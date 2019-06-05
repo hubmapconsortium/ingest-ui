@@ -1,0 +1,6 @@
+SECRET_KEY = 'somesecret'
+
+
+#both from developers.globus.org
+APP_CLIENT_ID = '21f293b0-5fa5-4ee1-9e0e-3cf88bd70114'
+APP_CLIENT_SECRET = 'myappssecret'

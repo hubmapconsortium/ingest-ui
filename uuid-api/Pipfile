@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+
+[packages]
+property = "==2.2"
+mysql-connector-python = "==8.0.16"
+flask = "*"
+requests = "*"
+globus-sdk = "*"
+neo4j = "*"
+flask-cors = "*"
+
+[requires]
+python_version = "3.7"
