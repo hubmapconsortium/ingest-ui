@@ -62,7 +62,7 @@ class Neo4jConnection(object):
     def load_config_file(self):    
         config = configparser.ConfigParser()
         try:
-            config.read('../common-api/config.ini')
+            config.read('../common-api/app.properties')
             self.uri = config.get('NEO4J', 'server')
             self.username = config.get('NEO4J', 'username')
             self.password = config.get('NEO4J', 'password')
