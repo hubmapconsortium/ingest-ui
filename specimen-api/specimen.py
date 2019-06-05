@@ -165,7 +165,7 @@ class Specimen:
         config = configparser.ConfigParser()
         confdata = {}
         try:
-            config.read('../common-api/config.ini')
+            config.read('../common-api/app.properties')
             confdata['neo4juri'] = config.get('NEO4J', 'server')
             confdata['neo4jusername'] = config.get('NEO4J', 'username')
             confdata['neo4jpassword'] = config.get('NEO4J', 'password')

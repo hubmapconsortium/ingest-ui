@@ -26,7 +26,7 @@ class Metadata:
     def load_config_file(self):    
         config = configparser.ConfigParser()
         try:
-            config.read('../common-api/config.ini')
+            config.read('../common-api/app.properties')
             self.md_config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
             self.md_config['APP_CLIENT_SECRET'] = config.get('GLOBUS', 'APP_CLIENT_SECRET')
             self.md_config['TRANSFER_ENDPOINT_UUID'] = config.get('GLOBUS', 'TRANSFER_ENDPOINT_UUID')

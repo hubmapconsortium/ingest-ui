@@ -32,7 +32,7 @@ def load_app_client():
 def load_config_file():
     config = configparser.ConfigParser()
     try:
-        config.read('../common-api/config.ini')
+        config.read('../common-api/app.properties')
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
         app.config['APP_CLIENT_SECRET'] = config.get(
             'GLOBUS', 'APP_CLIENT_SECRET')
@@ -85,12 +85,13 @@ def hello():
 
 config = configparser.ConfigParser()
 try:
-    config.read('../common-api/config.ini')
+    config.read('../common-api/app.properties')
     app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
 except:
     msg = "Unexpected error:", sys.exc_info()[0]
     print(msg + "  Program stopped.")
     exit(0)
+    
 @app.route('/specimens', methods=['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 def create_specimen():

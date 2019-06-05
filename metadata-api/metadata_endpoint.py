@@ -31,7 +31,7 @@ def load_app_client():
 def load_config_file():    
     config = configparser.ConfigParser()
     try:
-        config.read('../common-api/config.ini')
+        config.read('../common-api/app.properties')
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
         app.config['APP_CLIENT_SECRET'] = config.get('GLOBUS', 'APP_CLIENT_SECRET')
         app.config['TRANSFER_ENDPOINT_UUID'] = config.get('GLOBUS', 'TRANSFER_ENDPOINT_UUID')
