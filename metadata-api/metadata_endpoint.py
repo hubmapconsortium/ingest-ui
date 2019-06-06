@@ -68,7 +68,7 @@ def load_config_file():
         exit(0)
 
          
-# this method returns a JSON list of the entities the current user can edit.  The entitytype is an optional parameter.  If it is not set,
+# this method returns a JSON list of the UUIDs for the entities the current user can edit.  The entitytype is an optional parameter.  If it is not set,
 # the method returns all the editable entities available to the user. 
 @app.route('/metadata/usercanedit/type', methods = ['GET'])
 @app.route('/metadata/usercanedit/type/<entitytype>', methods = ['GET'])
