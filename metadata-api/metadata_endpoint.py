@@ -18,6 +18,7 @@ from hubmap_const import HubmapConst
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
 from hm_auth import AuthHelper
+from entity import Entity
 
 
 app = Flask(__name__)
@@ -66,17 +67,52 @@ def load_config_file():
         print (msg + "  Program stopped.")
         exit(0)
 
+         
+# this method returns a JSON list of the UUIDs for the entities the current user can edit.  The entitytype is an optional parameter.  If it is not set,
+# the method returns all the editable entities available to the user. 
+@app.route('/metadata/usercanedit/type', methods = ['GET'])
+@app.route('/metadata/usercanedit/type/<entitytype>', methods = ['GET'])
+def user_edit_entity_list(entitytype=None):
+    token = str(request.headers["AUTHORIZATION"])[7:]
+    conn = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        entity = Entity()
+        edit_list = entity.get_editable_entities_by_type(driver, token, entitytype)
+        return jsonify( { 'entity_list': edit_list } ), 200
+    
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
+
 # this method returns a simple JSON message {'editable':'True|False'}.  True indicates that the current
 # user can edit the given entity.  False indicates they cannot edit the entity.
 @app.route('/metadata/usercanedit/<entityuuid>', methods = ['GET'])
-def can_user_edit_entity():
-    pass
-    """#useruuid = request.args.get('useruuid')
+def can_user_edit_entity(entityuuid):
     token = str(request.headers["AUTHORIZATION"])[7:]
-    entityuuid = request.args.get('entityuuid')
+    #entityuuid = request.args.get('entityuuid')
     if len(entityuuid) == 0:
         abort(400, jsonify( { 'error': 'entityuuid parameter is required' } ))
-    """
+    conn = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        entity = Entity()
+        can_edit = entity.entitytype(driver, token, entityuuid)
+        return jsonify( { 'editable': can_edit } ), 200
+    
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
 
 # this method returns JSON containing a group uuid if given the name of a group (ex: hubmap-read) or returns
 # the name of the group if given a uuid (ex: 5777527e-ec11-11e8-ab41-0af86edb4424).  If the idenfier cannot be found,
@@ -87,22 +123,12 @@ def can_user_edit_entity():
 def get_group_by_identifier(identifier):
     if len(identifier) == 0:
         abort(400, jsonify( { 'error': 'identifier parameter is required' } ))
-    authcache = None
-    if AuthHelper.isInitialized() == False:
-        authcache = AuthHelper.create(
-            app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
-    else:
-        authcache = AuthHelper.instance()
-    groupinfo = authcache.getHuBMAPGroupInfo()
-    # search through the keys for the identifier, return the value
-    for k in groupinfo.keys():
-        if str(k).lower() == str(identifier).lower():
-            return jsonify( { 'groupuuid': groupinfo[k], 'groupname': identifier } ), 200
-    # search through the values for the identifier, return the key
-    for (k,v) in groupinfo.items():
-        if str(v).lower() == str(identifier).lower():
-            return jsonify( { 'groupuuid' : identifier ,'groupname': str(k) } ), 200
-    return jsonify( { 'error': 'cannot find a Hubmap group matching: [' + identifier + ']' } ), 404
+    metadata = Metadata()
+    try:
+        group = metadata.get_group_by_identifier(identifier)
+        return jsonify( { 'group': group } ), 200
+    except ValueError as ve:
+        return jsonify( { 'error': 'cannot find a Hubmap group matching: [' + identifier + ']' } ), 404
         
 
     
