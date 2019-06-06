@@ -15,7 +15,8 @@ from neo4j import TransactionError, CypherError
 import configparser
 from pprint import pprint
 import json
-<<<<<<< HEAD
+sys.path.append(os.path.realpath("../metadata-api"))
+from metadata import Metadata
 
 class AuthError(Exception):
     def __init__(self, message, status_code=None):
@@ -23,11 +24,6 @@ class AuthError(Exception):
         self.message = message
         if status_code is not None:
             self.status_code = status_code
-=======
-sys.path.append(os.path.realpath("../metadata-api"))
-from metadata import Metadata
->>>>>>> a7de423c506b7188268990a1956cba4f2f0d938c
-
 
 class Specimen:
 
