@@ -16,6 +16,12 @@ import configparser
 from pprint import pprint
 import json
 
+class AuthError(Exception):
+    def __init__(self, message, status_code=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
 
 
 class Specimen:
@@ -41,6 +47,8 @@ class Specimen:
         else:
             authcache = AuthHelper.instance()
         userinfo = authcache.getUserInfo(current_token, True)
+        if userinfo.status_code == 401:
+            raise AuthError('token is invalid.', 401)
         metadata_userinfo = {}
 
         if 'sub' in userinfo.keys():

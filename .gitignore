@@ -7,9 +7,11 @@ __pycache__/
 uuid-api/*.sh
 uuid-api/uuid.properties
 uuid-api/uuid_app.conf
+uuid-api/*.log
 common-api/common_app.conf
 common-api/config.ini
 common-api/*.sh
+common-api/app.properties
 
 # C extensions
 *.so
@@ -117,3 +119,10 @@ dmypy.json
 
 # conf
 portal/portal.conf
+
+# pipenv
+Pipfile
+Pipfile.lock
+
+# vscode editor
+.vscode
