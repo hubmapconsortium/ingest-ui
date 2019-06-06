@@ -1,2 +1,1 @@
-# data-ingest
-HuBMAP Data Ingest Portal
+# HuBMAP Data Ingest Portal
