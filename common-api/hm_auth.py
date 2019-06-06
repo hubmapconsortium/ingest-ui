@@ -55,7 +55,7 @@ def secured(func=None, groups=None, scopes=None):
                     gid = helperInstance.groupNameToId(group)
                     if gid is None:
                         return Response("Group " + group + " not found.", 500)
-                    if not gid in userInfo['hmgroupids']:
+                    if not gid['uuid'] in userInfo['hmgroupids']:
                         return Response('User is not a member of group ' + group, 403)
 
             return (func(*args, **kwargs))
@@ -177,8 +177,8 @@ class AuthCache:
                 with open(AuthCache.groupJsonFilename) as jsFile:
                     groups = json.load(jsFile)
                     for group in groups:
-                        if 'name' in group and 'id' in group and 'generateuuid' in group and 'displayname' in group and not string_helper.isBlank(group['name']) and not string_helper.isBlank(group['id']) and not string_helper.isBlank(group['displayname']):
-                            group_obj = {'name' : group['name'].lower().strip(), 'uuid' : group['name'].lower().strip(),
+                        if 'name' in group and 'uuid' in group and 'generateuuid' in group and 'displayname' in group and not string_helper.isBlank(group['name']) and not string_helper.isBlank(group['uuid']) and not string_helper.isBlank(group['displayname']):
+                            group_obj = {'name' : group['name'].lower().strip(), 'uuid' : group['uuid'].lower().strip(),
                                          'displayname' : group['displayname'], 'generateuuid': group['generateuuid']}
                             groupIdByName[group['name'].lower().strip()] = group_obj
             return groupIdByName

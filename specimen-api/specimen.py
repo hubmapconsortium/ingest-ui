@@ -15,7 +15,8 @@ from neo4j import TransactionError, CypherError
 import configparser
 from pprint import pprint
 import json
-
+sys.path.append(os.path.realpath("../metadata-api"))
+from metadata import Metadata
 
 
 class Specimen:
@@ -41,6 +42,16 @@ class Specimen:
         else:
             authcache = AuthHelper.instance()
         userinfo = authcache.getUserInfo(current_token, True)
+        user_group_ids = userinfo['hmgroupids']
+        provenance_group = None
+        metadata = Metadata()
+        try:
+            for groupid in user_group_ids:
+                group = metadata.get_group_by_identifier(groupid)
+                if group['generateuuid'] == True:
+                    provenance_group = group
+        except ValueError as ve:
+            raise ve
         metadata_userinfo = {}
 
         if 'sub' in userinfo.keys():
@@ -90,6 +101,8 @@ class Specimen:
                 metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+                metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
+                metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
 
                 # This is temporary, I need a set of calls to extract the metadata and file info
                 if 'metadata' in metadata_record.keys():
@@ -126,6 +139,8 @@ class Specimen:
                 activity_metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
                 activity_metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[
                     HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+                activity_metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
+                activity_metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
                 stmt = Neo4jConnection.get_create_statement(
                     activity_metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
                 tx.run(stmt)

@@ -77,25 +77,17 @@ class HubmapConst(object):
      {'attribute_name' : NAME_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}, {'attribute_name' : DESCRIPTION_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
      {'attribute_name' : HAS_PHI_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
      {'attribute_name' : STATUS_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
     DATASET_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : NAME_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}, {'attribute_name' : DESCRIPTION_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
      {'attribute_name' : HAS_PHI_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
      {'attribute_name' : STATUS_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
     ACTIVITY_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ACTIVITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
     FILE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : FILE_PATH_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+     {'attribute_name' : FILE_PATH_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
     METADATA_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
@@ -112,15 +104,11 @@ class HubmapConst(object):
     DONOR_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
     TISSUE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
 
 
     # Use this method to resolve a specific node type (ex: Donor, Tissue Sample, Create Dataset) to its more general
@@ -148,5 +136,5 @@ class HubmapConst(object):
             return HubmapConst.ENTITY_TYPE_ATTRIBUTE
         if str(specific_node_type).lower() in activity_type_list:
             return HubmapConst.ACTIVITY_TYPE_ATTRIBUTE
-        return ""
+        raise ValueError("Cannot find general node type for " + specific_node_type)
 
