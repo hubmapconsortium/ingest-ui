@@ -115,7 +115,7 @@ def can_user_edit_entity(entityuuid):
         conn = Neo4jConnection()
         driver = conn.get_driver()
         entity = Entity()
-        can_edit = entity.entitytype(driver, token, entityuuid)
+        can_edit = entity.can_user_edit_entity(driver, token, entityuuid)
         return jsonify( { 'editable': can_edit } ), 200
     
     except:
