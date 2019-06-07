@@ -107,6 +107,23 @@ class Entity(object):
         except:
             return False
 
+    def edit_entity(self, driver, token, entityuuid, entityjson): 
+        """try:
+            if Entity.does_identifier_exist(driver, entityuuid) == False:
+                raise ValueError("Cannot find entity with uuid: " + entityuuid)
+            metadata_list = Entity.get_entities_by_relationship(driver, entityuuid, HubmapConst.HAS_METADATA_REL)
+            if len(metadata_list) > 1:
+                raise ValueError("Found more than one metadata entry attached to uuid: " + entityuuid)
+            metadata_entity = metadata_list[0]
+            authcache = None
+            if AuthHelper.isInitialized() == False:
+                authcache = AuthHelper.create(
+                    self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+            else:
+                authcache = AuthHelper.instance()
+            userinfo = authcache.getUserInfo(token, True)
+        """
+    
     def can_user_edit_entity(self, driver, token, entityuuid): 
         try:
             if Entity.does_identifier_exist(driver, entityuuid) == False:
@@ -166,12 +183,15 @@ class Entity(object):
                     matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
                         group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid, rel_code=HubmapConst.HAS_METADATA_REL)
                     
-                stmt = matching_stmt + " RETURN a.{uuid_attr} AS uuid".format(
-                    uuid_attr=HubmapConst.UUID_ATTRIBUTE)
+                stmt = matching_stmt + " RETURN a.{uuid_attr} AS entity_uuid, CASE a.{entitytype_attr} WHEN null THEN a.{activitytype_attr} ELSE a.{entitytype_attr} END as datatype, properties(m) AS metadata_properties".format(
+                    uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE)
 
                 for record in session.run(stmt):
-                    uuid = record['uuid']
-                    return_list.append(uuid)
+                    data_record = {}
+                    data_record['uuid'] = record['entity_uuid']
+                    data_record['datatype'] = record['datatype']
+                    data_record['properties'] = record['metadata_properties']
+                    return_list.append(data_record)
                 return return_list                    
             except CypherError as cse:
                 print ('A Cypher error was encountered: '+ cse.message)
