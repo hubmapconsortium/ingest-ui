@@ -6,14 +6,14 @@ Created on May 15, 2019
 import sys
 import os
 sys.path.append(os.path.realpath("../common-api"))
-from specimen import Specimen
+from specimen import Specimen, AuthError
 from globus_sdk.exc import TransferAPIError
 import base64
 from pprint import pprint
 import configparser
 from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient
 import globus_sdk
-from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json
+from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json, Response
 from flask_cors import CORS, cross_origin
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
@@ -32,7 +32,7 @@ def load_app_client():
 def load_config_file():
     config = configparser.ConfigParser()
     try:
-        config.read('../common-api/config.ini')
+        config.read('../common-api/app.properties')
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
         app.config['APP_CLIENT_SECRET'] = config.get(
             'GLOBUS', 'APP_CLIENT_SECRET')
@@ -85,12 +85,13 @@ def hello():
 
 config = configparser.ConfigParser()
 try:
-    config.read('../common-api/config.ini')
+    config.read('../common-api/app.properties')
     app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
 except:
     msg = "Unexpected error:", sys.exc_info()[0]
     print(msg + "  Program stopped.")
     exit(0)
+    
 @app.route('/specimens', methods=['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 def create_specimen():
@@ -127,6 +128,9 @@ def create_specimen():
         conn.close()
         return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
     except:
         msg = 'An error occurred: '
         for x in sys.exc_info():

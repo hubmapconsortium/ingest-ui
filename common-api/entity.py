@@ -9,15 +9,67 @@ from hubmap_const import HubmapConst
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
 from builtins import staticmethod
+import configparser
+from hm_auth import AuthCache, AuthHelper
+import pprint
 
 class Entity(object):
     '''
     classdocs
     '''
-
+    
+    entity_config = {}
 
     def __init__(self):
-        pass
+        self.load_config_file()
+
+    def load_config_file(self):
+        config = configparser.ConfigParser()
+        try:
+            config.read('../common-api/app.properties')
+            self.entity_config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
+            self.entity_config['APP_CLIENT_SECRET'] = config.get(
+                'GLOBUS', 'APP_CLIENT_SECRET')
+            self.entity_config['TRANSFER_ENDPOINT_UUID'] = config.get(
+                'GLOBUS', 'TRANSFER_ENDPOINT_UUID')
+            self.entity_config['SECRET_KEY'] = config.get('GLOBUS', 'SECRET_KEY')
+            self.entity_config['STAGING_FILE_PATH'] = config.get(
+                'GLOBUS', 'STAGING_FILE_PATH')
+            self.entity_config['PUBLISH_FILE_PATH'] = config.get(
+                'GLOBUS', 'PUBLISH_FILE_PATH')
+            self.entity_config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
+            #app.config['DEBUG'] = True
+        except OSError as err:
+            msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
+                err)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except configparser.NoSectionError as noSectError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                noSectError)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except configparser.NoOptionError as noOptError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                noOptError)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except SyntaxError as syntaxError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                syntaxError)
+            msg = msg + "  Cannot read line: {0}".format(syntaxError.text)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except AttributeError as attrError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                attrError)
+            msg = msg + "  Cannot read line: {0}".format(attrError.text)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except:
+            msg = "Unexpected error:", sys.exc_info()[0]
+            print(msg + "  Program stopped.")
+            exit(0)
 
     @staticmethod
     # NOTE: This will return a single entity, activity, or agent
@@ -54,6 +106,122 @@ class Entity(object):
             return True
         except:
             return False
+
+    def edit_entity(self, driver, token, entityuuid, entityjson): 
+        """try:
+            if Entity.does_identifier_exist(driver, entityuuid) == False:
+                raise ValueError("Cannot find entity with uuid: " + entityuuid)
+            metadata_list = Entity.get_entities_by_relationship(driver, entityuuid, HubmapConst.HAS_METADATA_REL)
+            if len(metadata_list) > 1:
+                raise ValueError("Found more than one metadata entry attached to uuid: " + entityuuid)
+            metadata_entity = metadata_list[0]
+            authcache = None
+            if AuthHelper.isInitialized() == False:
+                authcache = AuthHelper.create(
+                    self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+            else:
+                authcache = AuthHelper.instance()
+            userinfo = authcache.getUserInfo(token, True)
+        """
+    
+    def can_user_edit_entity(self, driver, token, entityuuid): 
+        try:
+            if Entity.does_identifier_exist(driver, entityuuid) == False:
+                raise ValueError("Cannot find entity with uuid: " + entityuuid)
+            metadata_list = Entity.get_entities_by_relationship(driver, entityuuid, HubmapConst.HAS_METADATA_REL)
+            if len(metadata_list) > 1:
+                raise ValueError("Found more than one metadata entry attached to uuid: " + entityuuid)
+            metadata_entity = metadata_list[0]
+            authcache = None
+            if AuthHelper.isInitialized() == False:
+                authcache = AuthHelper.create(
+                    self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+            else:
+                authcache = AuthHelper.instance()
+            userinfo = authcache.getUserInfo(token, True)
+            if 'hmgroupids' not in userinfo:
+                raise ValueError("Cannot find Hubmap Group information for token")
+            if HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE not in metadata_entity:
+                raise ValueError("Cannot find Hubmap Group information in metadata entity associated with uuid: " + entityuuid)
+                
+            hmgroups = userinfo['hmgroupids']
+            for g in hmgroups:
+                if str(g).lower() == str(metadata_entity[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]).lower():
+                    return True
+            return False
+        except BaseException as be:
+            pprint(be)
+            raise be
+
+    def get_editable_entities_by_type(self, driver, token, type_code=None): 
+        with driver.session() as session:
+            return_list = []
+
+            try:
+                if type_code != None:
+                    general_type = HubmapConst.get_general_node_type_attribute(type_code)            
+                authcache = None
+                if AuthHelper.isInitialized() == False:
+                    authcache = AuthHelper.create(
+                        self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+                else:
+                    authcache = AuthHelper.instance()
+                userinfo = authcache.getUserInfo(token, True)
+                if 'hmgroupids' not in userinfo:
+                    raise ValueError("Cannot find Hubmap Group information for token")
+                hmgroups = userinfo['hmgroupids']
+                for g in hmgroups:
+                    group_record = self.get_group_by_identifier(g)
+                    if group_record['generateuuid'] == True:
+                        current_group_uuid = g
+                matching_stmt = ""
+                if type_code != None:
+                    matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
+                        type_attrib=general_type, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
+                        rel_code=HubmapConst.HAS_METADATA_REL)
+                else:
+                    matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
+                        group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid, rel_code=HubmapConst.HAS_METADATA_REL)
+                    
+                stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, properties(m) AS metadata_properties".format(
+                    uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE)
+
+                for record in session.run(stmt):
+                    data_record = {}
+                    data_record['uuid'] = record['entity_uuid']
+                    data_record['datatype'] = record['datatype']
+                    data_record['properties'] = record['metadata_properties']
+                    return_list.append(data_record)
+                return return_list                    
+            except CypherError as cse:
+                print ('A Cypher error was encountered: '+ cse.message)
+                raise
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                raise
+
+    def get_group_by_identifier(self, identifier):
+        if len(identifier) == 0:
+            raise ValueError("identifier cannot be blank")
+        authcache = None
+        if AuthHelper.isInitialized() == False:
+            authcache = AuthHelper.create(
+                self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+        else:
+            authcache = AuthHelper.instance()
+        groupinfo = authcache.getHuBMAPGroupInfo()
+        # search through the keys for the identifier, return the value
+        for k in groupinfo.keys():
+            if str(k).lower() == str(identifier).lower():
+                group = groupinfo.get(k)
+                return group
+            else:
+                group = groupinfo.get(k)
+                if str(group['uuid']).lower() == str(identifier).lower():
+                    return group
+        raise ValueError("cannot find a Hubmap group matching: [" + identifier + "]")
         
     @staticmethod
     def get_entity_by_type(driver, general_type, type_code): 
@@ -67,7 +235,7 @@ class Entity(object):
             elif str(general_type).lower() == str(HubmapConst.AGENT_NODE_NAME).lower():
                 type_attrib = HubmapConst.AGENT_TYPE_ATTRIBUTE
             try:
-                stmt = "MATCH (a {type_attrib}: '{type_code}') RETURN properties(a) as properties".format(
+                stmt = "MATCH (a {{{type_attrib}: '{type_code}'}}) RETURN properties(a) as properties".format(
                     type_attrib=general_type, type_code=type_code)
 
                 for record in session.run(stmt):
@@ -258,6 +426,9 @@ if __name__ == "__main__":
     dr_x_uuid = '33a46e57-c55d-4617-ad41-ca8a30d6d844'
     datastage_uuid = 'c67a6dec-5ef8-4728-8f42-b70966edcb7e'
     create_datastage_activity = '05e699aa-0320-48ee-b3bc-f92cd72e9f5f'
+    
+    current_token = "Ag1bPNX5yp5x71djvvglJmrelQoNN87WPM73eYk98XaQnv1DjkH2Ckw3kBb68kjnwG5ol724K7ye7oF4z40oPUjWvD"
+    
     entity = Entity()
     file_uuid = entity.get_entity(driver, uuid_to_modify)
     print (file_uuid)
@@ -268,4 +439,17 @@ if __name__ == "__main__":
     
     stmt = Entity.get_entity_from_relationship_statement("cafd03e784d2fd091dd2bafc71db911d", "HAS_METADATA", "left")
     print(stmt)
+    
+    status = entity.can_user_edit_entity(driver, current_token, "7023ad6f76fcaab429ab9c049410399d")
+    if status == True:
+        print ("I can edit 7023ad6f76fcaab429ab9c049410399d") 
+    else:
+        print ("I cannot edit 7023ad6f76fcaab429ab9c049410399d") 
+    
+    e_list = entity.get_editable_entities_by_type(driver, current_token, 'Donor')
+    print(e_list)
+
+    e_list = entity.get_editable_entities_by_type(driver, current_token)
+    print(e_list)
+    
     conn.close()

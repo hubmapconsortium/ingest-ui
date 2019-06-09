@@ -92,11 +92,15 @@ class HubmapConst(object):
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : REFERENCE_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+     {'attribute_name' : REFERENCE_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
+     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
+     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
     PROVENANCE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
+     {'attribute_name' : PROVENANCE_GROUP_NAME_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
     DONOR_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
@@ -105,6 +109,7 @@ class HubmapConst(object):
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
+
 
     # Use this method to resolve a specific node type (ex: Donor, Tissue Sample, Create Dataset) to its more general
     # entity type attribute (ex: entitytype, activitytype, agenttype)
@@ -131,5 +136,5 @@ class HubmapConst(object):
             return HubmapConst.ENTITY_TYPE_ATTRIBUTE
         if str(specific_node_type).lower() in activity_type_list:
             return HubmapConst.ACTIVITY_TYPE_ATTRIBUTE
-        return ""
+        raise ValueError("Cannot find general node type for " + specific_node_type)
 

@@ -15,8 +15,15 @@ from neo4j import TransactionError, CypherError
 import configparser
 from pprint import pprint
 import json
+sys.path.append(os.path.realpath("../metadata-api"))
+from metadata import Metadata
 
-
+class AuthError(Exception):
+    def __init__(self, message, status_code=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
 
 class Specimen:
 
@@ -41,6 +48,20 @@ class Specimen:
         else:
             authcache = AuthHelper.instance()
         userinfo = authcache.getUserInfo(current_token, True)
+        
+        if userinfo.status_code == 401:
+            raise AuthError('token is invalid.', 401)
+
+        user_group_ids = userinfo['hmgroupids']
+        provenance_group = None
+        metadata = Metadata()
+        try:
+            for groupid in user_group_ids:
+                group = metadata.get_group_by_identifier(groupid)
+                if group['generateuuid'] == True:
+                    provenance_group = group
+        except ValueError as ve:
+            raise ve
         metadata_userinfo = {}
 
         if 'sub' in userinfo.keys():
@@ -90,6 +111,8 @@ class Specimen:
                 metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+                metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
+                metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
 
                 # This is temporary, I need a set of calls to extract the metadata and file info
                 if 'metadata' in metadata_record.keys():
@@ -126,6 +149,8 @@ class Specimen:
                 activity_metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
                 activity_metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[
                     HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+                activity_metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
+                activity_metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
                 stmt = Neo4jConnection.get_create_statement(
                     activity_metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
                 tx.run(stmt)
@@ -165,7 +190,7 @@ class Specimen:
         config = configparser.ConfigParser()
         confdata = {}
         try:
-            config.read('../common-api/config.ini')
+            config.read('../common-api/app.properties')
             confdata['neo4juri'] = config.get('NEO4J', 'server')
             confdata['neo4jusername'] = config.get('NEO4J', 'username')
             confdata['neo4jpassword'] = config.get('NEO4J', 'password')

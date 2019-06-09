@@ -26,7 +26,7 @@ class Metadata:
     def load_config_file(self):    
         config = configparser.ConfigParser()
         try:
-            config.read('../common-api/config.ini')
+            config.read('../common-api/app.properties')
             self.md_config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
             self.md_config['APP_CLIENT_SECRET'] = config.get('GLOBUS', 'APP_CLIENT_SECRET')
             self.md_config['TRANSFER_ENDPOINT_UUID'] = config.get('GLOBUS', 'TRANSFER_ENDPOINT_UUID')
@@ -79,22 +79,6 @@ class Metadata:
             pprint(be)
             raise be
 
-    def can_user_edit_entity(self, driver, token, entityuuid): 
-        try:
-            if Entity.does_identifier_exist(driver, entityuuid) == False:
-                raise ValueError("Cannot find entity with uuid: " + entityuuid)
-            authcache = None
-            if AuthHelper.isInitialized() == False:
-                authcache = AuthHelper.create(
-                    self.md_config['APP_CLIENT_ID'], self.md_config['APP_CLIENT_SECRET'])
-            else:
-                authcache = AuthHelper.instance()
-            userinfo = authcache.getUserInfo(token, True)
-
-            #return Entity.get_entities_by_relationship(driver, identifier, HubmapConst.HAS_METADATA_REL)
-        except BaseException as be:
-            pprint(be)
-            raise be
 
     @staticmethod
     # NOTE: This will return a metadata object using the source's type
@@ -119,6 +103,27 @@ class Metadata:
                 for x in sys.exc_info():
                     print (x)
                 raise
+
+    def get_group_by_identifier(self, identifier):
+        if len(identifier) == 0:
+            raise ValueError("identifier cannot be blank")
+        authcache = None
+        if AuthHelper.isInitialized() == False:
+            authcache = AuthHelper.create(
+                self.md_config['APP_CLIENT_ID'], self.md_config['APP_CLIENT_SECRET'])
+        else:
+            authcache = AuthHelper.instance()
+        groupinfo = authcache.getHuBMAPGroupInfo()
+        # search through the keys for the identifier, return the value
+        for k in groupinfo.keys():
+            if str(k).lower() == str(identifier).lower():
+                group = groupinfo.get(k)
+                return group
+            else:
+                group = groupinfo.get(k)
+                if str(group['uuid']).lower() == str(identifier).lower():
+                    return group
+        raise ValueError("cannot find a Hubmap group matching: [" + identifier + "]")
 
 if __name__ == "__main__":
     conn = Neo4jConnection()
