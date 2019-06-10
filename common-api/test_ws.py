@@ -14,8 +14,27 @@ authHelper = None
 def hello():
     return "Hello World!"
  
+ 
+@app.route('/ptest', methods=['POST'])
+def ptest():
+    tokens = authHelper.getAuthorizationTokens(request.headers)
+    if tokens is Response: return tokens
+    if not isinstance(tokens, dict): return Response("MBearer token required", 401)
+    if not 'nexus_token' in tokens: return Response('Nexus token required', 401)
+    if not 'transfer_token' in tokens: return Response("Transfer token required", 401)
+    
+    pprint(tokens)
+    return('blech')
+
+@app.route('/usergroups', methods=['GET'])
+def userGroupss():
+    userInfo = authHelper.getUserInfoUsingRequest(request, getGroups=True)
+    if isinstance(userInfo, Response):
+        return userInfo
+    return jsonify(userInfo) 
+    
 @app.route('/userinfo', methods=['GET'])
-@secured
+@secured(groups="HuBMAP-read")
 def userInfo():
     userInfo = authHelper.getUserInfoUsingRequest(request)
     if isinstance(userInfo, Response):
