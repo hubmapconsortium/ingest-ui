@@ -25,6 +25,10 @@ POST arguments in json
 '''
 
 
+@app.route('/hello')
+def hello():
+    return Response("Hello", 200)
+
 @app.route('/hmuuid', methods=["POST"])
 @secured(groups="HuBMAP-read")
 def add_hmuuid():
@@ -39,7 +43,7 @@ def add_hmuuid():
         return(Response("Unexpected error: " + eMsg, 500))    
 
 @app.route('/hmuuid/<hmuuid>', methods=["GET"])
-#@secured(groups="HuBMAP-read")
+@secured(groups="HuBMAP-read")
 def get_hmuuid(hmuuid):
     try:
         if request.method == "GET":
@@ -53,7 +57,7 @@ def get_hmuuid(hmuuid):
         return(Response("Unexpected error: " + eMsg, 500))    
 
 @app.route('/hmuuid/<hmuuid>/exists', methods=["GET"])
-#@secured(groups="HuBMAP-read")
+@secured(groups="HuBMAP-read")
 def is_hmuuid(hmuuid):
     try:
         if request.method == "GET":
@@ -87,7 +91,7 @@ if __name__ == "__main__":
         cId = app.config['APP_CLIENT_ID']
         cSecret = app.config['APP_CLIENT_SECRET']
         worker = UUIDWorker(clientId=cId, clientSecret=cSecret)
-        app.run()
+        app.run(host='0.0.0.0')
     except Exception as e:                                                                                                            
         print("Error during startup.")                                                                                              
         print(str(e))                                                                                                                 
