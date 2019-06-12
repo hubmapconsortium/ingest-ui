@@ -92,46 +92,6 @@ except:
     msg = "Unexpected error:", sys.exc_info()[0]
     print(msg + "  Program stopped.")
     exit(0)
-@app.route('/newspecimens2', methods=['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
-def create_specimen2():
-    if not request.form:
-        abort(400)
-
-    # build a dataset from the json
-    #new_specimen = {}
-    # Convert the incoming JSON into an associative array using the JSON keys as the keys for the array
-    # for key in request.json.keys():
-    #    new_specimen[key] = request.json[key]
-    # TODO: make this a list in a configuration file
-    #min_datastage_keys = ['name','description','hasphi','labcreatedat','createdby','parentcollection']
-    #missing_key_list = [x for x in min_datastage_keys if x not in request.json.keys()]
-    # if len(missing_key_list) > 0:
-    #    abort(400, "Bad request, the JSON is missing these required fields:" + str(missing_key_list))
-
-
-    conn = None
-    new_uuid = None
-    try:
-        data_directory = temp_get_data_directory('/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8', 'temp_test', True)
-        #request, json.loads(request.form['data']), request.files
-        if 'metadata_file' in request.files:
-            metadata_file_path = temp_upload_file_data(request, 'metadata_file', data_directory)
-        """if 'images' in incoming_record:
-            image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory)
-            incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list"""
-        return jsonify({'metadata_file_path': metadata_file_path}), 201 
-
-    except AuthError as e:
-        print(e)
-        return Response('token is invalid', 401)
-    except:
-        msg = 'An error occurred: '
-        for x in sys.exc_info():
-            msg += str(x)
-        abort(400, msg)
-    finally:
-        conn.close()
 
 def temp_upload_file_data(request, file_key, directory_path):
     try:
