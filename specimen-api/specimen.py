@@ -5,16 +5,18 @@ Created on May 15, 2019
 '''
 import os
 import sys
+from neo4j import TransactionError, CypherError
+import configparser
+from pprint import pprint
+import json
+from werkzeug.utils import secure_filename
+from flask import json
 sys.path.append(os.path.realpath("../common-api"))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
 from entity import Entity
 from uuid_generator import getNewUUID
 from neo4j_connection import Neo4jConnection
-from neo4j import TransactionError, CypherError
-import configparser
-from pprint import pprint
-import json
 sys.path.append(os.path.realpath("../metadata-api"))
 from metadata import Metadata
 
@@ -37,7 +39,7 @@ class Specimen:
             raise be
 
     @staticmethod
-    def create_specimen(driver, incoming_record, current_token, labUUID, sourceUUID=None):
+    def create_specimen(driver, request, incoming_record, file_list, current_token, sourceUUID=None):
         # step 1: check that the uuids already exist
         conn = Neo4jConnection()
         confdata = Specimen.load_config_file()
@@ -49,9 +51,6 @@ class Specimen:
             authcache = AuthHelper.instance()
         userinfo = authcache.getUserInfo(current_token, True)
         
-        if userinfo.status_code == 401:
-            raise AuthError('token is invalid.', 401)
-
         user_group_ids = userinfo['hmgroupids']
         provenance_group = None
         metadata = Metadata()
@@ -78,18 +77,35 @@ class Specimen:
                 raise ValueError('Error: sourceUUID must be set for ')
 
         #userinfo = AuthCache.userInfo(current_token, True)
+        if len(file_list) > 0:
+            data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
 
         with driver.session() as session:
             tx = None
             try:
                 tx = session.begin_transaction()
-                # step 2: create the associated activity
-                specimen_data = {}
                 specimen_uuid_record = getNewUUID(
                     current_token, incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE])
                 incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record[HubmapConst.DOI_ATTRIBUTE]
                 incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record['displayDoi']
+                specimen_data = {}
+                metadata_file_path = None
+                protocol_file_path = None
+                image_file_data_list = None
+                if len(file_list) > 0:
+                    # append the current UUID to the data_directory to avoid filename collisions.
+                    data_directory = get_data_directory(data_directory, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], True)
+                    if 'metadata_file' in file_list:
+                        metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
+                        incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+                    if 'protocol_file' in file_list:
+                        protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
+                        incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
+                    if 'images' in incoming_record:
+                        image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory)
+                        incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+                         
                 required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
                 if entity_type == HubmapConst.TISSUE_TYPE_CODE:
                     required_list = HubmapConst.TISSUE_REQUIRED_ATTRIBUTE_LIST
@@ -186,6 +202,36 @@ class Specimen:
                 tx.rollback()
 
     @staticmethod
+    def upload_image_file_data(request, image_list, file_list, directory_path):
+        return_list = []
+        for image_data in image_list:
+            try:
+                if image_data['file_name'] in file_list:
+                    new_filepath = Specimen.upload_file_data(request, image_data['file_name'], directory_path)
+                    desc = ''
+                    if 'description' in image_data:
+                        desc = image_data['description']
+                    file_obj = {'filepath': new_filepath, 'description': desc}
+                    return_list.append(file_obj)
+                else:
+                    raise ValueError('Error: cannot find file: ' + image_data.file_name + ' in the list of files')
+            except:
+                raise
+        return json.dumps(return_list)
+
+    @staticmethod
+    def upload_file_data(request, file_key, directory_path):
+        try:
+            #TODO: handle case where file already exists.  Append a _x to filename where
+            # x is an integer
+            file = request.files[file_key]
+            filename = os.path.basename(file.filename)
+            file.save(os.path.join(directory_path, filename))
+            return str(os.path.join(directory_path, filename))
+        except:
+            raise
+     
+    @staticmethod
     def load_config_file():
         config = configparser.ConfigParser()
         confdata = {}
@@ -197,6 +243,8 @@ class Specimen:
             confdata['appclientid'] = config.get('GLOBUS', 'APP_CLIENT_ID')
             confdata['appclientsecret'] = config.get(
                 'GLOBUS', 'APP_CLIENT_SECRET')
+            confdata['localstoragedirectory'] = config.get(
+                'FILE_SYSTEM', 'LOCAL_STORAGE_DIRECTORY')
             return confdata
         except OSError as err:
             msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
@@ -230,9 +278,25 @@ class Specimen:
             print(msg + "  Program stopped.")
             exit(0)
 
+def create_site_directories(parent_folder):
+    hubmap_groups = AuthCache.getHMGroups()
+    for group in hubmap_groups:
+        if not os.path.exists(os.path.join(parent_folder, hubmap_groups[group]['uuid'])):
+            os.mkdir(os.path.join(parent_folder, hubmap_groups[group]['uuid']))
+
+def get_data_directory(parent_folder, group_uuid, create_folder=False):
+    if not os.path.exists(os.path.join(parent_folder, group_uuid)):
+        if create_folder == False:
+            raise ValueError('Error: cannot find path: ' + os.path.join(parent_folder, group_uuid))
+        else:
+            try:
+                os.mkdir(os.path.join(parent_folder, group_uuid))
+            except OSError as oserr:
+                pprint(oserr)
+    return os.path.join(parent_folder, group_uuid)
 
 if __name__ == "__main__":
-    conn = Neo4jConnection()
+    """conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Dataset'
     description = 'This dataset is a test'
@@ -253,4 +317,8 @@ if __name__ == "__main__":
                        'hasPHI': 'true', 'status': 'Published'}
     specimen_uuid_record = Specimen.create_specimen(
         driver, specimen_record,  current_token, labCreatedAt, parentCollection)
-    conn.close()
+    conn.close()"""
+    
+    confdata = Specimen.load_config_file()
+    parent_folder = confdata['localstoragedirectory']
+    #create_site_directories(parent_folder)
