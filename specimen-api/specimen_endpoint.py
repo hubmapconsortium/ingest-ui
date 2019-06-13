@@ -5,7 +5,6 @@ Created on May 15, 2019
 '''
 import sys
 import os
-sys.path.append(os.path.realpath("../common-api"))
 from specimen import Specimen, AuthError
 from globus_sdk.exc import TransferAPIError
 import base64
@@ -15,6 +14,8 @@ from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient
 import globus_sdk
 from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json, Response
 from flask_cors import CORS, cross_origin
+sys.path.append(os.path.realpath("../common-api"))
+from entity import Entity
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
 from hubmap_const import HubmapConst
@@ -92,28 +93,6 @@ except:
     msg = "Unexpected error:", sys.exc_info()[0]
     print(msg + "  Program stopped.")
     exit(0)
-
-def temp_upload_file_data(request, file_key, directory_path):
-    try:
-        #TODO: handle case where file already exists.  Append a _x to filename where
-        # x is an integer
-        file = request.files[file_key]
-        filename = os.path.basename(file.filename)
-        file.save(os.path.join(directory_path, filename))
-        return str(os.path.join(directory_path, filename))
-    except:
-        raise
-
-def temp_get_data_directory(parent_folder, group_uuid, create_folder=False):
-    if not os.path.exists(os.path.join(parent_folder, group_uuid)):
-        if create_folder == False:
-            raise ValueError('Error: cannot find path: ' + os.path.join(parent_folder, group_uuid))
-        else:
-            try:
-                os.mkdir(os.path.join(parent_folder, group_uuid))
-            except OSError as oserr:
-                pprint(oserr)
-    return os.path.join(parent_folder, group_uuid)
     
 @app.route('/specimens', methods=['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
@@ -149,6 +128,76 @@ def create_specimen():
             driver, request, json.loads(request.form['data']), request.files, token, sourceuuid)
         conn.close()
         return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
+
+@app.route('/specimens/<uuid>', methods=['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+def update_specimen(uuid):
+    if not request.form:
+        abort(400)
+    if 'data' not in request.form:
+        abort(400)
+
+    # build a dataset from the json
+    #new_specimen = {}
+    # Convert the incoming JSON into an associative array using the JSON keys as the keys for the array
+    # for key in request.json.keys():
+    #    new_specimen[key] = request.json[key]
+    # TODO: make this a list in a configuration file
+    #min_datastage_keys = ['name','description','hasphi','labcreatedat','createdby','parentcollection']
+    #missing_key_list = [x for x in min_datastage_keys if x not in request.json.keys()]
+    # if len(missing_key_list) > 0:
+    #    abort(400, "Bad request, the JSON is missing these required fields:" + str(missing_key_list))
+
+
+    conn = None
+    new_uuid = None
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        specimen = Specimen()
+        sourceuuid = None
+        new_uuid_record = specimen.update_specimen(
+            driver, uuid, request, json.loads(request.form['data']), request.files, token)
+        conn.close()
+        return jsonify({'uuid': uuid}), 201 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
+
+@app.route('/specimens/<uuid>', methods=['GET'])
+def get_specimen(uuid):
+    if uuid == None:
+        abort(400)
+    if len(uuid) == 0:
+        abort(400)
+
+    conn = None
+    try:
+        #token = str(request.headers["AUTHORIZATION"])[7:]
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        specimen = Entity.get_entity_metadata(driver, uuid)
+        return jsonify({'specimen': specimen}), 200 
 
     except AuthError as e:
         print(e)

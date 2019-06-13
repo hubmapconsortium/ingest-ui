@@ -133,7 +133,7 @@ class Neo4jConnection(object):
     include_update_timestamp is a boolean flag that includes/excludes the TIMESTAMP() method
     in the update statement."""
     @staticmethod
-    def get_update_statement(update_record, type_string, include_update_timestamp):
+    def get_update_statement(update_record, include_provenance_data=True):
         attr_string = ""
         uuid = None
         try:
@@ -141,14 +141,16 @@ class Neo4jConnection(object):
         except KeyError as keyerror:
             raise KeyError("Error: Unable to find UUID in the update record")
         
+        attr_string = "{"
         for key in update_record.keys():
-            attr_string += "a." + key + "= '" + str(update_record.get(key)) + "', "
-        if include_update_timestamp == True:
+            attr_string += key + ": '" + str(update_record.get(key)) + "', "
+        if include_provenance_data == True:
             attr_string += HubmapConst.PROVENANCE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
         else:
             # Remove the trailing comma
             attr_string = attr_string[:-2]
-        stmt =  "MATCH (a:{rtype} {{{uuid_attrib}: '{uuid}'}}) SET {attr_string} RETURN a.{uuid_attrib}".format(rtype=type_string, uuid_attrib=HubmapConst.UUID_ATTRIBUTE,
+        attr_string += "}"
+        stmt =  "MATCH (a {{{uuid_attrib}: '{uuid}'}}) SET a += {attr_string} RETURN a.{uuid_attrib}".format(uuid_attrib=HubmapConst.UUID_ATTRIBUTE,
                                                                                                             attr_string=attr_string, uuid=uuid)
         return stmt
 
