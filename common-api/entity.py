@@ -12,6 +12,8 @@ from builtins import staticmethod
 import configparser
 from hm_auth import AuthCache, AuthHelper
 import pprint
+from flask import Response
+from autherror import AuthError
 
 class Entity(object):
     '''
@@ -167,6 +169,10 @@ class Entity(object):
                 else:
                     authcache = AuthHelper.instance()
                 userinfo = authcache.getUserInfo(token, True)
+
+                if type(userinfo) == Response and userinfo.status_code == 401:
+                    raise AuthError('token is invalid.', 401)
+
                 if 'hmgroupids' not in userinfo:
                     raise ValueError("Cannot find Hubmap Group information for token")
                 hmgroups = userinfo['hmgroupids']

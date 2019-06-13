@@ -18,13 +18,7 @@ import json
 sys.path.append(os.path.realpath("../metadata-api"))
 from metadata import Metadata
 from flask import Response
-
-class AuthError(Exception):
-    def __init__(self, message, status_code=None):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
+from autherror import AuthError
 
 class Specimen:
 

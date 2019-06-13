@@ -3,7 +3,7 @@ Created on May 15, 2019
 
 @author: chb69
 '''
-from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json
+from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json, Response
 import globus_sdk
 from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient 
 import configparser
@@ -20,6 +20,7 @@ from uuid_generator import getNewUUID
 from hm_auth import AuthHelper
 from entity import Entity
 from flask_cors import CORS, cross_origin
+from autherror import AuthError
 
 
 app = Flask(__name__)
@@ -92,7 +93,9 @@ def user_edit_entity_list(entitytype=None):
         entity = Entity()
         edit_list = entity.get_editable_entities_by_type(driver, token, entitytype)
         return jsonify( { 'entity_list': edit_list } ), 200
-    
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
     except:
         msg = 'An error occurred: '
         for x in sys.exc_info():
