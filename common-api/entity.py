@@ -109,8 +109,10 @@ class Entity(object):
         except:
             return False
 
+    # Note: when editing an entity, you are really editing the metadata attached to the entity
     def edit_entity(self, driver, token, entityuuid, entityjson): 
-        """try:
+        tx = None
+        try:
             if Entity.does_identifier_exist(driver, entityuuid) == False:
                 raise ValueError("Cannot find entity with uuid: " + entityuuid)
             metadata_list = Entity.get_entities_by_relationship(driver, entityuuid, HubmapConst.HAS_METADATA_REL)
@@ -124,7 +126,32 @@ class Entity(object):
             else:
                 authcache = AuthHelper.instance()
             userinfo = authcache.getUserInfo(token, True)
-        """
+            #replace the uuid with the metadata uuid
+            entityjson[HubmapConst.UUID_ATTRIBUTE] = metadata_entity[HubmapConst.UUID_ATTRIBUTE]
+            stmt = Neo4jConnection.get_update_statement(entityjson, True)
+            with driver.session() as session:
+                tx = session.begin_transaction()
+                tx.run(stmt)
+                tx.commit()
+                return metadata_entity[HubmapConst.UUID_ATTRIBUTE]
+        except TransactionError as te: 
+            print ('A transaction error occurred: ', te.value)
+            if tx.closed() == False:
+                tx.rollback()
+            raise te
+        except CypherError as cse:
+            print ('A Cypher error was encountered: ', cse.message)
+            if tx.closed() == False:
+                tx.rollback()
+            raise cse               
+        except:
+            print ('A general error occurred: ')
+            for x in sys.exc_info():
+                print (x)
+            if tx.closed() == False:
+                tx.rollback()
+            raise
+        
     
     def can_user_edit_entity(self, driver, token, entityuuid): 
         try:
@@ -278,6 +305,15 @@ class Entity(object):
         return stmt                  
 
     @staticmethod
+    def get_entity_metadata(driver, identifier):
+        entity_list = Entity.get_entities_by_relationship(driver, identifier, HubmapConst.HAS_METADATA_REL, "right")
+        if len(entity_list) > 1:
+            raise ValueError("Error: more than one metadata object found for identifier: " + identifier)
+        if len(entity_list) == 0:
+            raise ValueError("Error: no metadata object found for identifier: " + identifier)
+        return entity_list[0]                  
+
+    @staticmethod
     def get_entities_by_relationship(driver, identifier, relationship_label, direction=None): 
         with driver.session() as session:
             return_list = []
@@ -342,15 +378,18 @@ class Entity(object):
                 return file_uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
-                tx.rollback()
+                if tx.closed() == False:
+                    tx.rollback()
             except CypherError as cse:
                 print ('A Cypher error was encountered: ', cse.message)
-                tx.rollback()                
+                if tx.closed() == False:
+                    tx.rollback()
             except:
                 print ('A general error occurred: ')
                 for x in sys.exc_info():
                     print (x)
-                tx.rollback()
+                if tx.closed() == False:
+                    tx.rollback()
 
     @staticmethod
     #TODO: I could abstract this more with a signature like:
@@ -383,15 +422,18 @@ class Entity(object):
                 return activity_uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
-                tx.rollback()
+                if tx.closed() == False:
+                    tx.rollback()
             except CypherError as cse:
                 print ('A Cypher error was encountered: ', cse.message)
-                tx.rollback()                
+                if tx.closed() == False:
+                    tx.rollback()
             except:
                 print ('A general error occurred: ')
                 for x in sys.exc_info():
                     print (x)
-                tx.rollback()
+                if tx.closed() == False:
+                    tx.rollback()
 
     @staticmethod
     def get_node_properties(driver, stmt, there_can_be_only_one=False): 
@@ -434,7 +476,7 @@ if __name__ == "__main__":
     create_datastage_activity = '05e699aa-0320-48ee-b3bc-f92cd72e9f5f'
     
     current_token = "Ag1bPNX5yp5x71djvvglJmrelQoNN87WPM73eYk98XaQnv1DjkH2Ckw3kBb68kjnwG5ol724K7ye7oF4z40oPUjWvD"
-    
+    """
     entity = Entity()
     file_uuid = entity.get_entity(driver, uuid_to_modify)
     print (file_uuid)
@@ -457,5 +499,13 @@ if __name__ == "__main__":
 
     e_list = entity.get_editable_entities_by_type(driver, current_token)
     print(e_list)
+    """
+    entity = Entity()
+    #edit_record = {'uuid' : 'b8f5fcbe0b891ac0361b361b722de4b4', 'description' :'new description'}
+    #entity.edit_entity(driver, current_token, 'b8f5fcbe0b891ac0361b361b722de4b4', edit_record)
+    metadata_obj = Entity.get_entity_metadata(driver, 'b8f5fcbe0b891ac0361b361b722de4b4')
+    print(metadata_obj)
+
+    
     
     conn.close()

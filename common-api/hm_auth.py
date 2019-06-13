@@ -108,8 +108,29 @@ class AuthHelper:
         if helperInstance is None:
             helperInstance = self
         
-    def getAuthorizationToken(self, requestHeaders):
-        if 'Authorization' in requestHeaders:
+    def getAuthorizationTokens(self, requestHeaders):
+        hasMauth=False
+        hasAuth=False
+        if 'MAuthorization' in requestHeaders: hasMauth=True
+        if 'Authorization' in requestHeaders: hasAuth=True
+        
+        if hasMauth:
+            mauthHeader = requestHeaders['MAuthorization']
+            if string_helper.isBlank(mauthHeader):
+                return Response("Empty MAuthorization header", 401)
+            mauthHeader = mauthHeader.strip()
+            if len(mauthHeader) <= 8:
+                return Response("Invalid MAuthorization header", 401)
+            if not mauthHeader.upper().startswith("MBEARER"):
+                return Response("MBearer authorization required in MAuthorization header", 401)
+            jsonTokens = mauthHeader[7:].strip()
+            try:
+                tokens = json.loads(jsonTokens)
+            except Exception as e:
+                return Response("Error decoding json included in MAuthorization header", 401)    
+            return tokens
+        
+        elif hasAuth:
             authHeader = requestHeaders['Authorization']
             if string_helper.isBlank(authHeader):
                 return Response("Empty Authorization header", 401)
@@ -126,10 +147,23 @@ class AuthHelper:
             return Response('No Authorization header', 401)
     
     def getUserInfoUsingRequest(self, httpReq, getGroups = False):
-        tokenResp = self.getAuthorizationToken(httpReq.headers)
+        tokenResp = self.getAuthorizationTokens(httpReq.headers)
         if isinstance(tokenResp, Response):
             return tokenResp;
-        return self.getUserInfo(tokenResp, getGroups)
+
+        if isinstance(tokenResp, dict):
+            if getGroups and not 'nexus_token' in tokenResp:
+                return Response("Nexus token required to get group information.")
+            elif 'nexus_token' in tokenResp:
+                return self.getUserInfo(tokenResp['nexus_token'], getGroups)
+            elif 'auth_token' in tokenResp:
+                return self.getUserInfo(tokenResp['auth_token'], getGroups)
+            elif 'transfer_token' in tokenResp:
+                return self.getUserInfo(tokenResp['transfer_token'], getGroups)
+            else:
+                return Response("A valid token was not found in the MAuthorization header") 
+        else:
+            return self.getUserInfo(tokenResp, getGroups)
     
     def getUserInfo(self, token, getGroups = False):
         userInfo = AuthCache.getUserInfo(self.getApplicationKey(), token, getGroups)
