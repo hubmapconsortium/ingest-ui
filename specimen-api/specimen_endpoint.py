@@ -184,6 +184,32 @@ def update_specimen(uuid):
     finally:
         conn.close()
 
+@app.route('/specimens/exists/<uuid>', methods=['GET'])
+def does_specimen_exist(uuid):
+    if uuid == None:
+        abort(400)
+    if len(uuid) == 0:
+        abort(400)
+
+    conn = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        does_exist = Entity.does_identifier_exist(driver, uuid)
+        return jsonify({'exists': does_exist}), 200 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
+
+
 @app.route('/specimens/<uuid>', methods=['GET'])
 def get_specimen(uuid):
     if uuid == None:
