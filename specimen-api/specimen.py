@@ -19,13 +19,8 @@ from uuid_generator import getNewUUID
 from neo4j_connection import Neo4jConnection
 sys.path.append(os.path.realpath("../metadata-api"))
 from metadata import Metadata
-
-class AuthError(Exception):
-    def __init__(self, message, status_code=None):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
+from flask import Response
+from autherror import AuthError
 
 class Specimen:
 
@@ -59,6 +54,8 @@ class Specimen:
             authcache = AuthHelper.instance()
         userinfo = authcache.getUserInfo(current_token, True)
         
+        if type(userinfo) == Response and userinfo.status_code == 401:
+            raise AuthError('token is invalid.', 401)
         user_group_ids = userinfo['hmgroupids']
         provenance_group = None
         metadata = Metadata()

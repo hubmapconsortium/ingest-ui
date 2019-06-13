@@ -3,7 +3,7 @@ Created on May 15, 2019
 
 @author: chb69
 '''
-from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json
+from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json, Response
 import globus_sdk
 from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient 
 import configparser
@@ -20,9 +20,20 @@ from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
 from hm_auth import AuthHelper
 from entity import Entity
+from flask_cors import CORS, cross_origin
+from autherror import AuthError
 
 
 app = Flask(__name__)
+
+config = configparser.ConfigParser()
+try:
+    config.read('../common-api/app.properties')
+    app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
+except:
+    msg = "Unexpected error:", sys.exc_info()[0]
+    print(msg + "  Program stopped.")
+    exit(0)
 
 @app.before_first_request
 def load_app_client():
@@ -94,7 +105,9 @@ def user_edit_entity_list(entitytype=None):
         entity = Entity()
         edit_list = entity.get_editable_entities_by_type(driver, token, entitytype)
         return jsonify( { 'entity_list': edit_list } ), 200
-    
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
     except:
         msg = 'An error occurred: '
         for x in sys.exc_info():
@@ -199,6 +212,7 @@ def get_metadata_by_source(uuid):
         conn.close()
 
 @app.route('/metadata/<uuid>', methods = ['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 def get_metadata(uuid):
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to get a metadata instance' } ))
