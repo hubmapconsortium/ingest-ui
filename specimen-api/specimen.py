@@ -78,7 +78,12 @@ class Specimen:
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         if len(file_list) > 0:
+            #get a link to the data directory using the group uuid
+            # ex: <data_parent_directory>/<group UUID>
             data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
+            #get a link to the subdirectory within data directory using the current uuid
+            # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
+            data_directory = get_data_directory(data_directory, uuid)
 
         with driver.session() as session:
             tx = None
@@ -88,7 +93,8 @@ class Specimen:
                 protocol_file_path = None
                 image_file_data_list = None
                 
-                NEED CODE TO RESOLVE DELETEED FILES
+                #NEED CODE TO RESOLVE DELETEED FILES
+                cleanup_files(directory_path, current_file_list)
                 if len(file_list) > 0:
                     # append the current UUID to the data_directory to avoid filename collisions.
                     data_directory = get_data_directory(data_directory, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], True)
@@ -123,12 +129,12 @@ class Specimen:
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
-    
+    """
     
     
     
       
-    """
+
     @staticmethod
     def cleanup_files(directory_path, current_file_list):
         try:
