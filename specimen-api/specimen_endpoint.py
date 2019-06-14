@@ -141,7 +141,7 @@ def create_specimen():
         conn.close()
 
 @app.route('/specimens/<uuid>', methods=['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 def update_specimen(uuid):
     if not request.form:
         abort(400)
@@ -185,6 +185,7 @@ def update_specimen(uuid):
         conn.close()
 
 @app.route('/specimens/exists/<uuid>', methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 def does_specimen_exist(uuid):
     if uuid == None:
         abort(400)
@@ -211,6 +212,7 @@ def does_specimen_exist(uuid):
 
 
 @app.route('/specimens/<uuid>', methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 def get_specimen(uuid):
     if uuid == None:
         abort(400)
