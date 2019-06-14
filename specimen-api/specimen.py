@@ -26,7 +26,7 @@ class Specimen:
 
     @staticmethod
     # NOTE: This will return an entity, activity, or agent
-    def get_specimen(self, driver, identifier):
+    def get_specimen(driver, identifier):
         try:
             return Entity.get_entity(driver, identifier)
         except BaseException as be:
@@ -91,7 +91,8 @@ class Specimen:
                 image_file_data_list = None
                 
                 #NEED CODE TO RESOLVE DELETEED FILES
-                cleanup_files(directory_path, current_file_list)
+                #TODO: get a list of the filenames and put them into current_file_list
+                cleanup_files(data_directory, current_file_list)
                 if len(file_list) > 0:
                     # append the current UUID to the data_directory to avoid filename collisions.
                     data_directory = get_data_directory(data_directory, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], True)
@@ -131,13 +132,14 @@ class Specimen:
     
     
       
-
+    # This method deletes any files found in directory_path that are NOT in the current_file_list
     @staticmethod
     def cleanup_files(directory_path, current_file_list):
         try:
-            for file in current_file_list:
-                if os.path.exists(os.path.join(directory_path, file.filename)):
-                    file.remove(os.path.join(directory_path, file.filename))
+            onlyfiles = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
+            for filename in onlyfiles:
+                if filename not in current_file_list:
+                    os.remove(os.path.join(directory_path, filename))
         except:
             pass
 
@@ -179,6 +181,11 @@ class Specimen:
             activity_type = HubmapConst.CREATE_TISSUE_ACTIVITY_TYPE_CODE
             if sourceUUID == None:
                 raise ValueError('Error: sourceUUID must be set for ')
+            try:
+                entity = Entity.get_entity(driver, sourceUUID)
+                sourceUUID = entity['uuid']
+            except:
+                raise
 
         #userinfo = AuthCache.userInfo(current_token, True)
         if len(file_list) > 0:
@@ -403,7 +410,7 @@ def get_data_directory(parent_folder, group_uuid, create_folder=False):
     return os.path.join(parent_folder, group_uuid)
 
 if __name__ == "__main__":
-    """conn = Neo4jConnection()
+    conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Dataset'
     description = 'This dataset is a test'
@@ -422,10 +429,14 @@ if __name__ == "__main__":
     specimen_record = {'label': 'test specimen record',
                        'description': 'test specimen record',
                        'hasPHI': 'true', 'status': 'Published'}
-    specimen_uuid_record = Specimen.create_specimen(
-        driver, specimen_record,  current_token, labCreatedAt, parentCollection)
-    conn.close()"""
+    #specimen_uuid_record = Specimen.create_specimen(
+    #    driver, specimen_record,  current_token, labCreatedAt, parentCollection)
+    specimen_record = Specimen.get_specimen(driver, '838-CVMW-577')
+    pprint(specimen_record)
     
-    confdata = Specimen.load_config_file()
-    parent_folder = confdata['localstoragedirectory']
+    Specimen.cleanup_files('/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/388877c5ceed0ceb715b91231ae7db18', ['crosby.jpeg','lift.jpg'])
+    conn.close()
+    
+    #confdata = Specimen.load_config_file()
+    #parent_folder = confdata['localstoragedirectory']
     #create_site_directories(parent_folder)
