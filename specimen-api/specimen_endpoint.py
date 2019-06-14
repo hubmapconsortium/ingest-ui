@@ -122,10 +122,13 @@ def create_specimen():
         driver = conn.get_driver()
         specimen = Specimen()
         sourceuuid = None
-        if 'sourceuuid' in request.form.keys():
-            sourceuuid = request.form['sourceuuid']
+        if 'data' not in request.form:
+            return Response('form data is invalid', 401)
+        form_data = json.loads(request.form['data'])
+        if 'source_uuid' in form_data:
+            sourceuuid = form_data['source_uuid']
         new_uuid_record = specimen.create_specimen(
-            driver, request, json.loads(request.form['data']), request.files, token, sourceuuid)
+            driver, request, form_data, request.files, token, sourceuuid)
         conn.close()
         return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
