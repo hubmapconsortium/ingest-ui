@@ -42,12 +42,14 @@ class HubmapConst(object):
     DOI_ATTRIBUTE = 'doi'
     DISPLAY_DOI_ATTRIBUTE = 'display_doi'
     SPECIMEN_TYPE_ATTRIBUTE = 'specimen_type'
+    SPECIMEN_TYPE_OTHER_ATTRIBUTE = 'specimen_type_other'
     PROTOCOL_FILE_ATTRIBUTE = 'protocol_file'
     LAB_TISSUE_ID_ATTRIBUTE = 'lab_tissue_id'
     REFERENCE_UUID_ATTRIBUTE = 'reference_uuid'
     FILE_LIST_ATTRIBUTE = 'file_list'
     IMAGE_FILE_METADATA_ATTRIBUTE = 'image_file_metadata'
     METADATA_FILE_ATTRIBUTE = 'metadata_file'
+    
 
     DATASET_TYPE_CODE = 'Dataset'
     DATASTAGE_TYPE_CODE = 'Datastage'
