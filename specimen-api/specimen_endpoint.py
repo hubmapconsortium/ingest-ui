@@ -244,6 +244,6 @@ def get_specimen(uuid):
 
 if __name__ == '__main__':
     try:
-        app.run()
+        app.run(port=5004)
     finally:
         pass

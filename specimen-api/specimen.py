@@ -33,13 +33,13 @@ class Specimen:
             pprint(be)
             raise be
 
-    """
     @staticmethod
     def update_specimen(driver, uuid, request, incoming_record, file_list, current_token):
         conn = Neo4jConnection()
         metadata_uuid = None
         try:
-            metadata_obj = Entity.get_entity_metadata(driver, uuid)
+            #metadata_obj = Entity.get_entity_metadata(driver, uuid)
+            metadata_obj = Entity.get_entity(driver, uuid)
             metadata_uuid = metadata_obj[HubmapConst.UUID_ATTRIBUTE]
         except ValueError as ve:
             raise ve
@@ -66,6 +66,7 @@ class Specimen:
                     provenance_group = group
         except ValueError as ve:
             raise ve
+
         metadata_userinfo = {}
 
         if 'sub' in userinfo.keys():
@@ -92,10 +93,9 @@ class Specimen:
                 
                 #NEED CODE TO RESOLVE DELETEED FILES
                 #TODO: get a list of the filenames and put them into current_file_list
-                cleanup_files(data_directory, current_file_list)
                 if len(file_list) > 0:
+                    Specimen.cleanup_files(data_directory, file_list)
                     # append the current UUID to the data_directory to avoid filename collisions.
-                    data_directory = get_data_directory(data_directory, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], True)
                     if 'metadata_file' in file_list:
                         metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
                         incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
@@ -127,7 +127,22 @@ class Specimen:
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
-    """
+                tx.commit()
+                return uuid
+            except TransactionError as te:
+                print('A transaction error occurred: ', te.value)
+                if tx.closed() == False:
+                    tx.rollback()
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                if tx.closed() == False:
+                    tx.rollback()
+            except:
+                print('A general error occurred: ')
+                for x in sys.exc_info():
+                    print(x)
+                if tx.closed() == False:
+                    tx.rollback()
     
     
     
