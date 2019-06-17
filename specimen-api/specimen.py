@@ -38,8 +38,8 @@ class Specimen:
         conn = Neo4jConnection()
         metadata_uuid = None
         try:
-            #metadata_obj = Entity.get_entity_metadata(driver, uuid)
-            metadata_obj = Entity.get_entity(driver, uuid)
+            metadata_obj = Entity.get_entity_metadata(driver, uuid)
+            #metadata_obj = Entity.get_entity(driver, uuid)
             metadata_uuid = metadata_obj[HubmapConst.UUID_ATTRIBUTE]
         except ValueError as ve:
             raise ve
@@ -81,7 +81,9 @@ class Specimen:
             data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
             #get a link to the subdirectory within data directory using the current uuid
             # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
-            data_directory = get_data_directory(data_directory, uuid)
+            # We need to allow this method to create a new directory.  It is possible that an earlier
+            # specimen didn't have any files when it was initially created
+            data_directory = get_data_directory(data_directory, uuid, True)
 
         with driver.session() as session:
             tx = None
@@ -107,6 +109,8 @@ class Specimen:
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                 
                 metadata_record = incoming_record
+                # don't change the type of this node
+                metadata_record.pop(HubmapConst.ENTITY_TYPE_ATTRIBUTE)
                 metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]

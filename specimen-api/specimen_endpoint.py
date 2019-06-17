@@ -174,7 +174,7 @@ def update_specimen(uuid):
         new_uuid_record = specimen.update_specimen(
             driver, uuid, request, json.loads(request.form['data']), request.files, token)
         conn.close()
-        return jsonify({'uuid': uuid}), 201 
+        return jsonify({'uuid': uuid}), 200 
 
     except AuthError as e:
         print(e)
