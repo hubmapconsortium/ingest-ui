@@ -13,7 +13,7 @@ from globus_sdk.exc import TransferAPIError
 import sys
 import os
 from flask_cors import CORS, cross_origin
-sys.path.append(os.path.realpath("../common-api"))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from metadata import Metadata
 from hubmap_const import HubmapConst 
 from neo4j_connection import Neo4jConnection
@@ -28,7 +28,7 @@ app = Flask(__name__)
 
 config = configparser.ConfigParser()
 try:
-    config.read('../common-api/app.properties')
+    config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
     app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
 except:
     msg = "Unexpected error:", sys.exc_info()[0]
@@ -44,7 +44,7 @@ def load_app_client():
 def load_config_file():    
     config = configparser.ConfigParser()
     try:
-        config.read('../common-api/app.properties')
+        config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
         app.config['APP_CLIENT_SECRET'] = config.get('GLOBUS', 'APP_CLIENT_SECRET')
         app.config['TRANSFER_ENDPOINT_UUID'] = config.get('GLOBUS', 'TRANSFER_ENDPOINT_UUID')
@@ -81,16 +81,6 @@ def load_config_file():
         print (msg + "  Program stopped.")
         exit(0)
 
-config = configparser.ConfigParser()
-try:
-    config.read('../common-api/app.properties')
-    app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
-except:
-    msg = "Unexpected error:", sys.exc_info()[0]
-    print(msg + "  Program stopped.")
-    exit(0)
-
-         
 # this method returns a JSON list of the UUIDs for the entities the current user can edit.  The entitytype is an optional parameter.  If it is not set,
 # the method returns all the editable entities available to the user. 
 @app.route('/metadata/usercanedit/type', methods = ['GET'])

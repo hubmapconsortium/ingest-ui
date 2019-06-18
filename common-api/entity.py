@@ -28,7 +28,7 @@ class Entity(object):
     def load_config_file(self):
         config = configparser.ConfigParser()
         try:
-            config.read('../common-api/app.properties')
+            config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
             self.entity_config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
             self.entity_config['APP_CLIENT_SECRET'] = config.get(
                 'GLOBUS', 'APP_CLIENT_SECRET')

@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.realpath("../common-api"))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 import time
 import logging
 from uuid_worker import UUIDWorker

@@ -2,7 +2,7 @@ from neo4j import GraphDatabase
 import configparser
 import sys
 import os
-sys.path.append(os.path.realpath("../common-api"))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst 
 
 '''
