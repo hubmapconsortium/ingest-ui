@@ -19,6 +19,7 @@ from entity import Entity
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
 from hubmap_const import HubmapConst
+from hm_auth import AuthHelper, secured
 
 
 app = Flask(__name__)
@@ -89,6 +90,14 @@ config = configparser.ConfigParser()
 try:
     config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
     app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
+    app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
+    app.config['APP_CLIENT_SECRET'] = config.get(
+        'GLOBUS', 'APP_CLIENT_SECRET')
+    if AuthHelper.isInitialized() == False:
+        authcache = AuthHelper.create(
+            app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
+    else:
+        authcache = AuthHelper.instance()
 except:
     msg = "Unexpected error:", sys.exc_info()[0]
     print(msg + "  Program stopped.")
@@ -96,6 +105,7 @@ except:
     
 @app.route('/specimens', methods=['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@secured(groups="HuBMAP-read")
 def create_specimen():
     if not request.form:
         abort(400)
@@ -145,6 +155,7 @@ def create_specimen():
 
 @app.route('/specimens/<uuid>', methods=['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
+@secured(groups="HuBMAP-read")
 def update_specimen(uuid):
     if not request.form:
         abort(400)
@@ -189,6 +200,7 @@ def update_specimen(uuid):
 
 @app.route('/specimens/exists/<uuid>', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def does_specimen_exist(uuid):
     if uuid == None:
         abort(400)
@@ -216,6 +228,7 @@ def does_specimen_exist(uuid):
 
 @app.route('/specimens/<uuid>', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
+@secured(groups="HuBMAP-read")
 def get_specimen(uuid):
     if uuid == None:
         abort(400)

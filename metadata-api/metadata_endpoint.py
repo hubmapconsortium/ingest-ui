@@ -18,7 +18,7 @@ from metadata import Metadata
 from hubmap_const import HubmapConst 
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
-from hm_auth import AuthHelper
+from hm_auth import AuthHelper, secured
 from entity import Entity
 from flask_cors import CORS, cross_origin
 from autherror import AuthError
@@ -30,6 +30,14 @@ config = configparser.ConfigParser()
 try:
     config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
     app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
+    app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
+    app.config['APP_CLIENT_SECRET'] = config.get(
+        'GLOBUS', 'APP_CLIENT_SECRET')
+    if AuthHelper.isInitialized() == False:
+        authcache = AuthHelper.create(
+            app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
+    else:
+        authcache = AuthHelper.instance()
 except:
     msg = "Unexpected error:", sys.exc_info()[0]
     print(msg + "  Program stopped.")
@@ -86,6 +94,7 @@ def load_config_file():
 @app.route('/metadata/usercanedit/type', methods = ['GET'])
 @app.route('/metadata/usercanedit/type/<entitytype>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def user_edit_entity_list(entitytype=None):
     token = str(request.headers["AUTHORIZATION"])[7:]
     conn = None
@@ -110,6 +119,7 @@ def user_edit_entity_list(entitytype=None):
 # user can edit the given entity.  False indicates they cannot edit the entity.
 @app.route('/metadata/usercanedit/<entityuuid>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def can_user_edit_entity(entityuuid):
     token = str(request.headers["AUTHORIZATION"])[7:]
     #entityuuid = request.args.get('entityuuid')
@@ -138,6 +148,7 @@ def can_user_edit_entity(entityuuid):
 # example url: /metadata/groups/hubmap-read or /metadata/groups/777527e-ec11-11e8-ab41-0af86edb4424  
 @app.route('/metadata/groups/<identifier>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def get_group_by_identifier(identifier):
     if len(identifier) == 0:
         abort(400, jsonify( { 'error': 'identifier parameter is required' } ))
@@ -152,6 +163,7 @@ def get_group_by_identifier(identifier):
     
 @app.route('/metadata/source/type/<type_code>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def get_metadata_by_source_type(type_code):
     if type_code == None or len(type_code) == 0:
         abort(400, jsonify( { 'error': 'type_code parameter is required to get a metadata instance' } ))
@@ -179,6 +191,7 @@ def get_metadata_by_source_type(type_code):
 
 @app.route('/metadata/source/<uuid>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def get_metadata_by_source(uuid):
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to get a metadata instance' } ))
@@ -203,6 +216,7 @@ def get_metadata_by_source(uuid):
 
 @app.route('/metadata/<uuid>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def get_metadata(uuid):
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to get a metadata instance' } ))
