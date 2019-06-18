@@ -94,8 +94,6 @@ class HubmapConst(object):
      {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : FILE_PATH_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
     METADATA_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : REFERENCE_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
      {'attribute_name' : PROVENANCE_GROUP_UUID_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
