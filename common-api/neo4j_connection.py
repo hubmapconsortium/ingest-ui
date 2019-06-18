@@ -4,6 +4,7 @@ import sys
 import os
 from hubmap_const import HubmapConst
 from pprint import pprint 
+from neo4j import TransactionError, CypherError
 
 '''
 Created on Apr 17, 2019
@@ -196,12 +197,37 @@ class Neo4jConnection(object):
                 return False        
         return True
     
-            
+def build_indices(driver):
+    with driver.session() as session:
+        tx = None
+        try:
+            tx = session.begin_transaction()
+            f = open("create_indices.cql","r")
+            fl = f.readlines()
+            for l in fl:
+                tx.run(l)
+            tx.commit()
+        except TransactionError as te:
+            print('A transaction error occurred: ', te.value)
+            if tx.closed() == False:
+                tx.rollback()
+        except CypherError as cse:
+            print('A Cypher error was encountered: ', cse.message)
+            if tx.closed() == False:
+                tx.rollback()
+        except:
+            print('A general error occurred: ')
+            for x in sys.exc_info():
+                print(x)
+            if tx.closed() == False:
+                tx.rollback()
+        
             
     
 if __name__ == "__main__":
     conn = Neo4jConnection()
     drv1 = conn.get_driver()
+    build_indices(drv1)
     #conn.does_identifier_exist('70a43e57-c4fd-4616-ad41-ca8c80d6d827')
     #conn.does_identifier_exist('0ce5be9b-8b7f-47e9-a6d9-16a08df05f50')
     #new_record = {'uuid': '8686865-faaf-4d27-b89c-99999999999', 'label': 'test dataset create file12', 'description': 'description test dataset create file12', 'hasphi': 'true', 'status': 'Published'}

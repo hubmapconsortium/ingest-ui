@@ -250,8 +250,8 @@ class Specimen:
                 metadata_uuid_record = getNewUUID(
                     current_token, HubmapConst.METADATA_TYPE_CODE)
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                metadata_record[HubmapConst.DOI_ATTRIBUTE] = metadata_uuid_record[HubmapConst.DOI_ATTRIBUTE]
-                metadata_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = metadata_uuid_record['displayDoi']
+                #metadata_record[HubmapConst.DOI_ATTRIBUTE] = metadata_uuid_record[HubmapConst.DOI_ATTRIBUTE]
+                #metadata_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = metadata_uuid_record['displayDoi']
                 metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
                 metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]

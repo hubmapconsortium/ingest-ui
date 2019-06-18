@@ -301,7 +301,7 @@ class Entity(object):
             left_dir = '<'
         elif str(direction).lower() == 'right':
             right_dir = '>'
-        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' OR e.{doi_attrib} = '{identifier}' OR e.{doi_display_attrib} = '{identifier}' RETURN properties(a) AS properties".format(
+        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' OR e.{doi_attrib} = '{identifier}' OR e.{doi_display_attrib} = '{identifier}' RETURN e.{uuid_attrib} AS uuid, e.{doi_attrib} AS doi, e.{doi_display_attrib} AS display_doi, properties(a) AS properties".format(
             identifier=identifier,uuid_attrib=HubmapConst.UUID_ATTRIBUTE, doi_attrib=HubmapConst.DOI_ATTRIBUTE, doi_display_attrib=HubmapConst.DISPLAY_DOI_ATTRIBUTE,
                 relationship_label=relationship_label, right_dir=right_dir, left_dir=left_dir)
         return stmt                  
@@ -324,7 +324,13 @@ class Entity(object):
                 stmt = Entity.get_entity_from_relationship_statement(identifier, relationship_label, direction)
 
                 for record in session.run(stmt):
+                    # add some data elements
+                    # since metadata lacks doi and display_doi
+                    # use the doi and display doi from the entity
                     dataset_record = record['properties']
+                    #dataset_record['entity_uuid'] = record['uuid']
+                    dataset_record['doi'] = record['doi']
+                    dataset_record['display_doi'] = record['display_doi']                    
                     return_list.append(dataset_record)
                 return return_list                    
             except CypherError as cse:
