@@ -11,13 +11,13 @@ from pprint import pprint
 import json
 from werkzeug.utils import secure_filename
 from flask import json
-sys.path.append(os.path.realpath("../common-api"))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
 from entity import Entity
 from uuid_generator import getNewUUID
 from neo4j_connection import Neo4jConnection
-sys.path.append(os.path.realpath("../metadata-api"))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'metadata-api'))
 from metadata import Metadata
 from flask import Response
 from autherror import AuthError
@@ -250,8 +250,8 @@ class Specimen:
                 metadata_uuid_record = getNewUUID(
                     current_token, HubmapConst.METADATA_TYPE_CODE)
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                metadata_record[HubmapConst.DOI_ATTRIBUTE] = metadata_uuid_record[HubmapConst.DOI_ATTRIBUTE]
-                metadata_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = metadata_uuid_record['displayDoi']
+                #metadata_record[HubmapConst.DOI_ATTRIBUTE] = metadata_uuid_record[HubmapConst.DOI_ATTRIBUTE]
+                #metadata_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = metadata_uuid_record['displayDoi']
                 metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
                 metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
@@ -369,7 +369,7 @@ class Specimen:
         config = configparser.ConfigParser()
         confdata = {}
         try:
-            config.read('../common-api/app.properties')
+            config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
             confdata['neo4juri'] = config.get('NEO4J', 'server')
             confdata['neo4jusername'] = config.get('NEO4J', 'username')
             confdata['neo4jpassword'] = config.get('NEO4J', 'password')

@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.realpath("../common_api"))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 import string_helper
 from hm_auth import AuthHelper
 from properties.p import Property #pip install property 

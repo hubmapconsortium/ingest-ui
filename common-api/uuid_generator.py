@@ -7,6 +7,7 @@ Created on Apr 18, 2019
 import uuid
 import requests
 import json
+import os
 import sys
 from hubmap_const import HubmapConst 
 from pprint import pprint
@@ -21,7 +22,7 @@ app_config = {}
 def load_config_file():    
     config = configparser.ConfigParser()
     try:
-        config.read('../common-api/app.properties')
+        config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
         app_config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
     except OSError as err:
         msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(err)
