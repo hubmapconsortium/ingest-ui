@@ -117,7 +117,6 @@ def create_specimen():
     conn = None
     new_uuid = None
     try:
-        import pdb; pdb.set_trace()
         token = str(request.headers["AUTHORIZATION"])[7:]
         conn = Neo4jConnection()
         driver = conn.get_driver()
