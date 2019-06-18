@@ -7,6 +7,7 @@ Created on Apr 18, 2019
 import uuid
 import requests
 import json
+import os
 import sys
 from hubmap_const import HubmapConst 
 from pprint import pprint

@@ -4,6 +4,7 @@ Created on Apr 18, 2019
 @author: chb69
 '''
 from neo4j import TransactionError, CypherError
+import os
 import sys
 from hubmap_const import HubmapConst 
 from neo4j_connection import Neo4jConnection
