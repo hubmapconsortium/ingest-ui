@@ -38,7 +38,10 @@ def isValidHMId(hmid):
 
 def stripHMid(hmid):
 	if string_helper.isBlank(hmid): return hmid
-	return 	hmid.strip().replace('-', '').replace(' ', '')
+	thmid = hmid.strip();
+	if thmid.lower().startswith('hmb'): thmid = thmid[3:]
+	if thmid.startswith(':'): thmid = thmid[1:]
+	return 	thmid.strip().replace('-', '').replace(' ', '')
 
 
 class UUIDWorker:
@@ -136,8 +139,8 @@ class UUIDWorker:
 				curs.execute(sql, vals)
 			self.hmdb.db.commit()
 		if generateDOI:
-			doiWithDashes= doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
-			return jsonify(uuid=hmid, doi=doi, displayDoi=doiWithDashes)
+			dispDoi= 'HBM:' + doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
+			return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
 		else:
 			return jsonify(uuid=hmid)
 
