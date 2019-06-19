@@ -11,7 +11,7 @@ from hm_auth import secured
 
 
 
-LOG_FILE_NAME = "uuid-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".log" 
+LOG_FILE_NAME = "/tmp/uuid-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".log" 
 logger = None
 worker = None
 app = Flask(__name__)
@@ -24,27 +24,64 @@ POST arguments in json
   parentId- required for entity type of TISSUE, optional for all others
 '''
 
+@app.before_first_request
+def init():
+    global logger
+    global worker
+    try:
+        logger = logging.getLogger('uuid.service')
+        logger.setLevel(logging.INFO)
+        logFH = logging.FileHandler(LOG_FILE_NAME)
+        logger.addHandler(logFH)
+        logger.info("started")
+    except Exception as e:
+        print("Error opening log file during startup")
+        print(str(e))
+
+    try:        
+        if 'APP_CLIENT_ID' not in app.config or string_helper.isBlank(app.config['APP_CLIENT_ID']):
+            raise Exception("Required configuration parameter APP_CLIENT_ID not found in application configuration.")
+        if 'APP_CLIENT_SECRET' not in app.config or string_helper.isBlank(app.config['APP_CLIENT_ID']):
+            raise Exception("Required configuration parameter APP_CLIENT_SECRET not found in application configuration.")
+        cId = app.config['APP_CLIENT_ID']
+        cSecret = app.config['APP_CLIENT_SECRET']
+        worker = UUIDWorker(clientId=cId, clientSecret=cSecret)
+        logger.info("initialized")
+
+    except Exception as e:
+        print("Error during startup.")
+        print(str(e))
+        logger.error(e, exc_info=True)
+        print("Check the log file for further information: " + LOG_FILE_NAME)
+
+
+
 
 @app.route('/hello')
 def hello():
+    global logger
     return Response("Hello", 200)
 
 @app.route('/hmuuid', methods=["POST"])
 @secured(groups="HuBMAP-read")
 def add_hmuuid():
+    global worker
+    global logger
     try:
         if request.method == "POST":
             return worker.uuidPost(request)
         else:
             return Response("Invalid request.  Use POST to create a UUID", 500)
-    except Exception as e:                                                                                                            
-        eMsg = str(e)                                                                                                                 
-        logger.error(e, exc_info=True)                                                                                                
-        return(Response("Unexpected error: " + eMsg, 500))    
+    except Exception as e:
+        eMsg = str(e)
+        logger.error(e, exc_info=True)
+        return(Response("Unexpected error: " + eMsg, 500))
 
 @app.route('/hmuuid/<hmuuid>', methods=["GET"])
 @secured(groups="HuBMAP-read")
 def get_hmuuid(hmuuid):
+    global worker
+    global logger
     try:
         if request.method == "GET":
             info = worker.getIdInfo(hmuuid)
@@ -59,6 +96,8 @@ def get_hmuuid(hmuuid):
 @app.route('/hmuuid/<hmuuid>/exists', methods=["GET"])
 @secured(groups="HuBMAP-read")
 def is_hmuuid(hmuuid):
+    global worker
+    global logger
     try:
         if request.method == "GET":
             exists = worker.getIdExists(hmuuid)
@@ -74,26 +113,10 @@ def is_hmuuid(hmuuid):
 
 if __name__ == "__main__":
     try:
-        logger = logging.getLogger('uuid.service')                                                                                             
-        logger.setLevel(logging.INFO)                                                                                                     
-        logFH = logging.FileHandler(LOG_FILE_NAME)                                                                                          
-        logger.addHandler(logFH)
-    except Exception as e:
-        print("Error opening log file during startup")
-        print(str(e))
-
-    try:
-        
-        if 'APP_CLIENT_ID' not in app.config or string_helper.isBlank(app.config['APP_CLIENT_ID']):
-            raise Exception("Required configuration parameter APP_CLIENT_ID not found in application configuration.")
-        if 'APP_CLIENT_SECRET' not in app.config or string_helper.isBlank(app.config['APP_CLIENT_ID']):
-            raise Exception("Required configuration parameter APP_CLIENT_SECRET not found in application configuration.")
-        cId = app.config['APP_CLIENT_ID']
-        cSecret = app.config['APP_CLIENT_SECRET']
-        worker = UUIDWorker(clientId=cId, clientSecret=cSecret)
         app.run(host='0.0.0.0')
-    except Exception as e:                                                                                                            
-        print("Error during startup.")                                                                                              
-        print(str(e))                                                                                                                 
-        logger.error(e, exc_info=True)                                                                                                
-        print("Check the log file for further information: " + LOG_FILE_NAME)                                                           
+    except Exception as e:
+        print("Error during starting debug server.")
+        print(str(e))
+        logger.error(e, exc_info=True)
+        print("Check the log file for further information: " + LOG_FILE_NAME)
+

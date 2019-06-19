@@ -16,7 +16,7 @@ import time
 from contextlib import closing
 import json
 
-PROP_FILE_NAME = "uuid.properties"
+PROP_FILE_NAME = os.path.join(os.path.dirname(__file__), 'uuid.properties') 
 DOI_ALPHA_CHARS=['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z']                 
 DOI_NUM_CHARS=['2','3','4','5','6','7','8','9']                                                                                   
 HEX_CHARS=['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
