@@ -1,11 +1,11 @@
 '''
 Created on May 15, 2019
-
 @author: chb69
 '''
 import os
 import sys
 from neo4j import TransactionError, CypherError
+import requests
 import configparser
 from pprint import pprint
 import json
@@ -214,8 +214,13 @@ class Specimen:
             tx = None
             try:
                 tx = session.begin_transaction()
-                specimen_uuid_record = getNewUUID(
-                    current_token, incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE])
+                try:
+                    specimen_uuid_record = getNewUUID(
+                        current_token, incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE])
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+                if specimen_uuid_record == None:
+                    raise ValueError("Error: UUID returned is empty")
                 incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record[HubmapConst.DOI_ATTRIBUTE]
                 incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record['displayDoi']
@@ -287,8 +292,6 @@ class Specimen:
                 activity_metadata_uuid_record = getNewUUID(
                     current_token, HubmapConst.METADATA_TYPE_CODE)
                 activity_metadata_record[HubmapConst.UUID_ATTRIBUTE] = activity_metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                activity_metadata_record[HubmapConst.DOI_ATTRIBUTE] = activity_metadata_uuid_record[HubmapConst.DOI_ATTRIBUTE]
-                activity_metadata_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = activity_metadata_uuid_record['displayDoi']
                 activity_metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
                 activity_metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = activity_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 activity_metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
@@ -319,6 +322,16 @@ class Specimen:
                 tx.run(stmt)"""
                 tx.commit()
                 return specimen_uuid_record
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                if tx.closed() == False:
+                    tx.rollback()
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                if tx.closed() == False:
+                    tx.rollback()
+                raise ve
             except TransactionError as te:
                 print('A transaction error occurred: ', te.value)
                 if tx.closed() == False:
