@@ -198,8 +198,9 @@ class Specimen:
         entity_type = incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE]
         if entity_type == HubmapConst.TISSUE_TYPE_CODE:
             activity_type = HubmapConst.CREATE_TISSUE_ACTIVITY_TYPE_CODE
-            if sourceUUID == None:
-                raise ValueError('Error: sourceUUID must be set for ')
+            sourceUUID = str(sourceUUID).strip()
+            if sourceUUID == None or len(sourceUUID) == 0:
+                raise ValueError('Error: sourceUUID must be set to create a tissue')
             try:
                 entity = Entity.get_entity(driver, sourceUUID)
                 sourceUUID = entity['uuid']
