@@ -198,8 +198,9 @@ class Specimen:
         entity_type = incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE]
         if entity_type == HubmapConst.TISSUE_TYPE_CODE:
             activity_type = HubmapConst.CREATE_TISSUE_ACTIVITY_TYPE_CODE
-            if sourceUUID == None:
-                raise ValueError('Error: sourceUUID must be set for ')
+            sourceUUID = str(sourceUUID).strip()
+            if sourceUUID == None or len(sourceUUID) == 0:
+                raise ValueError('Error: sourceUUID must be set to create a tissue')
             try:
                 entity = Entity.get_entity(driver, sourceUUID)
                 sourceUUID = entity['uuid']
@@ -352,6 +353,7 @@ class Specimen:
         return_list = []
         for image_data in image_list:
             try:
+                # upload the file if it represents a new file
                 if image_data['file_name'] in file_list:
                     new_filepath = Specimen.upload_file_data(request, image_data['file_name'], directory_path)
                     desc = ''
@@ -359,8 +361,6 @@ class Specimen:
                         desc = image_data['description']
                     file_obj = {'filepath': new_filepath, 'description': desc}
                     return_list.append(file_obj)
-                else:
-                    raise ValueError('Error: cannot find file: ' + image_data.file_name + ' in the list of files')
             except:
                 raise
         return json.dumps(return_list)

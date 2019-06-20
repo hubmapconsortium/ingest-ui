@@ -302,8 +302,9 @@ class Entity(object):
             left_dir = '<'
         elif str(direction).lower() == 'right':
             right_dir = '>'
-        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' OR e.{doi_attrib} = '{identifier}' OR e.{doi_display_attrib} = '{identifier}' RETURN e.{uuid_attrib} AS uuid, e.{doi_attrib} AS doi, e.{doi_display_attrib} AS display_doi, properties(a) AS properties".format(
+        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' OR e.{doi_attrib} = '{identifier}' OR e.{doi_display_attrib} = '{identifier}' RETURN CASE WHEN e.{entitytype} is not null THEN e.{entitytype} WHEN e.{activitytype} is not null THEN e.{activitytype} ELSE e.{agenttype} END AS datatype, e.{uuid_attrib} AS uuid, e.{doi_attrib} AS doi, e.{doi_display_attrib} AS display_doi, properties(a) AS properties".format(
             identifier=identifier,uuid_attrib=HubmapConst.UUID_ATTRIBUTE, doi_attrib=HubmapConst.DOI_ATTRIBUTE, doi_display_attrib=HubmapConst.DISPLAY_DOI_ATTRIBUTE,
+                entitytype=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, agenttype=HubmapConst.AGENT_TYPE_ATTRIBUTE,
                 relationship_label=relationship_label, right_dir=right_dir, left_dir=left_dir)
         return stmt                  
 
@@ -331,7 +332,11 @@ class Entity(object):
                     dataset_record = record['properties']
                     #dataset_record['entity_uuid'] = record['uuid']
                     dataset_record['doi'] = record['doi']
-                    dataset_record['display_doi'] = record['display_doi']                    
+                    dataset_record['display_doi'] = record['display_doi']
+                    #remove entitytype since it will be the other entity's type
+                    dataset_record.pop('entitytype')
+                    # re-insert the entity type corresponding to the original entity                    
+                    dataset_record['entitytype'] = record['datatype']
                     return_list.append(dataset_record)
                 return return_list                    
             except CypherError as cse:
