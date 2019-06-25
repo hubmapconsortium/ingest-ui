@@ -196,8 +196,8 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         activity_type = HubmapConst.REGISTER_DONOR_ACTIVITY_TYPE_CODE
         entity_type = incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE]
-        if entity_type == HubmapConst.TISSUE_TYPE_CODE:
-            activity_type = HubmapConst.CREATE_TISSUE_ACTIVITY_TYPE_CODE
+        if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
+            activity_type = HubmapConst.CREATE_SAMPLE_ACTIVITY_TYPE_CODE
             sourceUUID = str(sourceUUID).strip()
             if sourceUUID == None or len(sourceUUID) == 0:
                 raise ValueError('Error: sourceUUID must be set to create a tissue')
@@ -243,8 +243,8 @@ class Specimen:
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                          
                 required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
-                if entity_type == HubmapConst.TISSUE_TYPE_CODE:
-                    required_list = HubmapConst.TISSUE_REQUIRED_ATTRIBUTE_LIST
+                if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
+                    required_list = HubmapConst.SAMPLE_REQUIRED_ATTRIBUTE_LIST
                 required_list = [o['attribute_name'] for o in required_list]
                 for attrib in required_list:
                     specimen_data[attrib] = incoming_record.pop(attrib)
@@ -306,7 +306,7 @@ class Specimen:
                 tx.run(stmt)
 
                 # step 5: create the relationships
-                if entity_type == HubmapConst.TISSUE_TYPE_CODE:
+                if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
                     stmt = Neo4jConnection.create_relationship_statement(
                         sourceUUID, HubmapConst.ACTIVITY_INPUT_REL, activity_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                     tx.run(stmt)

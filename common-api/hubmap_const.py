@@ -9,6 +9,7 @@ class HubmapConst(object):
     ENTITY_NODE_NAME = 'Entity'
     ACTIVITY_NODE_NAME = 'Activity'
     AGENT_NODE_NAME = 'Agent'
+    METADATA_NODE_NAME = 'Metadata'
 
     CREATED_REL = 'CREATED'
     DERIVED_FROM_REL = 'DERIVED_FROM'
@@ -32,7 +33,8 @@ class HubmapConst(object):
     ACTIVITY_TYPE_ATTRIBUTE = 'activitytype'
     AGENT_TYPE_ATTRIBUTE = 'agenttype'
     METADATA_TYPE_ATTRIBUTE = 'metadatatype'
-    PROVENANCE_TIMESTAMP_ATTRIBUTE = 'provenance_timestamp'
+    PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE = 'provenance_create_timestamp'
+    PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE = 'provenance_modified_timestamp'
     PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE = 'provenance_user_displayname'
     PROVENANCE_USER_EMAIL_ATTRIBUTE = 'provenance_user_email'
     PROVENANCE_SUB_ATTRIBUTE = 'provenance_user_sub'
@@ -41,10 +43,10 @@ class HubmapConst(object):
     STATUS_ATTRIBUTE = 'status'
     DOI_ATTRIBUTE = 'doi'
     DISPLAY_DOI_ATTRIBUTE = 'display_doi'
-    SPECIMEN_TYPE_ATTRIBUTE = 'specimen_type'
-    SPECIMEN_TYPE_OTHER_ATTRIBUTE = 'specimen_type_other'
+    SAMPLE_TYPE_ATTRIBUTE = 'sample_type'
+    SAMPLE_TYPE_OTHER_ATTRIBUTE = 'sample_type_other'
     PROTOCOL_FILE_ATTRIBUTE = 'protocol_file'
-    LAB_TISSUE_ID_ATTRIBUTE = 'lab_tissue_id'
+    LAB_SAMPLE_ID_ATTRIBUTE = 'lab_tissue_id'
     REFERENCE_UUID_ATTRIBUTE = 'reference_uuid'
     FILE_LIST_ATTRIBUTE = 'file_list'
     IMAGE_FILE_METADATA_ATTRIBUTE = 'image_file_metadata'
@@ -59,7 +61,7 @@ class HubmapConst(object):
     DONOR_TYPE_CODE = 'Donor'
     FILE_TYPE_CODE = 'File'
     ORGAN_TYPE_CODE = 'Organ Sample'
-    TISSUE_TYPE_CODE = 'Tissue Sample'
+    SAMPLE_TYPE_CODE = 'Sample'
     PERSON_TYPE_CODE = 'Person'
     METADATA_TYPE_CODE = 'Metadata'
     DATA_ACTIVITY_TYPE_CODE = 'Data Activity'
@@ -75,7 +77,7 @@ class HubmapConst(object):
     DATASET_PUBLISH_ACTIVITY_TYPE_CODE = 'Publish Dataset Activity'
     DATASET_VALIDATE_ACTIVITY_TYPE_CODE = 'Validate Dataset Activity'
     DERIVED_ACTIVITY_TYPE_CODE = 'Derived Activity'
-    CREATE_TISSUE_ACTIVITY_TYPE_CODE = 'Create Tissue Activity'
+    CREATE_SAMPLE_ACTIVITY_TYPE_CODE = 'Create Sample Activity'
     REGISTER_DONOR_ACTIVITY_TYPE_CODE = 'Register Donor Activity'
 
     DATASTAGE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
@@ -108,7 +110,7 @@ class HubmapConst(object):
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
-    TISSUE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+    SAMPLE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
@@ -123,7 +125,7 @@ class HubmapConst(object):
                             str(HubmapConst.SUBJECT_TYPE_CODE).lower(), str(HubmapConst.SOURCE_TYPE_CODE).lower(),
                             str(HubmapConst.SAMPLE_TYPE_CODE).lower(), str(HubmapConst.DONOR_TYPE_CODE).lower(),
                             str(HubmapConst.FILE_TYPE_CODE).lower(), str(HubmapConst.ORGAN_TYPE_CODE).lower(),
-                            str(HubmapConst.TISSUE_TYPE_CODE).lower(), str(HubmapConst.PERSON_TYPE_CODE).lower(),
+                            str(HubmapConst.SAMPLE_TYPE_CODE).lower(), str(HubmapConst.PERSON_TYPE_CODE).lower(),
                             str(HubmapConst.METADATA_TYPE_CODE).lower()]
         activity_type_list = [str(HubmapConst.DATA_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.ADD_FILE_ACTIVITY_TYPE_CODE).lower(),
                               str(HubmapConst.LAB_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.SEQUENCING_ACTIVITY_TYPE_CODE).lower(),
@@ -131,7 +133,7 @@ class HubmapConst(object):
                               str(HubmapConst.DATASTAGE_CREATE_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.DATASET_MODIFY_ACTIVITY_TYPE_CODE).lower(),
                               str(HubmapConst.DATASET_LOCK_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE).lower(),
                               str(HubmapConst.DATASET_PUBLISH_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.DATASET_VALIDATE_ACTIVITY_TYPE_CODE).lower(),
-                              str(HubmapConst.DERIVED_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.CREATE_TISSUE_ACTIVITY_TYPE_CODE).lower(),
+                              str(HubmapConst.DERIVED_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.CREATE_SAMPLE_ACTIVITY_TYPE_CODE).lower(),
                               str(HubmapConst.REGISTER_DONOR_ACTIVITY_TYPE_CODE).lower()]
 
 

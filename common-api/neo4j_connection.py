@@ -112,7 +112,7 @@ class Neo4jConnection(object):
                     continue
                 attr_string += key + ": '" + str(create_record.get(key)) + "', "
             if include_provenance_timestamp == True:
-                attr_string += HubmapConst.PROVENANCE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
+                attr_string += HubmapConst.PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
             else:
                 # Remove the trailing comma
                 attr_string = attr_string[:-2]
@@ -146,7 +146,7 @@ class Neo4jConnection(object):
         for key in update_record.keys():
             attr_string += key + ": '" + str(update_record.get(key)) + "', "
         if include_provenance_data == True:
-            attr_string += HubmapConst.PROVENANCE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
+            attr_string += HubmapConst.PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
         else:
             # Remove the trailing comma
             attr_string = attr_string[:-2]
@@ -180,11 +180,11 @@ class Neo4jConnection(object):
             current_required_fields = HubmapConst.METADATA_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.DONOR_TYPE_CODE).lower():
             current_required_fields = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
-        elif str(datatype).lower() == str(HubmapConst.TISSUE_TYPE_CODE).lower():
-            current_required_fields = HubmapConst.TISSUE_REQUIRED_ATTRIBUTE_LIST
+        elif str(datatype).lower() == str(HubmapConst.SAMPLE_TYPE_CODE).lower():
+            current_required_fields = HubmapConst.SAMPLE_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.REGISTER_DONOR_ACTIVITY_TYPE_CODE).lower():
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
-        elif str(datatype).lower() == str(HubmapConst.CREATE_TISSUE_ACTIVITY_TYPE_CODE).lower():
+        elif str(datatype).lower() == str(HubmapConst.CREATE_SAMPLE_ACTIVITY_TYPE_CODE).lower():
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.PROVENANCE_TYPE_CODE).lower():
             current_required_fields = HubmapConst.PROVENANCE_REQUIRED_ATTRIBUTE_LIST

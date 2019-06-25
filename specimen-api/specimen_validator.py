@@ -21,7 +21,7 @@ def validate_workflow(json_data):
     conn = Neo4jConnection()
     if conn.does_identifier_exist(json_data['labuuid']) != True:
         raise LookupError('Cannot find labUUID: ' + json_data['labuuid'])
-    if json_data['entitytype'] == HubmapConst.TISSUE_TYPE_CODE:
+    if json_data['entitytype'] == HubmapConst.SAMPLE_TYPE_CODE:
         if json_data['sourceuuid'] == None or len(json_data['sourceuuid']) == 0:
             raise ValueError('Error: sourceUUID must be set for Tissue datatype')
         if conn.does_identifier_exist(json_data['sourceuuid']) != True:
