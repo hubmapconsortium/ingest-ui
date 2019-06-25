@@ -16,7 +16,7 @@
     "uuid": "07a29e4c-ed43-11e8-b56a-0e8017bdda58",
     "group_type": "regular",
     "name": "HuBMAP-UFlorida",
-    "displayname": "HuBMAP-UFlorida",
+    "displayname": "University of Florida TMC",
     "generateuuid": true
   },
   {
@@ -26,7 +26,7 @@
     "uuid": "308f5ffc-ed43-11e8-b56a-0e8017bdda58",
     "group_type": "regular",
     "name": "HuBMAP-CIT",
-    "displayname": "HuBMAP-CIT",
+    "displayname": "California Institute of Technology TMC",
     "generateuuid": true
   },
   {
@@ -36,7 +36,7 @@
     "uuid": "73bb26e4-ed43-11e8-8f19-0a7c1eab007a",
     "group_type": "regular",
     "name": "HuBMAP-Vanderbilt",
-    "displayname": "HuBMAP-Vanderbilt",
+    "displayname": "Vanderbilt TMC",
     "generateuuid": true
   },
   {
@@ -46,7 +46,7 @@
     "uuid": "def5fd76-ed43-11e8-b56a-0e8017bdda58",
     "group_type": "regular",
     "name": "HuBMAP-Stanford",
-    "displayname": "HuBMAP-Stanford",
+    "displayname": "Stanford TMC",
     "generateuuid": true
   },
   {
@@ -56,7 +56,7 @@
     "uuid": "03b3d854-ed44-11e8-8bce-0e368f3075e8",
     "group_type": "regular",
     "name": "HuBMAP-UCSD",
-    "displayname": "HuBMAP-UCSD",
+    "displayname": "University of California San Diego TMC",
     "generateuuid": true
   },
   {
@@ -76,7 +76,7 @@
     "uuid": "5bd084c8-edc2-11e8-802f-0e368f3075e8",
     "group_type": "regular",
     "name": "HuBMAP-Testing",
-    "displayname": "HuBMAP-Testing",
+    "displayname": "IEC Testing Group",
     "generateuuid": true
   }
 ]
