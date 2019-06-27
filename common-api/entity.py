@@ -183,6 +183,28 @@ class Entity(object):
             pprint(be)
             raise be
 
+    def get_user_groups(self, token):
+        try:
+            authcache = None
+            if AuthHelper.isInitialized() == False:
+                authcache = AuthHelper.create(
+                    self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+            else:
+                authcache = AuthHelper.instance()
+            userinfo = authcache.getUserInfo(token, True)
+
+            if type(userinfo) == Response and userinfo.status_code == 401:
+                raise AuthError('token is invalid.', 401)
+
+            if 'hmgroupids' not in userinfo:
+                raise ValueError("Cannot find Hubmap Group information for token")
+            return userinfo['hmgroupids']
+        except:
+            print ('A general error occurred: ')
+            for x in sys.exc_info():
+                print (x)
+            raise
+        
     def get_editable_entities_by_type(self, driver, token, type_code=None): 
         with driver.session() as session:
             return_list = []
@@ -190,20 +212,7 @@ class Entity(object):
             try:
                 if type_code != None:
                     general_type = HubmapConst.get_general_node_type_attribute(type_code)            
-                authcache = None
-                if AuthHelper.isInitialized() == False:
-                    authcache = AuthHelper.create(
-                        self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
-                else:
-                    authcache = AuthHelper.instance()
-                userinfo = authcache.getUserInfo(token, True)
-
-                if type(userinfo) == Response and userinfo.status_code == 401:
-                    raise AuthError('token is invalid.', 401)
-
-                if 'hmgroupids' not in userinfo:
-                    raise ValueError("Cannot find Hubmap Group information for token")
-                hmgroups = userinfo['hmgroupids']
+                hmgroups = self.get_user_groups(token)
                 for g in hmgroups:
                     group_record = self.get_group_by_identifier(g)
                     if group_record['generateuuid'] == True:
