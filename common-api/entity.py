@@ -198,7 +198,14 @@ class Entity(object):
 
             if 'hmgroupids' not in userinfo:
                 raise ValueError("Cannot find Hubmap Group information for token")
-            return userinfo['hmgroupids']
+            return_list = []
+            group_list = AuthCache.getHMGroups()
+            for group_uuid in userinfo['hmgroupids']:
+                for group_name in group_list.keys():
+                    if group_list[group_name]['uuid'] == group_uuid:
+                        return_list.append(group_list[group_name])
+                        break
+            return return_list
         except:
             print ('A general error occurred: ')
             for x in sys.exc_info():
@@ -526,8 +533,11 @@ if __name__ == "__main__":
     entity = Entity()
     #edit_record = {'uuid' : 'b8f5fcbe0b891ac0361b361b722de4b4', 'description' :'new description'}
     #entity.edit_entity(driver, current_token, 'b8f5fcbe0b891ac0361b361b722de4b4', edit_record)
-    metadata_obj = Entity.get_entity_metadata(driver, 'b8f5fcbe0b891ac0361b361b722de4b4')
-    print(metadata_obj)
+    #metadata_obj = Entity.get_entity_metadata(driver, 'b8f5fcbe0b891ac0361b361b722de4b4')
+    #print(metadata_obj)
+    
+    group_list = entity.get_user_groups('AgMDrmY9rabdVYErnaVBzbknVObqoJ1YXmy382XJj5lPyB985PcOCv2w4elj23a89MX10zp2v4yG56Tvjz3kQI1nwE')
+    print(group_list)
 
     
     
