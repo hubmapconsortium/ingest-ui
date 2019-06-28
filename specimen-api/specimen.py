@@ -114,7 +114,11 @@ class Specimen:
                     protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                     incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
                 if 'images' in incoming_record:
-                    image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory, metadata_obj['image_file_metadata'])
+                    # handle the case where the current record has no images
+                    current_image_file_metadata = None
+                    if 'image_file_metadata' in metadata_obj:
+                        current_image_file_metadata = metadata_obj['image_file_metadata']
+                    image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory, current_image_file_metadata)
                     incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                 
                 metadata_record = incoming_record
