@@ -110,7 +110,9 @@ class Neo4jConnection(object):
                 if create_record.get(key) == None or len(create_record.get(key)) == 0:
                     #skip empty fields
                     continue
-                attr_string += key + ": '" + str(create_record.get(key)) + "', "
+                # escape single quotes
+                key_value = str(create_record.get(key)).replace("'", r"\'")
+                attr_string += key + ": '" + key_value + "', "
             if include_provenance_timestamp == True:
                 attr_string += HubmapConst.PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP(), "
                 attr_string += HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
@@ -145,7 +147,9 @@ class Neo4jConnection(object):
         
         attr_string = "{"
         for key in update_record.keys():
-            attr_string += key + ": '" + str(update_record.get(key)) + "', "
+            # escape single quotes
+            key_value = str(update_record.get(key)).replace("'", r"\'")
+            attr_string += key + ": '" + key_value + "', "
         if include_provenance_data == True:
             attr_string += HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
         else:
