@@ -221,9 +221,9 @@ class Entity(object):
                     general_type = HubmapConst.get_general_node_type_attribute(type_code)            
                 hmgroups = self.get_user_groups(token)
                 for g in hmgroups:
-                    group_record = self.get_group_by_identifier(g)
+                    group_record = self.get_group_by_identifier(g['name'])
                     if group_record['generateuuid'] == True:
-                        current_group_uuid = g
+                        current_group_uuid = g['uuid']
                 matching_stmt = ""
                 if type_code != None:
                     matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
