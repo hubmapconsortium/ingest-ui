@@ -112,7 +112,8 @@ class Neo4jConnection(object):
                     continue
                 attr_string += key + ": '" + str(create_record.get(key)) + "', "
             if include_provenance_timestamp == True:
-                attr_string += HubmapConst.PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
+                attr_string += HubmapConst.PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP(), "
+                attr_string += HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
             else:
                 # Remove the trailing comma
                 attr_string = attr_string[:-2]

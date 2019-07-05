@@ -140,6 +140,11 @@ def create_specimen():
         form_data = json.loads(request.form['data'])
         if 'source_uuid' in form_data:
             sourceuuid = form_data['source_uuid']
+            r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + sourceuuid, headers={'Authorization': 'Bearer ' + token })
+            if r.ok == False:
+                raise ValueError("Cannot find specimen with identifier: " + sourceuuid)
+            sourceuuid = json.loads(r.text)[0]['hmuuid']
+
         new_uuid_record = specimen.create_specimen(
             driver, request, form_data, request.files, token, sourceuuid)
         conn.close()

@@ -257,7 +257,7 @@ class Specimen:
                 for attrib in required_list:
                     specimen_data[attrib] = incoming_record.pop(attrib)
                 stmt = Neo4jConnection.get_create_statement(
-                    specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, False)
+                    specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
                 tx.run(stmt)
 
                 metadata_record = incoming_record
