@@ -105,7 +105,7 @@ class Specimen:
                         protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                         incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
                     if 'images' in incoming_record:
-                        image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory)
+                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                     if 'protocols' in incoming_record:
                         protocol_file_data_list = Specimen.upload_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory)
@@ -131,6 +131,8 @@ class Specimen:
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
                     metadata_record.pop('images')
+                if 'protocols' in metadata_record.keys():
+                    metadata_record.pop('protocols')
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
@@ -242,11 +244,11 @@ class Specimen:
                         protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                         incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
                     if 'images' in incoming_record:
-                        image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory)
+                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
-                    if 'images' in incoming_record:
-                        image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory)
-                        incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+                    if 'protocols' in incoming_record:
+                        protocol_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['protocols'], file_list, data_directory)
+                        incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                          
                 required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
                 if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
@@ -282,6 +284,8 @@ class Specimen:
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
                     metadata_record.pop('images')
+                if 'protocols' in metadata_record.keys():
+                    metadata_record.pop('protocols')
                 stmt = Neo4jConnection.get_create_statement(
                     metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
                 tx.run(stmt)
@@ -355,12 +359,12 @@ class Specimen:
                     tx.rollback()
 
     @staticmethod
-    def upload_image_file_data(request, image_list, file_list, directory_path):
+    def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path):
         return_list = []
-        for image_data in image_list:
+        for image_data in annotated_file_list:
             try:
                 # upload the file if it represents a new file
-                if image_data['file_name'] in file_list:
+                if image_data['file_name'] in request_file_list:
                     new_filepath = Specimen.upload_file_data(request, image_data['file_name'], directory_path)
                     desc = ''
                     if 'description' in image_data:
