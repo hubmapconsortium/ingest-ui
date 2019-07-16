@@ -39,7 +39,7 @@ def isValidHMId(hmid):
 def stripHMid(hmid):
 	if string_helper.isBlank(hmid): return hmid
 	thmid = hmid.strip();
-	if thmid.lower().startswith('hmb'): thmid = thmid[3:]
+	if thmid.lower().startswith('hbm'): thmid = thmid[3:]
 	if thmid.startswith(':'): thmid = thmid[1:]
 	return 	thmid.strip().replace('-', '').replace(' ', '')
 
