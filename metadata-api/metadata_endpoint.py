@@ -89,6 +89,7 @@ def load_config_file():
         print (msg + "  Program stopped.")
         exit(0)
 
+
 @app.route('/metadata/usergroups', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
