@@ -108,7 +108,7 @@ class Specimen:
                         image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                     if 'protocols' in incoming_record:
-                        protocol_file_data_list = Specimen.upload_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory)
+                        protocol_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['protocols'], file_list, data_directory)
                         incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                 
                 metadata_record = incoming_record
@@ -131,8 +131,8 @@ class Specimen:
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
                     metadata_record.pop('images')
-                if 'protocols' in metadata_record.keys():
-                    metadata_record.pop('protocols')
+                #if 'protocols' in metadata_record.keys():
+                #    metadata_record.pop('protocols')
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
@@ -258,6 +258,7 @@ class Specimen:
                     specimen_data[attrib] = incoming_record.pop(attrib)
                 stmt = Neo4jConnection.get_create_statement(
                     specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
+                print('Specimen Create statement: ' + stmt)
                 tx.run(stmt)
 
                 metadata_record = incoming_record
@@ -284,10 +285,12 @@ class Specimen:
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
                     metadata_record.pop('images')
-                if 'protocols' in metadata_record.keys():
-                    metadata_record.pop('protocols')
+                #if 'protocols' in metadata_record.keys():
+                #    metadata_record.pop('protocols')
                 stmt = Neo4jConnection.get_create_statement(
                     metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
+                print('MEtadata Create statement: ' + stmt)
+
                 tx.run(stmt)
 
                 activity_uuid_record = getNewUUID(current_token, activity_type)
@@ -361,19 +364,21 @@ class Specimen:
     @staticmethod
     def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path):
         return_list = []
-        for image_data in annotated_file_list:
+        for file_data in annotated_file_list:
             try:
                 # upload the file if it represents a new file
-                if image_data['file_name'] in request_file_list:
-                    new_filepath = Specimen.upload_file_data(request, image_data['file_name'], directory_path)
+                if (str(file_data['id']) in request_file_list) == True:
+                    new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
                     desc = ''
-                    if 'description' in image_data:
-                        desc = image_data['description']
+                    if 'description' in file_data:
+                        desc = file_data['description']
                     file_obj = {'filepath': new_filepath, 'description': desc}
                     return_list.append(file_obj)
             except:
                 raise
-        return json.dumps(return_list)
+        return_string = json.dumps(return_list)
+        return_string = str(return_string).replace('\'', '"')
+        return return_string
 
     @staticmethod
     def upload_protocol_file_data(request, protocol_list, file_list, directory_path):
