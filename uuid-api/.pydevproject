@@ -9,4 +9,7 @@
 <key>BASE</key>
 <value>/home/devuser/projects/HuBMAP-Data-Portal</value>
 </pydev_variables_property>
+<pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
+<path>/Users/bill/Documents/workspace/provenance-metadata-services/common-api</path>
+</pydev_pathproperty>
 </pydev_project>

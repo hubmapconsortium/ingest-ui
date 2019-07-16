@@ -39,7 +39,7 @@ def isValidHMId(hmid):
 def stripHMid(hmid):
 	if string_helper.isBlank(hmid): return hmid
 	thmid = hmid.strip();
-	if thmid.lower().startswith('hbm'): thmid = thmid[3:]
+	if thmid.lower().startswith('hmb'): thmid = thmid[3:]
 	if thmid.startswith(':'): thmid = thmid[1:]
 	return 	thmid.strip().replace('-', '').replace(' ', '')
 
@@ -135,9 +135,10 @@ class UUIDWorker:
 			now = time.strftime('%Y-%m-%d %H:%M:%S')
 			sql = "INSERT INTO hm_uuids (HMUUID, DOI_SUFFIX, ENTITY_TYPE, PARENT_UUID, TIME_GENERATED, USER_ID, USER_EMAIL) VALUES (%s, %s, %s, %s, %s, %s,%s)"
 			vals = (hmid, doi, entityType, parentID, now, userId, userEmail)
-			with closing(self.hmdb.db.cursor()) as curs:
+			db = self.hmdb.getDB()
+			with closing(db.cursor()) as curs:
 				curs.execute(sql, vals)
-			self.hmdb.db.commit()
+			db.commit()
 		if generateDOI:
 			dispDoi= 'HBM:' + doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
 			return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
@@ -181,13 +182,13 @@ class UUIDWorker:
 			sql = "select " + UUID_SELECTS + " from hm_uuids where hmuuid ='" + tid + "'"
 		else:
 			return Response("Invalid HuBMAP Id (empty or bad length)", 400)	
-		with closing(self.hmdb.db.cursor()) as curs:
+		with closing(self.hmdb.getDB().cursor()) as curs:
 			curs.execute(sql)
 			results = [dict((curs.description[i][0], value) for i, value in enumerate(row)) for row in curs.fetchall()]
 		return json.dumps(results, indent=4, sort_keys=True, default=str)
 
 	def uuidExists(self, hmid):
-		with closing(self.hmdb.db.cursor()) as curs:
+		with closing(self.hmdb.getDB().cursor()) as curs:
 			curs.execute("select count(*) from hm_uuids where hmuuid = '" + hmid + "'")
 			res = curs.fetchone()
 		if(res is None or len(res) == 0): return False
@@ -196,7 +197,7 @@ class UUIDWorker:
 		raise Exception("Multiple uuids found matching " + hmid)
 	
 	def doiExists(self, doi):
-		with closing(self.hmdb.db.cursor()) as curs:
+		with closing(self.hmdb.getDB().cursor()) as curs:
 			curs.execute("select count(*) from hm_uuids where doi_suffix = '" + doi + "'")
 			res = curs.fetchone()
 		if(res is None or len(res) == 0): return False
