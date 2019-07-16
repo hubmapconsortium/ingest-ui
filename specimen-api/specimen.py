@@ -11,6 +11,7 @@ from pprint import pprint
 import json
 from werkzeug.utils import secure_filename
 from flask import json
+from builtins import staticmethod
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
@@ -75,15 +76,14 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
-        if len(file_list) > 0:
-            #get a link to the data directory using the group uuid
-            # ex: <data_parent_directory>/<group UUID>
-            data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
-            #get a link to the subdirectory within data directory using the current uuid
-            # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
-            # We need to allow this method to create a new directory.  It is possible that an earlier
-            # specimen didn't have any files when it was initially created
-            data_directory = get_data_directory(data_directory, uuid, True)
+        #get a link to the data directory using the group uuid
+        # ex: <data_parent_directory>/<group UUID>
+        data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
+        #get a link to the subdirectory within data directory using the current uuid
+        # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
+        # We need to allow this method to create a new directory.  It is possible that an earlier
+        # specimen didn't have any files when it was initially created
+        data_directory = get_data_directory(data_directory, uuid, True)
 
         with driver.session() as session:
             tx = None
@@ -121,12 +121,20 @@ class Specimen:
                 metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid
 
-                # This is temporary, I need a set of calls to extract the metadata and file info
                 if 'metadata' in metadata_record.keys():
-                    # TODO: see if the metadata stays here or needs to move to another section of code
-                    # TODO I need to check to see if this data is json before I dump it as json
-                    metadata_record['metadata'] = json.dumps(
-                        metadata_record['metadata'])
+                    # check if metadata contains valid data
+                    # if not, just remove it from the metadata_record
+                    if metadata_record['metadata'] == None or len(metadata_record['metadata']) == 0:
+                        metadata_record.pop('metadata')
+                    else:
+                        try:
+                            #try to load the data as json
+                            json.loads(metadata_record['metadata'])
+                            metadata_record['metadata'] = json.dumps(
+                                metadata_record['metadata'])
+                        except ValueError:
+                            # that failed, so load it as a string
+                            metadata_record['metadata'] = metadata_record['metadata']
                 if 'files' in metadata_record.keys():
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
@@ -153,8 +161,20 @@ class Specimen:
                 if tx.closed() == False:
                     tx.rollback()
     
-    
-    
+    @staticmethod
+    def build_complete_file_list(metadata_file, protocol_list, image_list):
+        return_list = []
+        if metadata_file != None:
+            return_list.append(metadata_file)
+        if protocol_list != None:
+            if isinstance(object, (list,)):
+                return_list.extend(protocol_list)
+            else:
+                return_list.append(protocol_list)
+        if image_list != None:
+            for image_data in image_list:
+                return_list.append(image_data['file_name'])
+        return return_list
       
     # This method deletes any files found in directory_path that are NOT in the current_file_list
     @staticmethod
@@ -275,12 +295,20 @@ class Specimen:
                 metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
                 metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
 
-                # This is temporary, I need a set of calls to extract the metadata and file info
                 if 'metadata' in metadata_record.keys():
-                    # TODO: see if the metadata stays here or needs to move to another section of code
-                    # TODO I need to check to see if this data is json before I dump it as json
-                    metadata_record['metadata'] = json.dumps(
-                        metadata_record['metadata'])
+                    # check if metadata contains valid data
+                    # if not, just remove it from the metadata_record
+                    if metadata_record['metadata'] == None or len(metadata_record['metadata']) == 0:
+                        metadata_record.pop('metadata')
+                    else:
+                        try:
+                            #try to load the data as json
+                            json.loads(metadata_record['metadata'])
+                            metadata_record['metadata'] = json.dumps(
+                                metadata_record['metadata'])
+                        except ValueError:
+                            # that failed, so load it as a string
+                            metadata_record['metadata'] = metadata_record['metadata']
                 if 'files' in metadata_record.keys():
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
@@ -361,6 +389,30 @@ class Specimen:
                 if tx.closed() == False:
                     tx.rollback()
 
+    @staticmethod 
+    def get_image_file_list_for_uuid(uuid):
+        conn = Neo4jConnection()
+        try:
+            with driver.session() as session:
+                stmt = " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
+                    uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
+    
+                for record in session.run(stmt):
+                    pass
+        except ConnectionError as ce:
+            print('A connection error occurred: ', str(ce.args[0]))
+            raise ce
+        except ValueError as ve:
+            print('A value error occurred: ', ve.value)
+            raise ve
+        except CypherError as cse:
+            print('A Cypher error was encountered: ', cse.message)
+            raise cse
+        except:
+            print('A general error occurred: ')
+            for x in sys.exc_info():
+                print(x)
+    
     @staticmethod
     def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path):
         return_list = []
@@ -374,6 +426,13 @@ class Specimen:
                         desc = file_data['description']
                     file_obj = {'filepath': new_filepath, 'description': desc}
                     return_list.append(file_obj)
+                # check existing files
+                else:
+                    # add data for existing file
+                    if image_data['file_name'] in existing_list:
+                        for existing_entry in existing_file_data:
+                            if os.path.basename(existing_entry['filepath']) == image_data['file_name']:
+                                return_list.append(existing_entry)                        
             except:
                 raise
         return_string = json.dumps(return_list)

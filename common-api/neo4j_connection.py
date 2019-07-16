@@ -110,7 +110,9 @@ class Neo4jConnection(object):
                 if create_record.get(key) == None or len(create_record.get(key)) == 0:
                     #skip empty fields
                     continue
-                attr_string += key + ": '" + str(create_record.get(key)) + "', "
+                # escape single quotes
+                key_value = str(create_record.get(key)).replace("'", r"\'")
+                attr_string += key + ": '" + key_value + "', "
             if include_provenance_timestamp == True:
                 attr_string += HubmapConst.PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP(), "
                 attr_string += HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
@@ -145,9 +147,11 @@ class Neo4jConnection(object):
         
         attr_string = "{"
         for key in update_record.keys():
-            attr_string += key + ": '" + str(update_record.get(key)) + "', "
+            # escape single quotes
+            key_value = str(update_record.get(key)).replace("'", r"\'")
+            attr_string += key + ": '" + key_value + "', "
         if include_provenance_data == True:
-            attr_string += HubmapConst.PROVENANCE_CREATE_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
+            attr_string += HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
         else:
             # Remove the trailing comma
             attr_string = attr_string[:-2]
@@ -187,8 +191,6 @@ class Neo4jConnection(object):
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.CREATE_SAMPLE_ACTIVITY_TYPE_CODE).lower():
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
-        elif str(datatype).lower() == str(HubmapConst.PROVENANCE_TYPE_CODE).lower():
-            current_required_fields = HubmapConst.PROVENANCE_REQUIRED_ATTRIBUTE_LIST
         else:
             raise ValueError("Error: cannot find required fields for datatype: " + datatype)
 
