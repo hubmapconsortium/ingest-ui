@@ -96,7 +96,18 @@ class Specimen:
                 #NEED CODE TO RESOLVE DELETEED FILES
                 #TODO: get a list of the filenames and put them into current_file_list
                 if len(file_list) > 0:
-                    Specimen.cleanup_files(data_directory, file_list)
+                    #TODO: get a list of the filenames and put them into current_file_list
+                    current_metadatafile = None
+                    if 'metadata_file' in incoming_record:
+                        current_metadatafile = incoming_record['metadata_file']
+                    current_protocolfile = None
+                    if 'protocol_file' in incoming_record:
+                        current_protocolfile = incoming_record['protocol_file']
+                    current_imagefiles = None
+                    if 'images' in incoming_record:
+                        current_imagefiles = incoming_record['images']
+                    all_files = Specimen.build_complete_file_list(current_metadatafile, current_protocolfile, current_imagefiles)
+                    Specimen.cleanup_files(data_directory, all_files)
                     # append the current UUID to the data_directory to avoid filename collisions.
                     if 'metadata_file' in file_list:
                         metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
@@ -105,10 +116,18 @@ class Specimen:
                         protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                         incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
                     if 'images' in incoming_record:
-                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
+                        # handle the case where the current record has no images
+                        current_image_file_metadata = None
+                        if 'image_file_metadata' in metadata_obj:
+                            current_image_file_metadata = metadata_obj['image_file_metadata']
+                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory, current_image_file_metadata)
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                     if 'protocols' in incoming_record:
-                        protocol_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['protocols'], file_list, data_directory)
+                        # handle the case where the current record has no images
+                        current_image_file_metadata = None
+                        if 'protocols' in metadata_obj:
+                            current_protocol_file_metadata = metadata_obj['protocols']
+                        protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
                         incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                 
                 metadata_record = incoming_record
@@ -267,7 +286,7 @@ class Specimen:
                         image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                     if 'protocols' in incoming_record:
-                        protocol_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['protocols'], file_list, data_directory)
+                        protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory)
                         incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                          
                 required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
@@ -414,8 +433,12 @@ class Specimen:
                 print(x)
     
     @staticmethod
-    def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path):
+    def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
         return_list = []
+        # build a list of all the existing files
+        if existing_file_data != None:
+            # convert existing file data from string to json
+            return_list = json.loads(existing_file_data)
         for file_data in annotated_file_list:
             try:
                 # upload the file if it represents a new file
@@ -426,35 +449,45 @@ class Specimen:
                         desc = file_data['description']
                     file_obj = {'filepath': new_filepath, 'description': desc}
                     return_list.append(file_obj)
-                # check existing files
-                else:
-                    # add data for existing file
-                    if image_data['file_name'] in existing_list:
-                        for existing_entry in existing_file_data:
-                            if os.path.basename(existing_entry['filepath']) == image_data['file_name']:
-                                return_list.append(existing_entry)                        
             except:
                 raise
         return_string = json.dumps(return_list)
         return_string = str(return_string).replace('\'', '"')
         return return_string
 
+    """Note: There is a subtle difference between storing data for protocols vs data for images.
+    For one thing, the protocol may not be a file, but an URL.  Second, there is no description field associated with
+    the protocol file.
+    The output protocol JSON should look like this:
+    "protocols": "[{"description": "", 
+        "protocol_file": "/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/f8ed3f8e2e8a49c032b602a35126ec71/C11_technical_survey_summary.pdf", 
+        “protocol_url”:””}, 
+        {"description": "", " protocol_file ": "/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/f8ed3f8e2e8a49c032b602a35126ec71/Revision2OfTR15-119.pdf", “protocol_url”:””}]" 
+    """
     @staticmethod
-    def upload_protocol_file_data(request, protocol_list, file_list, directory_path):
+    def upload_multiple_protocol_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
         return_list = []
-        for protocol_data in protocol_list:
+        # build a list of all the existing files
+        if existing_file_data != None:
+            # convert existing file data from string to json
+            return_list = json.loads(existing_file_data)
+                    
+        for file_data in annotated_file_list:
             try:
                 # upload the file if it represents a new file
-                if protocol_data['file_name'] in file_list:
-                    new_filepath = Specimen.upload_file_data(request, protocol_data['protocol_file'], directory_path)
-                    desc = ''
-                    if 'description' in protocol_data:
-                        desc = protocol_data['description']
-                    file_obj = {'filepath': new_filepath, 'description': desc}
+                if (str(file_data['id']) in request_file_list) == True:
+                    new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
+                    file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
                     return_list.append(file_obj)
+                # if there is no file to upload, but there is a protocol URL:
+                elif len(str(file_data['protocol_url'])) > 0:
+                    file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
+                    return_list.append(file_obj)                                        
             except:
                 raise
-        return json.dumps(return_list)
+        return_string = json.dumps(return_list)
+        return_string = str(return_string).replace('\'', '"')
+        return return_string
 
     @staticmethod
     def upload_file_data(request, file_key, directory_path):
