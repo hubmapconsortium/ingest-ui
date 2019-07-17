@@ -434,24 +434,50 @@ class Specimen:
     
     @staticmethod
     def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
+        """This method takes information about the file(s) associated with the specimen and builds a new list of files for storage in the Neo4j system.
+        For each file encountered, there are two cases handled by this code: 1) it is a new file to be uploaded or 2) it is an existing file.
+        
+        Keyword arguments:
+        request -- the HTTP request containing the submitted web form
+        annotated_file_list -- the dictionary of file data from the web form.  For example: [{'id': 'image_1', 'file_name': 'chicken_crossing.jpg', 'description': 'crossing'}, {'id': 'image_2', 'file_name': 'chicago_background.jpg', 'description': 'chicago'}, {'id': 'image_3', 'file_name': 'bug_feature.jpg', 'description': 'bug'}]
+        request_file_list -- the dictionary of the file data from the HTTP request.  This contains a key plus the actual binary data representing the file.  for example: [('image_3', <FileStorage: 'bug_feature.jpg' ('image/jpeg')>)]
+        directory_path -- a file path where any new files will be stored.  This is unique to the user's group and the uuid for the current specimen
+        existing_file_data -- a dictionary of the existing file information.  This is an optional parameter and is only set if the specimen is being updated
+        """
         return_list = []
-        # build a list of all the existing files
+        #rebuild the request['files'] dictionary.  Make it based on filename.  The request['files'] represents new files
+        file_name_dict = {}
+        for key_index, current_file_data in request_file_list.items():
+            file_name_dict[str(current_file_data.filename)] = current_file_data
+            
+        #rebuild the existing files dictionary.  Make it based on filename
+        existing_file_data_dict = {}
         if existing_file_data != None:
-            # convert existing file data from string to json
-            return_list = json.loads(existing_file_data)
+            existing_file_data_json = json.loads(existing_file_data)
+            for data_entry in existing_file_data_json:
+                existing_file_data_dict[os.path.basename(data_entry['filepath'])] = data_entry
+        # walk through each file represented on the web form.  For each file decide if it represents a new file or an existing file
+        # Note: this code builds a list of the current files.  Effectively, this approach implicitly "deletes" any previous files removed from the
+        # web form. 
         for file_data in annotated_file_list:
             try:
-                # upload the file if it represents a new file
-                if (str(file_data['id']) in request_file_list) == True:
+                # upload the file if it represents a new file.  New files are found in the file_name_dict
+                if (str(file_data['file_name']) in file_name_dict) == True:
                     new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
                     desc = ''
                     if 'description' in file_data:
                         desc = file_data['description']
                     file_obj = {'filepath': new_filepath, 'description': desc}
                     return_list.append(file_obj)
+                else:
+                    # in this case, simply copy an existing file's data into the retrun_list
+                    return_list.append(existing_file_data_dict[str(file_data['file_name'])])
+                    
             except:
                 raise
+        # dump the data as JSON
         return_string = json.dumps(return_list)
+        # replace any of the single quotes with double quotes so it can be stored by Neo4j statements
         return_string = str(return_string).replace('\'', '"')
         return return_string
 
@@ -467,22 +493,46 @@ class Specimen:
     @staticmethod
     def upload_multiple_protocol_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
         return_list = []
-        # build a list of all the existing files
+        #rebuild the request['files'] dictionary.  Make it based on filename.  The request['files'] represents new files
+        file_name_dict = {}
+        for key_index, current_file_data in request_file_list.items():
+            file_name_dict[str(current_file_data.filename)] = current_file_data
+            
+        #rebuild the existing files dictionary.  Make it based on filename
+        existing_file_data_dict = {}
         if existing_file_data != None:
-            # convert existing file data from string to json
-            return_list = json.loads(existing_file_data)
-                    
+            existing_file_data_json = json.loads(existing_file_data)
+            for data_entry in existing_file_data_json:
+                if len(str(data_entry['protocol_file'])) > 0: 
+                    existing_file_data_dict[os.path.basename(data_entry['protocol_file'])] = data_entry
+        
+        # walk through each file represented on the web form.  For each file decide if it represents a new file or an existing file
+        # Note: this code builds a list of the current files.  Effectively, this approach implicitly "deletes" any previous files removed from the
+        # web form. 
         for file_data in annotated_file_list:
             try:
-                # upload the file if it represents a new file
-                if (str(file_data['id']) in request_file_list) == True:
+                # upload the file if it represents a new file.  New files are found in the file_name_dict
+                if (str(file_data['protocol_file']) in file_name_dict) == True:
                     new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
                     file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
                     return_list.append(file_obj)
-                # if there is no file to upload, but there is a protocol URL:
-                elif len(str(file_data['protocol_url'])) > 0:
-                    file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
-                    return_list.append(file_obj)                                        
+                else:
+                    # in this case, simply copy an existing file's data into the retrun_list
+                    return_list.append(existing_file_data_dict[str(file_data['protocol_file'])])
+
+                    """            
+                    for file_data in annotated_file_list:
+                        try:
+                            # upload the file if it represents a new file
+                            if (str(file_data['id']) in request_file_list) == True:
+                                new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
+                                file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
+                                return_list.append(file_obj)
+                            # if there is no file to upload, but there is a protocol URL:
+                            elif len(str(file_data['protocol_url'])) > 0:
+                                file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
+                                return_list.append(file_obj)  
+                    """                                      
             except:
                 raise
         return_string = json.dumps(return_list)
