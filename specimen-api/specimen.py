@@ -518,7 +518,7 @@ class Specimen:
                     return_list.append(file_obj)
                 else:
                     # in this case, simply copy an existing file's data into the retrun_list
-                    return_list.append(existing_file_data_dict[str(file_data['protocol_file'])])
+                    return_list.append(existing_file_data_dict[os.path.basename(file_data['protocol_file'])])
 
                     """            
                     for file_data in annotated_file_list:
