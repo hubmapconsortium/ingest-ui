@@ -95,40 +95,40 @@ class Specimen:
                 
                 #NEED CODE TO RESOLVE DELETEED FILES
                 #TODO: get a list of the filenames and put them into current_file_list
-                if len(file_list) > 0:
-                    #TODO: get a list of the filenames and put them into current_file_list
-                    current_metadatafile = None
-                    if 'metadata_file' in incoming_record:
-                        current_metadatafile = incoming_record['metadata_file']
-                    current_protocolfile = None
-                    if 'protocol_file' in incoming_record:
-                        current_protocolfile = incoming_record['protocol_file']
-                    current_imagefiles = None
-                    if 'images' in incoming_record:
-                        current_imagefiles = incoming_record['images']
-                    all_files = Specimen.build_complete_file_list(current_metadatafile, current_protocolfile, current_imagefiles)
-                    Specimen.cleanup_files(data_directory, all_files)
-                    # append the current UUID to the data_directory to avoid filename collisions.
-                    if 'metadata_file' in file_list:
-                        metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
-                        incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
-                    if 'protocol_file' in file_list:
-                        protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
-                        incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
-                    if 'images' in incoming_record:
-                        # handle the case where the current record has no images
-                        current_image_file_metadata = None
-                        if 'image_file_metadata' in metadata_obj:
-                            current_image_file_metadata = metadata_obj['image_file_metadata']
-                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory, current_image_file_metadata)
-                        incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
-                    if 'protocols' in incoming_record:
-                        # handle the case where the current record has no images
-                        current_image_file_metadata = None
-                        if 'protocols' in metadata_obj:
-                            current_protocol_file_metadata = metadata_obj['protocols']
-                        protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
-                        incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
+                #if len(file_list) > 0:
+                #TODO: get a list of the filenames and put them into current_file_list
+                current_metadatafile = None
+                if 'metadata_file' in incoming_record:
+                    current_metadatafile = incoming_record['metadata_file']
+                current_protocolfile = None
+                if 'protocol_file' in incoming_record:
+                    current_protocolfile = incoming_record['protocol_file']
+                current_imagefiles = None
+                if 'images' in incoming_record:
+                    current_imagefiles = incoming_record['images']
+                all_files = Specimen.build_complete_file_list(current_metadatafile, current_protocolfile, current_imagefiles)
+                Specimen.cleanup_files(data_directory, all_files)
+                # append the current UUID to the data_directory to avoid filename collisions.
+                if 'metadata_file' in file_list:
+                    metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
+                    incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+                if 'protocol_file' in file_list:
+                    protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
+                    incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
+                if 'images' in incoming_record:
+                    # handle the case where the current record has no images
+                    current_image_file_metadata = None
+                    if 'image_file_metadata' in metadata_obj:
+                        current_image_file_metadata = metadata_obj['image_file_metadata']
+                    image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory, current_image_file_metadata)
+                    incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+                if 'protocols' in incoming_record:
+                    # handle the case where the current record has no images
+                    current_image_file_metadata = None
+                    if 'protocols' in metadata_obj:
+                        current_protocol_file_metadata = metadata_obj['protocols']
+                    protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
+                    incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                 
                 metadata_record = incoming_record
                 # don't change the type of this node
@@ -471,7 +471,7 @@ class Specimen:
                     return_list.append(file_obj)
                 else:
                     # in this case, simply copy an existing file's data into the retrun_list
-                    return_list.append(existing_file_data_dict[str(file_data['file_name'])])
+                    return_list.append(existing_file_data_dict[str(os.path.basename(file_data['file_name']))])
                     
             except:
                 raise
