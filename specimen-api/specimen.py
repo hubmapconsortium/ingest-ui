@@ -95,31 +95,40 @@ class Specimen:
                 
                 #NEED CODE TO RESOLVE DELETEED FILES
                 #TODO: get a list of the filenames and put them into current_file_list
-                current_metadatafile = None
-                if 'metadata_file' in incoming_record:
-                    current_metadatafile = incoming_record['metadata_file']
-                current_protocolfile = None
-                if 'protocol_file' in incoming_record:
-                    current_protocolfile = incoming_record['protocol_file']
-                current_imagefiles = None
-                if 'images' in incoming_record:
-                    current_imagefiles = incoming_record['images']
-                all_files = Specimen.build_complete_file_list(current_metadatafile, current_protocolfile, current_imagefiles)
-                Specimen.cleanup_files(data_directory, all_files)
-                # append the current UUID to the data_directory to avoid filename collisions.
-                if 'metadata_file' in file_list:
-                    metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
-                    incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
-                if 'protocol_file' in file_list:
-                    protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
-                    incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
-                if 'images' in incoming_record:
-                    # handle the case where the current record has no images
-                    current_image_file_metadata = None
-                    if 'image_file_metadata' in metadata_obj:
-                        current_image_file_metadata = metadata_obj['image_file_metadata']
-                    image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory, current_image_file_metadata)
-                    incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+                if len(file_list) > 0:
+                    #TODO: get a list of the filenames and put them into current_file_list
+                    current_metadatafile = None
+                    if 'metadata_file' in incoming_record:
+                        current_metadatafile = incoming_record['metadata_file']
+                    current_protocolfile = None
+                    if 'protocol_file' in incoming_record:
+                        current_protocolfile = incoming_record['protocol_file']
+                    current_imagefiles = None
+                    if 'images' in incoming_record:
+                        current_imagefiles = incoming_record['images']
+                    all_files = Specimen.build_complete_file_list(current_metadatafile, current_protocolfile, current_imagefiles)
+                    Specimen.cleanup_files(data_directory, all_files)
+                    # append the current UUID to the data_directory to avoid filename collisions.
+                    if 'metadata_file' in file_list:
+                        metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
+                        incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+                    if 'protocol_file' in file_list:
+                        protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
+                        incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
+                    if 'images' in incoming_record:
+                        # handle the case where the current record has no images
+                        current_image_file_metadata = None
+                        if 'image_file_metadata' in metadata_obj:
+                            current_image_file_metadata = metadata_obj['image_file_metadata']
+                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory, current_image_file_metadata)
+                        incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+                    if 'protocols' in incoming_record:
+                        # handle the case where the current record has no images
+                        current_image_file_metadata = None
+                        if 'protocols' in metadata_obj:
+                            current_protocol_file_metadata = metadata_obj['protocols']
+                        protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
+                        incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                 
                 metadata_record = incoming_record
                 # don't change the type of this node
@@ -149,6 +158,8 @@ class Specimen:
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
                     metadata_record.pop('images')
+                #if 'protocols' in metadata_record.keys():
+                #    metadata_record.pop('protocols')
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
@@ -272,8 +283,11 @@ class Specimen:
                         protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                         incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
                     if 'images' in incoming_record:
-                        image_file_data_list = Specimen.upload_image_file_data(request, incoming_record['images'], file_list, data_directory)
+                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
                         incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+                    if 'protocols' in incoming_record:
+                        protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory)
+                        incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                          
                 required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
                 if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
@@ -282,7 +296,8 @@ class Specimen:
                 for attrib in required_list:
                     specimen_data[attrib] = incoming_record.pop(attrib)
                 stmt = Neo4jConnection.get_create_statement(
-                    specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, False)
+                    specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
+                print('Specimen Create statement: ' + stmt)
                 tx.run(stmt)
 
                 metadata_record = incoming_record
@@ -317,8 +332,12 @@ class Specimen:
                     metadata_record.pop('files')
                 if 'images' in metadata_record.keys():
                     metadata_record.pop('images')
+                #if 'protocols' in metadata_record.keys():
+                #    metadata_record.pop('protocols')
                 stmt = Neo4jConnection.get_create_statement(
                     metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
+                print('MEtadata Create statement: ' + stmt)
+
                 tx.run(stmt)
 
                 activity_uuid_record = getNewUUID(current_token, activity_type)
@@ -414,35 +433,126 @@ class Specimen:
                 print(x)
     
     @staticmethod
-    def upload_image_file_data(request, image_list, file_list, directory_path, existing_file_data=None):
+    def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
+        """This method takes information about the file(s) associated with the specimen and builds a new list of files for storage in the Neo4j system.
+        For each file encountered, there are two cases handled by this code: 1) it is a new file to be uploaded or 2) it is an existing file.
+        
+        Keyword arguments:
+        request -- the HTTP request containing the submitted web form
+        annotated_file_list -- the dictionary of file data from the web form.  For example: [{'id': 'image_1', 'file_name': 'chicken_crossing.jpg', 'description': 'crossing'}, {'id': 'image_2', 'file_name': 'chicago_background.jpg', 'description': 'chicago'}, {'id': 'image_3', 'file_name': 'bug_feature.jpg', 'description': 'bug'}]
+        request_file_list -- the dictionary of the file data from the HTTP request.  This contains a key plus the actual binary data representing the file.  for example: [('image_3', <FileStorage: 'bug_feature.jpg' ('image/jpeg')>)]
+        directory_path -- a file path where any new files will be stored.  This is unique to the user's group and the uuid for the current specimen
+        existing_file_data -- a dictionary of the existing file information.  This is an optional parameter and is only set if the specimen is being updated
+        """
         return_list = []
-        existing_list = []
-        # build a list of all the existing files
+        #rebuild the request['files'] dictionary.  Make it based on filename.  The request['files'] represents new files
+        file_name_dict = {}
+        for key_index, current_file_data in request_file_list.items():
+            file_name_dict[str(current_file_data.filename)] = current_file_data
+            
+        #rebuild the existing files dictionary.  Make it based on filename
+        existing_file_data_dict = {}
         if existing_file_data != None:
-            # convert from string to json
-            existing_file_data = json.loads(existing_file_data)
-            for file_item in existing_file_data:
-                existing_list.append(os.path.basename(file_item['filepath']))
-        for image_data in image_list:
+            existing_file_data_json = json.loads(existing_file_data)
+            for data_entry in existing_file_data_json:
+                existing_file_data_dict[os.path.basename(data_entry['filepath'])] = data_entry
+        # walk through each file represented on the web form.  For each file decide if it represents a new file or an existing file
+        # Note: this code builds a list of the current files.  Effectively, this approach implicitly "deletes" any previous files removed from the
+        # web form. 
+        for file_data in annotated_file_list:
             try:
-                # upload the file if it represents a new file
-                if image_data['file_name'] in file_list:
-                    new_filepath = Specimen.upload_file_data(request, image_data['file_name'], directory_path)
+                # upload the file if it represents a new file.  New files are found in the file_name_dict
+                if (str(file_data['file_name']) in file_name_dict) == True:
+                    new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
                     desc = ''
-                    if 'description' in image_data:
-                        desc = image_data['description']
+                    if 'description' in file_data:
+                        desc = file_data['description']
                     file_obj = {'filepath': new_filepath, 'description': desc}
                     return_list.append(file_obj)
-                # check existing files
                 else:
-                    # add data for existing file
-                    if image_data['file_name'] in existing_list:
-                        for existing_entry in existing_file_data:
-                            if os.path.basename(existing_entry['filepath']) == image_data['file_name']:
-                                return_list.append(existing_entry)                        
+                    # in this case, simply copy an existing file's data into the retrun_list
+                    return_list.append(existing_file_data_dict[str(file_data['file_name'])])
+                    
             except:
                 raise
-        return json.dumps(return_list)
+        # dump the data as JSON
+        return_string = json.dumps(return_list)
+        # replace any of the single quotes with double quotes so it can be stored by Neo4j statements
+        return_string = str(return_string).replace('\'', '"')
+        return return_string
+
+    """Note: There is a subtle difference between storing data for protocols vs data for images.
+    For one thing, the protocol may not be a file, but an URL.  Second, there is no description field associated with
+    the protocol file.
+    The output protocol JSON should look like this:
+    "protocols": "[{"description": "", 
+        "protocol_file": "/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/f8ed3f8e2e8a49c032b602a35126ec71/C11_technical_survey_summary.pdf", 
+        “protocol_url”:””}, 
+        {"description": "", " protocol_file ": "/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/f8ed3f8e2e8a49c032b602a35126ec71/Revision2OfTR15-119.pdf", “protocol_url”:””}]" 
+    """
+    @staticmethod
+    def upload_multiple_protocol_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
+        return_list = []
+        #rebuild the request['files'] dictionary.  Make it based on filename.  The request['files'] represents new files
+        file_name_dict = {}
+        for key_index, current_file_data in request_file_list.items():
+            file_name_dict[str(current_file_data.filename)] = current_file_data
+            
+        #rebuild the existing files dictionary.  Make it based on filename
+        existing_file_data_dict = {}
+        existing_url_data_dict = {}
+        if existing_file_data != None:
+            # replace single quotes with JSON compliant double quotes before converting to JSON:
+            existing_file_data = str(existing_file_data).replace("\'", "\"")
+            existing_file_data_json = json.loads(existing_file_data)
+            for data_entry in existing_file_data_json:
+                if len(str(data_entry['protocol_file'])) > 0: 
+                    existing_file_data_dict[os.path.basename(data_entry['protocol_file'])] = data_entry
+                else:
+                    existing_url_data_dict[data_entry['protocol_url']] = data_entry
+        
+        # walk through each file represented on the web form.  For each file decide if it represents a new file or an existing file
+        # Note: this code builds a list of the current files.  Effectively, this approach implicitly "deletes" any previous files removed from the
+        # web form. 
+        for file_data in annotated_file_list:
+            try:
+                # upload the file if it represents a new file.  New files are found in the file_name_dict
+                if (str(os.path.basename(file_data['protocol_file'])) in file_name_dict) == True:
+                    new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
+                    file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
+                    return_list.append(file_obj)
+                else:
+                    if len(str(file_data['protocol_file'])) > 0:
+                        # in this case, simply copy an existing file's data into the retrun_list
+                        return_list.append(existing_file_data_dict[os.path.basename(file_data['protocol_file'])])
+                    else:
+                        if file_data['protocol_url'] in existing_url_data_dict:
+                            # copy the existing protocol_url entry
+                            return_list.append(existing_url_data_dict[file_data['protocol_url']])
+                        else:
+                            #create a new protocol_url entry
+                            file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
+                            return_list.append(file_obj)  
+                            
+
+                    """            
+                    for file_data in annotated_file_list:
+                        try:
+                            # upload the file if it represents a new file
+                            if (str(file_data['id']) in request_file_list) == True:
+                                new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
+                                file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
+                                return_list.append(file_obj)
+                            # if there is no file to upload, but there is a protocol URL:
+                            elif len(str(file_data['protocol_url'])) > 0:
+                                file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
+                                return_list.append(file_obj)  
+                    """                                      
+            except:
+                raise
+        return_string = json.dumps(return_list)
+        return_string = str(return_string).replace('\'', '"')
+        return return_string
 
     @staticmethod
     def upload_file_data(request, file_key, directory_path):

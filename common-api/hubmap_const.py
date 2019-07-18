@@ -50,6 +50,8 @@ class HubmapConst(object):
     REFERENCE_UUID_ATTRIBUTE = 'reference_uuid'
     FILE_LIST_ATTRIBUTE = 'file_list'
     IMAGE_FILE_METADATA_ATTRIBUTE = 'image_file_metadata'
+    PROTOCOL_FILE_METADATA_ATTRIBUTE = 'protocols'
+    #PROTOCOL_FILE_METADATA_ATTRIBUTE = 'protocol_file_metadata'
     METADATA_FILE_ATTRIBUTE = 'metadata_file'
     
 

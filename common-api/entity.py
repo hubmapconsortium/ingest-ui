@@ -82,8 +82,7 @@ class Entity(object):
             try:
                 #TODO: I can use the OR operator to match on either uuid or doi:
                 #MATCH (e) WHERE e.label= 'test dataset create file10' OR e.label= 'test dataset create file7' RETURN e
-                stmt = "MATCH (a) WHERE a.{uuid_attrib}= $identifier OR a.{doi_attrib} = $identifier OR a.{doi_display_attrib} = $identifier RETURN properties(a) as properties".format(uuid_attrib=HubmapConst.UUID_ATTRIBUTE,
-                                                                                                                                                 doi_attrib=HubmapConst.DOI_ATTRIBUTE, doi_display_attrib=HubmapConst.DISPLAY_DOI_ATTRIBUTE)
+                stmt = "MATCH (a) WHERE a.{uuid_attrib}= $identifier RETURN properties(a) as properties".format(uuid_attrib=HubmapConst.UUID_ATTRIBUTE)
 
                 for record in session.run(stmt, identifier=identifier):
                     dataset_record = record['properties']
@@ -183,6 +182,35 @@ class Entity(object):
             pprint(be)
             raise be
 
+    def get_user_groups(self, token):
+        try:
+            authcache = None
+            if AuthHelper.isInitialized() == False:
+                authcache = AuthHelper.create(
+                    self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+            else:
+                authcache = AuthHelper.instance()
+            userinfo = authcache.getUserInfo(token, True)
+
+            if type(userinfo) == Response and userinfo.status_code == 401:
+                raise AuthError('token is invalid.', 401)
+
+            if 'hmgroupids' not in userinfo:
+                raise ValueError("Cannot find Hubmap Group information for token")
+            return_list = []
+            group_list = AuthCache.getHMGroups()
+            for group_uuid in userinfo['hmgroupids']:
+                for group_name in group_list.keys():
+                    if group_list[group_name]['uuid'] == group_uuid:
+                        return_list.append(group_list[group_name])
+                        break
+            return return_list
+        except:
+            print ('A general error occurred: ')
+            for x in sys.exc_info():
+                print (x)
+            raise
+        
     def get_editable_entities_by_type(self, driver, token, type_code=None): 
         with driver.session() as session:
             return_list = []
@@ -190,24 +218,11 @@ class Entity(object):
             try:
                 if type_code != None:
                     general_type = HubmapConst.get_general_node_type_attribute(type_code)            
-                authcache = None
-                if AuthHelper.isInitialized() == False:
-                    authcache = AuthHelper.create(
-                        self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
-                else:
-                    authcache = AuthHelper.instance()
-                userinfo = authcache.getUserInfo(token, True)
-
-                if type(userinfo) == Response and userinfo.status_code == 401:
-                    raise AuthError('token is invalid.', 401)
-
-                if 'hmgroupids' not in userinfo:
-                    raise ValueError("Cannot find Hubmap Group information for token")
-                hmgroups = userinfo['hmgroupids']
+                hmgroups = self.get_user_groups(token)
                 for g in hmgroups:
-                    group_record = self.get_group_by_identifier(g)
+                    group_record = self.get_group_by_identifier(g['name'])
                     if group_record['generateuuid'] == True:
-                        current_group_uuid = g
+                        current_group_uuid = g['uuid']
                 matching_stmt = ""
                 if type_code != None:
                     matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
@@ -302,7 +317,7 @@ class Entity(object):
             left_dir = '<'
         elif str(direction).lower() == 'right':
             right_dir = '>'
-        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' OR e.{doi_attrib} = '{identifier}' OR e.{doi_display_attrib} = '{identifier}' RETURN CASE WHEN e.{entitytype} is not null THEN e.{entitytype} WHEN e.{activitytype} is not null THEN e.{activitytype} ELSE e.{agenttype} END AS datatype, e.{uuid_attrib} AS uuid, e.{doi_attrib} AS doi, e.{doi_display_attrib} AS display_doi, properties(a) AS properties".format(
+        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' RETURN CASE WHEN e.{entitytype} is not null THEN e.{entitytype} WHEN e.{activitytype} is not null THEN e.{activitytype} ELSE e.{agenttype} END AS datatype, e.{uuid_attrib} AS uuid, e.{doi_attrib} AS doi, e.{doi_display_attrib} AS display_doi, properties(a) AS properties".format(
             identifier=identifier,uuid_attrib=HubmapConst.UUID_ATTRIBUTE, doi_attrib=HubmapConst.DOI_ATTRIBUTE, doi_display_attrib=HubmapConst.DISPLAY_DOI_ATTRIBUTE,
                 entitytype=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, agenttype=HubmapConst.AGENT_TYPE_ATTRIBUTE,
                 relationship_label=relationship_label, right_dir=right_dir, left_dir=left_dir)
@@ -484,41 +499,45 @@ if __name__ == "__main__":
     labCreatedAt = '0ce5be9b-8b7f-47e9-a6d9-16a08df05f50'
     createdBy = '70a43e57-c4fd-4616-ad41-ca8c80d6d827'
 
-    uuid_to_modify = 'ec08e0ee-f2f6-4744-acb4-c4c6745eb04f'
+    uuid_to_modify = 'b7094763d7d8581ce0cdcee2c59440c4'
     dr_x_uuid = '33a46e57-c55d-4617-ad41-ca8a30d6d844'
-    datastage_uuid = 'c67a6dec-5ef8-4728-8f42-b70966edcb7e'
-    create_datastage_activity = '05e699aa-0320-48ee-b3bc-f92cd72e9f5f'
+    metadata_uuid = '11ba247d1deac704fd1ee96c3619f527'
+    register_datastage_activity = '177a1b530092b8bdd283c238e7d0166a'
     
-    current_token = "Ag1bPNX5yp5x71djvvglJmrelQoNN87WPM73eYk98XaQnv1DjkH2Ckw3kBb68kjnwG5ol724K7ye7oF4z40oPUjWvD"
-    """
+    current_token = "AgeYjkWV9mr79xKqJNzX8ojdlGyvy9nvj9dw2eaqKjE0Km7eXzfVCPv6zYwmxmjoj1MGgByep61ewgIK3jjwkupPoa"
+
     entity = Entity()
     file_uuid = entity.get_entity(driver, uuid_to_modify)
     print (file_uuid)
-    file_uuid = entity.get_entity(driver, datastage_uuid)
+    file_uuid = entity.get_entity(driver, metadata_uuid)
     print (file_uuid)
-    file_uuid = entity.get_entity(driver, create_datastage_activity)
+    file_uuid = entity.get_entity(driver, register_datastage_activity)
     print (file_uuid)
     
     stmt = Entity.get_entity_from_relationship_statement("cafd03e784d2fd091dd2bafc71db911d", "HAS_METADATA", "left")
     print(stmt)
     
-    status = entity.can_user_edit_entity(driver, current_token, "7023ad6f76fcaab429ab9c049410399d")
+    editable_entity = 'a3c44910213907cbc8d8d3fe53b63b53'
+    status = entity.can_user_edit_entity(driver, current_token, editable_entity)
     if status == True:
-        print ("I can edit 7023ad6f76fcaab429ab9c049410399d") 
+        print ("I can edit " + editable_entity) 
     else:
-        print ("I cannot edit 7023ad6f76fcaab429ab9c049410399d") 
+        print ("I cannot edit " + editable_entity) 
     
     e_list = entity.get_editable_entities_by_type(driver, current_token, 'Donor')
     print(e_list)
 
     e_list = entity.get_editable_entities_by_type(driver, current_token)
     print(e_list)
-    """
+
     entity = Entity()
     #edit_record = {'uuid' : 'b8f5fcbe0b891ac0361b361b722de4b4', 'description' :'new description'}
     #entity.edit_entity(driver, current_token, 'b8f5fcbe0b891ac0361b361b722de4b4', edit_record)
-    metadata_obj = Entity.get_entity_metadata(driver, 'b8f5fcbe0b891ac0361b361b722de4b4')
+    metadata_obj = Entity.get_entity_metadata(driver, '55f3673543e4843e04f7c19161b47104')
     print(metadata_obj)
+    
+    group_list = entity.get_user_groups(current_token)
+    print(group_list)
 
     
     

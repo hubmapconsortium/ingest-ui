@@ -5,6 +5,7 @@ Created on May 15, 2019
 '''
 import sys
 import os
+import requests
 from specimen import Specimen, AuthError
 from globus_sdk.exc import TransferAPIError
 import base64
@@ -46,6 +47,7 @@ def load_config_file():
         app.config['PUBLISH_FILE_PATH'] = config.get(
             'GLOBUS', 'PUBLISH_FILE_PATH')
         app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
+        app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
         app.config['LOCAL_STORAGE_DIRECTORY'] = config.get('FILE_SYSTEM','LOCAL_STORAGE_DIRECTORY')
         #app.config['DEBUG'] = True
     except OSError as err:
@@ -93,6 +95,7 @@ try:
     app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
     app.config['APP_CLIENT_SECRET'] = config.get(
         'GLOBUS', 'APP_CLIENT_SECRET')
+    app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
     if AuthHelper.isInitialized() == False:
         authcache = AuthHelper.create(
             app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
@@ -137,6 +140,11 @@ def create_specimen():
         form_data = json.loads(request.form['data'])
         if 'source_uuid' in form_data:
             sourceuuid = form_data['source_uuid']
+            r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + sourceuuid, headers={'Authorization': 'Bearer ' + token })
+            if r.ok == False:
+                raise ValueError("Cannot find specimen with identifier: " + sourceuuid)
+            sourceuuid = json.loads(r.text)[0]['hmuuid']
+
         new_uuid_record = specimen.create_specimen(
             driver, request, form_data, request.files, token, sourceuuid)
         conn.close()
@@ -153,10 +161,10 @@ def create_specimen():
     finally:
         conn.close()
 
-@app.route('/specimens/<uuid>', methods=['PUT'])
+@app.route('/specimens/<identifier>', methods=['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
-def update_specimen(uuid):
+def update_specimen(identifier):
     if not request.form:
         abort(400)
     if 'data' not in request.form:
@@ -178,6 +186,10 @@ def update_specimen(uuid):
     new_uuid = None
     try:
         token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
+        if r.ok == False:
+            raise ValueError("Cannot find specimen with identifier: " + identifier)
+        uuid = json.loads(r.text)[0]['hmuuid']
         conn = Neo4jConnection()
         driver = conn.get_driver()
         specimen = Specimen()
@@ -209,10 +221,9 @@ def does_specimen_exist(uuid):
 
     conn = None
     try:
-        conn = Neo4jConnection()
-        driver = conn.get_driver()
-        does_exist = Entity.does_identifier_exist(driver, uuid)
-        return jsonify({'exists': does_exist}), 200 
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + uuid, headers={'Authorization': 'Bearer ' + token })
+        return jsonify({'exists': r.ok}), 200 
 
     except AuthError as e:
         print(e)
@@ -222,22 +233,24 @@ def does_specimen_exist(uuid):
         for x in sys.exc_info():
             msg += str(x)
         abort(400, msg)
-    finally:
-        conn.close()
 
 
-@app.route('/specimens/<uuid>', methods=['GET'])
+@app.route('/specimens/<identifier>', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
-def get_specimen(uuid):
-    if uuid == None:
+def get_specimen(identifier):
+    if identifier == None:
         abort(400)
-    if len(uuid) == 0:
+    if len(identifier) == 0:
         abort(400)
 
     conn = None
     try:
-        #token = str(request.headers["AUTHORIZATION"])[7:]
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
+        if r.ok == False:
+            raise ValueError("Cannot find specimen with identifier: " + identifier)
+        uuid = json.loads(r.text)[0]['hmuuid']
         conn = Neo4jConnection()
         driver = conn.get_driver()
         specimen = Entity.get_entity_metadata(driver, uuid)
