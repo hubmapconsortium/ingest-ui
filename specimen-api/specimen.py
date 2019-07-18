@@ -500,11 +500,16 @@ class Specimen:
             
         #rebuild the existing files dictionary.  Make it based on filename
         existing_file_data_dict = {}
+        existing_url_data_dict = {}
         if existing_file_data != None:
+            # replace single quotes with JSON compliant double quotes before converting to JSON:
+            existing_file_data = str(existing_file_data).replace("\'", "\"")
             existing_file_data_json = json.loads(existing_file_data)
             for data_entry in existing_file_data_json:
                 if len(str(data_entry['protocol_file'])) > 0: 
                     existing_file_data_dict[os.path.basename(data_entry['protocol_file'])] = data_entry
+                else:
+                    existing_url_data_dict[data_entry['protocol_url']] = data_entry
         
         # walk through each file represented on the web form.  For each file decide if it represents a new file or an existing file
         # Note: this code builds a list of the current files.  Effectively, this approach implicitly "deletes" any previous files removed from the
@@ -512,13 +517,23 @@ class Specimen:
         for file_data in annotated_file_list:
             try:
                 # upload the file if it represents a new file.  New files are found in the file_name_dict
-                if (str(file_data['protocol_file']) in file_name_dict) == True:
+                if (str(os.path.basename(file_data['protocol_file'])) in file_name_dict) == True:
                     new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
                     file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
                     return_list.append(file_obj)
                 else:
-                    # in this case, simply copy an existing file's data into the retrun_list
-                    return_list.append(existing_file_data_dict[os.path.basename(file_data['protocol_file'])])
+                    if len(str(file_data['protocol_file'])) > 0:
+                        # in this case, simply copy an existing file's data into the retrun_list
+                        return_list.append(existing_file_data_dict[os.path.basename(file_data['protocol_file'])])
+                    else:
+                        if file_data['protocol_url'] in existing_url_data_dict:
+                            # copy the existing protocol_url entry
+                            return_list.append(existing_url_data_dict[file_data['protocol_url']])
+                        else:
+                            #create a new protocol_url entry
+                            file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
+                            return_list.append(file_obj)  
+                            
 
                     """            
                     for file_data in annotated_file_list:
