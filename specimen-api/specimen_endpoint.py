@@ -267,15 +267,20 @@ def get_specimen(identifier):
     finally:
         conn.close()
 
-@app.route('/specimens/search/<searchterm>', methods=['GET'])
+@app.route('/specimens/search/', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
-def search_specimen(searchterm):
-    if searchterm == None:
-        abort(400)
-    if len(searchterm) == 0:
-        abort(400)
+def search_specimen():
+    """ Search using Lucene indices.  The items returned are visible to the user according to their token.
+    
+    Some example URLs are:
+        http://localhost:5004/specimens/search?search_term=test donor&entity_type=whole_organ
+        uses Lucene index to find items with matching terms
+        
+        http://localhost:5004/specimens/search/
+        uses straight Neo4j query to find items the current user is allowed to see
 
+    """
     conn = None
     try:
         token = str(request.headers["AUTHORIZATION"])[7:]
@@ -289,9 +294,16 @@ def search_specimen(searchterm):
             group_uuid_list.append(group_data['uuid'])
         entity_type_list = request.args.get('entity_type')
         specimen_type = None
+        searchterm = None
         if 'specimen_type' in request.args:
             specimen_type = request.args.get('specimen_type')
-        specimen_list =  Specimen.search_specimen(driver, searchterm, group_uuid_list, specimen_type)
+        if 'search_term' in request.args:
+            searchterm = request.args.get('search_term')
+
+        if searchterm == None:
+            specimen_list = entity.get_editable_entities_by_type(driver, token)
+        else:
+            specimen_list =  Specimen.search_specimen(driver, searchterm, group_uuid_list, specimen_type)
 
         return jsonify({'specimens': specimen_list}), 200 
 

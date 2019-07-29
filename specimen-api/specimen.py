@@ -619,13 +619,16 @@ class Specimen:
     def search_specimen(driver, search_term, group_list, specimen_type):
         return_list = []
         lucence_index_name = "testIdx"
-        entity_type_clause = "entity_node.entitytype = 'Donor'"
+        entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
         if specimen_type != 'Donor' and specimen_type != None:
             entity_type_clause = "entity_node.entitytype = 'Sample' AND metadata_node.specimen_type = '{specimen_type}'".format(specimen_type=specimen_type)
-        stmt = "CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS metadata_node, score MATCH (metadata_node:Entity {metadata_clause})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} RETURN entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties ORDER BY score DESC".format(
+        elif specimen_type == 'Donor':
+            entity_type_clause = "entity_node.entitytype = 'Donor'"
+            
+        stmt = "CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS metadata_node, score MATCH (metadata_node:Entity {metadata_clause})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} RETURN entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties ORDER BY score DESC, metadata_node.{provenance_timestamp} DESC".format(
             metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
-            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE)
+            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
         print("Search query: " + stmt)
         with driver.session() as session:
