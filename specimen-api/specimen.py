@@ -12,6 +12,7 @@ import json
 from werkzeug.utils import secure_filename
 from flask import json
 from builtins import staticmethod
+from _ast import stmt
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
@@ -613,6 +614,43 @@ class Specimen:
             print(msg + "  Program stopped.")
             exit(0)
 
+
+    @staticmethod
+    def search_specimen(driver, search_term, group_list, specimen_type):
+        return_list = []
+        lucence_index_name = "testIdx"
+        entity_type_clause = "entity_node.entitytype = 'Donor'"
+        metadata_clause = "{entitytype: 'Metadata'}"
+        if specimen_type != 'Donor' and specimen_type != None:
+            entity_type_clause = "entity_node.entitytype = 'Sample' AND metadata_node.specimen_type = '{specimen_type}'".format(specimen_type=specimen_type)
+        stmt = "CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS metadata_node, score MATCH (metadata_node:Entity {metadata_clause})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} RETURN entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties ORDER BY score DESC".format(
+            metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
+            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE)
+
+        print("Search query: " + stmt)
+        with driver.session() as session:
+            return_list = []
+
+            try:
+                for record in session.run(stmt):
+                    data_record = {}
+                    data_record['uuid'] = record['entity_uuid']
+                    data_record['entity_display_doi'] = record['entity_display_doi']
+                    data_record['entity_doi'] = record['entity_doi']
+                    data_record['datatype'] = record['datatype']
+                    data_record['properties'] = record['metadata_properties']
+                    return_list.append(data_record)
+                return return_list                    
+            except CypherError as cse:
+                print ('A Cypher error was encountered: '+ cse.message)
+                raise
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                raise
+
+
 def create_site_directories(parent_folder):
     hubmap_groups = AuthCache.getHMGroups()
     for group in hubmap_groups:
@@ -633,7 +671,11 @@ def get_data_directory(parent_folder, group_uuid, create_folder=False):
 if __name__ == "__main__":
     conn = Neo4jConnection()
     driver = conn.get_driver()
-    name = 'Test Dataset'
+    return_list = Specimen.search_specimen(driver, 'test donor', ['5bd084c8-edc2-11e8-802f-0e368f3075e8'], 'whole_organ')
+    print("Found " + str(len(return_list)) + " items")
+    pprint(return_list)
+
+    """name = 'Test Dataset'
     description = 'This dataset is a test'
     parentCollection = '4470c8e8-3836-4986-9773-398912831'
     hasPHI = False
@@ -660,4 +702,4 @@ if __name__ == "__main__":
     
     #confdata = Specimen.load_config_file()
     #parent_folder = confdata['localstoragedirectory']
-    #create_site_directories(parent_folder)
+    #create_site_directories(parent_folder)"""

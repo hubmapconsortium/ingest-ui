@@ -267,6 +267,45 @@ def get_specimen(identifier):
     finally:
         conn.close()
 
+@app.route('/specimens/search/<searchterm>', methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
+def search_specimen(searchterm):
+    if searchterm == None:
+        abort(400)
+    if len(searchterm) == 0:
+        abort(400)
+
+    conn = None
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        entity = Entity()
+        group_list = entity.get_user_groups(token)
+        group_uuid_list = []
+        #build UUID group list
+        for group_data in group_list:
+            group_uuid_list.append(group_data['uuid'])
+        entity_type_list = request.args.get('entity_type')
+        specimen_type = None
+        if 'specimen_type' in request.args:
+            specimen_type = request.args.get('specimen_type')
+        specimen_list =  Specimen.search_specimen(driver, searchterm, group_uuid_list, specimen_type)
+
+        return jsonify({'specimens': specimen_list}), 200 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
+
 
 if __name__ == '__main__':
     try:
