@@ -617,8 +617,11 @@ class Specimen:
 
 
     @staticmethod
-    def search_specimen(driver, search_term, group_list, specimen_type=None):
+    def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, specimen_type=None):
         return_list = []
+        group_list = []
+        group_list.extend(readonly_uuid_list)
+        group_list.extend(writeable_uuid_list)
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
@@ -666,6 +669,10 @@ class Specimen:
                             data_record['entity_doi'] = record['entity_doi']
                             data_record['datatype'] = record['datatype']
                             data_record['properties'] = record['metadata_properties']
+                            # determine if the record is writable by the current user
+                            data_record['writeable'] = False
+                            if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
+                                data_record['writeable'] = True
                             uuid_list.append(str(data_record['entity_display_doi']))
                             if original_search_term != None:
                                 if str(data_record['entity_display_doi']).find(original_search_term) > -1:

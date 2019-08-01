@@ -210,7 +210,48 @@ class Entity(object):
             for x in sys.exc_info():
                 print (x)
             raise
-        
+    
+    def get_readonly_user_groups(self, token):
+        return self.get_user_groups_generic(token, 'READONLY')
+
+    def get_writeable_user_groups(self, token):
+        return self.get_user_groups_generic(token, 'WRITEABLE')
+
+    def get_user_groups_generic(self, token, group_type):
+        try:
+            authcache = None
+            if AuthHelper.isInitialized() == False:
+                authcache = AuthHelper.create(
+                    self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+            else:
+                authcache = AuthHelper.instance()
+            userinfo = authcache.getUserInfo(token, True)
+
+            if type(userinfo) == Response and userinfo.status_code == 401:
+                raise AuthError('token is invalid.', 401)
+
+            if 'hmgroupids' not in userinfo:
+                raise ValueError("Cannot find Hubmap Group information for token")
+            return_list = []
+            bWriteable = False
+            if group_type == 'WRITEABLE':
+                bWriteable = True
+            
+            
+            group_list = AuthCache.getHMGroups()
+            for group_uuid in userinfo['hmgroupids']:
+                for group_name in group_list.keys():
+                    if group_list[group_name]['uuid'] == group_uuid:
+                        if group_list[group_name]['generateuuid'] == bWriteable:
+                            return_list.append(group_list[group_name])
+                        break
+            return return_list
+        except:
+            print ('A general error occurred: ')
+            for x in sys.exc_info():
+                print (x)
+            raise
+       
     def get_editable_entities_by_type(self, driver, token, type_code=None): 
         with driver.session() as session:
             return_list = []
@@ -235,6 +276,16 @@ class Entity(object):
                 stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
                     uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
+                readonly_group_list = entity.get_readonly_user_groups(token)
+                writeable_group_list = entity.get_writeable_user_groups(token)
+                readonly_uuid_list = []
+                writeable_uuid_list = []
+                #build UUID group list
+                for readonly_group_data in readonly_group_list:
+                    readonly_uuid_list.append(readonly_group_data['uuid'])
+                for writeable_group_data in writeable_group_list:
+                    writeable_uuid_list.append(writeable_group_data['uuid'])
+
                 for record in session.run(stmt):
                     data_record = {}
                     data_record['uuid'] = record['entity_uuid']
@@ -242,6 +293,10 @@ class Entity(object):
                     data_record['entity_doi'] = record['entity_doi']
                     data_record['datatype'] = record['datatype']
                     data_record['properties'] = record['metadata_properties']
+                    # determine if the record is writable by the current user
+                    data_record['writeable'] = False
+                    if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
+                        data_record['writeable'] = True
                     return_list.append(data_record)
                 return return_list                    
             except CypherError as cse:
@@ -490,7 +545,15 @@ class Entity(object):
 
 
 if __name__ == "__main__":
-    conn = Neo4jConnection()
+    entity = Entity()
+    token = "AggQN13V56BW10NMY9e18vPen0rEEeDW5aorWD39gBx1j48pwycJC31pG8WXdvYdevkD8vGJa210qxc1ke58WSBgD6"
+    writeable_groups = entity.get_writeable_user_groups(token)
+    print('Writeable groups:')
+    print(writeable_groups)
+    readonly_groups = entity.get_readonly_user_groups(token)
+    print('Readonly groups:')
+    print(readonly_groups)
+    """conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Dataset'
     description= 'This dataset is a test'
@@ -541,4 +604,4 @@ if __name__ == "__main__":
 
     
     
-    conn.close()
+    conn.close()"""

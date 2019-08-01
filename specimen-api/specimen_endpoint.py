@@ -289,21 +289,14 @@ def search_specimen():
         entity = Entity()
         readonly_group_list = entity.get_readonly_user_groups(token)
         writeable_group_list = entity.get_writeable_user_groups(token)
-        
-        group_list = entity.get_user_groups(token)
-        group_uuid_list = []
-        for group_data in group_list:
-            group_uuid_list.append(group_data['uuid'])
-        
-        
         readonly_uuid_list = []
         writeable_uuid_list = []
         #build UUID group list
-        """for readonly_group_data in readonly_group_list:
+        for readonly_group_data in readonly_group_list:
             readonly_uuid_list.append(readonly_group_data['uuid'])
         for writeable_group_data in writeable_group_list:
             writeable_uuid_list.append(writeable_group_data['uuid'])
-            """
+            
         entity_type_list = request.args.get('entity_type')
         specimen_type = None
         searchterm = None
@@ -315,8 +308,7 @@ def search_specimen():
         if searchterm == None:
             specimen_list = entity.get_editable_entities_by_type(driver, token)
         else:
-            specimen_list =  Specimen.search_specimen(driver, searchterm, group_uuid_list, specimen_type)
-            #specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, specimen_type)
+            specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, specimen_type)
 
         return jsonify({'specimens': specimen_list}), 200 
 
