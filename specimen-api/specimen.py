@@ -4,6 +4,7 @@ Created on May 15, 2019
 '''
 import os
 import sys
+import re
 from neo4j import TransactionError, CypherError
 import requests
 import configparser
@@ -616,33 +617,63 @@ class Specimen:
 
 
     @staticmethod
-    def search_specimen(driver, search_term, group_list, specimen_type):
+    def search_specimen(driver, search_term, group_list, specimen_type=None):
         return_list = []
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
         if specimen_type != 'Donor' and specimen_type != None:
-            entity_type_clause = "entity_node.entitytype = 'Sample' AND metadata_node.specimen_type = '{specimen_type}'".format(specimen_type=specimen_type)
+            entity_type_clause = "entity_node.entitytype = 'Sample' AND lucene_node.specimen_type = '{specimen_type}'".format(specimen_type=specimen_type)
         elif specimen_type == 'Donor':
             entity_type_clause = "entity_node.entitytype = 'Donor'"
+        lucene_type_clause = entity_type_clause.replace('entity_node.entitytype', 'lucene_node.entitytype')
+        lucene_type_clause = lucene_type_clause.replace('lucene_node.specimen_type', 'metadata_node.specimen_type')
+        
+        original_search_term = None
+        pattern = re.compile('\d\d\d-\D\D\D\D-\d\d\d')
+        result = pattern.match(search_term)
+        if result != None:
+            original_search_term = result 
+        # for now, just escape Lucene special characters
+        lucene_special_characters = ['+','-','&','|','!','(',')','{','}','[',']','^','"','~','*','?',':']
+        for special_char in lucene_special_characters:
+            search_term = search_term.replace(special_char, '\\\\'+ special_char)
             
-        stmt = "CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS metadata_node, score MATCH (metadata_node:Entity {metadata_clause})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} RETURN entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties ORDER BY score DESC, metadata_node.{provenance_timestamp} DESC".format(
-            metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
-            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
+        stmt = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
+        OPTIONAL MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND lucene_node.provenance_group_uuid IN {group_list} 
+        WITH score, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+        OPTIONAL MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} 
+        WITH score, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
+        RETURN score, entity_uuid, datatype, entity_doi, entity_display_doi, metadata_properties 
+        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
+            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
+            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
         print("Search query: " + stmt)
         with driver.session() as session:
             return_list = []
+            uuid_list = []
 
+            # NOTE: I need code to remove duplicates
             try:
                 for record in session.run(stmt):
-                    data_record = {}
-                    data_record['uuid'] = record['entity_uuid']
-                    data_record['entity_display_doi'] = record['entity_display_doi']
-                    data_record['entity_doi'] = record['entity_doi']
-                    data_record['datatype'] = record['datatype']
-                    data_record['properties'] = record['metadata_properties']
-                    return_list.append(data_record)
+                    # skip any records with empty display_doi
+                    if record['entity_display_doi'] != None:
+                        if str(record['entity_display_doi']) not in uuid_list:
+                            data_record = {}
+                            data_record['uuid'] = record['entity_uuid']
+                            data_record['entity_display_doi'] = record['entity_display_doi']
+                            data_record['entity_doi'] = record['entity_doi']
+                            data_record['datatype'] = record['datatype']
+                            data_record['properties'] = record['metadata_properties']
+                            uuid_list.append(str(data_record['entity_display_doi']))
+                            if original_search_term != None:
+                                if str(data_record['entity_display_doi']).find(original_search_term) > -1:
+                                    return_list.insert(0,data_record)                            
+                                else:
+                                    return_list.append(data_record)
+                            else:
+                                return_list.append(data_record)
                 return return_list                    
             except CypherError as cse:
                 print ('A Cypher error was encountered: '+ cse.message)
@@ -674,7 +705,7 @@ def get_data_directory(parent_folder, group_uuid, create_folder=False):
 if __name__ == "__main__":
     conn = Neo4jConnection()
     driver = conn.get_driver()
-    return_list = Specimen.search_specimen(driver, 'test donor', ['5bd084c8-edc2-11e8-802f-0e368f3075e8'], 'whole_organ')
+    return_list = Specimen.search_specimen(driver, 'HBM:273-VXXV-779', ['5bd084c8-edc2-11e8-802f-0e368f3075e8'])
     print("Found " + str(len(return_list)) + " items")
     pprint(return_list)
 
