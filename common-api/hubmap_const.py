@@ -53,6 +53,7 @@ class HubmapConst(object):
     PROTOCOL_FILE_METADATA_ATTRIBUTE = 'protocols'
     #PROTOCOL_FILE_METADATA_ATTRIBUTE = 'protocol_file_metadata'
     METADATA_FILE_ATTRIBUTE = 'metadata_file'
+    SPECIMEN_TYPE_ATTRIBUTE = 'specimen_type'
     
 
     DATASET_TYPE_CODE = 'Dataset'

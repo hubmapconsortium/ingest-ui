@@ -257,8 +257,8 @@ class Entity(object):
             return_list = []
 
             try:
-                if type_code != None:
-                    general_type = HubmapConst.get_general_node_type_attribute(type_code)            
+                #if type_code != None:
+                #    general_type = HubmapConst.get_general_node_type_attribute(type_code)            
                 hmgroups = self.get_user_groups(token)
                 for g in hmgroups:
                     group_record = self.get_group_by_identifier(g['name'])
@@ -266,9 +266,17 @@ class Entity(object):
                         current_group_uuid = g['uuid']
                 matching_stmt = ""
                 if type_code != None:
-                    matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
-                        type_attrib=general_type, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
-                        rel_code=HubmapConst.HAS_METADATA_REL)
+                    if str(type_code).lower() == 'donor':
+                        type_attrib = HubmapConst.ENTITY_TYPE_ATTRIBUTE
+                        matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
+                            type_attrib=type_attrib, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
+                            rel_code=HubmapConst.HAS_METADATA_REL)
+                    else:
+                        type_attrib = HubmapConst.SPECIMEN_TYPE_ATTRIBUTE                        
+                        matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{ {group_attrib}: '{group_uuid}', {type_attrib}: '{type_code}' }})".format(
+                            type_attrib=type_attrib, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
+                            rel_code=HubmapConst.HAS_METADATA_REL)
+                        
                 else:
                     matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
                         group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid, rel_code=HubmapConst.HAS_METADATA_REL)
@@ -276,8 +284,9 @@ class Entity(object):
                 stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
                     uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
-                readonly_group_list = entity.get_readonly_user_groups(token)
-                writeable_group_list = entity.get_writeable_user_groups(token)
+                print("Here is the query: " + stmt)
+                readonly_group_list = self.get_readonly_user_groups(token)
+                writeable_group_list = self.get_writeable_user_groups(token)
                 readonly_uuid_list = []
                 writeable_uuid_list = []
                 #build UUID group list

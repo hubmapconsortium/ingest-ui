@@ -306,7 +306,7 @@ def search_specimen():
             searchterm = request.args.get('search_term')
 
         if searchterm == None:
-            specimen_list = entity.get_editable_entities_by_type(driver, token)
+            specimen_list = entity.get_editable_entities_by_type(driver, token, specimen_type)
         else:
             specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, specimen_type)
 
