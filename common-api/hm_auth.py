@@ -111,23 +111,23 @@ class AuthHelper:
     def getAuthorizationTokens(self, requestHeaders):
         hasMauth=False
         hasAuth=False
-        if 'MAuthorization' in requestHeaders: hasMauth=True
+        if 'Mauthorization' in requestHeaders: hasMauth=True
         if 'Authorization' in requestHeaders: hasAuth=True
         
         if hasMauth:
-            mauthHeader = requestHeaders['MAuthorization']
+            mauthHeader = requestHeaders['Mauthorization']
             if string_helper.isBlank(mauthHeader):
-                return Response("Empty MAuthorization header", 401)
+                return Response("Empty Mauthorization header", 401)
             mauthHeader = mauthHeader.strip()
-            if len(mauthHeader) <= 8:
-                return Response("Invalid MAuthorization header", 401)
-            if not mauthHeader.upper().startswith("MBEARER"):
-                return Response("MBearer authorization required in MAuthorization header", 401)
-            jsonTokens = mauthHeader[7:].strip()
+            """if len(mauthHeader) <= 8:
+                return Response("Invalid Mauthorization header", 401)"""
+            jsonTokens = mauthHeader
+            if mauthHeader.upper().startswith("MBEARER"):
+                jsonTokens = mauthHeader[7:].strip()
             try:
                 tokens = json.loads(jsonTokens)
             except Exception as e:
-                return Response("Error decoding json included in MAuthorization header", 401)    
+                return Response("Error decoding json included in Mauthorization header", 401)    
             return tokens
         
         elif hasAuth:

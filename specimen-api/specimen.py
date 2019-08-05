@@ -37,7 +37,7 @@ class Specimen:
             raise be
 
     @staticmethod
-    def update_specimen(driver, uuid, request, incoming_record, file_list, current_token):
+    def update_specimen(driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
         conn = Neo4jConnection()
         metadata_uuid = None
         try:
@@ -63,10 +63,7 @@ class Specimen:
         provenance_group = None
         metadata = Metadata()
         try:
-            for groupid in user_group_ids:
-                group = metadata.get_group_by_identifier(groupid)
-                if group['generateuuid'] == True:
-                    provenance_group = group
+            provenance_group = metadata.get_group_by_identifier(groupUUID)
         except ValueError as ve:
             raise ve
 
@@ -210,7 +207,7 @@ class Specimen:
 
         
     @staticmethod
-    def create_specimen(driver, request, incoming_record, file_list, current_token, sourceUUID=None):
+    def create_specimen(driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None):
         # step 1: check that the uuids already exist
         conn = Neo4jConnection()
         confdata = Specimen.load_config_file()
@@ -226,10 +223,7 @@ class Specimen:
         provenance_group = None
         metadata = Metadata()
         try:
-            for groupid in user_group_ids:
-                group = metadata.get_group_by_identifier(groupid)
-                if group['generateuuid'] == True:
-                    provenance_group = group
+            provenance_group = metadata.get_group_by_identifier(groupUUID)
         except ValueError as ve:
             raise ve
         metadata_userinfo = {}

@@ -138,6 +138,26 @@ def create_specimen():
         if 'data' not in request.form:
             return Response('form data is invalid', 401)
         form_data = json.loads(request.form['data'])
+        
+        # determine the group UUID to use when creating the specimen
+        group_uuid = None
+        if 'user_group_uuid' in form_data:
+            if is_user_in_group(token, form_data['user_group_uuid']):
+                group_uuid = form_data['user_group_uuid']
+            else:
+                return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
+        else:
+            #manually find the group id given the current user:
+            entity = Entity()
+            group_list = entity.get_user_groups(token)
+            for grp in group_list:
+                if grp['generateuuid'] == True:
+                    group_uuid = grp['uuid']
+                    break
+
+            if group_uuid == None:
+                return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
+            
         if 'source_uuid' in form_data:
             sourceuuid = form_data['source_uuid']
             r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + sourceuuid, headers={'Authorization': 'Bearer ' + token })
@@ -146,7 +166,7 @@ def create_specimen():
             sourceuuid = json.loads(r.text)[0]['hmuuid']
 
         new_uuid_record = specimen.create_specimen(
-            driver, request, form_data, request.files, token, sourceuuid)
+            driver, request, form_data, request.files, token, group_uuid, sourceuuid)
         conn.close()
         return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
@@ -160,6 +180,14 @@ def create_specimen():
         abort(400, msg)
     finally:
         conn.close()
+
+def is_user_in_group(token, group_uuid):
+    entity = Entity()
+    group_list = entity.get_user_groups(token)
+    for grp in group_list:
+        if grp['uuid'] == group_uuid:
+            return True
+    return False
 
 @app.route('/specimens/<identifier>', methods=['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
@@ -193,9 +221,28 @@ def update_specimen(identifier):
         conn = Neo4jConnection()
         driver = conn.get_driver()
         specimen = Specimen()
+        form_data = request.form['data']
+        # determine the group UUID to use when creating the specimen
+        group_uuid = None
+        if 'user_group_uuid' in form_data:
+            if is_user_in_group(token, form_data['user_group_uuid']):
+                group_uuid = form_data['user_group_uuid']
+            else:
+                return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
+        else:
+            #manually find the group id given the current user:
+            entity = Entity()
+            group_list = entity.get_user_groups(token)
+            for grp in group_list:
+                if grp['generateuuid'] == True:
+                    group_uuid = grp['uuid']
+                    break
+
+            if group_uuid == None:
+                return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
         sourceuuid = None
         new_uuid_record = specimen.update_specimen(
-            driver, uuid, request, json.loads(request.form['data']), request.files, token)
+            driver, uuid, request, json.loads(form_data), request.files, token, group_uuid)
         conn.close()
         return jsonify({'uuid': uuid}), 200 
 
