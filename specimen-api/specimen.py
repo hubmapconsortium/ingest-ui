@@ -207,7 +207,7 @@ class Specimen:
 
         
     @staticmethod
-    def create_specimen(driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None):
+    def create_specimen(driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None, sample_count=None):
         # step 1: check that the uuids already exist
         conn = Neo4jConnection()
         confdata = Specimen.load_config_file()
@@ -255,46 +255,49 @@ class Specimen:
             tx = None
             try:
                 tx = session.begin_transaction()
-                try:
-                    specimen_uuid_record = getNewUUID(
-                        current_token, incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE])
-                except requests.exceptions.ConnectionError as ce:
-                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
-                if specimen_uuid_record == None:
-                    raise ValueError("Error: UUID returned is empty")
-                incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record[HubmapConst.DOI_ATTRIBUTE]
-                incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record['displayDoi']
-                specimen_data = {}
-                metadata_file_path = None
-                protocol_file_path = None
-                image_file_data_list = None
-                if len(file_list) > 0:
-                    # append the current UUID to the data_directory to avoid filename collisions.
-                    data_directory = get_data_directory(data_directory, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], True)
-                    if 'metadata_file' in file_list:
-                        metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
-                        incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
-                    if 'protocol_file' in file_list:
-                        protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
-                        incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
-                    if 'images' in incoming_record:
-                        image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
-                        incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
-                    if 'protocols' in incoming_record:
-                        protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory)
-                        incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
-                         
-                required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
-                if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
-                    required_list = HubmapConst.SAMPLE_REQUIRED_ATTRIBUTE_LIST
-                required_list = [o['attribute_name'] for o in required_list]
-                for attrib in required_list:
-                    specimen_data[attrib] = incoming_record.pop(attrib)
-                stmt = Neo4jConnection.get_create_statement(
-                    specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
-                print('Specimen Create statement: ' + stmt)
-                tx.run(stmt)
+                cnt = 0
+                while cnt <= sample_count:
+                    try:
+                        specimen_uuid_record = getNewUUID(
+                            current_token, incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE])
+                    except requests.exceptions.ConnectionError as ce:
+                        raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+                    if specimen_uuid_record == None:
+                        raise ValueError("Error: UUID returned is empty")
+                    incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+                    incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record[HubmapConst.DOI_ATTRIBUTE]
+                    incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record['displayDoi']
+                    specimen_data = {}
+                    metadata_file_path = None
+                    protocol_file_path = None
+                    image_file_data_list = None
+                    if len(file_list) > 0:
+                        # append the current UUID to the data_directory to avoid filename collisions.
+                        data_directory = get_data_directory(data_directory, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], True)
+                        if 'metadata_file' in file_list:
+                            metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
+                            incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+                        if 'protocol_file' in file_list:
+                            protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
+                            incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
+                        if 'images' in incoming_record:
+                            image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
+                            incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+                        if 'protocols' in incoming_record:
+                            protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory)
+                            incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
+                             
+                    required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
+                    if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
+                        required_list = HubmapConst.SAMPLE_REQUIRED_ATTRIBUTE_LIST
+                    required_list = [o['attribute_name'] for o in required_list]
+                    for attrib in required_list:
+                        specimen_data[attrib] = incoming_record.pop(attrib)
+                    stmt = Neo4jConnection.get_create_statement(
+                        specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
+                    print('Specimen Create statement: ' + stmt)
+                    tx.run(stmt)
+                    cnt += 1
 
                 metadata_record = incoming_record
                 metadata_uuid_record = getNewUUID(

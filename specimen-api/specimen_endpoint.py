@@ -157,16 +157,20 @@ def create_specimen():
 
             if group_uuid == None:
                 return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
-            
+        # default to one new specimen
+        sample_count = 1    
         if 'source_uuid' in form_data:
             sourceuuid = form_data['source_uuid']
             r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + sourceuuid, headers={'Authorization': 'Bearer ' + token })
             if r.ok == False:
                 raise ValueError("Cannot find specimen with identifier: " + sourceuuid)
             sourceuuid = json.loads(r.text)[0]['hmuuid']
+            
+            if 'sample_count' in form_data:
+                sample_count = form_data['sample_count']
 
         new_uuid_record = specimen.create_specimen(
-            driver, request, form_data, request.files, token, group_uuid, sourceuuid)
+            driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
         conn.close()
         return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
