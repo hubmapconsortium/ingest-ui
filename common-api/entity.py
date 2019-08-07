@@ -9,7 +9,6 @@ import sys
 from hubmap_const import HubmapConst 
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
-from builtins import staticmethod
 import configparser
 from hm_auth import AuthCache, AuthHelper
 import pprint
@@ -255,7 +254,8 @@ class Entity(object):
     def get_editable_entities_by_type(self, driver, token, type_code=None): 
         with driver.session() as session:
             return_list = []
-
+            current_group_uuid = None
+            
             try:
                 #if type_code != None:
                 #    general_type = HubmapConst.get_general_node_type_attribute(type_code)            
@@ -264,6 +264,11 @@ class Entity(object):
                     group_record = self.get_group_by_identifier(g['name'])
                     if group_record['generateuuid'] == True:
                         current_group_uuid = g['uuid']
+                
+                # for now, if the user is not a member of a group with write privileges, return an empty list
+                if current_group_uuid == None:
+                    return return_list
+                       
                 matching_stmt = ""
                 if type_code != None:
                     if str(type_code).lower() == 'donor':
