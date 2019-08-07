@@ -272,6 +272,8 @@ class Entity(object):
                 matching_stmt = ""
                 if type_code != None:
                     if str(type_code).lower() == 'donor':
+                        # ensure proper case
+                        type_code = 'Donor'
                         type_attrib = HubmapConst.ENTITY_TYPE_ATTRIBUTE
                         matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
                             type_attrib=type_attrib, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
