@@ -258,28 +258,27 @@ class Entity(object):
 
             try:
                 #if type_code != None:
-                #    general_type = HubmapConst.get_general_node_type_attribute(type_code)            
+                #    general_type = HubmapConst.get_general_node_type_attribute(type_code)
+                group_list = []            
                 hmgroups = self.get_user_groups(token)
                 for g in hmgroups:
                     group_record = self.get_group_by_identifier(g['name'])
-                    if group_record['generateuuid'] == True:
-                        current_group_uuid = g['uuid']
+                    group_list.append(group_record['uuid'])
                 matching_stmt = ""
                 if type_code != None:
                     if str(type_code).lower() == 'donor':
                         type_attrib = HubmapConst.ENTITY_TYPE_ATTRIBUTE
-                        matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
-                            type_attrib=type_attrib, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
+                        matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m)".format(
+                            type_attrib=type_attrib, type_code=type_code, 
                             rel_code=HubmapConst.HAS_METADATA_REL)
                     else:
                         type_attrib = HubmapConst.SPECIMEN_TYPE_ATTRIBUTE                        
-                        matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{ {group_attrib}: '{group_uuid}', {type_attrib}: '{type_code}' }})".format(
-                            type_attrib=type_attrib, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
-                            rel_code=HubmapConst.HAS_METADATA_REL)
+                        matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{ {type_attrib}: '{type_code}' }})".format(
+                            type_attrib=type_attrib, type_code=type_code, rel_code=HubmapConst.HAS_METADATA_REL)
                         
                 else:
-                    matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
-                        group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid, rel_code=HubmapConst.HAS_METADATA_REL)
+                    matching_stmt = "MATCH (a)-[:{rel_code}]->(m)".format(
+                        rel_code=HubmapConst.HAS_METADATA_REL)
                     
                 stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
                     uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
