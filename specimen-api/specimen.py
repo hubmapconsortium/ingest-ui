@@ -619,9 +619,9 @@ class Specimen:
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
-        if specimen_type != 'Donor' and specimen_type != None:
+        if str(specimen_type).lower() != 'donor' and specimen_type != None:
             entity_type_clause = "entity_node.entitytype = 'Sample' AND lucene_node.specimen_type = '{specimen_type}'".format(specimen_type=specimen_type)
-        elif specimen_type == 'Donor':
+        elif str(specimen_type).lower() == 'donor':
             entity_type_clause = "entity_node.entitytype = 'Donor'"
         lucene_type_clause = entity_type_clause.replace('entity_node.entitytype', 'lucene_node.entitytype')
         lucene_type_clause = lucene_type_clause.replace('lucene_node.specimen_type', 'metadata_node.specimen_type')
