@@ -9,7 +9,6 @@ import sys
 from hubmap_const import HubmapConst 
 from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
-from builtins import staticmethod
 import configparser
 from hm_auth import AuthCache, AuthHelper
 import pprint

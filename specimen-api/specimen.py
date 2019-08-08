@@ -622,9 +622,9 @@ class Specimen:
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
-        if specimen_type != 'Donor' and specimen_type != None:
+        if str(specimen_type).lower() != 'donor' and specimen_type != None:
             entity_type_clause = "entity_node.entitytype = 'Sample' AND lucene_node.specimen_type = '{specimen_type}'".format(specimen_type=specimen_type)
-        elif specimen_type == 'Donor':
+        elif str(specimen_type).lower() == 'donor':
             entity_type_clause = "entity_node.entitytype = 'Donor'"
         lucene_type_clause = entity_type_clause.replace('entity_node.entitytype', 'lucene_node.entitytype')
         lucene_type_clause = lucene_type_clause.replace('lucene_node.specimen_type', 'metadata_node.specimen_type')
@@ -639,54 +639,71 @@ class Specimen:
         for special_char in lucene_special_characters:
             search_term = search_term.replace(special_char, '\\\\'+ special_char)
             
-        stmt = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-        OPTIONAL MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND lucene_node.provenance_group_uuid IN {group_list} 
-        WITH score, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
-        OPTIONAL MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} 
-        WITH score, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
-        RETURN score, entity_uuid, datatype, entity_doi, entity_display_doi, metadata_properties 
+        stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
+        MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND lucene_node.provenance_group_uuid IN {group_list} 
+        RETURN score, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
         ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
             uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
             display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
-        print("Search query: " + stmt)
-        with driver.session() as session:
-            return_list = []
-            uuid_list = []
+        stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
+        MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} 
+        RETURN score, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
+        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
+            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
+            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
-            # NOTE: I need code to remove duplicates
-            try:
-                for record in session.run(stmt):
-                    # skip any records with empty display_doi
-                    if record['entity_display_doi'] != None:
-                        if str(record['entity_display_doi']) not in uuid_list:
-                            data_record = {}
-                            data_record['uuid'] = record['entity_uuid']
-                            data_record['entity_display_doi'] = record['entity_display_doi']
-                            data_record['entity_doi'] = record['entity_doi']
-                            data_record['datatype'] = record['datatype']
-                            data_record['properties'] = record['metadata_properties']
-                            # determine if the record is writable by the current user
-                            data_record['writeable'] = False
-                            if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
-                                data_record['writeable'] = True
-                            uuid_list.append(str(data_record['entity_display_doi']))
-                            if original_search_term != None:
-                                if str(data_record['entity_display_doi']).find(original_search_term) > -1:
-                                    return_list.insert(0,data_record)                            
+        stmt_list = [stmt1, stmt2]
+        return_list = []
+        display_doi_list = []
+        for stmt in stmt_list:
+            print("Search query: " + stmt)
+            with driver.session() as session:
+    
+                try:
+                    for record in session.run(stmt):
+                        # skip any records with empty display_doi
+                        if record['entity_display_doi'] != None:
+                            # insert any new records
+                            if str(record['entity_display_doi']) not in display_doi_list:
+                                data_record = {}
+                                data_record['uuid'] = record['entity_uuid']
+                                data_record['score'] = record['score']
+                                data_record['entity_display_doi'] = record['entity_display_doi']
+                                data_record['entity_doi'] = record['entity_doi']
+                                data_record['datatype'] = record['datatype']
+                                data_record['properties'] = record['metadata_properties']
+                                # determine if the record is writable by the current user
+                                data_record['writeable'] = False
+                                if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
+                                    data_record['writeable'] = True
+                                display_doi_list.append(str(data_record['entity_display_doi']))
+                                if original_search_term != None:
+                                    if str(data_record['entity_display_doi']).find(original_search_term.string) > -1:
+                                        return_list.insert(0,data_record)                            
+                                    else:
+                                        return_list.append(data_record)
                                 else:
                                     return_list.append(data_record)
+                            # find any existing records and update their score (if necessary)
                             else:
-                                return_list.append(data_record)
-                return return_list                    
-            except CypherError as cse:
-                print ('A Cypher error was encountered: '+ cse.message)
-                raise
-            except:
-                print ('A general error occurred: ')
-                for x in sys.exc_info():
-                    print (x)
-                raise
+                                for ret_record in return_list:
+                                    if record['entity_display_doi'] == ret_record['entity_display_doi']:
+                                        # update the score if it is higher
+                                        if record['score'] > ret_record['score']:
+                                            ret_record['score'] = record['score']
+                        
+                except CypherError as cse:
+                    print ('A Cypher error was encountered: '+ cse.message)
+                    raise
+                except:
+                    print ('A general error occurred: ')
+                    for x in sys.exc_info():
+                        print (x)
+                    raise
+        # before returning the list, sort it again if new items were added
+        return_list.sort(key=lambda x: x['score'], reverse=True)
+        return return_list                    
 
 
 def create_site_directories(parent_folder):
