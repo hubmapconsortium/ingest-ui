@@ -145,7 +145,11 @@ def create_specimen():
             if is_user_in_group(token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
                 entity = Entity()
-                grp_info = entity.get_group_by_identifier(group_uuid)
+                grp_info = None
+                try:
+                    grp_info = entity.get_group_by_identifier(group_uuid)
+                except ValueError as ve:
+                    return Response('Unauthorized: Cannot find information on group: ' + str(group_uuid), 401)
                 if grp_info['generateuuid'] == False:
                     return Response('Unauthorized: This group {grp_info} is not a group with write privileges.'.format(grp_info=grp_info), 401)
             else:
@@ -173,6 +177,8 @@ def create_specimen():
             if 'sample_count' in form_data:
                 sample_count = form_data['sample_count']
 
+        # just for testing
+        sample_count = 3
         new_uuid_record = specimen.create_specimen(
             driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
         conn.close()
