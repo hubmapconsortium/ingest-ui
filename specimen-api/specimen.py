@@ -256,7 +256,7 @@ class Specimen:
             try:
                 tx = session.begin_transaction()
                 cnt = 0
-                while cnt <= sample_count:
+                while cnt < sample_count:
                     try:
                         specimen_uuid_record = getNewUUID(
                             current_token, incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE])
@@ -616,9 +616,6 @@ class Specimen:
     @staticmethod
     def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, specimen_type=None):
         return_list = []
-        group_list = []
-        group_list.extend(readonly_uuid_list)
-        group_list.extend(writeable_uuid_list)
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
@@ -630,7 +627,7 @@ class Specimen:
         lucene_type_clause = lucene_type_clause.replace('lucene_node.specimen_type', 'metadata_node.specimen_type')
         
         original_search_term = None
-        pattern = re.compile('\d\d\d-\D\D\D\D-\d\d\d')
+        pattern = re.compile('(HBM\:)?\d\d\d-\D\D\D\D-\d\d\d')
         result = pattern.match(search_term)
         if result != None:
             original_search_term = result 
@@ -640,16 +637,16 @@ class Specimen:
             search_term = search_term.replace(special_char, '\\\\'+ special_char)
             
         stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-        MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} AND lucene_node.provenance_group_uuid IN {group_list} 
+        MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause}  
         RETURN score, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
-        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
+        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
             uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
             display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
         stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-        MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} AND metadata_node.provenance_group_uuid IN {group_list} 
+        MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause}  
         RETURN score, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
-        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,group_list=group_list,lucence_index_name=lucence_index_name,search_term=search_term,
+        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
             uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
             display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
@@ -678,13 +675,7 @@ class Specimen:
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
                                     data_record['writeable'] = True
                                 display_doi_list.append(str(data_record['entity_display_doi']))
-                                if original_search_term != None:
-                                    if str(data_record['entity_display_doi']).find(original_search_term.string) > -1:
-                                        return_list.insert(0,data_record)                            
-                                    else:
-                                        return_list.append(data_record)
-                                else:
-                                    return_list.append(data_record)
+                                return_list.append(data_record)
                             # find any existing records and update their score (if necessary)
                             else:
                                 for ret_record in return_list:
@@ -703,6 +694,15 @@ class Specimen:
                     raise
         # before returning the list, sort it again if new items were added
         return_list.sort(key=lambda x: x['score'], reverse=True)
+        # promote any items where the entity_display_doi is an exact match to the search term (ex: HBM:234-TRET-596)
+        # to the top of the list (regardless of score)
+        if original_search_term != None:
+            for ret_record in return_list:
+                if str(ret_record['entity_display_doi']).find(original_search_term.string) > -1:
+                    return_list.remove(ret_record)
+                    return_list.insert(0,ret_record)     
+                    break                       
+
         return return_list                    
 
 

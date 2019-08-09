@@ -144,6 +144,10 @@ def create_specimen():
         if 'user_group_uuid' in form_data:
             if is_user_in_group(token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
+                entity = Entity()
+                grp_info = entity.get_group_by_identifier(group_uuid)
+                if grp_info['generateuuid'] == False:
+                    return Response('Unauthorized: This group {grp_info} is not a group with write privileges.'.format(grp_info=grp_info), 401)
             else:
                 return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
         else:
