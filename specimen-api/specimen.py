@@ -12,8 +12,7 @@ from pprint import pprint
 import json
 from werkzeug.utils import secure_filename
 from flask import json
-from builtins import staticmethod
-from _ast import stmt
+import traceback
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
@@ -174,8 +173,7 @@ class Specimen:
                     tx.rollback()
             except:
                 print('A general error occurred: ')
-                for x in sys.exc_info():
-                    print(x)
+                traceback.print_exc()
                 if tx.closed() == False:
                     tx.rollback()
     
@@ -221,6 +219,9 @@ class Specimen:
         
         user_group_ids = userinfo['hmgroupids']
         provenance_group = None
+        data_directory = None
+        specimen_uuid_record = None
+        specimen_uuid_list = []
         metadata = Metadata()
         try:
             provenance_group = metadata.get_group_by_identifier(groupUUID)
@@ -259,7 +260,7 @@ class Specimen:
                 while cnt < sample_count:
                     try:
                         specimen_uuid_record = getNewUUID(
-                            current_token, incoming_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE])
+                            current_token, entity_type)
                     except requests.exceptions.ConnectionError as ce:
                         raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
                     if specimen_uuid_record == None:
@@ -267,76 +268,28 @@ class Specimen:
                     incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                     incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record[HubmapConst.DOI_ATTRIBUTE]
                     incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record['displayDoi']
+                    specimen_uuid_list.append(specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                     specimen_data = {}
-                    metadata_file_path = None
-                    protocol_file_path = None
-                    image_file_data_list = None
-                    if len(file_list) > 0:
-                        # append the current UUID to the data_directory to avoid filename collisions.
-                        data_directory = get_data_directory(data_directory, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], True)
-                        if 'metadata_file' in file_list:
-                            metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
-                            incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
-                        if 'protocol_file' in file_list:
-                            protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
-                            incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
-                        if 'images' in incoming_record:
-                            image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory)
-                            incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
-                        if 'protocols' in incoming_record:
-                            protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory)
-                            incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
-                             
                     required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
                     if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
                         required_list = HubmapConst.SAMPLE_REQUIRED_ATTRIBUTE_LIST
                     required_list = [o['attribute_name'] for o in required_list]
                     for attrib in required_list:
-                        specimen_data[attrib] = incoming_record.pop(attrib)
+                        specimen_data[attrib] = incoming_record[attrib]
                     stmt = Neo4jConnection.get_create_statement(
                         specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
                     print('Specimen Create statement: ' + stmt)
                     tx.run(stmt)
                     cnt += 1
 
+                # remove the attributes related to the Entity node
+                for attrib in required_list:
+                    specimen_data[attrib] = incoming_record.pop(attrib)
                 metadata_record = incoming_record
-                metadata_uuid_record = getNewUUID(
-                    current_token, HubmapConst.METADATA_TYPE_CODE)
+                metadata_uuid_record = getNewUUID(current_token, HubmapConst.METADATA_TYPE_CODE)
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                #metadata_record[HubmapConst.DOI_ATTRIBUTE] = metadata_uuid_record[HubmapConst.DOI_ATTRIBUTE]
-                #metadata_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = metadata_uuid_record['displayDoi']
-                metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
-                metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
-                metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
-                metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
-                metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
-                metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
 
-                if 'metadata' in metadata_record.keys():
-                    # check if metadata contains valid data
-                    # if not, just remove it from the metadata_record
-                    if metadata_record['metadata'] == None or len(metadata_record['metadata']) == 0:
-                        metadata_record.pop('metadata')
-                    else:
-                        try:
-                            #try to load the data as json
-                            json.loads(metadata_record['metadata'])
-                            metadata_record['metadata'] = json.dumps(
-                                metadata_record['metadata'])
-                        except ValueError:
-                            # that failed, so load it as a string
-                            metadata_record['metadata'] = metadata_record['metadata']
-                if 'files' in metadata_record.keys():
-                    metadata_record.pop('files')
-                if 'images' in metadata_record.keys():
-                    metadata_record.pop('images')
-                #if 'protocols' in metadata_record.keys():
-                #    metadata_record.pop('protocols')
-                stmt = Neo4jConnection.get_create_statement(
-                    metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
-                print('MEtadata Create statement: ' + stmt)
-
+                stmt = Specimen.get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record, metadata_userinfo, provenance_group, file_list, data_directory, request)
                 tx.run(stmt)
 
                 activity_uuid_record = getNewUUID(current_token, activity_type)
@@ -370,14 +323,16 @@ class Specimen:
                         sourceUUID, HubmapConst.ACTIVITY_INPUT_REL, activity_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                     tx.run(stmt)
                 stmt = Neo4jConnection.create_relationship_statement(
-                    specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
-                tx.run(stmt)
-                stmt = Neo4jConnection.create_relationship_statement(
-                    activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.ACTIVITY_OUTPUT_REL, specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE])
-                tx.run(stmt)
-                stmt = Neo4jConnection.create_relationship_statement(
                     activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, activity_metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                 tx.run(stmt)
+                for uuid_record in specimen_uuid_list:
+                    stmt = Neo4jConnection.create_relationship_statement(
+                        uuid_record, HubmapConst.HAS_METADATA_REL, metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
+                    tx.run(stmt)
+                    stmt = Neo4jConnection.create_relationship_statement(
+                        activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.ACTIVITY_OUTPUT_REL, uuid_record)
+                    tx.run(stmt)
+
                 """stmt = Neo4jConnection.create_relationship_statement(specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.LAB_CREATED_AT_REL, labUUID)
                 tx.run(stmt)"""
                 tx.commit()
@@ -402,10 +357,67 @@ class Specimen:
                     tx.rollback()
             except:
                 print('A general error occurred: ')
-                for x in sys.exc_info():
-                    print(x)
+                traceback.print_exc()
                 if tx.closed() == False:
                     tx.rollback()
+
+    @staticmethod
+    def get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record, metadata_userinfo, provenance_group, file_list, data_directory, request):
+        metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
+        metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+        metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
+        metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
+        metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+        metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
+        metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
+
+        metadata_file_path = None
+        protocol_file_path = None
+        image_file_data_list = None
+        if len(file_list) > 0:
+            # append the current metadata UUID to the data_directory to avoid filename collisions.
+            # this method will also only create one copy of the file if the file is shared across several
+            # samples
+            data_directory = get_data_directory(data_directory, metadata_record[HubmapConst.UUID_ATTRIBUTE], True)
+            if 'metadata_file' in file_list:
+                metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
+                metadata_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+            if 'protocol_file' in file_list:
+                protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
+                metadata_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
+            if 'images' in metadata_record:
+                image_file_data_list = Specimen.upload_multiple_file_data(request, metadata_record['images'], file_list, data_directory)
+                metadata_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
+            if 'protocols' in metadata_record:
+                protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, metadata_record['protocols'], file_list, data_directory)
+                metadata_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
+                     
+
+
+        if 'metadata' in metadata_record.keys():
+            # check if metadata contains valid data
+            # if not, just remove it from the metadata_record
+            if metadata_record['metadata'] == None or len(metadata_record['metadata']) == 0:
+                metadata_record.pop('metadata')
+            else:
+                try:
+                    #try to load the data as json
+                    json.loads(metadata_record['metadata'])
+                    metadata_record['metadata'] = json.dumps(
+                        metadata_record['metadata'])
+                except ValueError:
+                    # that failed, so load it as a string
+                    metadata_record['metadata'] = metadata_record['metadata']
+        if 'files' in metadata_record.keys():
+            metadata_record.pop('files')
+        if 'images' in metadata_record.keys():
+            metadata_record.pop('images')
+        #if 'protocols' in metadata_record.keys():
+        #    metadata_record.pop('protocols')
+        stmt = Neo4jConnection.get_create_statement(
+            metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
+        print('MEtadata Create statement: ' + stmt)
+        return stmt
 
     @staticmethod 
     def get_image_file_list_for_uuid(uuid):
@@ -428,8 +440,7 @@ class Specimen:
             raise cse
         except:
             print('A general error occurred: ')
-            for x in sys.exc_info():
-                print(x)
+            traceback.print_exc()
     
     @staticmethod
     def upload_multiple_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
@@ -608,8 +619,7 @@ class Specimen:
             print(msg + "  Program stopped.")
             exit(0)
         except:
-            msg = "Unexpected error:", sys.exc_info()[0]
-            print(msg + "  Program stopped.")
+            traceback.print_exc()
             exit(0)
 
 
@@ -689,8 +699,7 @@ class Specimen:
                     raise
                 except:
                     print ('A general error occurred: ')
-                    for x in sys.exc_info():
-                        print (x)
+                    traceback.print_exc()
                     raise
         # before returning the list, sort it again if new items were added
         return_list.sort(key=lambda x: x['score'], reverse=True)

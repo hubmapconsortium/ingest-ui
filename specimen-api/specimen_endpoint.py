@@ -175,10 +175,10 @@ def create_specimen():
             sourceuuid = json.loads(r.text)[0]['hmuuid']
             
             if 'sample_count' in form_data:
-                sample_count = form_data['sample_count']
+                sample_count = int(form_data['sample_count'])
 
         # just for testing
-        sample_count = 3
+        #sample_count = 3
         new_uuid_record = specimen.create_specimen(
             driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
         conn.close()
