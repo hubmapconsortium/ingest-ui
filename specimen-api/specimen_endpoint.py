@@ -175,14 +175,17 @@ def create_specimen():
             sourceuuid = json.loads(r.text)[0]['hmuuid']
             
             if 'sample_count' in form_data:
-                sample_count = int(form_data['sample_count'])
+                if len(str(form_data['sample_count'])) > 0:
+                    sample_count = int(form_data['sample_count'])
 
-        # just for testing
-        #sample_count = 3
+        #new_uuid_records = specimen.create_specimen(
+        #    driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
         new_uuid_record = specimen.create_specimen(
             driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
         conn.close()
         return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
+
+        #return jsonify({'uuid_list': new_uuid_records}), 201 
 
     except AuthError as e:
         print(e)
@@ -193,7 +196,9 @@ def create_specimen():
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 def is_user_in_group(token, group_uuid):
     entity = Entity()
@@ -269,7 +274,9 @@ def update_specimen(identifier):
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/specimens/exists/<uuid>', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
@@ -326,7 +333,9 @@ def get_specimen(identifier):
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/specimens/search/', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
@@ -382,7 +391,9 @@ def search_specimen():
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 
 if __name__ == '__main__':

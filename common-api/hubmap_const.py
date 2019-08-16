@@ -24,6 +24,7 @@ class HubmapConst(object):
     TYPE_ATTRIBUTE = 'type'
     DESCRIPTION_ATTRIBUTE = 'description'
     NAME_ATTRIBUTE = 'label'
+    DISPLAY_NAME_ATTRIBUTE = 'displayname'
     DATASET_STATUS_ATTRIBUTE = 'status'
     DATASET_STATUS_OPTIONS = ['New','Invalid','Valid','Published','Reopened','Locked','Unpublished']
     FILE_PATH_ATTRIBUTE = 'filepath'
@@ -54,6 +55,24 @@ class HubmapConst(object):
     #PROTOCOL_FILE_METADATA_ATTRIBUTE = 'protocol_file_metadata'
     METADATA_FILE_ATTRIBUTE = 'metadata_file'
     SPECIMEN_TYPE_ATTRIBUTE = 'specimen_type'
+    LAB_IDENTIFIER_ATTRIBUTE = 'lab_identifier'
+    NEXT_IDENTIFIER_ATTRIBUTE = 'next_identifier'
+    
+    #Organ Specifiers
+    BLADDER_ORGAN_SPECIFIER = 'BL'
+    RIGHT_KIDNEY_ORGAN_SPECIFIER = 'RK'
+    LEFT_KIDNEY_ORGAN_SPECIFIER = 'LK'
+    HEART_ORGAN_SPECIFIER = 'HT'
+    LARGE_INTESTINE_ORGAN_SPECIFIER = 'LI'
+    SMALL_INTESTINE_ORGAN_SPECIFIER = 'SI'
+    LEFT_LUNG_ORGAN_SPECIFIER = 'LL'
+    RIGHT_LUNG_ORGAN_SPECIFIER = 'RL'
+    LYMPH_NODE_ORGAN_SPECIFIER = 'LY'
+    SPLEEN_ORGAN_SPECIFIER = 'SP'
+    THYMUS_ORGAN_SPECIFIER = 'TH'
+    URETER_ORGAN_SPECIFIER = 'UR'
+    LIVER_ORGAN_SPECIFIER = 'LV'
+    OTHER_ORGAN_SPECIFIER = 'OT'
     
 
     DATASET_TYPE_CODE = 'Dataset'
@@ -66,6 +85,7 @@ class HubmapConst(object):
     ORGAN_TYPE_CODE = 'Organ Sample'
     SAMPLE_TYPE_CODE = 'Sample'
     PERSON_TYPE_CODE = 'Person'
+    LAB_TYPE_CODE = 'Lab'
     METADATA_TYPE_CODE = 'Metadata'
     DATA_ACTIVITY_TYPE_CODE = 'Data Activity'
     ADD_FILE_ACTIVITY_TYPE_CODE = 'Add File Activity'
@@ -112,11 +132,15 @@ class HubmapConst(object):
     DONOR_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : LAB_IDENTIFIER_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : NEXT_IDENTIFIER_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
     SAMPLE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : LAB_IDENTIFIER_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : NEXT_IDENTIFIER_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
 
 
     # Use this method to resolve a specific node type (ex: Donor, Tissue Sample, Create Dataset) to its more general

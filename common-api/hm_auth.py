@@ -214,6 +214,8 @@ class AuthCache:
                         if 'name' in group and 'uuid' in group and 'generateuuid' in group and 'displayname' in group and not string_helper.isBlank(group['name']) and not string_helper.isBlank(group['uuid']) and not string_helper.isBlank(group['displayname']):
                             group_obj = {'name' : group['name'].lower().strip(), 'uuid' : group['uuid'].lower().strip(),
                                          'displayname' : group['displayname'], 'generateuuid': group['generateuuid']}
+                            if 'tmc_prefix' in group:
+                                group_obj['tmc_prefix'] = group['tmc_prefix']
                             groupIdByName[group['name'].lower().strip()] = group_obj
             return groupIdByName
 

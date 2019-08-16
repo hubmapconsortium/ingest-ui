@@ -107,7 +107,7 @@ class Neo4jConnection(object):
             #create_record.get(HubmapConst.UUID_ATTRIBUTE)
             attr_string = ""
             for key in create_record.keys():
-                if create_record.get(key) == None or len(create_record.get(key)) == 0:
+                if create_record.get(key) == None or len(str(create_record.get(key))) == 0:
                     #skip empty fields
                     continue
                 # escape single quotes

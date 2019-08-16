@@ -304,8 +304,9 @@ class Entity(object):
                     data_record['properties'] = record['metadata_properties']
                     # determine if the record is writable by the current user
                     data_record['writeable'] = False
-                    if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
-                        data_record['writeable'] = True
+                    if 'provenance_group_uuid' in record['metadata_properties']:
+                        if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
+                            data_record['writeable'] = True
                     return_list.append(data_record)
                 return return_list                    
             except CypherError as cse:

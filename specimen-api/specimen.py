@@ -206,6 +206,7 @@ class Specimen:
         
     @staticmethod
     def create_specimen(driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None, sample_count=None):
+        return_list = []
         # step 1: check that the uuids already exist
         conn = Neo4jConnection()
         confdata = Specimen.load_config_file()
@@ -252,10 +253,37 @@ class Specimen:
         if len(file_list) > 0:
             data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
 
+
+        # TEMPORARY FOR TESTING
+        #incoming_record['specimen_type'] = 'Organ'
+        #incoming_record['organ_specifier'] = 'RK'
+        
         with driver.session() as session:
             tx = None
             try:
                 tx = session.begin_transaction()
+                is_new_donor = False
+                organ_specifier = None
+                if incoming_record['entitytype'] == 'Donor':
+                    is_new_donor = True
+                    # for a donor, set the parentUUID to the Lab UUID (which is the same as the group)
+                    sourceUUID = groupUUID
+                elif incoming_record['specimen_type'] == 'organ':
+                    if 'organ' in incoming_record:
+                        organ_specifier = incoming_record['organ']
+                    else:
+                        raise ValueError("Error: The data indicates an organ sample, but no organ specified.")
+                new_lab_id_data = Specimen.generate_lab_identifiers(driver, sourceUUID, sample_count, organ_specifier, is_new_donor)
+                
+                lab_id_list = new_lab_id_data['new_id_list']
+                
+                stmt = new_lab_id_data['update_statement']
+                
+                # make the necessary updates
+                tx.run(stmt)
+
+                
+                # loop through data to create the samples
                 cnt = 0
                 while cnt < sample_count:
                     try:
@@ -268,6 +296,11 @@ class Specimen:
                     incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                     incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record[HubmapConst.DOI_ATTRIBUTE]
                     incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record['displayDoi']
+                    
+                    #Assign the generate lab id code here
+                    incoming_record[HubmapConst.LAB_IDENTIFIER_ATTRIBUTE] = lab_id_list[cnt]
+                    incoming_record[HubmapConst.NEXT_IDENTIFIER_ATTRIBUTE] = 1
+                    
                     specimen_uuid_list.append(specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                     specimen_data = {}
                     required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
@@ -280,11 +313,14 @@ class Specimen:
                         specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
                     print('Specimen Create statement: ' + stmt)
                     tx.run(stmt)
+                    return_list.append(specimen_data)
                     cnt += 1
 
                 # remove the attributes related to the Entity node
                 for attrib in required_list:
                     specimen_data[attrib] = incoming_record.pop(attrib)
+                
+                # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
                 metadata_uuid_record = getNewUUID(current_token, HubmapConst.METADATA_TYPE_CODE)
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
@@ -292,6 +328,7 @@ class Specimen:
                 stmt = Specimen.get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record, metadata_userinfo, provenance_group, file_list, data_directory, request)
                 tx.run(stmt)
 
+                # create the Activity Entity node
                 activity_uuid_record = getNewUUID(current_token, activity_type)
                 activity_record = {HubmapConst.UUID_ATTRIBUTE: activity_uuid_record[HubmapConst.UUID_ATTRIBUTE],
                                    HubmapConst.DOI_ATTRIBUTE: activity_uuid_record[HubmapConst.DOI_ATTRIBUTE],
@@ -301,30 +338,22 @@ class Specimen:
                     activity_record, HubmapConst.ACTIVITY_NODE_NAME, activity_type, False)
                 tx.run(stmt)
 
+                # create the Activity Metadata node
                 activity_metadata_record = {}
                 activity_metadata_uuid_record = getNewUUID(
                     current_token, HubmapConst.METADATA_TYPE_CODE)
-                activity_metadata_record[HubmapConst.UUID_ATTRIBUTE] = activity_metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                activity_metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
-                activity_metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = activity_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                activity_metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
-                activity_metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
-                activity_metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[
-                    HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
-                activity_metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
-                activity_metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
-                stmt = Neo4jConnection.get_create_statement(
-                    activity_metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
+
+                stmt = Specimen.get_create_activity_metadata_statement(activity_metadata_record, activity_metadata_uuid_record, activity_uuid_record, metadata_userinfo, provenance_group)              
                 tx.run(stmt)
 
-                # step 5: create the relationships
-                if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
-                    stmt = Neo4jConnection.create_relationship_statement(
-                        sourceUUID, HubmapConst.ACTIVITY_INPUT_REL, activity_uuid_record[HubmapConst.UUID_ATTRIBUTE])
-                    tx.run(stmt)
+                # create the relationships
+                stmt = Neo4jConnection.create_relationship_statement(
+                    sourceUUID, HubmapConst.ACTIVITY_INPUT_REL, activity_uuid_record[HubmapConst.UUID_ATTRIBUTE])
+                tx.run(stmt)
                 stmt = Neo4jConnection.create_relationship_statement(
                     activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, activity_metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                 tx.run(stmt)
+                # create multiple relationships if several samples are created
                 for uuid_record in specimen_uuid_list:
                     stmt = Neo4jConnection.create_relationship_statement(
                         uuid_record, HubmapConst.HAS_METADATA_REL, metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
@@ -333,9 +362,8 @@ class Specimen:
                         activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.ACTIVITY_OUTPUT_REL, uuid_record)
                     tx.run(stmt)
 
-                """stmt = Neo4jConnection.create_relationship_statement(specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.LAB_CREATED_AT_REL, labUUID)
-                tx.run(stmt)"""
                 tx.commit()
+                #return return_list
                 return specimen_uuid_record
             except ConnectionError as ce:
                 print('A connection error occurred: ', str(ce.args[0]))
@@ -361,6 +389,122 @@ class Specimen:
                 if tx.closed() == False:
                     tx.rollback()
 
+    @staticmethod
+    def generate_lab_identifiers(driver, parentUUID, specimen_count=1, organ_specifier=None, is_new_donor=False):
+        return_list = []
+        return_data = {}
+        update_stmt = None
+        with driver.session() as session:
+            tx = None
+            try:
+                parent_uuid_list = []
+                parent_uuid_record = {}
+                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{parentUUID}' }} ) RETURN e.{UUID_ATTRIBUTE} AS uuid, e.{LAB_IDENTIFIER_ATTRIBUTE} AS lab_identifier, e.{NEXT_IDENTIFIER_ATTRIBUTE} AS next_identifier".format(
+                    UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
+                    parentUUID=parentUUID, doi_attr=HubmapConst.DOI_ATTRIBUTE,LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                    HAS_METADATA=HubmapConst.HAS_METADATA_REL, NEXT_IDENTIFIER_ATTRIBUTE=HubmapConst.NEXT_IDENTIFIER_ATTRIBUTE)    
+                for record in session.run(stmt):
+                    parent_uuid_list.append(record)
+                if len(parent_uuid_list) == 0:
+                    raise LookupError('Unable to find entity using identifier:' + parentUUID)
+                if len(parent_uuid_list) > 1:
+                    raise LookupError('Error more than one entity found with identifier:' + parentUUID)
+                parent_uuid_record['uuid'] = parent_uuid_list[0]['uuid']
+                parent_lab_identifier = parent_uuid_list[0]['lab_identifier']
+                parent_uuid_record['next_identifier'] = parent_uuid_list[0]['next_identifier']
+                
+                
+                # update the parent record with the new counter
+                current_identifier = int(parent_uuid_record['next_identifier'])
+                if organ_specifier == None:
+                    parent_uuid_record['next_identifier'] = current_identifier + specimen_count
+                # NOTE: We don't want to run this statement because it could disrupt the other transaction active on the driver
+                update_stmt = Neo4jConnection.get_update_statement(parent_uuid_record, False)
+
+                cnt = 0
+                while cnt < specimen_count:
+                    if is_new_donor == True:
+                        new_id = cnt+current_identifier
+                        str_new_id = '{0:04d}'.format(new_id)
+                        return_list.append(str(parent_lab_identifier) + str_new_id)
+                    elif organ_specifier != None:
+                        # this covers the case where a new organ is added to a donor record
+                        # first, check to see if the identifier already exists
+                        new_lab_identifier = str(parent_lab_identifier) + '-' + organ_specifier
+                        does_id_exist = Specimen.lab_identifier_exists(driver, new_lab_identifier)
+                        if does_id_exist == True:
+                            raise ValueError('Value Error: organ identifier already exists: ' + new_lab_identifier)
+                        return_list.append(new_lab_identifier)
+                            
+                    else:
+                        # this covers the "normal" sample case
+                        return_list.append(str(parent_lab_identifier) + '-' + str(cnt+current_identifier))
+                        
+                    cnt += 1
+
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print(ve)
+                raise ve
+            except LookupError as le:
+                print('A lookup error occurred: ', le.value)
+                raise le
+            except TransactionError as te:
+                print('A transaction error occurred: ', te.value)
+                raise te
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
+        return_data = {'update_statement' : update_stmt, 'new_id_list' : return_list}
+        return return_data
+
+    @staticmethod
+    def lab_identifier_exists(driver, new_lab_identifier):
+        with driver.session() as session:
+            try:
+                return_list = []
+                stmt = """MATCH (e:Entity {{ {entitytype}: '{SAMPLE_TYPE_CODE}', {LAB_IDENTIFIER_ATTRIBUTE}: '{new_lab_identifier}' }}) RETURN e.{LAB_IDENTIFIER_ATTRIBUTE} AS lab_identifier""".format(
+                    entitytype=HubmapConst.ENTITY_TYPE_ATTRIBUTE, SAMPLE_TYPE_CODE=HubmapConst.SAMPLE_TYPE_CODE, LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                    new_lab_identifier=new_lab_identifier) 
+                for record in session.run(stmt):
+                    return_list.append(record)
+                if len(return_list) == 0:
+                    return False
+                if len(return_list) > 1:
+                    return True
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except TransactionError as te:
+                print('A transaction error occurred: ', te.value)
+                raise te
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+        
+        
+        
+    @staticmethod
+    def get_create_activity_metadata_statement(activity_metadata_record, activity_metadata_uuid_record, activity_uuid_record, metadata_userinfo, provenance_group):
+        activity_metadata_record[HubmapConst.UUID_ATTRIBUTE] = activity_metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+        activity_metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
+        activity_metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = activity_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+        activity_metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
+        activity_metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
+        activity_metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[
+            HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+        activity_metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
+        activity_metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
+        stmt = Neo4jConnection.get_create_statement(
+            activity_metadata_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
+        return stmt
+
+    
     @staticmethod
     def get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record, metadata_userinfo, provenance_group, file_list, data_directory, request):
         metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
@@ -732,14 +876,81 @@ def get_data_directory(parent_folder, group_uuid, create_folder=False):
                 pprint(oserr)
     return os.path.join(parent_folder, group_uuid)
 
+def initialize_lab_identifiers(driver):
+    group_list = AuthCache.getHMGroups()
+    with driver.session() as session:
+        tx = None
+        try:
+            tx = session.begin_transaction()
+            for group_name in group_list:
+                group = group_list[group_name]
+                if 'tmc_prefix' in group:
+                    #create an entry in Neo4j
+                    stmt = """CREATE (a:Entity {{ {ENTITY_TYPE_ATTRIBUTE} : '{LAB_TYPE_CODE}', {LAB_IDENTIFIER_ATTRIBUTE} : '{tmc_prefix}',
+                     {NAME_ATTRIBUTE} : '{name}', {DISPLAYNAME_ATTRIBUTE} : '{displayname}', {UUID_ATTRIBUTE} : '{uuid}', {NEXT_IDENTIFIER_ATTRIBUTE} : 1,
+                     provenance_create_timestamp: TIMESTAMP(), provenance_modified_timestamp: TIMESTAMP()}} )""".format(
+                        LAB_TYPE_CODE=HubmapConst.LAB_TYPE_CODE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE,
+                        LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,tmc_prefix=group['tmc_prefix'],
+                        NAME_ATTRIBUTE=HubmapConst.NAME_ATTRIBUTE, name=group['name'], DISPLAYNAME_ATTRIBUTE=HubmapConst.DISPLAY_NAME_ATTRIBUTE,
+                        displayname=group['displayname'], UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, uuid=group['uuid'],
+                        NEXT_IDENTIFIER_ATTRIBUTE=HubmapConst.NEXT_IDENTIFIER_ATTRIBUTE)
+                    print("Here is the stmt: " + stmt)
+                    tx.run(stmt)
+            tx.commit()
+        except ConnectionError as ce:
+            print('A connection error occurred: ', str(ce.args[0]))
+            if tx.closed() == False:
+                tx.rollback()
+            raise ce
+        except ValueError as ve:
+            print('A value error occurred: ', ve.value)
+            if tx.closed() == False:
+                tx.rollback()
+            raise ve
+        except TransactionError as te:
+            print('A transaction error occurred: ', te.value)
+            if tx.closed() == False:
+                tx.rollback()
+        except CypherError as cse:
+            print('A Cypher error was encountered: ', cse.message)
+            if tx.closed() == False:
+                tx.rollback()
+        except:
+            print('A general error occurred: ')
+            traceback.print_exc()
+            if tx.closed() == False:
+                tx.rollback()
+            
+
+
 if __name__ == "__main__":
     conn = Neo4jConnection()
     driver = conn.get_driver()
-    return_list = Specimen.search_specimen(driver, 'HBM:273-VXXV-779', ['5bd084c8-edc2-11e8-802f-0e368f3075e8'])
+    token = 'Aggqy6e0bYMYBlO45ywMm8Okv6YvyMWOMlY8EpO8bprxOxmPJKcJCmo0wEl78JrElrWo2oyV60nDjbh1k7r8ahBgD6'
+    initialize_lab_identifiers(driver)
+    
+    
+    """parentUUID = '9e68b1c1ed06d3aa087e2048c2c244dd'
+    specimen_count = 5
+    new_lab_id_data = Specimen.generate_lab_identifiers(driver, parentUUID, specimen_count)
+    pprint(new_lab_id_data)
+    
+    test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
+    new_lab_id_data = Specimen.generate_lab_identifiers(driver, test_group_uuid, 1, None, True)
+    pprint(new_lab_id_data)
+    
+    donor_uuid = 'f2cf800ea263b1c2e177a741d9aec9fb'
+    new_lab_id_data = Specimen.generate_lab_identifiers(driver, donor_uuid, 1, 'BL', False)
+    pprint(new_lab_id_data)"""
+    
+    #   def generate_lab_identifiers(driver, parentUUID, specimen_count=1, organ_specifier=None, is_donor=False):
+
+    
+    """return_list = Specimen.search_specimen(driver, 'HBM:273-VXXV-779', ['5bd084c8-edc2-11e8-802f-0e368f3075e8'])
     print("Found " + str(len(return_list)) + " items")
     pprint(return_list)
 
-    """name = 'Test Dataset'
+    name = 'Test Dataset'
     description = 'This dataset is a test'
     parentCollection = '4470c8e8-3836-4986-9773-398912831'
     hasPHI = False
