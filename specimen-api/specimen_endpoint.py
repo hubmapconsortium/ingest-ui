@@ -178,14 +178,14 @@ def create_specimen():
                 if len(str(form_data['sample_count'])) > 0:
                     sample_count = int(form_data['sample_count'])
 
-        #new_uuid_records = specimen.create_specimen(
-        #    driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
-        new_uuid_record = specimen.create_specimen(
+        new_uuid_records = specimen.create_specimen(
             driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
+        #new_uuid_record = specimen.create_specimen(
+        #    driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
         conn.close()
-        return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
+        #return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
-        #return jsonify({'uuid_list': new_uuid_records}), 201 
+        return jsonify(new_uuid_records), 201 
 
     except AuthError as e:
         print(e)
@@ -305,7 +305,7 @@ def does_specimen_exist(uuid):
 @app.route('/specimens/<identifier>/siblingids', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
-def get_specimen(identifier):
+def get_specimen_siblings(identifier):
     if identifier == None:
         abort(400)
     if len(identifier) == 0:

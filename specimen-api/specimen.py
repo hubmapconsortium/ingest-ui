@@ -255,10 +255,6 @@ class Specimen:
             data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
 
 
-        # TEMPORARY FOR TESTING
-        #incoming_record['specimen_type'] = 'Organ'
-        #incoming_record['organ_specifier'] = 'RK'
-        
         with driver.session() as session:
             tx = None
             try:
@@ -314,7 +310,7 @@ class Specimen:
                         specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
                     print('Specimen Create statement: ' + stmt)
                     tx.run(stmt)
-                    return_list.append(specimen_data)
+                    return_list.append(specimen_data[HubmapConst.UUID_ATTRIBUTE])
                     cnt += 1
 
                 # remove the attributes related to the Entity node
@@ -364,8 +360,8 @@ class Specimen:
                     tx.run(stmt)
 
                 tx.commit()
-                #return return_list
-                return specimen_uuid_record
+                return return_list
+                #return specimen_uuid_record
             except ConnectionError as ce:
                 print('A connection error occurred: ', str(ce.args[0]))
                 if tx.closed() == False:
