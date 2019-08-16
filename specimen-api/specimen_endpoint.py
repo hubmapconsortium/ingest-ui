@@ -302,6 +302,39 @@ def does_specimen_exist(uuid):
             msg += str(x)
         abort(400, msg)
 
+@app.route('/specimens/<identifier>/siblingids', methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
+def get_specimen(identifier):
+    if identifier == None:
+        abort(400)
+    if len(identifier) == 0:
+        abort(400)
+
+    conn = None
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
+        if r.ok == False:
+            raise ValueError("Cannot find specimen with identifier: " + identifier)
+        uuid = json.loads(r.text)[0]['hmuuid']
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        siblingid_list = Specimen.get_siblingid_list(driver, uuid)
+        return jsonify({'siblingid_list': siblingid_list}), 200 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/specimens/<identifier>', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])

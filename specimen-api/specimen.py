@@ -13,6 +13,7 @@ import json
 from werkzeug.utils import secure_filename
 from flask import json
 import traceback
+from builtins import staticmethod
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
@@ -709,6 +710,34 @@ class Specimen:
         return return_string
 
     @staticmethod
+    def get_siblingid_list(driver, uuid):
+        sibling_return_list = []
+        with driver.session() as session:
+            try:
+                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_lab_identifier".format(
+                    UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
+                    uuid=uuid, ACTIVITY_NODE_NAME=HubmapConst.ACTIVITY_NODE_NAME, LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                    ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL)    
+                for record in session.run(stmt):
+                    sibling_record = {}
+                    sibling_record['uuid'] = record['sibling_uuid']
+                    sibling_record['lab_identifier'] = record['sibling_lab_identifier']
+                    sibling_return_list.append(sibling_record)
+                return sibling_return_list
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
+    
+    @staticmethod
     def upload_file_data(request, file_key, directory_path):
         try:
             #TODO: handle case where file already exists.  Append a _x to filename where
@@ -927,7 +956,10 @@ if __name__ == "__main__":
     conn = Neo4jConnection()
     driver = conn.get_driver()
     token = 'Aggqy6e0bYMYBlO45ywMm8Okv6YvyMWOMlY8EpO8bprxOxmPJKcJCmo0wEl78JrElrWo2oyV60nDjbh1k7r8ahBgD6'
-    initialize_lab_identifiers(driver)
+    #initialize_lab_identifiers(driver)
+    sibling_uuid = 'b384d08f2692f12ec527de96c30577b6'
+    sibling_list = Specimen.get_siblingid_list(driver, sibling_uuid)
+    pprint(sibling_list)
     
     
     """parentUUID = '9e68b1c1ed06d3aa087e2048c2c244dd'
