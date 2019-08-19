@@ -281,8 +281,10 @@ class Entity(object):
                     matching_stmt = "MATCH (a)-[:{rel_code}]->(m)".format(
                         rel_code=HubmapConst.HAS_METADATA_REL)
                     
-                stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
-                    uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
+                stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{hubmapid_attr} AS hubmap_identifier, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
+                    uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                    activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
+                    display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
                 print("Here is the query: " + stmt)
                 readonly_group_list = self.get_readonly_user_groups(token)
@@ -302,6 +304,7 @@ class Entity(object):
                     data_record['entity_doi'] = record['entity_doi']
                     data_record['datatype'] = record['datatype']
                     data_record['properties'] = record['metadata_properties']
+                    data_record['hubmap_identifier'] = record['hubmap_identifier']
                     # determine if the record is writable by the current user
                     data_record['writeable'] = False
                     if 'provenance_group_uuid' in record['metadata_properties']:
@@ -338,6 +341,28 @@ class Entity(object):
                 if str(group['uuid']).lower() == str(identifier).lower():
                     return group
         raise ValueError("cannot find a Hubmap group matching: [" + identifier + "]")
+
+    def get_group_by_name(self, group_name):
+        if len(group_name) == 0:
+            raise ValueError("group_name cannot be blank")
+        authcache = None
+        if AuthHelper.isInitialized() == False:
+            authcache = AuthHelper.create(
+                self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+        else:
+            authcache = AuthHelper.instance()
+        groupinfo = authcache.getHuBMAPGroupInfo()
+        # search through the keys for the identifier, return the value
+        for k in groupinfo.values():
+            if str(k['name']).lower() == str(group_name).lower()  or str(k['displayname']).lower() == str(group_name).lower():
+                group = k
+                return group
+            if 'tmc_prefix' in k:
+                if str(k['tmc_prefix']).lower() == str(group_name).lower():
+                    group = k
+                    return group
+
+        raise ValueError("cannot find a Hubmap group matching: [" + group_name + "]")
         
     @staticmethod
     def get_entity_by_type(driver, general_type, type_code): 
@@ -556,13 +581,23 @@ class Entity(object):
 
 if __name__ == "__main__":
     entity = Entity()
-    token = "AggQN13V56BW10NMY9e18vPen0rEEeDW5aorWD39gBx1j48pwycJC31pG8WXdvYdevkD8vGJa210qxc1ke58WSBgD6"
+    group_info = entity.get_group_by_name('HuBMAP-UFlorida')
+    print(group_info)
+    group_info = entity.get_group_by_name('University of Florida TMC')
+    print(group_info)
+    group_info = entity.get_group_by_name('UFL')
+    print(group_info)
+    """token = "AggQN13V56BW10NMY9e18vPen0rEEeDW5aorWD39gBx1j48pwycJC31pG8WXdvYdevkD8vGJa210qxc1ke58WSBgD6"
     writeable_groups = entity.get_writeable_user_groups(token)
     print('Writeable groups:')
     print(writeable_groups)
     readonly_groups = entity.get_readonly_user_groups(token)
     print('Readonly groups:')
-    print(readonly_groups)
+    print(readonly_groups)"""
+    
+    
+    
+    
     """conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Dataset'

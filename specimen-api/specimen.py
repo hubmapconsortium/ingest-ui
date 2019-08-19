@@ -793,7 +793,7 @@ class Specimen:
 
 
     @staticmethod
-    def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, specimen_type=None):
+    def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list, specimen_type=None):
         return_list = []
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
@@ -802,6 +802,8 @@ class Specimen:
             entity_type_clause = "entity_node.entitytype = 'Sample' AND lucene_node.specimen_type = '{specimen_type}'".format(specimen_type=specimen_type)
         elif str(specimen_type).lower() == 'donor':
             entity_type_clause = "entity_node.entitytype = 'Donor'"
+            
+        #group_clause = ""
         lucene_type_clause = entity_type_clause.replace('entity_node.entitytype', 'lucene_node.entitytype')
         lucene_type_clause = lucene_type_clause.replace('lucene_node.specimen_type', 'metadata_node.specimen_type')
         
@@ -816,18 +818,18 @@ class Specimen:
             search_term = search_term.replace(special_char, '\\\\'+ special_char)
             
         stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-        MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause}  
-        RETURN score, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+        MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} 
+        RETURN score, entity_node.{hubmapid_attr} AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
         ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
             uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
-            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
+            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE)
 
         stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-        MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause}  
-        RETURN score, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
+        MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} 
+        RETURN score, lucene_node.{hubmapid_attr} AS hubmap_identifier, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
         ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
             uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
-            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
+            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE)
 
         stmt_list = [stmt1, stmt2]
         return_list = []
@@ -849,6 +851,7 @@ class Specimen:
                                 data_record['entity_doi'] = record['entity_doi']
                                 data_record['datatype'] = record['datatype']
                                 data_record['properties'] = record['metadata_properties']
+                                data_record['hubmap_identifier'] = record['hubmap_identifier']
                                 # determine if the record is writable by the current user
                                 data_record['writeable'] = False
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
