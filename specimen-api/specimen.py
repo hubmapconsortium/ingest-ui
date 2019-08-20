@@ -795,7 +795,6 @@ class Specimen:
     @staticmethod
     def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list, specimen_type=None):
         return_list = []
-        original_search_term = None
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
@@ -834,14 +833,6 @@ class Specimen:
             cypher_index_clause = "CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score"
             return_clause = "score, "
             order_by_clause = "score DESC, "    
-            pattern = re.compile('(HBM\:)?\d\d\d-\D\D\D\D-\d\d\d')
-            result = pattern.match(search_term)
-            if result != None:
-                original_search_term = result 
-            # for now, just escape Lucene special characters
-            lucene_special_characters = ['+','-','&','|','!','(',')','{','}','[',']','^','"','~','*','?',':']
-            for special_char in lucene_special_characters:
-                search_term = search_term.replace(special_char, '\\\\'+ special_char)
             stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
             MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
             RETURN score, entity_node.{hubmapid_attr} AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
@@ -909,9 +900,9 @@ class Specimen:
             return_list.sort(key=lambda x: x['score'], reverse=True)
             # promote any items where the entity_display_doi is an exact match to the search term (ex: HBM:234-TRET-596)
             # to the top of the list (regardless of score)
-            if original_search_term != None:
+            if search_term != None:
                 for ret_record in return_list:
-                    if str(ret_record['entity_display_doi']).find(original_search_term.string) > -1:
+                    if str(ret_record['hubmap_identifier']).find(str(search_term)) > -1:
                         return_list.remove(ret_record)
                         return_list.insert(0,ret_record)     
                         break                       
