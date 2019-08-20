@@ -436,6 +436,8 @@ class Entity(object):
                     # use the doi and display doi from the entity
                     dataset_record = record['properties']
                     #dataset_record['entity_uuid'] = record['uuid']
+                    if record.get('hubmap_identifier', None) != None:
+                        dataset_record['hubmap_identifier'] = record['hubmap_identifier']
                     dataset_record['doi'] = record['doi']
                     dataset_record['display_doi'] = record['display_doi']
                     #remove entitytype since it will be the other entity's type
