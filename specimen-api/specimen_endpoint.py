@@ -408,28 +408,29 @@ def search_specimen():
             specimen_type = request.args.get('specimen_type')
         if 'search_term' in request.args:
             searchterm = request.args.get('search_term')
+        # by default, show data from all the groups that the user can access
+        filtered_group_uuid_list.extend(readonly_uuid_list)
+        filtered_group_uuid_list.extend(writeable_uuid_list)
+        # remove the test group, by default
+        test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
+        if test_group_uuid in filtered_group_uuid_list:
+            filtered_group_uuid_list.remove(test_group_uuid)
         # if the user selects a specific group in the search filter,
-        # then include it in the search
+        # then use it for the search
         if 'group' in request.args:
             group_name = request.args.get('group')
             if group_name != 'All Groups':
                 group_info = entity.get_group_by_name(group_name)
-                filtered_group_uuid_list.append(group_info)
-        # if the user doesn't specify a group, then build a list of all
-        # the groups the user can access and remove the TEST group by default
-        else:
-            filtered_group_uuid_list.extend(readonly_uuid_list)
-            filtered_group_uuid_list.extend(writeable_uuid_list)
-            test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
-            if test_group_uuid in filtered_group_uuid_list:
-                filtered_group_uuid_list.remove(test_group_uuid)
+                # reset the filtered group list
+                filtered_group_uuid_list = []
+                filtered_group_uuid_list.append(group_info['uuid'])
                 
-        #specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list, specimen_type)
-        if searchterm == None:
+        specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list, specimen_type)
+        """if searchterm == None:
             specimen_list = entity.get_editable_entities_by_type(driver, token, specimen_type)
         else:
-            specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, specimen_type)
-
+            specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list, specimen_type)
+        """
         return jsonify({'specimens': specimen_list}), 200 
 
     except AuthError as e:

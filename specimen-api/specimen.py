@@ -710,14 +710,14 @@ class Specimen:
         sibling_return_list = []
         with driver.session() as session:
             try:
-                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_lab_identifier".format(
+                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier".format(
                     UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
                     uuid=uuid, ACTIVITY_NODE_NAME=HubmapConst.ACTIVITY_NODE_NAME, LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
                     ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL)    
                 for record in session.run(stmt):
                     sibling_record = {}
                     sibling_record['uuid'] = record['sibling_uuid']
-                    sibling_record['lab_identifier'] = record['sibling_lab_identifier']
+                    sibling_record['hubmap_identifier'] = record['sibling_hubmap_identifier']
                     sibling_return_list.append(sibling_record)
                 return sibling_return_list
             except ConnectionError as ce:
@@ -795,6 +795,7 @@ class Specimen:
     @staticmethod
     def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list, specimen_type=None):
         return_list = []
+        original_search_term = None
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
         metadata_clause = "{entitytype: 'Metadata'}"
@@ -804,34 +805,62 @@ class Specimen:
             entity_type_clause = "entity_node.entitytype = 'Donor'"
             
         #group_clause = ""
+        # first swap the entity_node.entitytype out of the clause, then the lucene_node.specimen_type
+        # I can't do this in one step since replacing the entity_node would update other sections of the query
         lucene_type_clause = entity_type_clause.replace('entity_node.entitytype', 'lucene_node.entitytype')
         lucene_type_clause = lucene_type_clause.replace('lucene_node.specimen_type', 'metadata_node.specimen_type')
         
-        original_search_term = None
-        pattern = re.compile('(HBM\:)?\d\d\d-\D\D\D\D-\d\d\d')
-        result = pattern.match(search_term)
-        if result != None:
-            original_search_term = result 
-        # for now, just escape Lucene special characters
-        lucene_special_characters = ['+','-','&','|','!','(',')','{','}','[',']','^','"','~','*','?',':']
-        for special_char in lucene_special_characters:
-            search_term = search_term.replace(special_char, '\\\\'+ special_char)
-            
-        stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-        MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} 
-        RETURN score, entity_node.{hubmapid_attr} AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
-        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
-            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
-            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE)
+        provenance_group_uuid_clause = ""
+        if group_uuid_list != None:
+            if len(group_uuid_list) > 0:
+                provenance_group_uuid_clause += " AND lucene_node.{provenance_group_uuid_attr} IN [".format(provenance_group_uuid_attr=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE)
+                for group_uuid in group_uuid_list:
+                    provenance_group_uuid_clause += "'{uuid}', ".format(uuid=group_uuid)
+                # lop off the trailing comma and space and add the finish bracket:
+                provenance_group_uuid_clause = provenance_group_uuid_clause[:-2] +']'
+                
+        
+        stmt_list = []
+        if search_term == None:
+            stmt1 = """MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
+            RETURN entity_node.{hubmapid_attr} AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            ORDER BY modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
+                uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
+                display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause)
+            stmt_list = [stmt1]
+        else:
+            # use the full text indexing if searching for a term
+            cypher_index_clause = "CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score"
+            return_clause = "score, "
+            order_by_clause = "score DESC, "    
+            pattern = re.compile('(HBM\:)?\d\d\d-\D\D\D\D-\d\d\d')
+            result = pattern.match(search_term)
+            if result != None:
+                original_search_term = result 
+            # for now, just escape Lucene special characters
+            lucene_special_characters = ['+','-','&','|','!','(',')','{','}','[',']','^','"','~','*','?',':']
+            for special_char in lucene_special_characters:
+                search_term = search_term.replace(special_char, '\\\\'+ special_char)
+            stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
+            MATCH (lucene_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
+            RETURN score, entity_node.{hubmapid_attr} AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
+                uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
+                display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause)
+    
+            provenance_group_uuid_clause = provenance_group_uuid_clause.replace('lucene_node.', 'metadata_node.')
 
-        stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-        MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} 
-        RETURN score, lucene_node.{hubmapid_attr} AS hubmap_identifier, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
-        ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
-            uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
-            display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE)
-
-        stmt_list = [stmt1, stmt2]
+            stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
+            MATCH (metadata_node:Entity {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
+            RETURN score, lucene_node.{hubmapid_attr} AS hubmap_identifier, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
+            ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
+                uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
+                display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause)
+    
+            stmt_list = [stmt1, stmt2]
         return_list = []
         display_doi_list = []
         for stmt in stmt_list:
@@ -846,7 +875,8 @@ class Specimen:
                             if str(record['entity_display_doi']) not in display_doi_list:
                                 data_record = {}
                                 data_record['uuid'] = record['entity_uuid']
-                                data_record['score'] = record['score']
+                                if record.get('score', None) != None:
+                                    data_record['score'] = record['score']
                                 data_record['entity_display_doi'] = record['entity_display_doi']
                                 data_record['entity_doi'] = record['entity_doi']
                                 data_record['datatype'] = record['datatype']
@@ -860,11 +890,12 @@ class Specimen:
                                 return_list.append(data_record)
                             # find any existing records and update their score (if necessary)
                             else:
-                                for ret_record in return_list:
-                                    if record['entity_display_doi'] == ret_record['entity_display_doi']:
-                                        # update the score if it is higher
-                                        if record['score'] > ret_record['score']:
-                                            ret_record['score'] = record['score']
+                                if search_term != None:
+                                    for ret_record in return_list:
+                                        if record['entity_display_doi'] == ret_record['entity_display_doi']:
+                                            # update the score if it is higher
+                                            if record['score'] > ret_record['score']:
+                                                ret_record['score'] = record['score']
                         
                 except CypherError as cse:
                     print ('A Cypher error was encountered: '+ cse.message)
@@ -873,16 +904,17 @@ class Specimen:
                     print ('A general error occurred: ')
                     traceback.print_exc()
                     raise
-        # before returning the list, sort it again if new items were added
-        return_list.sort(key=lambda x: x['score'], reverse=True)
-        # promote any items where the entity_display_doi is an exact match to the search term (ex: HBM:234-TRET-596)
-        # to the top of the list (regardless of score)
-        if original_search_term != None:
-            for ret_record in return_list:
-                if str(ret_record['entity_display_doi']).find(original_search_term.string) > -1:
-                    return_list.remove(ret_record)
-                    return_list.insert(0,ret_record)     
-                    break                       
+        if search_term != None:
+            # before returning the list, sort it again if new items were added
+            return_list.sort(key=lambda x: x['score'], reverse=True)
+            # promote any items where the entity_display_doi is an exact match to the search term (ex: HBM:234-TRET-596)
+            # to the top of the list (regardless of score)
+            if original_search_term != None:
+                for ret_record in return_list:
+                    if str(ret_record['entity_display_doi']).find(original_search_term.string) > -1:
+                        return_list.remove(ret_record)
+                        return_list.insert(0,ret_record)     
+                        break                       
 
         return return_list                    
 
