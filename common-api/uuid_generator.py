@@ -67,7 +67,7 @@ def getNewUUID(current_token, uuid_type):
             data = json.loads(r.content.decode())
             return data
         else:
-            msg = 'HTTP Response: ' + r.status_code + ' msg: ' + r.text 
+            msg = 'HTTP Response: ' + str(r.status_code) + ' msg: ' + str(r.text) 
             raise Exception(msg)
     except ConnectionError as connerr: # "connerr"...get it? like "ConAir"
         pprint(connerr)
