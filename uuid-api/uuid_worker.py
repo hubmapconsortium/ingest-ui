@@ -139,6 +139,7 @@ class UUIDWorker:
 			with closing(db.cursor()) as curs:
 				curs.execute(sql, vals)
 			db.commit()
+			db.close()
 		if generateDOI:
 			dispDoi= 'HBM:' + doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
 			return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
