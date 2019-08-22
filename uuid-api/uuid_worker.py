@@ -145,11 +145,11 @@ class UUIDWorker:
 
 		if generateDOI:
 			dispDoi= 'HBM:' + doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
-			return hmid
-			#return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
+			#return hmid
+			return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
 		else:
-			return hmid
-			#return jsonify(uuid=hmid)
+			#return hmid
+			return jsonify(uuid=hmid)
 
 	
 	def newDoi(self):
