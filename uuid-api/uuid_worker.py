@@ -17,7 +17,7 @@ from contextlib import closing
 import json
 
 PROP_FILE_NAME = os.path.join(os.path.dirname(__file__), 'uuid.properties') 
-DOI_ALPHA_CHARS=['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z']                 
+DOI_ALPHA_CHARS=['B','C','D','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','X','Z']                 
 DOI_NUM_CHARS=['2','3','4','5','6','7','8','9']                                                                                   
 HEX_CHARS=['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
 UUID_SELECTS = "HMUUID as hmuuid, DOI_SUFFIX as doiSuffix, ENTITY_TYPE as type, PARENT_UUID as parentId, TIME_GENERATED as timeStamp, USER_ID as userId, USER_EMAIL as email"
@@ -71,7 +71,7 @@ class UUIDWorker:
 		self.lock = threading.RLock()
 		self.hmdb = DBConn(self.dbHost, self.dbUsername, self.dbPassword, self.dbName)
 
-	def uuidPost(self, req):
+	def uuidPost(self, req, nIds):
 		userInfo = self.authHelper.getUserInfoUsingRequest(req)
 		if isinstance(userInfo, Response):
 			return userInfo;
@@ -103,7 +103,10 @@ class UUIDWorker:
 		if 'email' in userInfo:
 			userEmail = userInfo['email']
 		
-		return self.newUUID(generateDOI, parentId, entityType, userId, userEmail)
+		rVal = []
+		for x in range(nIds):
+			rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
+		return rVal
 
 	def newUUIDTest(self, generateDOI, parentId, entityType, userId, userEmail):
 		return self.newUUID(generateDOI, parentId, entityType, userId, userEmail)
@@ -145,12 +148,18 @@ class UUIDWorker:
 
 		if generateDOI:
 			dispDoi= 'HBM:' + doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
-			#return hmid
-			return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
+			rVal = {
+					"displayDoi": dispDoi,
+					"doi": doi,
+					"uuid": hmid
+				}
+			#return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
 		else:
-			#return hmid
-			return jsonify(uuid=hmid)
-
+			rVal = {
+					"uuid":hmid
+				}
+			#return jsonify(uuid=hmid)
+		return rVal
 	
 	def newDoi(self):
 		nums1 = ''                                                                                                                        

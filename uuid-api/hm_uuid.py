@@ -69,7 +69,15 @@ def add_hmuuid():
     global logger
     try:
         if request.method == "POST":
-            return worker.uuidPost(request)
+            if 'sample_count' in request.args:
+                nArgs = request.args.get('sample_count')
+                if string_helper.isBlank(nArgs) or not nArgs.strip().isnumeric():
+                    return Response("Sample count must be an integer ", 400)
+                rjson = worker.uuidPost(request, int(nArgs))
+            else:
+                rjson = worker.uuidPost(request, 1)
+            jsonStr = json.dumps(rjson)
+            return Response(jsonStr, 200, {'Content-Type': "application/json"})
         else:
             return Response("Invalid request.  Use POST to create a UUID", 500)
     except Exception as e:
