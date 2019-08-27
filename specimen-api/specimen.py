@@ -13,7 +13,6 @@ import json
 from werkzeug.utils import secure_filename
 from flask import json
 import traceback
-from builtins import staticmethod
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
@@ -222,8 +221,8 @@ class Specimen:
         user_group_ids = userinfo['hmgroupids']
         provenance_group = None
         data_directory = None
-        specimen_uuid_record = None
-        specimen_uuid_list = []
+        specimen_uuid_record_list = None
+        metadata_record = None
         metadata = Metadata()
         try:
             provenance_group = metadata.get_group_by_identifier(groupUUID)
@@ -279,26 +278,28 @@ class Specimen:
                 # make the necessary updates
                 tx.run(stmt)
 
+                # generate the set of specimen UUIDs required for this request
+                specimen_uuid_record_list = None
+                try:
+                    specimen_uuid_record_list = getNewUUID(current_token, entity_type, sample_count)
+                    if (specimen_uuid_record_list == None) or (len(specimen_uuid_record_list) == 0):
+                        raise ValueError("UUID service did not return a value")
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
                 
                 # loop through data to create the samples
                 cnt = 0
                 while cnt < sample_count:
-                    try:
-                        specimen_uuid_record = getNewUUID(
-                            current_token, entity_type)
-                    except requests.exceptions.ConnectionError as ce:
-                        raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
-                    if specimen_uuid_record == None:
+                    if specimen_uuid_record_list == None:
                         raise ValueError("Error: UUID returned is empty")
-                    incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-                    incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record[HubmapConst.DOI_ATTRIBUTE]
-                    incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record['displayDoi']
+                    incoming_record[HubmapConst.UUID_ATTRIBUTE] = specimen_uuid_record_list[cnt][HubmapConst.UUID_ATTRIBUTE]
+                    incoming_record[HubmapConst.DOI_ATTRIBUTE] = specimen_uuid_record_list[cnt][HubmapConst.DOI_ATTRIBUTE]
+                    incoming_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = specimen_uuid_record_list[cnt]['displayDoi']
                     
                     #Assign the generate lab id code here
                     incoming_record[HubmapConst.LAB_IDENTIFIER_ATTRIBUTE] = lab_id_list[cnt]
                     incoming_record[HubmapConst.NEXT_IDENTIFIER_ATTRIBUTE] = 1
                     
-                    specimen_uuid_list.append(specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                     specimen_data = {}
                     required_list = HubmapConst.DONOR_REQUIRED_ATTRIBUTE_LIST
                     if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
@@ -310,7 +311,7 @@ class Specimen:
                         specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
                     print('Specimen Create statement: ' + stmt)
                     tx.run(stmt)
-                    return_list.append(specimen_data[HubmapConst.UUID_ATTRIBUTE])
+                    return_list.append(specimen_data[HubmapConst.LAB_IDENTIFIER_ATTRIBUTE])
                     cnt += 1
 
                 # remove the attributes related to the Entity node
@@ -319,14 +320,32 @@ class Specimen:
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
-                metadata_uuid_record = getNewUUID(current_token, HubmapConst.METADATA_TYPE_CODE)
+                metadata_uuid_record_list = None
+                metadata_uuid_record = None
+                try: 
+                    metadata_uuid_record_list = getNewUUID(current_token, HubmapConst.METADATA_TYPE_CODE)
+                    if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
+                        raise ValueError("UUID service did not return a value")
+                    metadata_uuid_record = metadata_uuid_record_list[0]
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
 
-                stmt = Specimen.get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record, metadata_userinfo, provenance_group, file_list, data_directory, request)
+                stmt = Specimen.get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record_list, metadata_userinfo, provenance_group, file_list, data_directory, request)
                 tx.run(stmt)
 
                 # create the Activity Entity node
-                activity_uuid_record = getNewUUID(current_token, activity_type)
+                activity_uuid_record_list = None
+                activity_uuid_record = None
+                try: 
+                    activity_uuid_record_list = getNewUUID(current_token, activity_type)
+                    if (activity_uuid_record_list == None) or (len(activity_uuid_record_list) != 1):
+                        raise ValueError("UUID service did not return a value")
+                    activity_uuid_record = activity_uuid_record_list[0]
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+
                 activity_record = {HubmapConst.UUID_ATTRIBUTE: activity_uuid_record[HubmapConst.UUID_ATTRIBUTE],
                                    HubmapConst.DOI_ATTRIBUTE: activity_uuid_record[HubmapConst.DOI_ATTRIBUTE],
                                    HubmapConst.DISPLAY_DOI_ATTRIBUTE: activity_uuid_record['displayDoi'],
@@ -337,8 +356,16 @@ class Specimen:
 
                 # create the Activity Metadata node
                 activity_metadata_record = {}
-                activity_metadata_uuid_record = getNewUUID(
-                    current_token, HubmapConst.METADATA_TYPE_CODE)
+                activity_metadata_uuid_record_list = None
+                activity_metadata_uuid_record = None
+                try:
+                    activity_metadata_uuid_record_list = getNewUUID(
+                        current_token, HubmapConst.METADATA_TYPE_CODE)
+                    if (activity_metadata_uuid_record_list == None) or (len(activity_metadata_uuid_record_list) != 1):
+                        raise ValueError("UUID service did not return a value")
+                    activity_metadata_uuid_record = activity_metadata_uuid_record_list[0]
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
 
                 stmt = Specimen.get_create_activity_metadata_statement(activity_metadata_record, activity_metadata_uuid_record, activity_uuid_record, metadata_userinfo, provenance_group)              
                 tx.run(stmt)
@@ -351,17 +378,18 @@ class Specimen:
                     activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, activity_metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                 tx.run(stmt)
                 # create multiple relationships if several samples are created
-                for uuid_record in specimen_uuid_list:
+                for uuid_record in specimen_uuid_record_list:
                     stmt = Neo4jConnection.create_relationship_statement(
-                        uuid_record, HubmapConst.HAS_METADATA_REL, metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
+                        uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE])
                     tx.run(stmt)
                     stmt = Neo4jConnection.create_relationship_statement(
-                        activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.ACTIVITY_OUTPUT_REL, uuid_record)
+                        activity_uuid_record[HubmapConst.UUID_ATTRIBUTE], HubmapConst.ACTIVITY_OUTPUT_REL, uuid_record[HubmapConst.UUID_ATTRIBUTE])
                     tx.run(stmt)
 
                 tx.commit()
-                return return_list
-                #return specimen_uuid_record
+                return_obj = {'hubmap_identifiers': return_list, 'sample_metadata' : metadata_record}
+                return return_obj
+                #return specimen_uuid_record_list
             except ConnectionError as ce:
                 print('A connection error occurred: ', str(ce.args[0]))
                 if tx.closed() == False:
@@ -505,7 +533,10 @@ class Specimen:
     @staticmethod
     def get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record, metadata_userinfo, provenance_group, file_list, data_directory, request):
         metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
-        metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = specimen_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+        uuid_reference_list = []
+        for uuid_item in specimen_uuid_record:
+            uuid_reference_list.append(uuid_item[HubmapConst.UUID_ATTRIBUTE])
+        metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = uuid_reference_list
         metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
@@ -978,11 +1009,11 @@ if __name__ == "__main__":
     conn = Neo4jConnection()
     driver = conn.get_driver()
     token = 'Aggqy6e0bYMYBlO45ywMm8Okv6YvyMWOMlY8EpO8bprxOxmPJKcJCmo0wEl78JrElrWo2oyV60nDjbh1k7r8ahBgD6'
-    #initialize_lab_identifiers(driver)
-    sibling_uuid = 'b384d08f2692f12ec527de96c30577b6'
+    initialize_lab_identifiers(driver)
+    """sibling_uuid = 'b384d08f2692f12ec527de96c30577b6'
     sibling_list = Specimen.get_siblingid_list(driver, sibling_uuid)
     pprint(sibling_list)
-    
+    """
     
     """parentUUID = '9e68b1c1ed06d3aa087e2048c2c244dd'
     specimen_count = 5
