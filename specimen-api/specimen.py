@@ -311,7 +311,7 @@ class Specimen:
                         specimen_data, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
                     print('Specimen Create statement: ' + stmt)
                     tx.run(stmt)
-                    return_list.append(specimen_data[HubmapConst.LAB_IDENTIFIER_ATTRIBUTE])
+                    return_list.append(specimen_data)
                     cnt += 1
 
                 # remove the attributes related to the Entity node
@@ -387,7 +387,7 @@ class Specimen:
                     tx.run(stmt)
 
                 tx.commit()
-                return_obj = {'hubmap_identifiers': return_list, 'sample_metadata' : metadata_record}
+                return_obj = {'new_samples': return_list, 'sample_metadata' : metadata_record}
                 return return_obj
                 #return specimen_uuid_record_list
             except ConnectionError as ce:
