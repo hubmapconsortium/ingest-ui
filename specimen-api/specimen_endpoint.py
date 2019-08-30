@@ -144,6 +144,14 @@ def create_specimen():
         if 'user_group_uuid' in form_data:
             if is_user_in_group(token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
+                entity = Entity()
+                grp_info = None
+                try:
+                    grp_info = entity.get_group_by_identifier(group_uuid)
+                except ValueError as ve:
+                    return Response('Unauthorized: Cannot find information on group: ' + str(group_uuid), 401)
+                if grp_info['generateuuid'] == False:
+                    return Response('Unauthorized: This group {grp_info} is not a group with write privileges.'.format(grp_info=grp_info), 401)
             else:
                 return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
         else:
@@ -157,18 +165,27 @@ def create_specimen():
 
             if group_uuid == None:
                 return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
-            
+        # default to one new specimen
+        sample_count = 1    
         if 'source_uuid' in form_data:
             sourceuuid = form_data['source_uuid']
             r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + sourceuuid, headers={'Authorization': 'Bearer ' + token })
             if r.ok == False:
                 raise ValueError("Cannot find specimen with identifier: " + sourceuuid)
             sourceuuid = json.loads(r.text)[0]['hmuuid']
+            
+            if 'sample_count' in form_data:
+                if len(str(form_data['sample_count'])) > 0:
+                    sample_count = int(form_data['sample_count'])
 
-        new_uuid_record = specimen.create_specimen(
-            driver, request, form_data, request.files, token, group_uuid, sourceuuid)
+        new_uuid_records = specimen.create_specimen(
+            driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
+        #new_uuid_record = specimen.create_specimen(
+        #    driver, request, form_data, request.files, token, group_uuid, sourceuuid, sample_count)
         conn.close()
-        return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
+        #return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
+
+        return jsonify(new_uuid_records), 201 
 
     except AuthError as e:
         print(e)
@@ -179,7 +196,9 @@ def create_specimen():
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 def is_user_in_group(token, group_uuid):
     entity = Entity()
@@ -255,7 +274,9 @@ def update_specimen(identifier):
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/specimens/exists/<uuid>', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
@@ -281,6 +302,39 @@ def does_specimen_exist(uuid):
             msg += str(x)
         abort(400, msg)
 
+@app.route('/specimens/<identifier>/siblingids', methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
+def get_specimen_siblings(identifier):
+    if identifier == None:
+        abort(400)
+    if len(identifier) == 0:
+        abort(400)
+
+    conn = None
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
+        if r.ok == False:
+            raise ValueError("Cannot find specimen with identifier: " + identifier)
+        uuid = json.loads(r.text)[0]['hmuuid']
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        siblingid_list = Specimen.get_siblingid_list(driver, uuid)
+        return jsonify({'siblingid_list': siblingid_list}), 200 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/specimens/<identifier>', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
@@ -312,7 +366,9 @@ def get_specimen(identifier):
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/specimens/search/', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
@@ -344,6 +400,7 @@ def search_specimen():
         for writeable_group_data in writeable_group_list:
             writeable_uuid_list.append(writeable_group_data['uuid'])
             
+        filtered_group_uuid_list = [] 
         entity_type_list = request.args.get('entity_type')
         specimen_type = None
         searchterm = None
@@ -351,12 +408,29 @@ def search_specimen():
             specimen_type = request.args.get('specimen_type')
         if 'search_term' in request.args:
             searchterm = request.args.get('search_term')
-
-        if searchterm == None:
+        # by default, show data from all the groups that the user can access
+        filtered_group_uuid_list.extend(readonly_uuid_list)
+        filtered_group_uuid_list.extend(writeable_uuid_list)
+        # remove the test group, by default
+        test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
+        if test_group_uuid in filtered_group_uuid_list:
+            filtered_group_uuid_list.remove(test_group_uuid)
+        # if the user selects a specific group in the search filter,
+        # then use it for the search
+        if 'group' in request.args:
+            group_name = request.args.get('group')
+            if group_name != 'All Groups':
+                group_info = entity.get_group_by_name(group_name)
+                # reset the filtered group list
+                filtered_group_uuid_list = []
+                filtered_group_uuid_list.append(group_info['uuid'])
+                
+        specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list, specimen_type)
+        """if searchterm == None:
             specimen_list = entity.get_editable_entities_by_type(driver, token, specimen_type)
         else:
-            specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, specimen_type)
-
+            specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list, specimen_type)
+        """
         return jsonify({'specimens': specimen_list}), 200 
 
     except AuthError as e:
@@ -368,7 +442,9 @@ def search_specimen():
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 
 if __name__ == '__main__':

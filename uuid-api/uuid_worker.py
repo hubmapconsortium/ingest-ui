@@ -17,7 +17,7 @@ from contextlib import closing
 import json
 
 PROP_FILE_NAME = os.path.join(os.path.dirname(__file__), 'uuid.properties') 
-DOI_ALPHA_CHARS=['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z']                 
+DOI_ALPHA_CHARS=['B','C','D','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','X','Z']                 
 DOI_NUM_CHARS=['2','3','4','5','6','7','8','9']                                                                                   
 HEX_CHARS=['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
 UUID_SELECTS = "HMUUID as hmuuid, DOI_SUFFIX as doiSuffix, ENTITY_TYPE as type, PARENT_UUID as parentId, TIME_GENERATED as timeStamp, USER_ID as userId, USER_EMAIL as email"
@@ -71,7 +71,7 @@ class UUIDWorker:
 		self.lock = threading.RLock()
 		self.hmdb = DBConn(self.dbHost, self.dbUsername, self.dbPassword, self.dbName)
 
-	def uuidPost(self, req):
+	def uuidPost(self, req, nIds):
 		userInfo = self.authHelper.getUserInfoUsingRequest(req)
 		if isinstance(userInfo, Response):
 			return userInfo;
@@ -103,6 +103,12 @@ class UUIDWorker:
 		if 'email' in userInfo:
 			userEmail = userInfo['email']
 		
+		rVal = []
+		for x in range(nIds):
+			rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
+		return rVal
+
+	def newUUIDTest(self, generateDOI, parentId, entityType, userId, userEmail):
 		return self.newUUID(generateDOI, parentId, entityType, userId, userEmail)
 
 	def uuidGen(self):
@@ -135,16 +141,25 @@ class UUIDWorker:
 			now = time.strftime('%Y-%m-%d %H:%M:%S')
 			sql = "INSERT INTO hm_uuids (HMUUID, DOI_SUFFIX, ENTITY_TYPE, PARENT_UUID, TIME_GENERATED, USER_ID, USER_EMAIL) VALUES (%s, %s, %s, %s, %s, %s,%s)"
 			vals = (hmid, doi, entityType, parentID, now, userId, userEmail)
-			db = self.hmdb.getDB()
-			with closing(db.cursor()) as curs:
-				curs.execute(sql, vals)
-			db.commit()
+			with closing(self.hmdb.getDBConnection()) as dbConn:
+				with closing(dbConn.cursor()) as curs:
+					curs.execute(sql, vals)
+				dbConn.commit()
+
 		if generateDOI:
 			dispDoi= 'HBM:' + doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
-			return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
+			rVal = {
+					"displayDoi": dispDoi,
+					"doi": doi,
+					"uuid": hmid
+				}
+			#return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
 		else:
-			return jsonify(uuid=hmid)
-
+			rVal = {
+					"uuid":hmid
+				}
+			#return jsonify(uuid=hmid)
+		return rVal
 	
 	def newDoi(self):
 		nums1 = ''                                                                                                                        
@@ -181,25 +196,30 @@ class UUIDWorker:
 		elif len(tid) == 32:
 			sql = "select " + UUID_SELECTS + " from hm_uuids where hmuuid ='" + tid + "'"
 		else:
-			return Response("Invalid HuBMAP Id (empty or bad length)", 400)	
-		with closing(self.hmdb.getDB().cursor()) as curs:
-			curs.execute(sql)
-			results = [dict((curs.description[i][0], value) for i, value in enumerate(row)) for row in curs.fetchall()]
+			return Response("Invalid HuBMAP Id (empty or bad length)", 400)
+		with closing(self.hmdb.getDBConnection()) as dbConn:
+			with closing(dbConn.cursor()) as curs:
+				curs.execute(sql)
+				results = [dict((curs.description[i][0], value) for i, value in enumerate(row)) for row in curs.fetchall()]
+
 		return json.dumps(results, indent=4, sort_keys=True, default=str)
 
 	def uuidExists(self, hmid):
-		with closing(self.hmdb.getDB().cursor()) as curs:
-			curs.execute("select count(*) from hm_uuids where hmuuid = '" + hmid + "'")
-			res = curs.fetchone()
+		with closing(self.hmdb.getDBConnection()) as dbConn:
+			with closing(dbConn.cursor()) as curs:
+				curs.execute("select count(*) from hm_uuids where hmuuid = '" + hmid + "'")
+				res = curs.fetchone()
+
 		if(res is None or len(res) == 0): return False
 		if(res[0] == 1): return True
 		if(res[0] == 0): return False
 		raise Exception("Multiple uuids found matching " + hmid)
 	
 	def doiExists(self, doi):
-		with closing(self.hmdb.getDB().cursor()) as curs:
-			curs.execute("select count(*) from hm_uuids where doi_suffix = '" + doi + "'")
-			res = curs.fetchone()
+		with closing(self.hmdb.getDBConnection()) as dbConn:
+			with closing(dbConn.cursor()) as curs:
+				curs.execute("select count(*) from hm_uuids where doi_suffix = '" + doi + "'")
+				res = curs.fetchone()
 		if(res is None or len(res) == 0): return False
 		if(res[0] == 1): return True
 		if(res[0] == 0): return False

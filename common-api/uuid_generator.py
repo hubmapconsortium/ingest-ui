@@ -51,9 +51,9 @@ def load_config_file():
         print (msg + "  Program stopped.")
         exit(0)
 
-def getNewUUID(current_token, uuid_type):
+def getNewUUID(current_token, uuid_type, sample_count=1):
     load_config_file()
-    url = app_config['UUID_WEBSERVICE_URL']
+    url = app_config['UUID_WEBSERVICE_URL'] + "?sample_count=" + str(sample_count)
     if current_token == None or len(current_token) == 0:
         raise ValueError("Error in getNewUUID: the token cannot be blank")
     if uuid_type == None or len(uuid_type) == 0:
@@ -62,12 +62,12 @@ def getNewUUID(current_token, uuid_type):
         # take the incoming uuid_type and uppercase it
         uuid_datatype = str(uuid_type).upper()
         r = requests.post(url, json={"entityType" : "{uuid_datatype}", "generateDOI" : "true"}, 
-                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token, uuid_datatype=uuid_datatype )})
+                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token, uuid_datatype=uuid_datatype, sample_count=sample_count )})
         if r.ok == True:
             data = json.loads(r.content.decode())
             return data
         else:
-            msg = 'HTTP Response: ' + r.status_code + ' msg: ' + r.text 
+            msg = 'HTTP Response: ' + str(r.status_code) + ' msg: ' + str(r.text) 
             raise Exception(msg)
     except ConnectionError as connerr: # "connerr"...get it? like "ConAir"
         pprint(connerr)

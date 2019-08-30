@@ -254,42 +254,37 @@ class Entity(object):
     def get_editable_entities_by_type(self, driver, token, type_code=None): 
         with driver.session() as session:
             return_list = []
-            current_group_uuid = None
-            
+
             try:
                 #if type_code != None:
-                #    general_type = HubmapConst.get_general_node_type_attribute(type_code)            
+                #    general_type = HubmapConst.get_general_node_type_attribute(type_code)
+                group_list = []            
                 hmgroups = self.get_user_groups(token)
                 for g in hmgroups:
                     group_record = self.get_group_by_identifier(g['name'])
-                    if group_record['generateuuid'] == True:
-                        current_group_uuid = g['uuid']
-                
-                # for now, if the user is not a member of a group with write privileges, return an empty list
-                if current_group_uuid == None:
-                    return return_list
-                       
+                    group_list.append(group_record['uuid'])
                 matching_stmt = ""
                 if type_code != None:
                     if str(type_code).lower() == 'donor':
                         # ensure proper case
                         type_code = 'Donor'
                         type_attrib = HubmapConst.ENTITY_TYPE_ATTRIBUTE
-                        matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
-                            type_attrib=type_attrib, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
+                        matching_stmt = "MATCH (a {{{type_attrib}: '{type_code}'}})-[:{rel_code}]->(m)".format(
+                            type_attrib=type_attrib, type_code=type_code, 
                             rel_code=HubmapConst.HAS_METADATA_REL)
                     else:
                         type_attrib = HubmapConst.SPECIMEN_TYPE_ATTRIBUTE                        
-                        matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{ {group_attrib}: '{group_uuid}', {type_attrib}: '{type_code}' }})".format(
-                            type_attrib=type_attrib, type_code=type_code, group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid,
-                            rel_code=HubmapConst.HAS_METADATA_REL)
+                        matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{ {type_attrib}: '{type_code}' }})".format(
+                            type_attrib=type_attrib, type_code=type_code, rel_code=HubmapConst.HAS_METADATA_REL)
                         
                 else:
-                    matching_stmt = "MATCH (a)-[:{rel_code}]->(m {{{group_attrib}: '{group_uuid}'}})".format(
-                        group_attrib=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE, group_uuid=current_group_uuid, rel_code=HubmapConst.HAS_METADATA_REL)
+                    matching_stmt = "MATCH (a)-[:{rel_code}]->(m)".format(
+                        rel_code=HubmapConst.HAS_METADATA_REL)
                     
-                stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
-                    uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
+                stmt = matching_stmt + " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{hubmapid_attr} AS hubmap_identifier, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
+                    uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                    activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
+                    display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE, provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE)
 
                 print("Here is the query: " + stmt)
                 readonly_group_list = self.get_readonly_user_groups(token)
@@ -309,10 +304,12 @@ class Entity(object):
                     data_record['entity_doi'] = record['entity_doi']
                     data_record['datatype'] = record['datatype']
                     data_record['properties'] = record['metadata_properties']
+                    data_record['hubmap_identifier'] = record['hubmap_identifier']
                     # determine if the record is writable by the current user
                     data_record['writeable'] = False
-                    if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
-                        data_record['writeable'] = True
+                    if 'provenance_group_uuid' in record['metadata_properties']:
+                        if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
+                            data_record['writeable'] = True
                     return_list.append(data_record)
                 return return_list                    
             except CypherError as cse:
@@ -344,6 +341,28 @@ class Entity(object):
                 if str(group['uuid']).lower() == str(identifier).lower():
                     return group
         raise ValueError("cannot find a Hubmap group matching: [" + identifier + "]")
+
+    def get_group_by_name(self, group_name):
+        if len(group_name) == 0:
+            raise ValueError("group_name cannot be blank")
+        authcache = None
+        if AuthHelper.isInitialized() == False:
+            authcache = AuthHelper.create(
+                self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+        else:
+            authcache = AuthHelper.instance()
+        groupinfo = authcache.getHuBMAPGroupInfo()
+        # search through the keys for the identifier, return the value
+        for k in groupinfo.values():
+            if str(k['name']).lower() == str(group_name).lower()  or str(k['displayname']).lower() == str(group_name).lower():
+                group = k
+                return group
+            if 'tmc_prefix' in k:
+                if str(k['tmc_prefix']).lower() == str(group_name).lower():
+                    group = k
+                    return group
+
+        raise ValueError("cannot find a Hubmap group matching: [" + group_name + "]")
         
     @staticmethod
     def get_entity_by_type(driver, general_type, type_code): 
@@ -388,9 +407,10 @@ class Entity(object):
             left_dir = '<'
         elif str(direction).lower() == 'right':
             right_dir = '>'
-        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' RETURN CASE WHEN e.{entitytype} is not null THEN e.{entitytype} WHEN e.{activitytype} is not null THEN e.{activitytype} ELSE e.{agenttype} END AS datatype, e.{uuid_attrib} AS uuid, e.{doi_attrib} AS doi, e.{doi_display_attrib} AS display_doi, properties(a) AS properties".format(
+        stmt = "MATCH (e){left_dir}-[:{relationship_label}]-{right_dir}(a) WHERE e.{uuid_attrib}= '{identifier}' RETURN CASE WHEN e.{entitytype} is not null THEN e.{entitytype} WHEN e.{activitytype} is not null THEN e.{activitytype} ELSE e.{agenttype} END AS datatype, e.{uuid_attrib} AS uuid, e.{doi_attrib} AS doi, e.{doi_display_attrib} AS display_doi, e.{hubmap_identifier_attrib} AS hubmap_identifier, properties(a) AS properties".format(
             identifier=identifier,uuid_attrib=HubmapConst.UUID_ATTRIBUTE, doi_attrib=HubmapConst.DOI_ATTRIBUTE, doi_display_attrib=HubmapConst.DISPLAY_DOI_ATTRIBUTE,
                 entitytype=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, agenttype=HubmapConst.AGENT_TYPE_ATTRIBUTE,
+                hubmap_identifier_attrib=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
                 relationship_label=relationship_label, right_dir=right_dir, left_dir=left_dir)
         return stmt                  
 
@@ -417,6 +437,8 @@ class Entity(object):
                     # use the doi and display doi from the entity
                     dataset_record = record['properties']
                     #dataset_record['entity_uuid'] = record['uuid']
+                    if record.get('hubmap_identifier', None) != None:
+                        dataset_record['hubmap_identifier'] = record['hubmap_identifier']
                     dataset_record['doi'] = record['doi']
                     dataset_record['display_doi'] = record['display_doi']
                     #remove entitytype since it will be the other entity's type
@@ -562,13 +584,23 @@ class Entity(object):
 
 if __name__ == "__main__":
     entity = Entity()
-    token = "AggQN13V56BW10NMY9e18vPen0rEEeDW5aorWD39gBx1j48pwycJC31pG8WXdvYdevkD8vGJa210qxc1ke58WSBgD6"
+    group_info = entity.get_group_by_name('HuBMAP-UFlorida')
+    print(group_info)
+    group_info = entity.get_group_by_name('University of Florida TMC')
+    print(group_info)
+    group_info = entity.get_group_by_name('UFL')
+    print(group_info)
+    """token = "AggQN13V56BW10NMY9e18vPen0rEEeDW5aorWD39gBx1j48pwycJC31pG8WXdvYdevkD8vGJa210qxc1ke58WSBgD6"
     writeable_groups = entity.get_writeable_user_groups(token)
     print('Writeable groups:')
     print(writeable_groups)
     readonly_groups = entity.get_readonly_user_groups(token)
     print('Readonly groups:')
-    print(readonly_groups)
+    print(readonly_groups)"""
+    
+    
+    
+    
     """conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Dataset'
