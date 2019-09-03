@@ -64,140 +64,6 @@ def load_config_file():
         exit(0)
 
 
-@app.before_request
-def validate_globus_token():
-    #TODO: make this method examine the token
-    if request.path == '/login' or request.path == '/logout' or request.path == '/':
-        #ignore these endpoints
-        return
-    auth_header = request.headers.get('Authorization')
-    if auth_header == None:
-        return jsonify( { 'msg': 'Unauthorized: No token found' } ), 401
-    """authorizer = globus_sdk.AccessTokenAuthorizer(session['tokens']['transfer.api.globus.org']['access_token'])
-    transfer_client = globus_sdk.TransferClient(authorizer=authorizer)
-
-    print("Endpoints belonging to the current logged-in user:")
-    for ep in transfer_client.endpoint_search(filter_scope="my-endpoints"):
-        print("[{}] {}".format(ep["id"], ep["display_name"]))
-    """
-
-@app.route('/')
-def index():
-    """
-    This could be any page you like, rendered by Flask.
-    For this simple example, it will either redirect you to login, or print
-    a simple message.
-    """
-    if not session.get('is_authenticated'):
-        return redirect(url_for('login'))
-    return "You are successfully logged in!"
-
-@app.route('/introspect')
-def token_introspect():
-    cc = globus_sdk.ConfidentialAppAuthClient(
-        app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
-    #scopes = "profile"
-    scopes = ["urn:globus:auth:scope:transfer.api.globus.org:all","email","openid","profile"]
-    
-    token_response = cc.oauth2_client_credentials_tokens(scopes)
-
-    globus_auth_data = token_response.by_resource_server['auth.globus.org']
-    globus_transfer_data = token_response.by_resource_server['transfer.api.globus.org']
-    globus_auth_token = globus_auth_data['access_token']
-    globus_transfer_token = globus_transfer_data['access_token']
-    
-    token_list['auth.globus.org']= {'token' : globus_auth_token}
-    token_list['transfer.globus.org']= {'token' : globus_transfer_token}
-    
-    auth_token_data = cc.oauth2_token_introspect(str(globus_auth_token), include='identity_set')
-    print ("Auth token data: " + auth_token_data.text)
-    transfer_token_data = cc.oauth2_token_introspect(str(globus_transfer_token), include='identity_set')
-    print ("Transfer token data: " + transfer_token_data.text)
-    
-    return jsonify( { 'status': 'done' } ), 200
-
-@app.route('/login')
-def login():
-    redirect_uri = url_for('login', _external=True)
-
-    client = globus_sdk.ConfidentialAppAuthClient(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
-    client.oauth2_start_flow(redirect_uri)
-
-    # If there's no "code" query string parameter, we're in this route
-    # starting a Globus Auth login flow.
-    # Redirect out to Globus Auth
-    if 'code' not in request.args:                                
-        
-        auth_uri = client.oauth2_get_authorize_url(additional_params={"scope": "openid profile email urn:globus:auth:scope:transfer.api.globus.org:all urn:globus:auth:scope:auth.globus.org:view_identities" }) #"urn:globus:auth:scope:transfer.api.globus.org:all urn:globus:auth:scope:auth.globus.org:view_identities openid email profile"})
-        return redirect(auth_uri)
-    # If we do have a "code" param, we're coming back from Globus Auth
-    # and can start the process of exchanging an auth code for a token.
-    else:
-        code = request.args.get('code')
-        tokens = client.oauth2_exchange_code_for_tokens(code)
-
-        # store the resulting tokens in the session
-        session.update(
-            tokens=tokens.by_resource_server,
-            is_authenticated=True
-        )
-        globus_auth_data = tokens.by_resource_server['auth.globus.org']
-        globus_transfer_data = tokens.by_resource_server['transfer.api.globus.org']
-        globus_auth_token = globus_auth_data['access_token']
-        globus_transfer_token = globus_transfer_data['access_token']
-        
-        token_list['auth.globus.org']= {'token' : globus_auth_token}
-        token_list['transfer.globus.org']= {'token' : globus_transfer_token}
-
-        transferAuthorizer = globus_sdk.AccessTokenAuthorizer(session['tokens']['transfer.api.globus.org']['access_token'])
-        authAuthorizer = globus_sdk.AccessTokenAuthorizer(session['tokens']['auth.globus.org']['access_token'])
-        print('client/app token: ' + str(base64.b64encode(bytes(app.config['APP_CLIENT_ID'] + ':' + app.config['APP_CLIENT_SECRET'], 'utf-8'))))
-        print("Transfer Token:")
-        pprint(vars(transferAuthorizer))
-#        transfer_client = globus_sdk.TransferClient(authorizer=transferAuthorizer)        
-#        print("Endpoints belonging to the current logged-in user:")
-#        for ep in transfer_client.endpoint_search(filter_scope="my-endpoints"):
-#            print("[{}] {}".format(ep["id"], ep["display_name"]))
-        print("----------------------------")
-        print("Auth Token:")
-        pprint(vars(authAuthorizer))
-      
-        return redirect(url_for('index'))
-
-@app.route('/logout')
-def logout():
-    """
-    - Revoke the tokens with Globus Auth.
-    - Destroy the session state.
-    - Redirect the user to the Globus Auth logout page.
-    """
-    client = globus_sdk.ConfidentialAppAuthClient(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
-
-    # Revoke the tokens with Globus Auth
-    if 'tokens' in session:    
-        for token in (token_info['access_token']
-                      for token_info in session['tokens'].values()):
-            client.oauth2_revoke_token(token)
-
-    # Destroy the session state
-    session.clear()
-
-    # the return redirection location to give to Globus AUth
-    redirect_uri = url_for('index', _external=True)
-
-    # build the logout URI with query params
-    # there is no tool to help build this (yet!)
-    globus_logout_url = (
-        'https://auth.globus.org/v2/web/logout' +
-        '?client={}'.format(app.config['APP_CLIENT_ID']) +  #'?client={}'.format(app.config['PORTAL_CLIENT_ID']) +
-        '&redirect_uri={}'.format(redirect_uri) +
-        '&redirect_name=Globus Example App')
-
-    # Redirect the user to the Globus Auth logout page
-    clear_tokens()
-    return redirect(globus_logout_url)
-
-
 @app.route('/datasets', methods=["GET"])
 def get_datasets():
     conn = None
@@ -367,35 +233,6 @@ def validate_dataset(uuid):
     finally:
         conn.close()
 
-def clear_tokens():
-    global token_list
-    client = globus_sdk.ConfidentialAppAuthClient(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
-    try:
-        for token_key in token_list.keys():
-            print ("Revoking token: " + str(token_list[token_key]['token']))
-            client.oauth2_revoke_token(token_list[token_key]['token'])
-    except:
-        print ('A general error occurred: ')
-        for x in sys.exc_info():
-            print (x)
-
-
-def generate_tokens():
-    cc = globus_sdk.ConfidentialAppAuthClient(
-        app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
-    #scopes = "profile"
-    scopes = ["urn:globus:auth:scope:transfer.api.globus.org:all","email","openid","profile"]
-    
-    token_response = cc.oauth2_client_credentials_tokens(scopes)
-
-    globus_auth_data = token_response.by_resource_server['auth.globus.org']
-    globus_transfer_data = token_response.by_resource_server['transfer.api.globus.org']
-    globus_auth_token = globus_auth_data['access_token']
-    globus_transfer_token = globus_transfer_data['access_token']
-    
-    token_list['auth.globus.org']= {'token' : globus_auth_token}
-    token_list['transfer.globus.org']= {'token' : globus_transfer_token}
-
 # NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
 # if the file path was wrong.  
 def staging_directory(dir_UUID):
@@ -451,6 +288,6 @@ if __name__ == '__main__':
     try:
         app.run()
     finally:
-        clear_tokens()
+        pass
     
 
