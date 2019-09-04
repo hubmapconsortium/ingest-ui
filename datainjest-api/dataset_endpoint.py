@@ -63,31 +63,32 @@ def load_config_file():
         print (msg + "  Program stopped.")
         exit(0)
 
+@app.route('/datasets/serach', methods = ['GET'])
+def search_datasets():
+    pass
 
-@app.route('/datasets', methods=["GET"])
-def get_datasets():
+@app.route('/datasets/<uuid>', methods = ['GET'])
+def get_dataset(uuid):
+    if uuid == None or len(uuid) == 0:
+        abort(400, jsonify( { 'error': 'uuid parameter is required to get a dataset' } ))
+    
     conn = None
+    new_uuid = None
     try:
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
-        data = dataset.get_datasets(driver)
+        dataset_record = dataset.get_dataset(driver, uuid)
         conn.close()
+        return jsonify( { 'dataset': dataset_record } ), 200
     
-        response = app.response_class(
-            response=json.dumps(data),
-            status=200,
-            mimetype='application/json'
-        )
     except:
-        #TODO: return a 400 or 500 error
         msg = 'An error occurred: '
         for x in sys.exc_info():
-            msg += x
+            msg += str(x)
         abort(400, msg)
     finally:
         conn.close()
-    return response
 
 @app.route('/datasets', methods = ['POST'])
 # NOTE: The first step in the process is to create a "data stage" entity
@@ -127,56 +128,25 @@ def create_datastage():
     finally:
         conn.close()
 
-@app.route('/datasets/<uuid>', methods = ['PUT'])
-def modify_dataset(uuid):
+@app.route('/datasets/<uuid>/validate', methods = ['PUT'])
+def validate_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
-        abort(400, jsonify( { 'error': 'uuid parameter is required to modify a dataset' } ))
+        abort(400, jsonify( { 'error': 'uuid parameter is required to publish a dataset' } ))
     
-    new_dataset = {
-        'name': request.json['name'],
-        'description': request.json.get('description', ''),
-        'parentcollection': request.json['parentcollection'],
-        'hasphi': request.json['hasphi'],
-        'labcreatedat': request.json['labcreatedat'],
-        'createdby': request.json['createdby'],        
-    }
     conn = None
     new_uuid = None
     try:
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
-        new_uuid = dataset.update_dataset(driver, uuid, new_dataset['name'], new_dataset['description'], new_dataset['parentcollection'], new_dataset['hasphi'], new_dataset['labcreatedat'], new_dataset['createdby'])
+        new_uuid = dataset.validate_dataset(driver, uuid)
         conn.close()
-        return jsonify( { 'uuid': new_uuid } ), 204
+        return jsonify( { 'uuid': new_uuid, 'status': 'Valid' } ), 204
     
     except:
         msg = 'An error occurred: '
         for x in sys.exc_info():
             msg += x
-        abort(400, msg)
-    finally:
-        conn.close()
-
-@app.route('/datasets/<uuid>', methods = ['GET'])
-def get_dataset(uuid):
-    if uuid == None or len(uuid) == 0:
-        abort(400, jsonify( { 'error': 'uuid parameter is required to get a dataset' } ))
-    
-    conn = None
-    new_uuid = None
-    try:
-        conn = Neo4jConnection()
-        driver = conn.get_driver()
-        dataset = Dataset()
-        dataset_record = dataset.get_dataset(driver, uuid)
-        conn.close()
-        return jsonify( { 'dataset': dataset_record } ), 200
-    
-    except:
-        msg = 'An error occurred: '
-        for x in sys.exc_info():
-            msg += str(x)
         abort(400, msg)
     finally:
         conn.close()
@@ -210,20 +180,28 @@ def publish_datastage(uuid):
     finally:
         conn.close()
 
-@app.route('/datasets/<uuid>/validate', methods = ['PUT'])
-def validate_dataset(uuid):
+@app.route('/datasets/<uuid>', methods = ['PUT'])
+def modify_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
-        abort(400, jsonify( { 'error': 'uuid parameter is required to publish a dataset' } ))
+        abort(400, jsonify( { 'error': 'uuid parameter is required to modify a dataset' } ))
     
+    new_dataset = {
+        'name': request.json['name'],
+        'description': request.json.get('description', ''),
+        'parentcollection': request.json['parentcollection'],
+        'hasphi': request.json['hasphi'],
+        'labcreatedat': request.json['labcreatedat'],
+        'createdby': request.json['createdby'],        
+    }
     conn = None
     new_uuid = None
     try:
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
-        new_uuid = dataset.validate_dataset(driver, uuid)
+        new_uuid = dataset.update_dataset(driver, uuid, new_dataset['name'], new_dataset['description'], new_dataset['parentcollection'], new_dataset['hasphi'], new_dataset['labcreatedat'], new_dataset['createdby'])
         conn.close()
-        return jsonify( { 'uuid': new_uuid, 'status': 'Valid' } ), 204
+        return jsonify( { 'uuid': new_uuid } ), 204
     
     except:
         msg = 'An error occurred: '
@@ -232,6 +210,39 @@ def validate_dataset(uuid):
         abort(400, msg)
     finally:
         conn.close()
+
+@app.route('/datasets/<uuid>/lock', methods = ['POST'])
+def lock_dataset(uuid):
+    pass
+
+@app.route('/datasets/<uuid>/reopen', methods = ['POST'])
+def reopen_dataset(uuid):
+    pass
+
+@app.route('/datasets', methods = ['GET'])
+def get_datasets():
+    conn = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        dataset = Dataset()
+        data = dataset.get_datasets(driver)
+        conn.close()
+    
+        response = app.response_class(
+            response=json.dumps(data),
+            status=200,
+            mimetype='application/json'
+        )
+    except:
+        #TODO: return a 400 or 500 error
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += x
+        abort(400, msg)
+    finally:
+        conn.close()
+    return response
 
 # NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
 # if the file path was wrong.  
