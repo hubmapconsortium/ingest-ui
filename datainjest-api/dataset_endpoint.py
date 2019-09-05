@@ -63,9 +63,30 @@ def load_config_file():
         print (msg + "  Program stopped.")
         exit(0)
 
-@app.route('/datasets/serach', methods = ['GET'])
-def search_datasets():
-    pass
+@app.route('/datasets', methods = ['GET'])
+def get_datasets():
+    conn = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        dataset = Dataset()
+        data = dataset.get_datasets(driver)
+        conn.close()
+    
+        response = app.response_class(
+            response=json.dumps(data),
+            status=200,
+            mimetype='application/json'
+        )
+    except:
+        #TODO: return a 400 or 500 error
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += x
+        abort(400, msg)
+    finally:
+        conn.close()
+    return response
 
 @app.route('/datasets/<uuid>', methods = ['GET'])
 def get_dataset(uuid):
@@ -219,30 +240,17 @@ def lock_dataset(uuid):
 def reopen_dataset(uuid):
     pass
 
-@app.route('/datasets', methods = ['GET'])
-def get_datasets():
-    conn = None
-    try:
-        conn = Neo4jConnection()
-        driver = conn.get_driver()
-        dataset = Dataset()
-        data = dataset.get_datasets(driver)
-        conn.close()
-    
-        response = app.response_class(
-            response=json.dumps(data),
-            status=200,
-            mimetype='application/json'
-        )
-    except:
-        #TODO: return a 400 or 500 error
-        msg = 'An error occurred: '
-        for x in sys.exc_info():
-            msg += x
-        abort(400, msg)
-    finally:
-        conn.close()
-    return response
+@app.route('/collections', methods = ['GET'])
+def get_collections():
+    pass
+
+@app.route('/collections', methods = ['POST'])
+def create_collection():
+    pass
+
+@app.route('/collections/<uuid>', methods = ['PUT'])
+def update_collection():
+    pass
 
 # NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
 # if the file path was wrong.  
