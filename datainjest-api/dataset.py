@@ -4,12 +4,12 @@ Created on Apr 18, 2019
 @author: chb69
 '''
 from neo4j_connection import Neo4jConnection
-from edu.pitt.dbmi.hubmap.neo4j.UUIDGenerator import getNewUUID
+# from edu.pitt.dbmi.hubmap.neo4j.UUIDGenerator import getNewUUID
 from neo4j import TransactionError, CypherError
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
-from hubmap_const import HubmapConst 
+# from hubmap_const import HubmapConst 
 
 class Dataset(object):
     '''

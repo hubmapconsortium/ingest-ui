@@ -3,6 +3,8 @@ Created on Apr 23, 2019
 
 @author: chb69
 '''
+import sys
+import os
 from dataset import Dataset
 from neo4j_connection import Neo4jConnection
 from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json
@@ -10,58 +12,94 @@ import sys
 import globus_sdk
 from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient 
 import configparser
-from edu.pitt.dbmi.hubmap.neo4j.UUIDGenerator import getNewUUID
+# from edu.pitt.dbmi.hubmap.neo4j.UUIDGenerator import getNewUUID
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from pprint import pprint
 import base64
 from globus_sdk.exc import TransferAPIError
+from flask_cors import CORS, cross_origin
+from hm_auth import AuthHelper, secured
 
 
 app = Flask(__name__)
 token_list = {}
-
 @app.before_first_request
 def load_app_client():
     load_config_file()
     return globus_sdk.ConfidentialAppAuthClient(
         app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
 
-def load_config_file():    
+def load_config_file():
     config = configparser.ConfigParser()
     try:
-        config.read('config.ini')
+        config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
-        app.config['APP_CLIENT_SECRET'] = config.get('GLOBUS', 'APP_CLIENT_SECRET')
-        app.config['TRANSFER_ENDPOINT_UUID'] = config.get('GLOBUS', 'TRANSFER_ENDPOINT_UUID')
+        app.config['APP_CLIENT_SECRET'] = config.get(
+            'GLOBUS', 'APP_CLIENT_SECRET')
+        app.config['TRANSFER_ENDPOINT_UUID'] = config.get(
+            'GLOBUS', 'TRANSFER_ENDPOINT_UUID')
         app.config['SECRET_KEY'] = config.get('GLOBUS', 'SECRET_KEY')
-        app.config['STAGING_FILE_PATH'] = config.get('GLOBUS', 'STAGING_FILE_PATH')
-        app.config['PUBLISH_FILE_PATH'] = config.get('GLOBUS','PUBLISH_FILE_PATH')
+        app.config['STAGING_FILE_PATH'] = config.get(
+            'GLOBUS', 'STAGING_FILE_PATH')
+        app.config['PUBLISH_FILE_PATH'] = config.get(
+            'GLOBUS', 'PUBLISH_FILE_PATH')
+        app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
+        app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
+        app.config['LOCAL_STORAGE_DIRECTORY'] = config.get('FILE_SYSTEM','LOCAL_STORAGE_DIRECTORY')
         #app.config['DEBUG'] = True
     except OSError as err:
-        msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(err)
-        print (msg + "  Program stopped.")
+        msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
+            err)
+        print(msg + "  Program stopped.")
         exit(0)
     except configparser.NoSectionError as noSectError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(noSectError)
-        print (msg + "  Program stopped.")
+        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            noSectError)
+        print(msg + "  Program stopped.")
         exit(0)
     except configparser.NoOptionError as noOptError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(noOptError)
-        print (msg + "  Program stopped.")
+        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            noOptError)
+        print(msg + "  Program stopped.")
         exit(0)
     except SyntaxError as syntaxError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(syntaxError)
+        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            syntaxError)
         msg = msg + "  Cannot read line: {0}".format(syntaxError.text)
-        print (msg + "  Program stopped.")
-        exit(0)        
+        print(msg + "  Program stopped.")
+        exit(0)
     except AttributeError as attrError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(attrError)
+        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            attrError)
         msg = msg + "  Cannot read line: {0}".format(attrError.text)
-        print (msg + "  Program stopped.")
-        exit(0)        
+        print(msg + "  Program stopped.")
+        exit(0)
     except:
         msg = "Unexpected error:", sys.exc_info()[0]
-        print (msg + "  Program stopped.")
+        print(msg + "  Program stopped.")
         exit(0)
+
+config = configparser.ConfigParser()
+try:
+    config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
+    app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
+    app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
+    app.config['APP_CLIENT_SECRET'] = config.get(
+        'GLOBUS', 'APP_CLIENT_SECRET')
+    app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
+    if AuthHelper.isInitialized() == False:
+        authcache = AuthHelper.create(
+            app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
+    else:
+        authcache = AuthHelper.instance()
+except:
+    msg = "Unexpected error:", sys.exc_info()[0]
+    print(msg + "  Program stopped.")
+    exit(0)
+    
+@app.route('/hello', methods=['GET'])
+def hello():
+    return jsonify({'uuid': 'hello'}), 200
 
 @app.route('/datasets', methods = ['GET'])
 def get_datasets():
@@ -241,16 +279,45 @@ def reopen_dataset(uuid):
     pass
 
 @app.route('/collections', methods = ['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 def get_collections():
-    pass
+    return json.dumps([{
+        'name': 'collection1',
+        'description': 'This is collection 1',
+        'uuid': 'dc01a09f-e4db-4e53-a560-7a2ad80c1f02',
+        'display_dio': 'HBM:838-SWXH-475',
+        'doi': '838SWXH475',
+        'entitytype': 'Collection'
+    }, {
+        'name': 'collection2',
+        'description': 'This is collection 2',
+        'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f02',
+        'display_doi': 'HBM:654-STTH-775',
+        'doi': '654STTH775',
+        'entitytype': 'Collection'
+    }]), 200
 
 @app.route('/collections', methods = ['POST'])
 def create_collection():
-    pass
+    return jsonify({
+        'name': 'collection3',
+        'description': 'This is collection 3',
+        'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f03',
+        'display_doi': 'HBM:654-STTH-775',
+        'doi': '654STTH775',
+        'entitytype': 'Collection'
+    }), 201
 
 @app.route('/collections/<uuid>', methods = ['PUT'])
 def update_collection():
-    pass
+    return jsonify({
+        'name': 'collection1',
+        'description': 'This is collection 1',
+        'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f02',
+        'display_doi': 'HBM:654-STTH-775',
+        'doi': '654STTH775',
+        'entitytype': 'Collection'
+    }), 200
 
 # NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
 # if the file path was wrong.  
@@ -305,7 +372,7 @@ def get_publish_path(uuid):
 
 if __name__ == '__main__':
     try:
-        app.run()
+        app.run(port=5005)
     finally:
         pass
     
