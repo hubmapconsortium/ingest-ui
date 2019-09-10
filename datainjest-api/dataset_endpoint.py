@@ -12,12 +12,12 @@ import sys
 import globus_sdk
 from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient 
 import configparser
+from flask_cors import CORS, cross_origin
 # from edu.pitt.dbmi.hubmap.neo4j.UUIDGenerator import getNewUUID
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from pprint import pprint
 import base64
 from globus_sdk.exc import TransferAPIError
-from flask_cors import CORS, cross_origin
 from hm_auth import AuthHelper, secured
 
 
@@ -100,7 +100,7 @@ def hello():
     return jsonify({'uuid': 'hello'}), 200
 
 @app.route('/datasets', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
 @secured(groups="HuBMAP-read")
 def get_datasets():
     conn = None
@@ -151,12 +151,13 @@ def get_dataset(uuid):
     finally:
         conn.close()
 
-@app.route('/datasets', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@app.route('/datasets', methods=['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET','POST'])
 @secured(groups="HuBMAP-read")
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
 def create_datastage():
+    print("Get in the create datastage method")
     if not request.json or not 'name' in request.json:
         abort(400)
     if 'data' not in request.form:
