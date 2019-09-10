@@ -13,13 +13,15 @@ import globus_sdk
 from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient 
 import configparser
 from flask_cors import CORS, cross_origin
-# from edu.pitt.dbmi.hubmap.neo4j.UUIDGenerator import getNewUUID
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from pprint import pprint
 import base64
 from globus_sdk.exc import TransferAPIError
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
+from entity import Entity
+from neo4j_connection import Neo4jConnection
+from uuid_generator import getNewUUID
+from hubmap_const import HubmapConst
 from hm_auth import AuthHelper, secured
-
 
 app = Flask(__name__)
 token_list = {}
@@ -152,39 +154,35 @@ def get_dataset(uuid):
         conn.close()
 
 @app.route('/datasets', methods=['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET','POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 @secured(groups="HuBMAP-read")
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
 def create_datastage():
-    print("Get in the create datastage method")
-    if not request.json or not 'name' in request.json:
+    if not request.form:
         abort(400)
     if 'data' not in request.form:
         abort(400)
     
     #build a dataset from the json
     new_datastage = {}
-    # Convert the incoming JSON into an associative array using the JSON keys as the keys for the array
-    """for key in request.json.keys():
-        new_datastage[key] = request.json[key]
-    #TODO: make this a list in a configuration file
-    min_datastage_keys = ['name','description','hasphi','labcreatedat','createdby','parentcollection']
-    missing_key_list = [x for x in min_datastage_keys if x not in request.json.keys()]
-    if len(missing_key_list) > 0:
-        abort(400, "Bad request, the JSON is missing these required fields:" + str(missing_key_list))
-    """    
     conn = None
     new_record = None
     try:
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
+        current_token = None
+        try:
+            current_token = AuthHelper.parseAuthorizationTokens(request.headers)
+        except:
+            raise ValueError("Unable to parse token")
+        nexus_token = current_token['nexus_token']
         # determine the group UUID to use when creating the specimen
         group_uuid = None
-        form_data = request.form['data']
+        form_data = json.loads(request.form['data'])
         if 'user_group_uuid' in form_data:
-            if is_user_in_group(token, form_data['user_group_uuid']):
+            if is_user_in_group(nexus_token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
                 entity = Entity()
                 grp_info = None
@@ -199,7 +197,7 @@ def create_datastage():
         else:
             #manually find the group id given the current user:
             entity = Entity()
-            group_list = entity.get_user_groups(token)
+            group_list = entity.get_user_groups(nexus_token)
             for grp in group_list:
                 if grp['generateuuid'] == True:
                     group_uuid = grp['uuid']

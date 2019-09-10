@@ -293,11 +293,9 @@ class Dataset(object):
         conn = Neo4jConnection()
         driver = conn.get_driver()
         # step 1: check all the incoming UUID's to make sure they exist
-        if Entity.does_identifier_exist(driver, incoming_record['sourceUUID']) != True:
-            raise LookupError('Cannot create datastage.  Could not find sourceUUID: ' + sourceUUID)
-        if 'parentCollection' in incoming_record:
-            if Entity.does_identifier_exist(driver, incoming_record['parentCollection']) != True:
-                raise LookupError('Cannot create datastage.  Could not find parentCollection: ' + parentCollection)
+        sourceUUID = str(incoming_record['source_uuid']).strip()
+        if sourceUUID == None or len(sourceUUID) == 0:
+            raise ValueError('Error: sourceUUID must be set to create a tissue')
         
         confdata = Dataset.load_config_file()
         authcache = None
@@ -334,16 +332,6 @@ class Dataset(object):
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
         entity_type = HubmapConst.DATASTAGE_TYPE_CODE
-        sourceUUID = str(incoming_record['sourceUUID']).strip()
-        if sourceUUID == None or len(sourceUUID) == 0:
-            raise ValueError('Error: sourceUUID must be set to create a tissue')
-        try:
-            entity = Entity.get_entity(driver, sourceUUID)
-            sourceUUID = entity['uuid']
-        except:
-            raise
-
-
         
         with driver.session() as session:
             datastage_uuid_record_list = None
@@ -366,7 +354,7 @@ class Dataset(object):
                 
                 stmt = Neo4jConnection.get_create_statement(
                     dataset_entity_record, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
-                print('Specimen Create statement: ' + stmt)
+                print('Dataset Create statement: ' + stmt)
                 tx.run(stmt)
                 
                 # Step 3: setup initial Landing Zone directory for the new datastage
