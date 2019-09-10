@@ -94,10 +94,14 @@ except:
     exit(0)
     
 @app.route('/hello', methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def hello():
     return jsonify({'uuid': 'hello'}), 200
 
 @app.route('/datasets', methods = ['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def get_datasets():
     conn = None
     try:
@@ -123,6 +127,8 @@ def get_datasets():
     return response
 
 @app.route('/datasets/<uuid>', methods = ['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def get_dataset(uuid):
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to get a dataset' } ))
@@ -146,34 +152,64 @@ def get_dataset(uuid):
         conn.close()
 
 @app.route('/datasets', methods = ['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@secured(groups="HuBMAP-read")
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
 def create_datastage():
     if not request.json or not 'name' in request.json:
         abort(400)
+    if 'data' not in request.form:
+        abort(400)
     
     #build a dataset from the json
     new_datastage = {}
     # Convert the incoming JSON into an associative array using the JSON keys as the keys for the array
-    for key in request.json.keys():
+    """for key in request.json.keys():
         new_datastage[key] = request.json[key]
     #TODO: make this a list in a configuration file
     min_datastage_keys = ['name','description','hasphi','labcreatedat','createdby','parentcollection']
     missing_key_list = [x for x in min_datastage_keys if x not in request.json.keys()]
     if len(missing_key_list) > 0:
         abort(400, "Bad request, the JSON is missing these required fields:" + str(missing_key_list))
-        
+    """    
     conn = None
-    new_uuid = None
+    new_record = None
     try:
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
-        new_uuid = dataset.create_datastage(driver, new_datastage['name'], new_datastage['description'], new_datastage['parentcollection'], new_datastage['hasphi'], new_datastage['labcreatedat'], new_datastage['createdby'])
-        filepath = staging_directory(new_uuid)
-        new_uuid = dataset.update_filepath_dataset(driver, new_uuid, filepath)
+        # determine the group UUID to use when creating the specimen
+        group_uuid = None
+        form_data = request.form['data']
+        if 'user_group_uuid' in form_data:
+            if is_user_in_group(token, form_data['user_group_uuid']):
+                group_uuid = form_data['user_group_uuid']
+                entity = Entity()
+                grp_info = None
+                try:
+                    grp_info = entity.get_group_by_identifier(group_uuid)
+                except ValueError as ve:
+                    return Response('Unauthorized: Cannot find information on group: ' + str(group_uuid), 401)
+                if grp_info['generateuuid'] == False:
+                    return Response('Unauthorized: This group {grp_info} is not a group with write privileges.'.format(grp_info=grp_info), 401)
+            else:
+                return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
+        else:
+            #manually find the group id given the current user:
+            entity = Entity()
+            group_list = entity.get_user_groups(token)
+            for grp in group_list:
+                if grp['generateuuid'] == True:
+                    group_uuid = grp['uuid']
+                    break
+
+            if group_uuid == None:
+                return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
+        new_record = dataset.create_datastage(driver, request.headers, form_data, group_uuid)
+        #def create_datastage(self, driver, current_token, incoming_record, groupUUID):
         conn.close()
-        return jsonify( { 'uuid': new_uuid } ), 201
+        return jsonify( new_record ), 201
     
     except:
         msg = 'An error occurred: '
@@ -184,6 +220,8 @@ def create_datastage():
         conn.close()
 
 @app.route('/datasets/<uuid>/validate', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+@secured(groups="HuBMAP-read")
 def validate_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to publish a dataset' } ))
@@ -207,6 +245,8 @@ def validate_dataset(uuid):
         conn.close()
 
 @app.route('/datasets/<uuid>/publish', methods = ['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@secured(groups="HuBMAP-read")
 def publish_datastage(uuid):
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to publish a dataset' } ))
@@ -236,6 +276,8 @@ def publish_datastage(uuid):
         conn.close()
 
 @app.route('/datasets/<uuid>', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+@secured(groups="HuBMAP-read")
 def modify_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to modify a dataset' } ))
@@ -267,15 +309,20 @@ def modify_dataset(uuid):
         conn.close()
 
 @app.route('/datasets/<uuid>/lock', methods = ['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@secured(groups="HuBMAP-read")
 def lock_dataset(uuid):
     pass
 
 @app.route('/datasets/<uuid>/reopen', methods = ['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@secured(groups="HuBMAP-read")
 def reopen_dataset(uuid):
     pass
 
 @app.route('/collections', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
 def get_collections():
     return json.dumps([{
         'name': 'collection1',
@@ -294,17 +341,56 @@ def get_collections():
     }]), 200
 
 @app.route('/collections', methods = ['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@secured(groups="HuBMAP-read")
 def create_collection():
-    return jsonify({
-        'name': 'collection3',
-        'description': 'This is collection 3',
-        'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f03',
-        'display_doi': 'HBM:654-STTH-775',
-        'doi': '654STTH775',
-        'entitytype': 'Collection'
-    }), 201
+    if not request.form:
+        abort(400)
+    if 'data' not in request.form:
+        abort(400)
+    conn = None
+    new_uuid = None
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        collection = Collection()
+        if 'data' not in request.form:
+            return Response('form data is invalid', 401)
+        form_data = json.loads(request.form['data'])
+        collection = Collection.create_collection(driver, form_data)
+        
+        conn.close()
+        #return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
+        return jsonify({
+            'name': 'collection3',
+            'description': 'This is collection 3',
+            'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f03',
+            'display_doi': 'HBM:654-STTH-775',
+            'doi': '654STTH775',
+            'entitytype': 'Collection'
+        }), 201
+
+        return jsonify(new_uuid_records), 201 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
+    
 
 @app.route('/collections/<uuid>', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+@secured(groups="HuBMAP-read")
 def update_collection():
     return jsonify({
         'name': 'collection1',

@@ -283,13 +283,13 @@ class Dataset(object):
                     print (x)
                 raise
 
-    '''
-    NOTE!!!  You cannot pass the transaction variable to another method!!  The methods must return a Cypher statement string.
-    '''
     @classmethod
-    def create_datastage(self, driver, current_token, incoming_record, groupUUID):
-        if type(current_token) is not dict:
-            raise ValueError('Expecting multiple authorization tokens.  The current authorization element does not appear to contain multiple tokens.')
+    def create_datastage(self, driver, headers, incoming_record, groupUUID):
+        current_token = None
+        try:
+            current_token = AuthHelper.parseAuthorizationTokens(headers)
+        except:
+            raise ValueError("Unable to parse token")
         conn = Neo4jConnection()
         driver = conn.get_driver()
         # step 1: check all the incoming UUID's to make sure they exist
@@ -299,7 +299,6 @@ class Dataset(object):
             if Entity.does_identifier_exist(driver, incoming_record['parentCollection']) != True:
                 raise LookupError('Cannot create datastage.  Could not find parentCollection: ' + parentCollection)
         
-
         confdata = Dataset.load_config_file()
         authcache = None
         if AuthHelper.isInitialized() == False:
@@ -315,8 +314,6 @@ class Dataset(object):
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
             raise ValueError('Cannot authenticate current token via Globus.')
-
-        
         user_group_ids = userinfo['hmgroupids']
         provenance_group = None
         data_directory = None

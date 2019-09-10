@@ -145,6 +145,45 @@ class AuthHelper:
             return(token)
         else:
             return Response('No Authorization header', 401)
+
+    @staticmethod
+    def parseAuthorizationTokens(requestHeaders):
+        hasMauth=False
+        hasAuth=False
+        if 'Mauthorization' in requestHeaders: hasMauth=True
+        if 'Authorization' in requestHeaders: hasAuth=True
+        
+        if hasMauth:
+            mauthHeader = requestHeaders['Mauthorization']
+            if string_helper.isBlank(mauthHeader):
+                raise ValueError("Empty Mauthorization header")
+            mauthHeader = mauthHeader.strip()
+            """if len(mauthHeader) <= 8:
+                return Response("Invalid Mauthorization header", 401)"""
+            jsonTokens = mauthHeader
+            if mauthHeader.upper().startswith("MBEARER"):
+                jsonTokens = mauthHeader[7:].strip()
+            try:
+                tokens = json.loads(jsonTokens)
+            except Exception as e:
+                raise ValueError("Error decoding json included in Mauthorization header")    
+            return tokens
+        
+        elif hasAuth:
+            authHeader = requestHeaders['Authorization']
+            if string_helper.isBlank(authHeader):
+                raise ValueError("Empty Authorization header")
+            authHeader = authHeader.strip()
+            if len(authHeader) <= 7:
+                raise ValueError("Invalid Authorization header")
+            if not authHeader.upper().startswith("BEARER"):
+                raise ValueError("Bearer Authorization required")
+            token = authHeader[6:].strip()
+            if string_helper.isBlank(token):
+                raise ValueError('Invalid Bearer Authorization')
+            return(token)
+        else:
+            raise ValueError('No Authorization header')
     
     def getUserInfoUsingRequest(self, httpReq, getGroups = False):
         tokenResp = self.getAuthorizationTokens(httpReq.headers)

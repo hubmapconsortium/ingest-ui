@@ -208,7 +208,6 @@ class Specimen:
     def create_specimen(driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None, sample_count=None):
         return_list = []
         # step 1: check that the uuids already exist
-        conn = Neo4jConnection()
         confdata = Specimen.load_config_file()
         authcache = None
         if AuthHelper.isInitialized() == False:

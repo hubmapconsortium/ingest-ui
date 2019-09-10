@@ -89,6 +89,7 @@ class HubmapConst(object):
     PERSON_TYPE_CODE = 'Person'
     LAB_TYPE_CODE = 'Lab'
     METADATA_TYPE_CODE = 'Metadata'
+    COLLECTION_TYPE_CODE = 'Collection'
     DATA_ACTIVITY_TYPE_CODE = 'Data Activity'
     ADD_FILE_ACTIVITY_TYPE_CODE = 'Add File Activity'
     LAB_ACTIVITY_TYPE_CODE = 'Lab Activity'
