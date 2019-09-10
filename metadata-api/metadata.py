@@ -9,6 +9,7 @@ import sys
 import os
 from pprint import pprint
 import configparser
+import requests
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst 
 from neo4j_connection import Neo4jConnection
@@ -29,10 +30,9 @@ class Metadata:
             config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
             self.md_config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
             self.md_config['APP_CLIENT_SECRET'] = config.get('GLOBUS', 'APP_CLIENT_SECRET')
-            self.md_config['TRANSFER_ENDPOINT_UUID'] = config.get('GLOBUS', 'TRANSFER_ENDPOINT_UUID')
+            self.md_config['STAGING_ENDPOINT_UUID'] = config.get('GLOBUS', 'STAGING_ENDPOINT_UUID')
+            self.md_config['PUBLISH_ENDPOINT_UUID'] = config.get('GLOBUS', 'PUBLISH_ENDPOINT_UUID')
             self.md_config['SECRET_KEY'] = config.get('GLOBUS', 'SECRET_KEY')
-            self.md_config['STAGING_FILE_PATH'] = config.get('GLOBUS', 'STAGING_FILE_PATH')
-            self.md_config['PUBLISH_FILE_PATH'] = config.get('GLOBUS','PUBLISH_FILE_PATH')
             #app.config['DEBUG'] = True
         except OSError as err:
             msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(err)
@@ -124,6 +124,26 @@ class Metadata:
                 if str(group['uuid']).lower() == str(identifier).lower():
                     return group
         raise ValueError("cannot find a Hubmap group matching: [" + identifier + "]")
+
+    @staticmethod
+    def get_create_metadata_statement(current_token, metadata_record):
+        metadata_uuid_record_list = None
+        metadata_uuid_record = None
+        try:
+            metadata_uuid_record_list = getNewUUID(current_token, HubmapConst.METADATA_TYPE_CODE)
+            if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
+                raise ValueError("UUID service did not return a value")
+            metadata_uuid_record = metadata_uuid_record_list[0]
+        except requests.exceptions.ConnectionError as ce:
+            raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+        
+        metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+        
+        stmt = Neo4jConnection.get_create_statement(
+            metadata_record, HubmapConst.METADATA_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
+        # NOTE: I need to return a list of the newly created uud plus the stmt: {'uuid':'', 'doi':'', 'display_doi':'', 'stmt':stmt}
+        # otherwise, the new uuid might get lost 
+        return {'uuid_data': metadata_uuid_record_list, 'stmt':stmt}
 
 if __name__ == "__main__":
     conn = Neo4jConnection()

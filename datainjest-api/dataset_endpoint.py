@@ -31,10 +31,9 @@ def load_config_file():
         config.read('config.ini')
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
         app.config['APP_CLIENT_SECRET'] = config.get('GLOBUS', 'APP_CLIENT_SECRET')
-        app.config['TRANSFER_ENDPOINT_UUID'] = config.get('GLOBUS', 'TRANSFER_ENDPOINT_UUID')
+        app.config['STAGING_ENDPOINT_UUID'] = config.get('GLOBUS', 'STAGING_ENDPOINT_UUID')
+        app.config['PUBLISH_ENDPOINT_UUID'] = config.get('GLOBUS', 'PUBLISH_ENDPOINT_UUID')
         app.config['SECRET_KEY'] = config.get('GLOBUS', 'SECRET_KEY')
-        app.config['STAGING_FILE_PATH'] = config.get('GLOBUS', 'STAGING_FILE_PATH')
-        app.config['PUBLISH_FILE_PATH'] = config.get('GLOBUS','PUBLISH_FILE_PATH')
         #app.config['DEBUG'] = True
     except OSError as err:
         msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(err)
@@ -247,7 +246,7 @@ def staging_directory(dir_UUID):
         return get_staging_path(dir_UUID)
     except:
         raise
-
+"""
 def move_directory(dir_UUID, oldpath, newpath):
     if dir_UUID == None or len(str(dir_UUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
@@ -264,7 +263,7 @@ def move_directory(dir_UUID, oldpath, newpath):
         
     except:
         raise
-
+"""
 def publish_directory(dir_UUID):
     try:
         move_directory(dir_UUID, get_staging_path(dir_UUID), get_publish_path(dir_UUID))

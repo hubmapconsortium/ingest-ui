@@ -57,6 +57,8 @@ class HubmapConst(object):
     SPECIMEN_TYPE_ATTRIBUTE = 'specimen_type'
     LAB_IDENTIFIER_ATTRIBUTE = 'hubmap_identifier'
     NEXT_IDENTIFIER_ATTRIBUTE = 'next_identifier'
+    DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE = 'globus_directory_url_path'
+    
     
     #Organ Specifiers
     BLADDER_ORGAN_SPECIFIER = 'BL'
@@ -103,16 +105,14 @@ class HubmapConst(object):
     CREATE_SAMPLE_ACTIVITY_TYPE_CODE = 'Create Sample Activity'
     REGISTER_DONOR_ACTIVITY_TYPE_CODE = 'Register Donor Activity'
 
-    DATASTAGE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : NAME_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}, {'attribute_name' : DESCRIPTION_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : HAS_PHI_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : STATUS_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
-    DATASET_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : NAME_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}, {'attribute_name' : DESCRIPTION_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : HAS_PHI_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : STATUS_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'},
-     {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
+    DATASTAGE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
+    DATASET_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
     ACTIVITY_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ACTIVITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
     FILE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},

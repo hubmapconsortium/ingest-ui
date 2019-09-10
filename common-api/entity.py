@@ -32,13 +32,11 @@ class Entity(object):
             self.entity_config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
             self.entity_config['APP_CLIENT_SECRET'] = config.get(
                 'GLOBUS', 'APP_CLIENT_SECRET')
-            self.entity_config['TRANSFER_ENDPOINT_UUID'] = config.get(
-                'GLOBUS', 'TRANSFER_ENDPOINT_UUID')
+            self.entity_config['STAGING_ENDPOINT_UUID'] = config.get(
+                'GLOBUS', 'STAGING_ENDPOINT_UUID')
+            self.entity_config['PUBLISH_ENDPOINT_UUID'] = config.get(
+                'GLOBUS', 'PUBLISH_ENDPOINT_UUID')
             self.entity_config['SECRET_KEY'] = config.get('GLOBUS', 'SECRET_KEY')
-            self.entity_config['STAGING_FILE_PATH'] = config.get(
-                'GLOBUS', 'STAGING_FILE_PATH')
-            self.entity_config['PUBLISH_FILE_PATH'] = config.get(
-                'GLOBUS', 'PUBLISH_FILE_PATH')
             self.entity_config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
             #app.config['DEBUG'] = True
         except OSError as err:
