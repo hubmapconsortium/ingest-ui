@@ -191,6 +191,8 @@ class Neo4jConnection(object):
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.CREATE_SAMPLE_ACTIVITY_TYPE_CODE).lower():
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
+        elif str(datatype).lower() == str(HubmapConst.COLLECTION_TYPE_CODE).lower():
+            current_required_fields = HubmapConst.COLLECTION_REQUIRED_ATTRIBUTE_LIST
         else:
             raise ValueError("Error: cannot find required fields for datatype: " + datatype)
 

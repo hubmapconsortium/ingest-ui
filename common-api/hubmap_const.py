@@ -20,6 +20,7 @@ class HubmapConst(object):
     ACTIVITY_OUTPUT_REL = 'ACTIVITY_OUTPUT'
     HAS_METADATA_REL = 'HAS_METADATA'
     HAS_PROVENANCE_REL = 'HAS_PROVENANCE'
+    IN_COLLECTION_REL = 'IN_COLLECTION'
 
     TYPE_ATTRIBUTE = 'type'
     DESCRIPTION_ATTRIBUTE = 'description'
@@ -142,6 +143,11 @@ class HubmapConst(object):
      {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : LAB_IDENTIFIER_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : NEXT_IDENTIFIER_ATTRIBUTE, 'indexed' : 'False', 'required' : 'True'}]
+    COLLECTION_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+     {'attribute_name' : NAME_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
 
 
     # Use this method to resolve a specific node type (ex: Donor, Tissue Sample, Create Dataset) to its more general
