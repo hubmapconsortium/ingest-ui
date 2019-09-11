@@ -207,6 +207,35 @@ class Entity(object):
             for x in sys.exc_info():
                 print (x)
             raise
+
+    def get_user_roles(self, token):
+        try:
+            authcache = None
+            if AuthHelper.isInitialized() == False:
+                authcache = AuthHelper.create(
+                    self.entity_config['APP_CLIENT_ID'], self.entity_config['APP_CLIENT_SECRET'])
+            else:
+                authcache = AuthHelper.instance()
+            userinfo = authcache.getUserInfo(token, True)
+
+            if type(userinfo) == Response and userinfo.status_code == 401:
+                raise AuthError('token is invalid.', 401)
+
+            if 'hmgroupids' not in userinfo:
+                raise ValueError("Cannot find Hubmap Group information for token")
+            return_list = []
+            role_list = AuthCache.getHMRoles()
+            for role_uuid in userinfo['hmroleids']:
+                for role_name in role_list.keys():
+                    if role_list[role_name]['uuid'] == role_uuid:
+                        return_list.append(role_list[role_name])
+                        break
+            return return_list
+        except:
+            print ('A general error occurred: ')
+            for x in sys.exc_info():
+                print (x)
+            raise
     
     def get_readonly_user_groups(self, token):
         return self.get_user_groups_generic(token, 'READONLY')

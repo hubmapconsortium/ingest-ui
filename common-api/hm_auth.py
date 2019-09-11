@@ -235,8 +235,12 @@ class AuthCache:
     userLock = threading.RLock()
     groupLock = threading.RLock()
     groupIdByName = None
+    roleIdByName = None
+    groupsById = {}
+    rolesById = {}
     groupLastRefreshed = None
     groupJsonFilename = file_helper.ensureTrailingSlash(os.path.dirname(os.path.realpath(__file__))) + 'hubmap-globus-groups.json'
+    roleJsonFilename = file_helper.ensureTrailingSlash(os.path.dirname(os.path.realpath(__file__))) + 'hubmap-globus-roles.json'
     
     @staticmethod
     def getHMGroups():
@@ -247,6 +251,7 @@ class AuthCache:
                 diff = now - AuthCache.groupLastRefreshed
             if diff is None or diff.days > 0 or diff.seconds > TOKEN_EXPIRATION:
                 groupIdByName = {}                    
+                #groupsById = {}                    
                 with open(AuthCache.groupJsonFilename) as jsFile:
                     groups = json.load(jsFile)
                     for group in groups:
@@ -256,7 +261,28 @@ class AuthCache:
                             if 'tmc_prefix' in group:
                                 group_obj['tmc_prefix'] = group['tmc_prefix']
                             groupIdByName[group['name'].lower().strip()] = group_obj
+                            AuthCache.groupsById[group['uuid']] = group_obj
             return groupIdByName
+
+    @staticmethod
+    def getHMRoles():
+        with AuthCache.groupLock:
+            now = datetime.datetime.now()
+            diff = None
+            if AuthCache.groupLastRefreshed is not None:
+                diff = now - AuthCache.groupLastRefreshed
+            if diff is None or diff.days > 0 or diff.seconds > TOKEN_EXPIRATION:
+                roleIdByName = {}                    
+                #rolesById = {}                    
+                with open(AuthCache.roleJsonFilename) as jsFile:
+                    roles = json.load(jsFile)
+                    for role in roles:
+                        if 'name' in role and 'uuid' in role and 'displayname' in role and not string_helper.isBlank(role['name']) and not string_helper.isBlank(role['uuid']) and not string_helper.isBlank(role['displayname']):
+                            role_obj = {'name' : role['name'].lower().strip(), 'uuid' : role['uuid'].lower().strip(),
+                                         'displayname' : role['displayname']}
+                            roleIdByName[role['name'].lower().strip()] = role_obj
+                            AuthCache.rolesById[role['uuid']] = role_obj
+            return roleIdByName
 
     @staticmethod
     def getUserWithGroups(appKey, token):
@@ -337,10 +363,22 @@ class AuthCache:
             jsonResp = response.json()
             if 'active' in jsonResp and jsonResp['active']:
                 if getGroups:
+                    if len(AuthCache.groupsById) == 0:
+                        AuthCache.getHMGroups()
+                    if len(AuthCache.rolesById) == 0:
+                        AuthCache.getHMRoles()
                     groups = AuthCache.__userGroups(authToken)
                     if isinstance(groups, Response):
                         return groups
-                    jsonResp['hmgroupids'] = groups
+                    grp_list = []
+                    role_list = []
+                    for group_uuid in groups:
+                        if group_uuid in AuthCache.groupsById:
+                            grp_list.append(group_uuid)
+                        elif group_uuid in AuthCache.rolesById:
+                            role_list.append(group_uuid)
+                    jsonResp['hmgroupids'] = grp_list
+                    jsonResp['hmroleids'] = role_list
                 return jsonResp
             else:
                 return Response("Non-active login", 401)
