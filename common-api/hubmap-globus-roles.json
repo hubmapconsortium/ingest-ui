@@ -1,0 +1,11 @@
+[
+  {
+    "description": "This group includes the HuBMAP user that can manage the data curator process related to datasets.",
+    "has_subgroups": false,
+    "uuid": "75804b96-d4a8-11e9-9da9-0ad4acb67ed4",
+    "group_type": "regular",
+    "name": "HuBMAP-data-curator",
+    "displayname": "HuBMAP Data Curator"
+  }
+]
+
