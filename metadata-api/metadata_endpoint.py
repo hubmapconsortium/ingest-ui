@@ -107,6 +107,24 @@ def user_group_list():
             msg += str(x)
         abort(400, msg)
 
+@app.route('/metadata/userroles', methods = ['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
+def user_role_list():
+    token = str(request.headers["AUTHORIZATION"])[7:]
+    try:
+        entity = Entity()
+        role_list = entity.get_user_roles(token)
+        return jsonify( {'roles' : role_list}), 200
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+
 # this method returns a JSON list of the UUIDs for the entities the current user can edit.  The entitytype is an optional parameter.  If it is not set,
 # the method returns all the editable entities available to the user. 
 @app.route('/metadata/usercanedit/type', methods = ['GET'])
