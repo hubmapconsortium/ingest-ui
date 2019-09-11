@@ -102,31 +102,61 @@ def hello():
     return jsonify({'uuid': 'hello'}), 200
 
 @app.route('/datasets', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def get_datasets():
     conn = None
     try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
         conn = Neo4jConnection()
         driver = conn.get_driver()
-        dataset = Dataset()
-        data = dataset.get_datasets(driver)
-        conn.close()
-    
-        response = app.response_class(
-            response=json.dumps(data),
-            status=200,
-            mimetype='application/json'
-        )
+        entity = Entity()
+        readonly_group_list = entity.get_readonly_user_groups(token)
+        writeable_group_list = entity.get_writeable_user_groups(token)
+        readonly_uuid_list = []
+        writeable_uuid_list = []
+        #build UUID group list
+        for readonly_group_data in readonly_group_list:
+            readonly_uuid_list.append(readonly_group_data['uuid'])
+        for writeable_group_data in writeable_group_list:
+            writeable_uuid_list.append(writeable_group_data['uuid'])
+            
+        filtered_group_uuid_list = [] 
+        searchterm = None
+        if 'search_term' in request.args:
+            searchterm = request.args.get('search_term')
+        # by default, show data from all the groups that the user can access
+        filtered_group_uuid_list.extend(readonly_uuid_list)
+        filtered_group_uuid_list.extend(writeable_uuid_list)
+        # remove the test group, by default
+        test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
+        if test_group_uuid in filtered_group_uuid_list:
+            filtered_group_uuid_list.remove(test_group_uuid)
+        # if the user selects a specific group in the search filter,
+        # then use it for the search
+        if 'group' in request.args:
+            group_name = request.args.get('group')
+            if group_name != 'All Groups':
+                group_info = entity.get_group_by_name(group_name)
+                # reset the filtered group list
+                filtered_group_uuid_list = []
+                filtered_group_uuid_list.append(group_info['uuid'])
+                
+        dataset_list =  Dataset.search_datasets(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list)
+        return jsonify({'datasets': dataset_list}), 200 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
     except:
-        #TODO: return a 400 or 500 error
         msg = 'An error occurred: '
         for x in sys.exc_info():
-            msg += x
+            msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
-    return response
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/<uuid>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
@@ -206,7 +236,6 @@ def create_datastage():
             if group_uuid == None:
                 return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
         new_record = dataset.create_datastage(driver, request.headers, form_data, group_uuid)
-        #def create_datastage(self, driver, current_token, incoming_record, groupUUID):
         conn.close()
         return jsonify( new_record ), 201
     

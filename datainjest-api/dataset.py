@@ -13,6 +13,8 @@ import base64
 from globus_sdk.exc import TransferAPIError
 import requests
 import urllib.parse
+from flask import Response
+from pprint import pprint
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
@@ -20,10 +22,9 @@ from entity import Entity
 from uuid_generator import getNewUUID
 from neo4j_connection import Neo4jConnection
 from activity import Activity
+from autherror import AuthError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'metadata-api'))
 from metadata import Metadata
-from flask import Response
-from autherror import AuthError
 
 class Dataset(object):
     '''
@@ -102,8 +103,8 @@ class Dataset(object):
                 for x in sys.exc_info():
                     print (x)
     """
-    
-    def search_datasets(self, driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
+    @staticmethod
+    def search_datasets(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
         return_list = []
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype IN ['Datastage','Dataset']"
@@ -178,7 +179,6 @@ class Dataset(object):
                                 data_record['entity_doi'] = record['entity_doi']
                                 data_record['datatype'] = record['datatype']
                                 data_record['properties'] = record['metadata_properties']
-                                data_record['hubmap_identifier'] = record['hubmap_identifier']
                                 # determine if the record is writable by the current user
                                 data_record['writeable'] = False
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
@@ -286,6 +286,7 @@ class Dataset(object):
     @classmethod
     def create_datastage(self, driver, headers, incoming_record, groupUUID):
         current_token = None
+        collection_uuid = None
         try:
             current_token = AuthHelper.parseAuthorizationTokens(headers)
         except:
@@ -324,6 +325,12 @@ class Dataset(object):
             raise ve
         metadata_userinfo = {}
 
+        if 'collection_uuid' in incoming_record:
+            try:
+                collection_info = Entity.get_entity(driver, incoming_record['collection_uuid'])
+            except ValueError as ve:
+                raise ve
+            
         if 'sub' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
         if 'username' in userinfo.keys():
@@ -389,6 +396,10 @@ class Dataset(object):
                 stmt = Neo4jConnection.create_relationship_statement(
                     datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, metadata_record[HubmapConst.UUID_ATTRIBUTE])
                 tx.run(stmt)
+                if 'collection_uuid' in incoming_record:
+                    stmt = Neo4jConnection.create_relationship_statement(
+                        datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.IN_COLLECTION_REL, incoming_record['collection_uuid'])
+                    tx.run(stmt)
                 tx.commit()
                 ret_object = {'uuid' : datastage_uuid['uuid'], 'globus_directory': new_globus_path}
                 return ret_object
@@ -673,8 +684,11 @@ if __name__ == "__main__":
     sourceUUID = 'e8fa2558e19ca2226ccbb8521557236b' # this should be TEST0001-RK-1
     incoming_record = {'name' : 'Test Dataset', 'description': 'Description of this dataset', 'sourceUUID' : sourceUUID, 'hasPHI': False}
     
-    dataset.create_datastage(driver, mauth_token, incoming_record, groupUUID)
+    #dataset.create_datastage(driver, mauth_token, incoming_record, groupUUID)
     #make_new_staging_directory(transfer_token, groupUUID, sourceUUID)
+    result_set = Dataset.search_datasets(driver, None, None, [groupUUID], [groupUUID])
+    pprint (result_set)
+
 
     
     conn.close()

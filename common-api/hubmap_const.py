@@ -10,6 +10,7 @@ class HubmapConst(object):
     ACTIVITY_NODE_NAME = 'Activity'
     AGENT_NODE_NAME = 'Agent'
     METADATA_NODE_NAME = 'Metadata'
+    COLLECTION_NODE_NAME = 'Collection'
 
     CREATED_REL = 'CREATED'
     DERIVED_FROM_REL = 'DERIVED_FROM'

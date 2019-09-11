@@ -37,7 +37,7 @@ class Collection(object):
                 collection_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = collection_uuid_record['displayDoi']
                 collection_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.COLLECTION_TYPE_CODE
                 stmt = Neo4jConnection.get_create_statement(
-                    collection_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.COLLECTION_TYPE_CODE, False)
+                    collection_record, HubmapConst.COLLECTION_NODE_NAME, HubmapConst.COLLECTION_TYPE_CODE, False)
                 print('Collection Create statement: ' + stmt)
                 tx.run(stmt)
                 tx.commit()
