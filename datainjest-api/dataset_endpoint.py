@@ -158,18 +158,23 @@ def get_datasets():
             if conn.get_driver().closed() == False:
                 conn.close()
 
-@app.route('/datasets/<uuid>', methods = ['GET'])
+@app.route('/datasets/<identifier>', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
-def get_dataset(uuid):
-    if uuid == None or len(uuid) == 0:
-        abort(400, jsonify( { 'error': 'uuid parameter is required to get a dataset' } ))
+def get_dataset(identifier):
+    if identifier == None or len(identifier) == 0:
+        abort(400, jsonify( { 'error': 'identifier parameter is required to get a dataset' } ))
     
     conn = None
     new_uuid = None
     try:
         conn = Neo4jConnection()
         driver = conn.get_driver()
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
+        if r.ok == False:
+            raise ValueError("Cannot find specimen with identifier: " + identifier)
+        uuid = json.loads(r.text)[0]['hmuuid']
         dataset = Dataset()
         dataset_record = dataset.get_dataset(driver, uuid)
         conn.close()
@@ -352,21 +357,21 @@ def reopen_dataset(uuid):
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def get_collections():
-    return json.dumps([{
-        'name': 'collection1',
-        'description': 'This is collection 1',
-        'uuid': 'dc01a09f-e4db-4e53-a560-7a2ad80c1f02',
-        'display_dio': 'HBM:838-SWXH-475',
-        'doi': '838SWXH475',
-        'entitytype': 'Collection'
-    }, {
-        'name': 'collection2',
-        'description': 'This is collection 2',
-        'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f02',
-        'display_doi': 'HBM:654-STTH-775',
-        'doi': '654STTH775',
-        'entitytype': 'Collection'
-    }]), 200
+    conn = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        collection_records = Collection.get_collections(driver)
+        conn.close()
+        return jsonify( { 'collections': collection_records } ), 200
+    
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
 
 @app.route('/collections', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
@@ -389,16 +394,6 @@ def create_collection():
         collection = Collection.create_collection(driver, form_data)
         
         conn.close()
-        #return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
-        return jsonify({
-            'name': 'collection3',
-            'description': 'This is collection 3',
-            'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f03',
-            'display_doi': 'HBM:654-STTH-775',
-            'doi': '654STTH775',
-            'entitytype': 'Collection'
-        }), 201
-
         return jsonify(new_uuid_records), 201 
 
     except AuthError as e:

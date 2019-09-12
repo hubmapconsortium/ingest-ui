@@ -689,8 +689,12 @@ if __name__ == "__main__":
     
     #dataset.create_datastage(driver, mauth_token, incoming_record, groupUUID)
     #make_new_staging_directory(transfer_token, groupUUID, sourceUUID)
-    result_set = Dataset.search_datasets(driver, None, None, [groupUUID], [groupUUID])
+    #result_set = Dataset.search_datasets(driver, None, None, [groupUUID], [groupUUID])
+    result_set = dataset.get_dataset(driver, '03589ba88596106ca8cde53514676882')
     pprint (result_set)
+    result_set = dataset.get_dataset(driver, 'HBM:349-VTFT-937')
+    pprint (result_set)
+    
 
 
     

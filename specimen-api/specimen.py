@@ -28,9 +28,9 @@ class Specimen:
 
     @staticmethod
     # NOTE: This will return an entity, activity, or agent
-    def get_specimen(driver, identifier):
+    def get_specimen(driver, uuid):
         try:
-            return Entity.get_entity(driver, identifier)
+            return Entity.get_entity(driver, uuid)
         except BaseException as be:
             pprint(be)
             raise be

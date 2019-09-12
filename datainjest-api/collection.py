@@ -2,6 +2,7 @@ from neo4j import TransactionError, CypherError
 import sys
 import os
 from flask import jsonify, json
+from gc import collect
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from entity import Entity
@@ -66,14 +67,38 @@ class Collection(object):
                 if tx.closed() == False:
                     tx.rollback()
 
+    @staticmethod
+    # NOTE: This will return a single entity, activity, or agent
+    def get_collections(driver): 
+        with driver.session() as session:
+            return_list = []
+            try:
+                #TODO: I can use the OR operator to match on either uuid or doi:
+                #MATCH (e) WHERE e.label= 'test dataset create file10' OR e.label= 'test dataset create file7' RETURN e
+                stmt = "MATCH (a:{COLLECTION_TYPE}) RETURN properties(a) as properties".format(COLLECTION_TYPE=HubmapConst.COLLECTION_NODE_NAME)
+
+                for record in session.run(str(stmt)):
+                    dataset_record = record['properties']
+                    return_list.append(dataset_record)
+                return return_list                    
+            except CypherError as cse:
+                print ('A Cypher error was encountered: '+ cse.message)
+                raise
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                raise
+
+
 if __name__ == "__main__":
     conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Collection'
     description= 'This dataset is a collection'
-    nexus_token = 'AglKXgMkgndQ8Ddkz7Xab6p3wXwb3Qr7qyrW8JeVllVVKYY31ec8CQykV5DGE84XnbVyWox52djEEpTJBelW1t9gQd'
-    transfer_token = 'Ag92Kzwm5MMj9neJ5XzVbKO3OK25PKWgBl2g6ejWdwmWGWO7M2hpC4DxemyvN6Gvz5V3KGJGv0kNplUr3k7NdhvjMl'
-    auth_token = 'Agm9xX36yEyMbzQPnalaW7kwV6Dg6j8Bd8wGK3qYBGPwaJg95aS8Caabx5aPOlGMj03x6m8BDmzorDi8aVrnouk5jgS0mlgCl8NqhmX67'
+    nexus_token = 'Ag4bomPanqamWmr6vQ9bm60MdDeQ8vwyplp4p5xMexJBGKvzQrT7C7ekxXQD3zj8axojEXly932xoycjMeKE6UEezX'
+    transfer_token = 'AgnJlPv9Vv3bw34DrDgk2K99KVjjEjz3qxeX5yramDgPypQ7njt9C1wvPwJ3o6Nw0QVOM5PXl3NzwQs015DbWFxGpP'
+    auth_token = 'AgJdY9GjqeWDv8a8lb64E1JVvY0NvaPJYbzmBdbrjVgpaDB2JQC0CV64zom3kKwGkwNV3nM98xoabpH3deKMJSejQDtVz2yIdQYpsDw98'
     mauth_token = {"name": "Charles Borromeo", "email": "CHB69@pitt.edu", 
                    "globus_id": "32800bfe-83df-4b48-b755-701dc06a8913", 
                    "nexus_token": nexus_token, 
@@ -82,4 +107,8 @@ if __name__ == "__main__":
     
     incoming_record = {'label' : name, 'description': description}
     collection = Collection.create_collection(driver, nexus_token, incoming_record)
-    print ('New collection record uuid: ' + collection)
+    collection = Collection.create_collection(driver, nexus_token, incoming_record)
+    collection = Collection.create_collection(driver, nexus_token, incoming_record)
+    collection_set = Collection.get_collections(driver)
+    print (collection_set)
+    #print ('New collection record uuid: ' + collection)
