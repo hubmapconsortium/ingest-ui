@@ -90,6 +90,15 @@ class Collection(object):
                     print (x)
                 raise
 
+    @staticmethod
+    # NOTE: This will return a single entity, activity, or agent
+    def get_collection(driver, uuid): 
+        try:
+            return Entity.get_entity(driver, uuid)
+        except BaseException as be:
+            pprint(be)
+            raise be
+
 
 if __name__ == "__main__":
     conn = Neo4jConnection()

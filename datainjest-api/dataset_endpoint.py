@@ -425,6 +425,34 @@ def update_collection():
     }), 200
 
 
+@app.route('/collections/<identifier>', methods = ['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@secured(groups="HuBMAP-read")
+def get_collection(identifier):
+    if identifier == None or len(identifier) == 0:
+        abort(400, jsonify( { 'error': 'identifier parameter is required to get a dataset' } ))
+    
+    conn = None
+    new_uuid = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
+        if r.ok == False:
+            raise ValueError("Cannot find specimen with identifier: " + identifier)
+        uuid = json.loads(r.text)[0]['hmuuid']
+        collection_record = Collection.get_collection(driver, uuid)
+        conn.close()
+        return jsonify( { 'dataset': dataset_record } ), 200
+    
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        conn.close()
     
 
 
