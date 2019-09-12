@@ -372,6 +372,9 @@ class Dataset(object):
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
+                
+                #set the status of the datastage to New
+                metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = 'New'
                 metadata_uuid_record_list = None
                 metadata_uuid_record = None
                 try: 
