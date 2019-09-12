@@ -102,7 +102,7 @@ def hello():
     return jsonify({'uuid': 'hello'}), 200
 
 @app.route('/datasets', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
 @secured(groups="HuBMAP-read")
 def get_datasets():
     conn = None
@@ -189,7 +189,7 @@ def get_dataset(identifier):
         conn.close()
 
 @app.route('/datasets', methods=['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
 @secured(groups="HuBMAP-read")
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
