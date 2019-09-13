@@ -606,6 +606,52 @@ class Dataset(object):
                 print ('A general error occurred: ', sys.exc_info()[0])
                 raise
 
+    @classmethod
+    def lock_dataset(self, driver, uuid): 
+        conn = Neo4jConnection()
+        if conn.does_uuid_exist(uuid) != True:
+            raise LookupError('Cannot lock dataset.  Could not find dataset uuid: ' + uuid)
+
+        with driver.session() as session:
+            lock_code = True
+            try:
+                dataset = Dataset()
+                if lock_code == True:
+                    dataset.update_status_dataset(driver, uuid, 'Locked')
+                return uuid
+            except TransactionError as te: 
+                print ('A transaction error occurred: ', te.value)
+                raise
+            except CypherError as cse:
+                print ('A Cypher error was encountered: ', cse.message)
+                raise               
+            except:
+                print ('A general error occurred: ', sys.exc_info()[0])
+                raise
+
+    @classmethod
+    def reopen_dataset(self, driver, uuid): 
+        conn = Neo4jConnection()
+        if conn.does_uuid_exist(uuid) != True:
+            raise LookupError('Cannot reopen dataset.  Could not find dataset uuid: ' + uuid)
+
+        with driver.session() as session:
+            reopen_code = True
+            try:
+                dataset = Dataset()
+                if reopen_code == True:
+                    dataset.update_status_dataset(driver, uuid, 'Reopen')
+                return uuid
+            except TransactionError as te: 
+                print ('A transaction error occurred: ', te.value)
+                raise
+            except CypherError as cse:
+                print ('A Cypher error was encountered: ', cse.message)
+                raise               
+            except:
+                print ('A general error occurred: ', sys.exc_info()[0])
+                raise
+
 # NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
 # if the file path was wrong.  
 def make_new_dataset_directory(transfer_token, transfer_endpoint_uuid, groupDisplayname, newDirUUID):
@@ -692,9 +738,11 @@ if __name__ == "__main__":
     #result_set = Dataset.search_datasets(driver, None, None, [groupUUID], [groupUUID])
     result_set = dataset.get_dataset(driver, '03589ba88596106ca8cde53514676882')
     pprint (result_set)
-    result_set = dataset.get_dataset(driver, 'HBM:349-VTFT-937')
+    result_set = dataset.get_dataset(driver, '129e3c9c5f6ec157f884c172b502097c')
     pprint (result_set)
-    
+    result_set = dataset.get_dataset(driver, '9240537e62fac5ee38ad6da118d59886')
+    pprint (result_set)
+   
 
 
     

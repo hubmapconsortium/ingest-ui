@@ -267,7 +267,7 @@ def validate_dataset(uuid):
         dataset = Dataset()
         new_uuid = dataset.validate_dataset(driver, uuid)
         conn.close()
-        return jsonify( { 'uuid': new_uuid, 'status': 'Valid' } ), 204
+        return jsonify( { 'uuid': new_uuid, 'status': 'Valid' } ), 200
     
     except:
         msg = 'An error occurred: '
@@ -345,13 +345,51 @@ def modify_dataset(uuid):
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 @secured(groups="HuBMAP-read")
 def lock_dataset(uuid):
-    pass
+    if not request.json or uuid == None or len(uuid) == 0:
+        abort(400, jsonify( { 'error': 'uuid parameter is required to lock a dataset' } ))
+    
+    conn = None
+    new_uuid = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        dataset = Dataset()
+        new_uuid = dataset.lock_dataset(driver, uuid)
+        conn.close()
+        return jsonify( { 'uuid': new_uuid, 'status': 'Locked' } ), 200
+    
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += x
+        abort(400, msg)
+    finally:
+        conn.close()
 
 @app.route('/datasets/<uuid>/reopen', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 @secured(groups="HuBMAP-read")
 def reopen_dataset(uuid):
-    pass
+    if not request.json or uuid == None or len(uuid) == 0:
+        abort(400, jsonify( { 'error': 'uuid parameter is required to reopen a dataset' } ))
+    
+    conn = None
+    new_uuid = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        dataset = Dataset()
+        new_uuid = dataset.reopen_dataset(driver, uuid)
+        conn.close()
+        return jsonify( { 'uuid': new_uuid, 'status': 'Locked' } ), 200
+    
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += x
+        abort(400, msg)
+    finally:
+        conn.close()
 
 @app.route('/collections', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
@@ -444,7 +482,7 @@ def get_collection(identifier):
         uuid = json.loads(r.text)[0]['hmuuid']
         collection_record = Collection.get_collection(driver, uuid)
         conn.close()
-        return jsonify( { 'dataset': dataset_record } ), 200
+        return jsonify( { 'collection': dataset_record } ), 200
     
     except:
         msg = 'An error occurred: '
