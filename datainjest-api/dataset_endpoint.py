@@ -16,6 +16,7 @@ from flask_cors import CORS, cross_origin
 from pprint import pprint
 import base64
 from globus_sdk.exc import TransferAPIError
+from collection import Collection
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from entity import Entity
 from neo4j_connection import Neo4jConnection
