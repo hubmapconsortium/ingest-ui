@@ -107,7 +107,7 @@ class Dataset(object):
     def search_datasets(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
         return_list = []
         lucence_index_name = "testIdx"
-        entity_type_clause = "entity_node.entitytype IN ['Datastage','Dataset']"
+        entity_type_clause = "entity_node.entitytype = 'Dataset'"
         metadata_clause = "{entitytype: 'Metadata'}"
             
         #group_clause = ""
@@ -338,7 +338,7 @@ class Dataset(object):
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
-        entity_type = HubmapConst.DATASTAGE_TYPE_CODE
+        entity_type = HubmapConst.DATASET_TYPE_CODE
         
         with driver.session() as session:
             datastage_uuid_record_list = None

@@ -165,8 +165,8 @@ class Neo4jConnection(object):
     @staticmethod
     def validate_record(data_record, datatype):
         current_required_fields = None
-        if str(datatype).lower() == str(HubmapConst.DATASTAGE_TYPE_CODE).lower():
-            current_required_fields = HubmapConst.DATASTAGE_REQUIRED_ATTRIBUTE_LIST
+        if str(datatype).lower() == str(HubmapConst.DATASET_TYPE_CODE).lower():
+            current_required_fields = HubmapConst.DATASET_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.DATASET_TYPE_CODE).lower():
             current_required_fields = HubmapConst.DATASET_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.DATASTAGE_CREATE_ACTIVITY_TYPE_CODE).lower():

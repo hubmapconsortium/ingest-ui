@@ -108,7 +108,7 @@ class HubmapConst(object):
     CREATE_SAMPLE_ACTIVITY_TYPE_CODE = 'Create Sample Activity'
     REGISTER_DONOR_ACTIVITY_TYPE_CODE = 'Register Donor Activity'
 
-    DATASTAGE_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
+    DATASET_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
