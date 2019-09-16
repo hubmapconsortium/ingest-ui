@@ -23,6 +23,7 @@ from neo4j_connection import Neo4jConnection
 from uuid_generator import getNewUUID
 from hubmap_const import HubmapConst
 from hm_auth import AuthHelper, secured
+from autherror import AuthError
 
 app = Flask(__name__)
 token_list = {}
@@ -427,10 +428,8 @@ def create_collection():
         conn = Neo4jConnection()
         driver = conn.get_driver()
         collection = Collection()
-        if 'data' not in request.form:
-            return Response('form data is invalid', 401)
         form_data = json.loads(request.form['data'])
-        collection = Collection.create_collection(driver, form_data)
+        collection = Collection.create_collection(driver, token, form_data)
         
         conn.close()
         return jsonify(new_uuid_records), 201 

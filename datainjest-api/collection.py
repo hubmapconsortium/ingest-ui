@@ -8,6 +8,7 @@ from hubmap_const import HubmapConst
 from entity import Entity
 from uuid_generator import getNewUUID
 from neo4j_connection import Neo4jConnection
+from autherror import AuthError
 
 class Collection(object):
     '''
