@@ -16,13 +16,6 @@ logger = None
 worker = None
 app = Flask(__name__)
 app.config.from_pyfile('uuid_app.conf')
-    
-'''
-POST arguments in json
-  entityType- required: the type of entity, DONOR, TISSUE, DATASET
-  generateDOI- optional, defaults to false
-  parentId- required for entity type of TISSUE, optional for all others
-'''
 
 @app.before_first_request
 def init():
@@ -62,6 +55,22 @@ def hello():
     global logger
     return Response("Hello", 200)
 
+
+'''
+POST arguments in json
+  entityType- required: the type of entity, DONOR, TISSUE, DATASET
+  generateDOI- optional, defaults to false
+  parentId- required for entity type of TISSUE, optional for all others
+  hubmap-ids- optional, an array of ids to associate and store with the
+              generated ids. If provide, the length of this array must
+              match the sample_count argument
+              
+ Query (in url) argument
+   sample_count optional, the number of ids to generate.  If omitted,
+                defaults to 1 
+              
+
+'''
 @app.route('/hmuuid', methods=["POST"])
 @secured(groups="HuBMAP-read")
 def add_hmuuid():
@@ -76,7 +85,10 @@ def add_hmuuid():
                 rjson = worker.uuidPost(request, int(nArgs))
             else:
                 rjson = worker.uuidPost(request, 1)
+            if isinstance(rjson, Response):
+                return rjson                
             jsonStr = json.dumps(rjson)
+            
             return Response(jsonStr, 200, {'Content-Type': "application/json"})
         else:
             return Response("Invalid request.  Use POST to create a UUID", 500)

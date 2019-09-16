@@ -41,7 +41,7 @@ def stripHMid(hmid):
 	thmid = hmid.strip();
 	if thmid.lower().startswith('hbm'): thmid = thmid[3:]
 	if thmid.startswith(':'): thmid = thmid[1:]
-	return 	thmid.strip().replace('-', '').replace(' ', '')
+	return 	thmid.strip().replace('-', '').replace('.', '').replace(' ', '')
 
 
 class UUIDWorker:
@@ -73,6 +73,8 @@ class UUIDWorker:
 
 	def uuidPost(self, req, nIds):
 		userInfo = self.authHelper.getUserInfoUsingRequest(req)
+		hasHubmapIds = False
+		hmids = None
 		if isinstance(userInfo, Response):
 			return userInfo;
 
@@ -83,6 +85,15 @@ class UUIDWorker:
 			return(Response("Invalid input, uuid attributes required", 400))
 		if not 'entityType' in content or string_helper.isBlank(content['entityType']):
 			return(Response("entityType is a required attribute", 400))
+		
+		if 'hubmap-ids' in content:
+			hmids = content['hubmap-ids']
+			if hmids is not None and isinstance(hmids, list) and len(hmids) > 0:
+				hasHubmapIds = True
+		
+		if hasHubmapIds and not len(hmids) == nIds:
+			return(Response("Invalid input: Length of HuBMAP ID list must match the number of ids being generated"))
+		
 		entityType = content['entityType'].upper().strip()
 		parentId = None
 		if('parentId' in content and not string_helper.isBlank(content['parentId'])):
@@ -105,7 +116,10 @@ class UUIDWorker:
 		
 		rVal = []
 		for x in range(nIds):
-			rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
+			if hasHubmapIds:
+				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail, hmids[x]))
+			else:
+				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
 		return rVal
 
 	def newUUIDTest(self, generateDOI, parentId, entityType, userId, userEmail):
@@ -118,7 +132,7 @@ class UUIDWorker:
 		hexVal = hexVal.lower()
 		return hexVal
 	
-	def newUUID(self, generateDOI, parentID, entityType, userId, userEmail):
+	def newUUID(self, generateDOI, parentID, entityType, userId, userEmail, hubmapId=None):
 		doi = None
 		hmid = self.uuidGen() #uuid.uuid4().hex
 		if generateDOI:
@@ -139,25 +153,39 @@ class UUIDWorker:
 			if count == 100:
 				raise Exception("Unable to generate a unique doi id after 100 attempts")					
 			now = time.strftime('%Y-%m-%d %H:%M:%S')
-			sql = "INSERT INTO hm_uuids (HMUUID, DOI_SUFFIX, ENTITY_TYPE, PARENT_UUID, TIME_GENERATED, USER_ID, USER_EMAIL) VALUES (%s, %s, %s, %s, %s, %s,%s)"
-			vals = (hmid, doi, entityType, parentID, now, userId, userEmail)
+			sql = "INSERT INTO hm_uuids (HMUUID, DOI_SUFFIX, ENTITY_TYPE, PARENT_UUID, TIME_GENERATED, USER_ID, USER_EMAIL, HUBMAP_ID) VALUES (%s, %s, %s, %s, %s, %s,%s, %s)"
+			vals = (hmid, doi, entityType, parentID, now, userId, userEmail, hubmapId)
 			with closing(self.hmdb.getDBConnection()) as dbConn:
 				with closing(dbConn.cursor()) as curs:
 					curs.execute(sql, vals)
 				dbConn.commit()
 
 		if generateDOI:
-			dispDoi= 'HBM:' + doi[0:3] + '-' + doi[3:7] + '-' + doi[7:]
-			rVal = {
+			dispDoi= 'HBM' + doi[0:3] + '.' + doi[3:7] + '.' + doi[7:]
+			if hubmapId is None:
+				rVal = {
 					"displayDoi": dispDoi,
 					"doi": doi,
 					"uuid": hmid
-				}
+					}
+			else:
+				rVal = {
+					"displayDoi": dispDoi,
+					"doi": doi,
+					"uuid": hmid,
+					"hubmap-id": hubmapId
+					}				
 			#return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
 		else:
-			rVal = {
+			if hubmapId is None:
+				rVal = {
 					"uuid":hmid
-				}
+					}
+			else:
+				rVal = {
+					"uuid":hmid,
+					"hubamp-id": hubmapId
+					}				
 			#return jsonify(uuid=hmid)
 		return rVal
 	
