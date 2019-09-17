@@ -173,12 +173,8 @@ def get_dataset(identifier):
         conn = Neo4jConnection()
         driver = conn.get_driver()
         token = str(request.headers["AUTHORIZATION"])[7:]
-        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
-        if r.ok == False:
-            raise ValueError("Cannot find specimen with identifier: " + identifier)
-        uuid = json.loads(r.text)[0]['hmuuid']
         dataset = Dataset()
-        dataset_record = dataset.get_dataset(driver, uuid)
+        dataset_record = Entity.get_entity_metadata(driver, identifier)
         conn.close()
         return jsonify( { 'dataset': dataset_record } ), 200
     
@@ -188,7 +184,9 @@ def get_dataset(identifier):
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets', methods=['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
