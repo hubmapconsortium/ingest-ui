@@ -161,7 +161,7 @@ def get_datasets():
                 conn.close()
 
 @app.route('/datasets/<identifier>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
 def get_dataset(identifier):
     if identifier == None or len(identifier) == 0:
@@ -311,7 +311,7 @@ def publish_datastage(uuid):
         conn.close()
 
 @app.route('/datasets/<uuid>', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
 def modify_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:

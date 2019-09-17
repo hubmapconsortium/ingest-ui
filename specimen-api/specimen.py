@@ -280,7 +280,7 @@ class Specimen:
                 # generate the set of specimen UUIDs required for this request
                 specimen_uuid_record_list = None
                 try:
-                    specimen_uuid_record_list = getNewUUID(current_token, entity_type, sample_count)
+                    specimen_uuid_record_list = getNewUUID(current_token, entity_type, lab_id_list, sample_count)
                     if (specimen_uuid_record_list == None) or (len(specimen_uuid_record_list) == 0):
                         raise ValueError("UUID service did not return a value")
                 except requests.exceptions.ConnectionError as ce:

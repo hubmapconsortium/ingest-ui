@@ -51,7 +51,7 @@ def load_config_file():
         print (msg + "  Program stopped.")
         exit(0)
 
-def getNewUUID(current_token, uuid_type, sample_count=1):
+def getNewUUID(current_token, uuid_type, hubmap_identifier=None, sample_count=1):
     load_config_file()
     url = app_config['UUID_WEBSERVICE_URL'] + "?sample_count=" + str(sample_count)
     if current_token == None or len(current_token) == 0:
@@ -61,8 +61,8 @@ def getNewUUID(current_token, uuid_type, sample_count=1):
     try:
         # take the incoming uuid_type and uppercase it
         uuid_datatype = str(uuid_type).upper()
-        r = requests.post(url, json={"entityType" : "{uuid_datatype}", "generateDOI" : "true"}, 
-                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token, uuid_datatype=uuid_datatype, sample_count=sample_count )})
+        r = requests.post(url, json={"entityType" : "{uuid_datatype}".format(uuid_datatype=uuid_datatype), "generateDOI" : "true", "hubmap-ids" : "{hubmap_identifier}".format(hubmap_identifier=hubmap_identifier)}, 
+                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
         if r.ok == True:
             data = json.loads(r.content.decode())
             return data
