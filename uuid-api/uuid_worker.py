@@ -1,13 +1,5 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
-import string_helper
-from hm_auth import AuthHelper
-from properties.p import Property #pip install property 
-#import common_api.string_helper
-#from common_api import string_helper
-
-from hmdb import DBConn
 import logging
 from flask import Response, jsonify
 import threading
@@ -15,6 +7,15 @@ import secrets
 import time
 from contextlib import closing
 import json
+from properties.p import Property #pip install property 
+import ast
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
+import string_helper
+from hm_auth import AuthHelper
+from properties.p import Property #pip install property 
+#import common_api.string_helper
+#from common_api import string_helper
+from hmdb import DBConn
 
 PROP_FILE_NAME = os.path.join(os.path.dirname(__file__), 'uuid.properties') 
 DOI_ALPHA_CHARS=['B','C','D','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','X','Z']                 
@@ -78,6 +79,7 @@ class UUIDWorker:
 		userInfo = self.authHelper.getUserInfoUsingRequest(req)
 		hasHubmapIds = False
 		hmids = None
+		hmids_list = None
 		if isinstance(userInfo, Response):
 			return userInfo;
 
@@ -91,10 +93,14 @@ class UUIDWorker:
 		
 		if 'hubmap-ids' in content:
 			hmids = content['hubmap-ids']
-			if hmids is not None and isinstance(hmids, list) and len(hmids) > 0:
+			try:
+				hmids_list = ast.literal_eval(hmids)
+			except:
+				return(Response("Invalid input, cannot convert Hubmap Ids string '{hmids}' to list".format(hmids=hmids), 400))
+			if hmids_list is not None and isinstance(hmids_list, list) and len(hmids_list) > 0:
 				hasHubmapIds = True
-		
-		if hasHubmapIds and not len(hmids) == nIds:
+			
+		if hasHubmapIds and not len(hmids_list) == nIds:
 			return(Response("Invalid input: Length of HuBMAP ID list must match the number of ids being generated"))
 		
 		entityType = content['entityType'].upper().strip()
@@ -120,7 +126,7 @@ class UUIDWorker:
 		rVal = []
 		for x in range(nIds):
 			if hasHubmapIds:
-				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail, hmids[x]))
+				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail, hmids_list[x]))
 			else:
 				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
 		return rVal
