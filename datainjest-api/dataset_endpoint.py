@@ -449,21 +449,14 @@ def create_collection():
 
 
 @app.route('/collections/<uuid>', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
 def update_collection():
-    return jsonify({
-        'name': 'collection1',
-        'description': 'This is collection 1',
-        'uuid': '4501a09f-66bd-4e53-a560-7a269bdd1f02',
-        'display_doi': 'HBM:654-STTH-775',
-        'doi': '654STTH775',
-        'entitytype': 'Collection'
-    }), 200
+    return Response('PUT method not implemented is invalid', 400)
 
 
 @app.route('/collections/<identifier>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
 def get_collection(identifier):
     if identifier == None or len(identifier) == 0:
@@ -474,14 +467,9 @@ def get_collection(identifier):
     try:
         conn = Neo4jConnection()
         driver = conn.get_driver()
-        token = str(request.headers["AUTHORIZATION"])[7:]
-        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
-        if r.ok == False:
-            raise ValueError("Cannot find specimen with identifier: " + identifier)
-        uuid = json.loads(r.text)[0]['hmuuid']
-        collection_record = Collection.get_collection(driver, uuid)
+        collection_record = Collection.get_collection(driver, identifier)
         conn.close()
-        return jsonify( { 'collection': dataset_record } ), 200
+        return jsonify( { 'collection': collection_record } ), 200
     
     except:
         msg = 'An error occurred: '
@@ -489,7 +477,9 @@ def get_collection(identifier):
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
     
 
 
