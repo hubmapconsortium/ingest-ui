@@ -20,10 +20,13 @@ PROP_FILE_NAME = os.path.join(os.path.dirname(__file__), 'uuid.properties')
 DOI_ALPHA_CHARS=['B','C','D','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','X','Z']                 
 DOI_NUM_CHARS=['2','3','4','5','6','7','8','9']                                                                                   
 HEX_CHARS=['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
-UUID_SELECTS = "HMUUID as hmuuid, DOI_SUFFIX as doiSuffix, ENTITY_TYPE as type, PARENT_UUID as parentId, TIME_GENERATED as timeStamp, USER_ID as userId, USER_EMAIL as email"
+UUID_SELECTS = "HMUUID as hmuuid, DOI_SUFFIX as doiSuffix, ENTITY_TYPE as type, PARENT_UUID as parentId, TIME_GENERATED as timeStamp, USER_ID as userId, HUBMAP_ID as hubmapId, USER_EMAIL as email"
 
 def isValidHMId(hmid):
 	if string_helper.isBlank(hmid): return False
+	tidl = hmid.strip().lower()	
+	if tidl.startswith('test') or tidl.startswith('van') or tidl.startswith('ufl') or tidl.startswith('stan') or tidl.startswith('ucsd') or tidl.startswith('calt'):
+		return True	
 	tid = stripHMid(hmid)
 	l = len(tid)
 	if not (l == 10 or l == 32): return False
@@ -173,7 +176,7 @@ class UUIDWorker:
 					"displayDoi": dispDoi,
 					"doi": doi,
 					"uuid": hmid,
-					"hubmap-id": hubmapId
+					"hubmapId": hubmapId
 					}				
 			#return jsonify(uuid=hmid, doi=doi, displayDoi=dispDoi)
 		else:
@@ -184,7 +187,7 @@ class UUIDWorker:
 			else:
 				rVal = {
 					"uuid":hmid,
-					"hubamp-id": hubmapId
+					"hubampId": hubmapId
 					}				
 			#return jsonify(uuid=hmid)
 		return rVal
@@ -207,19 +210,25 @@ class UUIDWorker:
 			if not isValidHMId(hmid):
 				return Response("Invalid HuBMAP Id", 400)
 			tid = stripHMid(hmid)
-			if len(tid) == 10:
+			tidl = hmid.strip().lower()
+			if tidl.startswith('test') or tidl.startswith('van') or tidl.startswith('ufl') or tidl.startswith('stan') or tidl.startswith('ucsd') or tidl.startswith('calt'):
+				return self.hmidExists(hmid.strip())			
+			elif len(tid) == 10:
 				return self.doiExists(tid.upper())
 			elif len(tid) == 32:
 				return self.uuidExists(tid.lower())
 			else:
-				return Response("Invalid HuBMAP Id (empty or bad length)", 400)	
+				return Response("Invalid HuBMAP Id (or empty or bad length)", 400)	
 
 	
 	def getIdInfo(self, hmid):
 		if not isValidHMId(hmid):
 			return Response("Invalid HuBMAP Id", 400)
+		tidl = hmid.strip().lower()
 		tid = stripHMid(hmid)
-		if len(tid) == 10:
+		if tidl.startswith('test') or tidl.startswith('van') or tidl.startswith('ufl') or tidl.startswith('stan') or tidl.startswith('ucsd') or tidl.startswith('calt'):
+			sql = "select " + UUID_SELECTS + " from hm_uuids where lower(hubmap_id) ='" + tidl + "'"
+		elif len(tid) == 10:
 			sql = "select " + UUID_SELECTS + " from hm_uuids where doi_suffix ='" + tid + "'"
 		elif len(tid) == 32:
 			sql = "select " + UUID_SELECTS + " from hm_uuids where hmuuid ='" + tid + "'"
@@ -253,7 +262,16 @@ class UUIDWorker:
 		if(res[0] == 0): return False
 		raise Exception("Multiple dois found matching " + doi)
 		
-	
+	def hmidExists(self, hmid):
+		with closing(self.hmdb.getDBConnection()) as dbConn:
+			with closing(dbConn.cursor()) as curs:
+				curs.execute("select count(*) from hm_uuids where hubmap_id = '" + hmid + "'")
+				res = curs.fetchone()
+		if(res is None or len(res) == 0): return False
+		if(res[0] == 1): return True
+		if(res[0] == 0): return False
+		raise Exception("Multiple HuBMAP IDs found matching " + hmid)
+		
 	def getProperty(self, propName):																		 
 		if not propName in self.props:																								
 			raise Exception('Required property ' + propName + ' not found')																												   
