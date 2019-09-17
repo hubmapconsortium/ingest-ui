@@ -51,6 +51,8 @@ class Dataset(object):
                 'GLOBUS', 'APP_CLIENT_SECRET')
             confdata['localstoragedirectory'] = config.get(
                 'FILE_SYSTEM', 'LOCAL_STORAGE_DIRECTORY')
+            confdata['STAGING_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'STAGING_ENDPOINT_FILEPATH')
+            confdata['PUBLISH_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'PUBLISH_ENDPOINT_FILEPATH')
             return confdata
         except OSError as err:
             msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(

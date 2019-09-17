@@ -413,6 +413,8 @@ def get_collections():
     finally:
         conn.close()
 
+    
+
 @app.route('/collections', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
 @secured(groups="HuBMAP-read")
@@ -430,10 +432,10 @@ def create_collection():
         driver = conn.get_driver()
         collection = Collection()
         form_data = json.loads(request.form['data'])
-        collection = Collection.create_collection(driver, token, form_data)
+        collection_uuid = Collection.create_collection(driver, token, form_data)
         
         conn.close()
-        return jsonify(new_uuid_records), 201 
+        return jsonify({ 'uuid': collection_uuid}), 201 
 
     except AuthError as e:
         print(e)
@@ -448,7 +450,6 @@ def create_collection():
             if conn.get_driver().closed() == False:
                 conn.close()
 
-    
 
 @app.route('/collections/<uuid>', methods = ['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
