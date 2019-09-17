@@ -38,6 +38,8 @@ class Collection(object):
                 collection_record[HubmapConst.DOI_ATTRIBUTE] = collection_uuid_record[HubmapConst.DOI_ATTRIBUTE]
                 collection_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = collection_uuid_record['displayDoi']
                 collection_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.COLLECTION_TYPE_CODE
+                if 'name' in collection_record:
+                    collection_record[HubmapConst.NAME_ATTRIBUTE] = collection_record['name']
                 stmt = Neo4jConnection.get_create_statement(
                     collection_record, HubmapConst.COLLECTION_NODE_NAME, HubmapConst.COLLECTION_TYPE_CODE, False)
                 print('Collection Create statement: ' + stmt)
