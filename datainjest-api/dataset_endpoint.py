@@ -250,7 +250,9 @@ def create_datastage():
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/<uuid>/validate', methods = ['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
@@ -275,7 +277,9 @@ def validate_dataset(uuid):
             msg += x
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/<uuid>/publish', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
@@ -306,30 +310,29 @@ def publish_datastage(uuid):
         print (msg)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/<uuid>', methods = ['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
 def modify_dataset(uuid):
-    if not request.json or uuid == None or len(uuid) == 0:
+    if not request.form or uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to modify a dataset' } ))
     
-    new_dataset = {
-        'name': request.json['name'],
-        'description': request.json.get('description', ''),
-        'parentcollection': request.json['parentcollection'],
-        'hasphi': request.json['hasphi'],
-        'labcreatedat': request.json['labcreatedat'],
-        'createdby': request.json['createdby'],        
-    }
     conn = None
     new_uuid = None
     try:
+        form_data = json.loads(request.form['data'])
+        if 'old_status' not in form_data or 'status' not in form_data:
+            abort(400, jsonify( { 'error': 'old_status and status parameter are required to modify a dataset' } ))
+            
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
-        new_uuid = dataset.update_dataset(driver, uuid, new_dataset['name'], new_dataset['description'], new_dataset['parentcollection'], new_dataset['hasphi'], new_dataset['labcreatedat'], new_dataset['createdby'])
+        
+        new_uuid = dataset.update_dataset(driver, uuid, form_data['old_status'], form_data['status'], form_data)
         conn.close()
         return jsonify( { 'uuid': new_uuid } ), 204
     
@@ -339,7 +342,9 @@ def modify_dataset(uuid):
             msg += x
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/<uuid>/lock', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
@@ -364,7 +369,9 @@ def lock_dataset(uuid):
             msg += x
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/<uuid>/reopen', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
@@ -389,7 +396,9 @@ def reopen_dataset(uuid):
             msg += x
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/collections', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
@@ -409,7 +418,9 @@ def get_collections():
             msg += str(x)
         abort(400, msg)
     finally:
-        conn.close()
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
     
 
