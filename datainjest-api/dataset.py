@@ -15,6 +15,7 @@ import requests
 import urllib.parse
 from flask import Response
 from pprint import pprint
+import shutil
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
@@ -30,30 +31,31 @@ class Dataset(object):
     '''
     classdocs
     '''
+    confdata = {}
 
-
+    @classmethod
     def __init__(self):
-        pass
+        self.load_config_file()
 
-    @staticmethod
-    def load_config_file():
+    @classmethod
+    def load_config_file(self):
         config = configparser.ConfigParser()
-        confdata = {}
+        
         try:
             config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
-            confdata['neo4juri'] = config.get('NEO4J', 'server')
-            confdata['neo4jusername'] = config.get('NEO4J', 'username')
-            confdata['neo4jpassword'] = config.get('NEO4J', 'password')
-            confdata['appclientid'] = config.get('GLOBUS', 'APP_CLIENT_ID')
-            confdata['STAGING_ENDPOINT_UUID'] = config.get('GLOBUS', 'STAGING_ENDPOINT_UUID')
-            confdata['PUBLISH_ENDPOINT_UUID'] = config.get('GLOBUS', 'PUBLISH_ENDPOINT_UUID')
-            confdata['appclientsecret'] = config.get(
+            self.confdata['neo4juri'] = config.get('NEO4J', 'server')
+            self.confdata['neo4jusername'] = config.get('NEO4J', 'username')
+            self.confdata['neo4jpassword'] = config.get('NEO4J', 'password')
+            self.confdata['appclientid'] = config.get('GLOBUS', 'APP_CLIENT_ID')
+            self.confdata['STAGING_ENDPOINT_UUID'] = config.get('GLOBUS', 'STAGING_ENDPOINT_UUID')
+            self.confdata['PUBLISH_ENDPOINT_UUID'] = config.get('GLOBUS', 'PUBLISH_ENDPOINT_UUID')
+            self.confdata['appclientsecret'] = config.get(
                 'GLOBUS', 'APP_CLIENT_SECRET')
-            confdata['localstoragedirectory'] = config.get(
+            self.confdata['localstoragedirectory'] = config.get(
                 'FILE_SYSTEM', 'LOCAL_STORAGE_DIRECTORY')
-            confdata['STAGING_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'STAGING_ENDPOINT_FILEPATH')
-            confdata['PUBLISH_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'PUBLISH_ENDPOINT_FILEPATH')
-            return confdata
+            self.confdata['STAGING_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'STAGING_ENDPOINT_FILEPATH')
+            self.confdata['PUBLISH_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'PUBLISH_ENDPOINT_FILEPATH')
+            return self.confdata
         except OSError as err:
             msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
                 err)
@@ -295,12 +297,12 @@ class Dataset(object):
             raise ValueError("Unable to parse token")
         conn = Neo4jConnection()
         driver = conn.get_driver()
-        # step 1: check all the incoming UUID's to make sure they exist
+        # check all the incoming UUID's to make sure they exist
         sourceUUID = str(incoming_record['source_uuid']).strip()
         if sourceUUID == None or len(sourceUUID) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
         
-        confdata = Dataset.load_config_file()
+        confdata = self.confdata
         authcache = None
         if AuthHelper.isInitialized() == False:
             authcache = AuthHelper.create(
@@ -355,7 +357,7 @@ class Dataset(object):
             tx = None
             try:
                 tx = session.begin_transaction()
-                # step 2: create the data stage
+                # create the data stage
                 dataset_entity_record = {HubmapConst.UUID_ATTRIBUTE : datastage_uuid[HubmapConst.UUID_ATTRIBUTE],
                                          HubmapConst.DOI_ATTRIBUTE : datastage_uuid[HubmapConst.DOI_ATTRIBUTE],
                                          HubmapConst.DISPLAY_DOI_ATTRIBUTE : datastage_uuid['displayDoi'],
@@ -366,10 +368,13 @@ class Dataset(object):
                 print('Dataset Create statement: ' + stmt)
                 tx.run(stmt)
                 
-                # Step 3: setup initial Landing Zone directory for the new datastage
+                # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
-                new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                """new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
+                """
+                new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = os.makedirs(new_path)
                 incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 
                 # use the remaining attributes to create the Entity Metadata node
@@ -421,15 +426,51 @@ class Dataset(object):
                 tx.rollback()
 
     @classmethod
-    def publish_datastage(self, driver, uuid, new_file_path): 
-        conn = Neo4jConnection()
-        if conn.does_uuid_exist(uuid) != True:
-            raise LookupError('Cannot modify datastage.  Could not find datastage uuid: ' + uuid)
-        publish_state = 'Published'
+    def publish_dataset(self, driver, headers, uuid, new_file_path): 
+        if Entity.does_identifier_exist(driver, uuid) != True:
+            raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
+        publish_state = HubmapConst.DATASET_STATUS_PUBLISHED
+        current_token = None
+        try:
+            current_token = AuthHelper.parseAuthorizationTokens(headers)
+        except:
+            raise ValueError("Unable to parse token")
+
+        nexus_token = current_token['nexus_token']
 
         with driver.session() as session:
             tx = None
             try:
+                #step 1: move the files to the publish directory
+                new_publish_path = self.get_publish_path(uuid)
+                current_staging_path = self.get_staging_path(uuid)
+                move_directory(current_staging_path, new_publish_path)
+                #step 2: update the metadata node
+                metadata_node = Entity.get_entity_metadata(driver, uuid)
+                metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
+                authcache = None
+                if AuthHelper.isInitialized() == False:
+                    authcache = AuthHelper.create(
+                        self.confdata['appclientid'], self.confdata['appclientsecret'])
+                else:
+                    authcache = AuthHelper.instance()
+                userinfo = None
+                userinfo = authcache.getUserInfo(nexus_token, True)
+                if userinfo is Response:
+                    raise ValueError('Cannot authenticate current token via Globus.')
+                user_group_ids = userinfo['hmgroupids']
+                if 'sub' in userinfo.keys():
+                    metadata_node[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
+                if 'username' in userinfo.keys():
+                    metadata_node[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+                if 'name' in userinfo.keys():
+                    metadata_node[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
+
+                metadata_node[HubmapConst.PUBLISHED_TIMESTAMP_ATTRIBUTE] = 'TIMESTAMP()'
+                
+                stmt = Neo4jConnection.get_update_statement(metadata_node, True)
+                tx.run(stmt)
+                """
                 #step 1: copy the existing datastage entity
                 datastage_record = self.get_dataset(driver, uuid)
                 #TODO: swap with Bill's code
@@ -461,7 +502,7 @@ class Dataset(object):
                 tx.run(stmt)
                 # assign the "old" datastage as the input to the new activity node
                 stmt = Neo4jConnection.create_relationship_statement(uuid, HubmapConst.ACTIVITY_INPUT_REL, activity_uuid)
-                tx.run(stmt)
+                tx.run(stmt)"""
                 tx.commit()
                 return dataset_uuid
             except TypeError as te:
@@ -477,8 +518,7 @@ class Dataset(object):
 
     @classmethod
     def update_filepath_dataset(self, driver, uuid, filepath): 
-        conn = Neo4jConnection()
-        if conn.does_uuid_exist(uuid) != True:
+        if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
         
         with driver.session() as session:
@@ -504,10 +544,23 @@ class Dataset(object):
                     print (x)
                 tx.rollback()
 
+
     @classmethod
-    def update_status_dataset(self, driver, uuid, status): 
-        conn = Neo4jConnection()
-        if conn.does_uuid_exist(uuid) != True:
+    def change_status(self, driver, uuid, oldstatus, newstatus):
+        if str(oldstatus) == str(newstatus):
+            #ignore this situation, hope it goes away
+            return
+        elif str(oldstatus) == HubmapConst.DATASET_STATUS_PUBLISHED and str(newstatus) == HubmapConst.DATASET_STATUS_REOPENED:
+            self.reopen_dataset(driver, uuid)
+        elif str(oldstatus) == HubmapConst.DATASET_STATUS_QA and str(newstatus) == HubmapConst.DATASET_STATUS_PUBLISHED:
+            self.publish_dataset(driver, uuid)
+        elif str(oldstatus) == HubmapConst.DATASET_STATUS_PUBLISHED and str(newstatus) == HubmapConst.DATASET_STATUS_UNPUBLISHED:
+            self.unpublish_dataset(driver, uuid)
+            
+            
+    @classmethod
+    def set_status(self, driver, uuid, status): 
+        if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
         if HubmapConst.DATASET_STATUS_OPTIONS.count(status) == 0:
             raise ValueError('Cannot modify dataset.  Unknown dataset status: ' + status)
@@ -538,21 +591,15 @@ class Dataset(object):
                 tx.rollback()
 
     @classmethod
-    def update_dataset(self, driver, uuid, name, description, parentUUID, hasPHI, labCreatedUUID, createdByUUID): 
-        conn = Neo4jConnection()
-        if conn.does_uuid_exist(uuid) != True:
+    def update_dataset(self, driver, uuid, old_status, new_status, form_data): 
+        if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
-        if conn.does_uuid_exist(parentUUID) != True:
-            raise LookupError('Cannot modify dataset.  Could not find parentUUID: ' + parentUUID)
-        if conn.does_uuid_exist(labCreatedUUID) != True:
-            raise LookupError('Cannot modify dataset.  Could not find labCreatedUUID: ' + labCreatedUUID)
-        if conn.does_uuid_exist(createdByUUID) != True:
-            raise LookupError('Cannot modify dataset.  Could not find createdByUUID: ' + createdByUUID)
 
         with driver.session() as session:
             tx = None
             try:
-                tx = session.begin_transaction()
+                self.change_status(driver, uuid, old_status, new_status)
+                """tx = session.begin_transaction()
                 # step one, delete all relationships in case those are updated
                 stmt = "MATCH (a {{{uuid_attribute}: '{uuid_value}'}})-[r]-(b) DELETE r".format(uuid_attribute=HubmapConst.UUID_ATTRIBUTE, uuid_value=uuid)
                 #print "EXECUTING: " + stmt
@@ -571,7 +618,7 @@ class Dataset(object):
                 tx.run(stmt)
                 stmt = Neo4jConnection.create_relationship_statement(uuid, HubmapConst.CREATED_BY_REL, createdByUUID)
                 tx.run(stmt)
-                tx.commit()
+                tx.commit()"""
                 return uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
@@ -585,8 +632,7 @@ class Dataset(object):
 
     @classmethod
     def validate_dataset(self, driver, uuid): 
-        conn = Neo4jConnection()
-        if conn.does_uuid_exist(uuid) != True:
+        if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot validate dataset.  Could not find dataset uuid: ' + uuid)
 
         with driver.session() as session:
@@ -594,9 +640,9 @@ class Dataset(object):
             try:
                 dataset = Dataset()
                 if validate_code == True:
-                    dataset.update_status_dataset(driver, uuid, 'Valid')
+                    dataset.set_status(driver, uuid, 'Valid')
                 else:
-                    dataset.update_status_dataset(driver, uuid, 'Invalid')
+                    dataset.set_status(driver, uuid, 'Invalid')
                 return uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
@@ -610,8 +656,7 @@ class Dataset(object):
 
     @classmethod
     def lock_dataset(self, driver, uuid): 
-        conn = Neo4jConnection()
-        if conn.does_uuid_exist(uuid) != True:
+        if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot lock dataset.  Could not find dataset uuid: ' + uuid)
 
         with driver.session() as session:
@@ -619,7 +664,7 @@ class Dataset(object):
             try:
                 dataset = Dataset()
                 if lock_code == True:
-                    dataset.update_status_dataset(driver, uuid, 'Locked')
+                    dataset.set_status(driver, uuid, 'Locked')
                 return uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
@@ -633,8 +678,7 @@ class Dataset(object):
 
     @classmethod
     def reopen_dataset(self, driver, uuid): 
-        conn = Neo4jConnection()
-        if conn.does_uuid_exist(uuid) != True:
+        if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot reopen dataset.  Could not find dataset uuid: ' + uuid)
 
         with driver.session() as session:
@@ -642,7 +686,7 @@ class Dataset(object):
             try:
                 dataset = Dataset()
                 if reopen_code == True:
-                    dataset.update_status_dataset(driver, uuid, 'Reopen')
+                    dataset.set_status(driver, uuid, 'Reopen')
                 return uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
@@ -653,6 +697,20 @@ class Dataset(object):
             except:
                 print ('A general error occurred: ', sys.exc_info()[0])
                 raise
+
+    #TODO: This method needs the user's group id
+    @classmethod
+    def get_staging_path(self, group_name, dataset_uuid):
+        start_dir = str(self.confdata['STAGING_ENDPOINT_FILEPATH'])
+        ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
+        return ret_dir
+    
+    #TODO: This method needs the user's group id
+    @classmethod
+    def get_publish_path(self, group_name, dataset_uuid):
+        start_dir = str(self.confdata['PUBLISH_ENDPOINT_FILEPATH'])
+        ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
+        return ret_dir
 
 # NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
 # if the file path was wrong.  
@@ -696,6 +754,17 @@ def move_directory(dir_UUID, oldpath, newpath):
     except:
         raise
 """
+
+def move_directory(oldpath, newpath):
+    """it may seem like overkill to use a define a method just to move files, but we might need to move these
+    files across globus endpoints in the future"""
+    try:
+        os.makedirs(newpath)
+        ret_path = shutil.move(oldpath, newpath)
+    except: 
+        raise 
+    return ret_path
+
 def publish_directory(dir_UUID):
     try:
         move_directory(dir_UUID, get_staging_path(dir_UUID), get_publish_path(dir_UUID))
@@ -704,13 +773,6 @@ def publish_directory(dir_UUID):
     except:
         raise
 
-#TODO: This method needs the user's group id
-def get_staging_path():
-    return str(app.config['STAGING_FILE_PATH'])
-
-#TODO: This method needs the user's group id
-def get_publish_path():
-    return str(app.config['PUBLISH_FILE_PATH'])
     
 
 
