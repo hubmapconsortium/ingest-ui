@@ -28,7 +28,18 @@ class HubmapConst(object):
     NAME_ATTRIBUTE = 'label'
     DISPLAY_NAME_ATTRIBUTE = 'displayname'
     DATASET_STATUS_ATTRIBUTE = 'status'
-    DATASET_STATUS_OPTIONS = ['New','Invalid','Valid','Published','Reopened','Locked','Unpublished']
+    DATASET_STATUS_NEW = 'New'
+    DATASET_STATUS_INVALID = 'Invalid'
+    DATASET_STATUS_VALID = 'Valid'
+    DATASET_STATUS_PUBLISHED = 'Published'
+    DATASET_STATUS_REOPENED = 'Reopened'
+    DATASET_STATUS_LOCKED = 'Locked'
+    DATASET_STATUS_UNPUBLISHED = 'Unpublished'
+    DATASET_STATUS_QA = 'QA'
+    DATASET_STATUS_DEPRECATED = 'Deprecated'
+    DATASET_STATUS_OPTIONS = [DATASET_STATUS_NEW,DATASET_STATUS_INVALID,DATASET_STATUS_VALID,
+                              DATASET_STATUS_PUBLISHED,DATASET_STATUS_REOPENED,DATASET_STATUS_LOCKED,
+                              DATASET_STATUS_UNPUBLISHED,DATASET_STATUS_QA,DATASET_STATUS_DEPRECATED]
     FILE_PATH_ATTRIBUTE = 'filepath'
     HAS_PHI_ATTRIBUTE = 'hasphi'
     UUID_ATTRIBUTE = 'uuid'
@@ -43,6 +54,10 @@ class HubmapConst(object):
     PROVENANCE_SUB_ATTRIBUTE = 'provenance_user_sub'
     PROVENANCE_GROUP_UUID_ATTRIBUTE = 'provenance_group_uuid'
     PROVENANCE_GROUP_NAME_ATTRIBUTE = 'provenance_group_name'
+    PUBLISHED_TIMESTAMP_ATTRIBUTE = 'published_timestamp'
+    PUBLISHED_USER_EMAIL_ATTRIBUTE = 'published_user_email'
+    PUBLISHED_SUB_ATTRIBUTE = 'published_user_sub'
+    PUBLISHED_USER_DISPLAYNAME_ATTRIBUTE = 'published_user_displayname'
     STATUS_ATTRIBUTE = 'status'
     DOI_ATTRIBUTE = 'doi'
     DISPLAY_DOI_ATTRIBUTE = 'display_doi'
@@ -60,6 +75,7 @@ class HubmapConst(object):
     LAB_IDENTIFIER_ATTRIBUTE = 'hubmap_identifier'
     NEXT_IDENTIFIER_ATTRIBUTE = 'next_identifier'
     DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE = 'globus_directory_url_path'
+    DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE = 'local_directory_url_path'
     
     
     #Organ Specifiers
@@ -108,10 +124,6 @@ class HubmapConst(object):
     CREATE_SAMPLE_ACTIVITY_TYPE_CODE = 'Create Sample Activity'
     REGISTER_DONOR_ACTIVITY_TYPE_CODE = 'Register Donor Activity'
 
-    DATASET_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
-     {'attribute_name' : ENTITY_TYPE_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'}]
     DATASET_REQUIRED_ATTRIBUTE_LIST = [{'attribute_name' : UUID_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},
      {'attribute_name' : DISPLAY_DOI_ATTRIBUTE, 'indexed' : 'True', 'required' : 'True'},

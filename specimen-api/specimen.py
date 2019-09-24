@@ -788,7 +788,7 @@ class Specimen:
             confdata['appclientsecret'] = config.get(
                 'GLOBUS', 'APP_CLIENT_SECRET')
             confdata['localstoragedirectory'] = config.get(
-                'FILE_SYSTEM', 'LOCAL_STORAGE_DIRECTORY')
+                'FILE_SYSTEM', 'GLOBUS_STORAGE_DIRECTORY_ROOT')
             return confdata
         except OSError as err:
             msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(

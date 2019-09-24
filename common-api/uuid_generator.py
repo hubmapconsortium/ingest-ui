@@ -82,12 +82,44 @@ def getNewUUID(current_token, uuid_type, hubmap_identifier=None, sample_count=1)
         pprint(e)
         raise e
 
+def getUUID(current_token, identifier):
+    load_config_file()
+    url = app_config['UUID_WEBSERVICE_URL'] + "/" + str(identifier)
+    if current_token == None or len(current_token) == 0:
+        raise ValueError("Error in getNewUUID: the token cannot be blank")
+    try:
+        # take the incoming uuid_type and uppercase it
+        r = requests.get(url, headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
+        if r.ok == True:
+            data = json.loads(r.content.decode())
+            return data
+        else:
+            msg = 'HTTP Response: ' + str(r.status_code) + ' msg: ' + str(r.text) 
+            raise Exception(msg)
+    except ConnectionError as connerr: # "connerr"...get it? like "ConAir"
+        pprint(connerr)
+        raise connerr
+    except TimeoutError as toerr:
+        pprint(toerr)
+        raise toerr
+    except TooManyRedirects as toomany:
+        pprint(toomany)
+        raise toomany
+    except Exception as e:
+        pprint(e)
+        raise e
+
 
 if __name__ == '__main__':
     try:
         #app.run()
-        current_token = 'Agg3ex54N76B70r80K2G5yOxnN13mM960q4goq8bdJra1p5a0tJCYw70lnQ8VYq7N89J0y0xMvNN9F168VVwfBgD6'
-        returned_uuid = getNewUUID(current_token, HubmapConst.DATASET_TYPE_CODE)
+        current_token = 'Ag7oaJ1399NgqkPjP9G8WX0jgryxWNOoDe41YMmokWDbzkEy0kSWC8OVnvXjkwBbml4mByzK02WqBXTzpwv42cp1gr'
+        #returned_uuid = getNewUUID(current_token, HubmapConst.DATASET_TYPE_CODE)
+        returned_uuid = getUUID(current_token, 'HBM347.BPJH.682')
+        pprint(returned_uuid)
+        returned_uuid = getUUID(current_token, '347BPJH682')
+        pprint(returned_uuid)
+        returned_uuid = getUUID(current_token, 'f05e1b358b00bbf22ebab7834b730a06')
         pprint(returned_uuid)
 
     except Exception as e:
