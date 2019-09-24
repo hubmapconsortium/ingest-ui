@@ -149,11 +149,15 @@ class Neo4jConnection(object):
         for key in update_record.keys():
             # escape single quotes
             key_value = str(update_record.get(key)).replace("'", r"\'")
-            attr_string += key + ": '" + key_value + "', "
+            #handle the case where a Cypher function is sent
+            if key_value == 'TIMESTAMP()':
+                attr_string += key + ": " + key_value + ", "
+            else:
+                attr_string += key + ": '" + key_value + "', "
         if include_provenance_data == True:
             attr_string += HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE + ": TIMESTAMP()"
         else:
-            # Remove the trailing comma
+            # Remove the trailing space and comma
             attr_string = attr_string[:-2]
         attr_string += "}"
         stmt =  "MATCH (a {{{uuid_attrib}: '{uuid}'}}) SET a += {attr_string} RETURN a.{uuid_attrib}".format(uuid_attrib=HubmapConst.UUID_ATTRIBUTE,

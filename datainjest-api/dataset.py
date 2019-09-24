@@ -20,7 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 from hubmap_const import HubmapConst
 from hm_auth import AuthCache, AuthHelper
 from entity import Entity
-from uuid_generator import getNewUUID
+from uuid_generator import getNewUUID, getUUID
 from neo4j_connection import Neo4jConnection
 from activity import Activity
 from autherror import AuthError
@@ -52,7 +52,7 @@ class Dataset(object):
             self.confdata['appclientsecret'] = config.get(
                 'GLOBUS', 'APP_CLIENT_SECRET')
             self.confdata['localstoragedirectory'] = config.get(
-                'FILE_SYSTEM', 'LOCAL_STORAGE_DIRECTORY')
+                'FILE_SYSTEM', 'GLOBUS_STORAGE_DIRECTORY_ROOT')
             self.confdata['STAGING_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'STAGING_ENDPOINT_FILEPATH')
             self.confdata['PUBLISH_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'PUBLISH_ENDPOINT_FILEPATH')
             return self.confdata
@@ -301,7 +301,13 @@ class Dataset(object):
         sourceUUID = str(incoming_record['source_uuid']).strip()
         if sourceUUID == None or len(sourceUUID) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
-        
+        source_UUID_Data = None
+        try:
+            source_UUID_Data = getUUID(current_token['nexus_token'], sourceUUID)
+            if len(source_UUID_Data) != 1:
+                raise ValueError("Could not find information for identifier" + sourceUUID)
+        except:
+            raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
         confdata = self.confdata
         authcache = None
         if AuthHelper.isInitialized() == False:
@@ -370,12 +376,13 @@ class Dataset(object):
                 
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
-                """new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
-                """
-                new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = os.makedirs(new_path)
+                
+                """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = os.makedirs(new_path)"""
                 incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
+                incoming_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
@@ -398,7 +405,7 @@ class Dataset(object):
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group, data_directory)
                 tx.run(stmt)
                 # step 4: create the associated activity
-                activity_object = Activity.get_create_activity_statements(nexus_token, activity_type, sourceUUID, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                activity_object = Activity.get_create_activity_statements(nexus_token, activity_type, source_UUID_Data[0]['hmuuid'], datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
                     tx.run(stmt)                
@@ -410,6 +417,7 @@ class Dataset(object):
                     stmt = Neo4jConnection.create_relationship_statement(
                         datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.IN_COLLECTION_REL, incoming_record['collection_uuid'])
                     tx.run(stmt)
+                
                 tx.commit()
                 ret_object = {'uuid' : datastage_uuid['uuid'], 'globus_directory': new_globus_path}
                 return ret_object
@@ -425,10 +433,25 @@ class Dataset(object):
                     print (x)
                 tx.rollback()
 
+
     @classmethod
-    def publish_dataset(self, driver, headers, uuid, new_file_path): 
+    def publishing_process(self, driver, headers, uuid, publish=True):
+        group_info = None
+        metadata_node = None
+        metadata = None
         if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
+        try:
+            metadata_node = Entity.get_entity_metadata(driver, uuid)
+            metadata = Metadata()
+        except:
+            raise LookupError("Unable to find metadata node for '" + uuid + "'")
+        
+        try:
+            group_info = metadata.get_group_by_identifier(metadata_node['provenance_group_uuid'])
+        except:
+            raise LookupError("Unable to find group information for '" + metadata_node['uuid'] + "'")
+        
         publish_state = HubmapConst.DATASET_STATUS_PUBLISHED
         current_token = None
         try:
@@ -441,12 +464,107 @@ class Dataset(object):
         with driver.session() as session:
             tx = None
             try:
+                tx = session.begin_transaction()
                 #step 1: move the files to the publish directory
-                new_publish_path = self.get_publish_path(uuid)
-                current_staging_path = self.get_staging_path(uuid)
+                new_publish_path = self.get_publish_path(group_info['displayname'], uuid)
+                current_staging_path = self.get_staging_path(group_info['displayname'], uuid)
+                if publish == True:
+                    #publish
+                    move_directory(current_staging_path, new_publish_path)
+                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['PUBLISH_ENDPOINT_FILEPATH'],new_publish_path)
+                    metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
+                else:
+                    #unpublish
+                    move_directory(new_publish_path, current_staging_path)
+                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['STAGING_ENDPOINT_FILEPATH'],current_staging_path)
+                    metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_UNPUBLISHED
+                #step 2: update the metadata node
+                authcache = None
+                if AuthHelper.isInitialized() == False:
+                    authcache = AuthHelper.create(
+                        self.confdata['appclientid'], self.confdata['appclientsecret'])
+                else:
+                    authcache = AuthHelper.instance()
+                userinfo = None
+                userinfo = authcache.getUserInfo(nexus_token, True)
+                if userinfo is Response:
+                    raise ValueError('Cannot authenticate current token via Globus.')
+                user_group_ids = userinfo['hmgroupids']
+                if 'sub' in userinfo.keys():
+                    metadata_node[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
+                    metadata_node[HubmapConst.PUBLISHED_SUB_ATTRIBUTE] = userinfo['sub']
+                if 'username' in userinfo.keys():
+                    metadata_node[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+                    metadata_node[HubmapConst.PUBLISHED_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+                if 'name' in userinfo.keys():
+                    metadata_node[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
+                    metadata_node[HubmapConst.PUBLISHED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
+
+                metadata_node[HubmapConst.PUBLISHED_TIMESTAMP_ATTRIBUTE] = 'TIMESTAMP()'
+                metadata_node[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_NODE_NAME
+                
+                stmt = Neo4jConnection.get_update_statement(metadata_node, True)
+                print ("EXECUTING DATASET PUBLISH UPDATE: " + stmt)
+                tx.run(stmt)
+                tx.commit()
+                return uuid
+            except TypeError as te:
+                print ("Type Error: ", te.msg)
+                raise te
+            except AttributeError as ae:
+                print ("Attribute Error: ", ae.msg)
+                raise ae
+            except FileNotFoundError as fnfe:
+                print ("File Note Found Error: ", fnfe)
+                raise fnfe
+            except FileExistsError as fee:
+                print ("File Exists Error: ", fee)
+                raise fee                
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                raise
+            finally:
+                pass                
+
+    """
+    @classmethod
+    def publish_dataset(self, driver, headers, uuid): 
+        group_info = None
+        metadata_node = None
+        metadata = None
+        if Entity.does_identifier_exist(driver, uuid) != True:
+            raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
+        try:
+            metadata_node = Entity.get_entity_metadata(driver, uuid)
+            metadata = Metadata()
+        except:
+            raise LookupError("Unable to find metadata node for '" + uuid + "'")
+        
+        try:
+            group_info = metadata.get_group_by_identifier(metadata_node['provenance_group_uuid'])
+        except:
+            raise LookupError("Unable to find group information for '" + metadata_node['uuid'] + "'")
+        
+        publish_state = HubmapConst.DATASET_STATUS_PUBLISHED
+        current_token = None
+        try:
+            current_token = AuthHelper.parseAuthorizationTokens(headers)
+        except:
+            raise ValueError("Unable to parse token")
+
+        nexus_token = current_token['nexus_token']
+
+        with driver.session() as session:
+            tx = None
+            try:
+                tx = session.begin_transaction()
+                #step 1: move the files to the publish directory
+                new_publish_path = self.get_publish_path(group_info['displayname'], uuid)
+                current_staging_path = self.get_staging_path(group_info['displayname'], uuid)
                 move_directory(current_staging_path, new_publish_path)
                 #step 2: update the metadata node
-                metadata_node = Entity.get_entity_metadata(driver, uuid)
                 metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
                 authcache = None
                 if AuthHelper.isInitialized() == False:
@@ -461,61 +579,43 @@ class Dataset(object):
                 user_group_ids = userinfo['hmgroupids']
                 if 'sub' in userinfo.keys():
                     metadata_node[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
+                    metadata_node[HubmapConst.PUBLISHED_SUB_ATTRIBUTE] = userinfo['sub']
                 if 'username' in userinfo.keys():
                     metadata_node[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+                    metadata_node[HubmapConst.PUBLISHED_USER_EMAIL_ATTRIBUTE] = userinfo['username']
                 if 'name' in userinfo.keys():
                     metadata_node[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
+                    metadata_node[HubmapConst.PUBLISHED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
 
                 metadata_node[HubmapConst.PUBLISHED_TIMESTAMP_ATTRIBUTE] = 'TIMESTAMP()'
+                metadata_node[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_NODE_NAME
                 
                 stmt = Neo4jConnection.get_update_statement(metadata_node, True)
+                print ("EXECUTING DATASET PUBLISH UPDATE: " + stmt)
                 tx.run(stmt)
-                """
-                #step 1: copy the existing datastage entity
-                datastage_record = self.get_dataset(driver, uuid)
-                #TODO: swap with Bill's code
-                dataset_uuid = getNewUUID()
-                datastage_record[HubmapConst.UUID_ATTRIBUTE] = dataset_uuid
-                datastage_record[HubmapConst.DATASET_FILE_PATH_ATTRIBUTE] = new_file_path
-                datastage_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = publish_state
-                datastage_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.DATASET_TYPE_CODE
-                
-                tx = session.begin_transaction()
-                stmt = Neo4jConnection.get_create_statement(datastage_record, HubmapConst.ENTITY_NODE_NAME, HubmapConst.DATASET_TYPE_CODE, False)
-                tx.run(stmt)
-                #step 2: create new activity associated with the dataset
-                #TODO: swap with Bill's code
-                activity_uuid = getNewUUID()
-                datastage_activity_record = { HubmapConst.UUID_ATTRIBUTE : activity_uuid, HubmapConst.ACTIVITY_TYPE_ATTRIBUTE : HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE}
-                stmt = Neo4jConnection.get_create_statement(datastage_activity_record, HubmapConst.ACTIVITY_NODE_NAME, HubmapConst.DATASET_PUBLISH_ACTIVITY_TYPE_CODE, True)
-                tx.run(stmt)
-                # step 3: find all relationships
-                stmt = Neo4jConnection.get_entity_from_relationship_statement(uuid, HubmapConst.DERIVED_FROM_REL)
-                parentUUID_record = Dataset.get_node_properties(driver, stmt, True)
-                parentUUID = parentUUID_record.get(HubmapConst.UUID_ATTRIBUTE)
-                
-                # step 4: create all relationships
-
-                stmt = Neo4jConnection.create_relationship_statement(dataset_uuid, HubmapConst.DERIVED_FROM_REL, parentUUID)
-                tx.run(stmt)
-                stmt = Neo4jConnection.create_relationship_statement(activity_uuid, HubmapConst.ACTIVITY_OUTPUT_REL, dataset_uuid)
-                tx.run(stmt)
-                # assign the "old" datastage as the input to the new activity node
-                stmt = Neo4jConnection.create_relationship_statement(uuid, HubmapConst.ACTIVITY_INPUT_REL, activity_uuid)
-                tx.run(stmt)"""
                 tx.commit()
-                return dataset_uuid
+                return uuid
             except TypeError as te:
                 print ("Type Error: ", te.msg)
                 raise te
             except AttributeError as ae:
                 print ("Attribute Error: ", ae.msg)
                 raise ae
+            except FileNotFoundError as fnfe:
+                print ("File Note Found Error: ", fnfe.msg)
+                raise fnfe
+            except FileExistsError as fee:
+                print ("File Exists Error: ", fee.msg)
+                raise fee                
             except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
                 raise
             finally:
                 pass                
-
+    """
+    
     @classmethod
     def update_filepath_dataset(self, driver, uuid, filepath): 
         if Entity.does_identifier_exist(driver, uuid) != True:
@@ -546,18 +646,73 @@ class Dataset(object):
 
 
     @classmethod
-    def change_status(self, driver, uuid, oldstatus, newstatus):
-        if str(oldstatus) == str(newstatus):
-            #ignore this situation, hope it goes away
-            return
-        elif str(oldstatus) == HubmapConst.DATASET_STATUS_PUBLISHED and str(newstatus) == HubmapConst.DATASET_STATUS_REOPENED:
-            self.reopen_dataset(driver, uuid)
-        elif str(oldstatus) == HubmapConst.DATASET_STATUS_QA and str(newstatus) == HubmapConst.DATASET_STATUS_PUBLISHED:
-            self.publish_dataset(driver, uuid)
-        elif str(oldstatus) == HubmapConst.DATASET_STATUS_PUBLISHED and str(newstatus) == HubmapConst.DATASET_STATUS_UNPUBLISHED:
-            self.unpublish_dataset(driver, uuid)
+    def change_status(self, driver, headers, uuid, oldstatus, newstatus, formdata):
+        if str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_REOPENED).upper():
+            #self.reopen_dataset(driver, headers, uuid)
+            pass
+        elif str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_QA).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper():
+            #self.publish_dataset(driver, headers, uuid)
+            self.publishing_process(driver, headers, uuid, True)
+        elif str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_UNPUBLISHED).upper():
+            #self.unpublish_dataset(driver, headers, uuid)
+            self.publishing_process(driver, headers, uuid, False)
+        else:
+            self.modify_dataset(driver, headers, uuid, formdata)
             
             
+    @classmethod
+    def modify_dataset(self, driver, headers, uuid, formdata):
+        with driver.session() as session:
+            tx = None
+            try:
+                tx = session.begin_transaction()
+                update_record = formdata
+
+                # put the metadata UUID into the form data
+                metadata_node = Entity.get_entity_metadata(driver, uuid)
+                update_record[HubmapConst.UUID_ATTRIBUTE] = metadata_node[HubmapConst.UUID_ATTRIBUTE]
+
+                if 'old_status' in update_record:
+                    del update_record['old_status']
+                    
+                # I need to convert the status to what is found in the HubmapConst file
+                if str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_NEW).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_NEW
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_INVALID).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_INVALID
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_VALID).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_VALID
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_PUBLISHED
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_REOPENED).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_REOPENED
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_LOCKED).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_LOCKED
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_NEW).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_NEW
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_UNPUBLISHED).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_UNPUBLISHED
+                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
+                    update_record['status'] = HubmapConst.DATASET_STATUS_QA
+
+                stmt = Neo4jConnection.get_update_statement(update_record, True)
+                print ("EXECUTING DATASET UPDATE: " + stmt)
+                tx.run(stmt)
+                tx.commit()
+                return uuid
+            except TransactionError as te: 
+                print ('A transaction error occurred: ', te.value)
+                tx.rollback()
+            except CypherError as cse:
+                print ('A Cypher error was encountered: ', cse.message)
+                tx.rollback()                
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                tx.rollback()
+    
+    """
     @classmethod
     def set_status(self, driver, uuid, status): 
         if Entity.does_identifier_exist(driver, uuid) != True:
@@ -589,46 +744,19 @@ class Dataset(object):
                 for x in sys.exc_info():
                     print (x)
                 tx.rollback()
-
+    """
+    
     @classmethod
-    def update_dataset(self, driver, uuid, old_status, new_status, form_data): 
+    def process_update_request(self, driver, headers, uuid, old_status, new_status, form_data): 
         if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
-
-        with driver.session() as session:
-            tx = None
-            try:
-                self.change_status(driver, uuid, old_status, new_status)
-                """tx = session.begin_transaction()
-                # step one, delete all relationships in case those are updated
-                stmt = "MATCH (a {{{uuid_attribute}: '{uuid_value}'}})-[r]-(b) DELETE r".format(uuid_attribute=HubmapConst.UUID_ATTRIBUTE, uuid_value=uuid)
-                #print "EXECUTING: " + stmt
-                tx.run(stmt)
-                # step two, reset the properties
-                stmt = "MATCH (a:{type} {{{uuid_attrib}: $uuid}}) SET a.{name_attrib}= $name, a.{desc_attrib}= $desc, a.{has_phi_attrib}= $has_phi, a.{status_attrib} = 'Reopened' RETURN a.{uuid_attrib}".format(                                                                                                                                                               
-                        type=HubmapConst.ENTITY_NODE_NAME, uuid_attrib=HubmapConst.UUID_ATTRIBUTE, 
-                        name_attrib=HubmapConst.NAME_ATTRIBUTE, desc_attrib=HubmapConst.DESCRIPTION_ATTRIBUTE, status_attrib=HubmapConst.DATASET_STATUS_ATTRIBUTE, 
-                        has_phi_attrib=HubmapConst.HAS_PHI_ATTRIBUTE)
-                #print ("EXECUTING: " + stmt)
-                tx.run(stmt, uuid=uuid, name=name, desc=description, has_phi=hasPHI)
-                # step 3, re-establish the relationships
-                stmt = Neo4jConnection.create_relationship_statement(uuid, HubmapConst.DERIVED_FROM_REL, parentUUID)
-                tx.run(stmt)
-                stmt = Neo4jConnection.create_relationship_statement(uuid, HubmapConst.LAB_CREATED_AT_REL, labCreatedUUID)
-                tx.run(stmt)
-                stmt = Neo4jConnection.create_relationship_statement(uuid, HubmapConst.CREATED_BY_REL, createdByUUID)
-                tx.run(stmt)
-                tx.commit()"""
-                return uuid
-            except TransactionError as te: 
-                print ('A transaction error occurred: ', te.value)
-                tx.rollback()
-            except CypherError as cse:
-                print ('A Cypher error was encountered: ', cse.message)
-                tx.rollback()                
-            except:
-                print ('A general error occurred: ', sys.exc_info()[0])
-                tx.rollback()
+        try:
+            self.change_status(driver, headers, uuid, old_status, new_status, form_data)
+            return uuid
+        except:
+            print ('A general error occurred: ', sys.exc_info()[0])
+            raise
+        
 
     @classmethod
     def validate_dataset(self, driver, uuid): 
@@ -677,26 +805,155 @@ class Dataset(object):
                 raise
 
     @classmethod
-    def reopen_dataset(self, driver, uuid): 
+    def reopen_dataset(self, driver, headers, incoming_record):
+        """Reopen involves several large tasks:
+        1.  Create a new dataset entity object.
+        2.  Copy the existing metadata object and connect it to the new dataset entity object.
+        3.  Copy the existing files from the published location to staging using the new dataset uuid
+        --Steps to update the existing "original" dataset
+        4.  Move the existing files from the published location to the staging location
+        5.  Update the original dataset's state to deprecated
+        """ 
+        if HubmapConst.UUID_ATTRIBUTE not in incoming_record:
+            raise ValueError('Cannot reopen dataset.  Could not find dataset uuid')
+        uuid = incoming_record['HubmapConst.UUID_ATTRIBUTE']
         if Entity.does_identifier_exist(driver, uuid) != True:
             raise LookupError('Cannot reopen dataset.  Could not find dataset uuid: ' + uuid)
+        current_token = None
+        collection_uuid = None
+        try:
+            current_token = AuthHelper.parseAuthorizationTokens(headers)
+        except:
+            raise ValueError("Unable to parse token")
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        # check all the incoming UUID's to make sure they exist
+        sourceUUID = str(incoming_record['source_uuid']).strip()
+        if sourceUUID == None or len(sourceUUID) == 0:
+            raise ValueError('Error: sourceUUID must be set to create a tissue')
+        
+        confdata = self.confdata
+        authcache = None
+        if AuthHelper.isInitialized() == False:
+            authcache = AuthHelper.create(
+                confdata['appclientid'], confdata['appclientsecret'])
+        else:
+            authcache = AuthHelper.instance()
+        nexus_token = current_token['nexus_token']
+        transfer_token = current_token['transfer_token']
+        auth_token = current_token['auth_token']
+        transfer_endpoint = confdata['STAGING_ENDPOINT_UUID']
+        userinfo = None
+        userinfo = authcache.getUserInfo(nexus_token, True)
+        if userinfo is Response:
+            raise ValueError('Cannot authenticate current token via Globus.')
+        user_group_ids = userinfo['hmgroupids']
+        provenance_group = None
+        data_directory = None
+        specimen_uuid_record_list = None
+        metadata_record = None
+        metadata = Metadata()
+        try:
+            provenance_group = metadata.get_group_by_identifier(groupUUID)
+        except ValueError as ve:
+            raise ve
+        metadata_userinfo = {}
+
+        if 'collection_uuid' in incoming_record:
+            try:
+                collection_info = Entity.get_entity(driver, incoming_record['collection_uuid'])
+            except ValueError as ve:
+                raise ve
+            
+        if 'sub' in userinfo.keys():
+            metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
+        if 'username' in userinfo.keys():
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+        if 'name' in userinfo.keys():
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
+        activity_type = HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE
+        entity_type = HubmapConst.DATASET_TYPE_CODE
 
         with driver.session() as session:
-            reopen_code = True
+            datastage_uuid_record_list = None
+            datastage_uuid = None
+            try: 
+                datastage_uuid_record_list = getNewUUID(nexus_token, entity_type)
+                if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) != 1):
+                    raise ValueError("UUID service did not return a value")
+                datastage_uuid = datastage_uuid_record_list[0]
+            except requests.exceptions.ConnectionError as ce:
+                raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+            tx = None
             try:
-                dataset = Dataset()
-                if reopen_code == True:
-                    dataset.set_status(driver, uuid, 'Reopen')
+                tx = session.begin_transaction()
+                #step 1: create a new datastage entity
+                new_datastage_record = self.get_dataset(driver, uuid)
+                
+                # create the data stage
+                dataset_entity_record = {HubmapConst.UUID_ATTRIBUTE : datastage_uuid[HubmapConst.UUID_ATTRIBUTE],
+                                         HubmapConst.DOI_ATTRIBUTE : datastage_uuid[HubmapConst.DOI_ATTRIBUTE],
+                                         HubmapConst.DISPLAY_DOI_ATTRIBUTE : datastage_uuid['displayDoi'],
+                                         HubmapConst.ENTITY_TYPE_ATTRIBUTE : entity_type}
+                
+                stmt = Neo4jConnection.get_create_statement(
+                    dataset_entity_record, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
+                print('Dataset Create statement: ' + stmt)
+                tx.run(stmt)
+                
+                # copy the metadata node from the original dataset
+                original_metadata_record = None
+                try:
+                    original_metadata_record = Entity.get_entity_metadata(driver, uuid)
+                except LookupError as le:
+                    raise LookupError("Unable to find metadata for uuid: " + uuid)
+
+                metadata_record = original_metadata_record
+                #set the status of the datastage to New
+                metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_REOPENED
+                metadata_uuid_record_list = None
+                metadata_uuid_record = None
+                try: 
+                    metadata_uuid_record_list = getNewUUID(nexus_token, HubmapConst.METADATA_TYPE_CODE)
+                    if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
+                        raise ValueError("UUID service did not return a value")
+                    metadata_uuid_record = metadata_uuid_record_list[0]
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+
+
+                metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+                metadata_record[HubmapConst.DOI_ATTRIBUTE] = metadata_uuid_record[HubmapConst.DOI_ATTRIBUTE]
+                metadata_record[HubmapConst.DISPLAY_DOI_ATTRIBUTE] = metadata_uuid_record['displayDoi']
+
+                # copy the existing files from the original dataset to the staging directories
+                group_display_name = provenance_group['displayname']
+                """new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
+                """
+                new_path = self.get_staging_path(group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
+                old_path = metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
+                copy_directory(old_path, new_path)
+                incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_path
+                
+
+                stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group, data_directory)
+                tx.run(stmt)
+
+                tx.commit()
                 return uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
-                raise
+                tx.rollback()
             except CypherError as cse:
                 print ('A Cypher error was encountered: ', cse.message)
-                raise               
+                tx.rollback()                
             except:
-                print ('A general error occurred: ', sys.exc_info()[0])
-                raise
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                tx.rollback()
+
 
     #TODO: This method needs the user's group id
     @classmethod
@@ -759,11 +1016,20 @@ def move_directory(oldpath, newpath):
     """it may seem like overkill to use a define a method just to move files, but we might need to move these
     files across globus endpoints in the future"""
     try:
-        os.makedirs(newpath)
+        #os.makedirs(newpath)
         ret_path = shutil.move(oldpath, newpath)
     except: 
         raise 
     return ret_path
+
+def copy_directory(oldpath, newpath):
+    try:
+        #os.makedirs(newpath)
+        ret_path = shutil.copy(oldpath, newpath)
+    except: 
+        raise 
+    return ret_path
+
 
 def publish_directory(dir_UUID):
     try:

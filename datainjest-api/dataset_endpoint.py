@@ -45,7 +45,7 @@ def load_config_file():
         app.config['SECRET_KEY'] = config.get('GLOBUS', 'SECRET_KEY')
         app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
         app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
-        app.config['LOCAL_STORAGE_DIRECTORY'] = config.get('FILE_SYSTEM','LOCAL_STORAGE_DIRECTORY')
+        app.config['GLOBUS_STORAGE_DIRECTORY_ROOT'] = config.get('FILE_SYSTEM','GLOBUS_STORAGE_DIRECTORY_ROOT')
         #app.config['DEBUG'] = True
     except OSError as err:
         msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
@@ -253,7 +253,7 @@ def create_datastage():
         if conn != None:
             if conn.get_driver().closed() == False:
                 conn.close()
-
+"""
 @app.route('/datasets/<uuid>/validate', methods = ['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
@@ -313,7 +313,7 @@ def publish_datastage(uuid):
         if conn != None:
             if conn.get_driver().closed() == False:
                 conn.close()
-
+"""
 @app.route('/datasets/<uuid>', methods = ['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
@@ -332,7 +332,7 @@ def modify_dataset(uuid):
         driver = conn.get_driver()
         dataset = Dataset()
         
-        new_uuid = dataset.update_dataset(driver, uuid, form_data['old_status'], form_data['status'], form_data)
+        new_uuid = dataset.process_update_request(driver, request.headers, uuid, form_data['old_status'], form_data['status'], form_data)
         conn.close()
         return jsonify( { 'uuid': new_uuid } ), 204
     
@@ -345,7 +345,7 @@ def modify_dataset(uuid):
         if conn != None:
             if conn.get_driver().closed() == False:
                 conn.close()
-
+"""
 @app.route('/datasets/<uuid>/lock', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 @secured(groups="HuBMAP-read")
@@ -399,7 +399,7 @@ def reopen_dataset(uuid):
         if conn != None:
             if conn.get_driver().closed() == False:
                 conn.close()
-
+"""
 @app.route('/collections', methods = ['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
 @secured(groups="HuBMAP-read")
