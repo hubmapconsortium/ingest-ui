@@ -61,7 +61,7 @@ def getNewUUID(current_token, uuid_type, hubmap_identifier=None, sample_count=1)
     try:
         # take the incoming uuid_type and uppercase it
         uuid_datatype = str(uuid_type).upper()
-        r = requests.post(url, json={"entityType" : "{uuid_datatype}".format(uuid_datatype=uuid_datatype), "generateDOI" : "true", "hubmap-ids" : "{hubmap_identifier}".format(hubmap_identifier=hubmap_identifier)}, 
+        r = requests.post(url, json={"entityType" : "{uuid_datatype}".format(uuid_datatype=uuid_datatype), "generateDOI" : "true", "hubmap-ids" : hubmap_identifier}, 
                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
         if r.ok == True:
             data = json.loads(r.content.decode())
@@ -113,15 +113,17 @@ def getUUID(current_token, identifier):
 if __name__ == '__main__':
     try:
         #app.run()
-        current_token = 'Ag7oaJ1399NgqkPjP9G8WX0jgryxWNOoDe41YMmokWDbzkEy0kSWC8OVnvXjkwBbml4mByzK02WqBXTzpwv42cp1gr'
-        #returned_uuid = getNewUUID(current_token, HubmapConst.DATASET_TYPE_CODE)
-        returned_uuid = getUUID(current_token, 'HBM347.BPJH.682')
+        current_token = 'AgK6EKN866y61K0Pbo0Jkag53kkD9BJN6DgprwVqWlpkpn1VnYueC4x0PJKpqPp8K00OpoxJbMWGJyI17KebkfmBwW'
+        hum_id = ['id4', 'id5', 'id6' ]
+        returned_uuid = getNewUUID(current_token, HubmapConst.SAMPLE_TYPE_CODE, hum_id, len(hum_id))
+        pprint(returned_uuid)
+        """returned_uuid = getUUID(current_token, 'HBM347.BPJH.682')
         pprint(returned_uuid)
         returned_uuid = getUUID(current_token, '347BPJH682')
         pprint(returned_uuid)
         returned_uuid = getUUID(current_token, 'f05e1b358b00bbf22ebab7834b730a06')
         pprint(returned_uuid)
-
+        """
     except Exception as e:
         pprint(e)
     finally:
