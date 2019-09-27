@@ -1,18 +1,16 @@
 import sys
 import os
 import logging
-from flask import Response, jsonify
+from flask import Response
 import threading
 import secrets
 import time
 from contextlib import closing
 import json
 from properties.p import Property #pip install property 
-import ast
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 import string_helper
 from hm_auth import AuthHelper
-from properties.p import Property #pip install property 
 #import common_api.string_helper
 #from common_api import string_helper
 from hmdb import DBConn
@@ -93,14 +91,10 @@ class UUIDWorker:
 		
 		if 'hubmap-ids' in content:
 			hmids = content['hubmap-ids']
-			try:
-				hmids_list = ast.literal_eval(hmids)
-			except:
-				return(Response("Invalid input, cannot convert Hubmap Ids string '{hmids}' to list".format(hmids=hmids), 400))
-			if hmids_list is not None and isinstance(hmids_list, list) and len(hmids_list) > 0:
+			if hmids is not None and isinstance(hmids, list) and len(hmids) > 0:			
 				hasHubmapIds = True
 			
-		if hasHubmapIds and not len(hmids_list) == nIds:
+		if hasHubmapIds and not len(hmids) == nIds:
 			return(Response("Invalid input: Length of HuBMAP ID list must match the number of ids being generated"))
 		
 		entityType = content['entityType'].upper().strip()
@@ -126,7 +120,7 @@ class UUIDWorker:
 		rVal = []
 		for x in range(nIds):
 			if hasHubmapIds:
-				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail, hmids_list[x]))
+				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail, hmids[x]))
 			else:
 				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
 		return rVal
