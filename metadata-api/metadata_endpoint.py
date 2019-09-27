@@ -117,7 +117,7 @@ def user_role_list():
         role_list = entity.get_user_roles(token)
         
         #temp code!!
-        #role_list = []
+        role_list = []
         
         return jsonify( {'roles' : role_list}), 200
     except AuthError as e:
