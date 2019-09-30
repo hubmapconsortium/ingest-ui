@@ -550,7 +550,35 @@ class Dataset(object):
         else:
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
             
-            
+         
+    @classmethod
+    def set_status(self, driver, uuid, new_status):
+        with driver.session() as session:
+            tx = None
+            try:
+                tx = session.begin_transaction()
+                #construct a small record consisting of the uuid and new status
+                update_record = { "{uuid_attr}".format(uuid_attr=HubmapConst.UUID_ATTRIBUTE) : "{uuid}".format(uuid=uuid), 
+                                 "{status_attr}".format(status_attr=HubmapConst.STATUS_ATTRIBUTE): "{new_status}".format(new_status=new_status)}
+                #{"entityType" : "{uuid_datatype}".format(uuid_datatype=uuid_datatype), "generateDOI" : "true", "hubmap-ids" : hubmap_identifier}
+                stmt = Neo4jConnection.get_update_statement(update_record, True)
+                print ("EXECUTING DATASET UPDATE: " + stmt)
+                tx.run(stmt)
+                tx.commit()
+                return uuid
+            except TransactionError as te: 
+                print ('A transaction error occurred: ', te.value)
+                tx.rollback()
+            except CypherError as cse:
+                print ('A Cypher error was encountered: ', cse.message)
+                tx.rollback()                
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                tx.rollback()
+    
+   
     @classmethod
     def modify_dataset(self, driver, headers, uuid, formdata, group_uuid):
         with driver.session() as session:
@@ -626,9 +654,9 @@ class Dataset(object):
             try:
                 dataset = Dataset()
                 if validate_code == True:
-                    dataset.set_status(driver, uuid, 'Valid')
+                    dataset.set_status(driver, uuid, HubmapConst.DATASET_STATUS_VALID)
                 else:
-                    dataset.set_status(driver, uuid, 'Invalid')
+                    dataset.set_status(driver, uuid, HubmapConst.DATASET_STATUS_INVALID)
                 return uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
@@ -646,11 +674,9 @@ class Dataset(object):
             raise LookupError('Cannot lock dataset.  Could not find dataset uuid: ' + uuid)
 
         with driver.session() as session:
-            lock_code = True
             try:
                 dataset = Dataset()
-                if lock_code == True:
-                    dataset.set_status(driver, uuid, 'Locked')
+                dataset.set_status(driver, uuid, HubmapConst.DATASET_STATUS_LOCKED)
                 return uuid
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
