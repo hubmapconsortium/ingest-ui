@@ -392,7 +392,7 @@ def get_group_uuid_from_request(request):
             msg += x
         abort(400, msg)
     
-"""
+
 @app.route('/datasets/<uuid>', methods = ['PUT'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
@@ -403,50 +403,13 @@ def modify_dataset(uuid):
     conn = None
     new_uuid = None
     try:
-        form_data = json.loads(request.form['data'])
-        if 'old_status' not in form_data or 'status' not in form_data:
-            abort(400, jsonify( { 'error': 'old_status and status parameter are required to modify a dataset' } ))
-
-        current_token = None
-        try:
-            current_token = AuthHelper.parseAuthorizationTokens(request.headers)
-        except:
-            raise ValueError("Unable to parse token")
-        nexus_token = current_token['nexus_token']
-
-        # determine the group UUID to use when creating the dataset
-        group_uuid = None
-        form_data = json.loads(request.form['data'])
-        if 'user_group_uuid' in form_data:
-            if is_user_in_group(nexus_token, form_data['user_group_uuid']):
-                group_uuid = form_data['user_group_uuid']
-                entity = Entity()
-                grp_info = None
-                try:
-                    grp_info = entity.get_group_by_identifier(group_uuid)
-                except ValueError as ve:
-                    return Response('Unauthorized: Cannot find information on group: ' + str(group_uuid), 401)
-                if grp_info['generateuuid'] == False:
-                    return Response('Unauthorized: This group {grp_info} is not a group with write privileges.'.format(grp_info=grp_info), 401)
-            else:
-                return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
-        else:
-            #manually find the group id given the current user:
-            entity = Entity()
-            group_list = entity.get_user_groups(nexus_token)
-            for grp in group_list:
-                if grp['generateuuid'] == True:
-                    group_uuid = grp['uuid']
-                    break
-
-            if group_uuid == None:
-                return Response('Unauthorized: Current user is not a member of a group allowed to create new datasets', 401)
-            
+        
+        group_uuid = get_group_uuid_from_request(request)    
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
         
-        new_uuid = dataset.process_update_request(driver, request.headers, uuid, form_data['old_status'], form_data['status'], form_data, group_uuid)
+        new_uuid = dataset.modify_dataset(driver, request.headers, uuid, form_data, group_uuid)
         conn.close()
         return jsonify( { 'uuid': new_uuid } ), 204
     
