@@ -20,3 +20,20 @@ def getYesNo(msg):
             return True
         elif ans == "n":
             return False     
+
+def listToCommaSeparated(lst, quoteChar = None):
+    comma = ""
+    rVal = ""
+    first = True
+    if quoteChar is None:
+        quoteChar = ""
+    for val in lst:
+        if isinstance(val, tuple):
+            pVal = val[0]
+        else:
+            pVal = val
+        rVal = rVal + comma + quoteChar + pVal + quoteChar
+        if first:
+            first = False
+            comma = ", "
+    return(rVal)

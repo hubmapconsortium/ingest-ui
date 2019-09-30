@@ -11,9 +11,10 @@ from properties.p import Property #pip install property
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 import string_helper
 from hm_auth import AuthHelper
-#import common_api.string_helper
-#from common_api import string_helper
 from hmdb import DBConn
+
+MAX_GEN_IDS = 100
+INSERT_SQL = "INSERT INTO hm_uuids (HMUUID, DOI_SUFFIX, ENTITY_TYPE, PARENT_UUID, TIME_GENERATED, USER_ID, USER_EMAIL, HUBMAP_ID) VALUES (%s, %s, %s, %s, %s, %s,%s, %s)"
 
 PROP_FILE_NAME = os.path.join(os.path.dirname(__file__), 'uuid.properties') 
 DOI_ALPHA_CHARS=['B','C','D','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','X','Z']                 
@@ -77,7 +78,6 @@ class UUIDWorker:
 		userInfo = self.authHelper.getUserInfoUsingRequest(req)
 		hasHubmapIds = False
 		hmids = None
-		hmids_list = None
 		if isinstance(userInfo, Response):
 			return userInfo;
 
@@ -91,18 +91,20 @@ class UUIDWorker:
 		
 		if 'hubmap-ids' in content:
 			hmids = content['hubmap-ids']
-			if hmids is not None and isinstance(hmids, list) and len(hmids) > 0:			
-				hasHubmapIds = True
+			if not (hmids is not None and isinstance(hmids, list) and len(hmids) > 0):			
+				hmids = None
 			
-		if hasHubmapIds and not len(hmids) == nIds:
-			return(Response("Invalid input: Length of HuBMAP ID list must match the number of ids being generated"))
+		#if hasHubmapIds and not len(hmids) == nIds:
+		#	return(Response("Invalid input: Length of HuBMAP ID list must match the number of ids being generated"))
 		
 		entityType = content['entityType'].upper().strip()
 		parentId = None
 		if('parentId' in content and not string_helper.isBlank(content['parentId'])):
 			parentId = content['parentId'].strip()
+
 		if(entityType == 'TISSUE' and parentId is None):
 			return(Response("parentId is a required attribute for TISSUE entities", 400))
+		
 		generateDOI = False
 		if('generateDOI' in content and string_helper.isYes(content['generateDOI'])):
 			generateDOI = True
@@ -112,18 +114,20 @@ class UUIDWorker:
 
 		if not 'sub' in userInfo:
 			return Response("Unable to get user id (sub) via introspection", 400)
+
 		userId = userInfo['sub']
 		userEmail = None
 		if 'email' in userInfo:
 			userEmail = userInfo['email']
 		
-		rVal = []
-		for x in range(nIds):
-			if hasHubmapIds:
-				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail, hmids[x]))
-			else:
-				rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
-		return rVal
+		#rVal = []
+		#for x in range(nIds):
+		#	if hasHubmapIds:
+		#		rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail, hmids[x]))
+		#	else:
+		#		rVal.append(self.newUUID(generateDOI, parentId, entityType, userId, userEmail))
+		#return rVal
+		return self.newUUIDs(generateDOI, parentId, entityType, userId, userEmail, nIds, hmids)
 
 	def newUUIDTest(self, generateDOI, parentId, entityType, userId, userEmail):
 		return self.newUUID(generateDOI, parentId, entityType, userId, userEmail)
@@ -135,13 +139,106 @@ class UUIDWorker:
 		hexVal = hexVal.lower()
 		return hexVal
 	
+	#generate multiple ids, one for each display id in the displayIds array
+	def newUUIDs(self, generateDOI, parentID, entityType, userId, userEmail, nIds, displayIds=None):
+		hasDisplayIds = False
+		if displayIds is not None and len(displayIds) > 0:
+			hasDisplayIds = True
+			if len(displayIds) != nIds:
+				raise Exception("Number of display ids to store " + str(len(displayIds)) + " does not match the number of ids being generated (" + str(nIds) + ")")
+			dupes = self.__findDupsInDB("HUBMAP_ID", displayIds)
+			if(dupes is not None and len(dupes) > 0):
+				raise Exception("Display ID(s) are not unique " + string_helper.listToCommaSeparated(dupes))
+			
+			
+		returnIds = []
+		insertVals = []
+		now = time.strftime('%Y-%m-%d %H:%M:%S')
+		with self.lock:        
+			#generate in batches
+			displayIdCount = 0
+			for i in range(0, nIds, MAX_GEN_IDS):
+				numToGen = min(MAX_GEN_IDS, nIds - i)
+				#generate uuids
+				uuids = self.__nUniqueIds(numToGen, self.uuidGen, "HMUUID")
+				if generateDOI:
+					dois = self.__nUniqueIds(numToGen, self.newDoi, "DOI_SUFFIX")
+				
+				for n in range(0, numToGen):
+					insUuid = uuids[n]
+					thisId = {"uuid":insUuid}
+					if generateDOI:
+						insDoi = dois[n]
+						insDispDoi = self.__displayDoi(insDoi)
+						thisId["doi"] = insDoi
+						thisId["displayDoi"] = insDispDoi
+					else:
+						insDoi = None
+						
+					if hasDisplayIds:
+						insDisplayId = displayIds[displayIdCount]
+						thisId['hubmapId'] = insDisplayId
+						displayIdCount = displayIdCount + 1
+					else:
+						insDisplayId = None
+						
+					returnIds.append(thisId)
+					insRow = (insUuid, insDoi, entityType, parentID, now, userId, userEmail, insDisplayId)
+					insertVals.append(insRow)
+		
+			with closing(self.hmdb.getDBConnection()) as dbConn:
+				with closing(dbConn.cursor()) as curs:
+					curs.executemany(INSERT_SQL, insertVals)
+				dbConn.commit()
+			
+		return json.dumps(returnIds)
+
+	def nUniqueIds(self, nIds, idGenMethod, dbColumn):
+		return self.__nUniqueIds(nIds, idGenMethod, dbColumn)
+		
+	#generate unique ids
+	#generates ids with provided id generation method and checks them against existing ids in the DB
+	#this method MUST BE CALLED FROM WITHIN a self.lock block
+	def __nUniqueIds(self, nIds, idGenMethod, dbColumn, previousGeneratedIds=set(), iteration=1):
+		ids = set()
+		for n in range(nIds):			
+			newId = idGenMethod()
+			count = 1
+			while (newId in ids or newId in previousGeneratedIds) and count < 100:
+				newId = idGenMethod()
+				count = count + 1
+			if count == 100:
+				raise Exception("Unable to generate an initial unique id for " + dbColumn + " after 100 attempts.")
+			ids.add(newId)
+		dupes = self.__findDupsInDB(dbColumn, ids)
+		if dupes is not None and len(dupes) > 0:
+			iter = iteration + 1
+			if iter > 100:
+				raise Exception("Unable to generate unique id(s) for " + dbColumn + " after 100 attempts.")
+			replacements = self.__nUniqueIds(len(dupes), idGenMethod, dbColumn, previousGeneratedIds=ids, iteration=iter)
+			for val in dupes:
+				ids.remove(val[0])
+			for val in replacements:
+				ids.add(val)
+		return list(ids)
+	
+	def __findDupsInDB(self, dbColumn, idSet):
+		sql = "select " + dbColumn + " from hm_uuids where " + dbColumn + " IN(" + string_helper.listToCommaSeparated(idSet, "'") + ")"
+		with closing(self.hmdb.getDBConnection()) as dbConn:
+			with closing(dbConn.cursor()) as curs:
+				curs.execute(sql)
+				dupes = curs.fetchall()
+		
+		return dupes
+
+	
 	def newUUID(self, generateDOI, parentID, entityType, userId, userEmail, hubmapId=None):
 		doi = None
 		hmid = self.uuidGen() #uuid.uuid4().hex
 		if generateDOI:
 			doi = self.newDoi()
 
-		with self.lock:        
+		with self.lock:
 			count = 0
 			while(self.uuidExists(hmid) and count < 100):
 				hmid = self.uuidGen() #uuid.uuid4().hex
@@ -164,7 +261,7 @@ class UUIDWorker:
 				dbConn.commit()
 
 		if generateDOI:
-			dispDoi= 'HBM' + doi[0:3] + '.' + doi[3:7] + '.' + doi[7:]
+			dispDoi = self.__displayDoi(doi)
 			if hubmapId is None:
 				rVal = {
 					"displayDoi": dispDoi,
@@ -192,6 +289,10 @@ class UUIDWorker:
 			#return jsonify(uuid=hmid)
 		return rVal
 	
+	def __displayDoi(self, doiSuffix):
+		dispDoi= 'HBM' + doiSuffix[0:3] + '.' + doiSuffix[3:7] + '.' + doiSuffix[7:]
+		return dispDoi
+
 	def newDoi(self):
 		nums1 = ''                                                                                                                        
 		nums2 = ''                                                                                                                        
