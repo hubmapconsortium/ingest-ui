@@ -185,6 +185,8 @@ class Neo4jConnection(object):
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.DERIVED_ACTIVITY_TYPE_CODE).lower():
             current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
+        elif str(datatype).lower() == str(HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE).lower():
+            current_required_fields = HubmapConst.ACTIVITY_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.METADATA_TYPE_CODE).lower():
             current_required_fields = HubmapConst.METADATA_REQUIRED_ATTRIBUTE_LIST
         elif str(datatype).lower() == str(HubmapConst.DONOR_TYPE_CODE).lower():

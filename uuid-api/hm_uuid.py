@@ -69,7 +69,7 @@ POST arguments in json
    sample_count optional, the number of ids to generate.  If omitted,
                 defaults to 1 
               
-
+ curl example:  curl -d '{"entityType":"BILL-TEST","generateDOI":"true","hubmap-ids":["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]   }' -H "Content-Type: application/json" -H "Authorization: Bearer AgX07PVbz9Wb6WDK3QvP9p23j2vWV7bYnMGBvaQxQQGEY5MjJEIwC8x3vwqYmzwEzPw93qWYeGpEkKu4nOkPgs7VKQ" -X POST http://localhost:5000/hmuuid?sample_count=7  
 '''
 @app.route('/hmuuid', methods=["POST"])
 @secured(groups="HuBMAP-read")

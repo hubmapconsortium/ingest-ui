@@ -181,7 +181,7 @@ class HubmapConst(object):
                               str(HubmapConst.DATASET_LOCK_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE).lower(),
                               str(HubmapConst.DATASET_PUBLISH_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.DATASET_VALIDATE_ACTIVITY_TYPE_CODE).lower(),
                               str(HubmapConst.DERIVED_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.CREATE_SAMPLE_ACTIVITY_TYPE_CODE).lower(),
-                              str(HubmapConst.REGISTER_DONOR_ACTIVITY_TYPE_CODE).lower()]
+                              str(HubmapConst.REGISTER_DONOR_ACTIVITY_TYPE_CODE).lower(), str(HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE).lower()]
 
 
         if str(specific_node_type).lower() in entity_type_list:
