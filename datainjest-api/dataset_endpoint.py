@@ -254,12 +254,12 @@ def create_datastage():
             if conn.get_driver().closed() == False:
                 conn.close()
 
-@app.route('/datasets/<uuid>/validate', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@app.route('/datasets/<uuid>/validate', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def validate_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
-        abort(400, jsonify( { 'error': 'uuid parameter is required to publish a dataset' } ))
+        abort(400, jsonify( { 'error': 'uuid parameter is required to validate a dataset' } ))
     
     conn = None
     new_uuid = None
@@ -281,8 +281,8 @@ def validate_dataset(uuid):
             if conn.get_driver().closed() == False:
                 conn.close()
 
-@app.route('/datasets/<uuid>/publish', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@app.route('/datasets/<uuid>/publish', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def publish_datastage(uuid):
     if uuid == None or len(uuid) == 0:
@@ -312,14 +312,44 @@ def publish_datastage(uuid):
         if conn != None:
             if conn.get_driver().closed() == False:
                 conn.close()
+
+@app.route('/datasets/<uuid>/unpublish', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+@secured(groups="HuBMAP-read")
+def unpublish_datastage(uuid):
+    if uuid == None or len(uuid) == 0:
+        abort(400, jsonify( { 'error': 'uuid parameter is required to unpublish a dataset' } ))
+    
+    conn = None
+    new_uuid = None
+    try:
+        conn = Neo4jConnection()
+        driver = conn.get_driver()
+        dataset = Dataset()        
+        group_uuid = get_group_uuid_from_request(request)        
+        new_uuid = dataset.publishing_process(driver, request.headers, uuid, group_uuid, False)
+        conn.close()
+        return jsonify( { 'uuid': new_uuid } ), 204
+    
+    except ValueError:
+        abort(404, jsonify( { 'error': 'dataset {uuid} not found'.format(uuid=uuid) } ))
+        
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        print (msg)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
                 
 
 def get_group_uuid_from_request(request):
     return_group_uuid = None
     try:
         form_data = json.loads(request.form['data'])
-        if 'old_status' not in form_data or 'status' not in form_data:
-            abort(400, jsonify( { 'error': 'old_status and status parameter are required to modify a dataset' } ))
 
         current_token = None
         try:
@@ -430,8 +460,8 @@ def modify_dataset(uuid):
             if conn.get_driver().closed() == False:
                 conn.close()
 """
-@app.route('/datasets/<uuid>/lock', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@app.route('/datasets/<uuid>/lock', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def lock_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
@@ -457,8 +487,8 @@ def lock_dataset(uuid):
             if conn.get_driver().closed() == False:
                 conn.close()
 
-@app.route('/datasets/<uuid>/reopen', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@app.route('/datasets/<uuid>/reopen', methods = ['PUT'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def reopen_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
