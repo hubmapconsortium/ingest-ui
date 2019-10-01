@@ -399,7 +399,8 @@ def get_group_uuid_from_request(request):
 def modify_dataset(uuid):
     if not request.form or uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to modify a dataset' } ))
-    
+    if 'data' not in request.form:
+        abort(400, jsonify( { 'error': 'form data is required to modify a dataset' } ))
     conn = None
     new_uuid = None
     try:
@@ -408,6 +409,8 @@ def modify_dataset(uuid):
         conn = Neo4jConnection()
         driver = conn.get_driver()
         dataset = Dataset()
+        
+        form_data = json.loads(request.form['data'])
         
         new_uuid = dataset.modify_dataset(driver, request.headers, uuid, form_data, group_uuid)
         conn.close()

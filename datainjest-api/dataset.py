@@ -337,7 +337,7 @@ class Dataset(object):
             datastage_uuid = None
             try: 
                 datastage_uuid_record_list = getNewUUID(nexus_token, entity_type)
-                if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) != 1):
+                if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) == 0):
                     raise ValueError("UUID service did not return a value")
                 datastage_uuid = datastage_uuid_record_list[0]
             except requests.exceptions.ConnectionError as ce:
