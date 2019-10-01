@@ -65,7 +65,7 @@ def getNewUUID(current_token, uuid_type, hubmap_identifier=None, sample_count=1)
                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
         if r.ok == True:
             data = json.loads(r.content.decode())
-            return data
+            return eval(data)
         else:
             msg = 'HTTP Response: ' + str(r.status_code) + ' msg: ' + str(r.text) 
             raise Exception(msg)
