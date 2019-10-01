@@ -150,7 +150,18 @@ class UUIDWorker:
 			if(dupes is not None and len(dupes) > 0):
 				raise Exception("Display ID(s) are not unique " + string_helper.listToCommaSeparated(dupes))
 			
+			#check for duplicates in the list of display ids
+			valueSet = set()
+			dupes = []
+			for val in displayIds:
+				if val.strip(). upper() not in valueSet:
+					valueSet.add(val.strip().upper())
+				else:
+					dupes.append(val)
 			
+			if len(dupes) > 0:
+				raise Exception("Input Display ID(s) are duplicated: " + string_helper.listToCommaSeparated(dupes))
+
 		returnIds = []
 		insertVals = []
 		now = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -177,6 +188,8 @@ class UUIDWorker:
 						
 					if hasDisplayIds:
 						insDisplayId = displayIds[displayIdCount]
+						if insDisplayId is not None:
+							insDisplayId = insDisplayId.strip().upper()
 						thisId['hubmapId'] = insDisplayId
 						displayIdCount = displayIdCount + 1
 					else:
@@ -223,7 +236,7 @@ class UUIDWorker:
 		return list(ids)
 	
 	def __findDupsInDB(self, dbColumn, idSet):
-		sql = "select " + dbColumn + " from hm_uuids where " + dbColumn + " IN(" + string_helper.listToCommaSeparated(idSet, "'") + ")"
+		sql = "select " + dbColumn + " from hm_uuids where " + dbColumn + " IN(" + string_helper.listToCommaSeparated(idSet, "'", True) + ")"
 		with closing(self.hmdb.getDBConnection()) as dbConn:
 			with closing(dbConn.cursor()) as curs:
 				curs.execute(sql)
