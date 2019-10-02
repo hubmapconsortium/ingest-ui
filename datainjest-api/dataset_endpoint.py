@@ -173,8 +173,7 @@ def get_dataset(identifier):
         conn = Neo4jConnection()
         driver = conn.get_driver()
         token = str(request.headers["AUTHORIZATION"])[7:]
-        dataset = Dataset()
-        dataset_record = Entity.get_entity_metadata(driver, identifier)
+        dataset_record = Dataset.get_dataset(driver, identifier)
         conn.close()
         return jsonify( { 'dataset': dataset_record } ), 200
     
