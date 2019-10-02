@@ -164,6 +164,9 @@ class Dataset(object):
                                 data_record['entity_doi'] = record['entity_doi']
                                 data_record['datatype'] = record['datatype']
                                 data_record['properties'] = record['metadata_properties']
+                                if 'collection_uuid' in data_record['properties'] and (len(str(data_record['properties']['collection_uuid'])) > 0):
+                                    dataset_collection = Entity.get_entity(driver, data_record['properties']['collection_uuid'])
+                                    data_record['properties']['collection'] = dataset_collection
                                 # determine if the record is writable by the current user
                                 data_record['writeable'] = False
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
