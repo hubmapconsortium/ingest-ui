@@ -317,7 +317,7 @@ class Dataset(object):
             raise ve
         metadata_userinfo = {}
 
-        if 'collection_uuid' in incoming_record:
+        if 'collection_uuid' in incoming_record and (len(str(incoming_record['collection_uuid'])) > 0):
             try:
                 collection_info = Entity.get_entity(driver, incoming_record['collection_uuid'])
             except ValueError as ve:
