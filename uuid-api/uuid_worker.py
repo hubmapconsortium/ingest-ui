@@ -12,8 +12,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
 import string_helper
 from hm_auth import AuthHelper
 from hmdb import DBConn
+import copy
 
-MAX_GEN_IDS = 100
+MAX_GEN_IDS = 200
 INSERT_SQL = "INSERT INTO hm_uuids (HMUUID, DOI_SUFFIX, ENTITY_TYPE, PARENT_UUID, TIME_GENERATED, USER_ID, USER_EMAIL, HUBMAP_ID) VALUES (%s, %s, %s, %s, %s, %s,%s, %s)"
 
 PROP_FILE_NAME = os.path.join(os.path.dirname(__file__), 'uuid.properties') 
@@ -163,23 +164,27 @@ class UUIDWorker:
 				raise Exception("Input Display ID(s) are duplicated: " + string_helper.listToCommaSeparated(dupes))
 
 		returnIds = []
-		insertVals = []
 		now = time.strftime('%Y-%m-%d %H:%M:%S')
 		with self.lock:        
 			#generate in batches
 			displayIdCount = 0
+			previousUUIDs = set()
+			previousDOIs = set()
 			for i in range(0, nIds, MAX_GEN_IDS):
+				insertVals = []
 				numToGen = min(MAX_GEN_IDS, nIds - i)
 				#generate uuids
-				uuids = self.__nUniqueIds(numToGen, self.uuidGen, "HMUUID")
+				uuids = self.__nUniqueIds(numToGen, self.uuidGen, "HMUUID", previousGeneratedIds=previousUUIDs)
 				if generateDOI:
-					dois = self.__nUniqueIds(numToGen, self.newDoi, "DOI_SUFFIX")
+					dois = self.__nUniqueIds(numToGen, self.newDoi, "DOI_SUFFIX", previousGeneratedIds=previousDOIs)
 				
 				for n in range(0, numToGen):
 					insUuid = uuids[n]
+					previousUUIDs.add(insUuid)
 					thisId = {"uuid":insUuid}
 					if generateDOI:
 						insDoi = dois[n]
+						previousDOIs.add(insDoi)
 						insDispDoi = self.__displayDoi(insDoi)
 						thisId["doi"] = insDoi
 						thisId["displayDoi"] = insDispDoi
@@ -199,10 +204,10 @@ class UUIDWorker:
 					insRow = (insUuid, insDoi, entityType, parentID, now, userId, userEmail, insDisplayId)
 					insertVals.append(insRow)
 		
-			with closing(self.hmdb.getDBConnection()) as dbConn:
-				with closing(dbConn.cursor()) as curs:
-					curs.executemany(INSERT_SQL, insertVals)
-				dbConn.commit()
+				with closing(self.hmdb.getDBConnection()) as dbConn:
+					with closing(dbConn.cursor()) as curs:
+						curs.executemany(INSERT_SQL, insertVals)
+					dbConn.commit()
 			
 		return json.dumps(returnIds)
 
@@ -214,21 +219,23 @@ class UUIDWorker:
 	#this method MUST BE CALLED FROM WITHIN a self.lock block
 	def __nUniqueIds(self, nIds, idGenMethod, dbColumn, previousGeneratedIds=set(), iteration=1):
 		ids = set()
-		for n in range(nIds):			
+		lclPreviousIds = copy.deepcopy(previousGeneratedIds)
+		for n in range(nIds):
 			newId = idGenMethod()
 			count = 1
-			while (newId in ids or newId in previousGeneratedIds) and count < 100:
+			while (newId in ids or newId in lclPreviousIds) and count < 100:
 				newId = idGenMethod()
 				count = count + 1
 			if count == 100:
 				raise Exception("Unable to generate an initial unique id for " + dbColumn + " after 100 attempts.")
 			ids.add(newId)
+			lclPreviousIds.add(newId)
 		dupes = self.__findDupsInDB(dbColumn, ids)
 		if dupes is not None and len(dupes) > 0:
 			iter = iteration + 1
 			if iter > 100:
 				raise Exception("Unable to generate unique id(s) for " + dbColumn + " after 100 attempts.")
-			replacements = self.__nUniqueIds(len(dupes), idGenMethod, dbColumn, previousGeneratedIds=ids, iteration=iter)
+			replacements = self.__nUniqueIds(len(dupes), idGenMethod, dbColumn, previousGeneratedIds=lclPreviousIds, iteration=iter)
 			for val in dupes:
 				ids.remove(val[0])
 			for val in replacements:

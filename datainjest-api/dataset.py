@@ -317,7 +317,7 @@ class Dataset(object):
             raise ve
         metadata_userinfo = {}
 
-        if 'collection_uuid' in incoming_record:
+        if 'collection_uuid' in incoming_record and (len(str(incoming_record['collection_uuid'])) > 0):
             try:
                 collection_info = Entity.get_entity(driver, incoming_record['collection_uuid'])
             except ValueError as ve:
@@ -337,7 +337,7 @@ class Dataset(object):
             datastage_uuid = None
             try: 
                 datastage_uuid_record_list = getNewUUID(nexus_token, entity_type)
-                if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) != 1):
+                if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) == 0):
                     raise ValueError("UUID service did not return a value")
                 datastage_uuid = datastage_uuid_record_list[0]
             except requests.exceptions.ConnectionError as ce:
