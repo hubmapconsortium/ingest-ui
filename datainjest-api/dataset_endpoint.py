@@ -505,7 +505,6 @@ def get_collections():
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
 @secured(groups="HuBMAP-read")
 def create_collection():
-    import pdb; pdb.set_trace()
     if not request.form:
         abort(400)
     if 'data' not in request.form:
