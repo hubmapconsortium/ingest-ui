@@ -87,9 +87,9 @@ def add_hmuuid():
                 rjson = worker.uuidPost(request, 1)
             if isinstance(rjson, Response):
                 return rjson                
-            jsonStr = json.dumps(rjson)
+            #jsonStr = json.dumps(rjson)
             
-            return Response(jsonStr, 200, {'Content-Type': "application/json"})
+            return Response(rjson, 200, {'Content-Type': "application/json"})
         else:
             return Response("Invalid request.  Use POST to create a UUID", 500)
     except Exception as e:
