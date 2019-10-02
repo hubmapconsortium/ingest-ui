@@ -203,7 +203,11 @@ class Dataset(object):
     @staticmethod
     def get_dataset(driver, identifier):
         try:
-            return Entity.get_entity(driver, identifier)
+            dataset_record = Entity.get_entity_metadata(driver, identifier)
+            if 'collection_uuid' in dataset_record and (len(str(dataset_record['collection_uuid'])) > 0):
+                dataset_collection = Entity.get_entity(driver, dataset_record['collection_uuid'])
+                dataset_record['collection'] = dataset_collection
+            return dataset_record
         except BaseException as be:
             pprint(be)
             raise be
@@ -972,14 +976,14 @@ if __name__ == "__main__":
     #dataset.create_datastage(driver, mauth_token, incoming_record, groupUUID)
     #make_new_staging_directory(transfer_token, groupUUID, sourceUUID)
     #result_set = Dataset.search_datasets(driver, None, None, [groupUUID], [groupUUID])
-    """result_set = Dataset.get_dataset(driver, '03589ba88596106ca8cde53514676882')
+    result_set = Dataset.get_dataset(driver, '6e770a0c7c546e7e088050713ea2d26a')
     pprint (result_set)
-    result_set = Dataset.get_dataset(driver, '129e3c9c5f6ec157f884c172b502097c')
+    result_set = Dataset.get_dataset(driver, '4aa1afa50cf88b589bf4258f7269cc50')
     pprint (result_set)
-    result_set = Dataset.get_dataset(driver, '9240537e62fac5ee38ad6da118d59886')
-    pprint (result_set)"""
+    result_set = Dataset.get_dataset(driver, '21671c1891a9949fa04999ac3bdbe491')
+    pprint (result_set)
     # Test create dataset file functionality:
-    
+    """
     group_display_name = 'IEC Testing Group'
     new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, 'test001')
     new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
@@ -991,7 +995,7 @@ if __name__ == "__main__":
     current_staging_path = dataset.get_staging_path(group_info['displayname'], uuid)
     move_directory(current_staging_path, new_publish_path)
     metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['PUBLISH_ENDPOINT_FILEPATH'],new_publish_path)
-            
+    """       
 
 
 
