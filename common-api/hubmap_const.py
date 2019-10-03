@@ -76,6 +76,7 @@ class HubmapConst(object):
     NEXT_IDENTIFIER_ATTRIBUTE = 'next_identifier'
     DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE = 'globus_directory_url_path'
     DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE = 'local_directory_url_path'
+    ORGAN_TYPE_ATTRIBUTE = 'organ'
     
     
     #Organ Specifiers

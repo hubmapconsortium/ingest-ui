@@ -99,6 +99,52 @@ class Entity(object):
                 raise
 
     @staticmethod
+    # NOTE: This will return a list of all entities matching a type
+    def get_entity_by_type(driver, type_string): 
+        with driver.session() as session:
+            return_list = []
+            try:
+                #TODO: I can use the OR operator to match on either uuid or doi:
+                #MATCH (e) WHERE e.label= 'test dataset create file10' OR e.label= 'test dataset create file7' RETURN e
+                stmt = "MATCH (a) WHERE a.{type_attrib}= $type_string RETURN properties(a) as properties".format(type_attrib=HubmapConst.TYPE_ATTRIBUTE)
+
+                for record in session.run(stmt, type_string=type_string):
+                    dataset_record = record['properties']
+                    return_list.append(dataset_record)
+                return return_list                   
+            except CypherError as cse:
+                print ('A Cypher error was encountered: '+ cse.message)
+                raise
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                raise
+
+    @staticmethod
+    # NOTE: This will return a list of all entities matching a type
+    def get_entity_type_list(driver): 
+        with driver.session() as session:
+            return_list = []
+            try:
+                #TODO: I can use the OR operator to match on either uuid or doi:
+                #MATCH (e) WHERE e.label= 'test dataset create file10' OR e.label= 'test dataset create file7' RETURN e
+                stmt = "MATCH (e:Entity) RETURN DISTINCT e.{type_attrib} AS type_name".format(type_attrib=HubmapConst.ENTITY_TYPE_ATTRIBUTE)
+
+                for record in session.run(stmt):
+                    dataset_record = record['type_name']
+                    return_list.append(dataset_record)
+                return return_list                   
+            except CypherError as cse:
+                print ('A Cypher error was encountered: '+ cse.message)
+                raise
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                raise
+
+    @staticmethod
     def does_identifier_exist(driver, identifier):
         try:
             entity = Entity.get_entity(driver, identifier)
@@ -392,22 +438,20 @@ class Entity(object):
         raise ValueError("cannot find a Hubmap group matching: [" + group_name + "]")
         
     @staticmethod
-    def get_entity_by_type(driver, general_type, type_code): 
+    def get_entities_by_type(driver, type_code): 
         with driver.session() as session:
             return_list = []
 
             # by default assume Entity type
             type_attrib = HubmapConst.ENTITY_TYPE_ATTRIBUTE
-            if str(general_type).lower() == str(HubmapConst.ACTIVITY_NODE_NAME).lower():
-                type_attrib = HubmapConst.ACTIVITY_TYPE_ATTRIBUTE
-            elif str(general_type).lower() == str(HubmapConst.AGENT_NODE_NAME).lower():
-                type_attrib = HubmapConst.AGENT_TYPE_ATTRIBUTE
+            type_code = getTypeCode(type_code)
+
             try:
-                stmt = "MATCH (a {{{type_attrib}: '{type_code}'}}) RETURN properties(a) as properties".format(
-                    type_attrib=general_type, type_code=type_code)
+                stmt = "MATCH (a {{{type_attrib}: '{type_code}'}}) RETURN a.{uuid_attrib} as uuid".format(
+                    type_attrib=type_attrib, type_code=type_code, uuid_attrib=HubmapConst.UUID_ATTRIBUTE)
 
                 for record in session.run(stmt):
-                    dataset_record = record['properties']
+                    dataset_record = record['uuid']
                     return_list.append(dataset_record)
                 return return_list                    
             except CypherError as cse:
@@ -418,6 +462,44 @@ class Entity(object):
                 for x in sys.exc_info():
                     print (x)
                 raise
+
+    @staticmethod
+    def get_entities_by_metadata_attribute(driver, attribute_name, attribute_code): 
+        with driver.session() as session:
+            return_list = []
+
+            try:
+                stmt = "MATCH (e:Entity)-[:HAS_METADATA]-(m) WHERE m.{attribute_name} = '{attribute_code}' RETURN e.{uuid_attrib} as uuid".format(
+                    attribute_name=attribute_name, attribute_code=attribute_code, uuid_attrib=HubmapConst.UUID_ATTRIBUTE)
+
+                for record in session.run(stmt):
+                    dataset_record = record['uuid']
+                    return_list.append(dataset_record)
+                return return_list                    
+            except CypherError as cse:
+                print ('A Cypher error was encountered: '+ cse.message)
+                raise
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                raise
+
+    @staticmethod
+    def get_entity_count_by_type(driver, type_code): 
+        try:
+            entity_list = Entity.get_entities_by_type(driver, type_code)
+            return len(entity_list)
+        except CypherError as cse:
+            print ('A Cypher error was encountered: '+ cse.message)
+            raise
+        except:
+            print ('A general error occurred: ')
+            for x in sys.exc_info():
+                print (x)
+            raise
+        
+
 
     """This method builds a Cypher statement that returns a set of nodes constrained on the given UUID
     and relationship type.  This method also includes an optional "direction" parameter.  This can be used 
@@ -608,15 +690,50 @@ class Entity(object):
                     print (x)
                 raise
 
+def getTypeCode(type_code):
+    typeCodeDict = {str(HubmapConst.DATASET_TYPE_CODE).lower() : HubmapConst.DATASET_TYPE_CODE,
+                    str(HubmapConst.DATASTAGE_TYPE_CODE).lower() : HubmapConst.DATASTAGE_TYPE_CODE,
+                    str(HubmapConst.SUBJECT_TYPE_CODE).lower() : HubmapConst.SUBJECT_TYPE_CODE,
+                    str(HubmapConst.SOURCE_TYPE_CODE).lower() : HubmapConst.SOURCE_TYPE_CODE,
+                    str(HubmapConst.SAMPLE_TYPE_CODE).lower() : HubmapConst.SAMPLE_TYPE_CODE,
+                    str(HubmapConst.DONOR_TYPE_CODE).lower() : HubmapConst.DONOR_TYPE_CODE,
+                    str(HubmapConst.FILE_TYPE_CODE).lower() : HubmapConst.FILE_TYPE_CODE,
+                    str(HubmapConst.ORGAN_TYPE_CODE).lower() : HubmapConst.ORGAN_TYPE_CODE,
+                    str(HubmapConst.SAMPLE_TYPE_CODE).lower() : HubmapConst.SAMPLE_TYPE_CODE,
+                    str(HubmapConst.LAB_TYPE_CODE).lower() : HubmapConst.LAB_TYPE_CODE,
+                    str(HubmapConst.DATASET_TYPE_CODE).lower() : HubmapConst.DATASET_TYPE_CODE,
+                    str(HubmapConst.METADATA_TYPE_CODE).lower() : HubmapConst.METADATA_TYPE_CODE,
+                    str(HubmapConst.COLLECTION_TYPE_CODE).lower() : HubmapConst.COLLECTION_TYPE_CODE,
+                    
+                    }
+    return typeCodeDict[str(type_code).lower()]
 
 if __name__ == "__main__":
     entity = Entity()
-    group_info = entity.get_group_by_name('HuBMAP-UFlorida')
+    conn = Neo4jConnection()
+    driver = conn.get_driver()
+    """group_info = entity.get_group_by_name('HuBMAP-UFlorida')
     print(group_info)
     group_info = entity.get_group_by_name('University of Florida TMC')
     print(group_info)
     group_info = entity.get_group_by_name('UFL')
-    print(group_info)
+    print(group_info)"""
+    
+    type_list = entity.get_entity_type_list(driver)
+    print(type_list)
+    
+    entities_list = entity.get_entities_by_type(driver, 'daTaset')
+    print(entities_list) 
+
+    entities_count = entity.get_entity_count_by_type(driver, 'daTaset')
+    print(entities_count) 
+    
+    
+    entities_list = entity.get_entities_by_metadata_attribute(driver, HubmapConst.SPECIMEN_TYPE_ATTRIBUTE, 'ffpe_block')
+    print(entities_list) 
+
+    
+    
     """token = "AggQN13V56BW10NMY9e18vPen0rEEeDW5aorWD39gBx1j48pwycJC31pG8WXdvYdevkD8vGJa210qxc1ke58WSBgD6"
     writeable_groups = entity.get_writeable_user_groups(token)
     print('Writeable groups:')
