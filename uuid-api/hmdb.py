@@ -35,7 +35,7 @@ class DBConn:
 			#}
 			#self._dbpool = mysql.connector.pooling.MySQLConnectionPool(pool_name = "hm-mysql-pool", pool_size = 10, **dbargs)
 			
-			cnx =  mysql.connector.connect(pool_name ="hm_uuid_db", pool_size = 8, host=server, user=user, password=password, database=dbName)
+			cnx =  mysql.connector.connect(pool_name ="hm_uuid_db", pool_size = 20, host=server, user=user, password=password, database=dbName)
 
 			with closing(cnx.cursor()) as curs:
 				curs = cnx.cursor()
