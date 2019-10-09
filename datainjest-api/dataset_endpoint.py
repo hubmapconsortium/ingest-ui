@@ -125,8 +125,8 @@ def get_datasets():
             
         filtered_group_uuid_list = [] 
         searchterm = None
-        if 'search_term' in request.args:
-            searchterm = request.args.get('search_term')
+        if 'keywords' in request.args:
+            searchterm = request.args.get('keywords')
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
