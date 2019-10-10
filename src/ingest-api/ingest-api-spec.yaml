@@ -1,0 +1,431 @@
+swagger: '2.0'
+info:
+  description: |
+    This is the HuBMAP APIs specification
+    [http://swagger.io](http://swagger.io) or on 
+    [irc.freenode.net, #swagger](http://swagger.io/irc/).
+  version: 1.0.0
+  title: HuBMAP APIs
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+# host: www.hubmap.org
+tags:
+- name: dataset
+  description: Operations about dataset
+  externalDocs:
+    description: Find out more about our dataset
+    url: http://swagger.io
+- name: entity
+  description: Operations about entity
+  externalDocs:
+    description: Find out more about our store
+    url: http://swagger.io
+# schemes:
+# - http
+paths:
+  /dataset/search:
+    get:
+      tags:
+      - dataset
+      summary: Get a list of HuBMAP datasets.
+      operationId: serachDatasets
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: group
+        in: query
+        description: Lab Group
+        required: false
+        type: string
+      - name: keywords
+        in: query
+        description: search keywords
+        required: false
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Dataset'
+        400:
+          description: Invalid parameters
+        401:
+          description: User is not authorized to create datasets
+  /dataset/{datasetId}:
+    get:
+      tags:
+      - dataset
+      summary: Get HuBMAP dataset by id
+      operationId: getDataset
+      produces:
+      - application/json
+      parameters:
+      - name: datasetId
+        in: path
+        description: The unique UUID id of dataset
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Dataset'
+        401:
+          description: User is not authorized to create datasets
+        400:
+          description: Invalid dataset Id
+        404:
+          description: Dataset not found
+    put:
+      tags:
+      - dataset
+      summary: Modify HuBMAP dataset by id
+      operationId: putDataset
+      produces:
+      - application/json
+      parameters:
+      - name: datasetId
+        in: path
+        description: The unique UUID id of dataset
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Updated dataset object
+        required: true
+        schema:
+          $ref: '#/definitions/Dataset'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Dataset'
+        401:
+          description: User is not authorized to create datasets
+        400:
+          description: Invalid dataset Id
+        404:
+          description: Dataset not found
+  /dataset/{datasetId}/validate:
+    put:
+      tags:
+      - dataset
+      summary: Validate dataset
+      description: This can only be done by the logged in user.
+      operationId: validateDataset
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: datasetId
+        in: path
+        description: datasetId that need to be validated
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+        401:
+          description: User is not authorized to create datasets
+        404:
+          description: Dataset not found
+  /dataset/{datasetId}/publish:
+    put:
+      tags:
+      - dataset
+      summary: Publish dataset
+      description: This can only be done by the logged in user.
+      operationId: publishDataset
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: datasetId
+        in: path
+        description: datasetId that need to be validated
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+        401:
+          description: User is not authorized to publish datasets
+        404:
+          description: Dataset not found
+  /dataset/{datasetId}/lock:
+    put:
+      tags:
+      - dataset
+      summary: Lock dataset
+      description: This can only be done by the logged in user.
+      operationId: lockDataset
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: datasetId
+        in: path
+        description: datasetId that need to be locked
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+        401:
+          description: User is not authorized to publish datasets
+        404:
+          description: Dataset not found
+  /dataset/{datasetId}/reopen:
+    put:
+      tags:
+      - dataset
+      summary: Reopen dataset
+      description: This can only be done by the logged in user.
+      operationId: reopenDataset
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - name: datasetId
+        in: path
+        description: datasetId that need to be reopened
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+        401:
+          description: User is not authorized to publish datasets
+        404:
+          description: Dataset not found
+  /dataset:
+    post:
+      tags:
+      - dataset
+      summary: Creates a new HuBMAP dataset.
+      operationId: addDataset
+      consumes:
+      - application/json
+      - application/xml
+      produces:
+      - application/json
+      - application/xml
+      parameters:
+      - in: body
+        name: body
+        description: Dataset object that needs to be created
+        required: true
+        schema:
+          $ref: '#/definitions/Dataset'
+      responses:
+        201:
+          description: successful created
+        401:
+          description: User is not authorized to create datasets
+        400:
+          description: name field is required to create a new dataset
+  /entities/types:
+    get:
+      tags:
+      - entity
+      summary: Get Entity Types
+      operationId: getEntityTypes
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityType'
+        401:
+          description: User is not authorized to look for entities
+        400:
+          description: Invalid dataset Id
+        404:
+          description: Dataset not found
+  /entities/types/{type_code}:
+    get:
+      tags:
+      - entity
+      summary: Get Entities by type code
+      operationId: getEntityByType
+      produces:
+      - application/json
+      parameters:
+      - name: type_code
+        in: path
+        description: code of type
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Entity'
+        401:
+          description: User is not authorized to look for entities
+        400:
+          description: Invalid dataset Id
+        404:
+          description: Dataset not found
+  /entities/samples:
+    get:
+      tags:
+      - entity
+      summary: Get Entity Types
+      operationId: getEntityBySampleType
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: sample_type
+        description: a sample type code
+        required: true
+        type: string
+      - in: query
+        name: organ_type
+        description: a organ type code
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityType'
+        401:
+          description: User is not authorized to look for entities
+        400:
+          description: Invalid dataset Id
+        404:
+          description: Dataset not found
+  /entityes/{uuid}:
+    get:
+      tags:
+      - entity
+      summary: Get Entity
+      operationId: getEntity
+      produces:
+      - application/json
+      parameters:
+      - name: uuid
+        in: path
+        description: The unique UUID id of entity
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EntityType'
+        401:
+          description: User is not authorized to look for entities
+        400:
+          description: Invalid dataset Id
+        404:
+          description: Dataset not found
+securityDefinitions:
+  petstore_auth:
+    type: oauth2
+    authorizationUrl: http://petstore.swagger.io/oauth/dialog
+    flow: implicit
+    scopes:
+      write:pets: modify pets in your account
+      read:pets: read your pets
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  Dataset:
+    type: object
+    required:
+    - name
+    - collection
+    - labCreatedAt
+    - createdBy
+    - status
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+        example: Test Dataset
+      collection:
+        $ref: '#/definitions/Collection'
+      labCreatedAt:
+        $ref: '#/definitions/Lab'
+      createdBy:
+        $ref: '#/definitions/User'
+      hasPHI:
+        type: boolean
+        example: false
+      status:
+        type: string
+        example: publish
+    xml:
+      name: DataSet
+  Entity:
+    type: object
+  EntityType:
+    type: object
+  Collection:
+    type: object
+    required:
+    - name
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+        example: Test Collection
+    xml:
+      name: Collection
+  Lab:
+    type: object
+    required:
+    - name
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+        example: IEC Testing Group
+    xml:
+      name: Lab
+  User:
+    type: object
+    required:
+    - email
+    properties:
+      id:
+        type: string
+      email:
+        type: string
+        example: user@hubmap.org
+    xml:
+      name: User
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /etlds/DataIngest/1.0.0
+schemes:
+ - https
+ - http
