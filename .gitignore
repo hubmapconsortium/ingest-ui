@@ -111,3 +111,30 @@ venv.bak/
 *.conf
 *.ini
 .DS_Store
+
+# flask-app
+src/flask-app/venv
+src/flask-app/instance/app.cfg
+src/flask-app/__pycache__
+src/flask-app/Pipfile
+src/flask-app/Pipfile.lock
+
+# react-app
+src/react-app/node_modules
+src/react-app/.pnp
+src/react-app/.pnp.js
+
+# testing
+src/react-app/coverage
+
+# .env. files (not the .env file)
+src/react-app/.env.*
+
+# misc
+src/react-app/.DS_Store
+src/react-app/npm-debug.log*
+src/react-app/yarn-debug.log*
+src/react-app/yarn-error.log*
+
+# editor
+.vscode

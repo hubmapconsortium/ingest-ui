@@ -1,0 +1,247 @@
+import React, { Component } from "react";
+import Modal from "../modal";
+import axios from "axios";
+import { SAMPLE_TYPES } from "../../../constants";
+import { flattenSampleType } from "../../../utils/constants_helper";
+
+class IDSearchModal extends Component {
+  state = {};
+
+  constructor(props) {
+    super(props);
+    this.group = React.createRef();
+    this.sampleType = React.createRef();
+    this.keywords = React.createRef();
+  }
+
+  componentDidMount() {
+    this.setState({
+      LookUpShow: false
+    });
+  }
+
+  hideLookUpModal = () => {
+    this.setState({
+      LookUpShow: false
+    });
+  };
+
+  handleSearchClick = () => {
+    const group = this.group.current.value;
+    const sample_type = this.sampleType.current.value;
+    const keywords = this.keywords.current.value;
+    let params = {};
+    params["group"] = group;
+    if (sample_type) {
+      params["specimen_type"] = sample_type;
+    }
+    if (keywords) {
+      params["search_term"] = keywords;
+    }
+
+    const config = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        "Content-Type": "multipart/form-data"
+      },
+      params: params
+    };
+
+    axios
+      .get(
+        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search/`,
+        config
+      )
+      .then(res => {
+        this.setState({
+          HuBMAPIDResults: res.data.specimens
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  render() {
+    return (
+      <Modal show={this.props.show} handleClose={this.props.hide}>
+        <div className="row">
+          <div className="col-sm-12">
+            <div className="card text-center">
+              <div className="card-body">
+                <h5 className="card-title">HuBMAP ID Look Up</h5>
+                <div className="row">
+                  <div className="col-sm-6">
+                    <div className="form-group row">
+                      <label
+                        htmlFor="group"
+                        className="col-sm-3 col-form-label text-right"
+                      >
+                        Group
+                      </label>
+                      <div className="col-sm-9">
+                        <select
+                          name="group"
+                          id="group"
+                          className="form-control"
+                          ref={this.group}
+                          value={this.state.group}
+                        >
+                          <option value="All Groups">All Groups</option>
+                          <option value="University of Florida TMC">
+                            University of Florida TMC
+                          </option>
+                          <option value="California Institute of Technology TMC">
+                            California Institute of Technology TMC
+                          </option>
+                          <option value="Vanderbilt TMC">Vanderbilt TMC</option>
+                          <option value="Stanford TMC">Stanford TMC</option>
+                          <option value="University of California San Diego TMC">
+                            University of California San Diego TMC
+                          </option>
+                          <option value="IEC Testing Group">
+                            IEC Testing Group
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group row">
+                      <label
+                        htmlFor="specimen_type"
+                        className="col-sm-3 col-form-label text-right"
+                      >
+                        Type
+                      </label>
+                      <div className="col-sm-9">
+                        <select
+                          name="specimen_type"
+                          id="specimen_type"
+                          className="form-control"
+                          onChange={this.handleInputChange}
+                          ref={this.sampleType}
+                        >
+                          <option value="">----</option>
+                          {/* {this.props.parent === "dataset" && (
+                            <optgroup label="____________________________________________________________">
+                              <option value="dataset">Dataset</option>
+                            </optgroup>
+                          )} */}
+                          {SAMPLE_TYPES.map((optgs, index) => {
+                            return (
+                              <optgroup
+                                key={index}
+                                label="____________________________________________________________"
+                              >
+                                {Object.entries(optgs).map(op => {
+                                  return (
+                                    <option key={op[0]} value={op[0]}>
+                                      {op[1]}
+                                    </option>
+                                  );
+                                })}
+                              </optgroup>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-sm-10 offset-sm-1">
+                    <div className="form-group row">
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="keyworkds"
+                        id="keywords"
+                        placeholder="Search HuBMAP ID by Keywords"
+                        ref={this.keywords}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row mb-5">
+                  <div className="col-sm-4 offset-sm-2">
+                    <button
+                      className="btn btn-primary btn-block"
+                      type="button"
+                      onClick={this.handleSearchClick}
+                    >
+                      Search
+                    </button>
+                  </div>
+                  <div className="col-sm-2 text-left">
+                    <button
+                      className="btn btn-outline-secondary btn-block"
+                      type="button"
+                      onClick={this.props.hide}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+                {this.state.HuBMAPIDResults &&
+                  this.state.HuBMAPIDResults.length === 0 && (
+                    <div className="text-center">No record found.</div>
+                  )}
+                {this.state.HuBMAPIDResults &&
+                  this.state.HuBMAPIDResults.length > 0 && (
+                    <div className="scrollbar-div">
+                      <table className="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>HuBMAP Display ID</th>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Entered By</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {this.state.HuBMAPIDResults.map(result => {
+                            return (
+                              <tr
+                                key={result.hubmap_identifier}
+                                onClick={e =>
+                                  this.props.select(result.hubmap_identifier)
+                                }
+                              >
+                                <td>
+                                  {result.hubmap_identifier
+                                    ? result.hubmap_identifier
+                                    : result.entity_display_doi}
+                                </td>
+                                <td>
+                                  {result.datatype === "Sample"
+                                    ? flattenSampleType(SAMPLE_TYPES)[
+                                        result.properties.specimen_type
+                                      ]
+                                    : result.datatype}
+                                </td>
+                                <td>
+                                  {result.properties.label ||
+                                    result.properties.lab_tissue_id}
+                                </td>
+                                <td>
+                                  {result.properties.provenance_user_email}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+}
+
+export default IDSearchModal;
