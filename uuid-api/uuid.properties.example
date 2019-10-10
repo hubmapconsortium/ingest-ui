@@ -1,6 +1,0 @@
-db.name=uuid
-db.username=uuid-user
-db.password=password
-db.host=db.hostname.com
-globus.app.client.id=21f293b0-5fa5-4ee1-9e0e-3cf88bd70114
-globus.app.client.secret=secret

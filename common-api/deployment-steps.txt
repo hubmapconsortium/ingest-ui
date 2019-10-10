@@ -1,2 +1,0 @@
-When deploying to a new server:
-- create directories for each site.  run create_site_directories(parent_folder) in specimen.py.  Supply the parent directory parameter.
