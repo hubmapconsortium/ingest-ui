@@ -1,32 +1,86 @@
 from neo4j import TransactionError, CypherError
 import sys
 import os
+import configparser
 from flask import jsonify, json
-from gc import collect
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
-from hubmap_const import HubmapConst
-from entity import Entity
-from uuid_generator import getNewUUID
-from neo4j_connection import Neo4jConnection
-from autherror import AuthError
+from hubmap_commons.uuid_generator import UUID_Generator
+from hubmap_commons.hubmap_const import HubmapConst 
+from hubmap_commons.neo4j_connection import Neo4jConnection
+from hubmap_commons.entity import Entity
+from hubmap_commons.autherror import AuthError
 
 class Collection(object):
     '''
     classdocs
     '''
 
+    confdata = {}
+    
+    @classmethod
     def __init__(self):
-        pass
+        self.load_config_file()
 
-    @staticmethod
-    def create_collection(driver, current_token, collection_record):
+    @classmethod
+    def load_config_file(self):
+        config = configparser.ConfigParser()
+        
+        try:
+            config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
+            self.confdata['neo4juri'] = config.get('NEO4J', 'server')
+            self.confdata['neo4jusername'] = config.get('NEO4J', 'username')
+            self.confdata['neo4jpassword'] = config.get('NEO4J', 'password')
+            self.confdata['appclientid'] = config.get('GLOBUS', 'APP_CLIENT_ID')
+            self.confdata['STAGING_ENDPOINT_UUID'] = config.get('GLOBUS', 'STAGING_ENDPOINT_UUID')
+            self.confdata['PUBLISH_ENDPOINT_UUID'] = config.get('GLOBUS', 'PUBLISH_ENDPOINT_UUID')
+            self.confdata['appclientsecret'] = config.get(
+                'GLOBUS', 'APP_CLIENT_SECRET')
+            self.confdata['localstoragedirectory'] = config.get(
+                'FILE_SYSTEM', 'GLOBUS_STORAGE_DIRECTORY_ROOT')
+            self.confdata['STAGING_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'STAGING_ENDPOINT_FILEPATH')
+            self.confdata['PUBLISH_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'PUBLISH_ENDPOINT_FILEPATH')
+            self.confdata['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
+            return self.confdata
+        except OSError as err:
+            msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
+                err)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except configparser.NoSectionError as noSectError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                noSectError)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except configparser.NoOptionError as noOptError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                noOptError)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except SyntaxError as syntaxError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                syntaxError)
+            msg = msg + "  Cannot read line: {0}".format(syntaxError.text)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except AttributeError as attrError:
+            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+                attrError)
+            msg = msg + "  Cannot read line: {0}".format(attrError.text)
+            print(msg + "  Program stopped.")
+            exit(0)
+        except:
+            traceback.print_exc()
+            exit(0)
+
+    @classmethod
+    def create_collection(self, river, current_token, collection_record):
+        ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         with driver.session() as session:
             tx = None
             collection_uuid_record = None
             try:
                 tx = session.begin_transaction()
                 try:
-                    collection_uuid_record_list = getNewUUID(current_token, HubmapConst.COLLECTION_TYPE_CODE)
+                    collection_uuid_record_list = ug.getNewUUID(current_token, HubmapConst.COLLECTION_TYPE_CODE)
                     if (collection_uuid_record_list == None) or (len(collection_uuid_record_list) == 0):
                         raise ValueError("UUID service did not return a value")
                     if len(collection_uuid_record_list) > 1:
@@ -70,9 +124,9 @@ class Collection(object):
                 if tx.closed() == False:
                     tx.rollback()
 
-    @staticmethod
+    @classmethod
     # NOTE: This will return a single entity, activity, or agent
-    def get_collections(driver): 
+    def get_collections(self, driver): 
         with driver.session() as session:
             return_list = []
             try:
@@ -93,9 +147,9 @@ class Collection(object):
                     print (x)
                 raise
 
-    @staticmethod
+    @classmethod
     # NOTE: This will return a single entity, activity, or agent
-    def get_collection(driver, uuid): 
+    def get_collection(self, driver, uuid): 
         try:
             return Entity.get_entity(driver, uuid)
         except BaseException as be:
@@ -104,7 +158,9 @@ class Collection(object):
 
 
 if __name__ == "__main__":
-    conn = Neo4jConnection()
+    coll = Collection()
+    confdata = coll.load_config_file()
+    conn = Neo4jConnection(confdata['neo4juri'], confdata['neo4jusername'], confdata['neo4jpassword'])
     driver = conn.get_driver()
     name = 'Test Collection'
     description= 'This dataset is a collection'
@@ -117,10 +173,10 @@ if __name__ == "__main__":
                    "auth_token": auth_token, 
                    "transfer_token": transfer_token}
     
-    incoming_record = {'label' : name, 'description': description}
-    collection = Collection.create_collection(driver, nexus_token, incoming_record)
-    collection = Collection.create_collection(driver, nexus_token, incoming_record)
-    collection = Collection.create_collection(driver, nexus_token, incoming_record)
+    #incoming_record = {'label' : name, 'description': description}
+    #collection = Collection.create_collection(driver, nexus_token, incoming_record)
+    #collection = Collection.create_collection(driver, nexus_token, incoming_record)
+    #collection = Collection.create_collection(driver, nexus_token, incoming_record)
     collection_set = Collection.get_collections(driver)
     print (collection_set)
     #print ('New collection record uuid: ' + collection)
