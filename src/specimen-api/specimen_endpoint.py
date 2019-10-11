@@ -15,12 +15,11 @@ from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient
 import globus_sdk
 from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json, Response
 from flask_cors import CORS, cross_origin
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
-from entity import Entity
-from neo4j_connection import Neo4jConnection
-from uuid_generator import getNewUUID
-from hubmap_const import HubmapConst
-from hm_auth import AuthHelper, secured
+from hubmap_commons.hubmap_const import HubmapConst 
+from hubmap_commons.neo4j_connection import Neo4jConnection
+from hubmap_commons.uuid_generator import UUID_Generator
+from hubmap_commons.hm_auth import AuthHelper, secured
+from hubmap_commons.entity import Entity
 
 
 app = Flask(__name__)
@@ -35,7 +34,7 @@ def load_app_client():
 def load_config_file():
     config = configparser.ConfigParser()
     try:
-        config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
+        config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
         app.config['APP_CLIENT_SECRET'] = config.get(
             'GLOBUS', 'APP_CLIENT_SECRET')
@@ -45,6 +44,9 @@ def load_config_file():
         app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
         app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
         app.config['GLOBUS_STORAGE_DIRECTORY_ROOT'] = config.get('FILE_SYSTEM','GLOBUS_STORAGE_DIRECTORY_ROOT')
+        app.config['NEO4J_SERVER'] = config.get('NEO4J','server')
+        app.config['NEO4J_USERNAME'] = config.get('NEO4J','username')
+        app.config['NEO4J_PASSWORD'] = config.get('NEO4J','password')
         #app.config['DEBUG'] = True
     except OSError as err:
         msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
@@ -86,7 +88,7 @@ def hello():
 
 config = configparser.ConfigParser()
 try:
-    config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
+    config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
     app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
     app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
     app.config['APP_CLIENT_SECRET'] = config.get(
@@ -127,7 +129,7 @@ def create_specimen():
     new_uuid = None
     try:
         token = str(request.headers["AUTHORIZATION"])[7:]
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         specimen = Specimen()
         sourceuuid = None
@@ -140,7 +142,7 @@ def create_specimen():
         if 'user_group_uuid' in form_data:
             if is_user_in_group(token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
-                entity = Entity()
+                entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
                 grp_info = None
                 try:
                     grp_info = entity.get_group_by_identifier(group_uuid)
@@ -152,7 +154,7 @@ def create_specimen():
                 return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
         else:
             #manually find the group id given the current user:
-            entity = Entity()
+            entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
             group_list = entity.get_user_groups(token)
             for grp in group_list:
                 if grp['generateuuid'] == True:
@@ -197,7 +199,7 @@ def create_specimen():
                 conn.close()
 
 def is_user_in_group(token, group_uuid):
-    entity = Entity()
+    entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
     group_list = entity.get_user_groups(token)
     for grp in group_list:
         if grp['uuid'] == group_uuid:
@@ -233,7 +235,7 @@ def update_specimen(identifier):
         if r.ok == False:
             raise ValueError("Cannot find specimen with identifier: " + identifier)
         uuid = json.loads(r.text)[0]['hmuuid']
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         specimen = Specimen()
         form_data = request.form['data']
@@ -246,7 +248,7 @@ def update_specimen(identifier):
                 return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
         else:
             #manually find the group id given the current user:
-            entity = Entity()
+            entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
             group_list = entity.get_user_groups(token)
             for grp in group_list:
                 if grp['generateuuid'] == True:
@@ -314,7 +316,7 @@ def get_specimen_siblings(identifier):
         if r.ok == False:
             raise ValueError("Cannot find specimen with identifier: " + identifier)
         uuid = json.loads(r.text)[0]['hmuuid']
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         siblingid_list = Specimen.get_siblingid_list(driver, uuid)
         return jsonify({'siblingid_list': siblingid_list}), 200 
@@ -348,7 +350,7 @@ def get_specimen(identifier):
         if r.ok == False:
             raise ValueError("Cannot find specimen with identifier: " + identifier)
         uuid = json.loads(r.text)[0]['hmuuid']
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         specimen = Entity.get_entity_metadata(driver, uuid)
         return jsonify({'specimen': specimen}), 200 
@@ -383,9 +385,9 @@ def search_specimen():
     conn = None
     try:
         token = str(request.headers["AUTHORIZATION"])[7:]
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        entity = Entity()
+        entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
         readonly_group_list = entity.get_readonly_user_groups(token)
         writeable_group_list = entity.get_writeable_user_groups(token)
         readonly_uuid_list = []

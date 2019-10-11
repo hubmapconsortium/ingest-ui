@@ -1,4 +1,0 @@
-neo4j==1.7.2
-flask==1.0.2
-globus-sdk==1.7.1
-

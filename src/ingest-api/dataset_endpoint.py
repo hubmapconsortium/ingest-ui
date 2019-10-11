@@ -6,7 +6,6 @@ Created on Apr 23, 2019
 import sys
 import os
 from dataset import Dataset
-from neo4j_connection import Neo4jConnection
 from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json
 import sys
 import globus_sdk
@@ -17,13 +16,11 @@ from pprint import pprint
 import base64
 from globus_sdk.exc import TransferAPIError
 from collection import Collection
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
-from entity import Entity
-from neo4j_connection import Neo4jConnection
-from uuid_generator import getNewUUID
-from hubmap_const import HubmapConst
-from hm_auth import AuthHelper, secured
-from autherror import AuthError
+from hubmap_commons.hubmap_const import HubmapConst 
+from hubmap_commons.neo4j_connection import Neo4jConnection
+from hubmap_commons.hm_auth import AuthHelper, secured
+from hubmap_commons.entity import Entity
+from hubmap_commons.autherror import AuthError
 
 app = Flask(__name__)
 token_list = {}
@@ -36,7 +33,7 @@ def load_app_client():
 def load_config_file():
     config = configparser.ConfigParser()
     try:
-        config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
+        config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
         app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
         app.config['APP_CLIENT_SECRET'] = config.get(
             'GLOBUS', 'APP_CLIENT_SECRET')
@@ -46,6 +43,10 @@ def load_config_file():
         app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
         app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
         app.config['GLOBUS_STORAGE_DIRECTORY_ROOT'] = config.get('FILE_SYSTEM','GLOBUS_STORAGE_DIRECTORY_ROOT')
+        
+        app.config['NEO4J_SERVER'] = config.get('NEO4J','server')
+        app.config['NEO4J_USERNAME'] = config.get('NEO4J','username')
+        app.config['NEO4J_PASSWORD'] = config.get('NEO4J','password')
         #app.config['DEBUG'] = True
     except OSError as err:
         msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
@@ -81,7 +82,7 @@ def load_config_file():
 
 config = configparser.ConfigParser()
 try:
-    config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
+    config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
     app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
     app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
     app.config['APP_CLIENT_SECRET'] = config.get(
@@ -110,9 +111,9 @@ def get_datasets():
     conn = None
     try:
         token = str(request.headers["AUTHORIZATION"])[7:]
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        entity = Entity()
+        entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
         readonly_group_list = entity.get_readonly_user_groups(token)
         writeable_group_list = entity.get_writeable_user_groups(token)
         readonly_uuid_list = []
@@ -170,7 +171,7 @@ def get_dataset(identifier):
     conn = None
     new_uuid = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         token = str(request.headers["AUTHORIZATION"])[7:]
         dataset_record = Dataset.get_dataset(driver, identifier)
@@ -203,7 +204,7 @@ def create_datastage():
     conn = None
     new_record = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset()
         current_token = None
@@ -218,7 +219,7 @@ def create_datastage():
         if 'user_group_uuid' in form_data:
             if is_user_in_group(nexus_token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
-                entity = Entity()
+                entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
                 grp_info = None
                 try:
                     grp_info = entity.get_group_by_identifier(group_uuid)
@@ -230,7 +231,7 @@ def create_datastage():
                 return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
         else:
             #manually find the group id given the current user:
-            entity = Entity()
+            entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
             group_list = entity.get_user_groups(nexus_token)
             for grp in group_list:
                 if grp['generateuuid'] == True:
@@ -263,7 +264,7 @@ def validate_dataset(uuid):
     conn = None
     new_uuid = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset()
         new_uuid = dataset.validate_dataset(driver, uuid)
@@ -290,7 +291,7 @@ def publish_datastage(uuid):
     conn = None
     new_uuid = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset()        
         group_uuid = get_group_uuid_from_request(request)        
@@ -322,7 +323,7 @@ def unpublish_datastage(uuid):
     conn = None
     new_uuid = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset()        
         group_uuid = get_group_uuid_from_request(request)        
@@ -363,7 +364,7 @@ def get_group_uuid_from_request(request):
         if 'user_group_uuid' in form_data:
             if is_user_in_group(nexus_token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
-                entity = Entity()
+                entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
                 grp_info = None
                 try:
                     grp_info = entity.get_group_by_identifier(group_uuid)
@@ -375,7 +376,7 @@ def get_group_uuid_from_request(request):
                 return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
         else:
             #manually find the group id given the current user:
-            entity = Entity()
+            entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
             group_list = entity.get_user_groups(nexus_token)
             for grp in group_list:
                 if grp['generateuuid'] == True:
@@ -405,7 +406,7 @@ def modify_dataset(uuid):
     try:
         
         group_uuid = get_group_uuid_from_request(request)    
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset()
         
@@ -435,7 +436,7 @@ def lock_dataset(uuid):
     conn = None
     new_uuid = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset()
         new_uuid = dataset.lock_dataset(driver, uuid)
@@ -462,7 +463,7 @@ def reopen_dataset(uuid):
     conn = None
     new_uuid = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset()
         new_uuid = dataset.reopen_dataset(driver, uuid)
@@ -485,7 +486,7 @@ def reopen_dataset(uuid):
 def get_collections():
     conn = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         collection_records = Collection.get_collections(driver)
         conn.close()
@@ -515,7 +516,7 @@ def create_collection():
     new_uuid = None
     try:
         token = str(request.headers["AUTHORIZATION"])[7:]
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         collection = Collection()
         form_data = json.loads(request.form['data'])
@@ -555,7 +556,7 @@ def get_collection(identifier):
     conn = None
     new_uuid = None
     try:
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         collection_record = Collection.get_collection(driver, identifier)
         conn.close()

@@ -13,16 +13,14 @@ import json
 from werkzeug.utils import secure_filename
 from flask import json
 import traceback
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
-from hubmap_const import HubmapConst
-from hm_auth import AuthCache, AuthHelper
-from entity import Entity
-from uuid_generator import getNewUUID
-from neo4j_connection import Neo4jConnection
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'metadata-api'))
-from metadata import Metadata
 from flask import Response
-from autherror import AuthError
+from hubmap_commons.hubmap_const import HubmapConst 
+from hubmap_commons.neo4j_connection import Neo4jConnection
+from hubmap_commons.uuid_generator import UUID_Generator
+from hubmap_commons.hm_auth import AuthHelper, AuthCache
+from hubmap_commons.entity import Entity
+from hubmap_commons.autherror import AuthError
+from hubmap_commons.metadata import Metadata
 
 class Specimen:
 
@@ -37,7 +35,8 @@ class Specimen:
 
     @staticmethod
     def update_specimen(driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
-        conn = Neo4jConnection()
+        config = Specimen.load_config_file()
+        conn = Neo4jConnection(config['NEO4J_SERVER'], config['NEO4J_USERNAME'], config['NEO4J_PASSWORD'])
         metadata_uuid = None
         try:
             metadata_obj = Entity.get_entity_metadata(driver, uuid)
@@ -60,7 +59,7 @@ class Specimen:
             raise AuthError('token is invalid.', 401)
         user_group_ids = userinfo['hmgroupids']
         provenance_group = None
-        metadata = Metadata()
+        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(groupUUID)
         except ValueError as ve:
@@ -222,7 +221,7 @@ class Specimen:
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata()
+        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(groupUUID)
         except ValueError as ve:
@@ -248,6 +247,7 @@ class Specimen:
             except:
                 raise
 
+        ug = UUID_Generator(confdata['UUID_WEBSERVICE_URL'])
         #userinfo = AuthCache.userInfo(current_token, True)
         if len(file_list) > 0:
             data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
@@ -280,7 +280,7 @@ class Specimen:
                 # generate the set of specimen UUIDs required for this request
                 specimen_uuid_record_list = None
                 try:
-                    specimen_uuid_record_list = getNewUUID(current_token, entity_type, lab_id_list, sample_count)
+                    specimen_uuid_record_list = ug.getNewUUID(current_token, entity_type, lab_id_list, sample_count)
                     if (specimen_uuid_record_list == None) or (len(specimen_uuid_record_list) == 0):
                         raise ValueError("UUID service did not return a value")
                 except requests.exceptions.ConnectionError as ce:
@@ -322,7 +322,7 @@ class Specimen:
                 metadata_uuid_record_list = None
                 metadata_uuid_record = None
                 try: 
-                    metadata_uuid_record_list = getNewUUID(current_token, HubmapConst.METADATA_TYPE_CODE)
+                    metadata_uuid_record_list = ug.getNewUUID(current_token, HubmapConst.METADATA_TYPE_CODE)
                     if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
                         raise ValueError("UUID service did not return a value")
                     metadata_uuid_record = metadata_uuid_record_list[0]
@@ -338,7 +338,7 @@ class Specimen:
                 activity_uuid_record_list = None
                 activity_uuid_record = None
                 try: 
-                    activity_uuid_record_list = getNewUUID(current_token, activity_type)
+                    activity_uuid_record_list = ug.getNewUUID(current_token, activity_type)
                     if (activity_uuid_record_list == None) or (len(activity_uuid_record_list) != 1):
                         raise ValueError("UUID service did not return a value")
                     activity_uuid_record = activity_uuid_record_list[0]
@@ -358,7 +358,7 @@ class Specimen:
                 activity_metadata_uuid_record_list = None
                 activity_metadata_uuid_record = None
                 try:
-                    activity_metadata_uuid_record_list = getNewUUID(
+                    activity_metadata_uuid_record_list = ug.getNewUUID(
                         current_token, HubmapConst.METADATA_TYPE_CODE)
                     if (activity_metadata_uuid_record_list == None) or (len(activity_metadata_uuid_record_list) != 1):
                         raise ValueError("UUID service did not return a value")
@@ -592,7 +592,8 @@ class Specimen:
 
     @staticmethod 
     def get_image_file_list_for_uuid(uuid):
-        conn = Neo4jConnection()
+        config = Specimen.load_config_file()
+        conn = Neo4jConnection(config['NEO4J_SERVER'], config['NEO4J_USERNAME'], config['NEO4J_PASSWORD'])
         try:
             with driver.session() as session:
                 stmt = " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
@@ -780,7 +781,7 @@ class Specimen:
         config = configparser.ConfigParser()
         confdata = {}
         try:
-            config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
+            config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
             confdata['neo4juri'] = config.get('NEO4J', 'server')
             confdata['neo4jusername'] = config.get('NEO4J', 'username')
             confdata['neo4jpassword'] = config.get('NEO4J', 'password')
@@ -789,6 +790,7 @@ class Specimen:
                 'GLOBUS', 'APP_CLIENT_SECRET')
             confdata['localstoragedirectory'] = config.get(
                 'FILE_SYSTEM', 'GLOBUS_STORAGE_DIRECTORY_ROOT')
+            confdata['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
             return confdata
         except OSError as err:
             msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
@@ -1005,10 +1007,17 @@ def initialize_lab_identifiers(driver):
 
 
 if __name__ == "__main__":
-    conn = Neo4jConnection()
+    #            confdata['neo4juri'] = config.get('NEO4J', 'server')
+    #        confdata['neo4jusername'] = config.get('NEO4J', 'username')
+    #        confdata['neo4jpassword'] = config.get('NEO4J', 'password')
+    
+    confdata = Specimen.load_config_file()
+    conn = Neo4jConnection(confdata['neo4juri'], confdata['neo4jusername'], confdata['neo4jpassword'])
     driver = conn.get_driver()
     token = 'Aggqy6e0bYMYBlO45ywMm8Okv6YvyMWOMlY8EpO8bprxOxmPJKcJCmo0wEl78JrElrWo2oyV60nDjbh1k7r8ahBgD6'
-    initialize_lab_identifiers(driver)
+    specimen_record = Specimen.get_specimen(driver, 'ab4d0146e3ba01a3cd8983ee12dff146')
+    pprint(specimen_record)
+    #initialize_lab_identifiers(driver)
     """sibling_uuid = 'b384d08f2692f12ec527de96c30577b6'
     sibling_list = Specimen.get_siblingid_list(driver, sibling_uuid)
     pprint(sibling_list)

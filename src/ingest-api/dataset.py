@@ -17,16 +17,15 @@ from flask import Response
 from pprint import pprint
 import shutil
 from builtins import staticmethod
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common-api'))
-from hubmap_const import HubmapConst
-from hm_auth import AuthCache, AuthHelper
-from entity import Entity
-from uuid_generator import getNewUUID, getUUID
-from neo4j_connection import Neo4jConnection
-from activity import Activity
-from autherror import AuthError
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'metadata-api'))
-from metadata import Metadata
+
+from hubmap_commons.uuid_generator import UUID_Generator
+from hubmap_commons.hubmap_const import HubmapConst 
+from hubmap_commons.neo4j_connection import Neo4jConnection
+from hubmap_commons.hm_auth import AuthHelper, AuthCache
+from hubmap_commons.entity import Entity
+from hubmap_commons.autherror import AuthError
+from hubmap_commons.metadata import Metadata
+from hubmap_commons.activity import Activity
 
 class Dataset(object):
     '''
@@ -43,7 +42,7 @@ class Dataset(object):
         config = configparser.ConfigParser()
         
         try:
-            config.read(os.path.join(os.path.dirname(__file__), '..', 'common-api', 'app.properties'))
+            config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
             self.confdata['neo4juri'] = config.get('NEO4J', 'server')
             self.confdata['neo4jusername'] = config.get('NEO4J', 'username')
             self.confdata['neo4jpassword'] = config.get('NEO4J', 'password')
@@ -56,6 +55,7 @@ class Dataset(object):
                 'FILE_SYSTEM', 'GLOBUS_STORAGE_DIRECTORY_ROOT')
             self.confdata['STAGING_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'STAGING_ENDPOINT_FILEPATH')
             self.confdata['PUBLISH_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'PUBLISH_ENDPOINT_FILEPATH')
+            self.confdata['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
             return self.confdata
         except OSError as err:
             msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
@@ -289,15 +289,16 @@ class Dataset(object):
             current_token = AuthHelper.parseAuthorizationTokens(headers)
         except:
             raise ValueError("Unable to parse token")
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         # check all the incoming UUID's to make sure they exist
         sourceUUID = str(incoming_record['source_uuid']).strip()
         if sourceUUID == None or len(sourceUUID) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
         source_UUID_Data = None
+        ug = UUID_Generator(confdata['UUID_WEBSERVICE_URL'])
         try:
-            source_UUID_Data = getUUID(current_token['nexus_token'], sourceUUID)
+            source_UUID_Data = ug.getUUID(current_token['nexus_token'], sourceUUID)
             if len(source_UUID_Data) != 1:
                 raise ValueError("Could not find information for identifier" + sourceUUID)
         except:
@@ -322,7 +323,7 @@ class Dataset(object):
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata()
+        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(groupUUID)
         except ValueError as ve:
@@ -344,11 +345,12 @@ class Dataset(object):
         activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
         entity_type = HubmapConst.DATASET_TYPE_CODE
         
+        
         with driver.session() as session:
             datastage_uuid_record_list = None
             datastage_uuid = None
             try: 
-                datastage_uuid_record_list = getNewUUID(nexus_token, entity_type)
+                datastage_uuid_record_list = ug.getNewUUID(nexus_token, entity_type)
                 if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) == 0):
                     raise ValueError("UUID service did not return a value")
                 datastage_uuid = datastage_uuid_record_list[0]
@@ -386,7 +388,7 @@ class Dataset(object):
                 metadata_uuid_record_list = None
                 metadata_uuid_record = None
                 try: 
-                    metadata_uuid_record_list = getNewUUID(nexus_token, HubmapConst.METADATA_TYPE_CODE)
+                    metadata_uuid_record_list = ug.getNewUUID(nexus_token, HubmapConst.METADATA_TYPE_CODE)
                     if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
                         raise ValueError("UUID service did not return a value")
                     metadata_uuid_record = metadata_uuid_record_list[0]
@@ -399,7 +401,8 @@ class Dataset(object):
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
                 # step 4: create the associated activity
-                activity_object = Activity.get_create_activity_statements(nexus_token, activity_type, source_UUID_Data[0]['hmuuid'], datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                activity = Activity(confdata['UUID_WEBSERVICE_URL'])
+                activity_object = activity.get_create_activity_statements(nexus_token, activity_type, source_UUID_Data[0]['hmuuid'], datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
                     tx.run(stmt)                
@@ -437,7 +440,7 @@ class Dataset(object):
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
         try:
             metadata_node = Entity.get_entity_metadata(driver, uuid)
-            metadata = Metadata()
+            metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
         except:
             raise LookupError("Unable to find metadata node for '" + uuid + "'")
         
@@ -721,7 +724,7 @@ class Dataset(object):
             current_token = AuthHelper.parseAuthorizationTokens(headers)
         except:
             raise ValueError("Unable to parse token")
-        conn = Neo4jConnection()
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         # check all the incoming UUID's to make sure they exist
         sourceUUID = str(incoming_record['source_uuid']).strip()
@@ -748,7 +751,7 @@ class Dataset(object):
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata()
+        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(group_uuid)
         except ValueError as ve:
@@ -770,11 +773,13 @@ class Dataset(object):
         activity_type = HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE
         entity_type = HubmapConst.DATASET_TYPE_CODE
 
+        ug = UUID_Generator(confdata['UUID_WEBSERVICE_URL'])
+        
         with driver.session() as session:
             datastage_uuid_record_list = None
             datastage_uuid = None
             try: 
-                datastage_uuid_record_list = getNewUUID(nexus_token, entity_type)
+                datastage_uuid_record_list = ug.getNewUUID(nexus_token, entity_type)
                 if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) != 1):
                     raise ValueError("UUID service did not return a value")
                 datastage_uuid = datastage_uuid_record_list[0]
@@ -807,7 +812,7 @@ class Dataset(object):
                 metadata_uuid_record_list = None
                 metadata_uuid_record = None
                 try: 
-                    metadata_uuid_record_list = getNewUUID(nexus_token, HubmapConst.METADATA_TYPE_CODE)
+                    metadata_uuid_record_list = ug.getNewUUID(nexus_token, HubmapConst.METADATA_TYPE_CODE)
                     if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
                         raise ValueError("UUID service did not return a value")
                     metadata_uuid_record = metadata_uuid_record_list[0]
@@ -839,7 +844,8 @@ class Dataset(object):
                 tx.run(stmt)
 
                 # step 4: create the associated activity
-                activity_object = Activity.get_create_activity_statements(nexus_token, activity_type, uuid, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                activity = Activity(confdata['UUID_WEBSERVICE_URL'])
+                activity_object = activity.get_create_activity_statements(nexus_token, activity_type, uuid, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
                     tx.run(stmt)                
@@ -961,7 +967,10 @@ def publish_directory(dir_UUID):
 
 
 if __name__ == "__main__":
-    conn = Neo4jConnection()
+    ds = Dataset()
+    confdata = ds.load_config_file()
+    conn = Neo4jConnection(confdata['neo4juri'], confdata['neo4jusername'], confdata['neo4jpassword'])
+    #conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Dataset'
     description= 'This dataset is a test'
