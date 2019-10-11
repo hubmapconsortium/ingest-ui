@@ -6,4 +6,4 @@ globus-sdk==1.7.1
 property==2.2
 urllib3==1.24.2
 neo4j==1.7.2
-file:../commons#egg=hubmap-commons --no-index
+file:../../commons#egg=hubmap-commons --no-index
