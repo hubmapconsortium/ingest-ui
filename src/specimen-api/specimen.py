@@ -399,6 +399,11 @@ class Specimen:
                 if tx.closed() == False:
                     tx.rollback()
                 raise ve
+            except LookupError as le:
+                print('A lookup error occurred: ', str(le))
+                if tx.closed() == False:
+                    tx.rollback()
+                raise le
             except TransactionError as te:
                 print('A transaction error occurred: ', te.value)
                 if tx.closed() == False:
@@ -446,11 +451,13 @@ class Specimen:
                 update_stmt = Neo4jConnection.get_update_statement(parent_uuid_record, False)
 
                 cnt = 0
+                new_lab_identifier = None
                 while cnt < specimen_count:
                     if is_new_donor == True:
                         new_id = cnt+current_identifier
                         str_new_id = '{0:04d}'.format(new_id)
-                        return_list.append(str(parent_lab_identifier) + str_new_id)
+                        new_lab_identifier = str(parent_lab_identifier) + str_new_id
+                        return_list.append(new_lab_identifier)
                     elif organ_specifier != None:
                         # this covers the case where a new organ is added to a donor record
                         # first, check to see if the identifier already exists
@@ -462,7 +469,16 @@ class Specimen:
                             
                     else:
                         # this covers the "normal" sample case
-                        return_list.append(str(parent_lab_identifier) + '-' + str(cnt+current_identifier))
+                        new_lab_identifier = str(parent_lab_identifier) + '-' + str(cnt+current_identifier)
+                        return_list.append(new_lab_identifier)
+                    
+                    # check to see if the new_lab_identifier already exists in Neo4j
+                    check_stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {LAB_IDENTIFIER_ATTRIBUTE}: '{newIdentifier}' }} ) RETURN e.{UUID_ATTRIBUTE} AS uuid, e.{LAB_IDENTIFIER_ATTRIBUTE} AS lab_identifier".format(
+                        UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
+                        LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,newIdentifier=new_lab_identifier)    
+                    for record in session.run(check_stmt):
+                        raise LookupError("Error: display identifier {newid} already exists in the system".format(newid=new_lab_identifier))
+                    
                         
                     cnt += 1
 
@@ -473,7 +489,7 @@ class Specimen:
                 print(ve)
                 raise ve
             except LookupError as le:
-                print('A lookup error occurred: ', le.value)
+                print('A lookup error occurred: ', str(le))
                 raise le
             except TransactionError as te:
                 print('A transaction error occurred: ', te.value)
@@ -1007,27 +1023,34 @@ def initialize_lab_identifiers(driver):
 
 
 if __name__ == "__main__":
-    #            confdata['neo4juri'] = config.get('NEO4J', 'server')
-    #        confdata['neo4jusername'] = config.get('NEO4J', 'username')
-    #        confdata['neo4jpassword'] = config.get('NEO4J', 'password')
     
     confdata = Specimen.load_config_file()
     conn = Neo4jConnection(confdata['neo4juri'], confdata['neo4jusername'], confdata['neo4jpassword'])
     driver = conn.get_driver()
-    token = 'Aggqy6e0bYMYBlO45ywMm8Okv6YvyMWOMlY8EpO8bprxOxmPJKcJCmo0wEl78JrElrWo2oyV60nDjbh1k7r8ahBgD6'
-    specimen_record = Specimen.get_specimen(driver, 'ab4d0146e3ba01a3cd8983ee12dff146')
-    pprint(specimen_record)
+    #token = 'Aggqy6e0bYMYBlO45ywMm8Okv6YvyMWOMlY8EpO8bprxOxmPJKcJCmo0wEl78JrElrWo2oyV60nDjbh1k7r8ahBgD6'
+    #specimen_record = Specimen.get_specimen(driver, 'ab4d0146e3ba01a3cd8983ee12dff146')
+    #pprint(specimen_record)
     #initialize_lab_identifiers(driver)
     """sibling_uuid = 'b384d08f2692f12ec527de96c30577b6'
     sibling_list = Specimen.get_siblingid_list(driver, sibling_uuid)
     pprint(sibling_list)
     """
     
-    """parentUUID = '9e68b1c1ed06d3aa087e2048c2c244dd'
+    parentUUID = '398400024fda58e293cdb435db3c777e'
     specimen_count = 5
     new_lab_id_data = Specimen.generate_lab_identifiers(driver, parentUUID, specimen_count)
     pprint(new_lab_id_data)
     
+    parentUUID = 'e7fee514c9d1b26cbbb89e96f63b2c61'
+    new_lab_id_data = Specimen.generate_lab_identifiers(driver, parentUUID, 1, organ_specifier='BL')
+    pprint(new_lab_id_data)
+
+    parentUUID = 'e7fee514c9d1b26cbbb89e96f63b2c61'
+    new_lab_id_data = Specimen.generate_lab_identifiers(driver, parentUUID, 1, organ_specifier='LV')
+    pprint(new_lab_id_data)
+
+    
+    """
     test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
     new_lab_id_data = Specimen.generate_lab_identifiers(driver, test_group_uuid, 1, None, True)
     pprint(new_lab_id_data)
