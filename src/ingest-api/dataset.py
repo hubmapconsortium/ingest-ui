@@ -289,31 +289,31 @@ class Dataset(object):
             current_token = AuthHelper.parseAuthorizationTokens(headers)
         except:
             raise ValueError("Unable to parse token")
-        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
+        conn = Neo4jConnection(self.confdata['neo4juri'], self.confdata['neo4jusername'], self.confdata['neo4jpassword'])
         driver = conn.get_driver()
         # check all the incoming UUID's to make sure they exist
         sourceUUID = str(incoming_record['source_uuid']).strip()
         if sourceUUID == None or len(sourceUUID) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
         source_UUID_Data = None
-        ug = UUID_Generator(confdata['UUID_WEBSERVICE_URL'])
+        ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         try:
             source_UUID_Data = ug.getUUID(current_token['nexus_token'], sourceUUID)
             if len(source_UUID_Data) != 1:
                 raise ValueError("Could not find information for identifier" + sourceUUID)
         except:
             raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
-        confdata = self.confdata
+        #confdata = self.confdata
         authcache = None
         if AuthHelper.isInitialized() == False:
             authcache = AuthHelper.create(
-                confdata['appclientid'], confdata['appclientsecret'])
+                self.confdata['appclientid'], self.confdata['appclientsecret'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
         transfer_token = current_token['transfer_token']
         auth_token = current_token['auth_token']
-        transfer_endpoint = confdata['STAGING_ENDPOINT_UUID']
+        transfer_endpoint = self.confdata['STAGING_ENDPOINT_UUID']
         userinfo = None
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
@@ -323,7 +323,7 @@ class Dataset(object):
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
+        metadata = Metadata(self.confdata['appclientid'], self.confdata['appclientsecret'], self.confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(groupUUID)
         except ValueError as ve:
@@ -401,7 +401,7 @@ class Dataset(object):
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
                 # step 4: create the associated activity
-                activity = Activity(confdata['UUID_WEBSERVICE_URL'])
+                activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
                 activity_object = activity.get_create_activity_statements(nexus_token, activity_type, source_UUID_Data[0]['hmuuid'], datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
@@ -724,7 +724,7 @@ class Dataset(object):
             current_token = AuthHelper.parseAuthorizationTokens(headers)
         except:
             raise ValueError("Unable to parse token")
-        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
+        conn = Neo4jConnection(self.confdata['neo4juri'], self.confdata['neo4jusername'], self.confdata['neo4jpassword'])
         driver = conn.get_driver()
         # check all the incoming UUID's to make sure they exist
         sourceUUID = str(incoming_record['source_uuid']).strip()
