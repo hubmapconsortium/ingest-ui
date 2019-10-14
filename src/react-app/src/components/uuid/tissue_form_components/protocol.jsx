@@ -5,18 +5,19 @@ import ReactTooltip from "react-tooltip";
 import {
   validateRequired,
   validateProtocolIOURL,
+  validateProtocolIODOI,
   validateFileType
 } from "../../../utils/validators";
 import { getFileNameOnPath } from "../../../utils/file_helper";
 
 class Protocol extends Component {
   state = {
-    protocol_url: "",
+    protocol_doi: "",
     protocol_file: "",
     protocol_file_name: "",
 
     formErrors: {
-      protocol_url: "",
+      protocol_doi: "",
       protocol_file: ""
     }
   };
@@ -24,13 +25,13 @@ class Protocol extends Component {
   constructor(props) {
     super(props);
     // create a ref to store the file Input DOM element
-    this.protocol_url = React.createRef();
+    this.protocol_doi = React.createRef();
     this.protocol_file = React.createRef();
   }
 
   componentDidMount() {
     this.setState({
-      protocol_url: this.props.protocol.protocol_url || "",
+      protocol_doi: this.props.protocol.protocol_doi || "",
       protocol_file_name:
         getFileNameOnPath(this.props.protocol.protocol_file) || "",
       protocol_file: ""
@@ -40,7 +41,7 @@ class Protocol extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.protocol !== this.props.protocol) {
       this.setState({
-        protocol_url: nextProps.protocol.protocol_url || "",
+        protocol_doi: nextProps.protocol.protocol_doi || "",
         protocol_file_name:
           getFileNameOnPath(nextProps.protocol.protocol_file) || "",
         protocol_file: ""
@@ -48,11 +49,11 @@ class Protocol extends Component {
     }
   }
 
-  handleProtocolURLChange = e => {
+  handleProtocolDOIChange = e => {
     let value = e.target.value;
     this.setState(
       {
-        protocol_url: value
+        protocol_doi: value
       },
       () => {
         this.validate();
@@ -90,32 +91,32 @@ class Protocol extends Component {
   validate = () => {
     this.setState({
       formErrors: {
-        protocol_url: "",
+        protocol_doi: "",
         protocol_file: ""
       }
     });
     let isValid = true;
     if (
-      !validateRequired(this.state.protocol_url) &&
+      !validateRequired(this.state.protocol_doi) &&
       !validateRequired(this.state.protocol_file) &&
       !validateRequired(this.state.protocol_file_name)
     ) {
       this.setState(prevState => ({
         formErrors: {
           ...prevState.formErrors,
-          protocol_url: "Required"
+          protocol_doi: "Required"
         }
       }));
       isValid = false;
     }
     if (
-      validateRequired(this.state.protocol_url) &&
-      !validateProtocolIOURL(this.state.protocol_url)
+      validateRequired(this.state.protocol_doi) &&
+      !validateProtocolIODOI(this.state.protocol_doi)
     ) {
       this.setState(prevState => ({
         formErrors: {
           ...prevState.formErrors,
-          protocol_url: "Please enter a valid protocols.io URL"
+          protocol_doi: "Please enter a valid protocols.io DOI"
         }
       }));
       isValid = false;
@@ -174,7 +175,7 @@ class Protocol extends Component {
                       htmlFor="protocol"
                       className="col-sm-3 col-form-label text-right"
                     >
-                      protocols.io URL <span className="text-danger">*</span>
+                      protocols.io DOI <span className="text-danger">*</span>
                     </label>
                     {!this.props.readOnly && (
                       <div className="col-sm-8">
@@ -184,24 +185,24 @@ class Protocol extends Component {
                           id="protocol"
                           className={
                             "form-control " +
-                            this.errorClass(this.state.formErrors.protocol_url)
+                            this.errorClass(this.state.formErrors.protocol_doi)
                           }
-                          placeholder="protocols.io URL"
-                          ref={this.protocol_url}
-                          onChange={this.handleProtocolURLChange}
-                          value={this.state.protocol_url}
+                          placeholder="protocols.io DOI"
+                          ref={this.protocol_doi}
+                          onChange={this.handleProtocolDOIChange}
+                          value={this.state.protocol_doi}
                         />
-                        {this.state.formErrors.protocol_url &&
-                          this.state.formErrors.protocol_url !== "required" && (
+                        {this.state.formErrors.protocol_doi &&
+                          this.state.formErrors.protocol_doi !== "required" && (
                             <div className="invalid-feedback">
-                              {this.state.formErrors.protocol_url}
+                              {this.state.formErrors.protocol_doi}
                             </div>
                           )}
                       </div>
                     )}
                     {this.props.readOnly && (
                       <div className="col-sm-8 col-form-label">
-                        <p>{this.state.protocol_url}</p>
+                        <p>{this.state.protocol_doi}</p>
                       </div>
                     )}
                     <div className="col-sm-1 my-auto text-center">
@@ -218,7 +219,7 @@ class Protocol extends Component {
                       >
                         <h4>
                           The protocol used when creating the specimen. <br />
-                          This can be in the form of a protocols.io URL, <br />
+                          This can be in the form of a protocols.io DOI, <br />
                           an uploaded document or free text typed into the form.
                         </h4>
                       </ReactTooltip>

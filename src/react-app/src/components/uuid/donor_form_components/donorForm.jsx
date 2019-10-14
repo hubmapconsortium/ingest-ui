@@ -15,6 +15,7 @@ import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import {
   validateRequired,
   validateProtocolIOURL,
+  validateProtocolIODOI,
   validateFileType
 } from "../../../utils/validators";
 import ReactTooltip from "react-tooltip";
@@ -188,11 +189,11 @@ class DonorForm extends Component {
               protocol: "required"
             }
           }));
-        } else if (!validateProtocolIOURL(value)) {
+        } else if (!validateProtocolIODOI(value)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: "Please enter a valid protocols.io URL"
+              protocol: "Please enter a valid protocols.io DOI"
             }
           }));
         } else {
@@ -554,7 +555,7 @@ class DonorForm extends Component {
               ? ""
               : this.state.protocol_file_name
           )) &&
-        validateProtocolIOURL(this.state.protocol) &&
+        validateProtocolIODOI(this.state.protocol) &&
         validateFileType(this.state.protocol_file.type, [
           "application/msword",
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -581,11 +582,11 @@ class DonorForm extends Component {
         }));
         isValid = false;
       } else {
-        if (!validateProtocolIOURL(this.state.protocol)) {
+        if (!validateProtocolIODOI(this.state.protocol)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: "Please enter a valid protocols.io URL"
+              protocol: "Please enter a valid protocols.io DOI"
             }
           }));
           isValid = false;
@@ -741,32 +742,6 @@ class DonorForm extends Component {
               </button>
             </div>
             <form onSubmit={this.handleSubmit}>
-              {/* ##### lab is temperory ignore ######
-            <div className="form-group row">
-              <label htmlFor="lab" className="col-sm-2 col-form-label">
-                Lab <span className="text-danger">*</span>
-              </label>
-              <div className="col-sm-9">
-                <select
-                  name="lab"
-                  id="lab"
-                  className={
-                    "form-control " + this.errorClass(this.state.formErrors.lab)
-                  }
-                  onChange={this.handleInputChange}
-                >
-                  <option value="">----</option>
-                  <option value="1">Lab 1</option>
-                  <option value="2">Lab 2</option>
-                </select>
-              </div>
-              <div className="col-sm-1 my-auto text-center">
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  title="The name of the lab processing the donor.  This is chosen by the user from a list of labs in the HuBMAP consortium."
-                />
-              </div>
-            </div> */}
               <div className="form-group row d-none">
                 <label
                   htmlFor="visit"
@@ -920,7 +895,7 @@ class DonorForm extends Component {
                       }
                       onChange={this.handleInputChange}
                       value={this.state.protocol}
-                      placeholder="protocols.io URL"
+                      placeholder="protocols.io DOI"
                     />
                     {this.state.formErrors.protocol &&
                       this.state.formErrors.protocol !== "required" && (
@@ -954,7 +929,7 @@ class DonorForm extends Component {
                       <h4>
                         The protocol used when choosing and acquiring the donor.
                         <br />
-                        This can be supplied as either a protocols.io URL or{" "}
+                        This can be supplied as either a protocols.io DOI or{" "}
                         <br /> an uploaded document
                       </h4>
                     </ReactTooltip>
@@ -1294,60 +1269,6 @@ class DonorForm extends Component {
           </div>
         </div>
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
-        {/* <Modal show={this.state.show} handleClose={this.hideModal}>
-          <ol>
-            <li>Names.</li>
-            <li>
-              All geographic subdivisions smaller than a state, including street
-              address, city, county, precinct, ZIP Code, and their equivalent
-              geographical codes, except for the initial three digits of a ZIP
-              Code if, according to the current publicly available data from the
-              Bureau of the Census:
-              <ol type="a">
-                <li>
-                  The geographic unit formed by combining all ZIP Codes with the
-                  same three initial digits contains more than 20,000 people.
-                </li>
-                <li>
-                  The initial three digits of a ZIP Code for all such geographic
-                  units containing 20,000 or fewer people are changed to 000.
-                </li>
-              </ol>
-            </li>
-            <li>
-              All elements of dates (except year) for dates directly related to
-              an individual, including birth date, admission date, discharge
-              date, date of death; and all ages over 89 and all elements of
-              dates (including year) indicative of such age, except that such
-              ages and elements may be aggregated into a single category of age
-              90 or older.
-            </li>
-            <li>Telephone numbers.</li>
-            <li>Facsimile numbers.</li>
-            <li>Electronic mail addresses.</li>
-            <li>Social security numbers.</li>
-            <li>Medical record numbers.</li>
-            <li>Health plan beneficiary numbers.</li>
-            <li>Account numbers.</li>
-            <li>Certificate/license numbers.</li>
-            <li>
-              Vehicle identifiers and serial numbers, including license plate
-              numbers.
-            </li>
-            <li>Device identifiers and serial numbers.</li>
-            <li>Web universal resource locators (URLs).</li>
-            <li>Internet protocol (IP) address numbers.</li>
-            <li>
-              Biometric identifiers, including fingerprints and voiceprints.
-            </li>
-            <li>Full-face photographic images and any comparable images.</li>
-            <li>
-              Any other unique identifying number, characteristic, or code,
-              unless otherwise permitted by the Privacy Rule for
-              re-identification.
-            </li>
-          </ol>
-        </Modal> */}
         <GroupModal
           show={this.state.GroupSelectShow}
           hide={this.hideGroupSelectModal}

@@ -12,6 +12,12 @@ export function validateProtocolIOURL(value) {
   return patt.test(value);
 }
 
+export function validateProtocolIODOI(value) {
+  if (value === undefined || value === "") return true;
+  const patt = /^(http(s)?:\/\/)?dx.doi.org\/10\.17504\/protocols\.io\..+/;
+  return patt.test(value);
+}
+
 export function validateFileType(file_type, allow_types) {
   if (!file_type) return true;
   if (allow_types.includes(file_type)) return true;
