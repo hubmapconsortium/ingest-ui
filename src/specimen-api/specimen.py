@@ -399,6 +399,11 @@ class Specimen:
                 if tx.closed() == False:
                     tx.rollback()
                 raise ve
+            except LookupError as le:
+                print('A lookup error occurred: ', str(le))
+                if tx.closed() == False:
+                    tx.rollback()
+                raise le
             except TransactionError as te:
                 print('A transaction error occurred: ', te.value)
                 if tx.closed() == False:
