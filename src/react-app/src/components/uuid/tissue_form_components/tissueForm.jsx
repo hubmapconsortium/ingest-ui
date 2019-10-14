@@ -192,6 +192,41 @@ class TissueForm extends Component {
         p["ref"] = React.createRef();
         return p;
       });
+
+      let images = [];
+      let metadatas = [];
+      try {
+        images = JSON.parse(
+          this.props.editingEntity.properties.image_file_metadata
+            .replace(/\\/g, "\\\\")
+            .replace(/'/g, '"')
+        );
+        metadatas = JSON.parse(
+          this.props.editingEntity.properties.metadatas
+            .replace(/\\/g, "\\\\")
+            .replace(/'/g, '"')
+        );
+      } catch (e) {}
+      const image_list = [];
+      const metadata_list = [];
+      images.forEach((image, index) => {
+        image_list.push({
+          id: index + 1,
+          ref: React.createRef(),
+          file_name: getFileNameOnPath(image.filepath),
+          description: image.description
+        });
+      });
+      metadatas.forEach((metadata, index) => {
+        metadata_list.push({
+          id: index + 1,
+          ref: React.createRef(),
+          file_name: getFileNameOnPath(metadata.file_name)
+        });
+      });
+
+      this.setState({ images: image_list, metadatas: metadata_list });
+
       this.setState(
         {
           lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
@@ -207,7 +242,6 @@ class TissueForm extends Component {
           visit: this.props.editingEntity.properties.visit,
           source_uuid: this.props.editingEntity.properties.source_uuid,
           description: this.props.editingEntity.properties.description,
-          metadata: this.props.editingEntity.properties.metadata,
           metadata_file_name: getFileNameOnPath(
             this.props.editingEntity.properties.metadata_file
           )

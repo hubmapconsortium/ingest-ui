@@ -17,8 +17,7 @@ class MetadataUpload extends Component {
 
   componentDidMount() {
     this.setState({
-      metadata_file_name: this.props.metadata_name || "Choose a file",
-      image_file: ""
+      metadata_file_name: this.props.file_name || "Choose a file"
     });
   }
 
