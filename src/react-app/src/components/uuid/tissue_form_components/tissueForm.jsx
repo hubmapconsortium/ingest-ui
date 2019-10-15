@@ -29,9 +29,7 @@ class TissueForm extends Component {
     protocols: [
       {
         id: 1,
-        ref: React.createRef(),
-        protocol_url: "",
-        protocol_file: ""
+        ref: React.createRef()
       }
     ],
     protocol: "",
@@ -617,12 +615,12 @@ class TissueForm extends Component {
           formData.append("metadata_file", this.state.metadata_file);
           this.state.protocols.forEach(i => {
             if (
-              i.ref.current.protocol_url.current.value ||
+              i.ref.current.protocol_doi.current.value ||
               i.ref.current.protocol_file.current.files[0]
             ) {
               data.protocols.push({
                 id: "protocol_" + i.id,
-                protocol_url: i.ref.current.protocol_url.current.value,
+                protocol_doi: i.ref.current.protocol_doi.current.value,
                 protocol_file: i.ref.current.protocol_file.current.files[0]
                   ? i.ref.current.protocol_file.current.files[0].name
                   : ""
@@ -634,7 +632,7 @@ class TissueForm extends Component {
             } else {
               data.protocols.push({
                 id: "protocol_" + i.id,
-                protocol_url: i.protocol_url,
+                protocol_doi: i.protocol_doi,
                 protocol_file: i.protocol_file
               });
             }

@@ -96,9 +96,15 @@ class DonorForm extends Component {
       const pf = this.props.editingEntity.properties.protocol_file;
       const mf = this.props.editingEntity.properties.metadata_file;
       let images = [];
+      let metadatas = [];
       try {
         images = JSON.parse(
           this.props.editingEntity.properties.image_file_metadata
+            .replace(/\\/g, "\\\\")
+            .replace(/'/g, '"')
+        );
+        metadatas = JSON.parse(
+          this.props.editingEntity.properties.metadatas
             .replace(/\\/g, "\\\\")
             .replace(/'/g, '"')
         );
@@ -114,6 +120,7 @@ class DonorForm extends Component {
       });
 
       const image_list = [];
+      const metadata_list = [];
       images.forEach((image, index) => {
         image_list.push({
           id: index + 1,
@@ -122,8 +129,15 @@ class DonorForm extends Component {
           description: image.description
         });
       });
+      metadatas.forEach((metadata, index) => {
+        metadata_list.push({
+          id: index + 1,
+          ref: React.createRef(),
+          file_name: getFileNameOnPath(metadata.file_name)
+        });
+      });
 
-      this.setState({ images: image_list });
+      this.setState({ images: image_list, metadatas: metadata_list });
     }
   }
 
