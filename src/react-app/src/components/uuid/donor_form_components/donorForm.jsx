@@ -14,7 +14,6 @@ import { truncateString } from "../../../utils/string_helper";
 import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import {
   validateRequired,
-  validateProtocolIOURL,
   validateProtocolIODOI,
   validateFileType
 } from "../../../utils/validators";

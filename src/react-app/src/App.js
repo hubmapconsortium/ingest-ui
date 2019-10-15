@@ -54,14 +54,9 @@ class App extends Component {
       email: app_info.email || "",
       globus_id: app_info.globus_id || "",
       creatingNewEntity: false,
-      system: ""
+      system: "",
+      registered: true
     };
-
-    if (this.state.globus_id) {
-      this.setState({
-        registered: true
-      });
-    }
 
     // Binding event handler methods to an instance
     this.handleLougot = this.handleLogout.bind(this);

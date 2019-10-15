@@ -8,7 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
-  validateProtocolIOURL,
+  validateProtocolIODOI,
   validateFileType
 } from "../../../utils/validators";
 import { getFileNameOnPath } from "../../../utils/file_helper";
@@ -305,7 +305,7 @@ class TissueForm extends Component {
               protocol: "required"
             }
           }));
-        } else if (!validateProtocolIOURL(value)) {
+        } else if (!validateProtocolIODOI(value)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,

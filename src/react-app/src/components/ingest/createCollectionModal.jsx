@@ -13,10 +13,6 @@ class CreateCollectionModal extends Component {
     }
   };
 
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
     this.setState({
       LookUpShow: false

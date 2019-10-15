@@ -267,7 +267,7 @@ class DatasetEdit extends Component {
       AddCollectionShow: false
     });
 
-    if(collection.label) {
+    if (collection.label) {
       const config = {
         headers: {
           Authorization:
@@ -279,14 +279,19 @@ class DatasetEdit extends Component {
       axios
         .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
         .then(res => {
-          this.setState({
-            collections: res.data.collections
-          }, () => {
-            const ret = this.state.collections.filter(c => {
-              return c.label.toLowerCase().includes(collection.label.toLowerCase());
-            });
-            this.setState({ collection: ret[0] })
-          });
+          this.setState(
+            {
+              collections: res.data.collections
+            },
+            () => {
+              const ret = this.state.collections.filter(c => {
+                return c.label
+                  .toLowerCase()
+                  .includes(collection.label.toLowerCase());
+              });
+              this.setState({ collection: ret[0] });
+            }
+          );
         })
         .catch(err => {
           if (err.response === undefined) {
@@ -1081,9 +1086,13 @@ class DatasetEdit extends Component {
                   </div>
                   <small id="PHIHelpBlock" className="form-text text-muted">
                     Does this data contain any of the{" "}
-                    <a href="#" onClick={this.showModal}>
+                    <span
+                      style={{ cursor: "pointer" }}
+                      className="text-primary"
+                      onClick={this.showModal}
+                    >
                       18 identifiers specified by HIPAA
-                    </a>{" "}
+                    </span>{" "}
                     ?
                   </small>
                 </div>
