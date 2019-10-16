@@ -746,13 +746,13 @@ class DonorForm extends Component {
             >
               <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
               Protected Health Information. This includes the{" "}
-              <button
-                type="button"
-                className="btn btn-link btn-sm"
+              <span
+                style={{ cursor: "pointer" }}
+                className="text-primary"
                 onClick={this.showModal}
               >
                 18 identifiers specified by HIPAA
-              </button>
+              </span>
             </div>
             <form onSubmit={this.handleSubmit}>
               <div className="form-group row d-none">
