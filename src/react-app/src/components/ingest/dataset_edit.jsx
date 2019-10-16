@@ -729,8 +729,8 @@ class DatasetEdit extends Component {
               type="button"
               className="btn btn-primary btn-block"
               disabled={this.state.submitting}
-              onClick={() => this.handleButtonClick("new")}
-              data-status="new"
+              onClick={() => this.handleButtonClick("qa")}
+              data-status="qa"
             >
               {this.state.submitting && (
                 <FontAwesomeIcon
