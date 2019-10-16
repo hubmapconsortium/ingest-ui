@@ -37,7 +37,7 @@ class Specimen:
     @staticmethod
     def update_specimen(driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
         config = Specimen.load_config_file()
-        conn = Neo4jConnection(config['NEO4J_SERVER'], config['NEO4J_USERNAME'], config['NEO4J_PASSWORD'])
+        conn = Neo4jConnection(config['neo4juri'], config['neo4jusername'], config['neo4jpassword'])
         metadata_uuid = None
         try:
             metadata_obj = Entity.get_entity_metadata(driver, uuid)
