@@ -54,26 +54,9 @@ class App extends Component {
       email: app_info.email || "",
       globus_id: app_info.globus_id || "",
       creatingNewEntity: false,
-      system: ""
+      system: "",
+      registered: true
     };
-
-    if (this.state.globus_id) {
-      axios
-        .get(
-          `${process.env.REACT_APP_PROFILE_URL}/ismember/${this.state.globus_id}`
-        )
-        .then(res => {
-          this.setState({
-            registered: res.data
-          });
-        })
-        .catch(err => {
-          if (err.response.status === 401) {
-            localStorage.setItem("isAuthenticated", false);
-            window.location.reload();
-          }
-        });
-    }
 
     // Binding event handler methods to an instance
     this.handleLougot = this.handleLogout.bind(this);

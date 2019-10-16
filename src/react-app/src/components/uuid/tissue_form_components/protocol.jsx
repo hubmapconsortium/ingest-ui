@@ -4,7 +4,6 @@ import { faQuestionCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 import {
   validateRequired,
-  validateProtocolIOURL,
   validateProtocolIODOI,
   validateFileType
 } from "../../../utils/validators";

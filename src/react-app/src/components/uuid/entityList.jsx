@@ -1,7 +1,12 @@
 import React, { Component } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSpinner,
+  faFilter,
+  faBan,
+  faPlusSquare
+} from "@fortawesome/free-solid-svg-icons";
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import { naturalLanguageJoin } from "../../utils/string_helper";
@@ -65,9 +70,17 @@ class EntityList extends Component {
         config
       )
       .then(res => {
+        let entities = {};
+        res.data.specimens.forEach(s => {
+          if (entities[s.properties.uuid]) {
+            entities[s.properties.uuid].push(s);
+          } else {
+            entities[s.properties.uuid] = [s];
+          }
+        });
         this.setState({
           loading: false,
-          entities: res.data.specimens
+          entities: entities
         });
       })
       .catch(err => {
@@ -215,9 +228,17 @@ class EntityList extends Component {
         config
       )
       .then(res => {
+        let entities = {};
+        res.data.specimens.forEach(s => {
+          if (entities[s.properties.uuid]) {
+            entities[s.properties.uuid].push(s);
+          } else {
+            entities[s.properties.uuid] = [s];
+          }
+        });
         this.setState({
           loading: false,
-          entities: res.data.specimens
+          entities: entities
         });
       })
       .catch(err => {
@@ -402,41 +423,63 @@ class EntityList extends Component {
               </tr>
             </thead>
             <tbody>
-              {this.state.entities.map(entity => {
+              {Object.values(this.state.entities).map(es => {
+                const entity = es[0];
                 return (
-                  <tr key={entity.hubmap_identifier}>
-                    <td>{entity.hubmap_identifier}</td>
-                    <td
-                      className={this.selectClassforDataType(entity.datatype)}
-                    >
-                      {entity.datatype === "Sample"
-                        ? flattenSampleType(SAMPLE_TYPES)[
-                            entity.properties.specimen_type
-                          ]
-                        : entity.datatype}
-                    </td>
-                    <td>
-                      {entity.properties.label ||
-                        entity.properties.lab_tissue_id}
-                    </td>
-                    <td>{entity.properties.provenance_user_email}</td>
-                    <td>
-                      {entity.writeable && (
-                        <button
-                          className="btn btn-primary btn-sm mr-1"
-                          onClick={() => this.editForm(entity)}
-                        >
-                          Edit
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => this.viewForm(entity)}
+                  <React.Fragment>
+                    <tr key={entity.hubmap_identifier}>
+                      <td>
+                        {es.length > 1 && (
+                          <FontAwesomeIcon icon={faPlusSquare} />
+                        )}{" "}
+                        {entity.hubmap_identifier}
+                      </td>
+                      <td
+                        className={this.selectClassforDataType(entity.datatype)}
                       >
-                        View
-                      </button>
-                    </td>
-                  </tr>
+                        {entity.datatype === "Sample"
+                          ? flattenSampleType(SAMPLE_TYPES)[
+                              entity.properties.specimen_type
+                            ]
+                          : entity.datatype}
+                      </td>
+                      <td>
+                        {entity.properties.label ||
+                          entity.properties.lab_tissue_id}
+                      </td>
+                      <td>{entity.properties.provenance_user_email}</td>
+                      <td>
+                        {entity.writeable && (
+                          <button
+                            className="btn btn-primary btn-sm mr-1"
+                            onClick={() => this.editForm(entity)}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => this.viewForm(entity)}
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                    {es.length > 1 && (
+                      <tr>
+                        <td colspan="5">
+                          These ID(s) are generated at the same time:{" "}
+                          {es.map(e => {
+                            return (
+                              <span className="badge badge-light ml-2">
+                                {e.hubmap_identifier}
+                              </span>
+                            );
+                          })}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </tbody>
