@@ -440,7 +440,7 @@ class Dataset(object):
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
         try:
             metadata_node = Entity.get_entity_metadata(driver, uuid)
-            metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
+            metadata = Metadata(self.confdata['appclientid'], self.confdata['appclientsecret'], self.confdata['UUID_WEBSERVICE_URL'])
         except:
             raise LookupError("Unable to find metadata node for '" + uuid + "'")
         
@@ -731,17 +731,17 @@ class Dataset(object):
         if sourceUUID == None or len(sourceUUID) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
         
-        confdata = self.confdata
+        #confdata = self.confdata
         authcache = None
         if AuthHelper.isInitialized() == False:
             authcache = AuthHelper.create(
-                confdata['appclientid'], confdata['appclientsecret'])
+                self.confdata['appclientid'], self.confdata['appclientsecret'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
         transfer_token = current_token['transfer_token']
         auth_token = current_token['auth_token']
-        transfer_endpoint = confdata['STAGING_ENDPOINT_UUID']
+        transfer_endpoint = self.confdata['STAGING_ENDPOINT_UUID']
         userinfo = None
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
@@ -751,7 +751,7 @@ class Dataset(object):
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
+        metadata = Metadata(self.confdata['appclientid'], self.confdata['appclientsecret'], self.confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(group_uuid)
         except ValueError as ve:
@@ -773,7 +773,7 @@ class Dataset(object):
         activity_type = HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE
         entity_type = HubmapConst.DATASET_TYPE_CODE
 
-        ug = UUID_Generator(confdata['UUID_WEBSERVICE_URL'])
+        ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         
         with driver.session() as session:
             datastage_uuid_record_list = None
@@ -844,7 +844,7 @@ class Dataset(object):
                 tx.run(stmt)
 
                 # step 4: create the associated activity
-                activity = Activity(confdata['UUID_WEBSERVICE_URL'])
+                activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
                 activity_object = activity.get_create_activity_statements(nexus_token, activity_type, uuid, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
