@@ -20,6 +20,7 @@ from hubmap_commons.neo4j_connection import Neo4jConnection
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hm_auth import AuthHelper, secured
 from hubmap_commons.entity import Entity
+from hubmap_commons.hubmap_error import HubmapError
 
 
 app = Flask(__name__)
@@ -185,6 +186,9 @@ def create_specimen():
 
         return jsonify(new_uuid_records), 201 
 
+    except HubmapError as he:
+        print('A Hubmap error was encountered: ', str(he))
+        return Response(jsonify(he.getJson()), 401)
     except AuthError as e:
         print(e)
         return Response('token is invalid', 401)

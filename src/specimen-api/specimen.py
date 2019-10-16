@@ -21,6 +21,7 @@ from hubmap_commons.hm_auth import AuthHelper, AuthCache
 from hubmap_commons.entity import Entity
 from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
+from hubmap_commons.hubmap_error import HubmapError
 
 class Specimen:
 
@@ -412,6 +413,11 @@ class Specimen:
                 print('A Cypher error was encountered: ', cse.message)
                 if tx.closed() == False:
                     tx.rollback()
+            except HubmapError as he:
+                print('A Hubmap error was encountered: ', str(he))
+                if tx.closed() == False:
+                    tx.rollback()
+                raise he
             except:
                 print('A general error occurred: ')
                 traceback.print_exc()
@@ -464,7 +470,7 @@ class Specimen:
                         new_lab_identifier = str(parent_lab_identifier) + '-' + organ_specifier
                         does_id_exist = Specimen.lab_identifier_exists(driver, new_lab_identifier)
                         if does_id_exist == True:
-                            raise ValueError('Value Error: organ identifier already exists: ' + new_lab_identifier)
+                            raise HubmapError('Error: organ identifier already exists: ' + new_lab_identifier)
                         return_list.append(new_lab_identifier)
                             
                     else:
@@ -477,7 +483,7 @@ class Specimen:
                         UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
                         LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,newIdentifier=new_lab_identifier)    
                     for record in session.run(check_stmt):
-                        raise LookupError("Error: display identifier {newid} already exists in the system".format(newid=new_lab_identifier))
+                        raise HubmapError("Error: display identifier {newid} already exists in the system".format(newid=new_lab_identifier))
                     
                         
                     cnt += 1
@@ -497,6 +503,9 @@ class Specimen:
             except CypherError as cse:
                 print('A Cypher error was encountered: ', cse.message)
                 raise cse
+            except HubmapError as he:
+                print('A Hubmap error was encountered: ', str(he))
+                raise he
             except:
                 print('A general error occurred: ')
                 traceback.print_exc()
@@ -572,6 +581,9 @@ class Specimen:
             if 'protocol_file' in file_list:
                 protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                 metadata_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
+            if 'metadatas' in file_list:
+                metadata_file_path = Specimen.upload_multiple_file_data(request, metadata_record['metadatas'], file_list, data_directory)
+                metadata_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
             if 'images' in metadata_record:
                 image_file_data_list = Specimen.upload_multiple_file_data(request, metadata_record['images'], file_list, data_directory)
                 metadata_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
@@ -685,8 +697,8 @@ class Specimen:
     The output protocol JSON should look like this:
     "protocols": "[{"description": "", 
         "protocol_file": "/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/f8ed3f8e2e8a49c032b602a35126ec71/C11_technical_survey_summary.pdf", 
-        “protocol_url”:””}, 
-        {"description": "", " protocol_file ": "/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/f8ed3f8e2e8a49c032b602a35126ec71/Revision2OfTR15-119.pdf", “protocol_url”:””}]" 
+        “protocol_doi”:””}, 
+        {"description": "", " protocol_file ": "/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/f8ed3f8e2e8a49c032b602a35126ec71/Revision2OfTR15-119.pdf", “protocol_doi”:””}]" 
     """
     @staticmethod
     def upload_multiple_protocol_file_data(request, annotated_file_list, request_file_list, directory_path, existing_file_data=None):
@@ -707,7 +719,7 @@ class Specimen:
                 if len(str(data_entry['protocol_file'])) > 0: 
                     existing_file_data_dict[os.path.basename(data_entry['protocol_file'])] = data_entry
                 else:
-                    existing_url_data_dict[data_entry['protocol_url']] = data_entry
+                    existing_url_data_dict[data_entry['protocol_doi']] = data_entry
         
         # walk through each file represented on the web form.  For each file decide if it represents a new file or an existing file
         # Note: this code builds a list of the current files.  Effectively, this approach implicitly "deletes" any previous files removed from the
@@ -717,19 +729,19 @@ class Specimen:
                 # upload the file if it represents a new file.  New files are found in the file_name_dict
                 if (str(os.path.basename(file_data['protocol_file'])) in file_name_dict) == True:
                     new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
-                    file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
+                    file_obj = {'protocol_file': new_filepath, 'protocol_doi': ''}
                     return_list.append(file_obj)
                 else:
                     if len(str(file_data['protocol_file'])) > 0:
                         # in this case, simply copy an existing file's data into the retrun_list
                         return_list.append(existing_file_data_dict[os.path.basename(file_data['protocol_file'])])
                     else:
-                        if file_data['protocol_url'] in existing_url_data_dict:
-                            # copy the existing protocol_url entry
-                            return_list.append(existing_url_data_dict[file_data['protocol_url']])
+                        if file_data['protocol_doi'] in existing_url_data_dict:
+                            # copy the existing protocol_doi entry
+                            return_list.append(existing_url_data_dict[file_data['protocol_doi']])
                         else:
-                            #create a new protocol_url entry
-                            file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
+                            #create a new protocol_doi entry
+                            file_obj = {'protocol_file': '', 'protocol_doi': str(file_data['protocol_doi'])}
                             return_list.append(file_obj)  
                             
 
@@ -739,11 +751,11 @@ class Specimen:
                             # upload the file if it represents a new file
                             if (str(file_data['id']) in request_file_list) == True:
                                 new_filepath = Specimen.upload_file_data(request, str(file_data['id']), directory_path)
-                                file_obj = {'protocol_file': new_filepath, 'protocol_url': ''}
+                                file_obj = {'protocol_file': new_filepath, 'protocol_doi': ''}
                                 return_list.append(file_obj)
                             # if there is no file to upload, but there is a protocol URL:
-                            elif len(str(file_data['protocol_url'])) > 0:
-                                file_obj = {'protocol_file': '', 'protocol_url': str(file_data['protocol_url'])}
+                            elif len(str(file_data['protocol_doi'])) > 0:
+                                file_obj = {'protocol_file': '', 'protocol_doi': str(file_data['protocol_doi'])}
                                 return_list.append(file_obj)  
                     """                                      
             except:
