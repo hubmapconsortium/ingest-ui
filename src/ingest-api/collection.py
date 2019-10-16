@@ -72,7 +72,7 @@ class Collection(object):
             exit(0)
 
     @classmethod
-    def create_collection(self, river, current_token, collection_record):
+    def create_collection(self, driver, current_token, collection_record):
         ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         with driver.session() as session:
             tx = None
