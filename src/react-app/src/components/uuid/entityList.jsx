@@ -1,12 +1,7 @@
 import React, { Component } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faSpinner,
-  faFilter,
-  faBan,
-  faPlusSquare
-} from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import { naturalLanguageJoin } from "../../utils/string_helper";
@@ -425,14 +420,58 @@ class EntityList extends Component {
             <tbody>
               {Object.values(this.state.entities).map(es => {
                 const entity = es[0];
+                let first_lab_id = entity.hubmap_identifier;
+                let last_lab_id = "";
+                if (es.length > 1) {
+                  es.sort((a, b) => {
+                    if (
+                      parseInt(
+                        a.hubmap_identifier.substring(
+                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        )
+                      ) >
+                      parseInt(
+                        b.hubmap_identifier.substring(
+                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        )
+                      )
+                    ) {
+                      return 1;
+                    }
+                    if (
+                      parseInt(
+                        b.hubmap_identifier.substring(
+                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        )
+                      ) >
+                      parseInt(
+                        a.hubmap_identifier.substring(
+                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        )
+                      )
+                    ) {
+                      return -1;
+                    }
+                    return 0;
+                  });
+                  first_lab_id = es[0].hubmap_identifier;
+                  last_lab_id = es[es.length - 1].hubmap_identifier;
+                }
                 return (
                   <React.Fragment>
                     <tr key={entity.hubmap_identifier}>
                       <td>
                         {es.length > 1 && (
-                          <FontAwesomeIcon icon={faPlusSquare} />
-                        )}{" "}
-                        {entity.hubmap_identifier}
+                          <React.Fragment>
+                            {first_lab_id} <br />
+                            <span class="badge badge-secondary">
+                              <small>through</small>
+                            </span>
+                            <br />
+                            {last_lab_id}
+                          </React.Fragment>
+                        )}
+                        {es.length === 1 && first_lab_id}
                       </td>
                       <td
                         className={this.selectClassforDataType(entity.datatype)}
@@ -465,20 +504,6 @@ class EntityList extends Component {
                         </button>
                       </td>
                     </tr>
-                    {es.length > 1 && (
-                      <tr>
-                        <td colspan="5">
-                          These ID(s) are generated at the same time:{" "}
-                          {es.map(e => {
-                            return (
-                              <span className="badge badge-light ml-2">
-                                {e.hubmap_identifier}
-                              </span>
-                            );
-                          })}
-                        </td>
-                      </tr>
-                    )}
                   </React.Fragment>
                 );
               })}

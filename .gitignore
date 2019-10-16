@@ -129,6 +129,7 @@ src/react-app/coverage
 
 # .env. files (not the .env file)
 src/react-app/.env.*
+!src/react-app/.env.production.local.example
 
 # misc
 src/react-app/.DS_Store
