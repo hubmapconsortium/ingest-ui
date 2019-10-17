@@ -384,7 +384,8 @@ class Dataset(object):
                 metadata_record = incoming_record
                 
                 #set the status of the datastage to New
-                metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = 'New'
+                metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = convert_dataset_status(str(incoming_record['status']))
+
                 metadata_uuid_record_list = None
                 metadata_uuid_record = None
                 try: 
@@ -608,7 +609,10 @@ class Dataset(object):
 
                 if 'old_status' in update_record:
                     del update_record['old_status']
-                    
+                
+                update_record['status'] = convert_dataset_status(str(update_record['status']))
+                
+                """    
                 # I need to convert the status to what is found in the HubmapConst file
                 if str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_NEW).upper():
                     update_record['status'] = HubmapConst.DATASET_STATUS_NEW
@@ -628,7 +632,8 @@ class Dataset(object):
                     update_record['status'] = HubmapConst.DATASET_STATUS_UNPUBLISHED
                 elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
                     update_record['status'] = HubmapConst.DATASET_STATUS_QA
-
+                """
+                
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
                 print ("EXECUTING DATASET UPDATE: " + stmt)
                 tx.run(stmt)
@@ -963,7 +968,28 @@ def publish_directory(dir_UUID):
     except:
         raise
 
-    
+def convert_dataset_status(raw_status):
+    new_status = ''
+    # I need to convert the status to what is found in the HubmapConst file
+    if str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_NEW).upper():
+        new_status = HubmapConst.DATASET_STATUS_NEW
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_INVALID).upper():
+        new_status = HubmapConst.DATASET_STATUS_INVALID
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_VALID).upper():
+        new_status = HubmapConst.DATASET_STATUS_VALID
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper():
+        new_status = HubmapConst.DATASET_STATUS_PUBLISHED
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_REOPENED).upper():
+        new_status = HubmapConst.DATASET_STATUS_REOPENED
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_LOCKED).upper():
+        new_status = HubmapConst.DATASET_STATUS_LOCKED
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_NEW).upper():
+        new_status = HubmapConst.DATASET_STATUS_NEW
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_UNPUBLISHED).upper():
+        new_status = HubmapConst.DATASET_STATUS_UNPUBLISHED
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
+        new_status = HubmapConst.DATASET_STATUS_QA
+    return new_status
 
 
 if __name__ == "__main__":
