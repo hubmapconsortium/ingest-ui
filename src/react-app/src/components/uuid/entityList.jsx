@@ -464,7 +464,7 @@ class EntityList extends Component {
                         {es.length > 1 && (
                           <React.Fragment>
                             {first_lab_id} <br />
-                            <span class="badge badge-secondary">
+                            <span className="badge badge-secondary">
                               <small>through</small>
                             </span>
                             <br />

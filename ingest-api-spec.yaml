@@ -1,14 +1,12 @@
 openapi: 3.0.0
 info:
   description: |
-    This is the HuBMAP APIs specification
-    [http://swagger.io](http://swagger.io) or on 
-    [irc.freenode.net, #swagger](http://swagger.io/irc/).
+    This is the HuBMAP DataIngest APIs specification
   version: "1.0.0-oas3"
   title: HuBMAP DataIngest APIs
-  termsOfService: "http://swagger.io/terms/"
+  termsOfService: "http://hubmapconsortium.org"
   contact:
-    email: apiteam@swagger.io
+    email: apiteam@hubmap.org
   license:
     name: Apache 2.0
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -17,12 +15,12 @@ tags:
     description: Operations about dataset
     externalDocs:
       description: Find out more about our dataset
-      url: "http://swagger.io"
+      url: "http://hubmapconsortium.org"
   - name: entity
     description: Operations about entity
     externalDocs:
       description: Find out more about our store
-      url: "http://swagger.io"
+      url: "http://hubmapconsortium.org"
 paths:
   /dataset/search:
     get:
@@ -221,133 +219,19 @@ paths:
               $ref: "#/components/schemas/Dataset"
         description: Dataset object that needs to be created
         required: true
-  /entities/types:
-    get:
-      tags:
-        - entity
-      summary: Get Entity Types
-      operationId: getEntityTypes
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/EntityType"
-        "400":
-          description: Invalid dataset Id
-        "401":
-          description: User is not authorized to look for entities
-        "404":
-          description: Dataset not found
-  "/entities/types/{type_code}":
-    get:
-      tags:
-        - entity
-      summary: Get Entities by type code
-      operationId: getEntityByType
-      parameters:
-        - name: type_code
-          in: path
-          description: code of type
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Entity"
-        "400":
-          description: Invalid dataset Id
-        "401":
-          description: User is not authorized to look for entities
-        "404":
-          description: Dataset not found
-  /entities/samples:
-    get:
-      tags:
-        - entity
-      summary: Get Entity Types
-      operationId: getEntityBySampleType
-      parameters:
-        - in: query
-          name: sample_type
-          description: a sample type code
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: organ_type
-          description: a organ type code
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/EntityType"
-        "400":
-          description: Invalid dataset Id
-        "401":
-          description: User is not authorized to look for entities
-        "404":
-          description: Dataset not found
-  "/entityes/{uuid}":
-    get:
-      tags:
-        - entity
-      summary: Get Entity
-      operationId: getEntity
-      parameters:
-        - name: uuid
-          in: path
-          description: The unique UUID id of entity
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/EntityType"
-        "400":
-          description: Invalid dataset Id
-        "401":
-          description: User is not authorized to look for entities
-        "404":
-          description: Dataset not found
-externalDocs:
-  description: Find out more about Swagger
-  url: "http://swagger.io"
 servers:
-  - url: "https://virtserver.swaggerhub.com/etlds/DataIngest/1.0.0"
-  - url: "http://virtserver.swaggerhub.com/etlds/DataIngest/1.0.0"
+  - url: "https://uuid.hubmapconsortium.org/dataingest"
+  - url: "http://uuid.hubmapconsortium.org/dataingest"
 components:
   securitySchemes:
-    petstore_auth:
+    globus_auth:
       type: oauth2
       flows:
         implicit:
-          authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
+          authorizationUrl: "https://auth.globus.org/v2/oauth2/authorize"
           scopes:
-            "write:pets": modify pets in your account
-            "read:pets": read your pets
+            "write:dataset": modify datasets
+            "read:dataset": read datasets
     api_key:
       type: apiKey
       name: api_key

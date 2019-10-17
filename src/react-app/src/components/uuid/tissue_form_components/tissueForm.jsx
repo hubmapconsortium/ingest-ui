@@ -1730,9 +1730,6 @@ class TissueForm extends Component {
                 ))}
               </div>
               <div className="col-sm-1 my-auto text-center">
-                <span className="invisible text-danger inline-icon">
-                  <FontAwesomeIcon icon={faQuestionCircle} />
-                </span>
                 <span>
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
@@ -1799,9 +1796,6 @@ class TissueForm extends Component {
                 ))}
               </div>
               <div className="col-sm-1 my-auto text-center">
-                <span className="invisible text-danger inline-icon">
-                  <FontAwesomeIcon icon={faQuestionCircle} />
-                </span>
                 <span>
                   <FontAwesomeIcon
                     icon={faQuestionCircle}

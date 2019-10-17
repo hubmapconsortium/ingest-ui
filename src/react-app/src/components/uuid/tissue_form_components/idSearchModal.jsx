@@ -54,8 +54,20 @@ class IDSearchModal extends Component {
         config
       )
       .then(res => {
+        let entities = {};
+        if (this.props.parent === "dataset") {
+          res.data.specimens.forEach(s => {
+            if (entities[s.properties.uuid]) {
+              entities[s.properties.uuid].push(s);
+            } else {
+              entities[s.properties.uuid] = [s];
+            }
+          });
+        } else {
+          entities = res.data.specimens;
+        }
         this.setState({
-          HuBMAPIDResults: res.data.specimens
+          HuBMAPIDResults: Object.values(entities)
         });
       })
       .catch(error => {
@@ -201,7 +213,48 @@ class IDSearchModal extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.HuBMAPIDResults.map(result => {
+                          {this.state.HuBMAPIDResults.map(es => {
+                            if (!Array.isArray(es)) {
+                              es = [es];
+                            }
+                            const result = es[0];
+                            let first_lab_id = result.hubmap_identifier;
+                            let last_lab_id = "";
+                            if (es.length > 1) {
+                              es.sort((a, b) => {
+                                if (
+                                  parseInt(
+                                    a.hubmap_identifier.substring(
+                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    )
+                                  ) >
+                                  parseInt(
+                                    b.hubmap_identifier.substring(
+                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    )
+                                  )
+                                ) {
+                                  return 1;
+                                }
+                                if (
+                                  parseInt(
+                                    b.hubmap_identifier.substring(
+                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    )
+                                  ) >
+                                  parseInt(
+                                    a.hubmap_identifier.substring(
+                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    )
+                                  )
+                                ) {
+                                  return -1;
+                                }
+                                return 0;
+                              });
+                              first_lab_id = es[0].hubmap_identifier;
+                              last_lab_id = es[es.length - 1].hubmap_identifier;
+                            }
                             return (
                               <tr
                                 key={result.hubmap_identifier}
@@ -210,9 +263,17 @@ class IDSearchModal extends Component {
                                 }
                               >
                                 <td>
-                                  {result.hubmap_identifier
-                                    ? result.hubmap_identifier
-                                    : result.entity_display_doi}
+                                  {es.length > 1 && (
+                                    <React.Fragment>
+                                      {first_lab_id} <br />
+                                      <span className="badge badge-secondary">
+                                        <small>through</small>
+                                      </span>
+                                      <br />
+                                      {last_lab_id}
+                                    </React.Fragment>
+                                  )}
+                                  {es.length === 1 && first_lab_id}
                                 </td>
                                 <td>
                                   {result.datatype === "Sample"
