@@ -817,7 +817,7 @@ class Specimen:
             confdata['appclientsecret'] = config.get(
                 'GLOBUS', 'APP_CLIENT_SECRET')
             confdata['localstoragedirectory'] = config.get(
-                'FILE_SYSTEM', 'GLOBUS_STORAGE_DIRECTORY_ROOT')
+                'FILE_SYSTEM', 'LOCAL_STORAGE_DIRECTORY')
             confdata['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
             return confdata
         except OSError as err:
