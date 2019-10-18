@@ -581,7 +581,7 @@ class Specimen:
             if 'protocol_file' in file_list:
                 protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                 metadata_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
-            if 'metadatas' in file_list:
+            if 'metadatas' in metadata_record:
                 metadata_file_path = Specimen.upload_multiple_file_data(request, metadata_record['metadatas'], file_list, data_directory)
                 metadata_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
             if 'images' in metadata_record:
