@@ -1815,7 +1815,7 @@ class TissueForm extends Component {
             </div>
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
-                Oops! Something went wrong. Please contact adminitrator for
+                Oops! Something went wrong. Please contact administrator for
                 help.
               </div>
             )}
