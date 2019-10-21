@@ -247,7 +247,8 @@ class DatasetEdit extends Component {
   handleSelectClick = id => {
     this.setState(
       {
-        source_uuid: id,
+        source_uuid: `${id[0]} (and ${id.length - 1} more)`,
+        source_uuid_list: id,
         LookUpShow: false
       },
       () => {
@@ -305,7 +306,7 @@ class DatasetEdit extends Component {
 
   validateUUID = () => {
     let isValid = true;
-    const uuid = this.state.source_uuid;
+    const uuid = this.state.source_uuid_list[0];
     // const patt = new RegExp("^.{3}-.{4}-.{3}$");
     // if (patt.test(uuid)) {
     this.setState({
@@ -379,7 +380,7 @@ class DatasetEdit extends Component {
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid,
+          source_uuid: this.state.source_uuid_list,
           phi: this.state.phi,
           description: this.state.description,
           status: i

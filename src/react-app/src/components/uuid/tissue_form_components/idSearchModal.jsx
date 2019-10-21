@@ -3,6 +3,8 @@ import Modal from "../modal";
 import axios from "axios";
 import { SAMPLE_TYPES } from "../../../constants";
 import { flattenSampleType } from "../../../utils/constants_helper";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
 
 class IDSearchModal extends Component {
   state = {};
@@ -73,6 +75,13 @@ class IDSearchModal extends Component {
       .catch(error => {
         console.log(error);
       });
+  };
+
+  showSibling = e => {
+    // e.stopPropagation();
+    // this.setState({
+    //   showSibling: !this.state.showSibling
+    // });
   };
 
   render() {
@@ -256,40 +265,116 @@ class IDSearchModal extends Component {
                               last_lab_id = es[es.length - 1].hubmap_identifier;
                             }
                             return (
-                              <tr
-                                key={result.hubmap_identifier}
-                                onClick={e =>
-                                  this.props.select(result.hubmap_identifier)
-                                }
-                              >
-                                <td>
-                                  {es.length > 1 && (
-                                    <React.Fragment>
-                                      {first_lab_id} <br />
-                                      <span className="badge badge-secondary">
-                                        <small>through</small>
-                                      </span>
-                                      <br />
-                                      {last_lab_id}
-                                    </React.Fragment>
-                                  )}
-                                  {es.length === 1 && first_lab_id}
-                                </td>
-                                <td>
-                                  {result.datatype === "Sample"
-                                    ? flattenSampleType(SAMPLE_TYPES)[
-                                        result.properties.specimen_type
-                                      ]
-                                    : result.datatype}
-                                </td>
-                                <td>
-                                  {result.properties.label ||
-                                    result.properties.lab_tissue_id}
-                                </td>
-                                <td>
-                                  {result.properties.provenance_user_email}
-                                </td>
-                              </tr>
+                              <React.Fragment key={result.hubmap_identifier}>
+                                <tr
+                                  key={result.hubmap_identifier}
+                                  onClick={e =>
+                                    this.props.select(
+                                      // es.length > 1
+                                      //   ? `${
+                                      //       result.hubmap_identifier
+                                      //     } (and ${es.length - 1} more)`
+                                      //   : result.hubmap_identifier
+                                      es.map(e => {
+                                        return e.hubmap_identifier;
+                                      })
+                                    )
+                                  }
+                                >
+                                  <td>
+                                    {es.length > 1 && (
+                                      <React.Fragment>
+                                        <div className="row">
+                                          <div
+                                            className="col-sm-6"
+                                            onClick={this.showSibling}
+                                          >
+                                            {this.state.showSibling && (
+                                              <FontAwesomeIcon icon={faMinus} />
+                                            )}
+                                            {!this.state.showSibling && (
+                                              <FontAwesomeIcon icon={faPlus} />
+                                            )}
+                                          </div>
+                                          <div className="col-sm-6">
+                                            {first_lab_id} <br />
+                                            <span className="badge badge-secondary">
+                                              <small>through</small>
+                                            </span>
+                                            <br />
+                                            {last_lab_id}
+                                          </div>
+                                        </div>
+                                      </React.Fragment>
+                                    )}
+                                    {es.length === 1 && (
+                                      <React.Fragment>
+                                        <div className="row">
+                                          <div className="col-sm-6"></div>
+                                          <div className="col-sm-6">
+                                            {first_lab_id}
+                                          </div>
+                                        </div>
+                                      </React.Fragment>
+                                    )}
+                                  </td>
+                                  <td>
+                                    {result.datatype === "Sample"
+                                      ? flattenSampleType(SAMPLE_TYPES)[
+                                          result.properties.specimen_type
+                                        ]
+                                      : result.datatype}
+                                  </td>
+                                  <td>
+                                    {result.properties.label ||
+                                      result.properties.lab_tissue_id}
+                                  </td>
+                                  <td>
+                                    {result.properties.provenance_user_email}
+                                  </td>
+                                </tr>
+                                {this.state.showSibling && es.length > 1 && (
+                                  <React.Fragment>
+                                    {es.map(result => {
+                                      return (
+                                        <tr
+                                          key={result.hubmap_identifier}
+                                          className="table-dark"
+                                        >
+                                          <td>
+                                            <React.Fragment>
+                                              <div className="row">
+                                                <div className="col-sm-6"></div>
+                                                <div className="col-sm-6">
+                                                  {result.hubmap_identifier}
+                                                </div>
+                                              </div>
+                                            </React.Fragment>
+                                          </td>
+                                          <td>
+                                            {result.datatype === "Sample"
+                                              ? flattenSampleType(SAMPLE_TYPES)[
+                                                  result.properties
+                                                    .specimen_type
+                                                ]
+                                              : result.datatype}
+                                          </td>
+                                          <td>
+                                            {result.properties.label ||
+                                              result.properties.lab_tissue_id}
+                                          </td>
+                                          <td>
+                                            {
+                                              result.properties
+                                                .provenance_user_email
+                                            }
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </React.Fragment>
+                                )}
+                              </React.Fragment>
                             );
                           })}
                         </tbody>
