@@ -101,3 +101,7 @@ caption {
   color: #fff;
   background-color: #9933cc;
 }
+
+.nowrap {
+  white-space: nowrap;
+}

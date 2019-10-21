@@ -158,9 +158,10 @@ class TissueForm extends Component {
             const last_lab_id =
               res.data.siblingid_list[res.data.siblingid_list.length - 1]
                 .hubmap_identifier;
+
             if (first_lab_id !== null) {
               this.setState({
-                editingMultiWarning: `Editing this sample will affect the ${
+                editingMultiWarning: `Editing affect the ${
                   res.data.siblingid_list.length
                 } ${
                   flattenSampleType(SAMPLE_TYPES)[
@@ -1089,9 +1090,7 @@ class TissueForm extends Component {
       <div className="row">
         {this.props.editingEntity && (
           <div className="col-sm-10 offset-sm-2">
-            <h1 className="display-4">
-              {this.props.editingEntity.hubmap_identifier}
-            </h1>
+            <h4 className="display-5">{this.props.displayId}</h4>
           </div>
         )}
         {this.state.editingMultiWarning && !this.props.readOnly && (

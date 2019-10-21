@@ -734,9 +734,9 @@ class DonorForm extends Component {
         <div className="row">
           {this.props.editingEntity && (
             <div className="col-sm-9 offset-sm-3">
-              <h1 className="display-4">
+              <h4 className="display-5">
                 {this.props.editingEntity.hubmap_identifier}
-              </h1>
+              </h4>
             </div>
           )}
           <div className="col-sm-12">

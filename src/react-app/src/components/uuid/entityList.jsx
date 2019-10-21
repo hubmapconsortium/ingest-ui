@@ -135,10 +135,11 @@ class EntityList extends Component {
     }
   }
 
-  editForm = entity => {
+  editForm = (entity, display_id) => {
     this.setState({
       updateSuccess: null,
       editingEntity: entity,
+      editingDisplayId: display_id,
       readOnly: false
     });
     this.props.onEdit();
@@ -422,6 +423,14 @@ class EntityList extends Component {
                 const entity = es[0];
                 let first_lab_id = entity.hubmap_identifier;
                 let last_lab_id = "";
+                let id_common_part = first_lab_id.substring(
+                  0,
+                  first_lab_id.lastIndexOf("-") + 1
+                );
+                let first_lab_id_num = "";
+                let last_lab_id_num = "";
+                let display_id = entity.hubmap_identifier;
+
                 if (es.length > 1) {
                   es.sort((a, b) => {
                     if (
@@ -456,19 +465,30 @@ class EntityList extends Component {
                   });
                   first_lab_id = es[0].hubmap_identifier;
                   last_lab_id = es[es.length - 1].hubmap_identifier;
+
+                  first_lab_id_num = first_lab_id.substring(
+                    first_lab_id.lastIndexOf("-") + 1,
+                    first_lab_id.length
+                  );
+
+                  last_lab_id_num = last_lab_id.substring(
+                    last_lab_id.lastIndexOf("-") + 1,
+                    last_lab_id.length
+                  );
+
+                  display_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
                 }
                 return (
                   <React.Fragment>
-                    <tr key={entity.hubmap_identifier}>
-                      <td>
+                    <tr
+                      className={es.length > 1 ? "font-weight-bold" : ""}
+                      key={entity.hubmap_identifier}
+                    >
+                      <td className="nowrap">
                         {es.length > 1 && (
                           <React.Fragment>
-                            {first_lab_id} <br />
-                            <span className="badge badge-secondary">
-                              <small>through</small>
-                            </span>
-                            <br />
-                            {last_lab_id}
+                            {id_common_part} [{first_lab_id_num}{" "}
+                            <small>through</small> {last_lab_id_num}]
                           </React.Fragment>
                         )}
                         {es.length === 1 && first_lab_id}
@@ -487,11 +507,11 @@ class EntityList extends Component {
                           entity.properties.lab_tissue_id}
                       </td>
                       <td>{entity.properties.provenance_user_email}</td>
-                      <td>
+                      <td className="nowrap">
                         {entity.writeable && (
                           <button
                             className="btn btn-primary btn-sm mr-1"
-                            onClick={() => this.editForm(entity)}
+                            onClick={() => this.editForm(entity, display_id)}
                           >
                             Edit
                           </button>
@@ -527,6 +547,7 @@ class EntityList extends Component {
       if (dataType === "donor") {
         return (
           <DonorForm
+            displayId={this.state.editingDisplayId}
             editingEntity={this.state.editingEntity}
             readOnly={this.state.readOnly}
             handleCancel={this.cancelEdit}
@@ -536,6 +557,7 @@ class EntityList extends Component {
       } else if (dataType === "sample") {
         return (
           <TissueForm
+            displayId={this.state.editingDisplayId}
             editingEntity={this.state.editingEntity}
             readOnly={this.state.readOnly}
             handleCancel={this.cancelEdit}
