@@ -292,15 +292,18 @@ class Dataset(object):
         conn = Neo4jConnection(self.confdata['neo4juri'], self.confdata['neo4jusername'], self.confdata['neo4jpassword'])
         driver = conn.get_driver()
         # check all the incoming UUID's to make sure they exist
-        sourceUUID = str(incoming_record['source_uuid']).strip()
-        if sourceUUID == None or len(sourceUUID) == 0:
+        incoming_sourceUUID_string = str(incoming_record['source_uuid']).strip()
+        if incoming_sourceUUID_string == None or len(incoming_sourceUUID_string) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
-        source_UUID_Data = None
+        source_UUID_Data = []
         ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         try:
-            source_UUID_Data = ug.getUUID(current_token['nexus_token'], sourceUUID)
-            if len(source_UUID_Data) != 1:
-                raise ValueError("Could not find information for identifier" + sourceUUID)
+            incoming_sourceUUID_list = eval(incoming_sourceUUID_string)
+            for sourceID in incoming_sourceUUID_list:
+                hmuuid_data = ug.getUUID(current_token['nexus_token'], sourceID)
+                if len(hmuuid_data) != 1:
+                    raise ValueError("Could not find information for identifier" + sourceID)
+                source_UUID_Data.append(hmuuid_data)
         except:
             raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
         #confdata = self.confdata
@@ -403,7 +406,10 @@ class Dataset(object):
                 tx.run(stmt)
                 # step 4: create the associated activity
                 activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
-                activity_object = activity.get_create_activity_statements(nexus_token, activity_type, source_UUID_Data[0]['hmuuid'], datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                sourceUUID_list = []
+                for source_uuid in source_UUID_Data:
+                    sourceUUID_list.append(source_uuid[0]['hmuuid'])
+                activity_object = activity.get_create_activity_statements(nexus_token, activity_type, sourceUUID_list, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
                     tx.run(stmt)                
