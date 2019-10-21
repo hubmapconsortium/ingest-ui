@@ -39,6 +39,28 @@ class IngestEntrance extends Component {
           window.location.reload();
         }
       });
+
+    axios
+      .get(
+        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+        config
+      )
+      .then(res => {
+        const display_names = res.data.groups
+          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+          .map(g => {
+            return g.displayname;
+          });
+        this.setState({
+          group: display_names[0]
+        });
+      })
+      .catch(err => {
+        if (err.response.status === 401) {
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload();
+        }
+      });
   }
 
   handleNewDataSetClick = () => {
@@ -86,37 +108,12 @@ class IngestEntrance extends Component {
   render() {
     return (
       <div>
-        {/* {!this.state.editingDataset && (
-          <div className="form-group row">
-            <label
-              htmlFor="group"
-              className="offset-sm-5 col-sm-3 col-form-label text-right"
-            >
-              You can edit data sets for:{" "}
-            </label>
-            <div className="col-sm-4">
-              <select className="form-control" id="group" name="group">
-                <option value="University of Florida TMC">
-                  University of Florida TMC
-                </option>
-                <option value="California Institute of Technology TMC">
-                  California Institute of Technology TMC
-                </option>
-                <option value="Vanderbilt TMC">Vanderbilt TMC</option>
-                <option value="Stanford TMC">Stanford TMC</option>
-                <option value="University of California San Diego TMC">
-                  University of California San Diego TMC
-                </option>
-                <option value="IEC Testing Group">IEC Testing Group</option>
-              </select>
-            </div>
-          </div>
-        )} */}
         <div className="row">
           <div className="col-sm-12">
             {!this.state.creatingNewDataset &&
               !this.state.editingDataset &&
-              this.state.is_curator === false && (
+              this.state.is_curator === false &&
+              this.state.group && (
                 <button
                   className="btn btn-primary"
                   onClick={this.handleNewDataSetClick}

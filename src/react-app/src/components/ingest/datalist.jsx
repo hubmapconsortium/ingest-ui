@@ -362,6 +362,9 @@ class DataList extends Component {
                         default:
                           break;
                       }
+                      if (!this.state.group) {
+                        btn_text = "View";
+                      }
                       return (
                         <tr key={dataset.uuid}>
                           <td>{dataset.properties.name}</td>

@@ -82,6 +82,28 @@ class DatasetEdit extends Component {
         }
       });
 
+    axios
+      .get(
+        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+        config
+      )
+      .then(res => {
+        const display_names = res.data.groups
+          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+          .map(g => {
+            return g.displayname;
+          });
+        this.setState({
+          group: display_names[0]
+        });
+      })
+      .catch(err => {
+        if (err.response.status === 401) {
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload();
+        }
+      });
+
     if (this.props.editingDataset) {
       this.setState(
         {
@@ -466,242 +488,258 @@ class DatasetEdit extends Component {
 
   renderButtons() {
     if (this.props.editingDataset) {
-      if (this.state.is_curator) {
-        if (this.state.status.toUpperCase() === "QA") {
-          return (
-            <div className="row">
-              <div className="col-sm-3 offset-sm-2 text-center">
-                <button
-                  type="button"
-                  className="btn btn-primary btn-block"
-                  disabled={this.state.submitting}
-                  onClick={() => this.handleButtonClick("published")}
-                  data-status="published"
-                >
-                  {this.state.submitting && (
-                    <FontAwesomeIcon
-                      className="inline-icon"
-                      icon={faSpinner}
-                      spin
-                    />
-                  )}
-                  {!this.state.submitting && "Publish"}
-                </button>
-              </div>
-              <div className="col-sm-4 text-center">
-                <button
-                  type="button"
-                  className="btn btn-danger btn-block"
-                  disabled={this.state.submitting}
-                  onClick={() => this.handleButtonClick("invalid")}
-                  data-status="invalid"
-                >
-                  {this.state.submitting && (
-                    <FontAwesomeIcon
-                      className="inline-icon"
-                      icon={faSpinner}
-                      spin
-                    />
-                  )}
-                  {!this.state.submitting && "Reject"}
-                </button>
-              </div>
-              <div className="col-sm-2 text-right">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => this.props.handleCancel()}
-                >
-                  Close
-                </button>
-              </div>
+      if (!this.state.group) {
+        return (
+          <div className="row">
+            <div className="col-sm-2 offset-sm-10">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => this.props.handleCancel()}
+              >
+                Close
+              </button>
             </div>
-          );
-        } else if (this.state.status.toUpperCase() === "PUBLISHED") {
-          return (
-            <div className="row">
-              <div className="col-sm-3 offset-sm-2 text-center"></div>
-              <div className="col-sm-4 text-center">
-                <button
-                  type="button"
-                  className="btn btn-danger btn-block"
-                  disabled={this.state.submitting}
-                  onClick={() => this.handleButtonClick("unpublished")}
-                  data-status="unpublished"
-                >
-                  {this.state.submitting && (
-                    <FontAwesomeIcon
-                      className="inline-icon"
-                      icon={faSpinner}
-                      spin
-                    />
-                  )}
-                  {!this.state.submitting && "Unpublish"}
-                </button>
-              </div>
-              <div className="col-sm-2 text-right">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => this.props.handleCancel()}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          );
-        } else if (this.state.status.toUpperCase() === "UNPUBLISHED") {
-          return (
-            <div className="row">
-              <div className="col-sm-3 offset-sm-2 text-center"></div>
-              <div className="col-sm-4 text-center">
-                <button
-                  type="button"
-                  className="btn btn-primary btn-block"
-                  disabled={this.state.submitting}
-                  onClick={() => this.handleButtonClick("published")}
-                  data-status="published"
-                >
-                  {this.state.submitting && (
-                    <FontAwesomeIcon
-                      className="inline-icon"
-                      icon={faSpinner}
-                      spin
-                    />
-                  )}
-                  {!this.state.submitting && "Publish"}
-                </button>
-              </div>
-              <div className="col-sm-2 text-right">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => this.props.handleCancel()}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          );
-        } else {
-          return (
-            <div className="row">
-              <div className="col-sm-4 offset-sm-4">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => this.props.handleCancel()}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          );
-        }
+          </div>
+        );
       } else {
-        if (
-          ["NEW", "INVALID", "REOPENED"].includes(
-            this.state.status.toUpperCase()
-          )
-        ) {
-          return (
-            <div className="row">
-              <div className="col-sm-3 offset-sm-2 text-center">
-                <button
-                  type="button"
-                  className="btn btn-info btn-block"
-                  disabled={this.state.submitting}
-                  onClick={() =>
-                    this.handleButtonClick(this.state.status.toLowerCase())
-                  }
-                  data-status={this.state.status.toLowerCase()}
-                >
-                  {this.state.submitting && (
-                    <FontAwesomeIcon
-                      className="inline-icon"
-                      icon={faSpinner}
-                      spin
-                    />
-                  )}
-                  {!this.state.submitting && "Save"}
-                </button>
+        if (this.state.is_curator) {
+          if (this.state.status.toUpperCase() === "QA") {
+            return (
+              <div className="row">
+                <div className="col-sm-3 offset-sm-2 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-block"
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("published")}
+                    data-status="published"
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Publish"}
+                  </button>
+                </div>
+                <div className="col-sm-4 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-block"
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("invalid")}
+                    data-status="invalid"
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Reject"}
+                  </button>
+                </div>
+                <div className="col-sm-2 text-right">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-              <div className="col-sm-4 text-center">
-                <button
-                  type="button"
-                  className="btn btn-primary btn-block"
-                  disabled={this.state.submitting}
-                  onClick={() => this.handleButtonClick("qa")}
-                  data-status={this.state.status.toLowerCase()}
-                >
-                  {this.state.submitting && (
-                    <FontAwesomeIcon
-                      className="inline-icon"
-                      icon={faSpinner}
-                      spin
-                    />
-                  )}
-                  {!this.state.submitting && "Submit"}
-                </button>
+            );
+          } else if (this.state.status.toUpperCase() === "PUBLISHED") {
+            return (
+              <div className="row">
+                <div className="col-sm-3 offset-sm-2 text-center"></div>
+                <div className="col-sm-4 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-block"
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("unpublished")}
+                    data-status="unpublished"
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Unpublish"}
+                  </button>
+                </div>
+                <div className="col-sm-2 text-right">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-              <div className="col-sm-2 text-right">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => this.props.handleCancel()}
-                >
-                  Cancel
-                </button>
+            );
+          } else if (this.state.status.toUpperCase() === "UNPUBLISHED") {
+            return (
+              <div className="row">
+                <div className="col-sm-3 offset-sm-2 text-center"></div>
+                <div className="col-sm-4 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-block"
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("published")}
+                    data-status="published"
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Publish"}
+                  </button>
+                </div>
+                <div className="col-sm-2 text-right">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        } else if (this.state.status.toUpperCase() === "PUBLISHED") {
-          return (
-            <div className="row">
-              <div className="col-sm-3 offset-sm-2 text-center">
-                <button
-                  type="button"
-                  className="btn btn-primary btn-block"
-                  disabled={this.state.submitting}
-                  onClick={() => this.handleButtonClick("reopened")}
-                  data-status="reopened"
-                >
-                  {this.state.submitting && (
-                    <FontAwesomeIcon
-                      className="inline-icon"
-                      icon={faSpinner}
-                      spin
-                    />
-                  )}
-                  {!this.state.submitting && "Reopen"}
-                </button>
+            );
+          } else {
+            return (
+              <div className="row">
+                <div className="col-sm-4 offset-sm-4">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-              <div className="col-sm-4 text-center"></div>
-              <div className="col-sm-2 text-right">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => this.props.handleCancel()}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          );
+            );
+          }
         } else {
-          return (
-            <div className="row">
-              <div className="col-sm-2 offset-sm-10">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => this.props.handleCancel()}
-                >
-                  Close
-                </button>
+          if (
+            ["NEW", "INVALID", "REOPENED"].includes(
+              this.state.status.toUpperCase()
+            )
+          ) {
+            return (
+              <div className="row">
+                <div className="col-sm-3 offset-sm-2 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-info btn-block"
+                    disabled={this.state.submitting}
+                    onClick={() =>
+                      this.handleButtonClick(this.state.status.toLowerCase())
+                    }
+                    data-status={this.state.status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Save"}
+                  </button>
+                </div>
+                <div className="col-sm-4 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-block"
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("qa")}
+                    data-status={this.state.status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Submit"}
+                  </button>
+                </div>
+                <div className="col-sm-2 text-right">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-            </div>
-          );
+            );
+          } else if (this.state.status.toUpperCase() === "PUBLISHED") {
+            return (
+              <div className="row">
+                <div className="col-sm-3 offset-sm-2 text-center">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-block"
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("reopened")}
+                    data-status="reopened"
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Reopen"}
+                  </button>
+                </div>
+                <div className="col-sm-4 text-center"></div>
+                <div className="col-sm-2 text-right">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            );
+          } else {
+            return (
+              <div className="row">
+                <div className="col-sm-2 offset-sm-10">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            );
+          }
         }
       }
     } else {
@@ -876,13 +914,15 @@ class DatasetEdit extends Component {
                     )}
                   </div>
                   <div className="col-sm-2 my-auto text-right">
-                    <button
-                      className="btn btn-primary"
-                      type="button"
-                      onClick={this.handleAddNewCollection}
-                    >
-                      Add New
-                    </button>
+                    {this.state.group && (
+                      <button
+                        className="btn btn-primary"
+                        type="button"
+                        onClick={this.handleAddNewCollection}
+                      >
+                        Add New
+                      </button>
+                    )}
                   </div>
                   <CreateCollectionModal
                     show={this.state.AddCollectionShow}
