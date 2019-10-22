@@ -1073,10 +1073,10 @@ class TissueForm extends Component {
     });
   };
 
-  handleSelectClick = id => {
+  handleSelectClick = ids => {
     this.setState(
       {
-        source_uuid: id,
+        source_uuid: ids[0],
         LookUpShow: false
       },
       () => {
@@ -1502,7 +1502,7 @@ class TissueForm extends Component {
                   )}
                 </div>
               )}
-            {!this.state.multiple_id && (
+            {!this.state.multiple_id && !this.state.editingMultiWarning && (
               <div className="form-group row">
                 <label
                   htmlFor="lab_tissue_id"
