@@ -228,6 +228,7 @@ class TissueForm extends Component {
 
       this.setState(
         {
+          author: this.props.editingEntity.properties.provenance_user_email,
           lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
           protocols: protocols_json,
           protocol: this.props.editingEntity.properties.protocol,
@@ -1089,9 +1090,14 @@ class TissueForm extends Component {
     return (
       <div className="row">
         {this.props.editingEntity && (
-          <div className="col-sm-10 offset-sm-2">
-            <h4 className="display-5">{this.props.displayId}</h4>
-          </div>
+          <React.Fragment>
+            <div className="col-sm-6 offset-sm-2">
+              <h4 className="display-5">{this.props.displayId}</h4>
+            </div>
+            <div className="col-sm-4 text-right">
+              Created by: {this.state.author}
+            </div>
+          </React.Fragment>
         )}
         {this.state.editingMultiWarning && !this.props.readOnly && (
           <div className="alert alert-danger col-sm-12" role="alert">

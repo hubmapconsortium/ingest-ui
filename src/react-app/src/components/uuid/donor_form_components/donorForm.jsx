@@ -109,6 +109,7 @@ class DonorForm extends Component {
         );
       } catch (e) {}
       this.setState({
+        author: this.props.editingEntity.properties.provenance_user_email,
         visit: this.props.editingEntity.properties.visit,
         lab_donor_id: this.props.editingEntity.properties.lab_donor_id,
         identifying_name: this.props.editingEntity.properties.label,
@@ -733,11 +734,16 @@ class DonorForm extends Component {
         )}
         <div className="row">
           {this.props.editingEntity && (
-            <div className="col-sm-9 offset-sm-3">
-              <h4 className="display-5">
-                {this.props.editingEntity.hubmap_identifier}
-              </h4>
-            </div>
+            <React.Fragment>
+              <div className="col-sm-5 offset-sm-3">
+                <h4 className="display-5">
+                  {this.props.editingEntity.hubmap_identifier}
+                </h4>
+              </div>
+              <div className="col-sm-4 text-right">
+                Created by: {this.state.author}
+              </div>
+            </React.Fragment>
           )}
           <div className="col-sm-12">
             <div

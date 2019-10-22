@@ -408,6 +408,7 @@ class EntityList extends Component {
                 <th scope="col" width="200">
                   ID
                 </th>
+                <th scope="col">Lab Group</th>
                 <th scope="col" width="200">
                   Type
                 </th>
@@ -493,6 +494,7 @@ class EntityList extends Component {
                         )}
                         {es.length === 1 && first_lab_id}
                       </td>
+                      <td>{entity.properties.provenance_group_name}</td>
                       <td
                         className={this.selectClassforDataType(entity.datatype)}
                       >
