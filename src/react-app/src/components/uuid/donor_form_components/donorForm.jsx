@@ -955,328 +955,263 @@ class DonorForm extends Component {
                   </span>
                 </div>
               </div>
-              <div className="form-group row">
-                <label
-                  htmlFor="protocol"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Protocol document <span className="text-danger">*</span>
-                </label>
-                {!this.props.readOnly && (
-                  <React.Fragment>
-                    <div className="col-sm-6">
-                      <div className="custom-file">
-                        <input
-                          ref={this.protocolFile}
-                          type="file"
-                          name="protocol_file"
-                          key={this.protocolFileKey}
-                          className={
-                            "custom-file-input " +
-                            this.errorClass(this.state.formErrors.protocol_file)
-                          }
-                          id="protocol_file"
-                          onChange={this.handleInputChange}
-                          placeholder="A brief description of the donor"
-                          accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
-                        />
-                        <label
-                          className="custom-file-label"
-                          htmlFor="protocol_file"
-                        >
-                          {this.state.protocol_file_name}
-                        </label>
-                        {this.state.formErrors.protocol_file &&
-                          this.state.formErrors.protocol_file !==
-                            "required" && (
-                            <div className="invalid-feedback">
-                              {this.state.formErrors.protocol_file}
-                            </div>
-                          )}
-                      </div>
-                      <small
-                        id="protocol_file_help"
-                        className="form-text text-muted"
-                      >
-                        doc, docx and pdf files only
-                      </small>
-                    </div>
-                    <div className="col-sm-2">
-                      {this.state.protocol_file_name &&
-                        this.state.protocol_file_name !== "Choose a file" && (
-                          <button
-                            type="button"
-                            className="btn btn-danger"
-                            onClick={this.handleDeleteProtocolFile}
-                          >
-                            <FontAwesomeIcon
-                              className="inline-icon"
-                              icon={faTimes}
-                            />
-                            Delete
-                          </button>
-                        )}
-                    </div>
-                  </React.Fragment>
-                )}
-                {this.props.readOnly && (
-                  <div className="col-sm-9 col-form-label">
-                    <p>{this.state.protocol_file_name}</p>
-                  </div>
-                )}
-              </div>
-              <div className="form-group row">
-                <label
-                  htmlFor="description"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Description
-                </label>
-                {!this.props.readOnly && (
-                  <div className="col-sm-8">
-                    <textarea
-                      type="text"
-                      name="description"
-                      id="description"
-                      className="form-control"
-                      onChange={this.handleInputChange}
-                      value={this.state.description}
-                    />
-                  </div>
-                )}
-                {this.props.readOnly && (
-                  <div className="col-sm-8 col-form-label">
-                    <p>{truncateString(this.state.description, 400)}</p>
-                  </div>
-                )}
-                <div className="col-sm-1 my-auto text-center">
-                  <span className="invisible text-danger inline-icon">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                  </span>
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="description_tooltip"
-                    />
-                    <ReactTooltip
-                      id="description_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>
-                        Free text field to enter a description of the donor
-                      </h4>
-                    </ReactTooltip>
-                  </span>
-                </div>
-              </div>
-              {/* <div className="form-group row">
-                <label
-                  htmlFor="metadata"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Metadata
-                </label>
-                {!this.props.readOnly && (
-                  <React.Fragment>
-                    <div className="col-sm-6">
-                      <div className="input-group">
+              {(!this.props.readOnly ||
+                this.state.protocol_file_name !== undefined) && (
+                <div className="form-group row">
+                  <label
+                    htmlFor="protocol"
+                    className="col-sm-3 col-form-label text-right"
+                  >
+                    Protocol document <span className="text-danger">*</span>
+                  </label>
+                  {!this.props.readOnly && (
+                    <React.Fragment>
+                      <div className="col-sm-6">
                         <div className="custom-file">
                           <input
+                            ref={this.protocolFile}
                             type="file"
-                            className="custom-file-input"
-                            name="metadata_file"
-                            id="metadata_file"
-                            key={this.metadataFileKey}
+                            name="protocol_file"
+                            key={this.protocolFileKey}
+                            className={
+                              "custom-file-input " +
+                              this.errorClass(
+                                this.state.formErrors.protocol_file
+                              )
+                            }
+                            id="protocol_file"
                             onChange={this.handleInputChange}
+                            placeholder="A brief description of the donor"
+                            accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
                           />
                           <label
                             className="custom-file-label"
-                            htmlFor="metadata_file"
+                            htmlFor="protocol_file"
                           >
-                            {this.state.metadata_file_name}
+                            {this.state.protocol_file_name}
                           </label>
+                          {this.state.formErrors.protocol_file &&
+                            this.state.formErrors.protocol_file !==
+                              "required" && (
+                              <div className="invalid-feedback">
+                                {this.state.formErrors.protocol_file}
+                              </div>
+                            )}
                         </div>
+                        <small
+                          id="protocol_file_help"
+                          className="form-text text-muted"
+                        >
+                          doc, docx and pdf files only
+                        </small>
                       </div>
+                      <div className="col-sm-2">
+                        {this.state.protocol_file_name &&
+                          this.state.protocol_file_name !== "Choose a file" && (
+                            <button
+                              type="button"
+                              className="btn btn-danger"
+                              onClick={this.handleDeleteProtocolFile}
+                            >
+                              <FontAwesomeIcon
+                                className="inline-icon"
+                                icon={faTimes}
+                              />
+                              Delete
+                            </button>
+                          )}
+                      </div>
+                    </React.Fragment>
+                  )}
+                  {this.props.readOnly && (
+                    <div className="col-sm-9 col-form-label">
+                      <p>{this.state.protocol_file_name}</p>
                     </div>
-                    <div className="col-sm-2">
-                      {this.state.metadata_file_name &&
-                        this.state.metadata_file_name !== "Choose a file" && (
+                  )}
+                </div>
+              )}
+              {(!this.props.readOnly ||
+                this.state.description !== undefined) && (
+                <div className="form-group row">
+                  <label
+                    htmlFor="description"
+                    className="col-sm-3 col-form-label text-right"
+                  >
+                    Description
+                  </label>
+                  {!this.props.readOnly && (
+                    <div className="col-sm-8">
+                      <textarea
+                        type="text"
+                        name="description"
+                        id="description"
+                        className="form-control"
+                        onChange={this.handleInputChange}
+                        value={this.state.description}
+                      />
+                    </div>
+                  )}
+                  {this.props.readOnly && (
+                    <div className="col-sm-8 col-form-label">
+                      <p>{truncateString(this.state.description, 400)}</p>
+                    </div>
+                  )}
+                  <div className="col-sm-1 my-auto text-center">
+                    <span className="invisible text-danger inline-icon">
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </span>
+                    <span>
+                      <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="description_tooltip"
+                      />
+                      <ReactTooltip
+                        id="description_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
+                      >
+                        <h4>
+                          Free text field to enter a description of the donor
+                        </h4>
+                      </ReactTooltip>
+                    </span>
+                  </div>
+                </div>
+              )}
+              {(!this.props.readOnly || this.state.metadatas.length > 0) && (
+                <div className="form-group row">
+                  <label
+                    htmlFor="metadata"
+                    className="col-sm-3 col-form-label text-right"
+                  >
+                    Metadata
+                  </label>
+                  <div className="col-sm-8">
+                    {!this.props.readOnly && (
+                      <div className="row">
+                        <div className="col-sm-4">
                           <button
                             type="button"
-                            className="btn btn-danger"
-                            onClick={this.handleDeleteMetadataFile}
+                            onClick={this.handleAddMetadata}
+                            className="btn btn-primary"
                           >
                             <FontAwesomeIcon
                               className="inline-icon"
-                              icon={faTimes}
+                              icon={faPlus}
+                              title="Uploaded images (multiple allowed)."
                             />
-                            Delete
+                            Add Metadata
                           </button>
-                        )}
-                    </div>
-                  </React.Fragment>
-                )}
-                {this.props.readOnly && (
-                  <div className="col-sm-8 col-form-label">
-                    <p>{this.state.metadata_file_name}</p>
-                  </div>
-                )}
-                <div className="col-sm-1 my-auto text-center">
-                  <span className="invisible text-danger inline-icon">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                  </span>
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="metadata_file_tooltip"
-                    />
-                    <ReactTooltip
-                      id="metadata_file_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>
-                        Metadata describing the specimen. <br /> This could be
-                        typed in (or copy/pasted) or <br /> an uploaded file
-                        such as a spreadsheet.
-                      </h4>
-                    </ReactTooltip>
-                  </span>
-                </div>
-              </div> */}
-              <div className="form-group row">
-                <label
-                  htmlFor="metadata"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Metadata
-                </label>
-                <div className="col-sm-8">
-                  {!this.props.readOnly && (
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <button
-                          type="button"
-                          onClick={this.handleAddMetadata}
-                          className="btn btn-primary"
-                        >
-                          <FontAwesomeIcon
-                            className="inline-icon"
-                            icon={faPlus}
-                            title="Uploaded images (multiple allowed)."
-                          />
-                          Add Metadata
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {this.state.metadatas.map(metadata => (
-                    <MetadataUpload
-                      key={metadata.id}
-                      id={metadata.id}
-                      file_name={metadata.file_name}
-                      ref={metadata.ref}
-                      error={metadata.error}
-                      readOnly={this.props.readOnly}
-                      onDelete={this.handleDeleteMetadata}
-                    />
-                  ))}
-                </div>
-                <div className="col-sm-1 my-auto text-center">
-                  <span className="invisible text-danger inline-icon">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                  </span>
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="metadata_tooltip"
-                    />
-                    <ReactTooltip
-                      id="metadata_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>
-                        Metadata describing the specimen. <br /> This could be
-                        typed in (or copy/pasted) or <br /> an uploaded file
-                        such as a spreadsheet.
-                      </h4>
-                    </ReactTooltip>
-                  </span>
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  htmlFor="image"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Image
-                </label>
-                <div className="col-sm-8">
-                  {!this.props.readOnly && (
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <button
-                          type="button"
-                          onClick={this.handleAddImage}
-                          className="btn btn-primary"
-                        >
-                          <FontAwesomeIcon
-                            className="inline-icon"
-                            icon={faPlus}
-                            title="Uploaded images (multiple allowed)."
-                          />
-                          Add Image
-                        </button>
-                      </div>
-                      <div className="col-sm-8">
-                        <div className="alert alert-danger">
-                          Make sure any uploaded images are de-identified
                         </div>
                       </div>
-                    </div>
-                  )}
-                  {this.state.images.map(image => (
-                    <ImageUpload
-                      key={image.id}
-                      id={image.id}
-                      file_name={image.file_name}
-                      description={image.description}
-                      ref={image.ref}
-                      error={image.error}
-                      readOnly={this.props.readOnly}
-                      onDelete={this.handleDeleteImage}
-                    />
-                  ))}
+                    )}
+                    {this.state.metadatas.map(metadata => (
+                      <MetadataUpload
+                        key={metadata.id}
+                        id={metadata.id}
+                        file_name={metadata.file_name}
+                        ref={metadata.ref}
+                        error={metadata.error}
+                        readOnly={this.props.readOnly}
+                        onDelete={this.handleDeleteMetadata}
+                      />
+                    ))}
+                  </div>
+                  <div className="col-sm-1 my-auto text-center">
+                    <span className="invisible text-danger inline-icon">
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </span>
+                    <span>
+                      <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="metadata_tooltip"
+                      />
+                      <ReactTooltip
+                        id="metadata_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
+                      >
+                        <h4>
+                          Metadata describing the specimen. <br /> This could be
+                          typed in (or copy/pasted) or <br /> an uploaded file
+                          such as a spreadsheet.
+                        </h4>
+                      </ReactTooltip>
+                    </span>
+                  </div>
                 </div>
-                <div className="col-sm-1 my-auto text-center">
-                  <span className="invisible text-danger inline-icon">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                  </span>
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="image_tooltip"
-                    />
-                    <ReactTooltip
-                      id="image_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>Uploaded images (multiple allowed)</h4>
-                    </ReactTooltip>
-                  </span>
+              )}
+              {(!this.props.readOnly || this.state.images.length > 0) && (
+                <div className="form-group row">
+                  <label
+                    htmlFor="image"
+                    className="col-sm-3 col-form-label text-right"
+                  >
+                    Image
+                  </label>
+                  <div className="col-sm-8">
+                    {!this.props.readOnly && (
+                      <div className="row">
+                        <div className="col-sm-4">
+                          <button
+                            type="button"
+                            onClick={this.handleAddImage}
+                            className="btn btn-primary"
+                          >
+                            <FontAwesomeIcon
+                              className="inline-icon"
+                              icon={faPlus}
+                              title="Uploaded images (multiple allowed)."
+                            />
+                            Add Image
+                          </button>
+                        </div>
+                        <div className="col-sm-8">
+                          <div className="alert alert-danger">
+                            Make sure any uploaded images are de-identified
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {this.state.images.map(image => (
+                      <ImageUpload
+                        key={image.id}
+                        id={image.id}
+                        file_name={image.file_name}
+                        description={image.description}
+                        ref={image.ref}
+                        error={image.error}
+                        readOnly={this.props.readOnly}
+                        onDelete={this.handleDeleteImage}
+                      />
+                    ))}
+                  </div>
+                  <div className="col-sm-1 my-auto text-center">
+                    <span className="invisible text-danger inline-icon">
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </span>
+                    <span>
+                      <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="image_tooltip"
+                      />
+                      <ReactTooltip
+                        id="image_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
+                      >
+                        <h4>Uploaded images (multiple allowed)</h4>
+                      </ReactTooltip>
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
               {this.state.submit_error && (
                 <div className="alert alert-danger col-sm-12" role="alert">
                   Oops! Something went wrong. Please contact administrator for

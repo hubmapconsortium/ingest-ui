@@ -1410,37 +1410,38 @@ class TissueForm extends Component {
                 )}
               </div>
             )}
-            {["organ", "biopsy"].includes(this.state.specimen_type) && (
-              <div className="form-group row">
-                <label
-                  htmlFor="visit"
-                  className="col-sm-2 col-form-label text-right"
-                >
-                  Visit
-                </label>
-                {!this.props.readOnly && (
-                  <div className="col-sm-9">
-                    <input
-                      type="text"
-                      name="visit"
-                      id="visit"
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.visit)
-                      }
-                      placeholder="Visit"
-                      onChange={this.handleInputChange}
-                      value={this.state.visit}
-                    />
-                  </div>
-                )}
-                {this.props.readOnly && (
-                  <div className="col-sm-9 col-form-label">
-                    <p>{this.state.visit}</p>
-                  </div>
-                )}
-              </div>
-            )}
+            {["organ", "biopsy"].includes(this.state.specimen_type) &&
+              ((!this.props.readOnly || this.state.visit !== undefined) && (
+                <div className="form-group row">
+                  <label
+                    htmlFor="visit"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Visit
+                  </label>
+                  {!this.props.readOnly && (
+                    <div className="col-sm-9">
+                      <input
+                        type="text"
+                        name="visit"
+                        id="visit"
+                        className={
+                          "form-control " +
+                          this.errorClass(this.state.formErrors.visit)
+                        }
+                        placeholder="Visit"
+                        onChange={this.handleInputChange}
+                        value={this.state.visit}
+                      />
+                    </div>
+                  )}
+                  {this.props.readOnly && (
+                    <div className="col-sm-9 col-form-label">
+                      <p>{this.state.visit}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
             {this.state.protocols.map((protocol, index) => {
               return (
                 <Protocol
@@ -1508,96 +1509,101 @@ class TissueForm extends Component {
                   )}
                 </div>
               )}
-            {!this.state.multiple_id && !this.state.editingMultiWarning && (
+            {!this.state.multiple_id &&
+              !this.state.editingMultiWarning &&
+              ((!this.props.readOnly ||
+                this.state.lab_tissue_id !== undefined) && (
+                <div className="form-group row">
+                  <label
+                    htmlFor="lab_tissue_id"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Lab Sample Id
+                  </label>
+                  {!this.props.readOnly && (
+                    <div className="col-sm-9">
+                      <input
+                        type="text"
+                        name="lab_tissue_id"
+                        id="lab_tissue_id"
+                        className="form-control"
+                        placeholder="Lab specific Alpha-numeric id"
+                        onChange={this.handleInputChange}
+                        value={this.state.lab_tissue_id}
+                      />
+                    </div>
+                  )}
+                  {this.props.readOnly && (
+                    <div className="col-sm-9 col-form-label">
+                      <p>{this.state.lab_tissue_id}</p>
+                    </div>
+                  )}
+                  <div className="col-sm-1 my-auto text-center">
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for="lab_tissue_id_tooltip"
+                    />
+                    <ReactTooltip
+                      id="lab_tissue_id_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <h4>
+                        An identifier used by the lab to identify the specimen,{" "}
+                        <br />
+                        this can be an identifier from the system <br />
+                        used to track the specimen in the lab. This field will
+                        be entered by the user.
+                      </h4>
+                    </ReactTooltip>
+                  </div>
+                </div>
+              ))}
+            {(!this.props.readOnly || this.state.description !== undefined) && (
               <div className="form-group row">
                 <label
-                  htmlFor="lab_tissue_id"
+                  htmlFor="description"
                   className="col-sm-2 col-form-label text-right"
                 >
-                  Lab Sample Id
+                  Description
                 </label>
                 {!this.props.readOnly && (
                   <div className="col-sm-9">
-                    <input
-                      type="text"
-                      name="lab_tissue_id"
-                      id="lab_tissue_id"
+                    <textarea
+                      name="description"
+                      id="description"
+                      cols="30"
+                      rows="5"
                       className="form-control"
-                      placeholder="Lab specific Alpha-numeric id"
+                      value={this.state.description}
                       onChange={this.handleInputChange}
-                      value={this.state.lab_tissue_id}
                     />
                   </div>
                 )}
                 {this.props.readOnly && (
                   <div className="col-sm-9 col-form-label">
-                    <p>{this.state.lab_tissue_id}</p>
+                    <p>{truncateString(this.state.description, 250)}</p>
                   </div>
                 )}
                 <div className="col-sm-1 my-auto text-center">
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
-                    data-for="lab_tissue_id_tooltip"
+                    data-for="description_tooltip"
                   />
                   <ReactTooltip
-                    id="lab_tissue_id_tooltip"
+                    id="description_tooltip"
                     place="top"
                     type="info"
                     effect="solid"
                   >
-                    <h4>
-                      An identifier used by the lab to identify the specimen,{" "}
-                      <br />
-                      this can be an identifier from the system <br />
-                      used to track the specimen in the lab. This field will be
-                      entered by the user.
-                    </h4>
+                    <h4>A free text description of the specimen.</h4>
                   </ReactTooltip>
                 </div>
               </div>
             )}
-            <div className="form-group row">
-              <label
-                htmlFor="description"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Description
-              </label>
-              {!this.props.readOnly && (
-                <div className="col-sm-9">
-                  <textarea
-                    name="description"
-                    id="description"
-                    cols="30"
-                    rows="5"
-                    className="form-control"
-                    value={this.state.description}
-                    onChange={this.handleInputChange}
-                  />
-                </div>
-              )}
-              {this.props.readOnly && (
-                <div className="col-sm-9 col-form-label">
-                  <p>{truncateString(this.state.description, 250)}</p>
-                </div>
-              )}
-              <div className="col-sm-1 my-auto text-center">
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="description_tooltip"
-                />
-                <ReactTooltip
-                  id="description_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
-                >
-                  <h4>A free text description of the specimen.</h4>
-                </ReactTooltip>
-              </div>
-            </div>
             <div className="form-group row d-none">
               <label
                 htmlFor="metadata"
@@ -1643,181 +1649,132 @@ class TissueForm extends Component {
                 </ReactTooltip>
               </div>
             </div>
-            {/* <div className="form-group row">
-              <label
-                htmlFor="metadata"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Metadata Document
-              </label>
-              {!this.props.readOnly && (
-                <React.Fragment>
-                  <div className="col-sm-7">
-                    <div className="input-group mb-3">
-                      <div className="custom-file">
-                        <input
-                          type="file"
-                          name="metadata_file"
-                          className="custom-file-input"
-                          id="metadata_file"
-                          key={this.metadataFileKey}
-                          onChange={this.handleInputChange}
-                        />
-                        <label
-                          className="custom-file-label"
-                          htmlFor="metadata_file"
-                        >
-                          {this.state.metadata_file_name}
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-sm-2">
-                    {this.state.metadata_file_name &&
-                      this.state.metadata_file_name !== "Choose a file" && (
+            {(!this.props.readOnly || this.state.metadatas.length > 0) && (
+              <div className="form-group row">
+                <label
+                  htmlFor="metadata"
+                  className="col-sm-2 col-form-label text-right"
+                >
+                  Metadata
+                </label>
+                <div className="col-sm-9">
+                  {!this.props.readOnly && (
+                    <div className="row">
+                      <div className="col-sm-4">
                         <button
                           type="button"
-                          className="btn btn-danger"
-                          onClick={this.handleDeleteMetadataFile}
+                          onClick={this.handleAddMetadata}
+                          className="btn btn-primary"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
-                            icon={faTimes}
+                            icon={faPlus}
+                            title="Uploaded images (multiple allowed)."
                           />
-                          Delete
+                          Add Metadata
                         </button>
-                      )}
-                  </div>
-                </React.Fragment>
-              )}
-              {this.props.readOnly && (
-                <div className="col-sm-9 col-form-label">
-                  <p>{this.state.metadata_file_name}</p>
-                </div>
-              )}
-            </div> */}
-            <div className="form-group row">
-              <label
-                htmlFor="metadata"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Metadata
-              </label>
-              <div className="col-sm-9">
-                {!this.props.readOnly && (
-                  <div className="row">
-                    <div className="col-sm-4">
-                      <button
-                        type="button"
-                        onClick={this.handleAddMetadata}
-                        className="btn btn-primary"
-                      >
-                        <FontAwesomeIcon
-                          className="inline-icon"
-                          icon={faPlus}
-                          title="Uploaded images (multiple allowed)."
-                        />
-                        Add Metadata
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {this.state.metadatas.map(metadata => (
-                  <MetadataUpload
-                    key={metadata.id}
-                    id={metadata.id}
-                    file_name={metadata.file_name}
-                    ref={metadata.ref}
-                    error={metadata.error}
-                    readOnly={this.props.readOnly}
-                    onDelete={this.handleDeleteMetadata}
-                  />
-                ))}
-              </div>
-              <div className="col-sm-1 my-auto text-center">
-                <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for="metadata_tooltip"
-                  />
-                  <ReactTooltip
-                    id="metadata_tooltip"
-                    place="top"
-                    type="info"
-                    effect="solid"
-                  >
-                    <h4>
-                      Metadata describing the specimen. <br /> This could be
-                      typed in (or copy/pasted) or <br /> an uploaded file such
-                      as a spreadsheet.
-                    </h4>
-                  </ReactTooltip>
-                </span>
-              </div>
-            </div>
-            <div className="form-group row">
-              <label
-                htmlFor="image"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Image
-              </label>
-              <div className="col-sm-9">
-                {!this.props.readOnly && (
-                  <div className="row">
-                    <div className="col-sm-4">
-                      <button
-                        type="button"
-                        onClick={this.handleAddImage}
-                        className="btn btn-primary"
-                      >
-                        <FontAwesomeIcon
-                          className="inline-icon"
-                          icon={faPlus}
-                          title="Uploaded images (multiple allowed)."
-                        />
-                        Add Image
-                      </button>
-                    </div>
-                    <div className="col-sm-8">
-                      <div className="alert alert-danger">
-                        Make sure any uploaded images are de-identified
                       </div>
                     </div>
-                  </div>
-                )}
-                {this.state.images.map(image => (
-                  <ImageUpload
-                    key={image.id}
-                    id={image.id}
-                    file_name={image.file_name}
-                    description={image.description}
-                    ref={image.ref}
-                    error={image.error}
-                    readOnly={this.props.readOnly}
-                    onDelete={this.handleDeleteImage}
-                  />
-                ))}
+                  )}
+                  {this.state.metadatas.map(metadata => (
+                    <MetadataUpload
+                      key={metadata.id}
+                      id={metadata.id}
+                      file_name={metadata.file_name}
+                      ref={metadata.ref}
+                      error={metadata.error}
+                      readOnly={this.props.readOnly}
+                      onDelete={this.handleDeleteMetadata}
+                    />
+                  ))}
+                </div>
+                <div className="col-sm-1 my-auto text-center">
+                  <span>
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for="metadata_tooltip"
+                    />
+                    <ReactTooltip
+                      id="metadata_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <h4>
+                        Metadata describing the specimen. <br /> This could be
+                        typed in (or copy/pasted) or <br /> an uploaded file
+                        such as a spreadsheet.
+                      </h4>
+                    </ReactTooltip>
+                  </span>
+                </div>
               </div>
-              <div className="col-sm-1 my-auto text-center">
-                <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for="image_tooltip"
-                  />
-                  <ReactTooltip
-                    id="image_tooltip"
-                    place="top"
-                    type="info"
-                    effect="solid"
-                  >
-                    <h4>Uploaded images (multiple allowed)</h4>
-                  </ReactTooltip>
-                </span>
+            )}
+            {(!this.props.readOnly || this.state.images.length > 0) && (
+              <div className="form-group row">
+                <label
+                  htmlFor="image"
+                  className="col-sm-2 col-form-label text-right"
+                >
+                  Image
+                </label>
+                <div className="col-sm-9">
+                  {!this.props.readOnly && (
+                    <div className="row">
+                      <div className="col-sm-4">
+                        <button
+                          type="button"
+                          onClick={this.handleAddImage}
+                          className="btn btn-primary"
+                        >
+                          <FontAwesomeIcon
+                            className="inline-icon"
+                            icon={faPlus}
+                            title="Uploaded images (multiple allowed)."
+                          />
+                          Add Image
+                        </button>
+                      </div>
+                      <div className="col-sm-8">
+                        <div className="alert alert-danger">
+                          Make sure any uploaded images are de-identified
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {this.state.images.map(image => (
+                    <ImageUpload
+                      key={image.id}
+                      id={image.id}
+                      file_name={image.file_name}
+                      description={image.description}
+                      ref={image.ref}
+                      error={image.error}
+                      readOnly={this.props.readOnly}
+                      onDelete={this.handleDeleteImage}
+                    />
+                  ))}
+                </div>
+                <div className="col-sm-1 my-auto text-center">
+                  <span>
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for="image_tooltip"
+                    />
+                    <ReactTooltip
+                      id="image_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <h4>Uploaded images (multiple allowed)</h4>
+                    </ReactTooltip>
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
                 Oops! Something went wrong. Please contact administrator for
