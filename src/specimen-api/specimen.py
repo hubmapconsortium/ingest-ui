@@ -22,6 +22,7 @@ from hubmap_commons.entity import Entity
 from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.hubmap_error import HubmapError
+from hubmap_commons.provenance import Provenance
 
 class Specimen:
 
@@ -60,9 +61,14 @@ class Specimen:
             raise AuthError('token is invalid.', 401)
         user_group_ids = userinfo['hmgroupids']
         provenance_group = None
-        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
+        
+        # by default, set the proveance group uuid to the record's current group uuid
+        provenance_group_uuid = metadata_obj['provenance_group_uuid']
+        if groupUUID == None:
+            groupUUID = provenance_group_uuid
+        prov = Provenance(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
         try:
-            provenance_group = metadata.get_group_by_identifier(groupUUID)
+            provenance_group = prov.get_provenance_data_object(current_token, groupUUID)
         except ValueError as ve:
             raise ve
 
@@ -76,7 +82,7 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
         # ex: <data_parent_directory>/<group UUID>
-        data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
+        data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
         #get a link to the subdirectory within data directory using the current uuid
         # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
         # We need to allow this method to create a new directory.  It is possible that an earlier
@@ -134,8 +140,8 @@ class Specimen:
                 metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
-                metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
-                metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
+                metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE]
+                metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid
 
                 if 'metadata' in metadata_record.keys():

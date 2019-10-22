@@ -243,24 +243,13 @@ def update_specimen(identifier):
         driver = conn.get_driver()
         specimen = Specimen()
         form_data = request.form['data']
-        # determine the group UUID to use when creating the specimen
+        # use the group uuid if it is sent from the front-end
         group_uuid = None
         if 'user_group_uuid' in form_data:
             if is_user_in_group(token, form_data['user_group_uuid']):
                 group_uuid = form_data['user_group_uuid']
             else:
                 return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
-        else:
-            #manually find the group id given the current user:
-            entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
-            group_list = entity.get_user_groups(token)
-            for grp in group_list:
-                if grp['generateuuid'] == True:
-                    group_uuid = grp['uuid']
-                    break
-
-            if group_uuid == None:
-                return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
         sourceuuid = None
         new_uuid_record = specimen.update_specimen(
             driver, uuid, request, json.loads(form_data), request.files, token, group_uuid)
