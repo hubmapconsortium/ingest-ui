@@ -105,6 +105,14 @@ class DatasetEdit extends Component {
       });
 
     if (this.props.editingDataset) {
+      let source_uuids;
+      try {
+        source_uuids = JSON.parse(
+          this.props.editingDataset.properties.source_uuid.replace(/'/g, '"')
+        );
+      } catch {
+        source_uuids = [this.props.editingDataset.properties.source_uuid];
+      }
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -119,7 +127,11 @@ class DatasetEdit extends Component {
                 label: "",
                 description: ""
               },
-          source_uuid: this.props.editingDataset.properties.source_uuid,
+          source_uuid:
+            source_uuids.length === 1
+              ? source_uuids[0]
+              : `${source_uuids[0]} (and ${source_uuids.length - 1} more)`,
+          source_uuid_list: source_uuids,
           phi: this.props.editingDataset.properties.phi,
           description: this.props.editingDataset.properties.description
         },
