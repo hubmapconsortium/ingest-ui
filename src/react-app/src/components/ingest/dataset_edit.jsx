@@ -113,6 +113,7 @@ class DatasetEdit extends Component {
       } catch {
         source_uuids = [this.props.editingDataset.properties.source_uuid];
       }
+
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -127,10 +128,7 @@ class DatasetEdit extends Component {
                 label: "",
                 description: ""
               },
-          source_uuid:
-            source_uuids.length === 1
-              ? source_uuids[0]
-              : `${source_uuids[0]} (and ${source_uuids.length - 1} more)`,
+          source_uuid: this.generateDisplaySourceId(source_uuids),
           source_uuid_list: source_uuids,
           phi: this.props.editingDataset.properties.phi,
           description: this.props.editingDataset.properties.description
@@ -278,11 +276,11 @@ class DatasetEdit extends Component {
     });
   };
 
-  handleSelectClick = id => {
+  handleSelectClick = ids => {
     this.setState(
       {
-        source_uuid: `${id[0]} (and ${id.length - 1} more)`,
-        source_uuid_list: id,
+        source_uuid: this.generateDisplaySourceId(ids),
+        source_uuid_list: ids,
         LookUpShow: false
       },
       () => {
@@ -496,6 +494,31 @@ class DatasetEdit extends Component {
         });
       }
     });
+  }
+
+  generateDisplaySourceId(source_uuids) {
+    let first_lab_id = source_uuids[0];
+    let last_lab_id = source_uuids[source_uuids.length - 1];
+    let id_common_part = first_lab_id.substring(
+      0,
+      first_lab_id.lastIndexOf("-") + 1
+    );
+    let first_lab_id_num = "";
+    let last_lab_id_num = "";
+    let display_source_id = first_lab_id;
+
+    first_lab_id_num = first_lab_id.substring(
+      first_lab_id.lastIndexOf("-") + 1,
+      first_lab_id.length
+    );
+
+    last_lab_id_num = last_lab_id.substring(
+      last_lab_id.lastIndexOf("-") + 1,
+      last_lab_id.length
+    );
+
+    display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
+    return display_source_id;
   }
 
   renderButtons() {
