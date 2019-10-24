@@ -724,9 +724,11 @@ class Specimen:
             for data_entry in existing_file_data_json:
                 if len(str(data_entry['protocol_file'])) > 0: 
                     existing_file_data_dict[os.path.basename(data_entry['protocol_file'])] = data_entry
-                else:
+                """else:
+                    if 'protocol_doi' not in data_entry:
+                        data_entry['protocol_doi'] = None
                     existing_url_data_dict[data_entry['protocol_doi']] = data_entry
-        
+                """
         # walk through each file represented on the web form.  For each file decide if it represents a new file or an existing file
         # Note: this code builds a list of the current files.  Effectively, this approach implicitly "deletes" any previous files removed from the
         # web form. 
