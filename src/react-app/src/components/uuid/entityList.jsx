@@ -145,10 +145,11 @@ class EntityList extends Component {
     this.props.onEdit();
   };
 
-  viewForm = entity => {
+  viewForm = (entity, display_id) => {
     this.setState({
       updateSuccess: null,
       editingEntity: entity,
+      editingDisplayId: display_id,
       readOnly: true
     });
     this.props.onEdit();
@@ -520,7 +521,7 @@ class EntityList extends Component {
                         )}
                         <button
                           className="btn btn-secondary btn-sm"
-                          onClick={() => this.viewForm(entity)}
+                          onClick={() => this.viewForm(entity, display_id)}
                         >
                           View
                         </button>
