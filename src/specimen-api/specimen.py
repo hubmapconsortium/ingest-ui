@@ -23,6 +23,7 @@ from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.hubmap_error import HubmapError
 from hubmap_commons.provenance import Provenance
+from hubmap_commons.activity import Activity
 
 class Specimen:
 
@@ -228,11 +229,12 @@ class Specimen:
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
+        prov = Provenance(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
         try:
-            provenance_group = metadata.get_group_by_identifier(groupUUID)
+            provenance_group = prov.get_provenance_data_object(current_token, groupUUID)
         except ValueError as ve:
             raise ve
+
         metadata_userinfo = {}
 
         if 'sub' in userinfo.keys():
@@ -257,7 +259,7 @@ class Specimen:
         ug = UUID_Generator(confdata['UUID_WEBSERVICE_URL'])
         #userinfo = AuthCache.userInfo(current_token, True)
         if len(file_list) > 0:
-            data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group['uuid'])
+            data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
 
 
         with driver.session() as session:
@@ -373,7 +375,7 @@ class Specimen:
                 except requests.exceptions.ConnectionError as ce:
                     raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
 
-                stmt = Specimen.get_create_activity_metadata_statement(activity_metadata_record, activity_metadata_uuid_record, activity_uuid_record, metadata_userinfo, provenance_group)              
+                stmt = Activity.get_create_activity_metadata_statement(activity_metadata_record, activity_metadata_uuid_record, activity_uuid_record, metadata_userinfo, provenance_group)              
                 tx.run(stmt)
 
                 # create the relationships
@@ -543,7 +545,7 @@ class Specimen:
                 raise cse
         
         
-        
+    """    
     @staticmethod
     def get_create_activity_metadata_statement(activity_metadata_record, activity_metadata_uuid_record, activity_uuid_record, metadata_userinfo, provenance_group):
         activity_metadata_record[HubmapConst.UUID_ATTRIBUTE] = activity_metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
@@ -553,12 +555,12 @@ class Specimen:
         activity_metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
         activity_metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[
             HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
-        activity_metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
-        activity_metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
+        activity_metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE]
+        activity_metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]
         stmt = Neo4jConnection.get_create_statement(
             activity_metadata_record, HubmapConst.METADATA_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
         return stmt
-
+    """
     
     @staticmethod
     def get_create_metadata_statement(metadata_record, current_token, specimen_uuid_record, metadata_userinfo, provenance_group, file_list, data_directory, request):
@@ -570,8 +572,8 @@ class Specimen:
         metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
-        metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
-        metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
+        metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE]
+        metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]
 
         metadata_file_path = None
         protocol_file_path = None
