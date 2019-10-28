@@ -188,7 +188,8 @@ def create_specimen():
 
     except HubmapError as he:
         print('A Hubmap error was encountered: ', str(he))
-        return Response(jsonify(he.getJson()), 401)
+        return jsonify( he.getJson()), 401
+        #return Response(jsonify(he.getJson()), 401)
     except AuthError as e:
         print(e)
         return Response('token is invalid', 401)

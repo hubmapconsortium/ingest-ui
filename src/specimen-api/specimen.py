@@ -478,7 +478,7 @@ class Specimen:
                         new_lab_identifier = str(parent_lab_identifier) + '-' + organ_specifier
                         does_id_exist = Specimen.lab_identifier_exists(driver, new_lab_identifier)
                         if does_id_exist == True:
-                            raise HubmapError('Error: organ identifier already exists: ' + new_lab_identifier)
+                            raise HubmapError('Error: organ identifier already exists: ' + new_lab_identifier,'Error: organ identifier already exists: ' + new_lab_identifier)
                         return_list.append(new_lab_identifier)
                             
                     else:
@@ -491,7 +491,7 @@ class Specimen:
                         UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
                         LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,newIdentifier=new_lab_identifier)    
                     for record in session.run(check_stmt):
-                        raise HubmapError("Error: display identifier {newid} already exists in the system".format(newid=new_lab_identifier))
+                        raise HubmapError("Error: display identifier {newid} already exists in the system.  Please check to see if the organ already exists for this donor.".format(newid=new_lab_identifier), "Error: display identifier {newid} already exists in the system".format(newid=new_lab_identifier))
                     
                         
                     cnt += 1
@@ -514,8 +514,9 @@ class Specimen:
             except HubmapError as he:
                 print('A Hubmap error was encountered: ', str(he))
                 raise he
-            except:
+            except Exception as e:
                 print('A general error occurred: ')
+                print(str(e))
                 traceback.print_exc()
         return_data = {'update_statement' : update_stmt, 'new_id_list' : return_list}
         return return_data
