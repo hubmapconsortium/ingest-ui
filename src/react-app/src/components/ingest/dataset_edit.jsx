@@ -497,28 +497,32 @@ class DatasetEdit extends Component {
   }
 
   generateDisplaySourceId(source_uuids) {
-    let first_lab_id = source_uuids[0];
-    let last_lab_id = source_uuids[source_uuids.length - 1];
-    let id_common_part = first_lab_id.substring(
-      0,
-      first_lab_id.lastIndexOf("-") + 1
-    );
-    let first_lab_id_num = "";
-    let last_lab_id_num = "";
-    let display_source_id = first_lab_id;
+    if (source_uuids.length > 1) {
+      let first_lab_id = source_uuids[0];
+      let last_lab_id = source_uuids[source_uuids.length - 1];
+      let id_common_part = first_lab_id.substring(
+        0,
+        first_lab_id.lastIndexOf("-") + 1
+      );
+      let first_lab_id_num = "";
+      let last_lab_id_num = "";
+      let display_source_id = first_lab_id;
 
-    first_lab_id_num = first_lab_id.substring(
-      first_lab_id.lastIndexOf("-") + 1,
-      first_lab_id.length
-    );
+      first_lab_id_num = first_lab_id.substring(
+        first_lab_id.lastIndexOf("-") + 1,
+        first_lab_id.length
+      );
 
-    last_lab_id_num = last_lab_id.substring(
-      last_lab_id.lastIndexOf("-") + 1,
-      last_lab_id.length
-    );
+      last_lab_id_num = last_lab_id.substring(
+        last_lab_id.lastIndexOf("-") + 1,
+        last_lab_id.length
+      );
 
-    display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
-    return display_source_id;
+      display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
+      return display_source_id;
+    } else {
+      return source_uuids[0];
+    }
   }
 
   renderButtons() {
