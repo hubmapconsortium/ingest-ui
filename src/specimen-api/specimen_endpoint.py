@@ -188,7 +188,7 @@ def create_specimen():
 
     except HubmapError as he:
         print('A Hubmap error was encountered: ', str(he))
-        return jsonify( he.getJson()), 401
+        return jsonify( he.getJson()), 400
         #return Response(jsonify(he.getJson()), 401)
     except AuthError as e:
         print(e)
