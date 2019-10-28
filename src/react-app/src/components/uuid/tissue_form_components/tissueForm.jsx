@@ -702,7 +702,11 @@ class TissueForm extends Component {
                 this.props.onUpdated(res.data);
               })
               .catch(error => {
-                this.setState({ submit_error: true });
+                this.setState({
+                  submit_error: true,
+                  error_msg: error.response.data.displayMessage,
+                  submitting: false
+                });
               });
           } else {
             axios
@@ -715,7 +719,11 @@ class TissueForm extends Component {
                 this.props.onCreated(res.data);
               })
               .catch(error => {
-                this.setState({ submit_error: true });
+                this.setState({
+                  submit_error: true,
+                  error_msg: error.response.data.displayMessage,
+                  submitting: false
+                });
               });
           }
         }
@@ -1777,8 +1785,8 @@ class TissueForm extends Component {
             )}
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
-                Oops! Something went wrong. Please contact administrator for
-                help.
+                {this.state.error_msg ||
+                  "Oops! Something went wrong. Please contact administrator for help."}
               </div>
             )}
             {this.renderButtons()}
