@@ -481,11 +481,8 @@ class EntityList extends Component {
                   display_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
                 }
                 return (
-                  <React.Fragment>
-                    <tr
-                      className={es.length > 1 ? "font-weight-bold" : ""}
-                      key={entity.hubmap_identifier}
-                    >
+                  <React.Fragment key={entity.hubmap_identifier}>
+                    <tr className={es.length > 1 ? "font-weight-bold" : ""}>
                       <td className="nowrap">
                         {es.length > 1 && (
                           <React.Fragment>

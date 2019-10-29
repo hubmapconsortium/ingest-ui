@@ -37,7 +37,7 @@ class Protocol extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.protocol !== this.props.protocol) {
       this.setState({
         protocol_doi: nextProps.protocol.protocol_doi || "",

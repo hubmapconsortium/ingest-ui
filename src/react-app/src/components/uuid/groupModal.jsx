@@ -6,7 +6,7 @@ class GroupModal extends Component {
     groups: []
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({ groups: nextProps.groups });
   }
 

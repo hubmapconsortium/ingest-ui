@@ -229,7 +229,9 @@ class TissueForm extends Component {
       this.setState(
         {
           author: this.props.editingEntity.properties.provenance_user_email,
-          lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
+          lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id
+            ? this.props.editingEntity.properties.lab_tissue_id
+            : "",
           protocols: protocols_json,
           protocol: this.props.editingEntity.properties.protocol,
           protocol_file_name: getFileNameOnPath(
@@ -969,23 +971,23 @@ class TissueForm extends Component {
         }));
       }
 
-      if (!this.props.editingEntity) {
-        // Creating
-        this.state.images.forEach((image, index) => {
-          if (!validateRequired(image.ref.current.image_file.current.value)) {
-            isValid = false;
-            image.ref.current.validate();
-          }
-          if (
-            !validateRequired(
-              image.ref.current.image_file_description.current.value
-            )
-          ) {
-            isValid = false;
-            image.ref.current.validate();
-          }
-        });
-      }
+      this.state.images.forEach((image, index) => {
+        if (
+          !validateRequired(image.file_name) &&
+          !validateRequired(image.ref.current.image_file.current.value)
+        ) {
+          isValid = false;
+          image.ref.current.validate();
+        }
+        if (
+          !validateRequired(
+            image.ref.current.image_file_description.current.value
+          )
+        ) {
+          isValid = false;
+          image.ref.current.validate();
+        }
+      });
 
       this.state.images.forEach((image, index) => {
         usedFileName.add(image.file_name);
@@ -1000,17 +1002,15 @@ class TissueForm extends Component {
         }
       });
 
-      if (!this.props.editingEntity) {
-        // Creating
-        this.state.metadatas.forEach((metadata, index) => {
-          if (
-            !validateRequired(metadata.ref.current.metadata_file.current.value)
-          ) {
-            isValid = false;
-            metadata.ref.current.validate();
-          }
-        });
-      }
+      this.state.metadatas.forEach((metadata, index) => {
+        if (
+          !validateRequired(metadata.file_name) &&
+          !validateRequired(metadata.ref.current.metadata_file.current.value)
+        ) {
+          isValid = false;
+          metadata.ref.current.validate();
+        }
+      });
 
       this.state.metadatas.forEach((metadata, index) => {
         usedFileName.add(metadata.file_name);
