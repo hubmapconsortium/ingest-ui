@@ -396,7 +396,7 @@ class DonorForm extends Component {
           } else {
             data.metadatas.push({
               id: "metadata_" + i.id,
-              metadata_name: i.metadata_name
+              file_name: i.file_name
             });
           }
         });
@@ -646,23 +646,23 @@ class DonorForm extends Component {
       }
     }
 
-    if (!this.props.editingEntity) {
-      // Creating Donor
-      this.state.images.forEach((image, index) => {
-        if (!validateRequired(image.ref.current.image_file.current.value)) {
-          isValid = false;
-          image.ref.current.validate();
-        }
-        if (
-          !validateRequired(
-            image.ref.current.image_file_description.current.value
-          )
-        ) {
-          isValid = false;
-          image.ref.current.validate();
-        }
-      });
-    }
+    this.state.images.forEach((image, index) => {
+      if (
+        !validateRequired(image.file_name) &&
+        !validateRequired(image.ref.current.image_file.current.value)
+      ) {
+        isValid = false;
+        image.ref.current.validate();
+      }
+      if (
+        !validateRequired(
+          image.ref.current.image_file_description.current.value
+        )
+      ) {
+        isValid = false;
+        image.ref.current.validate();
+      }
+    });
 
     const usedFileName = new Set();
     this.state.images.forEach((image, index) => {
@@ -678,17 +678,15 @@ class DonorForm extends Component {
       }
     });
 
-    if (!this.props.editingEntity) {
-      // Creating Donor
-      this.state.metadatas.forEach((metadata, index) => {
-        if (
-          !validateRequired(metadata.ref.current.metadata_file.current.value)
-        ) {
-          isValid = false;
-          metadata.ref.current.validate();
-        }
-      });
-    }
+    this.state.metadatas.forEach((metadata, index) => {
+      if (
+        !validateRequired(metadata.file_name) &&
+        !validateRequired(metadata.ref.current.metadata_file.current.value)
+      ) {
+        isValid = false;
+        metadata.ref.current.validate();
+      }
+    });
 
     this.state.metadatas.forEach((metadata, index) => {
       usedFileName.add(metadata.file_name);
