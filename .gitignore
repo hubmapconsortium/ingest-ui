@@ -112,6 +112,10 @@ venv.bak/
 *.ini
 .DS_Store
 
+# ingest-api
+src/ingest-api/instance/app.cfg
+src/ingest-api/__pycache__
+
 # flask-app
 src/flask-app/venv
 src/flask-app/instance/app.cfg
