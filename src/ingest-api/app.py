@@ -27,26 +27,25 @@ from hubmap_commons.autherror import AuthError
 app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.curdir), 'instance'), instance_relative_config=True)
 app.config.from_pyfile('app.cfg')
 
-# Config for dataset and collection
+# Config for dataset class and collection class
 config = {}
 
 config['neo4juri'] = app.config['NEO4J_SERVER']
 config['neo4jusername'] = app.config['NEO4J_USERNAME']
 config['neo4jpassword'] = app.config['NEO4J_PASSWORD']
 config['appclientid'] = app.config['APP_CLIENT_ID']
-config['STAGING_ENDPOINT_UUID'] = app.config['STAGING_ENDPOINT_UUID']
-config['PUBLISH_ENDPOINT_UUID'] = app.config['PUBLISH_ENDPOINT_UUID']
 config['appclientsecret'] = app.config['APP_CLIENT_SECRET']
-config['localstoragedirectory'] = app.config['GLOBUS_STORAGE_DIRECTORY_ROOT']
 config['STAGING_ENDPOINT_FILEPATH'] = app.config['STAGING_ENDPOINT_FILEPATH']
 config['PUBLISH_ENDPOINT_FILEPATH'] = app.config['PUBLISH_ENDPOINT_FILEPATH']
 config['UUID_WEBSERVICE_URL'] = app.config['UUID_WEBSERVICE_URL']
 
 token_list = {}
-    
+
+# Default endpoint for testing with gateway
 @app.route('/', methods = ['GET'])
 def index():
     return "Hello! This is HuBMAP Ingest API service :)"
+
 
 @app.route('/hello', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])

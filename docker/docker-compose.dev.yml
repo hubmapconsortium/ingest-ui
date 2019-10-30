@@ -5,5 +5,5 @@ services:
   ingest-api:
     volumes:
       # Mount the source code to container
-      - "../src:/usr/src/app/src"
+      - "../src/ingest-api:/usr/src/app/src"
 

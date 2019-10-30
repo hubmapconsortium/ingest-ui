@@ -11,7 +11,7 @@ services:
     container_name: ingest-api
     volumes:
       # Mount the app config to container in order to keep it outside of the image
-      - "../src/instance:/usr/src/app/src/instance"
+      - "../src/ingest-api/instance:/usr/src/app/src/instance"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
     networks:

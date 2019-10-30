@@ -112,6 +112,9 @@ venv.bak/
 *.ini
 .DS_Store
 
+# copied stuff
+docker/ingest-api/src
+
 # ingest-api
 src/ingest-api/instance/app.cfg
 src/ingest-api/__pycache__
