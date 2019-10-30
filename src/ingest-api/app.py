@@ -41,6 +41,15 @@ config['UUID_WEBSERVICE_URL'] = app.config['UUID_WEBSERVICE_URL']
 
 token_list = {}
 
+# Initialize the AuthHelper
+# This is used by the @secured decorator
+if AuthHelper.isInitialized() == False:
+    authcache = AuthHelper.create(
+        app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
+else:
+    authcache = AuthHelper.instance()
+
+
 # Default endpoint for testing with gateway
 @app.route('/', methods = ['GET'])
 def index():
