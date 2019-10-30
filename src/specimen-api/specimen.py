@@ -102,21 +102,28 @@ class Specimen:
                 #TODO: get a list of the filenames and put them into current_file_list
                 #if len(file_list) > 0:
                 #TODO: get a list of the filenames and put them into current_file_list
-                current_metadatafile = None
-                if 'metadata_file' in incoming_record:
-                    current_metadatafile = incoming_record['metadata_file']
+                current_metadatafiles = None
+                if 'metadatas' in incoming_record:
+                    current_metadatafiles = incoming_record['metadatas']
                 current_protocolfile = None
                 if 'protocol_file' in incoming_record:
                     current_protocolfile = incoming_record['protocol_file']
                 current_imagefiles = None
                 if 'images' in incoming_record:
                     current_imagefiles = incoming_record['images']
-                all_files = Specimen.build_complete_file_list(current_metadatafile, current_protocolfile, current_imagefiles)
+                all_files = Specimen.build_complete_file_list(current_metadatafiles, current_protocolfile, current_imagefiles)
                 Specimen.cleanup_files(data_directory, all_files)
                 # append the current UUID to the data_directory to avoid filename collisions.
                 if 'metadata_file' in file_list:
                     metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
                     incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+                if 'metadatas' in incoming_record:
+                    current_metadata_file_list = None
+                    if 'metadata_file' in metadata_obj:
+                        current_metadata_file_list = metadata_obj['metadata_file']
+                    metadata_file_path = Specimen.upload_multiple_file_data(request, incoming_record['metadatas'], file_list, data_directory, current_metadata_file_list)
+                    incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+                    incoming_record[HubmapConst.METADATAS_ATTRIBUTE] = metadata_file_path
                 if 'protocol_file' in file_list:
                     protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                     incoming_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
@@ -185,10 +192,13 @@ class Specimen:
                     tx.rollback()
     
     @staticmethod
-    def build_complete_file_list(metadata_file, protocol_list, image_list):
+    def build_complete_file_list(metadata_list, protocol_list, image_list):
         return_list = []
-        if metadata_file != None:
-            return_list.append(metadata_file)
+        #if metadata_file != None:
+        #    return_list.append(metadata_file)
+        if metadata_list != None:
+            for metadata_data in metadata_list:
+                return_list.append(metadata_data['file_name'])
         if protocol_list != None:
             if isinstance(object, (list,)):
                 return_list.extend(protocol_list)
@@ -584,15 +594,16 @@ class Specimen:
             # this method will also only create one copy of the file if the file is shared across several
             # samples
             data_directory = get_data_directory(data_directory, metadata_record[HubmapConst.UUID_ATTRIBUTE], True)
-            if 'metadata_file' in file_list:
-                metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
-                metadata_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+            #if 'metadata_file' in file_list:
+            #    metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
+            #    metadata_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
             if 'protocol_file' in file_list:
                 protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                 metadata_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
             if 'metadatas' in metadata_record:
                 metadata_file_path = Specimen.upload_multiple_file_data(request, metadata_record['metadatas'], file_list, data_directory)
                 metadata_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
+                metadata_record[HubmapConst.METADATAS_ATTRIBUTE] = metadata_file_path
             if 'images' in metadata_record:
                 image_file_data_list = Specimen.upload_multiple_file_data(request, metadata_record['images'], file_list, data_directory)
                 metadata_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
@@ -620,11 +631,12 @@ class Specimen:
             metadata_record.pop('files')
         if 'images' in metadata_record.keys():
             metadata_record.pop('images')
+
         #if 'protocols' in metadata_record.keys():
         #    metadata_record.pop('protocols')
         stmt = Neo4jConnection.get_create_statement(
             metadata_record, HubmapConst.METADATA_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
-        print('MEtadata Create statement: ' + stmt)
+        print('Metadata Create statement: ' + stmt)
         return stmt
 
     @staticmethod 
