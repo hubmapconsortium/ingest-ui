@@ -120,7 +120,7 @@ class Specimen:
                 if 'metadatas' in incoming_record:
                     current_metadata_file_list = None
                     if 'metadata_file' in metadata_obj:
-                        current_metadata_file_list = metadata_obj['metadata_file']
+                        current_metadata_file_list = metadata_obj['metadatas']
                     metadata_file_path = Specimen.upload_multiple_file_data(request, incoming_record['metadatas'], file_list, data_directory, current_metadata_file_list)
                     incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
                     incoming_record[HubmapConst.METADATAS_ATTRIBUTE] = metadata_file_path
