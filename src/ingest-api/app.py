@@ -304,6 +304,38 @@ def unpublish_datastage(uuid):
                 conn.close()
                 
 
+@app.route('/datasets/status', methods = ['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+#disabled for now @secured(groups="HuBMAP-read")
+def update_ingest_status():
+    if not request.json:
+        abort(400, jsonify( { 'error': 'no data found cannot process update' } ))
+    
+    conn = None
+    new_uuid = None
+    try:
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        dataset = Dataset()
+        status_obj = dataset.set_ingest_status(driver, request.json)
+        conn.close()
+        return jsonify( { 'result' : status_obj } ), 200
+    
+    except ValueError:
+        abort(404, jsonify( { 'error': 'ingest_id {ingest_id} not found'.format(ingest_id=ingest_id) } ))
+        
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        print (msg)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
+
 def get_group_uuid_from_request(request):
     return_group_uuid = None
     try:

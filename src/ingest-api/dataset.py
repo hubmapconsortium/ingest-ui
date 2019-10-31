@@ -520,8 +520,22 @@ class Dataset(object):
             self.publishing_process(driver, headers, uuid, group_uuid, False)
         else:
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
-            
-         
+     
+    @classmethod
+    def set_ingest_status(self, driver, json_data): 
+        if 'ingest_id' not in json_data:
+            raise ValueError('cannot find ingest_id')
+        ingest_id = json_data['ingest_id']      
+        status_string = 'failed'
+        if 'success_msg' in json_data:
+            status_string = 'success'
+        return_obj = {'ingest_id': ingest_id, 'status':status_string}
+        if 'metadata' in json_data:
+            metadata = json_data['metadata']
+            return_obj['metadata'] = metadata
+        return return_obj
+
+
     @classmethod
     def set_status(self, driver, uuid, new_status):
         with driver.session() as session:

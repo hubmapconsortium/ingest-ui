@@ -200,6 +200,8 @@ class TissueForm extends Component {
             .replace(/\\/g, "\\\\")
             .replace(/'/g, '"')
         );
+      } catch (e) {}
+      try {
         metadatas = JSON.parse(
           this.props.editingEntity.properties.metadatas
             .replace(/\\/g, "\\\\")
@@ -220,7 +222,7 @@ class TissueForm extends Component {
         metadata_list.push({
           id: index + 1,
           ref: React.createRef(),
-          file_name: getFileNameOnPath(metadata.file_name)
+          file_name: getFileNameOnPath(metadata.filepath)
         });
       });
 

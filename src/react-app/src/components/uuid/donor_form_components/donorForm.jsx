@@ -133,7 +133,7 @@ class DonorForm extends Component {
         metadata_list.push({
           id: index + 1,
           ref: React.createRef(),
-          file_name: getFileNameOnPath(metadata.file_name)
+          file_name: getFileNameOnPath(metadata.filepath)
         });
       });
 
