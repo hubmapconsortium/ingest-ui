@@ -346,7 +346,7 @@ def unpublish_datastage(uuid):
                 conn.close()
                 
 
-@app.route('/datasets/status/', methods = ['POST'])
+@app.route('/datasets/status', methods = ['POST'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 #disabled for now @secured(groups="HuBMAP-read")
 def update_ingest_status():
@@ -364,7 +364,7 @@ def update_ingest_status():
         return jsonify( { 'result' : status_obj } ), 200
     
     except ValueError:
-        abort(404, jsonify( { 'error': 'ingest_id not found'.format(ingest_id=ingest_id) } ))
+        abort(404, jsonify( { 'error': 'ingest_id {ingest_id} not found'.format(ingest_id=ingest_id) } ))
         
     except:
         msg = 'An error occurred: '
