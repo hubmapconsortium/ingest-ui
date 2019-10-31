@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   description: |
-    This is the HuBMAP DataIngest APIs specification
-  version: "1.0.0-oas3"
+    This is the HuBMAP DataIngest API specification
+  version: "1.0.0-oas3-test"
   title: HuBMAP DataIngest APIs
   termsOfService: "http://hubmapconsortium.org"
   contact:
