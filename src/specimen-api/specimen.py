@@ -702,7 +702,10 @@ class Specimen:
                     return_list.append(file_obj)
                 else:
                     # in this case, simply copy an existing file's data into the retrun_list
-                    return_list.append(existing_file_data_dict[str(os.path.basename(file_data['file_name']))])
+                    existing_file = existing_file_data_dict[str(os.path.basename(file_data['file_name']))]
+                    if 'description' in file_data:
+                        existing_file['description'] = file_data['description']
+                    return_list.append(existing_file)
                     
             except:
                 raise
