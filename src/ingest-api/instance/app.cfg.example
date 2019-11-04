@@ -11,7 +11,7 @@ NEO4J_USERNAME = 'neo4j'
 NEO4J_PASSWORD = '123'
 
 # URL for talking to UUID API
-UUID_WEBSERVICE_URL = 'http://localhost:8282/'
+UUID_WEBSERVICE_URL = 'http://localhost:8282/hmuuid'
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
 UUID_UI_URL = 'http://localhost/'
