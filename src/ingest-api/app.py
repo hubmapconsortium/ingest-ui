@@ -22,82 +22,40 @@ from hubmap_commons.hm_auth import AuthHelper, secured
 from hubmap_commons.entity import Entity
 from hubmap_commons.autherror import AuthError
 
-app = Flask(__name__)
+
+# Specify the absolute path of the instance folder and use the config file relative to the instance path
+app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.curdir), 'instance'), instance_relative_config=True)
+app.config.from_pyfile('app.cfg')
+
+# Config for dataset class and collection class
+config = {}
+
+config['neo4juri'] = app.config['NEO4J_SERVER']
+config['neo4jusername'] = app.config['NEO4J_USERNAME']
+config['neo4jpassword'] = app.config['NEO4J_PASSWORD']
+config['appclientid'] = app.config['APP_CLIENT_ID']
+config['appclientsecret'] = app.config['APP_CLIENT_SECRET']
+config['STAGING_ENDPOINT_FILEPATH'] = app.config['STAGING_ENDPOINT_FILEPATH']
+config['PUBLISH_ENDPOINT_FILEPATH'] = app.config['PUBLISH_ENDPOINT_FILEPATH']
+config['UUID_WEBSERVICE_URL'] = app.config['UUID_WEBSERVICE_URL']
+
 token_list = {}
-@app.before_first_request
-def load_app_client():
-    load_config_file()
-    return globus_sdk.ConfidentialAppAuthClient(
+
+# Initialize the AuthHelper
+# This is used by the @secured decorator
+if AuthHelper.isInitialized() == False:
+    authcache = AuthHelper.create(
         app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
+else:
+    authcache = AuthHelper.instance()
 
-def load_config_file():
-    config = configparser.ConfigParser()
-    try:
-        config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
-        app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
-        app.config['APP_CLIENT_SECRET'] = config.get(
-            'GLOBUS', 'APP_CLIENT_SECRET')
-        app.config['STAGING_ENDPOINT_UUID'] = config.get('GLOBUS', 'STAGING_ENDPOINT_UUID')
-        app.config['PUBLISH_ENDPOINT_UUID'] = config.get('GLOBUS', 'PUBLISH_ENDPOINT_UUID')
-        app.config['SECRET_KEY'] = config.get('GLOBUS', 'SECRET_KEY')
-        app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
-        app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
-        app.config['GLOBUS_STORAGE_DIRECTORY_ROOT'] = config.get('FILE_SYSTEM','GLOBUS_STORAGE_DIRECTORY_ROOT')
-        
-        app.config['NEO4J_SERVER'] = config.get('NEO4J','server')
-        app.config['NEO4J_USERNAME'] = config.get('NEO4J','username')
-        app.config['NEO4J_PASSWORD'] = config.get('NEO4J','password')
-        #app.config['DEBUG'] = True
-    except OSError as err:
-        msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
-            err)
-        print(msg + "  Program stopped.")
-        exit(0)
-    except configparser.NoSectionError as noSectError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-            noSectError)
-        print(msg + "  Program stopped.")
-        exit(0)
-    except configparser.NoOptionError as noOptError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-            noOptError)
-        print(msg + "  Program stopped.")
-        exit(0)
-    except SyntaxError as syntaxError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-            syntaxError)
-        msg = msg + "  Cannot read line: {0}".format(syntaxError.text)
-        print(msg + "  Program stopped.")
-        exit(0)
-    except AttributeError as attrError:
-        msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-            attrError)
-        msg = msg + "  Cannot read line: {0}".format(attrError.text)
-        print(msg + "  Program stopped.")
-        exit(0)
-    except:
-        msg = "Unexpected error:", sys.exc_info()[0]
-        print(msg + "  Program stopped.")
-        exit(0)
 
-config = configparser.ConfigParser()
-try:
-    config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
-    app.config['UUID_UI_URL'] = config.get('HUBMAP', 'UUID_UI_URL')
-    app.config['APP_CLIENT_ID'] = config.get('GLOBUS', 'APP_CLIENT_ID')
-    app.config['APP_CLIENT_SECRET'] = config.get(
-        'GLOBUS', 'APP_CLIENT_SECRET')
-    app.config['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
-    if AuthHelper.isInitialized() == False:
-        authcache = AuthHelper.create(
-            app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
-    else:
-        authcache = AuthHelper.instance()
-except:
-    msg = "Unexpected error:", sys.exc_info()[0]
-    print(msg + "  Program stopped.")
-    exit(0)
-    
+# Default endpoint for testing with gateway
+@app.route('/', methods = ['GET'])
+def index():
+    return "Hello! This is HuBMAP Ingest API service :)"
+
+
 @app.route('/hello', methods=['GET'])
 @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
@@ -206,7 +164,7 @@ def create_datastage():
     try:
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        dataset = Dataset()
+        dataset = Dataset(config)
         current_token = None
         try:
             current_token = AuthHelper.parseAuthorizationTokens(request.headers)

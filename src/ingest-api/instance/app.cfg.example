@@ -1,0 +1,17 @@
+# Globus App ID and secret
+APP_CLIENT_ID = ''
+APP_CLIENT_SECRET = ''
+
+STAGING_ENDPOINT_FILEPATH = ''
+PUBLISH_ENDPOINT_FILEPATH = ''
+
+# Neo4j connection
+NEO4J_SERVER = 'bolt://hubmap-neo4j:7687'
+NEO4J_USERNAME = 'neo4j'
+NEO4J_PASSWORD = '123'
+
+# URL for talking to UUID API
+UUID_WEBSERVICE_URL = 'http://localhost:8282/'
+
+# URL of UUID UI for Cross-Origin Resource Sharing (CORS)
+UUID_UI_URL = 'http://localhost/'

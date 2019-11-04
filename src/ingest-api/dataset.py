@@ -34,59 +34,8 @@ class Dataset(object):
     confdata = {}
 
     @classmethod
-    def __init__(self):
-        self.load_config_file()
-
-    @classmethod
-    def load_config_file(self):
-        config = configparser.ConfigParser()
-        
-        try:
-            config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
-            self.confdata['neo4juri'] = config.get('NEO4J', 'server')
-            self.confdata['neo4jusername'] = config.get('NEO4J', 'username')
-            self.confdata['neo4jpassword'] = config.get('NEO4J', 'password')
-            self.confdata['appclientid'] = config.get('GLOBUS', 'APP_CLIENT_ID')
-            self.confdata['STAGING_ENDPOINT_UUID'] = config.get('GLOBUS', 'STAGING_ENDPOINT_UUID')
-            self.confdata['PUBLISH_ENDPOINT_UUID'] = config.get('GLOBUS', 'PUBLISH_ENDPOINT_UUID')
-            self.confdata['appclientsecret'] = config.get(
-                'GLOBUS', 'APP_CLIENT_SECRET')
-            self.confdata['localstoragedirectory'] = config.get(
-                'FILE_SYSTEM', 'GLOBUS_STORAGE_DIRECTORY_ROOT')
-            self.confdata['STAGING_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'STAGING_ENDPOINT_FILEPATH')
-            self.confdata['PUBLISH_ENDPOINT_FILEPATH'] = config.get('FILE_SYSTEM', 'PUBLISH_ENDPOINT_FILEPATH')
-            self.confdata['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
-            return self.confdata
-        except OSError as err:
-            msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
-                err)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except configparser.NoSectionError as noSectError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-                noSectError)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except configparser.NoOptionError as noOptError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-                noOptError)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except SyntaxError as syntaxError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-                syntaxError)
-            msg = msg + "  Cannot read line: {0}".format(syntaxError.text)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except AttributeError as attrError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
-                attrError)
-            msg = msg + "  Cannot read line: {0}".format(attrError.text)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except:
-            traceback.print_exc()
-            exit(0)
+    def __init__(self, config):
+        self.confdata = config
 
     @staticmethod
     def search_datasets(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
