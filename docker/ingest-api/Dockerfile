@@ -2,7 +2,7 @@
 FROM centos:7
 
 LABEL description="HuBMAP Ingest API Service" \
-	version="0.1.0"
+	version="1.4"
 
 # Change to directory that contains the Dockerfile
 WORKDIR /usr/src/app
