@@ -1,3 +1,6 @@
+#ignore emacs backup files
+*~
+
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
 
@@ -12,6 +15,7 @@ src/ingest-api/instance/app.cfg
 
 # flask-app
 src/flask-app/venv
+src/flask-app/app.cfg
 src/flask-app/instance/app.cfg
 src/flask-app/__pycache__
 src/flask-app/Pipfile
@@ -21,6 +25,8 @@ src/flask-app/Pipfile.lock
 src/react-app/node_modules
 src/react-app/.pnp
 src/react-app/.pnp.js
+
+conf/app.properties
 
 # testing
 src/react-app/coverage
@@ -39,3 +45,5 @@ src/react-app/yarn-error.log*
 .vscode
 src/Pipfile
 src/Pipfile.lock
+
+src/react-app/build/*
