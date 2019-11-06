@@ -39,3 +39,7 @@ src/react-app/yarn-error.log*
 .vscode
 src/Pipfile
 src/Pipfile.lock
+
+#ignore the ui build dir
+src/react-app/build/*
+!src/react-app/build/README.md
