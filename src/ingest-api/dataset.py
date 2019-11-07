@@ -34,8 +34,22 @@ class Dataset(object):
     confdata = {}
 
     @classmethod
+    
     def __init__(self, config):
-        self.confdata = config
+        # normalize some of the values
+        config_updated = config
+        if 'neo4juri' in config:
+           config_updated['NEO4J_SERVER'] = config['neo4juri']
+        if 'neo4jusername' in config:
+           config_updated['NEO4J_USERNAME'] = config['neo4jusername']
+        if 'neo4jpassword' in config:
+           config_updated['NEO4J_PASSWORD'] = config['neo4jpassword']
+        if 'appclientid' in config:
+           config_updated['APP_CLIENT_ID'] = config['appclientid']
+        if 'appclientsecret' in config:
+           config_updated['APP_CLIENT_SECRET'] = config['appclientsecret']
+            
+        self.confdata = config_updated
 
     @staticmethod
     def search_datasets(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
@@ -238,7 +252,7 @@ class Dataset(object):
             current_token = AuthHelper.parseAuthorizationTokens(headers)
         except:
             raise ValueError("Unable to parse token")
-        conn = Neo4jConnection(self.confdata['neo4juri'], self.confdata['neo4jusername'], self.confdata['neo4jpassword'])
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         # check all the incoming UUID's to make sure they exist
         incoming_sourceUUID_string = str(incoming_record['source_uuid']).strip()
@@ -259,7 +273,7 @@ class Dataset(object):
         authcache = None
         if AuthHelper.isInitialized() == False:
             authcache = AuthHelper.create(
-                self.confdata['appclientid'], self.confdata['appclientsecret'])
+                self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
@@ -275,7 +289,7 @@ class Dataset(object):
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata(self.confdata['appclientid'], self.confdata['appclientsecret'], self.confdata['UUID_WEBSERVICE_URL'])
+        metadata = Metadata(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(groupUUID)
         except ValueError as ve:
@@ -396,7 +410,7 @@ class Dataset(object):
             raise LookupError('Cannot modify dataset.  Could not find dataset uuid: ' + uuid)
         try:
             metadata_node = Entity.get_entity_metadata(driver, uuid)
-            metadata = Metadata(self.confdata['appclientid'], self.confdata['appclientsecret'], self.confdata['UUID_WEBSERVICE_URL'])
+            metadata = Metadata(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
         except:
             raise LookupError("Unable to find metadata node for '" + uuid + "'")
         
@@ -435,7 +449,7 @@ class Dataset(object):
                 authcache = None
                 if AuthHelper.isInitialized() == False:
                     authcache = AuthHelper.create(
-                        self.confdata['appclientid'], self.confdata['appclientsecret'])
+                        self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
                 else:
                     authcache = AuthHelper.instance()
                 userinfo = None
@@ -698,7 +712,7 @@ class Dataset(object):
             current_token = AuthHelper.parseAuthorizationTokens(headers)
         except:
             raise ValueError("Unable to parse token")
-        conn = Neo4jConnection(self.confdata['neo4juri'], self.confdata['neo4jusername'], self.confdata['neo4jpassword'])
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         # check all the incoming UUID's to make sure they exist
         sourceUUID = str(incoming_record['source_uuid']).strip()
@@ -709,7 +723,7 @@ class Dataset(object):
         authcache = None
         if AuthHelper.isInitialized() == False:
             authcache = AuthHelper.create(
-                self.confdata['appclientid'], self.confdata['appclientsecret'])
+                self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
@@ -725,7 +739,7 @@ class Dataset(object):
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        metadata = Metadata(self.confdata['appclientid'], self.confdata['appclientsecret'], self.confdata['UUID_WEBSERVICE_URL'])
+        metadata = Metadata(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = metadata.get_group_by_identifier(group_uuid)
         except ValueError as ve:
@@ -964,7 +978,7 @@ def convert_dataset_status(raw_status):
 if __name__ == "__main__":
     ds = Dataset()
     confdata = ds.load_config_file()
-    conn = Neo4jConnection(confdata['neo4juri'], confdata['neo4jusername'], confdata['neo4jpassword'])
+    conn = Neo4jConnection(confdata['NEO4J_SERVER'], confdata['NEO4J_USERNAME'], confdata['NEO4J_PASSWORD'])
     #conn = Neo4jConnection()
     driver = conn.get_driver()
     name = 'Test Dataset'
