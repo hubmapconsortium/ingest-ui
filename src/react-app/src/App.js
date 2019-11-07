@@ -220,7 +220,6 @@ class App extends Component {
                       <p className="card-text">Enter and manage HuBMAP data</p>
                       <button
                         className="btn btn-primary"
-                        disabled
                         onClick={this.handleEnterIngest}
                       >
                         Enter

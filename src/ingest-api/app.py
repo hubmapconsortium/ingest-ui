@@ -38,6 +38,16 @@ config['appclientsecret'] = app.config['APP_CLIENT_SECRET']
 config['STAGING_ENDPOINT_FILEPATH'] = app.config['STAGING_ENDPOINT_FILEPATH']
 config['PUBLISH_ENDPOINT_FILEPATH'] = app.config['PUBLISH_ENDPOINT_FILEPATH']
 config['UUID_WEBSERVICE_URL'] = app.config['UUID_WEBSERVICE_URL']
+config['TRANSFER_ENDPOINT_UUID'] = app.config['TRANSFER_ENDPOINT_UUID']
+config['SECRET_KEY'] = app.config['SECRET_KEY']
+config['STAGING_FILE_PATH'] = app.config['STAGING_FILE_PATH']
+config['PUBLISH_FILE_PATH'] = app.config['PUBLISH_FILE_PATH']
+config['STAGING_ENDPOINT_UUID'] = app.config['STAGING_ENDPOINT_UUID']
+config['PUBLISH_ENDPOINT_UUID'] = app.config['PUBLISH_ENDPOINT_UUID']
+config['UUID_UI_URL'] = app.config['UUID_UI_URL']
+config['LOCAL_STORAGE_DIRECTORY'] = app.config['LOCAL_STORAGE_DIRECTORY']
+config['GLOBUS_STORAGE_DIRECTORY_ROOT'] = app.config['GLOBUS_STORAGE_DIRECTORY_ROOT']
+
 
 token_list = {}
 
