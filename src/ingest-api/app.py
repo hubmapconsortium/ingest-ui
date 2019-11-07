@@ -24,7 +24,9 @@ from hubmap_commons.autherror import AuthError
 
 
 # Specify the absolute path of the instance folder and use the config file relative to the instance path
-app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.curdir), 'instance'), instance_relative_config=True)
+#app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.curdir), 'instance'), instance_relative_config=True)
+app = Flask(__name__, instance_path=os.path.join(os.path.dirname(__file__), 'instance'), instance_relative_config=True)
+#app = Flask(__name__, instance_path='/home/uuidui/ingest-ui/src/ingest-api/instance', instance_relative_config=True)
 app.config.from_pyfile('app.cfg')
 
 # Config for dataset class and collection class
@@ -38,6 +40,16 @@ config['appclientsecret'] = app.config['APP_CLIENT_SECRET']
 config['STAGING_ENDPOINT_FILEPATH'] = app.config['STAGING_ENDPOINT_FILEPATH']
 config['PUBLISH_ENDPOINT_FILEPATH'] = app.config['PUBLISH_ENDPOINT_FILEPATH']
 config['UUID_WEBSERVICE_URL'] = app.config['UUID_WEBSERVICE_URL']
+config['TRANSFER_ENDPOINT_UUID'] = app.config['TRANSFER_ENDPOINT_UUID']
+config['SECRET_KEY'] = app.config['SECRET_KEY']
+config['STAGING_FILE_PATH'] = app.config['STAGING_FILE_PATH']
+config['PUBLISH_FILE_PATH'] = app.config['PUBLISH_FILE_PATH']
+config['STAGING_ENDPOINT_UUID'] = app.config['STAGING_ENDPOINT_UUID']
+config['PUBLISH_ENDPOINT_UUID'] = app.config['PUBLISH_ENDPOINT_UUID']
+config['UUID_UI_URL'] = app.config['UUID_UI_URL']
+config['LOCAL_STORAGE_DIRECTORY'] = app.config['LOCAL_STORAGE_DIRECTORY']
+config['GLOBUS_STORAGE_DIRECTORY_ROOT'] = app.config['GLOBUS_STORAGE_DIRECTORY_ROOT']
+
 
 token_list = {}
 

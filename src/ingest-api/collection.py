@@ -18,7 +18,7 @@ class Collection(object):
     
     @classmethod
     def __init__(self, config):
-        self.self.confdata = config
+        self.confdata = config
 
     
     @classmethod
