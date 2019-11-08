@@ -27,24 +27,6 @@ from hubmap_commons.autherror import AuthError
 app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance'), instance_relative_config=True)
 app.config.from_pyfile('app.cfg')
 
-# Config for dataset class and collection class
-config = {}
-
-config['neo4juri'] = app.config['NEO4J_SERVER']
-config['neo4jusername'] = app.config['NEO4J_USERNAME']
-config['neo4jpassword'] = app.config['NEO4J_PASSWORD']
-config['appclientid'] = app.config['APP_CLIENT_ID']
-config['appclientsecret'] = app.config['APP_CLIENT_SECRET']
-config['STAGING_ENDPOINT_FILEPATH'] = app.config['STAGING_ENDPOINT_FILEPATH']
-config['PUBLISH_ENDPOINT_FILEPATH'] = app.config['PUBLISH_ENDPOINT_FILEPATH']
-config['UUID_WEBSERVICE_URL'] = app.config['UUID_WEBSERVICE_URL']
-#config['TRANSFER_ENDPOINT_UUID'] = app.config['TRANSFER_ENDPOINT_UUID']
-config['SECRET_KEY'] = app.config['SECRET_KEY']
-config['STAGING_ENDPOINT_UUID'] = app.config['STAGING_ENDPOINT_UUID']
-config['PUBLISH_ENDPOINT_UUID'] = app.config['PUBLISH_ENDPOINT_UUID']
-config['UUID_UI_URL'] = app.config['UUID_UI_URL']
-
-
 token_list = {}
 
 # Initialize the AuthHelper
@@ -170,7 +152,7 @@ def create_datastage():
     try:
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        dataset = Dataset(config)
+        dataset = Dataset(app.config)
         current_token = None
         try:
             current_token = AuthHelper.parseAuthorizationTokens(request.headers)
