@@ -26,3 +26,14 @@ UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
 UUID_UI_URL = 'http://localhost/'
+
+# For UI login/logout
+# Flask app session key
+SECRET_KEY = 'a%@3k9Hdlkfjakjajf99adsf909oel'
+
+# Need the trailing slash /
+FLASK_APP_BASE_URI = 'https://uuid.dev.hubmapconsortium.org/'
+
+# React app name and deployment URI
+GLOBUS_CLIENT_APP_NAME = 'HuBMAP UUID Generator'
+GLOBUS_CLIENT_APP_URI = 'https://uuid.dev.hubmapconsortium.org/'

@@ -73,7 +73,7 @@ def login():
     #redirect_uri = url_for('login', _external=True)
     redirect_uri = app.config['FLASK_APP_BASE_URI'] + 'login'
 
-    confidential_app_auth_client = ConfidentialAppAuthClient(app.config['GLOBUS_APP_ID'], app.config['GLOBUS_APP_SECRET'])
+    confidential_app_auth_client = ConfidentialAppAuthClient(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
     confidential_app_auth_client.oauth2_start_flow(redirect_uri, refresh_tokens=True)
 
     # If there's no "code" query string parameter, we're in this route
@@ -115,7 +115,7 @@ def login():
         )
       
         # Finally redirect back to the client
-        return redirect(app.config['CLIENT_APP_URI'] + '?info=' + str(json_str))
+        return redirect(app.config['GLOBUS_CLIENT_APP_URI'] + '?info=' + str(json_str))
 
    
 @app.route('/logout')
@@ -126,7 +126,7 @@ def logout():
     - Destroy the session state.
     - Redirect the user to the Globus Auth logout page.
     """
-    confidential_app_auth_client = ConfidentialAppAuthClient(app.config['GLOBUS_APP_ID'], app.config['GLOBUS_APP_SECRET'])
+    confidential_app_auth_client = ConfidentialAppAuthClient(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
 
     # Revoke the tokens with Globus Auth
     if 'tokens' in session:    
@@ -141,9 +141,9 @@ def logout():
     # there is no tool to help build this (yet!)
     globus_logout_url = (
         'https://auth.globus.org/v2/web/logout' +
-        '?client={}'.format(app.config['GLOBUS_APP_ID']) +
-        '&redirect_uri={}'.format(app.config['CLIENT_APP_URI']) +
-        '&redirect_name={}'.format(app.config['CLIENT_APP_NAME']))
+        '?client={}'.format(app.config['APP_CLIENT_ID']) +
+        '&redirect_uri={}'.format(app.config['GLOBUS_CLIENT_APP_URI']) +
+        '&redirect_name={}'.format(app.config['GLOBUS_CLIENT_APP_NAME']))
 
     # Redirect the user to the Globus Auth logout page
     return redirect(globus_logout_url)
