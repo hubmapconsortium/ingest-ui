@@ -1,0 +1,9 @@
+# Ignore Dockerfile
+Dockerfile
+
+# Ignore itself
+.dockerignore
+
+# Ignore README
+README.md
+

@@ -6,6 +6,7 @@
 
 # Docker copied stuff
 docker/ingest-api/src
+docker/ingest-ui/src
 
 # Ignore log files created by docker
 log/*
@@ -13,40 +14,28 @@ log/*
 # ingest-api
 src/ingest-api/instance/app.cfg
 
-# flask-app
-src/flask-app/venv
-src/flask-app/app.cfg
-src/flask-app/instance/app.cfg
-src/flask-app/__pycache__
-src/flask-app/Pipfile
-src/flask-app/Pipfile.lock
-
-# react-app
-src/react-app/node_modules
-src/react-app/.pnp
-src/react-app/.pnp.js
-
-conf/app.properties
+# UI react-app
+src/ingest-ui/node_modules
+src/ingest-ui/.pnp
+src/ingest-ui/.pnp.js
 
 # testing
 src/react-app/coverage
 
 # .env. files (not the .env file)
-src/react-app/.env.*
-!src/react-app/.env.production.local.example
+src/ingest-ui/.env.*
+!src/ingest-ui/.env.production.local.example
 
 # misc
-src/react-app/.DS_Store
-src/react-app/npm-debug.log*
-src/react-app/yarn-debug.log*
-src/react-app/yarn-error.log*
+src/ingest-ui/.DS_Store
+src/ingest-ui/npm-debug.log*
+src/ingest-ui/yarn-debug.log*
+src/ingest-ui/yarn-error.log*
 
 # editor
 .vscode
-src/Pipfile
-src/Pipfile.lock
 
 #ignore the ui build dir
-src/react-app/build/*
-!src/react-app/build/README.md
+src/ingest-ui/build/*
+!src/ingest-ui/build/README.md
 

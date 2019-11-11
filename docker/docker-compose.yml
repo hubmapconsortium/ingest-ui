@@ -17,6 +17,15 @@ services:
     networks:
       - gateway_hubmap
 
+  ingest-ui:
+    build: ./ingest-ui
+    # Build the image with name and tag
+    image: ingest-ui:1.4
+    hostname: ingest-ui
+    container_name: ingest-ui
+    networks:
+      - gateway_hubmap
+
 networks:
   # This is the network created by gateway to enable communicaton between multiple docker-compose projects
   gateway_hubmap:
