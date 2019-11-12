@@ -35,21 +35,8 @@ class Dataset(object):
 
     @classmethod
     
-    def __init__(self, config):
-        # normalize some of the values
-        config_updated = config
-        if 'neo4juri' in config:
-           config_updated['NEO4J_SERVER'] = config['neo4juri']
-        if 'neo4jusername' in config:
-           config_updated['NEO4J_USERNAME'] = config['neo4jusername']
-        if 'neo4jpassword' in config:
-           config_updated['NEO4J_PASSWORD'] = config['neo4jpassword']
-        if 'appclientid' in config:
-           config_updated['APP_CLIENT_ID'] = config['appclientid']
-        if 'appclientsecret' in config:
-           config_updated['APP_CLIENT_SECRET'] = config['appclientsecret']
-            
-        self.confdata = config_updated
+    def __init__(self, config): 
+        self.confdata = config
 
     @staticmethod
     def search_datasets(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
@@ -976,8 +963,6 @@ def convert_dataset_status(raw_status):
 
 
 if __name__ == "__main__":
-    ds = Dataset()
-    confdata = ds.load_config_file()
     conn = Neo4jConnection(confdata['NEO4J_SERVER'], confdata['NEO4J_USERNAME'], confdata['NEO4J_PASSWORD'])
     #conn = Neo4jConnection()
     driver = conn.get_driver()

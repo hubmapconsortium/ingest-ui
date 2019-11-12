@@ -108,9 +108,7 @@ class Collection(object):
 
 
 if __name__ == "__main__":
-    coll = Collection()
-    confdata = coll.load_config_file()
-    conn = Neo4jConnection(confdata['neo4juri'], confdata['neo4jusername'], confdata['neo4jpassword'])
+    conn = Neo4jConnection(confdata['NEO4J_SERVER'], confdata['NEO4J_USERNAME'], confdata['NEO4J_PASSWORD'])
     driver = conn.get_driver()
     name = 'Test Collection'
     description= 'This dataset is a collection'
