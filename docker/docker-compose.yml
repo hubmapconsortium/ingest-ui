@@ -26,8 +26,6 @@ services:
     volumes:
       # Mount the logging to container
       - "../log:/usr/src/app/log"
-      # Mount the .env file
-      - "../src/ingest-ui/.env:/usr/src/app/src/.env"
     networks:
       - gateway_hubmap
 

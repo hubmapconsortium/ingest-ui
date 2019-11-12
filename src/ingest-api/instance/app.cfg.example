@@ -21,15 +21,15 @@ PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/test-data'
 UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
-UUID_UI_URL = 'http://localhost/'
+UUID_UI_URL = ['http://localhost:8585']
 
 # For UI login/logout
 # Flask app session key
 SECRET_KEY = 'a%@3k9Hdlkfjakjajf99adsf909oel'
 
 # Need the trailing slash /
-FLASK_APP_BASE_URI = 'https://uuid.dev.hubmapconsortium.org/'
+FLASK_APP_BASE_URI = 'http://localhost:8484/'
 
 # React app name and deployment URI
 GLOBUS_CLIENT_APP_NAME = 'HuBMAP UUID Generator'
-GLOBUS_CLIENT_APP_URI = 'https://uuid.dev.hubmapconsortium.org/'
+GLOBUS_CLIENT_APP_URI = 'http://localhost:8585/'
