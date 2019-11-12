@@ -256,11 +256,10 @@ class Dataset(object):
                 source_UUID_Data.append(hmuuid_data)
         except:
             raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
-        #confdata = self.confdata
+
         authcache = None
         if AuthHelper.isInitialized() == False:
-            authcache = AuthHelper.create(
-                self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
@@ -435,8 +434,7 @@ class Dataset(object):
                 #step 2: update the metadata node
                 authcache = None
                 if AuthHelper.isInitialized() == False:
-                    authcache = AuthHelper.create(
-                        self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+                    authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
                 else:
                     authcache = AuthHelper.instance()
                 userinfo = None
@@ -706,11 +704,9 @@ class Dataset(object):
         if sourceUUID == None or len(sourceUUID) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
         
-        #confdata = self.confdata
         authcache = None
         if AuthHelper.isInitialized() == False:
-            authcache = AuthHelper.create(
-                self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
@@ -935,54 +931,3 @@ def convert_dataset_status(raw_status):
         new_status = HubmapConst.DATASET_STATUS_QA
     return new_status
 
-
-if __name__ == "__main__":
-    conn = Neo4jConnection(confdata['NEO4J_SERVER'], confdata['NEO4J_USERNAME'], confdata['NEO4J_PASSWORD'])
-    #conn = Neo4jConnection()
-    driver = conn.get_driver()
-    name = 'Test Dataset'
-    description= 'This dataset is a test'
-    parentCollection = '4470c8e8-3836-4986-9773-398912831'
-    hasPHI = False
-    nexus_token = 'AglKXgMkgndQ8Ddkz7Xab6p3wXwb3Qr7qyrW8JeVllVVKYY31ec8CQykV5DGE84XnbVyWox52djEEpTJBelW1t9gQd'
-    transfer_token = 'Ag92Kzwm5MMj9neJ5XzVbKO3OK25PKWgBl2g6ejWdwmWGWO7M2hpC4DxemyvN6Gvz5V3KGJGv0kNplUr3k7NdhvjMl'
-    auth_token = 'Agm9xX36yEyMbzQPnalaW7kwV6Dg6j8Bd8wGK3qYBGPwaJg95aS8Caabx5aPOlGMj03x6m8BDmzorDi8aVrnouk5jgS0mlgCl8NqhmX67'
-    mauth_token = {"name": "Charles Borromeo", "email": "CHB69@pitt.edu", 
-                   "globus_id": "32800bfe-83df-4b48-b755-701dc06a8913", 
-                   "nexus_token": nexus_token, 
-                   "auth_token": auth_token, 
-                   "transfer_token": transfer_token}
-    
-    groupUUID = "5bd084c8-edc2-11e8-802f-0e368f3075e8"
-    dataset = Dataset()
-    sourceUUID = 'e8fa2558e19ca2226ccbb8521557236b' # this should be TEST0001-RK-1
-    incoming_record = {'name' : 'Test Dataset', 'description': 'Description of this dataset', 'sourceUUID' : sourceUUID, 'hasPHI': False}
-    
-    #dataset.create_datastage(driver, mauth_token, incoming_record, groupUUID)
-    #make_new_staging_directory(transfer_token, groupUUID, sourceUUID)
-    #result_set = Dataset.search_datasets(driver, None, None, [groupUUID], [groupUUID])
-    result_set = Dataset.get_dataset(driver, '6e770a0c7c546e7e088050713ea2d26a')
-    pprint (result_set)
-    result_set = Dataset.get_dataset(driver, '4aa1afa50cf88b589bf4258f7269cc50')
-    pprint (result_set)
-    result_set = Dataset.get_dataset(driver, '21671c1891a9949fa04999ac3bdbe491')
-    pprint (result_set)
-    # Test create dataset file functionality:
-    """
-    group_display_name = 'IEC Testing Group'
-    new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, 'test001')
-    new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
-    pprint(new_globus_path)
-    
-    
-    #Test publishing
-    new_publish_path = dataset.get_publish_path(group_info['displayname'], uuid)
-    current_staging_path = dataset.get_staging_path(group_info['displayname'], uuid)
-    move_directory(current_staging_path, new_publish_path)
-    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['PUBLISH_ENDPOINT_FILEPATH'],new_publish_path)
-    """       
-
-
-
-    
-    conn.close()
