@@ -24,9 +24,7 @@ from hubmap_commons.autherror import AuthError
 
 
 # Specify the absolute path of the instance folder and use the config file relative to the instance path
-#app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.curdir), 'instance'), instance_relative_config=True)
-app = Flask(__name__, instance_path=os.path.join(os.path.dirname(__file__), 'instance'), instance_relative_config=True)
-#app = Flask(__name__, instance_path='/home/uuidui/ingest-ui/src/ingest-api/instance', instance_relative_config=True)
+app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance'), instance_relative_config=True)
 app.config.from_pyfile('app.cfg')
 
 # Config for dataset class and collection class
@@ -516,7 +514,7 @@ def create_collection():
         token = str(request.headers["AUTHORIZATION"])[7:]
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        collection = Collection()
+        collection = Collection(app.config)
         form_data = json.loads(request.form['data'])
         collection_uuid = Collection.create_collection(driver, token, form_data)
         
