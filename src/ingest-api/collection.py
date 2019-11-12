@@ -106,25 +106,3 @@ class Collection(object):
             pprint(be)
             raise be
 
-
-if __name__ == "__main__":
-    conn = Neo4jConnection(confdata['NEO4J_SERVER'], confdata['NEO4J_USERNAME'], confdata['NEO4J_PASSWORD'])
-    driver = conn.get_driver()
-    name = 'Test Collection'
-    description= 'This dataset is a collection'
-    nexus_token = 'Ag4bomPanqamWmr6vQ9bm60MdDeQ8vwyplp4p5xMexJBGKvzQrT7C7ekxXQD3zj8axojEXly932xoycjMeKE6UEezX'
-    transfer_token = 'AgnJlPv9Vv3bw34DrDgk2K99KVjjEjz3qxeX5yramDgPypQ7njt9C1wvPwJ3o6Nw0QVOM5PXl3NzwQs015DbWFxGpP'
-    auth_token = 'AgJdY9GjqeWDv8a8lb64E1JVvY0NvaPJYbzmBdbrjVgpaDB2JQC0CV64zom3kKwGkwNV3nM98xoabpH3deKMJSejQDtVz2yIdQYpsDw98'
-    mauth_token = {"name": "Charles Borromeo", "email": "CHB69@pitt.edu", 
-                   "globus_id": "32800bfe-83df-4b48-b755-701dc06a8913", 
-                   "nexus_token": nexus_token, 
-                   "auth_token": auth_token, 
-                   "transfer_token": transfer_token}
-    
-    #incoming_record = {'label' : name, 'description': description}
-    #collection = Collection.create_collection(driver, nexus_token, incoming_record)
-    #collection = Collection.create_collection(driver, nexus_token, incoming_record)
-    #collection = Collection.create_collection(driver, nexus_token, incoming_record)
-    collection_set = Collection.get_collections(driver)
-    print (collection_set)
-    #print ('New collection record uuid: ' + collection)

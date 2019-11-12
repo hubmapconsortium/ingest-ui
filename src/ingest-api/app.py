@@ -889,7 +889,7 @@ def create_specimen():
         token = str(request.headers["AUTHORIZATION"])[7:]
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        specimen = Specimen()
+        specimen = Specimen(app.config)
         sourceuuid = None
         if 'data' not in request.form:
             return Response('form data is invalid', 401)
@@ -999,7 +999,7 @@ def update_specimen(identifier):
         uuid = json.loads(r.text)[0]['hmuuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        specimen = Specimen()
+        specimen = Specimen(app.config)
         form_data = request.form['data']
         # use the group uuid if it is sent from the front-end
         group_uuid = None
@@ -1197,17 +1197,15 @@ def search_specimen():
 
 
 
-
-
-
-
-
-
-
+# This is for development only
 if __name__ == '__main__':
     try:
-        app.run(port=5005)
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-p", "--port")
+        args = parser.parse_args()
+        port = 5006
+        if args.port:
+            port = int(args.port)
+        app.run(port=port)
     finally:
         pass
-    
-

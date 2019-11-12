@@ -26,6 +26,11 @@ from hubmap_commons.provenance import Provenance
 from hubmap_commons.activity import Activity
 
 class Specimen:
+    confdata = {}
+    
+    @classmethod
+    def __init__(self, config):
+        self.confdata = config
 
     @staticmethod
     # NOTE: This will return an entity, activity, or agent
@@ -38,8 +43,7 @@ class Specimen:
 
     @staticmethod
     def update_specimen(driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
-        config = Specimen.load_config_file()
-        conn = Neo4jConnection(config['neo4juri'], config['neo4jusername'], config['neo4jpassword'])
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         metadata_uuid = None
         try:
             metadata_obj = Entity.get_entity_metadata(driver, uuid)
@@ -49,11 +53,10 @@ class Specimen:
             raise ve
         except:
             raise
-        confdata = Specimen.load_config_file()
+
         authcache = None
         if AuthHelper.isInitialized() == False:
-            authcache = AuthHelper.create(
-                confdata['appclientid'], confdata['appclientsecret'])
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         userinfo = authcache.getUserInfo(current_token, True)
@@ -67,7 +70,7 @@ class Specimen:
         provenance_group_uuid = metadata_obj['provenance_group_uuid']
         if groupUUID == None:
             groupUUID = provenance_group_uuid
-        prov = Provenance(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
+        prov = Provenance(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = prov.get_provenance_data_object(current_token, groupUUID)
         except ValueError as ve:
@@ -83,7 +86,7 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
         # ex: <data_parent_directory>/<group UUID>
-        data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
+        data_directory = get_data_directory(cself.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
         #get a link to the subdirectory within data directory using the current uuid
         # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
         # We need to allow this method to create a new directory.  It is possible that an earlier
@@ -225,11 +228,9 @@ class Specimen:
     def create_specimen(driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None, sample_count=None):
         return_list = []
         # step 1: check that the uuids already exist
-        confdata = Specimen.load_config_file()
         authcache = None
         if AuthHelper.isInitialized() == False:
-            authcache = AuthHelper.create(
-                confdata['appclientid'], confdata['appclientsecret'])
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         userinfo = authcache.getUserInfo(current_token, True)
@@ -239,7 +240,7 @@ class Specimen:
         data_directory = None
         specimen_uuid_record_list = None
         metadata_record = None
-        prov = Provenance(confdata['appclientid'], confdata['appclientsecret'], confdata['UUID_WEBSERVICE_URL'])
+        prov = Provenance(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
         try:
             provenance_group = prov.get_provenance_data_object(current_token, groupUUID)
         except ValueError as ve:
@@ -266,10 +267,10 @@ class Specimen:
             except:
                 raise
 
-        ug = UUID_Generator(confdata['UUID_WEBSERVICE_URL'])
+        ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         #userinfo = AuthCache.userInfo(current_token, True)
         if len(file_list) > 0:
-            data_directory = get_data_directory(confdata['localstoragedirectory'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
+            data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
 
 
         with driver.session() as session:
@@ -641,8 +642,7 @@ class Specimen:
 
     @staticmethod 
     def get_image_file_list_for_uuid(uuid):
-        config = Specimen.load_config_file()
-        conn = Neo4jConnection(config['NEO4J_SERVER'], config['NEO4J_USERNAME'], config['NEO4J_PASSWORD'])
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD']s)
         try:
             with driver.session() as session:
                 stmt = " WHERE a.{entitytype_attr} IS NOT NULL RETURN a.{uuid_attr} AS entity_uuid, a.{entitytype_attr} AS datatype, a.{doi_attr} AS entity_doi, a.{display_doi_attr} as entity_display_doi, properties(m) AS metadata_properties ORDER BY m.{provenance_timestamp} DESC".format(
@@ -829,54 +829,6 @@ class Specimen:
             return str(os.path.join(directory_path, filename))
         except:
             raise
-     
-    @staticmethod
-    def load_config_file():
-        config = configparser.ConfigParser()
-        confdata = {}
-        try:
-            config.read(os.path.join(os.path.dirname(__file__), '../..', 'conf', 'app.properties'))
-            confdata['neo4juri'] = config.get('NEO4J', 'server')
-            confdata['neo4jusername'] = config.get('NEO4J', 'username')
-            confdata['neo4jpassword'] = config.get('NEO4J', 'password')
-            confdata['appclientid'] = config.get('GLOBUS', 'APP_CLIENT_ID')
-            confdata['appclientsecret'] = config.get(
-                'GLOBUS', 'APP_CLIENT_SECRET')
-            confdata['localstoragedirectory'] = config.get(
-                'FILE_SYSTEM', 'LOCAL_STORAGE_DIRECTORY')
-            confdata['UUID_WEBSERVICE_URL'] = config.get('HUBMAP', 'UUID_WEBSERVICE_URL')
-            return confdata
-        except OSError as err:
-            msg = "OS error.  Check config.ini file to make sure it exists and is readable: {0}".format(
-                err)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except configparser.NoSectionError as noSectError:
-            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
-                noSectError)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except configparser.NoOptionError as noOptError:
-            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
-                noOptError)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except SyntaxError as syntaxError:
-            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
-                syntaxError)
-            msg = msg + "  Cannot read line: {0}".format(syntaxError.text)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except AttributeError as attrError:
-            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
-                attrError)
-            msg = msg + "  Cannot read line: {0}".format(attrError.text)
-            print(msg + "  Program stopped.")
-            exit(0)
-        except:
-            traceback.print_exc()
-            exit(0)
-
 
     @staticmethod
     def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list, specimen_type=None):
@@ -1059,76 +1011,3 @@ def initialize_lab_identifiers(driver):
                 tx.rollback()
             
 
-
-if __name__ == "__main__":
-    
-    confdata = Specimen.load_config_file()
-    conn = Neo4jConnection(confdata['neo4juri'], confdata['neo4jusername'], confdata['neo4jpassword'])
-    driver = conn.get_driver()
-    #token = 'Aggqy6e0bYMYBlO45ywMm8Okv6YvyMWOMlY8EpO8bprxOxmPJKcJCmo0wEl78JrElrWo2oyV60nDjbh1k7r8ahBgD6'
-    #specimen_record = Specimen.get_specimen(driver, 'ab4d0146e3ba01a3cd8983ee12dff146')
-    #pprint(specimen_record)
-    #initialize_lab_identifiers(driver)
-    """sibling_uuid = 'b384d08f2692f12ec527de96c30577b6'
-    sibling_list = Specimen.get_siblingid_list(driver, sibling_uuid)
-    pprint(sibling_list)
-    """
-    
-    parentUUID = '398400024fda58e293cdb435db3c777e'
-    specimen_count = 5
-    new_lab_id_data = Specimen.generate_lab_identifiers(driver, parentUUID, specimen_count)
-    pprint(new_lab_id_data)
-    
-    parentUUID = 'e7fee514c9d1b26cbbb89e96f63b2c61'
-    new_lab_id_data = Specimen.generate_lab_identifiers(driver, parentUUID, 1, organ_specifier='BL')
-    pprint(new_lab_id_data)
-
-    parentUUID = 'e7fee514c9d1b26cbbb89e96f63b2c61'
-    new_lab_id_data = Specimen.generate_lab_identifiers(driver, parentUUID, 1, organ_specifier='LV')
-    pprint(new_lab_id_data)
-
-    
-    """
-    test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
-    new_lab_id_data = Specimen.generate_lab_identifiers(driver, test_group_uuid, 1, None, True)
-    pprint(new_lab_id_data)
-    
-    donor_uuid = 'f2cf800ea263b1c2e177a741d9aec9fb'
-    new_lab_id_data = Specimen.generate_lab_identifiers(driver, donor_uuid, 1, 'BL', False)
-    pprint(new_lab_id_data)"""
-    
-    #   def generate_lab_identifiers(driver, parentUUID, specimen_count=1, organ_specifier=None, is_donor=False):
-
-    
-    """return_list = Specimen.search_specimen(driver, 'HBM:273-VXXV-779', ['5bd084c8-edc2-11e8-802f-0e368f3075e8'])
-    print("Found " + str(len(return_list)) + " items")
-    pprint(return_list)
-
-    name = 'Test Dataset'
-    description = 'This dataset is a test'
-    parentCollection = '4470c8e8-3836-4986-9773-398912831'
-    hasPHI = False
-    labCreatedAt = '0ce5be9b-8b7f-47e9-a6d9-16a08df05f50'
-    createdBy = '70a43e57-c4fd-4616-ad41-ca8c80d6d827'
-
-    uuid_to_modify = 'ec08e0ee-f2f6-4744-acb4-c4c6745eb04f'
-    dr_x_uuid = '33a46e57-c55d-4617-ad41-ca8a30d6d844'
-    datastage_uuid = 'c67a6dec-5ef8-4728-8f42-b70966edcb7e'
-    create_datastage_activity = '05e699aa-0320-48ee-b3bc-f92cd72e9f5f'
-    donor_uuid = 'aa7100ec-5e34-8628-3342-ac4566edcb22'
-    current_token = 'AgBkdvv7dqN5oYG0peddbwmoO6l0ep5OD3ovmyJ4Dx99vwQ3B4cyCrM20k1j3nYz3nk65aM9lm2yVdik174abHW845'
-
-    specimen_record = {'label': 'test specimen record',
-                       'description': 'test specimen record',
-                       'hasPHI': 'true', 'status': 'Published'}
-    #specimen_uuid_record = Specimen.create_specimen(
-    #    driver, specimen_record,  current_token, labCreatedAt, parentCollection)
-    specimen_record = Specimen.get_specimen(driver, '838-CVMW-577')
-    pprint(specimen_record)
-    
-    Specimen.cleanup_files('/Users/chb69/globus_temp_data/5bd084c8-edc2-11e8-802f-0e368f3075e8/388877c5ceed0ceb715b91231ae7db18', ['crosby.jpeg','lift.jpg'])
-    conn.close()
-    
-    #confdata = Specimen.load_config_file()
-    #parent_folder = confdata['localstoragedirectory']
-    #create_site_directories(parent_folder)"""
