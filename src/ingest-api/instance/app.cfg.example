@@ -8,15 +8,11 @@ APP_CLIENT_ID = ''
 APP_CLIENT_SECRET = ''
 
 # Globus Endpoint UUIDs
-TRANSFER_ENDPOINT_UUID = ''
 STAGING_ENDPOINT_UUID = ''
 PUBLISH_ENDPOINT_UUID = ''
 
 # File system settings
-STAGING_FILE_PATH = '/sampledata/testing/staging/testsite/'
-PUBLISH_FILE_PATH = '/sampledata/testing/publish/testsite/'
 LOCAL_STORAGE_DIRECTORY = '/home/temp'
-GLOBUS_STORAGE_DIRECTORY_ROOT = '/hubmap-data'
 STAGING_ENDPOINT_FILEPATH = '/hubmap-data/test-stage'
 PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/test-data'
 

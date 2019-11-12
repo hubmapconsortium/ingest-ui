@@ -891,25 +891,7 @@ def build_globus_url_for_directory(transfer_endpoint_uuid,new_directory):
     encoded_path = urllib.parse.quote(str(new_directory))
     ret_string = 'https://app.globus.org/file-manager?origin_id={endpoint_uuid}&origin_path={new_path}'.format(endpoint_uuid=transfer_endpoint_uuid, new_path=encoded_path)
     return ret_string
-    
-"""
-def move_directory(dir_UUID, oldpath, newpath):
-    if dir_UUID == None or len(str(dir_UUID)) == 0:
-        raise ValueError('The dataset UUID must have a value')
-    transfer_token_entry = token_list['transfer.globus.org']
-    transfer_token = transfer_token_entry['token']
-    tc = globus_sdk.TransferClient(authorizer=AccessTokenAuthorizer(transfer_token))
-    try:
-        tc.operation_rename(app.config['TRANSFER_ENDPOINT_UUID'],oldpath=oldpath, newpath=newpath)
-        print ("Done moving directory: " + oldpath + " to:" + newpath)
-        return str(app.config['STAGING_FILE_PATH'] + str(dir_UUID))
-    except TransferAPIError as tae:
-        print ('A TransferAPIError occurred: ', tae.msg)
-        abort(400, tae.msg)
-        
-    except:
-        raise
-"""
+
 
 def move_directory(oldpath, newpath):
     """it may seem like overkill to use a define a method just to move files, but we might need to move these
@@ -929,14 +911,6 @@ def copy_directory(oldpath, newpath):
         raise 
     return ret_path
 
-
-def publish_directory(dir_UUID):
-    try:
-        move_directory(dir_UUID, get_staging_path(dir_UUID), get_publish_path(dir_UUID))
-        print ("Done publishing directory: " + get_publish_path(dir_UUID))
-        return get_publish_path(dir_UUID)
-    except:
-        raise
 
 def convert_dataset_status(raw_status):
     new_status = ''

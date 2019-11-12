@@ -852,23 +852,23 @@ class Specimen:
             print(msg + "  Program stopped.")
             exit(0)
         except configparser.NoSectionError as noSectError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
                 noSectError)
             print(msg + "  Program stopped.")
             exit(0)
         except configparser.NoOptionError as noOptError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
                 noOptError)
             print(msg + "  Program stopped.")
             exit(0)
         except SyntaxError as syntaxError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
                 syntaxError)
             msg = msg + "  Cannot read line: {0}".format(syntaxError.text)
             print(msg + "  Program stopped.")
             exit(0)
         except AttributeError as attrError:
-            msg = "Error reading the config.ini file.  Check config.ini file to make sure it matches the structure in config.ini.example: {0}".format(
+            msg = "Error reading the config.ini file.  Check app.properties file to make sure it matches the structure in config.ini.example: {0}".format(
                 attrError)
             msg = msg + "  Cannot read line: {0}".format(attrError.text)
             print(msg + "  Program stopped.")
