@@ -256,11 +256,10 @@ class Dataset(object):
                 source_UUID_Data.append(hmuuid_data)
         except:
             raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
-        #confdata = self.confdata
+
         authcache = None
         if AuthHelper.isInitialized() == False:
-            authcache = AuthHelper.create(
-                self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
@@ -435,8 +434,7 @@ class Dataset(object):
                 #step 2: update the metadata node
                 authcache = None
                 if AuthHelper.isInitialized() == False:
-                    authcache = AuthHelper.create(
-                        self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+                    authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
                 else:
                     authcache = AuthHelper.instance()
                 userinfo = None
@@ -706,11 +704,9 @@ class Dataset(object):
         if sourceUUID == None or len(sourceUUID) == 0:
             raise ValueError('Error: sourceUUID must be set to create a tissue')
         
-        #confdata = self.confdata
         authcache = None
         if AuthHelper.isInitialized() == False:
-            authcache = AuthHelper.create(
-                self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
         else:
             authcache = AuthHelper.instance()
         nexus_token = current_token['nexus_token']
@@ -934,3 +930,4 @@ def convert_dataset_status(raw_status):
     elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
         new_status = HubmapConst.DATASET_STATUS_QA
     return new_status
+
