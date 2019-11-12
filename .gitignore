@@ -16,6 +16,7 @@ src/ingest-api/instance/app.cfg
 
 # UI react-app
 src/ingest-ui/node_modules
+src/ingest-ui/.env
 src/ingest-ui/.pnp
 src/ingest-ui/.pnp.js
 

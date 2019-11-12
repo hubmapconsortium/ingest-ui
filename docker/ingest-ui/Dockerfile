@@ -22,26 +22,30 @@ enabled=1\n'\
 # 1 - Update the package listings
 # 2 - Install nginx (using the custom yum repo specified earlier)
 # 3 - Remove the default nginx config file
-# 4 - Add Node.js stable release Yum Repository
-# 5 - Install Node.js (includes npm)
-# 6 - Clean all yum cache
+# 4 - Use our nginx config file
+# 5 - Add Node.js stable release Yum Repository
+# 6 - Install Node.js (includes npm)
+# 7 - Install npm dependencies
+# 8 - Clean all yum cache
 RUN yum update -y && \
     yum install -y nginx && \
     rm /etc/nginx/conf.d/default.conf && \
+    mv ingest-ui.conf /etc/nginx/conf.d && \
     curl -sL https://rpm.nodesource.com/setup_12.x | bash - && \
     yum install -y nodejs && \
+    npm install && \
     yum clean all
-
-# Change to react app directory
+    
+# Change to source code directory
 WORKDIR /usr/src/app/src
 
-# Install npm dependencies and generate static site content
+# Install npm dependencies and generate static site
 RUN npm install && \
     npm run build
 
 # The EXPOSE instruction informs Docker that the container listens on the specified network ports at runtime. 
 # EXPOSE does not make the ports of the container accessible to the host.
-# Here 5000 is for the uwsgi socket, 80 for nginx
-EXPOSE 5000 80
+# Here 80 for nginx to serve the react generated static site
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
