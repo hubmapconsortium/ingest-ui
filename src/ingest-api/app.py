@@ -514,7 +514,7 @@ def create_collection():
         token = str(request.headers["AUTHORIZATION"])[7:]
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        collection = Collection()
+        collection = Collection(app.config)
         form_data = json.loads(request.form['data'])
         collection_uuid = Collection.create_collection(driver, token, form_data)
         
