@@ -38,7 +38,6 @@ config['appclientsecret'] = app.config['APP_CLIENT_SECRET']
 config['STAGING_ENDPOINT_FILEPATH'] = app.config['STAGING_ENDPOINT_FILEPATH']
 config['PUBLISH_ENDPOINT_FILEPATH'] = app.config['PUBLISH_ENDPOINT_FILEPATH']
 config['UUID_WEBSERVICE_URL'] = app.config['UUID_WEBSERVICE_URL']
-#config['TRANSFER_ENDPOINT_UUID'] = app.config['TRANSFER_ENDPOINT_UUID']
 config['SECRET_KEY'] = app.config['SECRET_KEY']
 config['STAGING_ENDPOINT_UUID'] = app.config['STAGING_ENDPOINT_UUID']
 config['PUBLISH_ENDPOINT_UUID'] = app.config['PUBLISH_ENDPOINT_UUID']
@@ -342,6 +341,40 @@ def update_ingest_status():
                 conn.close()
 
 
+@app.route('/datasets/submissions/request_ingest', methods = ['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+#disabled for now @secured(groups="HuBMAP-read")
+def temp_request_ingest_call():
+    # NOTE: this is just a placeholder until Joel welling's code is ready for me to test
+    # simply return the dataset's uuid as the ingest_id and add some characters for the run_id
+    if not request.json:
+        abort(400, jsonify( { 'error': 'no data found cannot process request_ingest' } ))
+    
+    conn = None
+    new_uuid = None
+    try:
+
+        # for now just return some dummy data
+        json_data = request.json
+        #{"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
+        return_obj = {"ingest_id" : json_data['submission_id'], "run_id" : json_data['submission_id'] + '-1111', "overall_file_count": "10", "top_folder_contents": "[\"dir1\",\"dir2\",\"dir3\"]"}       
+        return jsonify( { "submission" : return_obj } ), 200
+    
+    except ValueError:
+        abort(404, jsonify( { 'error': 'ingest_id {ingest_id} not found'.format(ingest_id=ingest_id) } ))
+        
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        print (msg)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
+
 def get_group_uuid_from_request(request):
     return_group_uuid = None
     try:
@@ -514,7 +547,7 @@ def create_collection():
         token = str(request.headers["AUTHORIZATION"])[7:]
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        collection = Collection()
+        collection = Collection(app.config)
         form_data = json.loads(request.form['data'])
         collection_uuid = Collection.create_collection(driver, token, form_data)
         

@@ -3,6 +3,7 @@ Created on Apr 18, 2019
 
 @author: chb69
 '''
+import requests
 from neo4j import TransactionError, CypherError
 import sys
 import os
@@ -11,12 +12,13 @@ import globus_sdk
 from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient 
 import base64
 from globus_sdk.exc import TransferAPIError
-import requests
 import urllib.parse
 from flask import Response
 from pprint import pprint
 import shutil
 from builtins import staticmethod
+import json
+import traceback
 
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_const import HubmapConst 
@@ -26,6 +28,7 @@ from hubmap_commons.entity import Entity
 from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.activity import Activity
+from hubmap_commons.provenance import Provenance
 
 class Dataset(object):
     '''
@@ -595,27 +598,55 @@ class Dataset(object):
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
-                """    
-                # I need to convert the status to what is found in the HubmapConst file
-                if str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_NEW).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_NEW
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_INVALID).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_INVALID
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_VALID).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_VALID
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_PUBLISHED
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_REOPENED).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_REOPENED
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_LOCKED).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_LOCKED
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_NEW).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_NEW
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_UNPUBLISHED).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_UNPUBLISHED
-                elif str(update_record['status']).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
-                    update_record['status'] = HubmapConst.DATASET_STATUS_QA
-                """
+                if update_record['status'] == str(HubmapConst.DATASET_STATUS_LOCKED):
+                    #the status is set...so no problem
+                    # I need to retrieve the ingest_id from the call and store it in neo4j
+                    # /datasets/submissions/request_ingest 
+                    try:
+                        current_token = None
+                        try:
+                            current_token = AuthHelper.parseAuthorizationTokens(headers)
+                        except:
+                            raise ValueError("Unable to parse token")
+                        prov = Provenance(self.confdata['APP_CLIENT_ID'],self.confdata['APP_CLIENT_SECRET'], None)
+                        group_info = prov.get_group_by_identifier(group_uuid)
+                        # take the incoming uuid_type and uppercase it
+                        url = 'http://localhost:5005/datasets/submissions/request_ingest'
+                        
+                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MOCK.MICROSCOPY.IMG.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
+                                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
+                        if r.ok == True:
+                            """expect data like this:
+                            {"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
+                            """
+                            data = json.loads(r.content.decode())
+                            submission_data = data['submission']
+                            if 'overall_file_count' in submission_data:
+                                if int(submission_data['overall_file_count']) <= 0:
+                                    raise ValueError("Error: overall_file_count equals zero: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
+                            else:
+                                raise ValueError("Error: missing 'overall_file_count' from request ingest call")
+                            if 'top_folder_contents' in submission_data:
+                                top_folder_contents = json.loads(submission_data['top_folder_contents'])
+                                if len(top_folder_contents) == 0:
+                                    raise ValueError("Error: did not find any files for: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
+                            else:
+                                raise ValueError("Error: missing 'top_folder_contents' from request ingest call")
+                                    
+                            update_record[HubmapConst.DATASET_INGEST_ID_ATTRIBUTE] = submission_data['ingest_id']
+                            update_record[HubmapConst.DATASET_RUN_ID] = submission_data['run_id']
+                        else:
+                            msg = 'HTTP Response: ' + str(r.status_code) + ' msg: ' + str(r.text) 
+                            raise Exception(msg)
+                    except ConnectionError as connerr:
+                        pprint(connerr)
+                        raise connerr
+                    except TimeoutError as toerr:
+                        pprint(toerr)
+                        raise toerr
+                    except Exception as e:
+                        pprint(e)
+                        raise e
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
                 print ("EXECUTING DATASET UPDATE: " + stmt)
@@ -630,8 +661,7 @@ class Dataset(object):
                 tx.rollback()                
             except:
                 print ('A general error occurred: ')
-                for x in sys.exc_info():
-                    print (x)
+                traceback.print_exc(file=sys.stdout)
                 tx.rollback()
     
     
@@ -905,25 +935,6 @@ def build_globus_url_for_directory(transfer_endpoint_uuid,new_directory):
     ret_string = 'https://app.globus.org/file-manager?origin_id={endpoint_uuid}&origin_path={new_path}'.format(endpoint_uuid=transfer_endpoint_uuid, new_path=encoded_path)
     return ret_string
     
-"""
-def move_directory(dir_UUID, oldpath, newpath):
-    if dir_UUID == None or len(str(dir_UUID)) == 0:
-        raise ValueError('The dataset UUID must have a value')
-    transfer_token_entry = token_list['transfer.globus.org']
-    transfer_token = transfer_token_entry['token']
-    tc = globus_sdk.TransferClient(authorizer=AccessTokenAuthorizer(transfer_token))
-    try:
-        tc.operation_rename(app.config['TRANSFER_ENDPOINT_UUID'],oldpath=oldpath, newpath=newpath)
-        print ("Done moving directory: " + oldpath + " to:" + newpath)
-        return str(app.config['STAGING_FILE_PATH'] + str(dir_UUID))
-    except TransferAPIError as tae:
-        print ('A TransferAPIError occurred: ', tae.msg)
-        abort(400, tae.msg)
-        
-    except:
-        raise
-"""
-
 def move_directory(oldpath, newpath):
     """it may seem like overkill to use a define a method just to move files, but we might need to move these
     files across globus endpoints in the future"""
