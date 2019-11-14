@@ -22,7 +22,7 @@ UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
 # This has no effect with Gateway (enabled CORS in nginx conf)
-UUID_UI_URL = 'http://localhost:8585'
+# UUID_UI_URL = 'http://localhost:8585'
 
 # For UI login/logout
 # Flask app session key
