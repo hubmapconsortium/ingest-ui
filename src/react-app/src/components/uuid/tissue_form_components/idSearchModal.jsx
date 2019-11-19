@@ -145,11 +145,11 @@ class IDSearchModal extends Component {
                           ref={this.sampleType}
                         >
                           <option value="">----</option>
-                          {/* {this.props.parent === "dataset" && (
+                          {this.props.parent === "dataset" && (
                             <optgroup label="____________________________________________________________">
                               <option value="dataset">Dataset</option>
                             </optgroup>
-                          )} */}
+                          )} 
                           {SAMPLE_TYPES.map((optgs, index) => {
                             return (
                               <optgroup
