@@ -370,6 +370,10 @@ class DatasetEdit extends Component {
         )
         .then(res => {
           if (res.data) {
+            if (res.data.specimen.entitytype === "Dataset") {
+              res.data.dataset = res.data.specimen;
+              res.data.specimen = null;
+            }
             this.setState(prevState => ({
               source_entity: res.data,
               formErrors: { ...prevState.formErrors, source_uuid: "valid" }
