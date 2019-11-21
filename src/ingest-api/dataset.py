@@ -261,7 +261,11 @@ class Dataset(object):
         source_UUID_Data = []
         ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         try:
-            incoming_sourceUUID_list = eval(incoming_sourceUUID_string)
+            incoming_sourceUUID_list = []
+            if str(incoming_sourceUUID_string).startswith('['):
+                incoming_sourceUUID_list = eval(incoming_sourceUUID_string)
+            else:
+                incoming_sourceUUID_list.append(incoming_sourceUUID_string)
             for sourceID in incoming_sourceUUID_list:
                 hmuuid_data = ug.getUUID(current_token['nexus_token'], sourceID)
                 if len(hmuuid_data) != 1:

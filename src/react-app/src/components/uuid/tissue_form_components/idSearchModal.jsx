@@ -276,7 +276,11 @@ class IDSearchModal extends Component {
                                       //     } (and ${es.length - 1} more)`
                                       //   : result.hubmap_identifier
                                       es.map(e => {
-                                        return e.hubmap_identifier;
+                                        return {hubmap_identifier: e.hubmap_identifier, datatype: result.datatype === "Sample"
+                                      ? flattenSampleType(SAMPLE_TYPES)[
+                                          result.properties.specimen_type
+                                        ]
+                                      : result.datatype};
                                       })
                                     )
                                   }

@@ -5,6 +5,7 @@ Created on Apr 23, 2019
 '''
 import sys
 import os
+import requests
 from dataset import Dataset
 from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json
 import sys
@@ -135,10 +136,14 @@ def get_dataset(identifier):
     conn = None
     new_uuid = None
     try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
+        if r.ok == False:
+            raise ValueError("Cannot find specimen with identifier: " + identifier)
+        uuid = json.loads(r.text)[0]['hmuuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        token = str(request.headers["AUTHORIZATION"])[7:]
-        dataset_record = Dataset.get_dataset(driver, identifier)
+        dataset_record = Dataset.get_dataset(driver, uuid)
         conn.close()
         return jsonify( { 'dataset': dataset_record } ), 200
     

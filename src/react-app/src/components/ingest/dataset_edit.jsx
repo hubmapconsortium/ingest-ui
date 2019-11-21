@@ -24,8 +24,11 @@ class DatasetEdit extends Component {
     source_uuid: "",
     phi: "no",
     description: "",
+    source_uuids: [],
 
     is_curator: null,
+    source_uuid_type: "",
+    
     formErrors: {
       name: "",
       collection: "",
@@ -130,6 +133,7 @@ class DatasetEdit extends Component {
               },
           source_uuid: this.generateDisplaySourceId(source_uuids),
           source_uuid_list: source_uuids,
+          source_uuid_type: this.props.editingDataset.properties.specimen_type,
           phi: this.props.editingDataset.properties.phi,
           description: this.props.editingDataset.properties.description
         },
@@ -281,6 +285,7 @@ class DatasetEdit extends Component {
       {
         source_uuid: this.generateDisplaySourceId(ids),
         source_uuid_list: ids,
+        
         LookUpShow: false
       },
       () => {
@@ -338,7 +343,12 @@ class DatasetEdit extends Component {
 
   validateUUID = () => {
     let isValid = true;
-    const uuid = this.state.source_uuid_list[0];
+    const uuid = this.state.source_uuid_list[0].hubmap_identifier ? this.state.source_uuid_list[0].hubmap_identifier : this.state.source_uuid_list[0];
+    const uuid_type = this.state.source_uuid_list[0].datatype ? this.state.source_uuid_list[0].datatype : "";
+    //const uuid_type = "Not dataset";
+    const url_path = uuid_type === "Dataset" ? "datasets" : "specimens";
+    const url_server = uuid_type === "Dataset" ? process.env.REACT_APP_DATAINGEST_API_URL : process.env.REACT_APP_SPECIMEN_API_URL;
+    
     // const patt = new RegExp("^.{3}-.{4}-.{3}$");
     // if (patt.test(uuid)) {
     this.setState({
@@ -355,7 +365,7 @@ class DatasetEdit extends Component {
 
       return axios
         .get(
-          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}`,
+          `${url_server}/${url_path}/${uuid}`,
           config
         )
         .then(res => {
@@ -412,7 +422,7 @@ class DatasetEdit extends Component {
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid_list,
+          source_uuid: this.state.source_uuid_list[0].hubmap_identifier,
           phi: this.state.phi,
           description: this.state.description,
           status: i
@@ -498,6 +508,8 @@ class DatasetEdit extends Component {
 
   generateDisplaySourceId(source_uuids) {
     if (source_uuids.length > 1) {
+      //let first_lab_id = source_uuids[0].hubmap_identifier;
+      //let last_lab_id = source_uuids[source_uuids.length - 1].hubmap_identifier;
       let first_lab_id = source_uuids[0];
       let last_lab_id = source_uuids[source_uuids.length - 1];
       let id_common_part = first_lab_id.substring(
@@ -521,7 +533,11 @@ class DatasetEdit extends Component {
       display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
       return display_source_id;
     } else {
-      return source_uuids[0];
+      if (source_uuids[0].hubmap_identifier) {
+      	return source_uuids[0].hubmap_identifier;
+      } else {
+      	return source_uuids[0];
+      }
     }
   }
 
@@ -799,31 +815,13 @@ class DatasetEdit extends Component {
                   spin
                 />
               )}
-              {!this.state.submitting && "Save"}
+              {!this.state.submitting && "Create"}
             </button>
           </div>
           <div className="col-sm-4 text-center">
             <button
               type="button"
-              className="btn btn-primary btn-block"
-              disabled={this.state.submitting}
-              onClick={() => this.handleButtonClick("qa")}
-              data-status="qa"
-            >
-              {this.state.submitting && (
-                <FontAwesomeIcon
-                  className="inline-icon"
-                  icon={faSpinner}
-                  spin
-                />
-              )}
-              {!this.state.submitting && "Submit"}
-            </button>
-          </div>
-          <div className="col-sm-2 text-right">
-            <button
-              type="button"
-              className="btn btn-secondary"
+              className="btn btn-secondary btn-block"
               onClick={() => this.props.handleCancel()}
             >
               Cancel
@@ -854,10 +852,11 @@ class DatasetEdit extends Component {
                 </h3>
                 {this.props.editingDataset && "Dataset id: " + this.state.id}
               </div>
+              {this.state.globus_path && (
               <div className="col-sm-6">
                 To add or modify data files go to the{" "}
                 <a href={this.state.globus_path}>data repository</a>.
-              </div>
+              </div> )}
             </div>
             <div className="form-group row">
               <label
@@ -1080,8 +1079,9 @@ class DatasetEdit extends Component {
                             <b>
                               <span>
                                 {
-                                  this.state.source_entity.specimen
-                                    .hubmap_identifier
+                                  this.state.source_entity.specimen ? this.state.source_entity.specimen.hubmap_identifier : (
+                                      this.state.source_entity.dataset ? this.state.source_entity.dataset.display_doi : ""
+                                  )
                                 }
                               </span>
                             </b>
@@ -1091,37 +1091,42 @@ class DatasetEdit extends Component {
                       <div className="row">
                         <div className="col-sm-6">
                           <b>type:</b>{" "}
-                          {this.state.source_entity.specimen.specimen_type
+                          {this.state.source_entity.specimen ? (this.state.source_entity.specimen.specimen_type
                             ? flattenSampleType(SAMPLE_TYPES)[
                                 this.state.source_entity.specimen.specimen_type
                               ]
-                            : this.state.source_entity.specimen.entitytype}
+                            : this.state.source_entity.specimen.entitytype) : this.state.source_entity.dataset ? this.state.source_entity.dataset.entitytype : ""}
                         </div>
                         <div className="col-sm-6">
-                          <b>name:</b> {this.state.source_entity.specimen.label}
+                          <b>name:</b> {this.state.source_entity.specimen ? (this.state.source_entity.specimen.label) :
+                                            this.state.source_entity.dataset ? this.state.source_entity.dataset.name : ""}
                         </div>
-                        {this.state.source_entity.specimen.specimen_type ===
+                        {this.state.source_entity.specimen && (this.state.source_entity.specimen.specimen_type ===
                           "organ" && (
                           <div className="col-sm-12">
                             <b>Organ Type:</b>{" "}
-                            {
+                            {this.state.source_entity.specimen && (
                               ORGAN_TYPES[
                                 this.state.source_entity.specimen.organ
-                              ]
+                              ])
                             }
                           </div>
-                        )}
+                        ) )}
                         <div className="col-sm-6">
                           <b>HuBMAP ID:</b>{" "}
-                          {this.state.source_entity.specimen.display_doi}
+                          {this.state.source_entity.specimen ? this.state.source_entity.specimen.hubmap_identifier : (
+                                      this.state.source_entity.dataset ? this.state.source_entity.dataset.display_doi : "")}
                         </div>
                         <div className="col-sm-12">
                           <p>
                             <b>Description: </b>{" "}
-                            {truncateString(
+                            {this.state.source_entity.specimen ? (truncateString(
                               this.state.source_entity.specimen.description,
                               230
-                            )}
+                            ) ) : this.state.source_entity.dataset ? (truncateString(
+                              this.state.source_entity.dataset.description,
+                              230
+                            ) ) : ""}
                           </p>
                         </div>
                       </div>
