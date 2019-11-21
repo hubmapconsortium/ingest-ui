@@ -370,7 +370,7 @@ class DatasetEdit extends Component {
         )
         .then(res => {
           if (res.data) {
-            if (res.data.specimen.entitytype === "Dataset") {
+            if (res.data.specimen && res.data.specimen.entitytype === "Dataset") {
               res.data.dataset = res.data.specimen;
               res.data.specimen = null;
             }
@@ -512,10 +512,10 @@ class DatasetEdit extends Component {
 
   generateDisplaySourceId(source_uuids) {
     if (source_uuids.length > 1) {
-      //let first_lab_id = source_uuids[0].hubmap_identifier;
-      //let last_lab_id = source_uuids[source_uuids.length - 1].hubmap_identifier;
-      let first_lab_id = source_uuids[0];
-      let last_lab_id = source_uuids[source_uuids.length - 1];
+      let first_lab_id = source_uuids[0].hubmap_identifier ? source_uuids[0].hubmap_identifier : source_uuids[0];
+      let last_lab_id = source_uuids[source_uuids.length - 1].hubmap_identifier ? source_uuids[source_uuids.length - 1].hubmap_identifier : source_uuids[source_uuids.length - 1];
+      //let first_lab_id = source_uuids[0];
+      //let last_lab_id = source_uuids[source_uuids.length - 1];
       let id_common_part = first_lab_id.substring(
         0,
         first_lab_id.lastIndexOf("-") + 1
