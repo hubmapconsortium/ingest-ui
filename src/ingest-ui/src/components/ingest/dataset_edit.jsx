@@ -10,6 +10,9 @@ import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
+import {
+  faUserShield
+} from "@fortawesome/free-solid-svg-icons";
 
 class DatasetEdit extends Component {
   state = {
@@ -847,27 +850,34 @@ class DatasetEdit extends Component {
         <form>
           <div>
             <div className="row mt-3 mb-3">
-              <div className="col-sm-2"></div>
-              <div className="col-sm-4">
-                <h3>
+              <div className="col-sm-2">
+                 <h3 className="float-right">
                   <span className={"badge " + this.state.badge_class}>
                     {this.state.status}
                   </span>
                 </h3>
-                {this.props.editingDataset && "Dataset id: " + this.state.id}
               </div>
-              {this.state.globus_path && (
-              <div className="col-sm-6">
-                To add or modify data files go to the{" "}
-                <a href={this.state.globus_path}>data repository</a>. Do not upload any data containing any of the {" "}
-                    <span
-                      style={{ cursor: "pointer" }}
-                      className="text-primary"
-                      onClick={this.showModal}
-                    >
-                      18 identifiers specified by HIPAA
-                    </span>{" "}.
-              </div> )}
+              <div className="col-sm-10">
+                <h3>{this.props.editingDataset && "Dataset id: " + this.state.id}</h3>
+                {this.state.globus_path && (
+	              <div>
+	                <p>To add or modify data files go to the{" "}
+	                    <a href={this.state.globus_path}>data repository</a>.
+	                </p>
+
+	                <div className="alert alert-danger" role="alert">
+                        <FontAwesomeIcon icon={faUserShield} /> - Do not upload any data containing any of the {" "}
+	                    <span
+	                      style={{ cursor: "pointer" }}
+	                      className="text-primary"
+	                      onClick={this.showModal}
+	                    >
+	                      18 identifiers specified by HIPAA
+	                    </span>.
+	                    </div>
+	              </div> )}
+              </div>
+              
             </div>
             <div className="form-group row">
               <label
