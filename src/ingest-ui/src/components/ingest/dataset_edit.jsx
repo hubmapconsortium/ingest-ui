@@ -859,7 +859,14 @@ class DatasetEdit extends Component {
               {this.state.globus_path && (
               <div className="col-sm-6">
                 To add or modify data files go to the{" "}
-                <a href={this.state.globus_path}>data repository</a>.
+                <a href={this.state.globus_path}>data repository</a>. Do not upload any data containing any of the {" "}
+                    <span
+                      style={{ cursor: "pointer" }}
+                      className="text-primary"
+                      onClick={this.showModal}
+                    >
+                      18 identifiers specified by HIPAA
+                    </span>{" "}.
               </div> )}
             </div>
             <div className="form-group row">
@@ -1144,7 +1151,7 @@ class DatasetEdit extends Component {
                 htmlFor="phi"
                 className="col-sm-2 col-form-label text-right"
               >
-                PHI <span className="text-danger">*</span>
+                Gene Sequences <span className="text-danger">*</span>
               </label>
               {!this.props.readOnly && (
                 <div className="col-sm-9">
@@ -1174,15 +1181,7 @@ class DatasetEdit extends Component {
                     </label>
                   </div>
                   <small id="PHIHelpBlock" className="form-text text-muted">
-                    Does this data contain any of the{" "}
-                    <span
-                      style={{ cursor: "pointer" }}
-                      className="text-primary"
-                      onClick={this.showModal}
-                    >
-                      18 identifiers specified by HIPAA
-                    </span>{" "}
-                    ?
+                    Will this data contain any human genomic sequence data?
                   </small>
                 </div>
               )}
@@ -1204,7 +1203,7 @@ class DatasetEdit extends Component {
                     type="info"
                     effect="solid"
                   >
-                    <h4>PHI Tips</h4>
+                    <h4>Gene Sequences Tips</h4>
                   </ReactTooltip>
                 </span>
               </div>
