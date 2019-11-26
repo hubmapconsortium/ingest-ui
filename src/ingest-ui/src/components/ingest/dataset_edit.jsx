@@ -11,7 +11,8 @@ import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
-  faUserShield
+  faUserShield,
+  faExternalLinkAlt
 } from "@fortawesome/free-solid-svg-icons";
 
 class DatasetEdit extends Component {
@@ -858,11 +859,10 @@ class DatasetEdit extends Component {
                 </h3>
               </div>
               <div className="col-sm-10">
-                <h3>{this.props.editingDataset && "Dataset id: " + this.state.id}</h3>
+                <p>{this.props.editingDataset && "Dataset id: " + this.state.id}</p>
                 {this.state.globus_path && (
 	              <div>
-	                <p>To add or modify data files go to the{" "}
-	                    <a href={this.state.globus_path}>data repository</a>.
+	                <p><strong><big>To add or modify data files go to the <a href={this.state.globus_path} target="_blank">data repository <FontAwesomeIcon icon={faExternalLinkAlt} /></a>.</big></strong>
 	                </p>
 
 	                <div className="alert alert-danger" role="alert">
