@@ -25,6 +25,7 @@ class DatasetEdit extends Component {
     phi: "no",
     description: "",
     source_uuids: [],
+    globus_path: "",
 
     is_curator: null,
     source_uuid_type: "",
@@ -468,7 +469,11 @@ class DatasetEdit extends Component {
               config
             )
             .then(res => {
+              this.setState({
+                 globus_path : res.data.globus_directory_url_path
+              });
               this.props.onCreated();
+              this.onChangeGlobusURL();
             })
             .catch(error => {
               this.setState({ submit_error: true, submitting: false });
@@ -839,6 +844,10 @@ class DatasetEdit extends Component {
   errorClass(error) {
     if (error === "valid") return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
+  }
+  
+  onChangeGlobusURL() {
+  	this.props.changeLink(this.state.globus_path, this.state.name);
   }
 
   render() {

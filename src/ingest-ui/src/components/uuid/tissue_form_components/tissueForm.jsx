@@ -740,7 +740,7 @@ class TissueForm extends Component {
 
   validateUUID = () => {
     let isValid = true;
-    const uuid = this.state.source_uuid;
+    const uuid = this.state.source_uuid.hubmap_identifier;
     // const patt = new RegExp("^.{3}-.{4}-.{3}$");
     // if (patt.test(uuid)) {
     this.setState({
@@ -1032,7 +1032,7 @@ class TissueForm extends Component {
         }
       });
 
-      if (!validateRequired(this.state.source_uuid)) {
+      if (!validateRequired(this.state.source_uuid.hubmap_identifier)) {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, source_uuid: "required" }
         }));
@@ -1137,7 +1137,7 @@ class TissueForm extends Component {
                         "form-control " +
                         this.errorClass(this.state.formErrors.source_uuid)
                       }
-                      value={this.state.source_uuid}
+                      value={this.state.source_uuid && this.state.source_uuid.hubmap_identifier}
                       onChange={this.handleInputChange}
                       onKeyDown={this.handleSourceUUIDKeyDown}
                     />

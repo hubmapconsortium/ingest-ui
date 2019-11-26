@@ -2,12 +2,14 @@ import React, { Component } from "react";
 import DataList from "./datalist";
 import DatasetEdit from "./dataset_edit";
 import axios from "axios";
+import NewDatasetModal from "./newDatasetModal";
 
 class IngestEntrance extends Component {
   state = {
     editingDataset: null,
     is_curator: false,
-    filter_group: ""
+    filter_group: "",
+    globus_url: ""
   };
 
   componentDidMount() {
@@ -96,6 +98,10 @@ class IngestEntrance extends Component {
     setTimeout(() => {
       this.setState({ createSuccess: null });
     }, 5000);
+    this.setState({
+           NewDatasetShow: true
+        });
+    
   };
 
   setFilter = (group, keywords) => {
@@ -104,6 +110,10 @@ class IngestEntrance extends Component {
       filter_keywords: keywords
     });
   };
+  
+  onChangeGlobusLink(newLink, newName) {
+  	this.setState({globus_url: newLink, name: newName});
+  }
 
   render() {
     return (
@@ -146,8 +156,18 @@ class IngestEntrance extends Component {
             editingDataset={this.state.editingDataset}
             onUpdated={this.handleDatasetUpdated}
             onCreated={this.handleDatasetCreated}
+            changeLink={this.onChangeGlobusLink.bind(this)}
           />
         )}
+          <NewDatasetModal
+            show={this.state.NewDatasetShow}
+            hide={this.hideNewDatasetModal}
+            //select={this.handleSelectClick}
+            parent="dataset"
+            globus_directory_url_path={this.state.globus_url}
+            name={this.state.name}
+         />
+        
       </div>
     );
   }
