@@ -41,8 +41,8 @@ class Specimen:
             pprint(be)
             raise be
 
-    @staticmethod
-    def update_specimen(driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
+    @classmethod
+    def update_specimen(self, driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         metadata_uuid = None
         try:
@@ -224,8 +224,8 @@ class Specimen:
             pass
 
         
-    @staticmethod
-    def create_specimen(driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None, sample_count=None):
+    @classmethod
+    def create_specimen(self, driver, request, incoming_record, file_list, current_token, groupUUID, sourceUUID=None, sample_count=None):
         return_list = []
         # step 1: check that the uuids already exist
         authcache = None
@@ -640,8 +640,8 @@ class Specimen:
         print('Metadata Create statement: ' + stmt)
         return stmt
 
-    @staticmethod 
-    def get_image_file_list_for_uuid(uuid):
+    @classmethod 
+    def get_image_file_list_for_uuid(self, uuid):
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         try:
             with driver.session() as session:

@@ -963,6 +963,9 @@ def create_specimen():
         sample_count = 1    
         if 'source_uuid' in form_data:
             sourceuuid = form_data['source_uuid']
+            # the source_uuid is now a dictionary like this: "source_uuid":{"hubmap_identifier":"TEST0006-LI-1-1-1","datatype":"Fresh Frozen Tissue Section"}
+            if isinstance(sourceuuid, dict):
+                sourceuuid = sourceuuid["hubmap_identifier"]
             r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + sourceuuid, headers={'Authorization': 'Bearer ' + token })
             if r.ok == False:
                 raise ValueError("Cannot find specimen with identifier: " + sourceuuid)
