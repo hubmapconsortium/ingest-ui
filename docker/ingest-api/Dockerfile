@@ -2,7 +2,7 @@
 FROM hubmap/api-base-image:latest
 
 LABEL description="HuBMAP Ingest API Service" \
-	version="1.4"
+	version="1.5"
 
 # Change to directory that contains the Dockerfile
 WORKDIR /usr/src/app

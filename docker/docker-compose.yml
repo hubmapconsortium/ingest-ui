@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api
     # Build the image with name and tag
-    image: ingest-api:1.4
+    image: ingest-api:1.5
     hostname: ingest-api
     container_name: ingest-api
     volumes:
@@ -20,7 +20,7 @@ services:
   ingest-ui:
     build: ./ingest-ui
     # Build the image with name and tag
-    image: ingest-ui:1.4
+    image: ingest-ui:1.5
     hostname: ingest-ui
     container_name: ingest-ui
     volumes:
