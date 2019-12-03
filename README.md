@@ -10,7 +10,7 @@ And the backend ingest API is located in this repository at `src/ingest-api`, th
 
 This option allows you to setup all the pieces in a containerized environment with docker and docker-compose. This requires to have the [HuBMAP Gateway](https://github.com/hubmapconsortium/gateway) running locally before starting building the Entity API docker compose project. Please follow the [instructions](https://github.com/hubmapconsortium/gateway#workflow-of-setting-up-multiple-hubmap-docker-compose-projects). It also requires the Gateway project to be configured accordingly.
 
-## Testing and Production deployment
+### Testing and Production deployment
 
 The ingest-api and ingest-ui are deployed on a separare host machine for testing and production due to different deployment requirements.
 
