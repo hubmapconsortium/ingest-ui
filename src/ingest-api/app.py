@@ -8,6 +8,7 @@ import os
 import json
 import base64
 import requests
+import argparse
 from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json, Response
 from flask_cors import CORS, cross_origin
 import globus_sdk
@@ -1194,10 +1195,15 @@ def search_specimen():
         entity_type_list = request.args.get('entity_type')
         specimen_type = None
         searchterm = None
+        include_datasets = False
         if 'specimen_type' in request.args:
             specimen_type = request.args.get('specimen_type')
         if 'search_term' in request.args:
             searchterm = request.args.get('search_term')
+        if 'include_datasets' in request.args:
+            include_datasets_string = request.args.get('include_datasets')
+            if str(include_datasets_string).lower() == 'true':
+                include_datasets = True
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
@@ -1215,7 +1221,7 @@ def search_specimen():
                 filtered_group_uuid_list = []
                 filtered_group_uuid_list.append(group_info['uuid'])
                 
-        specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list, specimen_type)
+        specimen_list =  Specimen.search_specimen(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list, specimen_type, include_datasets)
         """if searchterm == None:
             specimen_list = entity.get_editable_entities_by_type(driver, token, specimen_type)
         else:

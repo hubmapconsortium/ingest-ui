@@ -834,7 +834,9 @@ class Specimen:
     def search_specimen(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list, specimen_type=None):
         return_list = []
         lucence_index_name = "testIdx"
-        entity_type_clause = "entity_node.entitytype IN ['Donor','Sample','Dataset']"
+        entity_type_clause = "entity_node.entitytype IN ['Donor','Sample']"
+        if include_datasets == True:
+            entity_type_clause = "entity_node.entitytype IN ['Donor','Sample','Dataset']"
         metadata_clause = "{entitytype: 'Metadata'}"
         if specimen_type != None:
             if str(specimen_type).lower() == 'donor':
