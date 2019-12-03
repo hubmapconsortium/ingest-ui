@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
+import LabIDsModal from "./labIdsModal";
 
 class Result extends Component {
   state = { results: [] };
@@ -27,6 +28,18 @@ class Result extends Component {
 
   handleReturnClick = e => {
     this.props.onReturn();
+  };
+
+  enterLabIDs = () => {
+    this.setState({
+      LabIDsModalShow: true
+    });
+  };
+
+  hideGroupSelectModal = () => {
+    this.setState({
+      LabIDsModalShow: false
+    });
   };
 
   render() {
@@ -109,6 +122,23 @@ class Result extends Component {
               </div>
               <div className="row mb-2">
                 <div className="col-sm-4 offset-sm-4">
+                  {this.props.result["new_samples"].length > 1 && (
+                    <React.Fragment>
+                      <button
+                        className="btn btn-link btn-block"
+                        type="button"
+                        onClick={this.enterLabIDs}
+                      >
+                        Assign Lab IDs
+                      </button>
+                      <LabIDsModal
+                        show={this.state.LabIDsModalShow}
+                        hide={this.hideLabIDsModal}
+                        ids={this.props.result["new_samples"]}
+                        submit={this.handleSubmit}
+                      />
+                    </React.Fragment>
+                  )}
                   {!this.props.result.sample_metadata.specimen_type && (
                     <button
                       className="btn btn-success btn-block"
