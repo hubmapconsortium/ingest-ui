@@ -1161,7 +1161,7 @@ def get_specimen(identifier):
             if conn.get_driver().closed() == False:
                 conn.close()
 
-@app.route('/specimens/search/', methods=['GET'])
+@app.route('/specimens/search', methods=['GET'])
 # @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def search_specimen():
