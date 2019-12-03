@@ -600,8 +600,8 @@ class Dataset(object):
                         prov = Provenance(self.confdata['APP_CLIENT_ID'],self.confdata['APP_CLIENT_SECRET'], None)
                         group_info = prov.get_group_by_identifier(group_uuid)
                         # take the incoming uuid_type and uppercase it
-                        url = 'http://localhost:5005/datasets/submissions/request_ingest'
-                        
+                        url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
+                        print('sending request_ingest to: ' + url)
                         r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MOCK.MICROSCOPY.IMG.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
                         if r.ok == True:
