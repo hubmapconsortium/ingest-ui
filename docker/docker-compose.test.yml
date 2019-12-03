@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  
+  ingest-api:
+    init: true
+    restart: always
+
+  ingest-ui:
+    init: true
+    restart: always
+
+    

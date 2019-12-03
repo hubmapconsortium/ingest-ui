@@ -1,4 +1,5 @@
-# Neo4j connection
+# Neo4j connection (default value used for docker dev environment)
+# Point to remote neo4j for testing and production deployment
 NEO4J_SERVER = 'bolt://hubmap-neo4j:7687'
 NEO4J_USERNAME = 'neo4j'
 NEO4J_PASSWORD = '123'
@@ -16,8 +17,9 @@ LOCAL_STORAGE_DIRECTORY = '/home/temp'
 STAGING_ENDPOINT_FILEPATH = '/hubmap-data/test-stage'
 PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/test-data'
 
-# URL for talking to UUID API
+# URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container
+# Point to remote URL for testing and production deployment
 UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
@@ -31,6 +33,7 @@ SECRET_KEY = 'a%@3k9Hdlkfjakjajf99adsf909oel'
 # Need the trailing slash /
 FLASK_APP_BASE_URI = 'http://localhost:8484/'
 
-# React app name and deployment URI
+# React app name and deployment URI (default value used for docker dev environment)
 GLOBUS_CLIENT_APP_NAME = 'HuBMAP UUID Generator'
+# Point to remote URL for testing and production deployment
 GLOBUS_CLIENT_APP_URI = 'http://localhost:8585/'
