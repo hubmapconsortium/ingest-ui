@@ -71,8 +71,3 @@ REACT_APP_READ_ONLY_GROUP_ID = '5777527e-ec11-11e8-ab41-0af86edb4424'
 ```bash
 npm start
 ```
-
-
-## Local testing against HuBMAP Gateway in a containerized environment
-
-This option allows you to setup all the pieces in a containerized environment with docker and docker-compose. This requires to have the [HuBMAP Gateway](https://github.com/hubmapconsortium/gateway) running locally before starting building the Entity API docker compose project. Please follow the [instructions](https://github.com/hubmapconsortium/gateway#workflow-of-setting-up-multiple-hubmap-docker-compose-projects). It also requires the Gateway project to be configured accordingly.
