@@ -18,17 +18,17 @@ To build the docker image of ingest-api on that separate machine, you'll first n
 
 ````
 cd docker
-./docker-setup-test.sh
-sudo docker-compose -f docker-compose.test.yml build
+./docker-setup-ingest-api.test.sh
+sudo docker-compose -f docker-compose-ingest-api.test.yml build
 ````
 
 To start up the containers:
 
 ````
-sudo docker-compose -p ingest-api -f docker-compose.test.yml up -d
+sudo docker-compose -p ingest-api -f docker-compose-ingest-api.test.yml up -d
 ````
 
 Note: here we specify the docker compose project with the `-p` to avoid "WARNING: Found orphan containers ..." due to the fact that docker compose uses the directory name as the default project name.
 
-Note: for production deployment, use `docker-setup-prod.sh` and also change `docker-compose.test.yml` to `docker-compose.prod.yml` in the above commands.
+Note: for production deployment, use `docker-setup-ingest-api.prod.sh` and also change to `docker-compose-ingest-api.prod.yml` in the above commands.
 
