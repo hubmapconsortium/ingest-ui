@@ -1080,7 +1080,7 @@ class TissueForm extends Component {
   handleSelectClick = ids => {
     this.setState(
       {
-        source_uuid: ids[0],
+        source_uuid: ids[0].hubmap_identifier,
         LookUpShow: false
       },
       () => {
