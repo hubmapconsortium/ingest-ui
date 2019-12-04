@@ -406,7 +406,7 @@ def unpublish_datastage(uuid):
                 
 
 @app.route('/datasets/status', methods = ['POST'])
-# @cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+# @cross_origin(origins=[app.config['UUID_UI_URL'], app.config['INGEST_PIPELINE_URL']], methods=['POST'])
 #disabled for now @secured(groups="HuBMAP-read")
 def update_ingest_status():
     if not request.json:

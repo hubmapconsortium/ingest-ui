@@ -602,21 +602,21 @@ class Dataset(object):
                         # take the incoming uuid_type and uppercase it
                         url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
                         print('sending request_ingest to: ' + url)
-                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MOCK.MICROSCOPY.IMG.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
+                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MOCK.MICROSCOPY.IMS.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
                         if r.ok == True:
                             """expect data like this:
                             {"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
                             """
                             data = json.loads(r.content.decode())
-                            submission_data = data['submission']
+                            submission_data = data['response']
                             if 'overall_file_count' in submission_data:
                                 if int(submission_data['overall_file_count']) <= 0:
                                     raise ValueError("Error: overall_file_count equals zero: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
                             else:
                                 raise ValueError("Error: missing 'overall_file_count' from request ingest call")
                             if 'top_folder_contents' in submission_data:
-                                top_folder_contents = json.loads(submission_data['top_folder_contents'])
+                                top_folder_contents = submission_data['top_folder_contents']
                                 if len(top_folder_contents) == 0:
                                     raise ValueError("Error: did not find any files for: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
                             else:
