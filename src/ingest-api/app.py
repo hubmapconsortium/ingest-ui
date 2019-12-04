@@ -418,6 +418,8 @@ def update_ingest_status():
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset(app.config)
+        # expecting something like this:
+        #{'ingest_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': 'success|error', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]}
         status_obj = dataset.set_ingest_status(driver, request.json)
         conn.close()
         return jsonify( { 'result' : status_obj } ), 200
