@@ -136,9 +136,6 @@ class IngestEntrance extends Component {
         {this.state.updateSuccess === true && (
           <div className="alert alert-success">Updated!</div>
         )}
-        {this.state.createSuccess === true && (
-          <div className="alert alert-success">Created!</div>
-        )}
         {this.state.updateSuccess === false && (
           <div className="alert alert-danger">Update failed!</div>
         )}
@@ -161,11 +158,12 @@ class IngestEntrance extends Component {
         )}
           <NewDatasetModal
             show={this.state.NewDatasetShow}
-            hide={this.hideNewDatasetModal}
+            //hide={this.hideNewDatasetModal}
             //select={this.handleSelectClick}
             parent="dataset"
             globus_directory_url_path={this.state.globus_url}
             name={this.state.name}
+            onDismiss={() => this.setState({ NewDatasetShow: false })}
          />
         
       </div>
