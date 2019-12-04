@@ -12,23 +12,23 @@ This option allows you to setup all the pieces in a containerized environment wi
 
 ### Testing and Production deployment
 
-The ingest-api and ingest-ui are deployed on a separare host machine for testing and production due to different deployment requirements.
+In local development mode, all the docker containers are running on the same host machine. However, the ingest-api will be deployed on a separare host machine for testing and production due to different deployment requirements. 
 
-To build the docker images of ingest-api and ingest-ui:
+To build the docker image of ingest-api on that separate machine, you'll first need to Git clone the source code of this repo and change directory to the project root.
 
 ````
 cd docker
-./docker-setup.sh
-sudo docker-compose -f docker-compose.yml -f docker-compose.test.yml build
+./docker-setup-test.sh
+sudo docker-compose -f docker-compose.test.yml build
 ````
 
 To start up the containers:
 
 ````
-sudo docker-compose -p ingest -f docker-compose.yml -f docker-compose.test.yml up -d
+sudo docker-compose -p ingest-api -f docker-compose.test.yml up -d
 ````
 
 Note: here we specify the docker compose project with the `-p` to avoid "WARNING: Found orphan containers ..." due to the fact that docker compose uses the directory name as the default project name.
 
-Note: just change `docker-compose.test.yml` to `docker-compose.prod.yml` for production deployment.
+Note: for production deployment, use `docker-setup-prod.sh` and also change `docker-compose.test.yml` to `docker-compose.prod.yml` in the above commands.
 
