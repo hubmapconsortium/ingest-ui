@@ -5,7 +5,9 @@
 **/__pycache__/
 
 # Docker copied stuff
-docker/ingest-api/src
+docker/ingest-api-dev/src
+docker/ingest-api-test/src
+docker/ingest-api-prod/src
 docker/ingest-ui/src
 
 # Ignore log files created by docker
