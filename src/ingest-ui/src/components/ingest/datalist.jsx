@@ -359,6 +359,14 @@ class DataList extends Component {
                         case "DEPRECATED":
                           btn_text = this.state.is_curator ? "View" : "View";
                           break;
+                        case "PROCESSING":
+                          badge_class = "badge-secondary";
+                          btn_text = "View";
+                          break;
+						case "ERROR":
+                          badge_class = "badge-danger";
+                          btn_text = "View";
+                          break;
                         default:
                           break;
                       }

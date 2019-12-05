@@ -1019,6 +1019,10 @@ def convert_dataset_status(raw_status):
         new_status = HubmapConst.DATASET_STATUS_UNPUBLISHED
     elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
         new_status = HubmapConst.DATASET_STATUS_QA
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_ERROR).upper():
+        new_status = HubmapConst.DATASET_STATUS_ERROR
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_PROCESSING).upper():
+        new_status = HubmapConst.DATASET_STATUS_PROCESSING
     return new_status
 
 
