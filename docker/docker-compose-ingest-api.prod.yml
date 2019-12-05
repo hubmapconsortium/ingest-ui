@@ -20,6 +20,8 @@ services:
       - "../src/ingest-api/instance:/usr/src/app/src/instance"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
+      # Mount ssl certificates from host to container
+      - "/etc/letsencrypt:/etc/letsencrypt"
     networks:
       - hubmap
 
