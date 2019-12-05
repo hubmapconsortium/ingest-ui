@@ -424,8 +424,9 @@ def update_ingest_status():
         conn.close()
         return jsonify( { 'result' : status_obj } ), 200
     
-    except ValueError:
-        abort(404, jsonify( { 'error': 'ingest_id {ingest_id} not found'.format(ingest_id=ingest_id) } ))
+    except ValueError as ve:
+        print('ERROR: ' + str(ve))
+        abort(404, jsonify( { 'error': str(ve) } ))
         
     except:
         msg = 'An error occurred: '

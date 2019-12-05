@@ -428,6 +428,7 @@ class DatasetEdit extends Component {
   handleSubmit = i => {
     this.validateForm().then(isValid => {
       if (isValid) {
+		this.setState({ submitting: true });
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
