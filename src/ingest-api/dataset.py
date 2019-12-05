@@ -644,7 +644,7 @@ class Dataset(object):
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
-                if update_record['status'] == str(HubmapConst.DATASET_STATUS_LOCKED):
+                if update_record['status'] == str(HubmapConst.DATASET_STATUS_PROCESSING):
                     #the status is set...so no problem
                     # I need to retrieve the ingest_id from the call and store it in neo4j
                     # /datasets/submissions/request_ingest 
@@ -1041,7 +1041,13 @@ if __name__ == "__main__":
     uuid_2 = dataset.get_metadata_uuid_for_ingest_id(driver, ingest_id_2)
     print (uuid_2)
     
-    json_object_1 = {'ingest_id': ingest_id_1, 'status': 'success', 'message' : 'everything is ok', 'metadata': '{"attr1":"value_1", "attr_2":"value_2"'}
+    dataset_obj_1 = dataset.get_dataset(driver, 'eb0d6aa9579ef4af1383ead1ed2412b2')
+    pprint(dataset_obj_1)
+
+    dataset_obj_2 = dataset.get_dataset(driver, '6feea44e7a6c143f2a9e1cf750abce84')
+    pprint(dataset_obj_2)
+    
+    """json_object_1 = {'ingest_id': ingest_id_1, 'status': 'success', 'message' : 'everything is ok', 'metadata': '{"attr1":"value_1", "attr_2":"value_2"'}
     
     json_object_2 = {'ingest_id': ingest_id_2, 'status': 'error', 'message' : 'everything is terrible', 'metadata': '{"attr1":"value_1_failure", "attr_2":"value_2_failure"'}
     
@@ -1050,5 +1056,5 @@ if __name__ == "__main__":
         status_obj = dataset.set_ingest_status(driver, json_object_2)
     except Exception as e:
         pprint(e)
-
+    """
     conn.close()
