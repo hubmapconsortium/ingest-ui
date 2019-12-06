@@ -2,20 +2,6 @@ version: "3.7"
 
 # Will use the hostname when talking between services on the same network
 services:
-  
-  ingest-api:
-    build: ./ingest-api
-    # Build the image with name and tag
-    image: ingest-api:1.5
-    hostname: ingest-api
-    container_name: ingest-api
-    volumes:
-      # Mount the app config to container in order to keep it outside of the image
-      - "../src/ingest-api/instance:/usr/src/app/src/instance"
-      # Mount the logging to container
-      - "../log:/usr/src/app/log"
-    networks:
-      - gateway_hubmap
 
   ingest-ui:
     build: ./ingest-ui
@@ -23,6 +9,8 @@ services:
     image: ingest-ui:1.5
     hostname: ingest-ui
     container_name: ingest-ui
+    init: true
+    restart: always
     volumes:
       # Mount the logging to container
       - "../log:/usr/src/app/log"

@@ -61,7 +61,7 @@ class EntityList extends Component {
 
     axios
       .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search/`,
+        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
         config
       )
       .then(res => {
@@ -97,7 +97,7 @@ class EntityList extends Component {
 
     axios
       .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search/`,
+        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
         config
       )
       .then(res => {
@@ -222,7 +222,7 @@ class EntityList extends Component {
 
     axios
       .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search/`,
+        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
         config
       )
       .then(res => {
@@ -267,7 +267,7 @@ class EntityList extends Component {
 
     axios
       .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search/`,
+        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
         config
       )
       .then(res => {

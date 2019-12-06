@@ -30,67 +30,11 @@ class NewDatasetModal extends Component {
     });
   };
 
-  handleSearchClick = () => {
-    const group = this.group.current.value;
-    const sample_type = this.sampleType.current.value;
-    const keywords = this.keywords.current.value;
-    let params = {};
-    params["group"] = group;
-    if (sample_type) {
-      params["specimen_type"] = sample_type;
-    }
-    if (keywords) {
-      params["search_term"] = keywords;
-    }
-/*
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      },
-      params: params
-    };
-
-    axios
-      .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search/`,
-        config
-      )
-      .then(res => {
-        let entities = {};
-        if (this.props.parent === "dataset") {
-          res.data.specimens.forEach(s => {
-            if (entities[s.properties.uuid]) {
-              entities[s.properties.uuid].push(s);
-            } else {
-              entities[s.properties.uuid] = [s];
-            }
-          });
-        } else {
-          entities = res.data.specimens;
-        }
-        this.setState({
-          HuBMAPIDResults: Object.values(entities)
-        });
-      })
-      .catch(error => {
-        console.log(error);
-      });
-      */
-  };
-
-  showSibling = e => {
-    // e.stopPropagation();
-    // this.setState({
-    //   showSibling: !this.state.showSibling
-    // });
-  };
 
 
   render() {
     return (
-      <Modal show={this.props.show} handleClose={this.hideNewDatasetModal}>
+      <Modal show={this.props.show} handleClose={this.props.onDismiss}>
         <div className="row">
           <div className="col-sm-12">
             <div className="card text-center">

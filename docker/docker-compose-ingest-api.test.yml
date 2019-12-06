@@ -1,0 +1,29 @@
+version: "3.7"
+
+# Will use the hostname when talking between services on the same network
+services:
+  
+  ingest-api:
+    build: ./ingest-api-test
+    # Build the image with name and tag
+    image: ingest-api:1.5
+    hostname: ingest-api
+    container_name: ingest-api
+    init: true
+    restart: always
+    # Only map port 80 or 443
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Mount the app config to container in order to keep it outside of the image
+      - "../src/ingest-api/instance:/usr/src/app/src/instance"
+      # Mount the logging to container
+      - "../log:/usr/src/app/log"
+      # Mount ssl certificates from host to container
+      - "/etc/letsencrypt:/etc/letsencrypt"
+    networks:
+      - hubmap
+
+networks:
+  hubmap:
