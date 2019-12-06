@@ -23,9 +23,9 @@ services:
       # Mount ssl certificates from host to container
       - "/etc/letsencrypt:/etc/letsencrypt"
       # Mount conf.d to the nginx conf.d on container
-      - "./ingest-api-prod/nginx/conf.d:/etc/nginx/conf.d"
+      - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
-      - "./ingest-api-prod/nginx/html:/usr/share/nginx/html"
+      - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
     networks:
       - hubmap
 
