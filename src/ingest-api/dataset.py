@@ -553,7 +553,7 @@ class Dataset(object):
         update_record['message'] = message_string
         if 'metadata' in json_data:
             metadata = json_data['metadata']
-            update_record['metadata'] = metadata
+            update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata
         tx = None
         with driver.session() as session:
             try:
@@ -1045,20 +1045,27 @@ if __name__ == "__main__":
     uuid_2 = dataset.get_metadata_uuid_for_ingest_id(driver, ingest_id_2)
     print (uuid_2)
     
+    ingest_id_3 = 'eb0d6aa0000ef4af1383ead1ed2412b2'
+    ingest_id_4 = 'eb0d6aa1111ef4af1383ead1ed2412b2'
+    ingest_id_5 = 'eb0d6aa2222ef4af1383ead1ed2412b2'
+     
+    id_list = [ingest_id_3, ingest_id_4, ingest_id_5]
     dataset_obj_1 = dataset.get_dataset(driver, 'eb0d6aa9579ef4af1383ead1ed2412b2')
     pprint(dataset_obj_1)
 
     dataset_obj_2 = dataset.get_dataset(driver, '6feea44e7a6c143f2a9e1cf750abce84')
     pprint(dataset_obj_2)
     
-    """json_object_1 = {'ingest_id': ingest_id_1, 'status': 'success', 'message' : 'everything is ok', 'metadata': '{"attr1":"value_1", "attr_2":"value_2"'}
+    json_object_1 = {'ingest_id': ingest_id_1, 'status': 'success', 'message' : 'everything is ok', 'metadata': '{"attr1":"value_1", "attr_2":"value_2"'}
     
-    json_object_2 = {'ingest_id': ingest_id_2, 'status': 'error', 'message' : 'everything is terrible', 'metadata': '{"attr1":"value_1_failure", "attr_2":"value_2_failure"'}
+    json_object_2 = {'ingest_id': ingest_id_2, 'status': 'error', 'message' : 'Error: This is an error message.  Stack trace: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'metadata': '{"attr1":"value_1_failure", "attr_2":"value_2_failure"'}
     
     try:
-        status_obj = dataset.set_ingest_status(driver, json_object_1)
-        status_obj = dataset.set_ingest_status(driver, json_object_2)
+        for id in id_list:
+            json_object_2['ingest_id'] = id
+            status_obj = dataset.set_ingest_status(driver, json_object_2)
+        #status_obj = dataset.set_ingest_status(driver, json_object_2)
     except Exception as e:
         pprint(e)
-    """
+
     conn.close()
