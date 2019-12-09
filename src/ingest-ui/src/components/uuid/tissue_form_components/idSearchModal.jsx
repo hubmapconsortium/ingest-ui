@@ -49,17 +49,14 @@ class IDSearchModal extends Component {
       },
       params: params
     };
-	
-	var specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`;
-	if (this.props.parent === "dataset") {
-		specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search?include_datasets=true`;
-	}
+
+    var specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`;
+    if (this.props.parent === "dataset") {
+      specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search?include_datasets=true`;
+    }
 
     axios
-      .get(
-        `${specimen_url}`,
-        config
-      )
+      .get(`${specimen_url}`, config)
       .then(res => {
         let entities = {};
         if (this.props.parent === "dataset") {
@@ -154,7 +151,7 @@ class IDSearchModal extends Component {
                             <optgroup label="____________________________________________________________">
                               <option value="dataset">Dataset</option>
                             </optgroup>
-                          )} 
+                          )}
                           {SAMPLE_TYPES.map((optgs, index) => {
                             return (
                               <optgroup
@@ -275,18 +272,19 @@ class IDSearchModal extends Component {
                                   key={result.hubmap_identifier}
                                   onClick={e =>
                                     this.props.select(
-                                      // es.length > 1
-                                      //   ? `${
-                                      //       result.hubmap_identifier
-                                      //     } (and ${es.length - 1} more)`
-                                      //   : result.hubmap_identifier
                                       es.map(e => {
-                                        return {hubmap_identifier: e.hubmap_identifier, datatype: result.datatype === "Sample"
-                                      ? flattenSampleType(SAMPLE_TYPES)[
-                                          result.properties.specimen_type
-                                        ]
-                                      : result.datatype};
-                                      })
+                                        return {
+                                          hubmap_identifier:
+                                            e.hubmap_identifier,
+                                          datatype:
+                                            result.datatype === "Sample"
+                                              ? flattenSampleType(SAMPLE_TYPES)[
+                                                  result.properties
+                                                    .specimen_type
+                                                ]
+                                              : result.datatype
+                                        };
+                                      })[0]
                                     )
                                   }
                                 >

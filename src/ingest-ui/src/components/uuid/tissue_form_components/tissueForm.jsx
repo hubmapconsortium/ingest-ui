@@ -740,7 +740,7 @@ class TissueForm extends Component {
 
   validateUUID = () => {
     let isValid = true;
-    const uuid = this.state.source_uuid.hubmap_identifier;
+    const uuid = this.state.source_uuid;
     // const patt = new RegExp("^.{3}-.{4}-.{3}$");
     // if (patt.test(uuid)) {
     this.setState({
@@ -1087,10 +1087,10 @@ class TissueForm extends Component {
     });
   };
 
-  handleSelectClick = ids => {
+  handleSelectClick = id => {
     this.setState(
       {
-        source_uuid: ids[0],
+        source_uuid: id.hubmap_identifier,
         LookUpShow: false
       },
       () => {
@@ -1137,7 +1137,7 @@ class TissueForm extends Component {
                         "form-control " +
                         this.errorClass(this.state.formErrors.source_uuid)
                       }
-                      value={this.state.source_uuid && this.state.source_uuid.hubmap_identifier}
+                      value={this.state.source_uuid}
                       onChange={this.handleInputChange}
                       onKeyDown={this.handleSourceUUIDKeyDown}
                     />
@@ -1424,7 +1424,7 @@ class TissueForm extends Component {
               </div>
             )}
             {["organ", "biopsy"].includes(this.state.specimen_type) &&
-              ((!this.props.readOnly || this.state.visit !== undefined) && (
+              (!this.props.readOnly || this.state.visit !== undefined) && (
                 <div className="form-group row">
                   <label
                     htmlFor="visit"
@@ -1454,7 +1454,7 @@ class TissueForm extends Component {
                     </div>
                   )}
                 </div>
-              ))}
+              )}
             {this.state.protocols.map((protocol, index) => {
               return (
                 <Protocol
@@ -1524,7 +1524,7 @@ class TissueForm extends Component {
               )}
             {!this.state.multiple_id &&
               !this.state.editingMultiWarning &&
-              ((!this.props.readOnly ||
+              (!this.props.readOnly ||
                 this.state.lab_tissue_id !== undefined) && (
                 <div className="form-group row">
                   <label
@@ -1573,7 +1573,7 @@ class TissueForm extends Component {
                     </ReactTooltip>
                   </div>
                 </div>
-              ))}
+              )}
             {(!this.props.readOnly || this.state.description !== undefined) && (
               <div className="form-group row">
                 <label

@@ -1250,7 +1250,7 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         parser.add_argument("-p", "--port")
         args = parser.parse_args()
-        port = 5006
+        port = 5000
         if args.port:
             port = int(args.port)
         app.run(port=port)
