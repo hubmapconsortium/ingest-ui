@@ -1077,10 +1077,10 @@ class TissueForm extends Component {
     });
   };
 
-  handleSelectClick = ids => {
+  handleSelectClick = id => {
     this.setState(
       {
-        source_uuid: ids[0].hubmap_identifier,
+        source_uuid: id.hubmap_identifier,
         LookUpShow: false
       },
       () => {
@@ -1422,7 +1422,7 @@ class TissueForm extends Component {
               </div>
             )}
             {["organ", "biopsy"].includes(this.state.specimen_type) &&
-              ((!this.props.readOnly || this.state.visit !== undefined) && (
+              (!this.props.readOnly || this.state.visit !== undefined) && (
                 <div className="form-group row">
                   <label
                     htmlFor="visit"
@@ -1452,7 +1452,7 @@ class TissueForm extends Component {
                     </div>
                   )}
                 </div>
-              ))}
+              )}
             {this.state.protocols.map((protocol, index) => {
               return (
                 <Protocol

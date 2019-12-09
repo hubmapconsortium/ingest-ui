@@ -22,6 +22,10 @@ services:
       - "../log:/usr/src/app/log"
       # Mount ssl certificates from host to container
       - "/etc/letsencrypt:/etc/letsencrypt"
+      # Mount conf.d to the nginx conf.d on container
+      - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
+      # favicon.ico
+      - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
     networks:
       - hubmap
 

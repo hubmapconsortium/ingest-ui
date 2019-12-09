@@ -608,7 +608,7 @@ class DatasetEdit extends Component {
                 <div className="col-sm-4 text-center">
                   <button
                     type="button"
-                    className="btn btn-danger btn-block"
+                    className="btn btn-dark btn-block"
                     disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("invalid")}
                     data-status="invalid"
@@ -620,7 +620,7 @@ class DatasetEdit extends Component {
                         spin
                       />
                     )}
-                    {!this.state.submitting && "Reject"}
+                    {!this.state.submitting && "Hold"}
                   </button>
                 </div>
                 <div className="col-sm-2 text-right">

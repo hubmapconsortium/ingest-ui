@@ -24,7 +24,7 @@ class Forms extends Component {
       createSuccess: false,
       formType: "sample",
       specimenType: e.entitytype === "Sample" ? "" : "organ",
-      sourceUUID: e.display_doi
+      sourceUUID: e.hubmap_identifier
     });
   };
 
