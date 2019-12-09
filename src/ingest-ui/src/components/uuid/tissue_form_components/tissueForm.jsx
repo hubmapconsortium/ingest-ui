@@ -1032,7 +1032,7 @@ class TissueForm extends Component {
         }
       });
 
-      if (!validateRequired(this.state.source_uuid.hubmap_identifier)) {
+      if (!validateRequired(this.state.source_uuid)) {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, source_uuid: "required" }
         }));
