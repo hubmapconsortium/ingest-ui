@@ -378,7 +378,7 @@ class DataList extends Component {
                               ? dataset.properties.collection.label
                               : ""}
                           </td>
-                          <td>{dataset.properties.provenance_user_email}</td>
+                          <td>{dataset.created_by}</td>
                           <td>
                             <span
                               style={{ width: "100px" }}
