@@ -36,6 +36,12 @@ class Result extends Component {
     });
   };
 
+  hideLabIDsModal = () => {
+    this.setState({
+      LabIDsModalShow: false
+    });
+  };
+
   hideGroupSelectModal = () => {
     this.setState({
       LabIDsModalShow: false
