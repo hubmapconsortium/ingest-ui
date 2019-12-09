@@ -610,7 +610,7 @@ class DatasetEdit extends Component {
                     type="button"
                     className="btn btn-dark btn-block"
                     disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("invalid")}
+                    onClick={() => this.handleButtonClick("hold")}
                     data-status="invalid"
                   >
                     {this.state.submitting && (

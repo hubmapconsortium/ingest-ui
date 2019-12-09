@@ -962,5 +962,7 @@ def convert_dataset_status(raw_status):
         new_status = HubmapConst.DATASET_STATUS_UNPUBLISHED
     elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
         new_status = HubmapConst.DATASET_STATUS_QA
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_HOLD).upper():
+        new_status = HubmapConst.DATASET_STATUS_HOLD
     return new_status
 
