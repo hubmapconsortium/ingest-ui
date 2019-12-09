@@ -284,7 +284,7 @@ class IDSearchModal extends Component {
                                                 ]
                                               : result.datatype
                                         };
-                                      })[0]
+                                      })
                                     )
                                   }
                                 >
