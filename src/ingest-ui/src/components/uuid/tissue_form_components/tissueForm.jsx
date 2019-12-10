@@ -1077,10 +1077,10 @@ class TissueForm extends Component {
     });
   };
 
-  handleSelectClick = id => {
+  handleSelectClick = ids => {
     this.setState(
       {
-        source_uuid: id.hubmap_identifier,
+        source_uuid: ids[0].hubmap_identifier,
         LookUpShow: false
       },
       () => {
