@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import ReactTooltip from "react-tooltip";
+import { truncateString } from "../../utils/string_helper";
+import Modal from "../uuid/modal";
 
 class DataList extends Component {
   state = {
@@ -240,6 +243,14 @@ class DataList extends Component {
     this.props.viewEdit(e);
   };
 
+  showErrorMsgModal = msg => {
+    this.setState({ errorMsgShow: true, statusErrorMsg: msg });
+  };
+
+  hideErrorMsgModal = () => {
+    this.setState({ errorMsgShow: false });
+  };
+
   render() {
     return (
       <React.Fragment>
@@ -348,6 +359,10 @@ class DataList extends Component {
                           badge_class = "badge-secondary";
                           btn_text = "View";
                           break;
+                        case "PROCESSING":
+                          badge_class = "badge-secondary";
+                          btn_text = "View";
+                          break;
                         case "PUBLISHED":
                           badge_class = "badge-success";
                           btn_text = this.state.is_curator ? "View" : "Reopen";
@@ -363,7 +378,7 @@ class DataList extends Component {
                           badge_class = "badge-secondary";
                           btn_text = "View";
                           break;
-						case "ERROR":
+						            case "ERROR":
                           badge_class = "badge-danger";
                           btn_text = "View";
                           break;
@@ -385,10 +400,35 @@ class DataList extends Component {
                           <td>{dataset.properties.provenance_user_email}</td>
                           <td>
                             <span
-                              style={{ width: "100px" }}
+                              style={{
+                                width: "100px",
+                                cursor: status === "ERROR" && "pointer"
+                              }}
                               className={"badge " + badge_class}
+                              data-tip
+                              data-for={"status_tooltip_" + dataset.uuid}
+                              onClick={() =>
+                                this.showErrorMsgModal(
+                                  dataset.properties.message
+                                )
+                              }
                             >
                               {status}
+                              {status === "ERROR" && (
+                                <ReactTooltip
+                                  id={"status_tooltip_" + dataset.uuid}
+                                  place="top"
+                                  type="error"
+                                  effect="solid"
+                                >
+                                  <p>
+                                    {truncateString(
+                                      dataset.properties.message,
+                                      250
+                                    ) || "Error"}
+                                  </p>
+                                </ReactTooltip>
+                              )}
                             </span>
                           </td>
                           <td>
@@ -410,6 +450,17 @@ class DataList extends Component {
             </div>
           </div>
         )}
+        <Modal
+          show={this.state.errorMsgShow}
+          handleClose={this.hideErrorMsgModal}
+        >
+          <div className="row">
+            <div className="col-sm-12 text-center alert alert-danger">
+              <h4>ERROR</h4>
+              <p>{this.state.statusErrorMsg}</p>
+            </div>
+          </div>
+        </Modal>
       </React.Fragment>
     );
   }
