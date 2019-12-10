@@ -428,6 +428,7 @@ class DatasetEdit extends Component {
   handleSubmit = i => {
     this.validateForm().then(isValid => {
       if (isValid) {
+		this.setState({ submitting: true });
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
@@ -736,7 +737,7 @@ class DatasetEdit extends Component {
                     type="button"
                     className="btn btn-primary btn-block"
                     disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("qa")}
+                    onClick={() => this.handleButtonClick("processing")}
                     data-status={this.state.status.toLowerCase()}
                   >
                     {this.state.submitting && (

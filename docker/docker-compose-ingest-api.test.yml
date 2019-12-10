@@ -4,32 +4,20 @@ version: "3.7"
 services:
   
   ingest-api:
-    build: ./ingest-api
+    build: ./ingest-api-test
     # Build the image with name and tag
     image: ingest-api:1.5
     hostname: ingest-api
     container_name: ingest-api
+    init: true
+    restart: always
     volumes:
       # Mount the app config to container in order to keep it outside of the image
       - "../src/ingest-api/instance:/usr/src/app/src/instance"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
     networks:
-      - gateway_hubmap
-
-  ingest-ui:
-    build: ./ingest-ui
-    # Build the image with name and tag
-    image: ingest-ui:1.5
-    hostname: ingest-ui
-    container_name: ingest-ui
-    volumes:
-      # Mount the logging to container
-      - "../log:/usr/src/app/log"
-    networks:
-      - gateway_hubmap
+      - hubmap
 
 networks:
-  # This is the network created by gateway to enable communicaton between multiple docker-compose projects
-  gateway_hubmap:
-    external: true
+  hubmap:

@@ -528,76 +528,19 @@ class Dataset(object):
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
      
     @classmethod
-    def set_ingest_status(self, driver, json_data):
-        # expect something like this:
-        #{'ingest_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': 'success|error', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]} 
+    def set_ingest_status(self, driver, json_data): 
         if 'ingest_id' not in json_data:
             raise ValueError('cannot find ingest_id')
-        ingest_id = json_data['ingest_id']
-        uuid = None
-        update_record = {}
-        try:
-            uuid = self.get_metadata_uuid_for_ingest_id(driver, ingest_id)
-        except:
-            raise ValueError('cannot find data for ingest_id: ' + ingest_id)
-        update_record['uuid'] = uuid
-        if 'status' not in json_data:
-            raise ValueError('cannot find status')                  
-        status_string = 'error'
-        if str(json_data['status']).lower() == 'success':
-            status_string = 'QA'
-        update_record['status'] = status_string
-        if 'message' not in json_data:
-            raise ValueError('cannot find message')                  
-        message_string = json_data['message']
-        update_record['message'] = message_string
+        ingest_id = json_data['ingest_id']      
+        status_string = 'failed'
+        if 'success_msg' in json_data:
+            status_string = 'success'
+        return_obj = {'ingest_id': ingest_id, 'status':status_string}
         if 'metadata' in json_data:
             metadata = json_data['metadata']
-            update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata
-        tx = None
-        with driver.session() as session:
-            try:
-                tx = session.begin_transaction()
-                stmt = Neo4jConnection.get_update_statement(update_record, True)
-                print ("EXECUTING DATASET UPDATE: " + stmt)
-                tx.run(stmt)
-                tx.commit()
-                return update_record
-            except TransactionError as te: 
-                print ('A transaction error occurred: ', te.value)
-                tx.rollback()
-            except CypherError as cse:
-                print ('A Cypher error was encountered: ', cse.message)
-                tx.rollback()                
-            except:
-                print ('A general error occurred: ')
-                for x in sys.exc_info():
-                    print (x)
-                tx.rollback()
+            return_obj['metadata'] = metadata
+        return return_obj
 
-    @classmethod
-    def get_metadata_uuid_for_ingest_id(self, driver, ingest_id):
-        stmt = "MATCH (e {" + HubmapConst.DATASET_INGEST_ID_ATTRIBUTE + ": '" + ingest_id + "'}) RETURN e." + HubmapConst.UUID_ATTRIBUTE + " AS uuid" 
-        record_list = []
-        with driver.session() as session:
-            try:
-                for record in session.run(stmt):
-                    dataset_record = {}
-                    dataset_record['uuid'] = record['uuid']
-                    record_list.append(dataset_record)
-                if len(record_list) == 1:
-                   return record_list[0]['uuid']
-                else:
-                   if len(record_list) == 0:
-                       raise ValueError('Error: Cannot find dataset with ingest_id of: ' + ingest_id)
-                   else:
-                       raise ValueError('Error: Found multiple datasets with ingest_id of: ' + ingest_id)
-                       
-            except CypherError as cse:
-                raise cse
-            except Exception as e:
-                raise e
-        
 
     @classmethod
     def set_status(self, driver, uuid, new_status):
@@ -644,7 +587,7 @@ class Dataset(object):
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
-                if update_record['status'] == str(HubmapConst.DATASET_STATUS_PROCESSING):
+                if update_record['status'] == str(HubmapConst.DATASET_STATUS_LOCKED):
                     #the status is set...so no problem
                     # I need to retrieve the ingest_id from the call and store it in neo4j
                     # /datasets/submissions/request_ingest 
@@ -657,23 +600,23 @@ class Dataset(object):
                         prov = Provenance(self.confdata['APP_CLIENT_ID'],self.confdata['APP_CLIENT_SECRET'], None)
                         group_info = prov.get_group_by_identifier(group_uuid)
                         # take the incoming uuid_type and uppercase it
-                        url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
-                        print('sending request_ingest to: ' + url)
-                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MICROSCOPY.IMS.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
+                        url = 'http://localhost:5005/datasets/submissions/request_ingest'
+                        
+                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MOCK.MICROSCOPY.IMG.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
                         if r.ok == True:
                             """expect data like this:
                             {"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
                             """
                             data = json.loads(r.content.decode())
-                            submission_data = data['response']
+                            submission_data = data['submission']
                             if 'overall_file_count' in submission_data:
                                 if int(submission_data['overall_file_count']) <= 0:
                                     raise ValueError("Error: overall_file_count equals zero: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
                             else:
                                 raise ValueError("Error: missing 'overall_file_count' from request ingest call")
                             if 'top_folder_contents' in submission_data:
-                                top_folder_contents = submission_data['top_folder_contents']
+                                top_folder_contents = json.loads(submission_data['top_folder_contents'])
                                 if len(top_folder_contents) == 0:
                                     raise ValueError("Error: did not find any files for: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
                             else:
@@ -1019,53 +962,5 @@ def convert_dataset_status(raw_status):
         new_status = HubmapConst.DATASET_STATUS_UNPUBLISHED
     elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
         new_status = HubmapConst.DATASET_STATUS_QA
-    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_ERROR).upper():
-        new_status = HubmapConst.DATASET_STATUS_ERROR
-    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_PROCESSING).upper():
-        new_status = HubmapConst.DATASET_STATUS_PROCESSING
     return new_status
 
-
-if __name__ == "__main__":
-    from flask import Flask
-    # Specify the absolute path of the instance folder and use the config file relative to the instance path
-    app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance'), instance_relative_config=True)
-    app.config.from_pyfile('app.cfg')
-
-    conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
-    driver = conn.get_driver()
-    
-    dataset = Dataset(app.config) 
-    
-    ingest_id_1 = 'eb0d6aa9579ef4af1383ead1ed2412b2'    
-    uuid_1 = dataset.get_metadata_uuid_for_ingest_id(driver, ingest_id_1)
-    print (uuid_1)
-
-    ingest_id_2 = '6feea44e7a6c143f2a9e1cf750abce84'    
-    uuid_2 = dataset.get_metadata_uuid_for_ingest_id(driver, ingest_id_2)
-    print (uuid_2)
-    
-    ingest_id_3 = 'eb0d6aa0000ef4af1383ead1ed2412b2'
-    ingest_id_4 = 'eb0d6aa1111ef4af1383ead1ed2412b2'
-    ingest_id_5 = 'eb0d6aa2222ef4af1383ead1ed2412b2'
-     
-    id_list = [ingest_id_3, ingest_id_4, ingest_id_5]
-    dataset_obj_1 = dataset.get_dataset(driver, 'eb0d6aa9579ef4af1383ead1ed2412b2')
-    pprint(dataset_obj_1)
-
-    dataset_obj_2 = dataset.get_dataset(driver, '6feea44e7a6c143f2a9e1cf750abce84')
-    pprint(dataset_obj_2)
-    
-    json_object_1 = {'ingest_id': ingest_id_1, 'status': 'success', 'message' : 'everything is ok', 'metadata': '{"attr1":"value_1", "attr_2":"value_2"'}
-    
-    json_object_2 = {'ingest_id': ingest_id_2, 'status': 'error', 'message' : 'Error: This is an error message.  Stack trace: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'metadata': '{"attr1":"value_1_failure", "attr_2":"value_2_failure"'}
-    
-    try:
-        for id in id_list:
-            json_object_2['ingest_id'] = id
-            status_obj = dataset.set_ingest_status(driver, json_object_2)
-        #status_obj = dataset.set_ingest_status(driver, json_object_2)
-    except Exception as e:
-        pprint(e)
-
-    conn.close()
