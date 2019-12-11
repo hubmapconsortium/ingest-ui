@@ -122,7 +122,9 @@ class TissueForm extends Component {
         .then(res => {
           if (res.data.siblingid_list.length > 0) {
             res.data.siblingid_list.push({
-              hubmap_identifier: this.props.editingEntity.hubmap_identifier
+              hubmap_identifier: this.props.editingEntity.hubmap_identifier,
+              uuid: this.props.editingEntity.uuid,
+              lab_tissue_id: this.props.editingEntity.lab_tissue_id
             });
             res.data.siblingid_list.sort((a, b) => {
               if (
@@ -156,7 +158,10 @@ class TissueForm extends Component {
               return 0;
             });
 
-            this.setState({ entities: this.props.editingEntities });
+            this.setState({
+              entities: this.props.editingEntities,
+              ids: res.data.siblingid_list
+            });
             const first_lab_id = res.data.siblingid_list[0].hubmap_identifier;
             const last_lab_id =
               res.data.siblingid_list[res.data.siblingid_list.length - 1]
@@ -1594,6 +1599,7 @@ class TissueForm extends Component {
                       type="button"
                       className="btn btn-link"
                       onClick={this.handleEditLabIDs}
+                      disabled={this.props.readOnly}
                     >
                       Edit Lab IDs
                     </button>
@@ -1602,7 +1608,7 @@ class TissueForm extends Component {
                 <LabIDsModal
                   show={this.state.LabIDsModalShow}
                   hide={this.hideLabIDsModal}
-                  ids={[]}
+                  ids={this.state.ids}
                   submit={this.handleSubmit}
                 />
               </React.Fragment>
