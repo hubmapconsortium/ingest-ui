@@ -28,8 +28,8 @@ services:
       - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
       # Mount data storage
       - "/home/temp:/home/temp"
-      - "/hubmap-data/test-stage:/hubmap-data/test-stage"
-      - "/hubmap-data/test-data:/hubmap-data/test-data"
+      - "/data/test-stage:/hubmap-data/test-stage"
+      - "/data/test-data:/hubmap-data/test-data"
     networks:
       - hubmap
 
