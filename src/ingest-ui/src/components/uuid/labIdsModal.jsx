@@ -11,10 +11,10 @@ class LabIDsModal extends Component {
   state = {};
 
   UNSAFE_componentWillReceiveProps() {
-    let assigned_ids = [];
+    let assigned_ids = {};
     if (this.props.ids) {
-      assigned_ids = this.props.ids.map(x => {
-        return { [x.uuid]: x.lab_tissue_id };
+      this.props.ids.map(x => {
+        assigned_ids[x.uuid] = x.lab_tissue_id;
       });
     }
 
