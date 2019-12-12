@@ -26,6 +26,12 @@ services:
       - "./ingest-api-prod/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-prod/nginx/html:/usr/share/nginx/html"
+      # Mount local storage and Globus data
+      # No need to change the directories in docker container (right of :)
+      # Just change the directories on host if not the same (left of :)
+      - "/home/temp:/home/temp"
+      - "/hubmap-data/test-stage:/hubmap-data/test-stage"
+      - "/hubmap-data/test-data:/hubmap-data/test-data"
     networks:
       - hubmap
 
