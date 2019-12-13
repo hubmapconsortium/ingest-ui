@@ -1,10 +1,6 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 import Modal from "../modal";
 import axios from "axios";
-import { SAMPLE_TYPES } from "../../../constants";
-import { flattenSampleType } from "../../../utils/constants_helper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
 
 //import Paper from '@material-ui/core/Paper';
 import { SelectionState } from '@devexpress/dx-react-grid';
@@ -118,6 +114,7 @@ class IDSearchModalMultiSelect extends Component {
                     <div className="form-group row">
 
 {rows && (
+      <div className="scrollbar-div">
       <Grid
         rows={rows}
         columns={columns}
@@ -134,6 +131,7 @@ class IDSearchModalMultiSelect extends Component {
           showSelectionColumn={false}
         />
       </Grid>
+      </div>
     )}
                     </div>
                   </div>

@@ -57,7 +57,7 @@ def index():
 
 
 @app.route('/hello', methods=['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def hello():
     return jsonify({'uuid': 'hello'}), 200
@@ -69,7 +69,7 @@ def hello():
 
 # Redirect users from react app login page to Globus auth login widget then redirect back
 @app.route('/login')
-@cross_origin()
+#@cross_origin()
 def login():
     #redirect_uri = url_for('login', _external=True)
     redirect_uri = app.config['FLASK_APP_BASE_URI'] + 'login'
@@ -120,7 +120,7 @@ def login():
 
    
 @app.route('/logout')
-@cross_origin()
+#@cross_origin()
 def logout():
     """
     - Revoke the tokens with Globus Auth.
@@ -160,7 +160,7 @@ def get_user_info(token):
 ####################################################################################################
 
 @app.route('/datasets', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
 @secured(groups="HuBMAP-read")
 def get_datasets():
     conn = None
@@ -217,7 +217,7 @@ def get_datasets():
                 conn.close()
 
 @app.route('/datasets/<identifier>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
 def get_dataset(identifier):
     if identifier == None or len(identifier) == 0:
@@ -248,7 +248,7 @@ def get_dataset(identifier):
                 conn.close()
 
 @app.route('/datasets', methods=['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
 @secured(groups="HuBMAP-read")
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
@@ -314,7 +314,7 @@ def create_datastage():
                 conn.close()
 
 @app.route('/datasets/<uuid>/validate', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def validate_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
@@ -341,7 +341,7 @@ def validate_dataset(uuid):
                 conn.close()
 
 @app.route('/datasets/<uuid>/publish', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def publish_datastage(uuid):
     if uuid == None or len(uuid) == 0:
@@ -373,7 +373,7 @@ def publish_datastage(uuid):
                 conn.close()
 
 @app.route('/datasets/<uuid>/unpublish', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def unpublish_datastage(uuid):
     if uuid == None or len(uuid) == 0:
@@ -406,7 +406,7 @@ def unpublish_datastage(uuid):
                 
 
 @app.route('/datasets/status', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 #disabled for now @secured(groups="HuBMAP-read")
 def update_ingest_status():
     if not request.json:
@@ -438,7 +438,7 @@ def update_ingest_status():
 
 
 @app.route('/datasets/submissions/request_ingest', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 #disabled for now @secured(groups="HuBMAP-read")
 def temp_request_ingest_call():
     # NOTE: this is just a placeholder until Joel welling's code is ready for me to test
@@ -519,7 +519,7 @@ def get_group_uuid_from_request(request):
     
 
 @app.route('/datasets/<uuid>', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
 def modify_dataset(uuid):
     if not request.form or uuid == None or len(uuid) == 0:
@@ -552,7 +552,7 @@ def modify_dataset(uuid):
                 conn.close()
 """
 @app.route('/datasets/<uuid>/lock', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def lock_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
@@ -579,7 +579,7 @@ def lock_dataset(uuid):
                 conn.close()
 
 @app.route('/datasets/<uuid>/reopen', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def reopen_dataset(uuid):
     if not request.json or uuid == None or len(uuid) == 0:
@@ -606,7 +606,7 @@ def reopen_dataset(uuid):
                 conn.close()
 """
 @app.route('/collections', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
 @secured(groups="HuBMAP-read")
 def get_collections():
     conn = None
@@ -630,7 +630,7 @@ def get_collections():
     
 
 @app.route('/collections', methods = ['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
 @secured(groups="HuBMAP-read")
 def create_collection():
     if not request.form:
@@ -665,14 +665,14 @@ def create_collection():
 
 
 @app.route('/collections/<uuid>', methods = ['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
 def update_collection():
     return Response('PUT method not implemented is invalid', 400)
 
 
 @app.route('/collections/<identifier>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
 def get_collection(identifier):
     if identifier == None or len(identifier) == 0:
@@ -705,7 +705,7 @@ def get_collection(identifier):
 ####################################################################################################
 
 @app.route('/metadata/usergroups', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def user_group_list():
     token = str(request.headers["AUTHORIZATION"])[7:]
@@ -723,7 +723,7 @@ def user_group_list():
         abort(400, msg)
 
 @app.route('/metadata/userroles', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def user_role_list():
     token = str(request.headers["AUTHORIZATION"])[7:]
@@ -748,7 +748,7 @@ def user_role_list():
 # the method returns all the editable entities available to the user. 
 @app.route('/metadata/usercanedit/type', methods = ['GET'])
 @app.route('/metadata/usercanedit/type/<entitytype>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def user_edit_entity_list(entitytype=None):
     token = str(request.headers["AUTHORIZATION"])[7:]
@@ -773,7 +773,7 @@ def user_edit_entity_list(entitytype=None):
 # this method returns a simple JSON message {'editable':'True|False'}.  True indicates that the current
 # user can edit the given entity.  False indicates they cannot edit the entity.
 @app.route('/metadata/usercanedit/<entityuuid>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def can_user_edit_entity(entityuuid):
     token = str(request.headers["AUTHORIZATION"])[7:]
@@ -802,7 +802,7 @@ def can_user_edit_entity(entityuuid):
 # The JSON returned looks like {"groupuuid":"5777527e-ec11-11e8-ab41-0af86edb4424", "groupname":"hubmap-all-access"}
 # example url: /metadata/groups/hubmap-read or /metadata/groups/777527e-ec11-11e8-ab41-0af86edb4424  
 @app.route('/metadata/groups/<identifier>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def get_group_by_identifier(identifier):
     if len(identifier) == 0:
@@ -817,7 +817,7 @@ def get_group_by_identifier(identifier):
 
     
 @app.route('/metadata/source/type/<type_code>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def get_metadata_by_source_type(type_code):
     if type_code == None or len(type_code) == 0:
@@ -845,7 +845,7 @@ def get_metadata_by_source_type(type_code):
         conn.close()
 
 @app.route('/metadata/source/<uuid>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def get_metadata_by_source(uuid):
     if uuid == None or len(uuid) == 0:
@@ -870,7 +870,7 @@ def get_metadata_by_source(uuid):
         conn.close()
 
 @app.route('/metadata/<uuid>', methods = ['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def get_metadata(uuid):
     if uuid == None or len(uuid) == 0:
@@ -902,7 +902,7 @@ def get_metadata(uuid):
 ####################################################################################################
    
 @app.route('/specimens', methods=['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 @secured(groups="HuBMAP-read")
 def create_specimen():
     if not request.form:
@@ -1011,7 +1011,7 @@ def is_user_in_group(token, group_uuid):
     return False
 
 @app.route('/specimens/<identifier>', methods=['PUT'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
 def update_specimen(identifier):
     if not request.form:
@@ -1070,7 +1070,7 @@ def update_specimen(identifier):
                 conn.close()
 
 @app.route('/specimens/exists/<uuid>', methods=['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def does_specimen_exist(uuid):
     if uuid == None:
@@ -1094,7 +1094,7 @@ def does_specimen_exist(uuid):
         abort(400, msg)
 
 @app.route('/specimens/<identifier>/siblingids', methods=['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def get_specimen_siblings(identifier):
     if identifier == None:
@@ -1128,7 +1128,7 @@ def get_specimen_siblings(identifier):
                 conn.close()
 
 @app.route('/specimens/<identifier>', methods=['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
 def get_specimen(identifier):
     if identifier == None:
@@ -1162,7 +1162,7 @@ def get_specimen(identifier):
                 conn.close()
 
 @app.route('/specimens/search', methods=['GET'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
 def search_specimen():
     """ Search using Lucene indices.  The items returned are visible to the user according to their token.
