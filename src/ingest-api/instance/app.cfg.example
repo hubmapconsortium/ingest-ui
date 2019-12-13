@@ -13,6 +13,8 @@ STAGING_ENDPOINT_UUID = ''
 PUBLISH_ENDPOINT_UUID = ''
 
 # File system settings
+# No need to modify here if deployed with docker
+# Just make sure the volume mounts in docker compose yaml mapped correctly
 LOCAL_STORAGE_DIRECTORY = '/home/temp'
 STAGING_ENDPOINT_FILEPATH = '/hubmap-data/test-stage'
 PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/test-data'

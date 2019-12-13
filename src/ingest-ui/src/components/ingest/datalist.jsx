@@ -378,9 +378,12 @@ class DataList extends Component {
                           badge_class = "badge-secondary";
                           btn_text = "View";
                           break;
-						            case "ERROR":
+                        case "ERROR":
                           badge_class = "badge-danger";
                           btn_text = "View";
+                        case "HOLD":
+                          badge_class = "badge-dark";
+                          btn_text = this.state.is_curator ? "View" : "View";
                           break;
                         default:
                           break;
@@ -397,7 +400,7 @@ class DataList extends Component {
                               ? dataset.properties.collection.label
                               : ""}
                           </td>
-                          <td>{dataset.properties.provenance_user_email}</td>
+                          <td>{dataset.created_by}</td>
                           <td>
                             <span
                               style={{

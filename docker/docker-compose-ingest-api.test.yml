@@ -11,11 +11,27 @@ services:
     container_name: ingest-api
     init: true
     restart: always
+    # Map host machine port 80, 443 to container ports
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       # Mount the app config to container in order to keep it outside of the image
       - "../src/ingest-api/instance:/usr/src/app/src/instance"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
+      # Mount ssl certificates from host to container
+      - "/etc/letsencrypt:/etc/letsencrypt"
+      # Mount conf.d to the nginx conf.d on container
+      - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
+      # favicon.ico
+      - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
+      # Mount local storage and Globus data
+      # No need to change the directories in docker container (right of :)
+      # Just change the directories on host if not the same (left of :)
+      - "/home/temp:/home/temp"
+      - "/data/test-stage:/hubmap-data/test-stage"
+      - "/data/test-data:/hubmap-data/test-data"
     networks:
       - hubmap
 

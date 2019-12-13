@@ -33,7 +33,7 @@ class DatasetEdit extends Component {
 
     is_curator: null,
     source_uuid_type: "",
-    
+
     formErrors: {
       name: "",
       collection: "",
@@ -290,7 +290,7 @@ class DatasetEdit extends Component {
       {
         source_uuid: this.generateDisplaySourceId(ids),
         source_uuid_list: ids,
-        
+
         LookUpShow: false
       },
       () => {
@@ -348,12 +348,19 @@ class DatasetEdit extends Component {
 
   validateUUID = () => {
     let isValid = true;
-    const uuid = this.state.source_uuid_list[0].hubmap_identifier ? this.state.source_uuid_list[0].hubmap_identifier : this.state.source_uuid_list[0];
-    const uuid_type = this.state.source_uuid_list[0].datatype ? this.state.source_uuid_list[0].datatype : "";
+    const uuid = this.state.source_uuid_list[0].hubmap_identifier
+      ? this.state.source_uuid_list[0].hubmap_identifier
+      : this.state.source_uuid_list[0];
+    const uuid_type = this.state.source_uuid_list[0].datatype
+      ? this.state.source_uuid_list[0].datatype
+      : "";
     //const uuid_type = "Not dataset";
     const url_path = uuid_type === "Dataset" ? "datasets" : "specimens";
-    const url_server = uuid_type === "Dataset" ? process.env.REACT_APP_DATAINGEST_API_URL : process.env.REACT_APP_SPECIMEN_API_URL;
-    
+    const url_server =
+      uuid_type === "Dataset"
+        ? process.env.REACT_APP_DATAINGEST_API_URL
+        : process.env.REACT_APP_SPECIMEN_API_URL;
+
     // const patt = new RegExp("^.{3}-.{4}-.{3}$");
     // if (patt.test(uuid)) {
     this.setState({
@@ -369,13 +376,13 @@ class DatasetEdit extends Component {
       };
 
       return axios
-        .get(
-          `${url_server}/${url_path}/${uuid}`,
-          config
-        )
+        .get(`${url_server}/${url_path}/${uuid}`, config)
         .then(res => {
           if (res.data) {
-            if (res.data.specimen && res.data.specimen.entitytype === "Dataset") {
+            if (
+              res.data.specimen &&
+              res.data.specimen.entitytype === "Dataset"
+            ) {
               res.data.dataset = res.data.specimen;
               res.data.specimen = null;
             }
@@ -428,7 +435,7 @@ class DatasetEdit extends Component {
   handleSubmit = i => {
     this.validateForm().then(isValid => {
       if (isValid) {
-		this.setState({ submitting: true });
+        this.setState({ submitting: true });
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
@@ -475,7 +482,7 @@ class DatasetEdit extends Component {
             )
             .then(res => {
               this.setState({
-                 globus_path : res.data.globus_directory_url_path
+                globus_path: res.data.globus_directory_url_path
               });
               this.props.onCreated();
               this.onChangeGlobusURL();
@@ -522,8 +529,12 @@ class DatasetEdit extends Component {
 
   generateDisplaySourceId(source_uuids) {
     if (source_uuids.length > 1) {
-      let first_lab_id = source_uuids[0].hubmap_identifier ? source_uuids[0].hubmap_identifier : source_uuids[0];
-      let last_lab_id = source_uuids[source_uuids.length - 1].hubmap_identifier ? source_uuids[source_uuids.length - 1].hubmap_identifier : source_uuids[source_uuids.length - 1];
+      let first_lab_id = source_uuids[0].hubmap_identifier
+        ? source_uuids[0].hubmap_identifier
+        : source_uuids[0];
+      let last_lab_id = source_uuids[source_uuids.length - 1].hubmap_identifier
+        ? source_uuids[source_uuids.length - 1].hubmap_identifier
+        : source_uuids[source_uuids.length - 1];
       //let first_lab_id = source_uuids[0];
       //let last_lab_id = source_uuids[source_uuids.length - 1];
       let id_common_part = first_lab_id.substring(
@@ -548,9 +559,9 @@ class DatasetEdit extends Component {
       return display_source_id;
     } else {
       if (source_uuids[0].hubmap_identifier) {
-      	return source_uuids[0].hubmap_identifier;
+        return source_uuids[0].hubmap_identifier;
       } else {
-      	return source_uuids[0];
+        return source_uuids[0];
       }
     }
   }
@@ -597,9 +608,9 @@ class DatasetEdit extends Component {
                 <div className="col-sm-4 text-center">
                   <button
                     type="button"
-                    className="btn btn-danger btn-block"
+                    className="btn btn-dark btn-block"
                     disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("invalid")}
+                    onClick={() => this.handleButtonClick("hold")}
                     data-status="invalid"
                   >
                     {this.state.submitting && (
@@ -609,7 +620,7 @@ class DatasetEdit extends Component {
                         spin
                       />
                     )}
-                    {!this.state.submitting && "Reject"}
+                    {!this.state.submitting && "Hold"}
                   </button>
                 </div>
                 <div className="col-sm-2 text-right">
@@ -850,9 +861,9 @@ class DatasetEdit extends Component {
     if (error === "valid") return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
   }
-  
+
   onChangeGlobusURL() {
-  	this.props.changeLink(this.state.globus_path, this.state.name);
+    this.props.changeLink(this.state.globus_path, this.state.name);
   }
 
   render() {
@@ -862,32 +873,50 @@ class DatasetEdit extends Component {
           <div>
             <div className="row mt-3 mb-3">
               <div className="col-sm-2">
-                 <h3 className="float-right">
+                <h3 className="float-right">
                   <span className={"badge " + this.state.badge_class}>
                     {this.state.status}
                   </span>
                 </h3>
               </div>
               <div className="col-sm-10">
-                <p>{this.props.editingDataset && "Dataset id: " + this.state.id}</p>
+                <p>
+                  {this.props.editingDataset && "Dataset id: " + this.state.id}
+                </p>
                 {this.state.globus_path && (
-	              <div>
-	                <p><strong><big>To add or modify data files go to the <a href={this.state.globus_path} target="_blank" rel="noopener noreferrer">data repository <FontAwesomeIcon icon={faExternalLinkAlt} /></a>.</big></strong>
-	                </p>
+                  <div>
+                    <p>
+                      <strong>
+                        <big>
+                          To add or modify data files go to the{" "}
+                          <a
+                            href={this.state.globus_path}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            data repository{" "}
+                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+                          </a>
+                          .
+                        </big>
+                      </strong>
+                    </p>
 
-	                <div className="alert alert-danger" role="alert">
-                        <FontAwesomeIcon icon={faUserShield} /> - Do not upload any data containing any of the {" "}
-	                    <span
-	                      style={{ cursor: "pointer" }}
-	                      className="text-primary"
-	                      onClick={this.showModal}
-	                    >
-	                      18 identifiers specified by HIPAA
-	                    </span>.
-	                    </div>
-	              </div> )}
+                    <div className="alert alert-danger" role="alert">
+                      <FontAwesomeIcon icon={faUserShield} /> - Do not upload
+                      any data containing any of the{" "}
+                      <span
+                        style={{ cursor: "pointer" }}
+                        className="text-primary"
+                        onClick={this.showModal}
+                      >
+                        18 identifiers specified by HIPAA
+                      </span>
+                      .
+                    </div>
+                  </div>
+                )}
               </div>
-              
             </div>
             <div className="form-group row">
               <label
@@ -1109,11 +1138,12 @@ class DatasetEdit extends Component {
                             HuBMAP display id:{" "}
                             <b>
                               <span>
-                                {
-                                  this.state.source_entity.specimen ? this.state.source_entity.specimen.hubmap_identifier : (
-                                      this.state.source_entity.dataset ? this.state.source_entity.dataset.display_doi : ""
-                                  )
-                                }
+                                {this.state.source_entity.specimen
+                                  ? this.state.source_entity.specimen
+                                      .hubmap_identifier
+                                  : this.state.source_entity.dataset
+                                  ? this.state.source_entity.dataset.display_doi
+                                  : ""}
                               </span>
                             </b>
                           </h4>
@@ -1122,42 +1152,59 @@ class DatasetEdit extends Component {
                       <div className="row">
                         <div className="col-sm-6">
                           <b>type:</b>{" "}
-                          {this.state.source_entity.specimen ? (this.state.source_entity.specimen.specimen_type
-                            ? flattenSampleType(SAMPLE_TYPES)[
-                                this.state.source_entity.specimen.specimen_type
-                              ]
-                            : this.state.source_entity.specimen.entitytype) : this.state.source_entity.dataset ? this.state.source_entity.dataset.entitytype : ""}
+                          {this.state.source_entity.specimen
+                            ? this.state.source_entity.specimen.specimen_type
+                              ? flattenSampleType(SAMPLE_TYPES)[
+                                  this.state.source_entity.specimen
+                                    .specimen_type
+                                ]
+                              : this.state.source_entity.specimen.entitytype
+                            : this.state.source_entity.dataset
+                            ? this.state.source_entity.dataset.entitytype
+                            : ""}
                         </div>
                         <div className="col-sm-6">
-                          <b>name:</b> {this.state.source_entity.specimen ? (this.state.source_entity.specimen.label) :
-                                            this.state.source_entity.dataset ? this.state.source_entity.dataset.name : ""}
+                          <b>name:</b>{" "}
+                          {this.state.source_entity.specimen
+                            ? this.state.source_entity.specimen.label
+                            : this.state.source_entity.dataset
+                            ? this.state.source_entity.dataset.name
+                            : ""}
                         </div>
-                        {this.state.source_entity.specimen && (this.state.source_entity.specimen.specimen_type ===
-                          "organ" && (
-                          <div className="col-sm-12">
-                            <b>Organ Type:</b>{" "}
-                            {this.state.source_entity.specimen && (
-                              ORGAN_TYPES[
-                                this.state.source_entity.specimen.organ
-                              ])
-                            }
-                          </div>
-                        ) )}
+                        {this.state.source_entity.specimen &&
+                          this.state.source_entity.specimen.specimen_type ===
+                            "organ" && (
+                            <div className="col-sm-12">
+                              <b>Organ Type:</b>{" "}
+                              {this.state.source_entity.specimen &&
+                                ORGAN_TYPES[
+                                  this.state.source_entity.specimen.organ
+                                ]}
+                            </div>
+                          )}
                         <div className="col-sm-6">
                           <b>HuBMAP ID:</b>{" "}
-                          {this.state.source_entity.specimen ? this.state.source_entity.specimen.hubmap_identifier : (
-                                      this.state.source_entity.dataset ? this.state.source_entity.dataset.display_doi : "")}
+                          {this.state.source_entity.specimen
+                            ? this.state.source_entity.specimen
+                                .hubmap_identifier
+                            : this.state.source_entity.dataset
+                            ? this.state.source_entity.dataset.display_doi
+                            : ""}
                         </div>
                         <div className="col-sm-12">
                           <p>
                             <b>Description: </b>{" "}
-                            {this.state.source_entity.specimen ? (truncateString(
-                              this.state.source_entity.specimen.description,
-                              230
-                            ) ) : this.state.source_entity.dataset ? (truncateString(
-                              this.state.source_entity.dataset.description,
-                              230
-                            ) ) : ""}
+                            {this.state.source_entity.specimen
+                              ? truncateString(
+                                  this.state.source_entity.specimen.description,
+                                  230
+                                )
+                              : this.state.source_entity.dataset
+                              ? truncateString(
+                                  this.state.source_entity.dataset.description,
+                                  230
+                                )
+                              : ""}
                           </p>
                         </div>
                       </div>
