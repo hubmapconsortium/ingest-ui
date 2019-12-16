@@ -580,7 +580,7 @@ class Specimen:
         uuid_reference_list = []
         for uuid_item in specimen_uuid_record:
             uuid_reference_list.append(uuid_item[HubmapConst.UUID_ATTRIBUTE])
-        metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = uuid_reference_list
+        #metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = uuid_reference_list
         metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
