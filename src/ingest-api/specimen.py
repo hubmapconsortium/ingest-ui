@@ -86,7 +86,7 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
         # ex: <data_parent_directory>/<group UUID>
-        data_directory = get_data_directory(cself.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
+        data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
         #get a link to the subdirectory within data directory using the current uuid
         # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
         # We need to allow this method to create a new directory.  It is possible that an earlier
