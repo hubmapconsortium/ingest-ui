@@ -906,7 +906,8 @@ def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID)
     try:
         new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
         os.mkdir(new_path)
-        return new_path
+        relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
+        return relative_path
     except globus_sdk.TransferAPIError as e:
         if e.code == "ExternalError.MkdirFailed.Exists":
             pass
