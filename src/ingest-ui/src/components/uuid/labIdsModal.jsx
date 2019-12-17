@@ -71,7 +71,7 @@ class LabIDsModal extends Component {
         <div className="row">
           <div className="col-sm-12">
             <div className="card text-center">
-              <div className="card-body">
+              <div className="card-body scrollbar-div">
                 <h5 className="card-title">Assign Lab IDs</h5>
                 {this.state.ids &&
                   this.state.ids.map(id => (
