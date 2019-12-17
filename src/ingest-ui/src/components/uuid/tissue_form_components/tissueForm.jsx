@@ -228,7 +228,7 @@ class TissueForm extends Component {
         metadata_list.push({
           id: index + 1,
           ref: React.createRef(),
-          file_name: getFileNameOnPath(metadata.file_name)
+          file_name: getFileNameOnPath(metadata.filepath)
         });
       });
 
@@ -973,6 +973,21 @@ class TissueForm extends Component {
         // Creating
         this.state.images.forEach((image, index) => {
           if (!validateRequired(image.ref.current.image_file.current.value)) {
+            isValid = false;
+            image.ref.current.validate();
+          }
+          if (
+            !validateRequired(
+              image.ref.current.image_file_description.current.value
+            )
+          ) {
+            isValid = false;
+            image.ref.current.validate();
+          }
+        });
+      } else {
+        this.state.images.forEach((image, index) => {
+          if (!validateRequired(image.file_name) && !validateRequired(image.ref.current.image_file.current.value)) {
             isValid = false;
             image.ref.current.validate();
           }
