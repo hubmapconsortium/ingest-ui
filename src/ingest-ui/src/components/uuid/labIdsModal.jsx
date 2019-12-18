@@ -22,6 +22,7 @@ class LabIDsModal extends Component {
 
       return { ids: props.ids, assigned_ids: assigned_ids };
     }
+    return null;
   }
 
   handleInputChange = e => {
