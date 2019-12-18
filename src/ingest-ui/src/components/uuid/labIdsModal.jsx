@@ -10,15 +10,18 @@ class LabIDsModal extends Component {
   // }
   state = {};
 
-  UNSAFE_componentWillReceiveProps() {
-    let assigned_ids = {};
-    if (this.props.ids) {
-      this.props.ids.map(x => {
-        assigned_ids[x.uuid] = x.lab_tissue_id;
-      });
-    }
+  static getDerivedStateFromProps(props, current_state) {
+    if (current_state.ids !== props.ids) {
+      let assigned_ids = {};
+      if (props.ids) {
+        props.ids.map(x => {
+          assigned_ids[x.uuid] = x.lab_tissue_id;
+          return x;
+        });
+      }
 
-    this.setState({ ids: this.props.ids, assigned_ids: assigned_ids });
+      return { ids: props.ids, assigned_ids: assigned_ids };
+    }
   }
 
   handleInputChange = e => {
@@ -57,6 +60,7 @@ class LabIDsModal extends Component {
               submitting: false,
               success: true
             });
+            this.props.update(formData);
           })
           .catch(error => {
             this.setState({ submitting: false, submit_error: true });
@@ -85,9 +89,7 @@ class LabIDsModal extends Component {
                           name={id.uuid}
                           className="form-control"
                           id={id.uuid}
-                          value={
-                            this.state.assigned_ids[id.uuid] || id.lab_tissue_id
-                          }
+                          value={this.state.assigned_ids[id.uuid]}
                           onChange={this.handleInputChange}
                         />
                       </div>
@@ -107,23 +109,24 @@ class LabIDsModal extends Component {
                     </div>
                   </div>
                 )}
-                <div className="form-group row">
-                  <div className="col-sm-12 text-center">
-                    <button
-                      className="btn btn-primary"
-                      onClick={this.handleSubmit}
-                      disabled={this.state.submitting}
-                    >
-                      {this.state.submitting && (
-                        <FontAwesomeIcon
-                          className="inline-icon"
-                          icon={faSpinner}
-                          spin
-                        />
-                      )}
-                      {!this.state.submitting && "Submit"}
-                    </button>
-                  </div>
+              </div>
+              <hr />
+              <div className="form-group row">
+                <div className="col-sm-12 text-center">
+                  <button
+                    className="btn btn-primary"
+                    onClick={this.handleSubmit}
+                    disabled={this.state.submitting}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className="inline-icon"
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Submit"}
+                  </button>
                 </div>
               </div>
             </div>

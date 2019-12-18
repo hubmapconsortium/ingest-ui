@@ -124,7 +124,7 @@ class TissueForm extends Component {
             res.data.siblingid_list.push({
               hubmap_identifier: this.props.editingEntity.hubmap_identifier,
               uuid: this.props.editingEntity.uuid,
-              lab_tissue_id: this.props.editingEntity.lab_tissue_id
+              lab_tissue_id: this.props.editingEntity.lab_tissue_id || ""
             });
             res.data.siblingid_list.sort((a, b) => {
               if (
@@ -969,38 +969,23 @@ class TissueForm extends Component {
         }));
       }
 
-      if (!this.props.editingEntity) {
-        // Creating
-        this.state.images.forEach((image, index) => {
-          if (!validateRequired(image.ref.current.image_file.current.value)) {
-            isValid = false;
-            image.ref.current.validate();
-          }
-          if (
-            !validateRequired(
-              image.ref.current.image_file_description.current.value
-            )
-          ) {
-            isValid = false;
-            image.ref.current.validate();
-          }
-        });
-      } else {
-        this.state.images.forEach((image, index) => {
-          if (!validateRequired(image.file_name) && !validateRequired(image.ref.current.image_file.current.value)) {
-            isValid = false;
-            image.ref.current.validate();
-          }
-          if (
-            !validateRequired(
-              image.ref.current.image_file_description.current.value
-            )
-          ) {
-            isValid = false;
-            image.ref.current.validate();
-          }
-        });
-      }
+      this.state.images.forEach((image, index) => {
+        if (
+          !validateRequired(image.file_name) &&
+          !validateRequired(image.ref.current.image_file.current.value)
+        ) {
+          isValid = false;
+          image.ref.current.validate();
+        }
+        if (
+          !validateRequired(
+            image.ref.current.image_file_description.current.value
+          )
+        ) {
+          isValid = false;
+          image.ref.current.validate();
+        }
+      });
 
       this.state.images.forEach((image, index) => {
         usedFileName.add(image.file_name);
@@ -1115,6 +1100,20 @@ class TissueForm extends Component {
 
   hideLabIDsModal = () => {
     this.setState({ LabIDsModalShow: false });
+  };
+
+  handleLabIdsUpdate = e => {
+    let new_ids = [];
+    this.state.ids.map(id => {
+      return new_ids.push({
+        hubmap_identifier: id.hubmap_identifier,
+        uuid: id.uuid,
+        lab_tissue_id: e[id.uuid]
+      });
+    });
+    this.setState({
+      ids: new_ids
+    });
   };
 
   render() {
@@ -1624,7 +1623,7 @@ class TissueForm extends Component {
                   show={this.state.LabIDsModalShow}
                   hide={this.hideLabIDsModal}
                   ids={this.state.ids}
-                  submit={this.handleSubmit}
+                  update={this.handleLabIdsUpdate}
                 />
               </React.Fragment>
             )}
