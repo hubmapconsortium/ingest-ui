@@ -103,15 +103,15 @@ class LabIDsModal extends Component {
                     </div>
                   </div>
                 )}
-                {this.state.success && (
-                  <div className="row">
-                    <div className="col-sm-12 text-center">
-                      <p className="text-success">Lab IDs updated!</p>
-                    </div>
-                  </div>
-                )}
               </div>
               <hr />
+              {this.state.success && (
+                <div className="row">
+                  <div className="col-sm-12 text-center">
+                    <p className="text-success">Lab IDs updated!</p>
+                  </div>
+                </div>
+              )}
               <div className="form-group row">
                 <div className="col-sm-12 text-center">
                   <button
