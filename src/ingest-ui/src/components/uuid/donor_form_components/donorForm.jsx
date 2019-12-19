@@ -396,7 +396,7 @@ class DonorForm extends Component {
           } else {
             data.metadatas.push({
               id: "metadata_" + i.id,
-              metadata_name: i.metadata_name
+              file_name: i.file_name
             });
           }
         });
