@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import Modal from "../modal";
 import axios from "axios";
 
@@ -12,7 +12,6 @@ import {
 } from '@devexpress/dx-react-grid-material-ui';
 
 
-
 class IDSearchModalMultiSelect extends Component {
   state = {};
 
@@ -23,7 +22,9 @@ class IDSearchModalMultiSelect extends Component {
     this.keywords = React.createRef();
     this.state = {
     	columns : [{name: 'hubmap_identifier', title: 'Identifier'}],
-    	rows: this.props.uuid_list};
+    	rows: [{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}]};
+    	
+    
   }
 
   componentDidMount() {
@@ -95,12 +96,40 @@ class IDSearchModalMultiSelect extends Component {
     //   showSibling: !this.state.showSibling
     // });
   };
+  
+  getRows = () => {
+    if (this.props.uuid_list !== undefined) {
+       return this.props.uuid_list;
+    } else {
+       return [];
+    }
+  }
+  
+  getColumns = () => {
+    if (this.state.columns !== undefined) {
+       return this.state.columns;
+    } else {
+       return [];
+    }
+  }
+
 
   render() {
-
-        let rows = this.props.uuid_list;  
-        let columns = this.state.columns;  
-		let [selection, setSelection] = rows[0];    
+        //const [rows] = this.props.uuid_list;  
+       //const  [columns] = this.state.columns;
+       //const  [columns] = React.useState([{name: 'hubmap_identifier', title: 'Identifier'}]);
+       //const [rows] = React.useState([{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}]);
+	   //const  [selection, setSelection] = React.useState([1]);  
+	   //var columns =   useState(this.state.columns);
+	   //var rows = useState([{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}]);
+	   //var [selection, setSelection] = useState([1]);
+	   let {rows, columns} = this.state;
+	   let  {selection, setSelection} = rows[0];
+        if (this.props.uuid_list === undefined) {
+          return(<div></div>);
+        } else {
+          rows = this.props.uuid_list;
+        }
     return (
   
       <Modal show={this.props.show} handleClose={this.props.hide}>
