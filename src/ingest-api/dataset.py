@@ -332,7 +332,8 @@ class Dataset(object):
                 
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
-                new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+
+                new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
                 
                 """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
@@ -956,17 +957,14 @@ class Dataset(object):
         ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
         return ret_dir
 
-# NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
-# if the file path was wrong.  
-def make_new_dataset_directory(transfer_token, transfer_endpoint_uuid, groupDisplayname, newDirUUID):
+def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
     try:
-        tc = globus_sdk.TransferClient(authorizer=AccessTokenAuthorizer(transfer_token))
-        new_path = str(os.path.join('/',groupDisplayname, newDirUUID))
-        tc.operation_mkdir(transfer_endpoint_uuid,new_path)
-        #print ("Done adding directory: " + new_path)
-        return new_path
+        new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
+        os.mkdir(new_path)
+        relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
+        return relative_path
     except globus_sdk.TransferAPIError as e:
         if e.code == "ExternalError.MkdirFailed.Exists":
             pass

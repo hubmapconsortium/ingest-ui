@@ -13,7 +13,7 @@ class Forms extends Component {
     });
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.setState({
       formType: this.props.formType
     });
