@@ -439,7 +439,9 @@ class DatasetEdit extends Component {
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid_list[0].hubmap_identifier,
+          source_uuid: this.state.source_uuid_list.map(
+            su => su.hubmap_identifier
+          ),
           phi: this.state.phi,
           description: this.state.description,
           status: i
