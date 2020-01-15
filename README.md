@@ -8,7 +8,7 @@ And the backend ingest API is located in this repository at `src/ingest-api`, th
 
 We have the following 4 development and deployment environments:
 
-* local - all the containers are running on the same localhost listing on different ports, without globus data
+* localhost - all the containers are running on the same localhost listing on different ports, without globus data
 * dev - similar to local, but on AWS EC2 instance with domains, with globus data
 * test - ingest-api and ingest-pipeline are running on the same AWS VM (with globus data), the rest APIs on another VM
 * prod - similar to test but for production settings
