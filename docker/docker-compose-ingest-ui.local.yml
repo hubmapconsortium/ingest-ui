@@ -1,0 +1,21 @@
+version: "3.7"
+
+# Will use the hostname when talking between services on the same network
+services:
+
+  ingest-ui:
+    build: ./ingest-ui
+    # Build the image with name and tag
+    image: ingest-ui:1.5
+    hostname: ingest-ui
+    container_name: ingest-ui
+    volumes:
+      # Mount the logging to container
+      - "../log:/usr/src/app/log"
+    networks:
+      - gateway_hubmap
+
+networks:
+  # This is the network created by gateway to enable communicaton between multiple docker-compose projects
+  gateway_hubmap:
+    external: true

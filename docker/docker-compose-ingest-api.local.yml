@@ -4,7 +4,7 @@ version: "3.7"
 services:
   
   ingest-api:
-    build: ./ingest-api-dev
+    build: ./ingest-api-local
     # Build the image with name and tag
     image: ingest-api:1.5
     hostname: ingest-api
@@ -18,8 +18,8 @@ services:
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
       - "/home/temp:/home/temp"
-      - "/hubmap-data/dev-stage:/hubmap-data/dev-stage"
-      - "/hubmap-data/dev-data:/hubmap-data/dev-data"
+      - "/hubmap-data/local-stage:/hubmap-data/local-stage"
+      - "/hubmap-data/local-data:/hubmap-data/local-data"
     networks:
       - gateway_hubmap
 
