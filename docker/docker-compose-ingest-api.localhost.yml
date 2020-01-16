@@ -18,8 +18,8 @@ services:
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
       - "/home/temp:/home/temp"
-      - "/hubmap-data/localhost-stage:/hubmap-data/localhost-stage"
-      - "/hubmap-data/localhost-data:/hubmap-data/localhost-data"
+      - "/hubmap-data/stage:/hubmap-data/stage"
+      - "/hubmap-data/data:/hubmap-data/data"
     networks:
       - gateway_hubmap
 
