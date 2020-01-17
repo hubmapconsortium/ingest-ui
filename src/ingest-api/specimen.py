@@ -81,7 +81,7 @@ class Specimen:
         if 'sub' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
         if 'username' in userinfo.keys():
-            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['email']
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
@@ -251,7 +251,7 @@ class Specimen:
         if 'sub' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
         if 'username' in userinfo.keys():
-            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['email']
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         activity_type = HubmapConst.REGISTER_DONOR_ACTIVITY_TYPE_CODE
