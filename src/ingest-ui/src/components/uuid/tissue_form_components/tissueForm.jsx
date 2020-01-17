@@ -1151,7 +1151,7 @@ class TissueForm extends Component {
                       Look up
                     </button>
                   </div>
-                  <div className="col-sm-2">
+                  {/* <div className="col-sm-2">
                     <button
                       className="btn btn-primary"
                       type="button"
@@ -1160,7 +1160,7 @@ class TissueForm extends Component {
                     >
                       {this.state.validatingUUID ? "..." : "Validate"}
                     </button>
-                  </div>
+                  </div> */}
                   <IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}

@@ -1084,7 +1084,7 @@ class DatasetEdit extends Component {
                       Look up
                     </button>
                   </div>
-                  <div className="col-sm-2 text-right">
+                  {/* <div className="col-sm-2 text-right">
                     <button
                       className="btn btn-primary"
                       type="button"
@@ -1093,7 +1093,7 @@ class DatasetEdit extends Component {
                     >
                       {this.state.validatingUUID ? "..." : "Validate"}
                     </button>
-                  </div>
+                  </div> */}
                   <IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
