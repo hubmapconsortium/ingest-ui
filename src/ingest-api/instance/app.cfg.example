@@ -16,8 +16,8 @@ PUBLISH_ENDPOINT_UUID = ''
 # No need to modify here if deployed with docker
 # Just make sure the volume mounts in docker compose yaml mapped correctly
 LOCAL_STORAGE_DIRECTORY = '/home/temp'
-STAGING_ENDPOINT_FILEPATH = '/hubmap-data/test-stage'
-PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/test-data'
+STAGING_ENDPOINT_FILEPATH = '/hubmap-data/stage'
+PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/data'
 
 # URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container
