@@ -498,6 +498,11 @@ class TissueForm extends Component {
         this.setState({
           multiple_id: e.target.checked
         });
+        if(!e.target.checked){
+          this.setState({
+            sample_count: ""
+          })
+        }
         break;
       case "sample_count":
         this.setState({
