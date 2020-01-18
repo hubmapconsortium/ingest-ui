@@ -634,7 +634,6 @@ class Dataset(object):
         with driver.session() as session:
             tx = None
             try:
-                print('BEGINNING modify_dataset')
                 tx = session.begin_transaction()
                 update_record = formdata
 
@@ -648,7 +647,6 @@ class Dataset(object):
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
                 if update_record['status'] == str(HubmapConst.DATASET_STATUS_PROCESSING):
-                    print('DATASET IS LOCKED')
                     #the status is set...so no problem
                     # I need to retrieve the ingest_id from the call and store it in neo4j
                     # /datasets/submissions/request_ingest 
@@ -662,10 +660,9 @@ class Dataset(object):
                         group_info = prov.get_group_by_identifier(group_uuid)
                         # take the incoming uuid_type and uppercase it
                         url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
-                        print('SENDING request_ingest TO: ' + url)
+                        print('sending request_ingest to: ' + url)
                         r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MICROSCOPY.IMS.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
-                        print('REPLY WAS %s' % r)
                         if r.ok == True:
                             """expect data like this:
                             {"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
@@ -698,9 +695,6 @@ class Dataset(object):
                     except Exception as e:
                         pprint(e)
                         raise e
-                else:
-                    print('DATASET IS NOT LOCKED')
-                    
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
                 print ("EXECUTING DATASET UPDATE: " + stmt)
@@ -968,9 +962,7 @@ def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID)
         raise ValueError('The dataset UUID must have a value')
     try:
         new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
-        print('CREATING %s' % new_path)
         os.makedirs(new_path)
-        print('CREATION SUCCESSFUL')
         relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
         return relative_path
     except globus_sdk.TransferAPIError as e:
