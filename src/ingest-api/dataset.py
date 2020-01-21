@@ -530,18 +530,78 @@ class Dataset(object):
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
      
     @classmethod
-    def set_ingest_status(self, driver, json_data): 
+    def get_metadata_uuid_for_ingest_id(self, driver, ingest_id):
+        stmt = "MATCH (e {" + HubmapConst.DATASET_INGEST_ID_ATTRIBUTE + ": '" + ingest_id + "'}) RETURN e." + HubmapConst.UUID_ATTRIBUTE + " AS uuid" 
+        record_list = []
+        with driver.session() as session:
+            try:
+                for record in session.run(stmt):
+                    dataset_record = {}
+                    dataset_record['uuid'] = record['uuid']
+                    record_list.append(dataset_record)
+                if len(record_list) == 1:
+                   return record_list[0]['uuid']
+                else:
+                   if len(record_list) == 0:
+                       raise ValueError('Error: Cannot find dataset with ingest_id of: ' + ingest_id)
+                   else:
+                       raise ValueError('Error: Found multiple datasets with ingest_id of: ' + ingest_id)
+                       
+            except CypherError as cse:
+                raise cse
+            except Exception as e:
+                raise e
+
+    @classmethod
+    def set_ingest_status(self, driver, json_data):
+        # expect something like this:
+        #{'ingest_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': 'success|error', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]} 
         if 'ingest_id' not in json_data:
             raise ValueError('cannot find ingest_id')
-        ingest_id = json_data['ingest_id']      
-        status_string = 'failed'
-        if 'success_msg' in json_data:
-            status_string = 'success'
-        return_obj = {'ingest_id': ingest_id, 'status':status_string}
+        ingest_id = json_data['ingest_id']
+        uuid = None
+        update_record = {}
+        try:
+            uuid = self.get_metadata_uuid_for_ingest_id(driver, ingest_id)
+        except:
+            raise ValueError('cannot find data for ingest_id: ' + ingest_id)
+        update_record['uuid'] = uuid
+        if 'status' not in json_data:
+            raise ValueError('cannot find status')                  
+        status_string = 'error'
+        if str(json_data['status']).lower() == 'success':
+            status_string = 'QA'
+        if 'process' in json_data:
+            if json_data['process'] == True:
+              status_string = 'New'
+        update_record['status'] = status_string
+        if 'message' not in json_data:
+            raise ValueError('cannot find message')                  
+        message_string = json_data['message']
+        update_record['message'] = message_string
         if 'metadata' in json_data:
             metadata = json_data['metadata']
-            return_obj['metadata'] = metadata
-        return return_obj
+            update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata
+        tx = None
+        with driver.session() as session:
+            try:
+                tx = session.begin_transaction()
+                stmt = Neo4jConnection.get_update_statement(update_record, True)
+                print ("EXECUTING DATASET UPDATE: " + stmt)
+                tx.run(stmt)
+                tx.commit()
+                return update_record
+            except TransactionError as te: 
+                print ('A transaction error occurred: ', te.value)
+                tx.rollback()
+            except CypherError as cse:
+                print ('A Cypher error was encountered: ', cse.message)
+                tx.rollback()                
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                tx.rollback()
 
 
     @classmethod
@@ -550,8 +610,9 @@ class Dataset(object):
             tx = None
             try:
                 tx = session.begin_transaction()
+                metadata_node = Entity.get_entity_metadata(driver, uuid)
                 #construct a small record consisting of the uuid and new status
-                update_record = { "{uuid_attr}".format(uuid_attr=HubmapConst.UUID_ATTRIBUTE) : "{uuid}".format(uuid=uuid), 
+                update_record = { "{uuid_attr}".format(uuid_attr=HubmapConst.UUID_ATTRIBUTE) : "{uuid}".format(uuid=metadata_node['uuid']), 
                                  "{status_attr}".format(status_attr=HubmapConst.STATUS_ATTRIBUTE): "{new_status}".format(new_status=new_status)}
                 #{"entityType" : "{uuid_datatype}".format(uuid_datatype=uuid_datatype), "generateDOI" : "true", "hubmap-ids" : hubmap_identifier}
                 stmt = Neo4jConnection.get_update_statement(update_record, True)

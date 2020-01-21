@@ -163,6 +163,7 @@ def get_user_info(token):
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'POST'])
 @secured(groups="HuBMAP-read")
 def get_datasets():
+    print("here get_datasets")
     conn = None
     try:
         token = str(request.headers["AUTHORIZATION"])[7:]
@@ -220,6 +221,7 @@ def get_datasets():
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET', 'PUT'])
 @secured(groups="HuBMAP-read")
 def get_dataset(identifier):
+    print("here get_dataset")
     if identifier == None or len(identifier) == 0:
         abort(400, jsonify( { 'error': 'identifier parameter is required to get a dataset' } ))
     
@@ -253,6 +255,7 @@ def get_dataset(identifier):
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
 def create_datastage():
+    print("here create_datastage")
     if not request.form:
         abort(400)
     if 'data' not in request.form:
@@ -317,6 +320,7 @@ def create_datastage():
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def validate_dataset(uuid):
+    print("here validate_dataset")
     if not request.json or uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to validate a dataset' } ))
     
@@ -344,6 +348,7 @@ def validate_dataset(uuid):
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def publish_datastage(uuid):
+    print("here publish_datastage")
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to publish a dataset' } ))
     
@@ -376,6 +381,7 @@ def publish_datastage(uuid):
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 @secured(groups="HuBMAP-read")
 def unpublish_datastage(uuid):
+    print("here unpublish_datastage")
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to unpublish a dataset' } ))
     
@@ -404,11 +410,44 @@ def unpublish_datastage(uuid):
             if conn.get_driver().closed() == False:
                 conn.close()
                 
+@app.route('/datasets/<uuid>/status/<new_status>', methods = ['PUT'])
+@secured(groups="HuBMAP-read")
+def update_dataset_status(uuid, new_status):
+    print("here update_dataset_status")
+    if uuid == None or len(uuid) == 0:
+        abort(400, jsonify( { 'error': 'uuid parameter is required to change a dataset status' } ))
+    if str(new_status) not in HubmapConst.DATASET_STATUS_OPTIONS:
+        abort(400, jsonify( { 'error': 'dataset status: ' + str(new_status) + ' is not a valid status.' } ))
+    conn = None
+    new_uuid = None
+    try:
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        dataset = Dataset(app.config)
+        status_obj = dataset.set_status(driver, uuid, new_status)
+        conn.close()
+        return jsonify( { 'result' : status_obj } ), 200
+    
+    except ValueError as ve:
+        print('ERROR: ' + str(ve))
+        abort(404, jsonify( { 'error': str(ve) } ))
+        
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        print (msg)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/status', methods = ['POST'])
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 #disabled for now @secured(groups="HuBMAP-read")
 def update_ingest_status():
+    print("here update_ingest_status")
     if not request.json:
         abort(400, jsonify( { 'error': 'no data found cannot process update' } ))
     
@@ -443,6 +482,7 @@ def update_ingest_status():
 def temp_request_ingest_call():
     # NOTE: this is just a placeholder until Joel welling's code is ready for me to test
     # simply return the dataset's uuid as the ingest_id and add some characters for the run_id
+    print("here temp_request_ingest_call")
     if not request.json:
         abort(400, jsonify( { 'error': 'no data found cannot process request_ingest' } ))
     
@@ -522,6 +562,7 @@ def get_group_uuid_from_request(request):
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'GET'])
 @secured(groups="HuBMAP-read")
 def modify_dataset(uuid):
+    print("here modify_dataset")
     if not request.form or uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to modify a dataset' } ))
     if 'data' not in request.form:
