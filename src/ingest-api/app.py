@@ -256,7 +256,7 @@ def create_derived_dataset():
         abort(400, jsonify( { 'error': 'This request requries a json in the body' } ))
     
     json_data = request.get_json()
-    pprint(json_data)
+    #pprint(json_data)
 
     if 'source_dataset_uuid' not in json_data:
         abort(400, jsonify( { 'error': "The 'source_dataset_uuid' property is requried in the json data from the request" } ))
@@ -264,34 +264,32 @@ def create_derived_dataset():
     # Create a new derived dataset based on this parent dataset ID
     conn = None
 
-    # try:
-    conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
-    driver = conn.get_driver()
-    dataset = Dataset(app.config)
-
-    # Note: the user who can create the derived dataset doesn't have to be the same person who created the source dataset
-    # Get the nexus token from request headers
-    nexus_token = None
     try:
-        nexus_token = AuthHelper.parseAuthorizationTokens(request.headers)
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        dataset = Dataset(app.config)
+
+        # Note: the user who can create the derived dataset doesn't have to be the same person who created the source dataset
+        # Get the nexus token from request headers
+        nexus_token = None
+        try:
+            nexus_token = AuthHelper.parseAuthorizationTokens(request.headers)
+        except:
+            raise ValueError("Unable to parse globus token from request header")
+
+        new_record = dataset.create_derived_datastage(driver, nexus_token, json_data)
+        conn.close()
+
+        return jsonify( new_record ), 201
     except:
-        raise ValueError("Unable to parse globus token from request header")
-
-    pprint("========calling create_derived_datastage()===========")
-    new_record = dataset.create_derived_datastage(driver, nexus_token, json_data)
-    conn.close()
-
-    return jsonify( new_record ), 201
-    # except:
-    #     pprint("========error calling create_derived_datastage()===========")
-    #     msg = 'An error occurred: '
-    #     for x in sys.exc_info():
-    #         msg += str(x)
-    #     abort(400, msg)
-    # finally:
-    #     if conn != None:
-    #         if conn.get_driver().closed() == False:
-    #             conn.close()
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 
 ###############################
