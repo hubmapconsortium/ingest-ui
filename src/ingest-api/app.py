@@ -271,7 +271,6 @@ def create_derived_dataset():
         abort(400, jsonify( { 'error': 'This request requries a json in the body' } ))
     
     json_data = request.get_json()
-    #pprint(json_data)
 
     if 'source_dataset_uuid' not in json_data:
         abort(400, jsonify( { 'error': "The 'source_dataset_uuid' property is requried in the json data from the request" } ))

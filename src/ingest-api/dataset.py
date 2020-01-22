@@ -274,9 +274,6 @@ class Dataset(object):
         if 'provenance_group_uuid' in dataset_record:
             source_dataset_provenance_group_uuid = dataset_record['provenance_group_uuid']
 
-        #pprint("========dataset_record===========")
-        #pprint(dataset_record)
-
         # Note: the user who can create the derived dataset doesn't have to be the same person who created the source dataset
         # That's why we need to parase the userinfo again here
         authcache = None
@@ -289,8 +286,6 @@ class Dataset(object):
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
             raise ValueError('Cannot authenticate current token via Globus.')
-
-        #pprint(userinfo)
 
         # Decide the provenance group UUID
         provenance_group = None
@@ -516,7 +511,7 @@ class Dataset(object):
                 group_display_name = provenance_group['displayname']
 
                 new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = build_globus_url_for_directory(self.confdata['STAGING_ENDPOINT_UUID'], new_path)
+                new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = os.makedirs(new_path)"""
@@ -1208,47 +1203,3 @@ def convert_dataset_status(raw_status):
         new_status = HubmapConst.DATASET_STATUS_HOLD
     return new_status
 
-
-if __name__ == "__main__":
-    from flask import Flask
-    # Specify the absolute path of the instance folder and use the config file relative to the instance path
-    app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance'), instance_relative_config=True)
-    app.config.from_pyfile('app.cfg')
-
-    conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
-    driver = conn.get_driver()
-    
-    C
-    
-    ingest_id_1 = 'eb0d6aa9579ef4af1383ead1ed2412b2'    
-    uuid_1 = dataset.get_metadata_uuid_for_ingest_id(driver, ingest_id_1)
-    print (uuid_1)
-
-    ingest_id_2 = '6feea44e7a6c143f2a9e1cf750abce84'    
-    uuid_2 = dataset.get_metadata_uuid_for_ingest_id(driver, ingest_id_2)
-    print (uuid_2)
-    
-    ingest_id_3 = 'eb0d6aa0000ef4af1383ead1ed2412b2'
-    ingest_id_4 = 'eb0d6aa1111ef4af1383ead1ed2412b2'
-    ingest_id_5 = 'eb0d6aa2222ef4af1383ead1ed2412b2'
-     
-    id_list = [ingest_id_3, ingest_id_4, ingest_id_5]
-    dataset_obj_1 = dataset.get_dataset(driver, 'eb0d6aa9579ef4af1383ead1ed2412b2')
-    pprint(dataset_obj_1)
-
-    dataset_obj_2 = dataset.get_dataset(driver, '6feea44e7a6c143f2a9e1cf750abce84')
-    pprint(dataset_obj_2)
-    
-    json_object_1 = {'ingest_id': ingest_id_1, 'status': 'success', 'message' : 'everything is ok', 'metadata': '{"attr1":"value_1", "attr_2":"value_2"'}
-    
-    json_object_2 = {'ingest_id': ingest_id_2, 'status': 'error', 'message' : 'Error: This is an error message.  Stack trace: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'metadata': '{"attr1":"value_1_failure", "attr_2":"value_2_failure"'}
-    
-    try:
-        for id in id_list:
-            json_object_2['ingest_id'] = id
-            status_obj = dataset.set_ingest_status(driver, json_object_2)
-        #status_obj = dataset.set_ingest_status(driver, json_object_2)
-    except Exception as e:
-        pprint(e)
-
-    conn.close()
