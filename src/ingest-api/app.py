@@ -248,7 +248,22 @@ def get_dataset(identifier):
                 conn.close()
 
 
-###############################
+# Create derived dataset
+"""
+Input JSON example:
+{
+"source_dataset_uuid":"e517ce652d3c4f22ace7f21fd64208ac",
+"derived_dataset_name":"Test derived dataset 1",
+"derived_dataset_entity_type":"Dataset"
+}
+
+Output JSON example:
+{
+    "derived_dataset_uuid": "2ecc257c3fd1875be08a12ff654f1264",
+    "group_display_name": "IEC Testing Group",
+    "group_uuid": "5bd084c8-edc2-11e8-802f-0e368f3075e8"
+}
+"""
 @app.route('/datasets/derived', methods=['POST'])
 @secured(groups="HuBMAP-read")
 def create_derived_dataset():
@@ -260,6 +275,12 @@ def create_derived_dataset():
 
     if 'source_dataset_uuid' not in json_data:
         abort(400, jsonify( { 'error': "The 'source_dataset_uuid' property is requried in the json data from the request" } ))
+    
+    if 'derived_dataset_name' not in json_data:
+        abort(400, jsonify( { 'error': "The 'derived_dataset_name' property is requried in the json data from the request" } ))
+
+    if 'derived_dataset_entity_type' not in json_data:
+        abort(400, jsonify( { 'error': "The 'derived_dataset_entity_type' property is requried in the json data from the request" } ))
 
     # Create a new derived dataset based on this parent dataset ID
     conn = None
@@ -290,9 +311,6 @@ def create_derived_dataset():
         if conn != None:
             if conn.get_driver().closed() == False:
                 conn.close()
-
-
-###############################
 
 
 @app.route('/datasets', methods=['POST'])

@@ -241,8 +241,7 @@ class Dataset(object):
 
 
 
-# Create derived dataset
-####################
+    # Create derived dataset
     @classmethod
     def create_derived_datastage(self, driver, nexus_token, json_data):
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
@@ -316,7 +315,8 @@ class Dataset(object):
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
     
         activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
-        entity_type = HubmapConst.DATASET_TYPE_CODE
+        # Use the entity_type from the input JSON
+        entity_type = json_data['derived_dataset_entity_type']
         
         with driver.session() as session:
             # First create a new uuid for this derived dataset
@@ -354,6 +354,9 @@ class Dataset(object):
                 # Create the Entity Metadata node
                 # Don't use None, it'll throw TypeError: 'NoneType' object does not support item assignment
                 metadata_record = {}
+
+                # Use the dataset name from input json
+                metadata_record['name'] = json_data['derived_dataset_name']
 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
@@ -411,15 +414,6 @@ class Dataset(object):
                 for x in sys.exc_info():
                     print (x)
                 tx.rollback()
-
-########################
-
-
-
-
-
-
-
 
 
 
