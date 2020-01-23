@@ -207,6 +207,19 @@ class Dataset(object):
         metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
         metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
+        if HubmapConst.DATA_TYPES_ATTRIBUTE in metadata_record:
+            if metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] == None or len(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE]) == 0:
+                        metadata_record.pop(HubmapConst.DATA_TYPES_ATTRIBUTE)
+            else:
+                try:
+                    #try to load the data as json
+                    #json.loads(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE])
+                    if isinstance(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE], list):
+                        metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(
+                            metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE])
+                except ValueError:
+                    # that failed, so load it as a string
+                    metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE]
                      
         stmt = Neo4jConnection.get_create_statement(
             metadata_record, HubmapConst.METADATA_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
