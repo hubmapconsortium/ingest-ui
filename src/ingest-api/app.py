@@ -469,6 +469,37 @@ def unpublish_datastage(uuid):
             if conn.get_driver().closed() == False:
                 conn.close()
                 
+@app.route('/datasets/<uuid>/status/<new_status>', methods = ['PUT'])
+@secured(groups="HuBMAP-read")
+def update_dataset_status(uuid, new_status):
+    if uuid == None or len(uuid) == 0:
+        abort(400, jsonify( { 'error': 'uuid parameter is required to change a dataset status' } ))
+    if str(new_status) not in HubmapConst.DATASET_STATUS_OPTIONS:
+        abort(400, jsonify( { 'error': 'dataset status: ' + str(new_status) + ' is not a valid status.' } ))
+    conn = None
+    new_uuid = None
+    try:
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        dataset = Dataset(app.config)
+        status_obj = dataset.set_status(driver, uuid, new_status)
+        conn.close()
+        return jsonify( { 'result' : status_obj } ), 200
+    
+    except ValueError as ve:
+        print('ERROR: ' + str(ve))
+        abort(404, jsonify( { 'error': str(ve) } ))
+        
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        print (msg)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 @app.route('/datasets/status', methods = ['POST'])
 # @cross_origin(origins=[app.config['UUID_UI_URL'], app.config['INGEST_PIPELINE_URL']], methods=['POST'])

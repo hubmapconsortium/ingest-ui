@@ -707,6 +707,29 @@ class Dataset(object):
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
      
     @classmethod
+    def get_metadata_uuid_for_ingest_id(self, driver, ingest_id):
+        stmt = "MATCH (e {" + HubmapConst.DATASET_INGEST_ID_ATTRIBUTE + ": '" + ingest_id + "'}) RETURN e." + HubmapConst.UUID_ATTRIBUTE + " AS uuid" 
+        record_list = []
+        with driver.session() as session:
+            try:
+                for record in session.run(stmt):
+                    dataset_record = {}
+                    dataset_record['uuid'] = record['uuid']
+                    record_list.append(dataset_record)
+                if len(record_list) == 1:
+                   return record_list[0]['uuid']
+                else:
+                   if len(record_list) == 0:
+                       raise ValueError('Error: Cannot find dataset with ingest_id of: ' + ingest_id)
+                   else:
+                       raise ValueError('Error: Found multiple datasets with ingest_id of: ' + ingest_id)
+                       
+            except CypherError as cse:
+                raise cse
+            except Exception as e:
+                raise e
+
+    @classmethod
     def set_ingest_status(self, driver, json_data):
         # expect something like this:
         #{'ingest_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': 'success|error', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]} 
@@ -725,6 +748,9 @@ class Dataset(object):
         status_string = 'error'
         if str(json_data['status']).lower() == 'success':
             status_string = 'QA'
+        if 'process' in json_data:
+            if json_data['process'] == True:
+              status_string = 'New'
         update_record['status'] = status_string
         if 'message' not in json_data:
             raise ValueError('cannot find message')                  
@@ -784,8 +810,9 @@ class Dataset(object):
             tx = None
             try:
                 tx = session.begin_transaction()
+                metadata_node = Entity.get_entity_metadata(driver, uuid)
                 #construct a small record consisting of the uuid and new status
-                update_record = { "{uuid_attr}".format(uuid_attr=HubmapConst.UUID_ATTRIBUTE) : "{uuid}".format(uuid=uuid), 
+                update_record = { "{uuid_attr}".format(uuid_attr=HubmapConst.UUID_ATTRIBUTE) : "{uuid}".format(uuid=metadata_node['uuid']), 
                                  "{status_attr}".format(status_attr=HubmapConst.STATUS_ATTRIBUTE): "{new_status}".format(new_status=new_status)}
                 #{"entityType" : "{uuid_datatype}".format(uuid_datatype=uuid_datatype), "generateDOI" : "true", "hubmap-ids" : hubmap_identifier}
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
