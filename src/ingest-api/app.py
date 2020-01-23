@@ -282,8 +282,8 @@ def create_derived_dataset():
         abort(400, jsonify( { 'error': "The 'derived_dataset_types' property is requried in the json data from the request" } ))
 
     # Ensure the data types is an array
-    if isinstance(json_data['derived_dataset_types'], dict):
-        abort(400, jsonify( { 'error': "The 'derived_dataset_types' property is requried in the json data from the request" } ))
+    if not isinstance(json_data['derived_dataset_types'], list):
+        abort(400, jsonify( { 'error': "The 'derived_dataset_types' values must be an json array" } ))
 
     # Create a new derived dataset based on this parent dataset ID
     conn = None
