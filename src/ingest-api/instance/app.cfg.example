@@ -44,3 +44,6 @@ GLOBUS_CLIENT_APP_URI = 'http://localhost:8585/'
 INGEST_PIPELINE_URL = 'http://ingest-pipeline:8789/api/hubmap'
 # internal test: INGEST_PIPELINE_URL = 'http://localhost:5005/datasets/submissions'
 
+# Default processing type for ingest pipeline API.
+INGEST_PIPELINE_DEFAULT_PROCESS = 'SCAN.AND.BEGIN.PROCESSING'
+

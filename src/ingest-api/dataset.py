@@ -838,7 +838,9 @@ class Dataset(object):
                         # take the incoming uuid_type and uppercase it
                         url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
                         print('sending request_ingest to: ' + url)
-                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MICROSCOPY.IMS.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
+                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid),
+                                                     "process" : self.confdata['INGEST_PIPELINE_DEFAULT_PROCESS'],
+                                                     "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
                         if r.ok == True:
                             """expect data like this:
