@@ -126,9 +126,11 @@ class DatasetEdit extends Component {
       } catch {
         source_uuids = [this.props.editingDataset.properties.source_uuid];
       }
-      let data_types = JSON.parse(this.props.editingDataset.properties.data_types.replace(/'/g, '"'));
-      let other_dt = data_types.filter(dt => !dt.startsWith('dt_'))[0];
-      data_types = data_types.filter(dt => dt.startsWith('dt_'));
+      let data_types = JSON.parse(
+        this.props.editingDataset.properties.data_types.replace(/'/g, '"')
+      );
+      let other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
+      data_types = data_types.filter(dt => dt.startsWith("dt_"));
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -468,6 +470,10 @@ class DatasetEdit extends Component {
     this.validateForm().then(isValid => {
       if (isValid) {
         this.setState({ submitting: true });
+        let data_types = [...this.state.data_types];
+        if (this.state.other_dt !== "") {
+          data_types = [...data_types, this.state.other_dt];
+        }
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
@@ -475,7 +481,7 @@ class DatasetEdit extends Component {
             su => su.hubmap_identifier
           ),
           phi: this.state.phi,
-          data_types: [...this.state.data_types, ...[this.state.other_dt.replace(/'/g, '').replace(/,/g, '')]],
+          data_types: data_types,
           description: this.state.description,
           status: i
         };
@@ -572,7 +578,10 @@ class DatasetEdit extends Component {
         }));
       }
 
-      if (this.state.data_types.has('dt_other') && !validateRequired(this.state.other_dt)) {
+      if (
+        this.state.data_types.has("dt_other") &&
+        !validateRequired(this.state.other_dt)
+      ) {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, other_dt: "required" }
         }));
@@ -1354,7 +1363,7 @@ class DatasetEdit extends Component {
                           name='dt_codex'
                           id='dt_codex'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_codex')}
+                          checked={this.state.data_types.has("dt_codex")}
                         />
                         <label className='form-check-label' htmlFor='dt_codex'>
                           CODEX
@@ -1367,7 +1376,7 @@ class DatasetEdit extends Component {
                           name='dt_lightsheet'
                           id='dt_lightsheet'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_lightsheet')}
+                          checked={this.state.data_types.has("dt_lightsheet")}
                         />
                         <label
                           className='form-check-label'
@@ -1383,7 +1392,9 @@ class DatasetEdit extends Component {
                           name='dt_autoflorescence'
                           id='dt_autoflorescence'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_autoflorescence')}
+                          checked={this.state.data_types.has(
+                            "dt_autoflorescence"
+                          )}
                         />
                         <label
                           className='form-check-label'
@@ -1399,7 +1410,7 @@ class DatasetEdit extends Component {
                           name='dt_maldiims'
                           id='dt_maldiims'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_maldiims')}
+                          checked={this.state.data_types.has("dt_maldiims")}
                         />
                         <label
                           className='form-check-label'
@@ -1415,7 +1426,7 @@ class DatasetEdit extends Component {
                           name='dt_lcms'
                           id='dt_lcms'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_lcms')}
+                          checked={this.state.data_types.has("dt_lcms")}
                         />
                         <label className='form-check-label' htmlFor='dt_lcms'>
                           LC-MS
@@ -1428,7 +1439,7 @@ class DatasetEdit extends Component {
                           name='dt_nanodesi'
                           id='dt_nanodesi'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_nanodesi')}
+                          checked={this.state.data_types.has("dt_nanodesi")}
                         />
                         <label
                           className='form-check-label'
@@ -1444,7 +1455,7 @@ class DatasetEdit extends Component {
                           name='dt_ims'
                           id='dt_ims'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_ims')}
+                          checked={this.state.data_types.has("dt_ims")}
                         />
                         <label className='form-check-label' htmlFor='dt_ims'>
                           IMS
@@ -1457,7 +1468,7 @@ class DatasetEdit extends Component {
                           name='dt_nanopots'
                           id='dt_nanopots'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_nanopots')}
+                          checked={this.state.data_types.has("dt_nanopots")}
                         />
                         <label
                           className='form-check-label'
@@ -1475,7 +1486,7 @@ class DatasetEdit extends Component {
                           name='dt_tmtlcms'
                           id='dt_tmtlcms'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_tmtlcms')}
+                          checked={this.state.data_types.has("dt_tmtlcms")}
                         />
                         <label
                           className='form-check-label'
@@ -1491,7 +1502,7 @@ class DatasetEdit extends Component {
                           name='dt_hilicrpmc'
                           id='dt_hilicrpmc'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_hilicrpmc')}
+                          checked={this.state.data_types.has("dt_hilicrpmc")}
                         />
                         <label
                           className='form-check-label'
@@ -1507,7 +1518,7 @@ class DatasetEdit extends Component {
                           name='dt_sciex'
                           id='dt_sciex'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_sciex')}
+                          checked={this.state.data_types.has("dt_sciex")}
                         />
                         <label className='form-check-label' htmlFor='dt_sciex'>
                           SCIEX
@@ -1520,7 +1531,7 @@ class DatasetEdit extends Component {
                           name='dt_metabolomics'
                           id='dt_metabolomics'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_metabolomics')}
+                          checked={this.state.data_types.has("dt_metabolomics")}
                         />
                         <label
                           className='form-check-label'
@@ -1536,7 +1547,7 @@ class DatasetEdit extends Component {
                           name='dt_10x'
                           id='dt_10x'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_10x')}
+                          checked={this.state.data_types.has("dt_10x")}
                         />
                         <label className='form-check-label' htmlFor='dt_10x'>
                           10x
@@ -1549,7 +1560,7 @@ class DatasetEdit extends Component {
                           name='dt_snrnaseq'
                           id='dt_snrnaseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_snrnaseq')}
+                          checked={this.state.data_types.has("dt_snrnaseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1565,7 +1576,7 @@ class DatasetEdit extends Component {
                           name='dt_bulkrnaseq'
                           id='dt_bulkrnaseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_bulkrnaseq')}
+                          checked={this.state.data_types.has("dt_bulkrnaseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1581,7 +1592,7 @@ class DatasetEdit extends Component {
                           name='dt_bulkatacseq'
                           id='dt_bulkatacseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_bulkatacseq')}
+                          checked={this.state.data_types.has("dt_bulkatacseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1599,7 +1610,7 @@ class DatasetEdit extends Component {
                           name='dt_scatacdeq'
                           id='dt_scatacdeq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_scatacdeq')}
+                          checked={this.state.data_types.has("dt_scatacdeq")}
                         />
                         <label
                           className='form-check-label'
@@ -1615,7 +1626,7 @@ class DatasetEdit extends Component {
                           name='dt_bulkwgs'
                           id='dt_bulkwgs'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_bulkwgs')}
+                          checked={this.state.data_types.has("dt_bulkwgs")}
                         />
                         <label
                           className='form-check-label'
@@ -1631,7 +1642,7 @@ class DatasetEdit extends Component {
                           name='dt_snareseq2cas'
                           id='dt_snareseq2cas'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_snareseq2cas')}
+                          checked={this.state.data_types.has("dt_snareseq2cas")}
                         />
                         <label
                           className='form-check-label'
@@ -1647,7 +1658,7 @@ class DatasetEdit extends Component {
                           name='dt_snareseq2s'
                           id='dt_snareseq2s'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_snareseq2s')}
+                          checked={this.state.data_types.has("dt_snareseq2s")}
                         />
                         <label
                           className='form-check-label'
@@ -1663,7 +1674,7 @@ class DatasetEdit extends Component {
                           name='dt_sciatacseq'
                           id='dt_sciatacseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_sciatacseq')}
+                          checked={this.state.data_types.has("dt_sciatacseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1679,7 +1690,7 @@ class DatasetEdit extends Component {
                           name='dt_scirnaseq'
                           id='dt_scirnaseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_scirnaseq')}
+                          checked={this.state.data_types.has("dt_scirnaseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1695,7 +1706,7 @@ class DatasetEdit extends Component {
                           name='dt_other'
                           id='dt_other'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has('dt_other')}
+                          checked={this.state.data_types.has("dt_other")}
                         />
                         <label className='form-check-label' htmlFor='dt_other'>
                           Other
@@ -1721,7 +1732,9 @@ class DatasetEdit extends Component {
                   </div>
                   <div className='col-sm-12'>
                     {this.state.formErrors.data_types && (
-                      <p className='text-danger'>At least select one data type</p>
+                      <p className='text-danger'>
+                        At least select one data type
+                      </p>
                     )}
                   </div>
                 </div>
