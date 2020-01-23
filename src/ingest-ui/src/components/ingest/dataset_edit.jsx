@@ -474,6 +474,7 @@ class DatasetEdit extends Component {
         if (this.state.other_dt !== "") {
           data_types = [...data_types, this.state.other_dt];
         }
+        
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
