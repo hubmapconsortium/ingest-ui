@@ -310,8 +310,7 @@ class Dataset(object):
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
     
         activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
-        # Use the entity_type from the input JSON
-        entity_type = json_data['derived_dataset_entity_type']
+        entity_type = HubmapConst.DATASET_TYPE_CODE
         
         with driver.session() as session:
             # First create a new uuid for this derived dataset
@@ -352,6 +351,8 @@ class Dataset(object):
 
                 # Use the dataset name from input json
                 metadata_record['name'] = json_data['derived_dataset_name']
+                # Also use the dataset datatype from input json
+                metadata_record['datatype'] = json_data['derived_dataset_datatype']
 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
