@@ -236,11 +236,6 @@ class Dataset(object):
                 raise
 
 
-
-
-
-
-
     # Create derived dataset
     @classmethod
     def create_derived_datastage(self, driver, nexus_token, json_data):
@@ -335,7 +330,6 @@ class Dataset(object):
                                          HubmapConst.ENTITY_TYPE_ATTRIBUTE : entity_type}
                 
                 stmt = Neo4jConnection.get_create_statement(dataset_entity_record, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
-                print('Derived dataset create statement: ' + stmt)
                 tx.run(stmt)
                 
                 # Create directory on file system for for this new derived dataset
@@ -350,9 +344,10 @@ class Dataset(object):
                 metadata_record = {}
 
                 # Use the dataset name from input json
+                # Need to use constant instead of hardcoding later
                 metadata_record['name'] = json_data['derived_dataset_name']
-                # Also use the dataset datatype from input json
-                metadata_record['datatype'] = json_data['derived_dataset_datatype']
+                # Also use the dataset data types array from input json and store as string in metadata attribute
+                metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data['derived_dataset_types'])
 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
