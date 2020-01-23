@@ -213,10 +213,10 @@ class Dataset(object):
             else:
                 try:
                     #try to load the data as json
-                    #json.loads(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE])
                     if isinstance(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE], list):
-                        metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(
-                            metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE])
+                        json_data_type_list = json.loads(str(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE]))
+                        # then convert it to a json string
+                        metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data_type_list)
                 except ValueError:
                     # that failed, so load it as a string
                     metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE]
