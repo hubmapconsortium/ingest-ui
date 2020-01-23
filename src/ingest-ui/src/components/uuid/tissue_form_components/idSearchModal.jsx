@@ -306,7 +306,7 @@ class IDSearchModal extends Component {
                                           <div
                                             className="col-sm-6"
                                           >
-		                                      <FontAwesomeIcon icon={faCopy} key={result.hubmap_identifier}
+		                                      {/* <FontAwesomeIcon icon={faCopy} key={result.hubmap_identifier}
 				                                  onClick={e => {e.stopPropagation(); let temp_arr = es.map(e => {
 				                                  
 				                                     return { hubmap_identifier: e.hubmap_identifier };
@@ -315,7 +315,7 @@ class IDSearchModal extends Component {
 				                                     
 				                                     //alert(temp_arr);
 				                                  } }
-                                              />
+                                              /> */}
                                           </div>
                                           <div className="col-sm-6">
                                             {first_lab_id} <br />
