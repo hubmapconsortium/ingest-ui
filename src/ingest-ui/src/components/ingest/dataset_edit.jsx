@@ -9,7 +9,7 @@ import { truncateString } from "../../utils/string_helper";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
-import { validateRequired } from "../../utils/validators";
+import { validateRequired, atLeastOneChecked } from "../../utils/validators";
 import {
   faUserShield,
   faExternalLinkAlt
@@ -33,11 +33,16 @@ class DatasetEdit extends Component {
 
     is_curator: null,
     source_uuid_type: "",
+    data_types: new Set(),
+    other_datatype: false,
+    other_dt: "",
 
     formErrors: {
       name: "",
       collection: "",
-      source_uuid: ""
+      source_uuid: "",
+      data_types: "",
+      other_dt: ""
     }
   };
 
@@ -121,7 +126,9 @@ class DatasetEdit extends Component {
       } catch {
         source_uuids = [this.props.editingDataset.properties.source_uuid];
       }
-
+      let data_types = JSON.parse(this.props.editingDataset.properties.data_types.replace(/'/g, '"'));
+      let other_dt = data_types.filter(dt => !dt.startsWith('dt_'))[0];
+      data_types = data_types.filter(dt => dt.startsWith('dt_'));
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -140,6 +147,9 @@ class DatasetEdit extends Component {
           source_uuid_list: source_uuids,
           source_uuid_type: this.props.editingDataset.properties.specimen_type,
           phi: this.props.editingDataset.properties.phi,
+          data_types: new Set(data_types),
+          other_datatype: other_dt !== "",
+          other_dt: other_dt,
           description: this.props.editingDataset.properties.description
         },
         () => {
@@ -242,8 +252,30 @@ class DatasetEdit extends Component {
           new_status: value
         });
         break;
+      case "other_dt":
+        this.setState({ other_dt: value });
       default:
         break;
+    }
+    if (name.startsWith("dt")) {
+      if (name === "dt_other") {
+        this.setState({
+          other_datatype: e.target.checked
+        });
+      }
+      if (e.target.checked) {
+        const data_types = this.state.data_types;
+        data_types.add(name);
+        this.setState({
+          data_types: data_types
+        });
+      } else {
+        const data_types = this.state.data_types;
+        data_types.delete(name);
+        this.setState({
+          data_types: data_types
+        });
+      }
     }
   };
 
@@ -443,6 +475,7 @@ class DatasetEdit extends Component {
             su => su.hubmap_identifier
           ),
           phi: this.state.phi,
+          data_types: [...this.state.data_types, ...[this.state.other_dt.replace(/'/g, '').replace(/,/g, '')]],
           description: this.state.description,
           status: i
         };
@@ -526,6 +559,30 @@ class DatasetEdit extends Component {
           resolve(isValid && res);
         });
       }
+
+      if (this.state.data_types.size === 0) {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, data_types: "required" }
+        }));
+        isValid = false;
+        resolve(isValid);
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, data_types: "" }
+        }));
+      }
+
+      if (this.state.data_types.has('dt_other') && !validateRequired(this.state.other_dt)) {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, other_dt: "required" }
+        }));
+        isValid = false;
+        resolve(isValid);
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, other_dt: "" }
+        }));
+      }
     });
   }
 
@@ -572,11 +629,11 @@ class DatasetEdit extends Component {
     if (this.props.editingDataset) {
       if (!this.state.group) {
         return (
-          <div className="row">
-            <div className="col-sm-2 offset-sm-10">
+          <div className='row'>
+            <div className='col-sm-2 offset-sm-10'>
               <button
-                type="button"
-                className="btn btn-secondary"
+                type='button'
+                className='btn btn-secondary'
                 onClick={() => this.props.handleCancel()}
               >
                 Close
@@ -588,18 +645,18 @@ class DatasetEdit extends Component {
         if (this.state.is_curator) {
           if (this.state.status.toUpperCase() === "QA") {
             return (
-              <div className="row">
-                <div className="col-sm-3 offset-sm-2 text-center">
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'>
                   <button
-                    type="button"
-                    className="btn btn-primary btn-block"
+                    type='button'
+                    className='btn btn-primary btn-block'
                     disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("published")}
-                    data-status="published"
+                    data-status='published'
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />
@@ -607,17 +664,17 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Publish"}
                   </button>
                 </div>
-                <div className="col-sm-4 text-center">
+                <div className='col-sm-4 text-center'>
                   <button
-                    type="button"
-                    className="btn btn-dark btn-block"
+                    type='button'
+                    className='btn btn-dark btn-block'
                     disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("hold")}
-                    data-status="invalid"
+                    data-status='invalid'
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />
@@ -625,10 +682,10 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Hold"}
                   </button>
                 </div>
-                <div className="col-sm-2 text-right">
+                <div className='col-sm-2 text-right'>
                   <button
-                    type="button"
-                    className="btn btn-secondary"
+                    type='button'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Close
@@ -638,19 +695,19 @@ class DatasetEdit extends Component {
             );
           } else if (this.state.status.toUpperCase() === "PUBLISHED") {
             return (
-              <div className="row">
-                <div className="col-sm-3 offset-sm-2 text-center"></div>
-                <div className="col-sm-4 text-center">
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'></div>
+                <div className='col-sm-4 text-center'>
                   <button
-                    type="button"
-                    className="btn btn-danger btn-block"
+                    type='button'
+                    className='btn btn-danger btn-block'
                     disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("unpublished")}
-                    data-status="unpublished"
+                    data-status='unpublished'
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />
@@ -658,10 +715,10 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Unpublish"}
                   </button>
                 </div>
-                <div className="col-sm-2 text-right">
+                <div className='col-sm-2 text-right'>
                   <button
-                    type="button"
-                    className="btn btn-secondary"
+                    type='button'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Close
@@ -671,19 +728,19 @@ class DatasetEdit extends Component {
             );
           } else if (this.state.status.toUpperCase() === "UNPUBLISHED") {
             return (
-              <div className="row">
-                <div className="col-sm-3 offset-sm-2 text-center"></div>
-                <div className="col-sm-4 text-center">
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'></div>
+                <div className='col-sm-4 text-center'>
                   <button
-                    type="button"
-                    className="btn btn-primary btn-block"
+                    type='button'
+                    className='btn btn-primary btn-block'
                     disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("published")}
-                    data-status="published"
+                    data-status='published'
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />
@@ -691,10 +748,10 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Publish"}
                   </button>
                 </div>
-                <div className="col-sm-2 text-right">
+                <div className='col-sm-2 text-right'>
                   <button
-                    type="button"
-                    className="btn btn-secondary"
+                    type='button'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Close
@@ -704,11 +761,11 @@ class DatasetEdit extends Component {
             );
           } else {
             return (
-              <div className="row">
-                <div className="col-sm-4 offset-sm-4">
+              <div className='row'>
+                <div className='col-sm-4 offset-sm-4'>
                   <button
-                    type="button"
-                    className="btn btn-secondary"
+                    type='button'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Close
@@ -724,11 +781,11 @@ class DatasetEdit extends Component {
             )
           ) {
             return (
-              <div className="row">
-                <div className="col-sm-3 offset-sm-2 text-center">
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'>
                   <button
-                    type="button"
-                    className="btn btn-info btn-block"
+                    type='button'
+                    className='btn btn-info btn-block'
                     disabled={this.state.submitting}
                     onClick={() =>
                       this.handleButtonClick(this.state.status.toLowerCase())
@@ -737,7 +794,7 @@ class DatasetEdit extends Component {
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />
@@ -745,17 +802,17 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Save"}
                   </button>
                 </div>
-                <div className="col-sm-4 text-center">
+                <div className='col-sm-4 text-center'>
                   <button
-                    type="button"
-                    className="btn btn-primary btn-block"
+                    type='button'
+                    className='btn btn-primary btn-block'
                     disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("qa")}
                     data-status={this.state.status.toLowerCase()}
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />
@@ -763,10 +820,10 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Submit"}
                   </button>
                 </div>
-                <div className="col-sm-2 text-right">
+                <div className='col-sm-2 text-right'>
                   <button
-                    type="button"
-                    className="btn btn-secondary"
+                    type='button'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Cancel
@@ -776,18 +833,18 @@ class DatasetEdit extends Component {
             );
           } else if (this.state.status.toUpperCase() === "PUBLISHED") {
             return (
-              <div className="row">
-                <div className="col-sm-3 offset-sm-2 text-center">
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'>
                   <button
-                    type="button"
-                    className="btn btn-primary btn-block"
+                    type='button'
+                    className='btn btn-primary btn-block'
                     disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("reopened")}
-                    data-status="reopened"
+                    data-status='reopened'
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />
@@ -795,11 +852,11 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Reopen"}
                   </button>
                 </div>
-                <div className="col-sm-4 text-center"></div>
-                <div className="col-sm-2 text-right">
+                <div className='col-sm-4 text-center'></div>
+                <div className='col-sm-2 text-right'>
                   <button
-                    type="button"
-                    className="btn btn-secondary"
+                    type='button'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Cancel
@@ -809,11 +866,11 @@ class DatasetEdit extends Component {
             );
           } else {
             return (
-              <div className="row">
-                <div className="col-sm-2 offset-sm-10">
+              <div className='row'>
+                <div className='col-sm-2 offset-sm-10'>
                   <button
-                    type="button"
-                    className="btn btn-secondary"
+                    type='button'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Close
@@ -826,18 +883,18 @@ class DatasetEdit extends Component {
       }
     } else {
       return (
-        <div className="row">
-          <div className="col-sm-3 offset-sm-2 text-center">
+        <div className='row'>
+          <div className='col-sm-3 offset-sm-2 text-center'>
             <button
-              type="button"
-              className="btn btn-info btn-block"
+              type='button'
+              className='btn btn-info btn-block'
               disabled={this.state.submitting}
               onClick={() => this.handleButtonClick("new")}
-              data-status="new"
+              data-status='new'
             >
               {this.state.submitting && (
                 <FontAwesomeIcon
-                  className="inline-icon"
+                  className='inline-icon'
                   icon={faSpinner}
                   spin
                 />
@@ -845,10 +902,10 @@ class DatasetEdit extends Component {
               {!this.state.submitting && "Create"}
             </button>
           </div>
-          <div className="col-sm-4 text-center">
+          <div className='col-sm-4 text-center'>
             <button
-              type="button"
-              className="btn btn-secondary btn-block"
+              type='button'
+              className='btn btn-secondary btn-block'
               onClick={() => this.props.handleCancel()}
             >
               Cancel
@@ -873,15 +930,15 @@ class DatasetEdit extends Component {
       <React.Fragment>
         <form>
           <div>
-            <div className="row mt-3 mb-3">
-              <div className="col-sm-2">
-                <h3 className="float-right">
+            <div className='row mt-3 mb-3'>
+              <div className='col-sm-2'>
+                <h3 className='float-right'>
                   <span className={"badge " + this.state.badge_class}>
                     {this.state.status}
                   </span>
                 </h3>
               </div>
-              <div className="col-sm-10">
+              <div className='col-sm-10'>
                 <p>
                   {this.props.editingDataset && "Dataset id: " + this.state.id}
                 </p>
@@ -893,8 +950,8 @@ class DatasetEdit extends Component {
                           To add or modify data files go to the{" "}
                           <a
                             href={this.state.globus_path}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            target='_blank'
+                            rel='noopener noreferrer'
                           >
                             data repository{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
@@ -904,12 +961,12 @@ class DatasetEdit extends Component {
                       </strong>
                     </p>
 
-                    <div className="alert alert-danger" role="alert">
+                    <div className='alert alert-danger' role='alert'>
                       <FontAwesomeIcon icon={faUserShield} /> - Do not upload
                       any data containing any of the{" "}
                       <span
                         style={{ cursor: "pointer" }}
-                        className="text-primary"
+                        className='text-primary'
                         onClick={this.showModal}
                       >
                         18 identifiers specified by HIPAA
@@ -920,91 +977,91 @@ class DatasetEdit extends Component {
                 )}
               </div>
             </div>
-            <div className="form-group row">
+            <div className='form-group row'>
               <label
-                htmlFor="name"
-                className="col-sm-2 col-form-label text-right"
+                htmlFor='name'
+                className='col-sm-2 col-form-label text-right'
               >
-                Dataset Name <span className="text-danger">*</span>
+                Dataset Name <span className='text-danger'>*</span>
               </label>
               {!this.props.readOnly && (
-                <div className="col-sm-9">
+                <div className='col-sm-9'>
                   <input
-                    type="text"
-                    name="name"
-                    id="name"
+                    type='text'
+                    name='name'
+                    id='name'
                     className={
                       "form-control " +
                       this.errorClass(this.state.formErrors.name)
                     }
-                    placeholder="Dataset name"
+                    placeholder='Dataset name'
                     onChange={this.handleInputChange}
                     value={this.state.name}
                   />
                 </div>
               )}
               {this.props.readOnly && (
-                <div className="col-sm-9 col-form-label">
+                <div className='col-sm-9 col-form-label'>
                   <p>{this.state.name}</p>
                 </div>
               )}
-              <div className="col-sm-1 my-auto text-center">
+              <div className='col-sm-1 my-auto text-center'>
                 <span>
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
-                    data-for="name_tooltip"
+                    data-for='name_tooltip'
                   />
                   <ReactTooltip
-                    id="name_tooltip"
-                    place="top"
-                    type="info"
-                    effect="solid"
+                    id='name_tooltip'
+                    place='top'
+                    type='info'
+                    effect='solid'
                   >
                     <h4>Dataset Name Tips</h4>
                   </ReactTooltip>
                 </span>
               </div>
             </div>
-            <div className="form-group row">
+            <div className='form-group row'>
               <label
-                htmlFor="name"
-                className="col-sm-2 col-form-label text-right"
+                htmlFor='name'
+                className='col-sm-2 col-form-label text-right'
               >
                 Collection
               </label>
               {!this.props.readOnly && (
                 <React.Fragment>
-                  <div className="col-sm-7">
+                  <div className='col-sm-7'>
                     <input
-                      type="text"
-                      name="collection"
-                      id="collection"
+                      type='text'
+                      name='collection'
+                      id='collection'
                       className={
                         "form-control " +
                         this.errorClass(this.state.formErrors.collection)
                       }
-                      placeholder="Collection"
+                      placeholder='Collection'
                       onChange={this.handleInputChange}
                       value={this.state.collection.label}
-                      autoComplete="off"
+                      autoComplete='off'
                     />
                     {this.state.showCollectionsDropDown && (
                       <div
-                        className="dropdown-menu display-block ml-2"
-                        aria-labelledby="dropdownMenuButton"
+                        className='dropdown-menu display-block ml-2'
+                        aria-labelledby='dropdownMenuButton'
                       >
                         {this.state.collection_candidates.map(collection => {
                           return (
                             <div
                               key={collection.uuid}
-                              className="card-body"
+                              className='card-body'
                               onClick={() =>
                                 this.handleCollectionClick(collection)
                               }
                             >
-                              <h5 className="card-title">{collection.label}</h5>
-                              <p className="card-text">
+                              <h5 className='card-title'>{collection.label}</h5>
+                              <p className='card-text'>
                                 {truncateString(collection.description, 230)}
                               </p>
                             </div>
@@ -1013,11 +1070,11 @@ class DatasetEdit extends Component {
                       </div>
                     )}
                   </div>
-                  <div className="col-sm-2 my-auto text-right">
+                  <div className='col-sm-2 my-auto text-right'>
                     {this.state.group && (
                       <button
-                        className="btn btn-primary"
-                        type="button"
+                        className='btn btn-primary'
+                        type='button'
                         onClick={this.handleAddNewCollection}
                       >
                         Add New
@@ -1031,42 +1088,42 @@ class DatasetEdit extends Component {
                 </React.Fragment>
               )}
               {this.props.readOnly && (
-                <div className="col-sm-9 col-form-label">
+                <div className='col-sm-9 col-form-label'>
                   <p>{this.state.collection}</p>
                 </div>
               )}
-              <div className="col-sm-1 my-auto text-center">
+              <div className='col-sm-1 my-auto text-center'>
                 <span>
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
-                    data-for="collection_tooltip"
+                    data-for='collection_tooltip'
                   />
                   <ReactTooltip
-                    id="collection_tooltip"
-                    place="top"
-                    type="info"
-                    effect="solid"
+                    id='collection_tooltip'
+                    place='top'
+                    type='info'
+                    effect='solid'
                   >
                     <h4>Collection Tips</h4>
                   </ReactTooltip>
                 </span>
               </div>
             </div>
-            <div className="form-group row">
+            <div className='form-group row'>
               <label
-                htmlFor="source_uuid"
-                className="col-sm-2 col-form-label text-right"
+                htmlFor='source_uuid'
+                className='col-sm-2 col-form-label text-right'
               >
-                Source ID <span className="text-danger">*</span>
+                Source ID <span className='text-danger'>*</span>
               </label>
               {!this.props.readOnly && (
                 <React.Fragment>
-                  <div className="col-sm-5">
+                  <div className='col-sm-5'>
                     <input
-                      type="text"
-                      name="source_uuid"
-                      id="source_uuid"
+                      type='text'
+                      name='source_uuid'
+                      id='source_uuid'
                       className={
                         "form-control " +
                         this.errorClass(this.state.formErrors.source_uuid)
@@ -1075,10 +1132,10 @@ class DatasetEdit extends Component {
                       onChange={this.handleInputChange}
                     />
                   </div>
-                  <div className="col-sm-2">
+                  <div className='col-sm-2'>
                     <button
-                      className="btn btn-link"
-                      type="button"
+                      className='btn btn-link'
+                      type='button'
                       onClick={this.handleLookUpClick}
                     >
                       Look up
@@ -1098,28 +1155,28 @@ class DatasetEdit extends Component {
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
-                    parent="dataset"
+                    parent='dataset'
                   />
                 </React.Fragment>
               )}
               {this.props.readOnly && (
                 <React.Fragment>
-                  <div className="col-sm-9 col-form-label">
+                  <div className='col-sm-9 col-form-label'>
                     <p>{this.state.source_uuid}</p>
                   </div>{" "}
                 </React.Fragment>
               )}
-              <div className="col-sm-1 my-auto text-center">
+              <div className='col-sm-1 my-auto text-center'>
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for="source_uuid_tooltip"
+                  data-for='source_uuid_tooltip'
                 />
                 <ReactTooltip
-                  id="source_uuid_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
+                  id='source_uuid_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
                 >
                   <h4>
                     The HuBMAP Unique identifier of the direct origin entity,
@@ -1130,13 +1187,13 @@ class DatasetEdit extends Component {
               </div>
             </div>
             {this.state.source_entity && (
-              <div className="form-group row">
-                <div className="col-sm-7 offset-sm-2">
-                  <div className="card">
-                    <div className="card-body">
-                      <div className="row">
-                        <div className="col-sm-12">
-                          <h4 className="card-title">
+              <div className='form-group row'>
+                <div className='col-sm-7 offset-sm-2'>
+                  <div className='card'>
+                    <div className='card-body'>
+                      <div className='row'>
+                        <div className='col-sm-12'>
+                          <h4 className='card-title'>
                             HuBMAP display id:{" "}
                             <b>
                               <span>
@@ -1151,8 +1208,8 @@ class DatasetEdit extends Component {
                           </h4>
                         </div>
                       </div>
-                      <div className="row">
-                        <div className="col-sm-6">
+                      <div className='row'>
+                        <div className='col-sm-6'>
                           <b>type:</b>{" "}
                           {this.state.source_entity.specimen
                             ? this.state.source_entity.specimen.specimen_type
@@ -1165,7 +1222,7 @@ class DatasetEdit extends Component {
                             ? this.state.source_entity.dataset.entitytype
                             : ""}
                         </div>
-                        <div className="col-sm-6">
+                        <div className='col-sm-6'>
                           <b>name:</b>{" "}
                           {this.state.source_entity.specimen
                             ? this.state.source_entity.specimen.label
@@ -1176,7 +1233,7 @@ class DatasetEdit extends Component {
                         {this.state.source_entity.specimen &&
                           this.state.source_entity.specimen.specimen_type ===
                             "organ" && (
-                            <div className="col-sm-12">
+                            <div className='col-sm-12'>
                               <b>Organ Type:</b>{" "}
                               {this.state.source_entity.specimen &&
                                 ORGAN_TYPES[
@@ -1184,7 +1241,7 @@ class DatasetEdit extends Component {
                                 ]}
                             </div>
                           )}
-                        <div className="col-sm-6">
+                        <div className='col-sm-6'>
                           <b>HuBMAP ID:</b>{" "}
                           {this.state.source_entity.specimen
                             ? this.state.source_entity.specimen
@@ -1193,7 +1250,7 @@ class DatasetEdit extends Component {
                             ? this.state.source_entity.dataset.display_doi
                             : ""}
                         </div>
-                        <div className="col-sm-12">
+                        <div className='col-sm-12'>
                           <p>
                             <b>Description: </b>{" "}
                             {this.state.source_entity.specimen
@@ -1215,62 +1272,62 @@ class DatasetEdit extends Component {
                 </div>
               </div>
             )}
-            <div className="form-group row">
+            <div className='form-group row'>
               <label
-                htmlFor="phi"
-                className="col-sm-2 col-form-label text-right"
+                htmlFor='phi'
+                className='col-sm-2 col-form-label text-right'
               >
-                Gene Sequences <span className="text-danger">*</span>
+                Gene Sequences <span className='text-danger'>*</span>
               </label>
               {!this.props.readOnly && (
-                <div className="col-sm-9">
-                  <div className="form-check form-check-inline">
+                <div className='col-sm-9'>
+                  <div className='form-check form-check-inline'>
                     <input
-                      className="form-check-input"
-                      type="radio"
-                      name="phi"
-                      id="phi_no"
-                      value="no"
+                      className='form-check-input'
+                      type='radio'
+                      name='phi'
+                      id='phi_no'
+                      value='no'
                       defaultChecked={true}
                     />
-                    <label className="form-check-label" htmlFor="phi_no">
+                    <label className='form-check-label' htmlFor='phi_no'>
                       No
                     </label>
                   </div>
-                  <div className="form-check form-check-inline">
+                  <div className='form-check form-check-inline'>
                     <input
-                      className="form-check-input"
-                      type="radio"
-                      name="phi"
-                      id="phi_yes"
-                      value="Yes"
+                      className='form-check-input'
+                      type='radio'
+                      name='phi'
+                      id='phi_yes'
+                      value='Yes'
                     />
-                    <label className="form-check-label" htmlFor="phi_yes">
+                    <label className='form-check-label' htmlFor='phi_yes'>
                       Yes
                     </label>
                   </div>
-                  <small id="PHIHelpBlock" className="form-text text-muted">
+                  <small id='PHIHelpBlock' className='form-text text-muted'>
                     Will this data contain any human genomic sequence data?
                   </small>
                 </div>
               )}
               {this.props.readOnly && (
-                <div className="col-sm-9 col-form-label">
+                <div className='col-sm-9 col-form-label'>
                   <p>{this.state.phi}</p>
                 </div>
               )}
-              <div className="col-sm-1 my-auto text-center">
+              <div className='col-sm-1 my-auto text-center'>
                 <span>
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
-                    data-for="phi_tooltip"
+                    data-for='phi_tooltip'
                   />
                   <ReactTooltip
-                    id="phi_tooltip"
-                    place="top"
-                    type="info"
-                    effect="solid"
+                    id='phi_tooltip'
+                    place='top'
+                    type='info'
+                    effect='solid'
                   >
                     <h4>Gene Sequences Tips</h4>
                   </ReactTooltip>
@@ -1278,24 +1335,439 @@ class DatasetEdit extends Component {
               </div>
             </div>
           </div>
-          <div className="form-group row">
+          <div className='form-group row'>
             <label
-              htmlFor="description"
-              className="col-sm-2 col-form-label text-right"
+              htmlFor='description'
+              className='col-sm-2 col-form-label text-right'
+            >
+              Data Type <span className='text-danger'>*</span>
+            </label>
+            {!this.props.readOnly && (
+              <React.Fragment>
+                <div className='col-sm-9'>
+                  <div className='row'>
+                    <div className='col-sm-4'>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_codex'
+                          id='dt_codex'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_codex')}
+                        />
+                        <label className='form-check-label' htmlFor='dt_codex'>
+                          CODEX
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_lightsheet'
+                          id='dt_lightsheet'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_lightsheet')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_lightsheet'
+                        >
+                          Lightsheet
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_autoflorescence'
+                          id='dt_autoflorescence'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_autoflorescence')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_autoflorescence'
+                        >
+                          AutoFlorescence
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_maldiims'
+                          id='dt_maldiims'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_maldiims')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_maldiims'
+                        >
+                          MALDI-IMS
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_lcms'
+                          id='dt_lcms'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_lcms')}
+                        />
+                        <label className='form-check-label' htmlFor='dt_lcms'>
+                          LC-MS
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_nanodesi'
+                          id='dt_nanodesi'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_nanodesi')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_nanodesi'
+                        >
+                          NanoDESI
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_ims'
+                          id='dt_ims'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_ims')}
+                        />
+                        <label className='form-check-label' htmlFor='dt_ims'>
+                          IMS
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_nanopots'
+                          id='dt_nanopots'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_nanopots')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_nanopots'
+                        >
+                          nanoPOTS
+                        </label>
+                      </div>
+                    </div>
+                    <div className='col-sm-4'>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_tmtlcms'
+                          id='dt_tmtlcms'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_tmtlcms')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_tmtlcms'
+                        >
+                          TMT-LC-MS
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_hilicrpmc'
+                          id='dt_hilicrpmc'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_hilicrpmc')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_hilicrpmc'
+                        >
+                          HILIC RPMC
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_sciex'
+                          id='dt_sciex'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_sciex')}
+                        />
+                        <label className='form-check-label' htmlFor='dt_sciex'>
+                          SCIEX
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_metabolomics'
+                          id='dt_metabolomics'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_metabolomics')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_metabolomics'
+                        >
+                          metabolomics
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_10x'
+                          id='dt_10x'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_10x')}
+                        />
+                        <label className='form-check-label' htmlFor='dt_10x'>
+                          10x
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_snrnaseq'
+                          id='dt_snrnaseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_snrnaseq')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_snrnaseq'
+                        >
+                          snRNAseq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_bulkrnaseq'
+                          id='dt_bulkrnaseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_bulkrnaseq')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_bulkrnaseq'
+                        >
+                          Bulk RNA-seq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_bulkatacseq'
+                          id='dt_bulkatacseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_bulkatacseq')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_bulkatacseq'
+                        >
+                          Bulk ATAC-seq
+                        </label>
+                      </div>
+                    </div>
+                    <div className='col-sm-4'>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_scatacdeq'
+                          id='dt_scatacdeq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_scatacdeq')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_scatacdeq'
+                        >
+                          scATAC-seq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_bulkwgs'
+                          id='dt_bulkwgs'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_bulkwgs')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_bulkwgs'
+                        >
+                          Bulk WGS
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_snareseq2cas'
+                          id='dt_snareseq2cas'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_snareseq2cas')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_snareseq2cas'
+                        >
+                          SNARE-Seq2: Chromatin Accessibility seq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_snareseq2s'
+                          id='dt_snareseq2s'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_snareseq2s')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_snareseq2s'
+                        >
+                          SNARE-Seq2: snRNAseq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_sciatacseq'
+                          id='dt_sciatacseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_sciatacseq')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_sciatacseq'
+                        >
+                          sci-ATACseq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_scirnaseq'
+                          id='dt_scirnaseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_scirnaseq')}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_scirnaseq'
+                        >
+                          sci-RNAseq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_other'
+                          id='dt_other'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has('dt_other')}
+                        />
+                        <label className='form-check-label' htmlFor='dt_other'>
+                          Other
+                        </label>
+                      </div>
+                      {this.state.other_datatype && (
+                        <div className='form-group'>
+                          <input
+                            type='text'
+                            name='other_dt'
+                            id='other_dt'
+                            className={
+                              "form-control " +
+                              this.errorClass(this.state.formErrors.other_dt)
+                            }
+                            placeholder='Other Data Type'
+                            value={this.state.other_dt}
+                            onChange={this.handleInputChange}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className='col-sm-12'>
+                    {this.state.formErrors.data_types && (
+                      <p className='text-danger'>At least select one data type</p>
+                    )}
+                  </div>
+                </div>
+              </React.Fragment>
+            )}
+            {this.props.readOnly && (
+              <div className='col-sm-9 col-form-label'>
+                <p>Readonly</p>
+              </div>
+            )}
+            <div className='col-sm-1 my-auto text-center'>
+              <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='datatype_tooltip'
+                />
+                <ReactTooltip
+                  id='datatype_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <h4>Data Type Tips</h4>
+                </ReactTooltip>
+              </span>
+            </div>
+          </div>
+          <div className='form-group row'>
+            <label
+              htmlFor='description'
+              className='col-sm-2 col-form-label text-right'
             >
               Description
             </label>
             {!this.props.readOnly && (
               <React.Fragment>
-                <div className="col-sm-9">
+                <div className='col-sm-9'>
                   <textarea
-                    type="text"
-                    name="description"
-                    id="description"
-                    cols="30"
-                    rows="5"
-                    className="form-control"
-                    placeholder="Description"
+                    type='text'
+                    name='description'
+                    id='description'
+                    cols='30'
+                    rows='5'
+                    className='form-control'
+                    placeholder='Description'
                     onChange={this.handleInputChange}
                     value={this.state.description}
                   />
@@ -1303,22 +1775,22 @@ class DatasetEdit extends Component {
               </React.Fragment>
             )}
             {this.props.readOnly && (
-              <div className="col-sm-9 col-form-label">
+              <div className='col-sm-9 col-form-label'>
                 <p>{this.state.description}</p>
               </div>
             )}
-            <div className="col-sm-1 my-auto text-center">
+            <div className='col-sm-1 my-auto text-center'>
               <span>
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for="description_tooltip"
+                  data-for='description_tooltip'
                 />
                 <ReactTooltip
-                  id="description_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
+                  id='description_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
                 >
                   <h4>Description Tips</h4>
                 </ReactTooltip>
@@ -1326,7 +1798,7 @@ class DatasetEdit extends Component {
             </div>
           </div>
           {this.state.submit_error && (
-            <div className="alert alert-danger col-sm-12" role="alert">
+            <div className='alert alert-danger col-sm-12' role='alert'>
               Oops! Something went wrong. Please contact administrator for help.
             </div>
           )}
