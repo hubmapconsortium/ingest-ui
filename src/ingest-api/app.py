@@ -247,6 +247,71 @@ def get_dataset(identifier):
             if conn.get_driver().closed() == False:
                 conn.close()
 
+
+# Create derived dataset
+"""
+Input JSON example:
+{
+"source_dataset_uuid":"e517ce652d3c4f22ace7f21fd64208ac",
+"derived_dataset_name":"Test derived dataset 1",
+"derived_dataset_entity_type":"Dataset"
+}
+
+Output JSON example:
+{
+    "derived_dataset_uuid": "2ecc257c3fd1875be08a12ff654f1264",
+    "group_display_name": "IEC Testing Group",
+    "group_uuid": "5bd084c8-edc2-11e8-802f-0e368f3075e8"
+}
+"""
+@app.route('/datasets/derived', methods=['POST'])
+@secured(groups="HuBMAP-read")
+def create_derived_dataset():
+    if not request.is_json:
+        abort(400, jsonify( { 'error': 'This request requries a json in the body' } ))
+    
+    json_data = request.get_json()
+
+    if 'source_dataset_uuid' not in json_data:
+        abort(400, jsonify( { 'error': "The 'source_dataset_uuid' property is requried in the json data from the request" } ))
+    
+    if 'derived_dataset_name' not in json_data:
+        abort(400, jsonify( { 'error': "The 'derived_dataset_name' property is requried in the json data from the request" } ))
+
+    if 'derived_dataset_entity_type' not in json_data:
+        abort(400, jsonify( { 'error': "The 'derived_dataset_entity_type' property is requried in the json data from the request" } ))
+
+    # Create a new derived dataset based on this parent dataset ID
+    conn = None
+
+    try:
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        dataset = Dataset(app.config)
+
+        # Note: the user who can create the derived dataset doesn't have to be the same person who created the source dataset
+        # Get the nexus token from request headers
+        nexus_token = None
+        try:
+            nexus_token = AuthHelper.parseAuthorizationTokens(request.headers)
+        except:
+            raise ValueError("Unable to parse globus token from request header")
+
+        new_record = dataset.create_derived_datastage(driver, nexus_token, json_data)
+        conn.close()
+
+        return jsonify( new_record ), 201
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
+
 @app.route('/datasets', methods=['POST'])
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
 @secured(groups="HuBMAP-read")
@@ -437,6 +502,7 @@ def update_dataset_status(uuid, new_status):
                 conn.close()
 
 @app.route('/datasets/status', methods = ['POST'])
+# @cross_origin(origins=[app.config['UUID_UI_URL'], app.config['INGEST_PIPELINE_URL']], methods=['POST'])
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
 #disabled for now @secured(groups="HuBMAP-read")
 def update_ingest_status():
@@ -449,12 +515,15 @@ def update_ingest_status():
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset(app.config)
+        # expecting something like this:
+        #{'ingest_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': 'success|error', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]}
         status_obj = dataset.set_ingest_status(driver, request.json)
         conn.close()
         return jsonify( { 'result' : status_obj } ), 200
     
-    except ValueError:
-        abort(404, jsonify( { 'error': 'ingest_id {ingest_id} not found'.format(ingest_id=ingest_id) } ))
+    except ValueError as ve:
+        print('ERROR: ' + str(ve))
+        abort(404, jsonify( { 'error': str(ve) } ))
         
     except:
         msg = 'An error occurred: '

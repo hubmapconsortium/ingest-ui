@@ -16,8 +16,8 @@ PUBLISH_ENDPOINT_UUID = ''
 # No need to modify here if deployed with docker
 # Just make sure the volume mounts in docker compose yaml mapped correctly
 LOCAL_STORAGE_DIRECTORY = '/home/temp'
-STAGING_ENDPOINT_FILEPATH = '/hubmap-data/test-stage'
-PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/test-data'
+STAGING_ENDPOINT_FILEPATH = '/hubmap-data/stage'
+PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/data'
 
 # URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container
@@ -39,3 +39,11 @@ FLASK_APP_BASE_URI = 'http://localhost:8484/'
 GLOBUS_CLIENT_APP_NAME = 'HuBMAP UUID Generator'
 # Point to remote URL for testing and production deployment
 GLOBUS_CLIENT_APP_URI = 'http://localhost:8585/'
+
+# URL for the ingest pipeline API.  No trailing '/'
+INGEST_PIPELINE_URL = 'http://ingest-pipeline:8789/api/hubmap'
+# internal test: INGEST_PIPELINE_URL = 'http://localhost:5005/datasets/submissions'
+
+# Default processing type for ingest pipeline API.
+INGEST_PIPELINE_DEFAULT_PROCESS = 'SCAN.AND.BEGIN.PROCESSING'
+

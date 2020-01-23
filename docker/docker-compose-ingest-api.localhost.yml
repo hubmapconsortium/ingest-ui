@@ -4,28 +4,16 @@ version: "3.7"
 services:
   
   ingest-api:
-    build: ./ingest-api-prod
+    build: ./ingest-api-localhost
     # Build the image with name and tag
     image: ingest-api:1.5
     hostname: ingest-api
     container_name: ingest-api
-    init: true
-    restart: always
-    # Map host machine port 80, 443 to container ports
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
-      # Mount the app config to container in order to keep it outside of the image
-      - "../src/ingest-api/instance:/usr/src/app/src/instance"
+      # Mount the source code to container
+      - "../src/ingest-api:/usr/src/app/src"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
-      # Mount ssl certificates from host to container
-      - "/etc/letsencrypt:/etc/letsencrypt"
-      # Mount conf.d to the nginx conf.d on container
-      - "./ingest-api-prod/nginx/conf.d:/etc/nginx/conf.d"
-      # favicon.ico
-      - "./ingest-api-prod/nginx/html:/usr/share/nginx/html"
       # Mount local storage and Globus data
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
@@ -33,7 +21,9 @@ services:
       - "/hubmap-data/stage:/hubmap-data/stage"
       - "/hubmap-data/data:/hubmap-data/data"
     networks:
-      - hubmap
+      - gateway_hubmap
 
 networks:
-  hubmap:
+  # This is the network created by gateway to enable communicaton between multiple docker-compose projects
+  gateway_hubmap:
+    external: true

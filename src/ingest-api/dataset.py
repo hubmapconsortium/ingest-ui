@@ -235,6 +235,183 @@ class Dataset(object):
                     print (x)
                 raise
 
+
+
+
+
+
+
+    # Create derived dataset
+    @classmethod
+    def create_derived_datastage(self, driver, nexus_token, json_data):
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        
+        # check the incoming UUID to make sure they exist
+        source_dataset_uuid = str(json_data['source_dataset_uuid']).strip()
+
+        if source_dataset_uuid == None or len(source_dataset_uuid) == 0:
+            raise ValueError('Error: sourceUUID must be set to create a derived dataset')
+        
+        # In this derived dataset case, only one source uuid in the list
+        source_UUID_Data = []
+        ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
+        try:
+            hmuuid_data = ug.getUUID(nexus_token, source_dataset_uuid)
+            if len(hmuuid_data) != 1:
+                raise ValueError("Could not find information for identifier" + source_dataset_uuid)
+            source_UUID_Data.append(hmuuid_data)
+        except:
+            raise ValueError('Unable to resolve UUID for: ' + source_dataset_uuid)
+
+        # Get information of the source dataset
+        dataset = Dataset(self.confdata) 
+        dataset_record = dataset.get_dataset(driver, source_dataset_uuid)
+
+        # See if provenance_group_uuid of the source dataset exists in the list of group uuids from the user info.
+        # If so, use the provenance_group_uuid for the derived dataset. If not, throw an error.
+        source_dataset_provenance_group_uuid = None
+        if 'provenance_group_uuid' in dataset_record:
+            source_dataset_provenance_group_uuid = dataset_record['provenance_group_uuid']
+
+        # Note: the user who can create the derived dataset doesn't have to be the same person who created the source dataset
+        # That's why we need to parase the userinfo again here
+        authcache = None
+        if AuthHelper.isInitialized() == False:
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+        else:
+            authcache = AuthHelper.instance()
+
+        userinfo = None
+        userinfo = authcache.getUserInfo(nexus_token, True)
+        if userinfo is Response:
+            raise ValueError('Cannot authenticate current token via Globus.')
+
+        # Decide the provenance group UUID
+        provenance_group = None
+
+        # See if provenance_group_uuid of the source dataset exists in the list of group uuids from the user info.
+        # If so, use the provenance_group_uuid for the derived dataset. If not, throw an error.
+        try:
+            if source_dataset_provenance_group_uuid in userinfo['hmgroupids']:
+                metadata = Metadata(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
+                provenance_group = metadata.get_group_by_identifier(source_dataset_provenance_group_uuid)
+        except ValueError as ve:
+            print("This user has no group access to create this derived dataset from source dataset UUID: " + source_dataset_uuid)
+            raise ve
+
+        metadata_userinfo = {}
+
+        if 'sub' in userinfo.keys():
+            metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
+        if 'username' in userinfo.keys():
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+        if 'name' in userinfo.keys():
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
+    
+        activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
+        # Use the entity_type from the input JSON
+        entity_type = json_data['derived_dataset_entity_type']
+        
+        with driver.session() as session:
+            # First create a new uuid for this derived dataset
+            datastage_uuid_record_list = None
+            datastage_uuid = None
+            try: 
+                datastage_uuid_record_list = ug.getNewUUID(nexus_token, entity_type)
+                if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) == 0):
+                    raise ValueError("UUID service did not return a value")
+                datastage_uuid = datastage_uuid_record_list[0]
+            except requests.exceptions.ConnectionError as ce:
+                raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+
+            tx = None
+            
+            try:
+                tx = session.begin_transaction()
+                # create the data stage
+                dataset_entity_record = {HubmapConst.UUID_ATTRIBUTE : datastage_uuid[HubmapConst.UUID_ATTRIBUTE],
+                                         HubmapConst.DOI_ATTRIBUTE : datastage_uuid[HubmapConst.DOI_ATTRIBUTE],
+                                         HubmapConst.DISPLAY_DOI_ATTRIBUTE : datastage_uuid['displayDoi'],
+                                         HubmapConst.ENTITY_TYPE_ATTRIBUTE : entity_type}
+                
+                stmt = Neo4jConnection.get_create_statement(dataset_entity_record, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
+                print('Derived dataset create statement: ' + stmt)
+                tx.run(stmt)
+                
+                # Create directory on file system for for this new derived dataset
+                # setup initial Landing Zone directory for the new datastage
+                group_display_name = provenance_group['displayname']
+
+                new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(self.confdata['STAGING_ENDPOINT_UUID'], new_path)
+
+                # Create the Entity Metadata node
+                # Don't use None, it'll throw TypeError: 'NoneType' object does not support item assignment
+                metadata_record = {}
+
+                # Use the dataset name from input json
+                metadata_record['name'] = json_data['derived_dataset_name']
+
+                metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
+                metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
+                
+                # Set the default status to New
+                metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = convert_dataset_status("New")
+
+                metadata_uuid_record_list = None
+                metadata_uuid_record = None
+                try: 
+                    metadata_uuid_record_list = ug.getNewUUID(nexus_token, HubmapConst.METADATA_TYPE_CODE)
+                    if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
+                        raise ValueError("UUID service did not return a value")
+                    metadata_uuid_record = metadata_uuid_record_list[0]
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+
+                metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+
+                stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                tx.run(stmt)
+
+                # Create the associated Activity node in neo4j
+                activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
+                sourceUUID_list = []
+                for source_uuid in source_UUID_Data:
+                    sourceUUID_list.append(source_uuid[0]['hmuuid'])
+                
+                activity_object = activity.get_create_activity_statements(nexus_token, activity_type, sourceUUID_list, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                activity_uuid = activity_object['activity_uuid']
+                for stmt in activity_object['statements']: 
+                    tx.run(stmt)                
+                
+                # Create all relationships
+                stmt = Neo4jConnection.create_relationship_statement(datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, metadata_record[HubmapConst.UUID_ATTRIBUTE])
+                tx.run(stmt)
+
+                tx.commit()
+
+                response_data = {
+                    'derived_dataset_uuid': datastage_uuid['uuid'],
+                    'group_uuid': source_dataset_provenance_group_uuid,
+                    'group_display_name': group_display_name
+                }
+
+                return response_data
+            except TransactionError as te: 
+                print ('A transaction error occurred: ', te.value)
+                tx.rollback()
+            except CypherError as cse:
+                print ('A Cypher error was encountered: ', cse.message)
+                tx.rollback()                
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                tx.rollback()
+
+
+
     @classmethod
     def create_datastage(self, driver, headers, incoming_record, groupUUID):
         current_token = None
@@ -334,7 +511,7 @@ class Dataset(object):
                 group_display_name = provenance_group['displayname']
 
                 new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
+                new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = os.makedirs(new_path)"""
@@ -603,6 +780,29 @@ class Dataset(object):
                     print (x)
                 tx.rollback()
 
+    @classmethod
+    def get_metadata_uuid_for_ingest_id(self, driver, ingest_id):
+        stmt = "MATCH (e {" + HubmapConst.DATASET_INGEST_ID_ATTRIBUTE + ": '" + ingest_id + "'}) RETURN e." + HubmapConst.UUID_ATTRIBUTE + " AS uuid" 
+        record_list = []
+        with driver.session() as session:
+            try:
+                for record in session.run(stmt):
+                    dataset_record = {}
+                    dataset_record['uuid'] = record['uuid']
+                    record_list.append(dataset_record)
+                if len(record_list) == 1:
+                   return record_list[0]['uuid']
+                else:
+                   if len(record_list) == 0:
+                       raise ValueError('Error: Cannot find dataset with ingest_id of: ' + ingest_id)
+                   else:
+                       raise ValueError('Error: Found multiple datasets with ingest_id of: ' + ingest_id)
+                       
+            except CypherError as cse:
+                raise cse
+            except Exception as e:
+                raise e
+        
 
     @classmethod
     def set_status(self, driver, uuid, new_status):
@@ -650,7 +850,7 @@ class Dataset(object):
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
-                if update_record['status'] == str(HubmapConst.DATASET_STATUS_LOCKED):
+                if update_record['status'] == str(HubmapConst.DATASET_STATUS_PROCESSING):
                     #the status is set...so no problem
                     # I need to retrieve the ingest_id from the call and store it in neo4j
                     # /datasets/submissions/request_ingest 
@@ -663,23 +863,25 @@ class Dataset(object):
                         prov = Provenance(self.confdata['APP_CLIENT_ID'],self.confdata['APP_CLIENT_SECRET'], None)
                         group_info = prov.get_group_by_identifier(group_uuid)
                         # take the incoming uuid_type and uppercase it
-                        url = 'http://localhost:5005/datasets/submissions/request_ingest'
-                        
-                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid), "process" : "MOCK.MICROSCOPY.IMG.ALL", "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
+                        url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
+                        print('sending request_ingest to: ' + url)
+                        r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid),
+                                                     "process" : self.confdata['INGEST_PIPELINE_DEFAULT_PROCESS'],
+                                                     "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
                         if r.ok == True:
                             """expect data like this:
                             {"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
                             """
                             data = json.loads(r.content.decode())
-                            submission_data = data['submission']
+                            submission_data = data['response']
                             if 'overall_file_count' in submission_data:
                                 if int(submission_data['overall_file_count']) <= 0:
                                     raise ValueError("Error: overall_file_count equals zero: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
                             else:
                                 raise ValueError("Error: missing 'overall_file_count' from request ingest call")
                             if 'top_folder_contents' in submission_data:
-                                top_folder_contents = json.loads(submission_data['top_folder_contents'])
+                                top_folder_contents = submission_data['top_folder_contents']
                                 if len(top_folder_contents) == 0:
                                     raise ValueError("Error: did not find any files for: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
                             else:
@@ -966,7 +1168,7 @@ def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID)
         raise ValueError('The dataset UUID must have a value')
     try:
         new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
-        os.mkdir(new_path)
+        os.makedirs(new_path)
         relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
         return relative_path
     except globus_sdk.TransferAPIError as e:
@@ -1022,6 +1224,10 @@ def convert_dataset_status(raw_status):
         new_status = HubmapConst.DATASET_STATUS_UNPUBLISHED
     elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_QA).upper():
         new_status = HubmapConst.DATASET_STATUS_QA
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_ERROR).upper():
+        new_status = HubmapConst.DATASET_STATUS_ERROR
+    elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_PROCESSING).upper():
+        new_status = HubmapConst.DATASET_STATUS_PROCESSING
     elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_HOLD).upper():
         new_status = HubmapConst.DATASET_STATUS_HOLD
     return new_status
