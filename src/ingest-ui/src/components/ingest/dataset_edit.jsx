@@ -127,7 +127,7 @@ class DatasetEdit extends Component {
         source_uuids = [this.props.editingDataset.properties.source_uuid];
       }
       let data_types = JSON.parse(
-        this.props.editingDataset.properties.data_types.replace(/'/g, '"')
+        this.props.editingDataset.properties.data_types.replace(/'/g, '"').replace(/\\\"/g, '\'')
       );
       let other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
       data_types = data_types.filter(dt => dt.startsWith("dt_"));
@@ -472,9 +472,9 @@ class DatasetEdit extends Component {
         this.setState({ submitting: true });
         let data_types = [...this.state.data_types];
         if (this.state.other_dt !== "") {
-          data_types = [...data_types, this.state.other_dt];
+          data_types = [...data_types, this.state.other_dt.replace(/'/g, '\\\'')];
         }
-        
+
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
