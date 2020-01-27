@@ -47,6 +47,7 @@ class DatasetEdit extends Component {
   };
 
   componentDidMount() {
+    document.addEventListener('click', this.handleClickOutside);
     const config = {
       headers: {
         Authorization:
@@ -201,6 +202,10 @@ class DatasetEdit extends Component {
     }
   }
 
+  componentWillUnmount() {
+    document.removeEventListener('click', this.handleClickOutside, true);
+}
+
   showModal = () => {
     this.setState({ show: true });
   };
@@ -235,7 +240,7 @@ class DatasetEdit extends Component {
         });
         this.setState({
           collection: value,
-          showCollectionsDropDown: true,
+          showCollectionsDropDown: value !== "",
           collection_candidates: ret
         });
         break;
@@ -379,6 +384,12 @@ class DatasetEdit extends Component {
         });
     }
   };
+
+  handleClickOutside = e => {
+    this.setState({
+      showCollectionsDropDown: false
+    });
+  }
 
   validateUUID = () => {
     let isValid = true;
