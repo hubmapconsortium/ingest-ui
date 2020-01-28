@@ -82,7 +82,7 @@ class Dataset(object):
             return_clause = "score, "
             order_by_clause = "score DESC, "    
             stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-            MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node:Entity) WHERE {entity_type_clause} {provenance_group_uuid_clause}
+            MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node:Entity)<-[:ACTIVITY_OUTPUT]-(create_activity:Activity)-[:HAS_METADATA]->(activity_metadata:Metadata) WHERE {entity_type_clause} {provenance_group_uuid_clause}
             OPTIONAL MATCH (entity_node)-[:IN_COLLECTION]->(c:Collection)
             RETURN score, entity_node.{hubmapid_attr} AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp, activity_metadata.{create_user_email} AS created_by_email
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
@@ -93,7 +93,7 @@ class Dataset(object):
             provenance_group_uuid_clause = provenance_group_uuid_clause.replace('lucene_node.', 'metadata_node.')
 
             stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-            MATCH (metadata_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node:Entity) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
+            MATCH (metadata_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node:Entity)<-[:ACTIVITY_OUTPUT]-(create_activity:Activity)-[:HAS_METADATA]->(activity_metadata:Metadata) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
             OPTIONAL MATCH (entity_node)-[:IN_COLLECTION]->(c:Collection)
             RETURN score, lucene_node.{hubmapid_attr} AS hubmap_identifier, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp, activity_metadata.{create_user_email} AS created_by_email
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
@@ -345,7 +345,8 @@ class Dataset(object):
                 
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
-                new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+
+                new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
                 
                 """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
@@ -912,17 +913,14 @@ class Dataset(object):
         ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
         return ret_dir
 
-# NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
-# if the file path was wrong.  
-def make_new_dataset_directory(transfer_token, transfer_endpoint_uuid, groupDisplayname, newDirUUID):
+def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
     try:
-        tc = globus_sdk.TransferClient(authorizer=AccessTokenAuthorizer(transfer_token))
-        new_path = str(os.path.join('/',groupDisplayname, newDirUUID))
-        tc.operation_mkdir(transfer_endpoint_uuid,new_path)
-        #print ("Done adding directory: " + new_path)
-        return new_path
+        new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
+        os.mkdir(new_path)
+        relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
+        return relative_path
     except globus_sdk.TransferAPIError as e:
         if e.code == "ExternalError.MkdirFailed.Exists":
             pass

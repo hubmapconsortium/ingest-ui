@@ -21,6 +21,7 @@ import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
+import LabIDsModal from "../labIdsModal";
 
 class TissueForm extends Component {
   state = {
@@ -121,7 +122,9 @@ class TissueForm extends Component {
         .then(res => {
           if (res.data.siblingid_list.length > 0) {
             res.data.siblingid_list.push({
-              hubmap_identifier: this.props.editingEntity.hubmap_identifier
+              hubmap_identifier: this.props.editingEntity.hubmap_identifier,
+              uuid: this.props.editingEntity.uuid,
+              lab_tissue_id: this.props.editingEntity.lab_tissue_id || ""
             });
             res.data.siblingid_list.sort((a, b) => {
               if (
@@ -153,6 +156,11 @@ class TissueForm extends Component {
                 return -1;
               }
               return 0;
+            });
+
+            this.setState({
+              entities: this.props.editingEntities,
+              ids: res.data.siblingid_list
             });
             const first_lab_id = res.data.siblingid_list[0].hubmap_identifier;
             const last_lab_id =
@@ -200,8 +208,6 @@ class TissueForm extends Component {
             .replace(/\\/g, "\\\\")
             .replace(/'/g, '"')
         );
-      } catch (e) {}
-      try {
         metadatas = JSON.parse(
           this.props.editingEntity.properties.metadatas
             .replace(/\\/g, "\\\\")
@@ -231,9 +237,7 @@ class TissueForm extends Component {
       this.setState(
         {
           author: this.props.editingEntity.properties.provenance_user_email,
-          lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id
-            ? this.props.editingEntity.properties.lab_tissue_id
-            : "",
+          lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
           protocols: protocols_json,
           protocol: this.props.editingEntity.properties.protocol,
           protocol_file_name: getFileNameOnPath(
@@ -683,10 +687,7 @@ class TissueForm extends Component {
               data.images.push({
                 id: "image_" + i.id,
                 file_name: i.file_name,
-                description: i.ref.current.image_file_description.current.value.replace(
-                  /"/g,
-                  '\\"'
-                )
+                description: i.description
               });
             }
           });
@@ -714,11 +715,7 @@ class TissueForm extends Component {
                 this.props.onUpdated(res.data);
               })
               .catch(error => {
-                this.setState({
-                  submit_error: true,
-                  error_msg: error.response.data.displayMessage,
-                  submitting: false
-                });
+                this.setState({ submit_error: true });
               });
           } else {
             axios
@@ -731,11 +728,7 @@ class TissueForm extends Component {
                 this.props.onCreated(res.data);
               })
               .catch(error => {
-                this.setState({
-                  submit_error: true,
-                  error_msg: error.response.data.displayMessage,
-                  submitting: false
-                });
+                this.setState({ submit_error: true });
               });
           }
         }
@@ -1012,15 +1005,17 @@ class TissueForm extends Component {
         }
       });
 
-      this.state.metadatas.forEach((metadata, index) => {
-        if (
-          !validateRequired(metadata.file_name) &&
-          !validateRequired(metadata.ref.current.metadata_file.current.value)
-        ) {
-          isValid = false;
-          metadata.ref.current.validate();
-        }
-      });
+      if (!this.props.editingEntity) {
+        // Creating
+        this.state.metadatas.forEach((metadata, index) => {
+          if (
+            !validateRequired(metadata.ref.current.metadata_file.current.value)
+          ) {
+            isValid = false;
+            metadata.ref.current.validate();
+          }
+        });
+      }
 
       this.state.metadatas.forEach((metadata, index) => {
         usedFileName.add(metadata.file_name);
@@ -1102,6 +1097,28 @@ class TissueForm extends Component {
         this.validateUUID();
       }
     );
+  };
+
+  handleEditLabIDs = () => {
+    this.setState({ LabIDsModalShow: true });
+  };
+
+  hideLabIDsModal = () => {
+    this.setState({ LabIDsModalShow: false });
+  };
+
+  handleLabIdsUpdate = e => {
+    let new_ids = [];
+    this.state.ids.map(id => {
+      return new_ids.push({
+        hubmap_identifier: id.hubmap_identifier,
+        uuid: id.uuid,
+        lab_tissue_id: e[id.uuid]
+      });
+    });
+    this.setState({
+      ids: new_ids
+    });
   };
 
   render() {
@@ -1510,20 +1527,28 @@ class TissueForm extends Component {
                     </div>
                   </div>
                   {this.state.multiple_id && (
-                    <div className="col-sm-4 offset-sm-2">
-                      <input
-                        type="number"
-                        className={
-                          "form-control " +
-                          this.errorClass(this.state.formErrors.sample_count)
-                        }
-                        name="sample_count"
-                        id="sample_count"
-                        placeholder="Number of IDs to Generate"
-                        min="1"
-                        onChange={this.handleInputChange}
-                      />
-                    </div>
+                    <React.Fragment>
+                      <div className="col-sm-4 offset-sm-2">
+                        <input
+                          type="number"
+                          className={
+                            "form-control " +
+                            this.errorClass(this.state.formErrors.sample_count)
+                          }
+                          name="sample_count"
+                          id="sample_count"
+                          placeholder="Number of IDs to Generate"
+                          min="1"
+                          onChange={this.handleInputChange}
+                        />
+                      </div>
+                      <div className="col-sm-4">
+                        <small>
+                          Lab IDs can be assigned on the next screen after
+                          generating the HuBMAP IDs
+                        </small>
+                      </div>
+                    </React.Fragment>
                   )}
                 </div>
               )}
@@ -1579,6 +1604,34 @@ class TissueForm extends Component {
                   </div>
                 </div>
               )}
+            {this.props.editingEntity && this.props.editingEntities.length > 1 && (
+              <React.Fragment>
+                <div className="form-group row">
+                  <label
+                    htmlFor="lab_tissue_id"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Lab Sample Id
+                  </label>
+                  <div className="col-sm-9">
+                    <button
+                      type="button"
+                      className="btn btn-link"
+                      onClick={this.handleEditLabIDs}
+                      disabled={this.props.readOnly}
+                    >
+                      Edit Lab IDs
+                    </button>
+                  </div>
+                </div>
+                <LabIDsModal
+                  show={this.state.LabIDsModalShow}
+                  hide={this.hideLabIDsModal}
+                  ids={this.state.ids}
+                  update={this.handleLabIdsUpdate}
+                />
+              </React.Fragment>
+            )}
             {(!this.props.readOnly || this.state.description !== undefined) && (
               <div className="form-group row">
                 <label
@@ -1795,8 +1848,8 @@ class TissueForm extends Component {
             )}
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
-                {this.state.error_msg ||
-                  "Oops! Something went wrong. Please contact administrator for help."}
+                Oops! Something went wrong. Please contact administrator for
+                help.
               </div>
             )}
             {this.renderButtons()}

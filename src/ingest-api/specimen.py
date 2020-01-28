@@ -86,7 +86,7 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
         # ex: <data_parent_directory>/<group UUID>
-        data_directory = get_data_directory(cself.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
+        data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
         #get a link to the subdirectory within data directory using the current uuid
         # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
         # We need to allow this method to create a new directory.  It is possible that an earlier
@@ -194,6 +194,35 @@ class Specimen:
                 if tx.closed() == False:
                     tx.rollback()
     
+    @classmethod
+    def batch_update_specimen_lab_ids(cls, driver, incoming_record, token):
+        conn = Neo4jConnection(cls.confdata['NEO4J_SERVER'], cls.confdata['NEO4J_USERNAME'], cls.confdata['NEO4J_PASSWORD'])
+        with driver.session() as session:
+            tx = None
+            try:
+                tx = session.begin_transaction()
+                
+                for uuid, lab_id in incoming_record.items():
+                    id = {HubmapConst.UUID_ATTRIBUTE: uuid, HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE: lab_id}
+                    stmt = Neo4jConnection.get_update_statement(
+                        id, True)
+                    tx.run(stmt)
+                tx.commit()
+                return True
+            except TransactionError as te:
+                print('A transaction error occurred: ', te.value)
+                if tx.closed() == False:
+                    tx.rollback()
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                if tx.closed() == False:
+                    tx.rollback()
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
+                if tx.closed() == False:
+                    tx.rollback()
+
     @staticmethod
     def build_complete_file_list(metadata_list, protocol_list, image_list):
         return_list = []
@@ -795,14 +824,15 @@ class Specimen:
         sibling_return_list = []
         with driver.session() as session:
             try:
-                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier".format(
+                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier, sibling.{LAB_TISSUE_ID} AS sibling_lab_tissue_id".format(
                     UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
                     uuid=uuid, ACTIVITY_NODE_NAME=HubmapConst.ACTIVITY_NODE_NAME, LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
-                    ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL)    
+                    ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, LAB_TISSUE_ID =HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)    
                 for record in session.run(stmt):
                     sibling_record = {}
                     sibling_record['uuid'] = record['sibling_uuid']
                     sibling_record['hubmap_identifier'] = record['sibling_hubmap_identifier']
+                    sibling_record['lab_tissue_id'] = record['sibling_lab_tissue_id']
                     sibling_return_list.append(sibling_record)
                 return sibling_return_list
             except ConnectionError as ce:
@@ -852,6 +882,8 @@ class Specimen:
         lucene_type_clause = entity_type_clause.replace('entity_node.entitytype', 'lucene_node.entitytype')
         lucene_type_clause = lucene_type_clause.replace('lucene_node.specimen_type', 'metadata_node.specimen_type')
         
+        print("-----><entity_type_clause: " + entity_type_clause)
+        
         provenance_group_uuid_clause = ""
         if group_uuid_list != None:
             if len(group_uuid_list) > 0:
@@ -865,11 +897,11 @@ class Specimen:
         stmt_list = []
         if search_term == None:
             stmt1 = """MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
-            RETURN COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            RETURN COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
             stmt_list = [stmt1]
         else:
             # use the full text indexing if searching for a term
@@ -878,21 +910,21 @@ class Specimen:
             order_by_clause = "score DESC, "    
             stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
             MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
-            RETURN score, COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            RETURN score, COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
     
             provenance_group_uuid_clause = provenance_group_uuid_clause.replace('lucene_node.', 'metadata_node.')
 
             stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
             MATCH (metadata_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
-            RETURN score, COALESCE(lucene_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
+            RETURN score, COALESCE(lucene_node.{hubmapid_attr}, lucene_node.{display_doi_attr}) AS hubmap_identifier, lucene_node.{lab_tissue_id_attr} AS lab_tissue_id, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
     
             stmt_list = [stmt1, stmt2]
         return_list = []
@@ -916,6 +948,7 @@ class Specimen:
                                 data_record['datatype'] = record['datatype']
                                 data_record['properties'] = record['metadata_properties']
                                 data_record['hubmap_identifier'] = record['hubmap_identifier']
+                                data_record['lab_tissue_id'] = record['lab_tissue_id']
                                 # determine if the record is writable by the current user
                                 data_record['writeable'] = False
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:

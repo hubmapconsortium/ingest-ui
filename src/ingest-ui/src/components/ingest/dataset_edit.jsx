@@ -249,6 +249,11 @@ class DatasetEdit extends Component {
           source_uuid: value
         });
         break;
+      case "phi":
+        this.setState({
+          phi: value
+        });
+        break;
       case "description":
         this.setState({
           description: value
@@ -1310,6 +1315,8 @@ class DatasetEdit extends Component {
                       id='phi_no'
                       value='no'
                       defaultChecked={true}
+                      checked={this.state.phi === 'no'}
+                      onChange={this.handleInputChange}
                     />
                     <label className='form-check-label' htmlFor='phi_no'>
                       No
@@ -1317,11 +1324,13 @@ class DatasetEdit extends Component {
                   </div>
                   <div className='form-check form-check-inline'>
                     <input
-                      className='form-check-input'
-                      type='radio'
-                      name='phi'
-                      id='phi_yes'
-                      value='Yes'
+                      className="form-check-input"
+                      type="radio"
+                      name="phi"
+                      id="phi_yes"
+                      value="yes"
+                      checked={this.state.phi === 'yes'}
+                      onChange={this.handleInputChange}
                     />
                     <label className='form-check-label' htmlFor='phi_yes'>
                       Yes

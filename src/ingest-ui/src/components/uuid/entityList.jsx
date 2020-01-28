@@ -60,10 +60,7 @@ class EntityList extends Component {
       });
 
     axios
-      .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
-        config
-      )
+      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
       .then(res => {
         let entities = {};
         res.data.specimens.forEach(s => {
@@ -96,10 +93,7 @@ class EntityList extends Component {
     };
 
     axios
-      .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
-        config
-      )
+      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
       .then(res => {
         this.setState({
           loading: false,
@@ -135,21 +129,23 @@ class EntityList extends Component {
     }
   }
 
-  editForm = (entity, display_id) => {
+  editForm = (entity, display_id, es) => {
     this.setState({
       updateSuccess: null,
       editingEntity: entity,
       editingDisplayId: display_id,
+      editingEntities: es,
       readOnly: false
     });
     this.props.onEdit();
   };
 
-  viewForm = (entity, display_id) => {
+  viewForm = (entity, display_id, es) => {
     this.setState({
       updateSuccess: null,
       editingEntity: entity,
       editingDisplayId: display_id,
+      editingEntities: es,
       readOnly: true
     });
     this.props.onEdit();
@@ -220,10 +216,7 @@ class EntityList extends Component {
     };
 
     axios
-      .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
-        config
-      )
+      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
       .then(res => {
         let entities = {};
         res.data.specimens.forEach(s => {
@@ -265,10 +258,7 @@ class EntityList extends Component {
     };
 
     axios
-      .get(
-        `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`,
-        config
-      )
+      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
       .then(res => {
         this.setState({
           loading: false,
@@ -481,8 +471,11 @@ class EntityList extends Component {
                   display_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
                 }
                 return (
-                  <React.Fragment key={entity.hubmap_identifier}>
-                    <tr className={es.length > 1 ? "font-weight-bold" : ""}>
+                  <React.Fragment key={display_id}>
+                    <tr
+                      className={es.length > 1 ? "font-weight-bold" : ""}
+                      key={entity.hubmap_identifier}
+                    >
                       <td className="nowrap">
                         {es.length > 1 && (
                           <React.Fragment>
@@ -511,14 +504,16 @@ class EntityList extends Component {
                         {entity.writeable && (
                           <button
                             className="btn btn-primary btn-sm mr-1"
-                            onClick={() => this.editForm(entity, display_id)}
+                            onClick={() =>
+                              this.editForm(entity, display_id, es)
+                            }
                           >
                             Edit
                           </button>
                         )}
                         <button
                           className="btn btn-secondary btn-sm"
-                          onClick={() => this.viewForm(entity, display_id)}
+                          onClick={() => this.viewForm(entity, display_id, es)}
                         >
                           View
                         </button>
@@ -559,6 +554,7 @@ class EntityList extends Component {
           <TissueForm
             displayId={this.state.editingDisplayId}
             editingEntity={this.state.editingEntity}
+            editingEntities={this.state.editingEntities}
             readOnly={this.state.readOnly}
             handleCancel={this.cancelEdit}
             onUpdated={this.onUpdated}
