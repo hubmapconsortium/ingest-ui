@@ -95,12 +95,15 @@ class App extends Component {
         .catch(err => {
           if (err.response === undefined) {
             this.setState({
-              allowed: false,
               web_services_error: true
-            });
+            }); 
           } else if (err.response.status === 401) {
             localStorage.setItem("isAuthenticated", false);
             // window.location.reload();
+          } else if (err.response.status === 403) {
+            this.setState({
+              allowed: false
+            }); 
           }
         });
 
