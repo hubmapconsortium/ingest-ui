@@ -254,7 +254,7 @@ Input JSON example:
 {
 "source_dataset_uuid":"e517ce652d3c4f22ace7f21fd64208ac",
 "derived_dataset_name":"Test derived dataset 1",
-"derived_dataset_entity_type":"Dataset"
+"derived_dataset_types":["QX11", "xxx"]
 }
 
 Output JSON example:
@@ -278,8 +278,12 @@ def create_derived_dataset():
     if 'derived_dataset_name' not in json_data:
         abort(400, jsonify( { 'error': "The 'derived_dataset_name' property is requried in the json data from the request" } ))
 
-    if 'derived_dataset_entity_type' not in json_data:
-        abort(400, jsonify( { 'error': "The 'derived_dataset_entity_type' property is requried in the json data from the request" } ))
+    if 'derived_dataset_types' not in json_data:
+        abort(400, jsonify( { 'error': "The 'derived_dataset_types' property is requried in the json data from the request" } ))
+
+    # Ensure the data types is an array
+    if not isinstance(json_data['derived_dataset_types'], list):
+        abort(400, jsonify( { 'error': "The 'derived_dataset_types' values must be an json array" } ))
 
     # Create a new derived dataset based on this parent dataset ID
     conn = None
