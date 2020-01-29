@@ -11,7 +11,6 @@ import {
 } from '@devexpress/dx-react-grid-material-ui';
 
 
-
 class IDSearchModalMultiSelect extends Component {
   state = {};
 
@@ -22,56 +21,27 @@ class IDSearchModalMultiSelect extends Component {
     this.keywords = React.createRef();
     this.state = {
     	columns : [{name: 'hubmap_identifier', title: 'Identifier'}],
-    	//rows: [{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}],
-    	isInitialized : 'false'};
+    	rows: [{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}]};
     	
          this.changeSelection = selection => {
-             this.setState({ selectedRows: []});
+            //this.grid.deselectAll();
+            this.setState({ selection: [0] });
+            this.setState({ selection: selection });
+            this.setState({ selectedRows: []});
             var newRows = []
             for (var i=0;i < selection.length; i++) {
               newRows.push(this.state.rows[selection[i]]);
             }
             this.setState({ selectedRows: newRows});
-            this.setState({ selection: selection });
         };
     
-  };
+  }
 
   componentDidMount() {
     this.setState({
       LookUpShow: false
     });
-  };
-  
-  UNSAFE_componentWillReceiveProps(nextProps) {
-	  //let {rows, columns} = this.state;
-	  let  {selection, setSelection} = [];
-	  let currSelected = [];
-	  if (nextProps.uuid_list === undefined) {
-	    return;
-	  }
-	  let rows = nextProps.uuid_list;
-      if (nextProps.currentSourceIds !== undefined && nextProps.currentSourceIds.length > 0) {
-          let  {selection, setSelection} = [];
-	      let currSelected = [];
-          for (var j=0;j<nextProps.currentSourceIds.length;j++) {
-             if (nextProps.currentSourceIds[j] !== undefined) {
-             	 let hubmap_id_list = rows.map(function(o) { return o.hubmap_identifier; })
-             	 let idx = hubmap_id_list.indexOf(nextProps.currentSourceIds[j]);
-	             if (idx > -1) {
-	               currSelected.push(idx);
-	               
-	             }
-             }
-          }
-          this.setState({selection: currSelected});
-	      this.state.selection = currSelected;
-	      //let {selection} = currSelected;
-	      this.setState({isInitialized : 'true'});
-          
-          
-      }
-  };
+  }
 
   hideLookUpModal = () => {
     this.setState({
@@ -81,26 +51,21 @@ class IDSearchModalMultiSelect extends Component {
 
   handleDoneClick = () => {
 
-	//this.setState({uuid_list : this.state.selectedRows});
-	this.props.parentCallback(this.state.selectedRows);
+	this.setState({uuid_list : this.state.selectedRows});
     this.setState({
-      //HuBMAPIDResults: Object.values(this.state.selection),
       LookUpShow: false
     });
   };
-  
 
 
   render() {
 	   let {rows, columns} = this.state;
-	   let  {selection, setSelection} = [];
+	   let  {selection, setSelection} = rows[0];
         if (this.props.uuid_list === undefined) {
           return(<div></div>);
         } else {
           rows = this.props.uuid_list;
           this.state.rows = rows;
-          
-	       
         }
     return (
   
@@ -121,7 +86,7 @@ class IDSearchModalMultiSelect extends Component {
 					        columns={columns}
 					      >
 					        <SelectionState
-					          selection={this.state.selection}
+					          selection={selection}
 					          onSelectionChange={this.changeSelection}
 					        />
 					        <Table />

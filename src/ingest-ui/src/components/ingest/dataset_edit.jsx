@@ -198,6 +198,7 @@ class DatasetEdit extends Component {
   };
 
   handleLookUpClick = () => {
+    //this.props.current_source_uuid_list = this.state.source_uuid_list;
     this.setState({
       LookUpShow: true
     });
@@ -298,6 +299,22 @@ class DatasetEdit extends Component {
       }
     );
   };
+  
+  getUuidList = (new_uuid_list) => {
+    //this.setState({uuid_list: new_uuid_list}); 
+    this.setState(
+      {
+        source_uuid: this.generateDisplaySourceId(new_uuid_list),
+        source_uuid_list: new_uuid_list,
+
+        LookUpShow: false
+      },
+      () => {
+        this.validateUUID();
+      }
+    );
+  };
+  
 
   handleAddNewCollection = () => {
     this.setState({
@@ -1099,6 +1116,8 @@ class DatasetEdit extends Component {
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                     parent="dataset"
+                    parentCallback = {this.getUuidList}
+                    currentSourceIds = {this.state.source_uuid_list}
                   />
                 </React.Fragment>
               )}
