@@ -8,8 +8,9 @@ import {
   Table,
   TableHeaderRow,
   TableSelection,
-} from '@devexpress/dx-react-grid-material-ui';
+} from '@devexpress/dx-react-grid-bootstrap4';
 
+import "@devexpress/dx-react-grid-bootstrap4/dist/dx-react-grid-bootstrap4.css";
 
 
 class IDSearchModalMultiSelect extends Component {
@@ -21,7 +22,7 @@ class IDSearchModalMultiSelect extends Component {
     this.sampleType = React.createRef();
     this.keywords = React.createRef();
     this.state = {
-    	columns : [{name: 'hubmap_identifier', title: 'Identifier'}],
+    	columns : [{name: 'hubmap_identifier', title: 'Sample Identifier'}],
     	//rows: [{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}],
     	isInitialized : 'false'};
     	
@@ -36,7 +37,12 @@ class IDSearchModalMultiSelect extends Component {
         };
     
   };
-
+  
+  tableHeaderComponent = (props: any) => (<TableHeaderRow.Content
+				{...props}
+				align='center'
+				/>)
+				
   componentDidMount() {
     this.setState({
       LookUpShow: false
@@ -109,8 +115,9 @@ class IDSearchModalMultiSelect extends Component {
           <div className="col-sm-12">
             <div className="card text-center">
               <div className="card-body">
-                <h5 className="card-title">Select Sibling IDs</h5>
+                <h5 className="card-title">Choose the Sample(s) to Associate with this Dataset</h5>
                 <div className="row">
+                  <div className="col-sm-3"></div>
                   <div className="col-sm-6">
                     <div className="form-group row">
 
@@ -125,7 +132,7 @@ class IDSearchModalMultiSelect extends Component {
 					          onSelectionChange={this.changeSelection}
 					        />
 					        <Table />
-					        <TableHeaderRow />
+					        <TableHeaderRow contentComponent={this.tableHeaderComponent} />
 					        <TableSelection
 					          selectByRowClick
 					          highlightRow
@@ -142,7 +149,7 @@ class IDSearchModalMultiSelect extends Component {
                     <div className="text-center">No record found.</div>
                   )}
                 <div className="row mb-5">
-                  <div className="col-sm-4 offset-sm-2">
+                  <div className="col-sm-3 offset-sm-3">
                     <button
                       className="btn btn-primary btn-block"
                       type="button"
