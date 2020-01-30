@@ -61,7 +61,7 @@ class LabIDsModal extends Component {
               submitting: false,
               success: true
             });
-            this.props.update(formData);
+            // this.props.update(formData);
           })
           .catch(error => {
             this.setState({ submitting: false, submit_error: true });
