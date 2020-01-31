@@ -87,9 +87,42 @@ class IDSearchModalMultiSelect extends Component {
 
   handleDoneClick = () => {
 
-	//this.setState({uuid_list : this.state.selectedRows});
-	this.props.parentCallback(this.state.selectedRows);
-    this.setState({
+	  //sort the results before returning them
+	  var sortedResults = this.state.selectedRows;
+	  sortedResults.sort((a, b) => {
+	    if (
+	      parseInt(
+	        a.hubmap_identifier.substring(
+	          a.hubmap_identifier.lastIndexOf("-") + 1
+	        )
+	      ) >
+	      parseInt(
+	        b.hubmap_identifier.substring(
+	          a.hubmap_identifier.lastIndexOf("-") + 1
+	        )
+	      )
+	    ) {
+	      return 1;
+	    }
+	    if (
+	      parseInt(
+	        b.hubmap_identifier.substring(
+	          a.hubmap_identifier.lastIndexOf("-") + 1
+	        )
+	      ) >
+	      parseInt(
+	        a.hubmap_identifier.substring(
+	          a.hubmap_identifier.lastIndexOf("-") + 1
+	        )
+	      )
+	    ) {
+	      return -1;
+	    }
+	    return 0;
+	  });
+      this.state.selectedRows = sortedResults;
+	  this.props.parentCallback(this.state.selectedRows);
+      this.setState({
       //HuBMAPIDResults: Object.values(this.state.selection),
       LookUpShow: false
     });
