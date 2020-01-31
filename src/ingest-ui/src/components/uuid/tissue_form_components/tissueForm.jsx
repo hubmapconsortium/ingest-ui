@@ -425,23 +425,23 @@ class TissueForm extends Component {
         }
         break;
       case "source_uuid":
-        this.setState({ source_uuid: value });
-        // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
-        // if (patt.test(value)) {
-        //   this.setState({ source_uuid: value + "-" });
+        // this.setState({ source_uuid: value });
+        // // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
+        // // if (patt.test(value)) {
+        // //   this.setState({ source_uuid: value + "-" });
+        // // }
+        // if (!validateRequired(value)) {
+        //   this.setState(prevState => ({
+        //     formErrors: {
+        //       ...prevState.formErrors,
+        //       source_uuid: "required"
+        //     }
+        //   }));
+        // } else {
+        //   this.setState(prevState => ({
+        //     formErrors: { ...prevState.formErrors, source_uuid: "" }
+        //   }));
         // }
-        if (!validateRequired(value)) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              source_uuid: "required"
-            }
-          }));
-        } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, source_uuid: "" }
-          }));
-        }
         break;
       case "organ":
         this.setState({ organ: value });
@@ -1161,7 +1161,7 @@ class TissueForm extends Component {
                       }
                       value={this.state.source_uuid}
                       onChange={this.handleInputChange}
-                      onKeyDown={this.handleSourceUUIDKeyDown}
+                      onFocus={this.handleLookUpClick}
                     />
                   </div>
                   <div className="col-sm-2">
