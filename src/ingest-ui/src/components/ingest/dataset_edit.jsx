@@ -47,7 +47,7 @@ class DatasetEdit extends Component {
   };
 
   componentDidMount() {
-    document.addEventListener('click', this.handleClickOutside);
+    document.addEventListener("click", this.handleClickOutside);
     const config = {
       headers: {
         Authorization:
@@ -127,11 +127,17 @@ class DatasetEdit extends Component {
       } catch {
         source_uuids = [this.props.editingDataset.properties.source_uuid];
       }
-      let data_types = JSON.parse(
-        this.props.editingDataset.properties.data_types.replace(/'/g, '"').replace(/\\\"/g, '\'')
-      );
-      let other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
-      data_types = data_types.filter(dt => dt.startsWith("dt_"));
+      let data_types = null;
+      let other_dt = "";
+      if (this.props.editingDataset.properties.data_types) {
+        let data_types = JSON.parse(
+          this.props.editingDataset.properties.data_types
+            .replace(/'/g, '"')
+            .replace(/\\\"/g, "'")
+        );
+        let other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
+        data_types = data_types.filter(dt => dt.startsWith("dt_"));
+      }
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -203,8 +209,8 @@ class DatasetEdit extends Component {
   }
 
   componentWillUnmount() {
-    document.removeEventListener('click', this.handleClickOutside, true);
-}
+    document.removeEventListener("click", this.handleClickOutside, true);
+  }
 
   showModal = () => {
     this.setState({ show: true });
@@ -394,7 +400,7 @@ class DatasetEdit extends Component {
     this.setState({
       showCollectionsDropDown: false
     });
-  }
+  };
 
   validateUUID = () => {
     let isValid = true;
@@ -488,7 +494,10 @@ class DatasetEdit extends Component {
         this.setState({ submitting: true });
         let data_types = [...this.state.data_types];
         if (this.state.other_dt !== "") {
-          data_types = [...data_types, this.state.other_dt.replace(/'/g, '\\\'')];
+          data_types = [
+            ...data_types,
+            this.state.other_dt.replace(/'/g, "\\'")
+          ];
         }
 
         let data = {
@@ -1156,6 +1165,7 @@ class DatasetEdit extends Component {
                       }
                       value={this.state.source_uuid}
                       onChange={this.handleInputChange}
+                      onFocus={this.handleLookUpClick}
                     />
                   </div>
                   <div className='col-sm-2'>
@@ -1315,7 +1325,7 @@ class DatasetEdit extends Component {
                       id='phi_no'
                       value='no'
                       defaultChecked={true}
-                      checked={this.state.phi === 'no'}
+                      checked={this.state.phi === "no"}
                       onChange={this.handleInputChange}
                     />
                     <label className='form-check-label' htmlFor='phi_no'>
@@ -1324,12 +1334,12 @@ class DatasetEdit extends Component {
                   </div>
                   <div className='form-check form-check-inline'>
                     <input
-                      className="form-check-input"
-                      type="radio"
-                      name="phi"
-                      id="phi_yes"
-                      value="yes"
-                      checked={this.state.phi === 'yes'}
+                      className='form-check-input'
+                      type='radio'
+                      name='phi'
+                      id='phi_yes'
+                      value='yes'
+                      checked={this.state.phi === "yes"}
                       onChange={this.handleInputChange}
                     />
                     <label className='form-check-label' htmlFor='phi_yes'>
