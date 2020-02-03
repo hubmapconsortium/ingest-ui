@@ -130,12 +130,12 @@ class DatasetEdit extends Component {
       let data_types = null;
       let other_dt = "";
       if (this.props.editingDataset.properties.data_types) {
-        let data_types = JSON.parse(
+        data_types = JSON.parse(
           this.props.editingDataset.properties.data_types
             .replace(/'/g, '"')
             .replace(/\\\"/g, "'")
         );
-        let other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
+        other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
         data_types = data_types.filter(dt => dt.startsWith("dt_"));
       }
       this.setState(
@@ -1166,6 +1166,7 @@ class DatasetEdit extends Component {
                       value={this.state.source_uuid}
                       onChange={this.handleInputChange}
                       onFocus={this.handleLookUpClick}
+                      autocomplete='no'
                     />
                   </div>
                   <div className='col-sm-2'>
