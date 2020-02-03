@@ -1162,7 +1162,7 @@ class TissueForm extends Component {
                       value={this.state.source_uuid}
                       onChange={this.handleInputChange}
                       onFocus={this.handleLookUpClick}
-                      autocomplete='no'
+                      autoComplete='off'
                     />
                   </div>
                   <div className="col-sm-2">
