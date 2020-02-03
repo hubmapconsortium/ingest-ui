@@ -728,28 +728,26 @@ class Dataset(object):
     @classmethod
     def set_ingest_status(self, driver, json_data):
         # expect something like this:
-        #{'ingest_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': 'success|error', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]} 
-        if 'ingest_id' not in json_data:
-            raise ValueError('cannot find ingest_id')
-        ingest_id = json_data['ingest_id']
+        #{'dataset_id' : '4d3eb2a87cda705bde38495bb564c8dc', 'status': '<status>', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]} 
+        if 'dataset_id' not in json_data:
+            raise ValueError('cannot find dataset_id')
+        dataset_id = json_data['dataset_id']
         uuid = None
         update_record = {}
         try:
-            uuid = self.get_metadata_uuid_for_ingest_id(driver, ingest_id)
+            #uuid = self.get_metadata_uuid_for_ingest_id(driver, ingest_id)
+            metadata_node = Entity.get_entity_metadata(driver, dataset_id)
+            uuid = metadata_node['uuid']
         except:
-            raise ValueError('cannot find data for ingest_id: ' + ingest_id)
+            raise ValueError('cannot find metadata for dataset_id: ' + dataset_id)
         update_record['uuid'] = uuid
         if 'status' not in json_data:
-            raise ValueError('cannot find status')                  
-        status_string = 'error'
-        if str(json_data['status']).lower() == 'success':
-            status_string = 'QA'
-        if 'process' in json_data:
-            if json_data['process'] == True:
-              status_string = 'New'
-        update_record['status'] = status_string
+            raise ValueError('cannot find status')
+        if json_data['status'] not in HubmapConst.DATASET_STATUS_OPTIONS:
+            raise ValueError('"' + json_data['status'] + '" is not a valid status')                              
+        update_record['status'] = json_data['status']
         if 'message' not in json_data:
-            raise ValueError('cannot find message')                  
+            raise ValueError('cannot find "message" parameter')                  
         message_string = json_data['message']
         update_record['message'] = message_string
         if 'metadata' in json_data:

@@ -505,9 +505,9 @@ def update_dataset_status(uuid, new_status):
             if conn.get_driver().closed() == False:
                 conn.close()
 
-@app.route('/datasets/status', methods = ['POST'])
+@app.route('/datasets/status', methods = ['PUT'])
 # @cross_origin(origins=[app.config['UUID_UI_URL'], app.config['INGEST_PIPELINE_URL']], methods=['POST'])
-#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 #disabled for now @secured(groups="HuBMAP-read")
 def update_ingest_status():
     if not request.json:
@@ -520,14 +520,14 @@ def update_ingest_status():
         driver = conn.get_driver()
         dataset = Dataset(app.config)
         # expecting something like this:
-        #{'ingest_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': 'success|error', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]}
+        #{'dataset_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': '<', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]}
         status_obj = dataset.set_ingest_status(driver, request.json)
         conn.close()
         return jsonify( { 'result' : status_obj } ), 200
     
     except ValueError as ve:
         print('ERROR: ' + str(ve))
-        abort(404, jsonify( { 'error': str(ve) } ))
+        return jsonify({'error' : str(ve)}), 400
         
     except:
         msg = 'An error occurred: '
