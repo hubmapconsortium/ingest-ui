@@ -339,7 +339,7 @@ class DatasetEdit extends Component {
     this.setState(
       {
         source_uuid: this.generateDisplaySourceId(ids),
-        source_uuid_list: ids,
+        source_uuid_list: ids.map(id => id.hubmap_identifier),
 
         LookUpShow: false
       },
@@ -503,9 +503,7 @@ class DatasetEdit extends Component {
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid_list.map(
-            su => su.hubmap_identifier
-          ),
+          source_uuid: this.state.source_uuid_list,
           phi: this.state.phi,
           data_types: data_types,
           description: this.state.description,
