@@ -128,7 +128,7 @@ class DatasetEdit extends Component {
         source_uuids = [this.props.editingDataset.properties.source_uuid];
       }
       let data_types = null;
-      let other_dt = "";
+      let other_dt = undefined;
       if (this.props.editingDataset.properties.data_types) {
         data_types = JSON.parse(
           this.props.editingDataset.properties.data_types
@@ -157,7 +157,7 @@ class DatasetEdit extends Component {
           source_uuid_type: this.props.editingDataset.properties.specimen_type,
           phi: this.props.editingDataset.properties.phi,
           data_types: new Set(data_types),
-          other_datatype: other_dt !== "",
+          other_datatype: other_dt !== undefined,
           other_dt: other_dt,
           description: this.props.editingDataset.properties.description
         },
@@ -291,7 +291,8 @@ class DatasetEdit extends Component {
         const data_types = this.state.data_types;
         data_types.delete(name);
         this.setState({
-          data_types: data_types
+          data_types: data_types,
+          other_dt: ""
         });
       }
     }
