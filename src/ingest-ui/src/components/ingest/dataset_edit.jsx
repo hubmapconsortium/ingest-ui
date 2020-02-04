@@ -280,6 +280,11 @@ class DatasetEdit extends Component {
         this.setState({
           other_datatype: e.target.checked
         });
+        if (!e.target.checked) {
+          this.setState({
+            other_dt: ''
+          });
+        }
       }
       if (e.target.checked) {
         const data_types = this.state.data_types;
@@ -291,8 +296,7 @@ class DatasetEdit extends Component {
         const data_types = this.state.data_types;
         data_types.delete(name);
         this.setState({
-          data_types: data_types,
-          other_dt: ""
+          data_types: data_types
         });
       }
     }
