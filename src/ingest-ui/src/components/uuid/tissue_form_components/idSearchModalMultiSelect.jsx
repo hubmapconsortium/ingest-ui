@@ -8,7 +8,7 @@ import {
   Table,
   TableHeaderRow,
   TableSelection,
-} from '@devexpress/dx-react-grid-material-ui';
+} from '@devexpress/dx-react-grid-bootstrap4';
 
 
 class IDSearchModalMultiSelect extends Component {

@@ -62,6 +62,10 @@ class Dataset(object):
                     provenance_group_uuid_clause += "'{uuid}', ".format(uuid=group_uuid)
                 # lop off the trailing comma and space and add the finish bracket:
                 provenance_group_uuid_clause = provenance_group_uuid_clause[:-2] +']'
+            # if all groups are being selected, ignore the test group
+            elif len(group_uuid_list) == 0:
+                test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
+                provenance_group_uuid_clause += " AND NOT lucene_node.{provenance_group_uuid_attr} IN ['{group_uuid}']".format(provenance_group_uuid_attr=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE,group_uuid=test_group_uuid)
                 
         
         stmt_list = []
