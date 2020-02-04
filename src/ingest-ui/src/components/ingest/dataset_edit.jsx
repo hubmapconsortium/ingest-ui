@@ -494,7 +494,7 @@ class DatasetEdit extends Component {
       if (isValid) {
         this.setState({ submitting: true });
         let data_types = [...this.state.data_types];
-        if (this.state.other_dt !== "") {
+        if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
           data_types = [
             ...data_types,
             this.state.other_dt.replace(/'/g, "\\'")
