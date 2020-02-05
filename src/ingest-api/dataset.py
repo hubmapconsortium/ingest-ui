@@ -271,7 +271,7 @@ class Dataset(object):
                     break
         # the data curator role overrules the group level write rules
         if is_data_curator == True:
-            if current_record['status'] in [HubmapConst.DATASET_STATUS_QA]:
+            if current_record['metadata_properties']['status'] in [HubmapConst.DATASET_STATUS_QA]:
                 return True
             else:
                 return False
