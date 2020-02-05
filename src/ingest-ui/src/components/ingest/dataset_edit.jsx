@@ -665,7 +665,7 @@ class DatasetEdit extends Component {
 
   renderButtons() {
     if (this.props.editingDataset) {
-      if (!this.state.group) {
+      if (!this.props.editingDataset.writeable) {
         return (
           <div className='row'>
             <div className='col-sm-2 offset-sm-10'>

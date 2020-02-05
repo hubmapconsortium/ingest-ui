@@ -328,42 +328,39 @@ class DataList extends Component {
                         ? dataset.properties.status.toUpperCase()
                         : "";
                       let badge_class = "";
-                      let btn_text = "";
+                      let btn_text = dataset.writeable ? "Edit" : "View";
                       switch (status) {
                         case "NEW":
                           badge_class = "badge-purple";
-                          btn_text = this.state.is_curator ? "View" : "Edit";
                           break;
                         case "REOPENED":
                           badge_class = "badge-purple";
-                          btn_text = this.state.is_curator ? "View" : "Edit";
                           break;
                         case "INVALID":
                           badge_class = "badge-warning";
-                          btn_text = this.state.is_curator ? "View" : "Edit";
                           break;
                         case "QA":
                           badge_class = "badge-info";
-                          btn_text = "View";
                           break;
                         case "LOCKED":
                           badge_class = "badge-secondary";
-                          btn_text = "View";
+                          break;
+                        case "PROCESSING":
+                          badge_class = "badge-secondary";
                           break;
                         case "PUBLISHED":
                           badge_class = "badge-success";
-                          btn_text = this.state.is_curator ? "View" : "Reopen";
                           break;
                         case "UNPUBLISHED":
                           badge_class = "badge-light";
-                          btn_text = this.state.is_curator ? "Publish" : "View";
                           break;
                         case "DEPRECATED":
-                          btn_text = this.state.is_curator ? "View" : "View";
                           break;
-                        case "HOLD":
-                          badge_class = "badge-dark";
-                          btn_text = this.state.is_curator ? "View" : "View";
+                        case "PROCESSING":
+                          badge_class = "badge-secondary";
+                          break;
+                        case "ERROR":
+                          badge_class = "badge-danger";
                           break;
                         default:
                           break;
