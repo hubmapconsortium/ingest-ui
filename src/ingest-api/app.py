@@ -205,8 +205,8 @@ def get_datasets():
                 # reset the filtered group list
                 filtered_group_uuid_list = []
                 filtered_group_uuid_list.append(group_info['uuid'])
-                
-        dataset_list =  Dataset.search_datasets(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list)
+        dataset = Dataset(app.config)        
+        dataset_list =  dataset.search_datasets(driver, token, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list)
         return jsonify({'datasets': dataset_list}), 200 
 
     except AuthError as e:
