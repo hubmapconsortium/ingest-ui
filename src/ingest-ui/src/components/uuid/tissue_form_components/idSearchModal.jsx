@@ -86,7 +86,7 @@ class IDSearchModal extends Component {
 
   getUuidList = (new_uuid_list) => {
     this.setState({uuid_list: new_uuid_list}); 
-	this.props.parentCallback(new_uuid_list);
+	this.props.parentCallback(new_uuid_list, "subset");
   };
   
   showSibling = e => {
