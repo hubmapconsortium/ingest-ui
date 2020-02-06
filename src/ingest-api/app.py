@@ -507,7 +507,7 @@ def update_dataset_status(uuid, new_status):
 
 @app.route('/datasets/status', methods = ['PUT'])
 # @cross_origin(origins=[app.config['UUID_UI_URL'], app.config['INGEST_PIPELINE_URL']], methods=['POST'])
-@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT'])
 #disabled for now @secured(groups="HuBMAP-read")
 def update_ingest_status():
     if not request.json:
