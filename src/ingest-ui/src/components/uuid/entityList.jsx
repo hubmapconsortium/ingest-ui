@@ -59,28 +59,28 @@ class EntityList extends Component {
         }
       });
 
-    axios
-      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-      .then(res => {
-        let entities = {};
-        res.data.specimens.forEach(s => {
-          if (entities[s.properties.uuid]) {
-            entities[s.properties.uuid].push(s);
-          } else {
-            entities[s.properties.uuid] = [s];
-          }
-        });
-        this.setState({
-          loading: false,
-          entities: entities
-        });
-      })
-      .catch(err => {
-        if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
+    // axios
+    //   .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
+    //   .then(res => {
+    //     let entities = {};
+    //     res.data.specimens.forEach(s => {
+    //       if (entities[s.properties.uuid]) {
+    //         entities[s.properties.uuid].push(s);
+    //       } else {
+    //         entities[s.properties.uuid] = [s];
+    //       }
+    //     });
+    //     this.setState({
+    //       loading: false,
+    //       entities: entities
+    //     });
+    //   })
+    //   .catch(err => {
+    //     if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
   }
 
   refreshList() {

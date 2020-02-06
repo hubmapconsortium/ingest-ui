@@ -35,23 +35,23 @@ class DataList extends Component {
       params: params
     };
 
-    axios
-      .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
-      .then(res => {
-        if (res.data) {
-          this.setState({
-            loading: false,
-            datasets: res.data.datasets
-          });
-        }
-      })
-      .catch(err => {
-        if (err.response === undefined) {
-        } else if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
+    // axios
+    //   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
+    //   .then(res => {
+    //     if (res.data) {
+    //       this.setState({
+    //         loading: false,
+    //         datasets: res.data.datasets
+    //       });
+    //     }
+    //   })
+    //   .catch(err => {
+    //     if (err.response === undefined) {
+    //     } else if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
 
     axios
       .get(

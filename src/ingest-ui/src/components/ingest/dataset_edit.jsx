@@ -188,6 +188,11 @@ class DatasetEdit extends Component {
                 badge_class: "badge-secondary"
               });
               break;
+            case "ERROR":
+              this.setState({
+                badge_class: "badge-danger"
+              });
+              break;
             case "PUBLISHED":
               this.setState({
                 badge_class: "badge-success"
@@ -665,7 +670,7 @@ class DatasetEdit extends Component {
 
   renderButtons() {
     if (this.props.editingDataset) {
-      if (!this.props.editingDataset.writeable) {
+      if (!this.state.group) {
         return (
           <div className='row'>
             <div className='col-sm-2 offset-sm-10'>
@@ -684,7 +689,45 @@ class DatasetEdit extends Component {
           if (this.state.status.toUpperCase() === "QA") {
             return (
               <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'>
+                <div className='col-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-info btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() =>
+                      this.handleButtonClick(this.state.status.toLowerCase())
+                    }
+                    data-status={this.state.status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Save"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-primary btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("qa")}
+                    data-status={this.state.status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Submit"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-center'>
                   <button
                     type='button'
                     className='btn btn-primary btn-block'
@@ -702,7 +745,7 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Publish"}
                   </button>
                 </div>
-                <div className='col-sm-4 text-center'>
+                <div className='col-sm-3 text-center'>
                   <button
                     type='button'
                     className='btn btn-dark btn-block'
@@ -734,7 +777,24 @@ class DatasetEdit extends Component {
           } else if (this.state.status.toUpperCase() === "PUBLISHED") {
             return (
               <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'></div>
+                <div className='col-sm-3 offset-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-primary btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("reopened")}
+                    data-status='reopened'
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Reopen"}
+                  </button>
+                </div>
                 <div className='col-sm-4 text-center'>
                   <button
                     type='button'
@@ -800,7 +860,7 @@ class DatasetEdit extends Component {
           } else {
             return (
               <div className='row'>
-                <div className='col-sm-4 offset-sm-4'>
+                <div className='col-sm-2 offset-sm-10'>
                   <button
                     type='button'
                     className='btn btn-secondary'
@@ -814,7 +874,7 @@ class DatasetEdit extends Component {
           }
         } else {
           if (
-            ["NEW", "INVALID", "REOPENED"].includes(
+            ["NEW", "INVALID", "REOPENED", "ERROR"].includes(
               this.state.status.toUpperCase()
             )
           ) {
@@ -858,39 +918,6 @@ class DatasetEdit extends Component {
                     {!this.state.submitting && "Submit"}
                   </button>
                 </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            );
-          } else if (this.state.status.toUpperCase() === "PUBLISHED") {
-            return (
-              <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("reopened")}
-                    data-status='reopened'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Reopen"}
-                  </button>
-                </div>
-                <div className='col-sm-4 text-center'></div>
                 <div className='col-sm-2 text-right'>
                   <button
                     type='button'
@@ -946,7 +973,7 @@ class DatasetEdit extends Component {
               className='btn btn-secondary btn-block'
               onClick={() => this.props.handleCancel()}
             >
-              Cancel
+              Close
             </button>
           </div>
         </div>
