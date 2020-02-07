@@ -64,7 +64,7 @@ class LabIDsModal extends Component {
               }
             ,() => {
               this.props.hide();
-              this.props.update(formData);
+              // this.props.update(formData);
             });
           })
           .catch(error => {
