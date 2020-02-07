@@ -186,6 +186,10 @@ def get_datasets():
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
+        
+        # get a unique list of the groups:
+        filtered_group_uuid_list = list(set(filtered_group_uuid_list))
+
         # remove the test group, by default
         test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
         if test_group_uuid in filtered_group_uuid_list:
@@ -1257,6 +1261,10 @@ def search_specimen():
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
+        
+        # get a unique list of the groups:
+        filtered_group_uuid_list = list(set(filtered_group_uuid_list))
+        
         # remove the test group, by default
         test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
         if test_group_uuid in filtered_group_uuid_list:
