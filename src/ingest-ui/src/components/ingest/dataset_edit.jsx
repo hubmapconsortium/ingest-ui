@@ -575,7 +575,7 @@ class DatasetEdit extends Component {
       );
 	  
       display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
-      if (is_subset == "subset") {
+      if (is_subset === "subset") {
         display_source_id = `a subset of ${id_common_part}[ between ${first_lab_id_num} and ${last_lab_id_num}]`;
       }
       return display_source_id;

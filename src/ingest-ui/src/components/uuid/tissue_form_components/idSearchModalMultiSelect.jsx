@@ -4,6 +4,10 @@ import axios from "axios";
 
 import { SelectionState } from '@devexpress/dx-react-grid';
 import {
+  TemplateConnector,
+} from '@devexpress/dx-react-core';
+
+import {
   Grid,
   Table,
   TableHeaderRow,
@@ -12,12 +16,56 @@ import {
 
 import "@devexpress/dx-react-grid-bootstrap4/dist/dx-react-grid-bootstrap4.css";
 
+let isCtrlKeyPressed = false;
+let isShiftKeyPressed = false;
+let firstSelectedRow = null;
+
+class Row extends React.Component {
+  handleClick({ getRowId, selection, rows, toggleSelection }, e) {
+    const { row } = this.props;
+    if (e.shiftKey && selection.length) {
+      const firstSelectedIndex = rows.findIndex(row => getRowId(row) === selection[0])
+      const rowIndex = rows.indexOf(row);
+      toggleSelection({
+        rowIds: rows
+          .slice(Math.min(firstSelectedIndex + 1, rowIndex), Math.max(firstSelectedIndex - 1, rowIndex) + 1)
+          .map(row => getRowId(row)),
+        state: true,
+      })
+    } else if (e.ctrlKey || e.metaKey) {
+      toggleSelection({ rowIds: [getRowId(row)] })
+    } else {
+      toggleSelection({ rowIds: selection, state: false });
+      toggleSelection({ rowIds: [getRowId(row)], state: true });
+    }
+  }
+  render() {
+    const { row, children } = this.props;
+    return (
+      <TemplateConnector>
+        {({ selection, getRowId, rows }, { toggleSelection }) => (
+          <Table.Row
+            className={selection.indexOf(getRowId(row)) > -1 ? 'active bg-secondary text-white' : ''}
+            onClick={this.handleClick
+              .bind(this, { selection, rows, getRowId, toggleSelection })}
+          >
+            {children}
+          </Table.Row>
+        )}
+      </TemplateConnector>
+    );
+  }
+}
+
 
 class IDSearchModalMultiSelect extends Component {
   state = {};
 
    constructor(props) {
     super(props);
+    isCtrlKeyPressed = false;
+    isShiftKeyPressed = false;
+    firstSelectedRow = null;
     this.group = React.createRef();
     this.sampleType = React.createRef();
     this.keywords = React.createRef();
@@ -35,7 +83,7 @@ class IDSearchModalMultiSelect extends Component {
             this.setState({ selectedRows: newRows});
             this.setState({ selection: selection });
         };
-    
+
   };
   
   tableHeaderComponent = (props: any) => (<TableHeaderRow.Content
@@ -161,16 +209,13 @@ class IDSearchModalMultiSelect extends Component {
 					        columns={columns}
 					      >
 					        <SelectionState
-					          selection={this.state.selection}
+					          selection={selection}
 					          onSelectionChange={this.changeSelection}
 					        />
-					        <Table />
-					        <TableHeaderRow contentComponent={this.tableHeaderComponent} />
-					        <TableSelection
-					          selectByRowClick
-					          highlightRow
-					          showSelectionColumn={false}
+					        <Table
+					          rowComponent={Row}
 					        />
+					        <TableHeaderRow contentComponent={this.tableHeaderComponent} />
 					      </Grid>
 					      </div>
 					    )}
