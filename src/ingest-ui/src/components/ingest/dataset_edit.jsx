@@ -714,24 +714,6 @@ class DatasetEdit extends Component {
                     type='button'
                     className='btn btn-primary btn-block'
                     disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("qa")}
-                    data-status={this.state.status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Submit"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
                     onClick={() => this.handleButtonClick("published")}
                     data-status='published'
                   >
@@ -743,6 +725,24 @@ class DatasetEdit extends Component {
                       />
                     )}
                     {!this.state.submitting && "Publish"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-primary btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("reopened")}
+                    data-status={this.state.status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Reopen"}
                   </button>
                 </div>
                 <div className='col-sm-3 text-center'>
