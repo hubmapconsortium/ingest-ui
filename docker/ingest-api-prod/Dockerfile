@@ -35,4 +35,10 @@ RUN yum install -y nginx && \
 # Here 5000 is for the uwsgi socket, 80 for nginx
 EXPOSE 5000 80
 
+# Set an entrypoint
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
 CMD ["./start.sh"]
