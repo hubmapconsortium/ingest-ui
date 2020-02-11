@@ -69,19 +69,26 @@ class IDSearchModalMultiSelect extends Component {
     this.group = React.createRef();
     this.sampleType = React.createRef();
     this.keywords = React.createRef();
+    //this variable is quite important.  This key is associated with the
+    //grid shown on the screen.  The key is incremented each time the grid contents
+    //change.  This causes the grid to be redrawn to ensure it is showing the proper data.
+    this.childKey = 0;
     this.state = {
     	columns : [{name: 'hubmap_identifier', title: 'Sample Identifier'}],
     	//rows: [{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}],
     	isInitialized : 'false'};
     	
          this.changeSelection = selection => {
-             this.setState({ selectedRows: []});
-            var newRows = []
-            for (var i=0;i < selection.length; i++) {
-              newRows.push(this.state.rows[selection[i]]);
-            }
-            this.setState({ selectedRows: newRows});
-            this.setState({ selection: selection });
+             //this.setState({ selectedRows: []});
+            //var newRows = []
+           // for (var i=0;i < selection.length; i++) {
+            //  newRows.push(this.state.rows[selection[i]]);
+            //}
+            
+            
+            //this.setState({ selectedRows: selection});
+            //this.setState({ selection: selection });
+            
         };
 
   };
@@ -110,8 +117,14 @@ class IDSearchModalMultiSelect extends Component {
 	      let currSelected = [];
           for (var j=0;j<nextProps.currentSourceIds.length;j++) {
              if (nextProps.currentSourceIds[j] !== undefined) {
-             	 let hubmap_id_list = rows.map(function(o) { return o.hubmap_identifier; })
-             	 let idx = hubmap_id_list.indexOf(nextProps.currentSourceIds[j]);
+             	 let hubmap_id_list = rows.map(function(o) { return o.hubmap_identifier; });
+             	 let curr_identifier = null;
+             	 if (typeof(nextProps.currentSourceIds[j]) === "string") {
+             	   curr_identifier = nextProps.currentSourceIds[j];
+             	 } else {
+             	   curr_identifier = nextProps.currentSourceIds[j].hubmap_identifier;
+             	 }
+             	 let idx = hubmap_id_list.indexOf(curr_identifier);
 	             if (idx > -1) {
 	               currSelected.push(idx);
 	               
@@ -120,8 +133,9 @@ class IDSearchModalMultiSelect extends Component {
           }
           this.setState({selection: currSelected});
 	      this.state.selection = currSelected;
-	      //let {selection} = currSelected;
+	      this.changeSelection(currSelected);
 	      this.setState({isInitialized : 'true'});
+         ++this.childKey;
           
           
       }
@@ -204,7 +218,7 @@ class IDSearchModalMultiSelect extends Component {
 
 					{rows && (
 					      <div className="scrollbar-div">
-					      <Grid
+					      <Grid key={this.childKey}
 					        rows={rows}
 					        columns={columns}
 					      >
