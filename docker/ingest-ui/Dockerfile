@@ -1,8 +1,7 @@
 # Parent image
-FROM centos:7
+FROM hubmap/api-base-image:latest
 
-LABEL description="HuBMAP Ingest UI" \
-	version="1.5"
+LABEL description="HuBMAP Ingest UI"
 
 # Change to directory that contains the Dockerfile
 WORKDIR /usr/src/app
@@ -19,17 +18,17 @@ enabled=1\n'\
 >> /etc/yum.repos.d/nginx.repo
 
 # Reduce the number of layers in image by minimizing the number of separate RUN commands
-# 1 - Update the package listings
-# 2 - Install nginx (using the custom yum repo specified earlier)
-# 3 - Remove the default nginx config file
+# 1 - Install nginx (using the custom yum repo specified earlier)
+# 2 - Remove the default nginx config file
+# 3 - Overwrite the nginx.conf with ours to run nginx as non-root
 # 4 - Use our nginx config file
 # 5 - Add Node.js stable release Yum Repository
 # 6 - Install Node.js (includes npm)
 # 7 - Install npm dependencies
 # 8 - Clean all yum cache
-RUN yum update -y && \
-    yum install -y nginx && \
+RUN yum install -y nginx && \
     rm /etc/nginx/conf.d/default.conf && \
+    mv nginx.conf /etc/nginx/nginx.conf && \
     mv ingest-ui.conf /etc/nginx/conf.d && \
     curl -sL https://rpm.nodesource.com/setup_12.x | bash - && \
     yum install -y nodejs && \
@@ -47,5 +46,11 @@ RUN npm install && \
 # EXPOSE does not make the ports of the container accessible to the host.
 # Here 80 for nginx to serve the react generated static site
 EXPOSE 80
+
+# Set an entrypoint
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD ["nginx", "-g", "daemon off;"]

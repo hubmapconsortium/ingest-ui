@@ -16,6 +16,7 @@ services:
       - "80:8080"
       - "443:8443"
     environment:
+      - HOST_GID=1000
       - HOST_UID=1000
     volumes:
       # Mount the app config to container in order to keep it outside of the image

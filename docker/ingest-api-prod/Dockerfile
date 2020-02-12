@@ -1,8 +1,7 @@
 # Parent image
 FROM hubmap/api-base-image:latest
 
-LABEL description="HuBMAP Ingest API Service" \
-	version="1.5"
+LABEL description="HuBMAP Ingest API Service"
 
 # Change to directory that contains the Dockerfile
 WORKDIR /usr/src/app
@@ -21,11 +20,13 @@ enabled=1\n'\
 # Reduce the number of layers in image by minimizing the number of separate RUN commands
 # 1 - Install nginx (using the custom yum repo specified earlier)
 # 2 - Remove the default nginx config file
-# 3 - Install flask app dependencies with pip (pip3 also works)
-# 4 - Make the start script executable
-# 5 - Clean all yum cache
+# 3 - Overwrite the nginx.conf with ours to run nginx as non-root
+# 4 - Install flask app dependencies with pip (pip3 also works)
+# 5 - Make the start script executable
+# 6 - Clean all yum cache
 RUN yum install -y nginx && \
     rm /etc/nginx/conf.d/default.conf && \
+    mv nginx.conf /etc/nginx/nginx.conf && \
     pip install -r src/requirements.txt && \
     chmod +x start.sh && \
     yum clean all 
