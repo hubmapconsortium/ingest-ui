@@ -425,23 +425,23 @@ class TissueForm extends Component {
         }
         break;
       case "source_uuid":
-        this.setState({ source_uuid: value });
-        // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
-        // if (patt.test(value)) {
-        //   this.setState({ source_uuid: value + "-" });
+        // this.setState({ source_uuid: value });
+        // // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
+        // // if (patt.test(value)) {
+        // //   this.setState({ source_uuid: value + "-" });
+        // // }
+        // if (!validateRequired(value)) {
+        //   this.setState(prevState => ({
+        //     formErrors: {
+        //       ...prevState.formErrors,
+        //       source_uuid: "required"
+        //     }
+        //   }));
+        // } else {
+        //   this.setState(prevState => ({
+        //     formErrors: { ...prevState.formErrors, source_uuid: "" }
+        //   }));
         // }
-        if (!validateRequired(value)) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              source_uuid: "required"
-            }
-          }));
-        } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, source_uuid: "" }
-          }));
-        }
         break;
       case "organ":
         this.setState({ organ: value });
@@ -502,6 +502,11 @@ class TissueForm extends Component {
         this.setState({
           multiple_id: e.target.checked
         });
+        if(!e.target.checked){
+          this.setState({
+            sample_count: ""
+          })
+        }
         break;
       case "sample_count":
         this.setState({
@@ -1156,7 +1161,8 @@ class TissueForm extends Component {
                       }
                       value={this.state.source_uuid}
                       onChange={this.handleInputChange}
-                      onKeyDown={this.handleSourceUUIDKeyDown}
+                      onFocus={this.handleLookUpClick}
+                      autoComplete='off'
                     />
                   </div>
                   <div className="col-sm-2">
@@ -1168,7 +1174,7 @@ class TissueForm extends Component {
                       Look up
                     </button>
                   </div>
-                  <div className="col-sm-2">
+                  {/* <div className="col-sm-2">
                     <button
                       className="btn btn-primary"
                       type="button"
@@ -1177,7 +1183,7 @@ class TissueForm extends Component {
                     >
                       {this.state.validatingUUID ? "..." : "Validate"}
                     </button>
-                  </div>
+                  </div> */}
                   <IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}

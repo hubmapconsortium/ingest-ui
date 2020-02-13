@@ -57,11 +57,15 @@ class LabIDsModal extends Component {
             config
           )
           .then(res => {
-            this.setState({
-              submitting: false,
-              success: true
+            this.setState(
+              {
+                submitting: false,
+                success: true
+              }
+            ,() => {
+              this.props.hide();
+              // this.props.update(formData);
             });
-            this.props.update(formData);
           })
           .catch(error => {
             this.setState({ submitting: false, submit_error: true });
@@ -72,23 +76,26 @@ class LabIDsModal extends Component {
 
   render() {
     return (
-      <Modal show={this.props.show} handleClose={this.props.hide}>
-        <div className="row">
-          <div className="col-sm-12">
-            <div className="card text-center">
-              <div className="card-body scrollbar-div">
-                <h5 className="card-title">Assign Lab IDs</h5>
+      <Modal
+        show={this.props.show}
+        handleClose={this.props.hide}
+      >
+        <div className='row'>
+          <div className='col-sm-12'>
+            <div className='card text-center'>
+              <div className='card-body scrollbar-div'>
+                <h5 className='card-title'>Assign Lab IDs</h5>
                 {this.state.ids &&
                   this.state.ids.map(id => (
-                    <div key={id.hubmap_identifier} className="form-group row">
-                      <label className="col-sm-4 col-form-label text-right">
+                    <div key={id.hubmap_identifier} className='form-group row'>
+                      <label className='col-sm-4 col-form-label text-right'>
                         {id.hubmap_identifier}
                       </label>
-                      <div className="col-sm-8">
+                      <div className='col-sm-8'>
                         <input
-                          type="text"
+                          type='text'
                           name={id.uuid}
-                          className="form-control"
+                          className='form-control'
                           id={id.uuid}
                           value={this.state.assigned_ids[id.uuid]}
                           onChange={this.handleInputChange}
@@ -97,31 +104,31 @@ class LabIDsModal extends Component {
                     </div>
                   ))}
                 {this.state.submit_error && (
-                  <div className="row">
-                    <div className="col-sm-12 text-center">
-                      <p className="text-danger">Error</p>
+                  <div className='row'>
+                    <div className='col-sm-12 text-center'>
+                      <p className='text-danger'>Error</p>
                     </div>
                   </div>
                 )}
               </div>
               <hr />
               {this.state.success && (
-                <div className="row">
-                  <div className="col-sm-12 text-center">
-                    <p className="text-success">Lab IDs updated!</p>
+                <div className='row'>
+                  <div className='col-sm-12 text-center'>
+                    <p className='text-success'>Lab IDs updated!</p>
                   </div>
                 </div>
               )}
-              <div className="form-group row">
-                <div className="col-sm-12 text-center">
+              <div className='form-group row'>
+                <div className='col-sm-12 text-center'>
                   <button
-                    className="btn btn-primary"
+                    className='btn btn-primary'
                     onClick={this.handleSubmit}
                     disabled={this.state.submitting}
                   >
                     {this.state.submitting && (
                       <FontAwesomeIcon
-                        className="inline-icon"
+                        className='inline-icon'
                         icon={faSpinner}
                         spin
                       />

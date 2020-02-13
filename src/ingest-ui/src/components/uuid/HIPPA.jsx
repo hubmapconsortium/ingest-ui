@@ -7,7 +7,7 @@ class HIPPA extends Component {
   render() {
     return (
       <Modal show={this.props.show} handleClose={this.props.handleClose}>
-        <ol>
+        <ol className="text-left">
           <li>Names.</li>
           <li>
             All geographic subdivisions smaller than a state, including street
