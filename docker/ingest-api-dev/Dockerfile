@@ -17,5 +17,11 @@ RUN pip install -r src/requirements.txt
 # EXPOSE does not make the ports of the container accessible to the host.
 EXPOSE 5000
 
+# Set an entrypoint
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
 # Finally, we run uWSGI with the ini file
 CMD [ "uwsgi", "--ini", "/usr/src/app/src/uwsgi.ini" ]

@@ -9,6 +9,9 @@ services:
     image: ingest-api:1.5
     hostname: ingest-api
     container_name: ingest-api
+    environment:
+      - HOST_GID=1000
+      - HOST_UID=1000
     volumes:
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
