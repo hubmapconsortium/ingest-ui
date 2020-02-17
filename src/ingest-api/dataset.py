@@ -16,7 +16,6 @@ import urllib.parse
 from flask import Response
 from pprint import pprint
 import shutil
-from builtins import staticmethod
 import json
 import traceback
 
@@ -41,8 +40,8 @@ class Dataset(object):
     def __init__(self, config): 
         self.confdata = config
 
-    @staticmethod
-    def search_datasets(driver, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
+    @classmethod
+    def search_datasets(self, driver, token, search_term, readonly_uuid_list, writeable_uuid_list, group_uuid_list):
         return_list = []
         lucence_index_name = "testIdx"
         entity_type_clause = "entity_node.entitytype = 'Dataset'"
@@ -62,6 +61,10 @@ class Dataset(object):
                     provenance_group_uuid_clause += "'{uuid}', ".format(uuid=group_uuid)
                 # lop off the trailing comma and space and add the finish bracket:
                 provenance_group_uuid_clause = provenance_group_uuid_clause[:-2] +']'
+            # if all groups are being selected, ignore the test group
+            elif len(group_uuid_list) == 0:
+                test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
+                provenance_group_uuid_clause += " AND NOT lucene_node.{provenance_group_uuid_attr} IN ['{group_uuid}']".format(provenance_group_uuid_attr=HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE,group_uuid=test_group_uuid)
                 
         
         stmt_list = []
@@ -82,7 +85,7 @@ class Dataset(object):
             return_clause = "score, "
             order_by_clause = "score DESC, "    
             stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-            MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node:Entity) WHERE {entity_type_clause} {provenance_group_uuid_clause}
+            MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node:Entity)<-[:ACTIVITY_OUTPUT]-(create_activity:Activity)-[:HAS_METADATA]->(activity_metadata:Metadata) WHERE {entity_type_clause} {provenance_group_uuid_clause}
             OPTIONAL MATCH (entity_node)-[:IN_COLLECTION]->(c:Collection)
             RETURN score, entity_node.{hubmapid_attr} AS hubmap_identifier, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp, activity_metadata.{create_user_email} AS created_by_email
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
@@ -93,7 +96,7 @@ class Dataset(object):
             provenance_group_uuid_clause = provenance_group_uuid_clause.replace('lucene_node.', 'metadata_node.')
 
             stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
-            MATCH (metadata_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node:Entity) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
+            MATCH (metadata_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node:Entity)<-[:ACTIVITY_OUTPUT]-(create_activity:Activity)-[:HAS_METADATA]->(activity_metadata:Metadata) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
             OPTIONAL MATCH (entity_node)-[:IN_COLLECTION]->(c:Collection)
             RETURN score, lucene_node.{hubmapid_attr} AS hubmap_identifier, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp, activity_metadata.{create_user_email} AS created_by_email
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
@@ -126,10 +129,11 @@ class Dataset(object):
                                 if 'collection_uuid' in data_record['properties'] and (len(str(data_record['properties']['collection_uuid'])) > 0):
                                     dataset_collection = Entity.get_entity(driver, data_record['properties']['collection_uuid'])
                                     data_record['properties']['collection'] = dataset_collection
+                                
                                 # determine if the record is writable by the current user
-                                data_record['writeable'] = False
-                                if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
-                                    data_record['writeable'] = True
+                                write_flag = self.get_writeable_flag(token, writeable_uuid_list, record)                                
+                                data_record['writeable'] = write_flag
+                                
                                 display_doi_list.append(str(data_record['entity_display_doi']))
                                 return_list.append(data_record)
                             # find any existing records and update their score (if necessary)
@@ -207,6 +211,19 @@ class Dataset(object):
         metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
         metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group['uuid']
+        if HubmapConst.DATA_TYPES_ATTRIBUTE in metadata_record:
+            if metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] == None or len(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE]) == 0:
+                        metadata_record.pop(HubmapConst.DATA_TYPES_ATTRIBUTE)
+            else:
+                try:
+                    #try to load the data as json
+                    if isinstance(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE], list):
+                        json_data_type_list = json.loads(str(metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE]))
+                        # then convert it to a json string
+                        metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data_type_list)
+                except ValueError:
+                    # that failed, so load it as a string
+                    metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE]
                      
         stmt = Neo4jConnection.get_create_statement(
             metadata_record, HubmapConst.METADATA_NODE_NAME, HubmapConst.METADATA_TYPE_CODE, True)
@@ -235,6 +252,44 @@ class Dataset(object):
                     print (x)
                 raise
 
+    @classmethod
+    def get_writeable_flag(self, token, writeable_uuid_list, current_record):
+        authcache = None
+        if AuthHelper.isInitialized() == False:
+            authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+        else:
+            authcache = AuthHelper.instance()
+        userinfo = None
+        userinfo = authcache.getUserInfo(token, True)
+        role_list = AuthCache.getHMRoles()
+        
+        data_curator_uuid = role_list['hubmap-data-curator']['uuid']
+        is_data_curator = False
+        for role_uuid in userinfo['hmroleids']:
+            if role_uuid == data_curator_uuid:
+                    is_data_curator = True
+                    break
+        # the data curator role overrules the group level write rules
+        if is_data_curator == True:
+            if current_record['metadata_properties']['status'] in [HubmapConst.DATASET_STATUS_QA]:
+                return True
+            else:
+                return False
+
+        # perform two checks:
+        # 1. make sure the user has write access to the record's group
+        # 2. make sure the record has a status that is writable
+        if current_record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
+            if current_record['metadata_properties']['status'] in [HubmapConst.DATASET_STATUS_NEW, HubmapConst.DATASET_STATUS_ERROR]:
+                return True
+        
+        return False
+
+        
+            
+        #print(str(userinfo) + ' is curator: ' + str(is_data_curator))
+        
+    
     @classmethod
     def create_datastage(self, driver, headers, incoming_record, groupUUID):
         current_token = None
@@ -299,7 +354,7 @@ class Dataset(object):
         if 'sub' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
         if 'username' in userinfo.keys():
-            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['email']
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
@@ -332,7 +387,8 @@ class Dataset(object):
                 
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
-                new_path = make_new_dataset_directory(transfer_token, transfer_endpoint, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+
+                new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
                 
                 """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
@@ -454,8 +510,8 @@ class Dataset(object):
                     metadata_node[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
                     metadata_node[HubmapConst.PUBLISHED_SUB_ATTRIBUTE] = userinfo['sub']
                 if 'username' in userinfo.keys():
-                    metadata_node[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
-                    metadata_node[HubmapConst.PUBLISHED_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+                    metadata_node[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['email']
+                    metadata_node[HubmapConst.PUBLISHED_USER_EMAIL_ATTRIBUTE] = userinfo['email']
                 if 'name' in userinfo.keys():
                     metadata_node[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
                     metadata_node[HubmapConst.PUBLISHED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
@@ -825,7 +881,7 @@ class Dataset(object):
         if 'sub' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
         if 'username' in userinfo.keys():
-            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['username']
+            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['email']
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         activity_type = HubmapConst.DATASET_REOPEN_ACTIVITY_TYPE_CODE
@@ -951,17 +1007,14 @@ class Dataset(object):
         ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
         return ret_dir
 
-# NOTE: The globus API would return a "No effective ACL rules on the endpoint" error
-# if the file path was wrong.  
-def make_new_dataset_directory(transfer_token, transfer_endpoint_uuid, groupDisplayname, newDirUUID):
+def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
     try:
-        tc = globus_sdk.TransferClient(authorizer=AccessTokenAuthorizer(transfer_token))
-        new_path = str(os.path.join('/',groupDisplayname, newDirUUID))
-        tc.operation_mkdir(transfer_endpoint_uuid,new_path)
-        #print ("Done adding directory: " + new_path)
-        return new_path
+        new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
+        os.mkdir(new_path)
+        relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
+        return relative_path
     except globus_sdk.TransferAPIError as e:
         if e.code == "ExternalError.MkdirFailed.Exists":
             pass

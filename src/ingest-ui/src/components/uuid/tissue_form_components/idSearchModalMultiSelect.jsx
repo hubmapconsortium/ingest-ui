@@ -14,7 +14,6 @@ import {
   TableSelection,
 } from '@devexpress/dx-react-grid-bootstrap4';
 
-import "@devexpress/dx-react-grid-bootstrap4/dist/dx-react-grid-bootstrap4.css";
 
 let isCtrlKeyPressed = false;
 let isShiftKeyPressed = false;

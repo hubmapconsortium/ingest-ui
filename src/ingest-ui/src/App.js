@@ -78,6 +78,9 @@ class App extends Component {
           config
         )
         .then(res => {
+          this.setState({
+            allowed: true
+          });
           const display_names = res.data.groups
             .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
             .map(g => {
@@ -93,32 +96,36 @@ class App extends Component {
           if (err.response === undefined) {
             this.setState({
               web_services_error: true
-            });
+            }); 
           } else if (err.response.status === 401) {
             localStorage.setItem("isAuthenticated", false);
             // window.location.reload();
+          } else if (err.response.status === 403) {
+            this.setState({
+              allowed: false
+            }); 
           }
         });
 
-      axios
-        .get(
-          `${process.env.REACT_APP_METADATA_API_URL}/metadata/usercanedit/type`,
-          config
-        )
-        .then(res => {
-          this.setState({ allowed: true });
-        })
-        .catch(err => {
-          if (err.response === undefined) {
-            this.setState({
-              web_services_error: true
-            });
-          } else if (err.response.status === 401) {
-            localStorage.setItem("isAuthenticated", false);
-          } else if (err.response.status === 403) {
-            this.setState({ allowed: false });
-          }
-        });
+      // axios
+      //   .get(
+      //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/usercanedit/type`,
+      //     config
+      //   )
+      //   .then(res => {
+      //     this.setState({ allowed: true });
+      //   })
+      //   .catch(err => {
+      //     if (err.response === undefined) {
+      //       this.setState({
+      //         web_services_error: true
+      //       });
+      //     } else if (err.response.status === 401) {
+      //       localStorage.setItem("isAuthenticated", false);
+      //     } else if (err.response.status === 403) {
+      //       this.setState({ allowed: false });
+      //     }
+      //   });
     }
   }
 

@@ -186,10 +186,20 @@ def get_datasets():
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
+        
+        # get a unique list of the groups:
+        filtered_group_uuid_list = list(set(filtered_group_uuid_list))
+
         # remove the test group, by default
         test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
         if test_group_uuid in filtered_group_uuid_list:
             filtered_group_uuid_list.remove(test_group_uuid)
+
+        # remove the readonly group by default
+        read_only_group = '5777527e-ec11-11e8-ab41-0af86edb4424'
+        if read_only_group in filtered_group_uuid_list:
+            filtered_group_uuid_list.remove(read_only_group)
+
         # if the user selects a specific group in the search filter,
         # then use it for the search
         if 'group' in request.args:
@@ -199,8 +209,8 @@ def get_datasets():
                 # reset the filtered group list
                 filtered_group_uuid_list = []
                 filtered_group_uuid_list.append(group_info['uuid'])
-                
-        dataset_list =  Dataset.search_datasets(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list)
+        dataset = Dataset(app.config)        
+        dataset_list =  dataset.search_datasets(driver, token, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list)
         return jsonify({'datasets': dataset_list}), 200 
 
     except AuthError as e:
@@ -902,7 +912,7 @@ def get_metadata(uuid):
 ####################################################################################################
    
 @app.route('/specimens', methods=['POST'])
-#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'PUT'])
 @secured(groups="HuBMAP-read")
 def create_specimen():
     if not request.form:
@@ -1069,6 +1079,50 @@ def update_specimen(identifier):
             if conn.get_driver().closed() == False:
                 conn.close()
 
+@app.route('/specimens', methods=['PUT'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['PUT', 'POST'])
+@secured(groups="HuBMAP-read")
+def update_specimen_lab_ids():
+    '''
+    Batch update specimen lab ids
+    request payload: request.data
+    example: 
+    [{'TEST0001': '123456', 'TEST0002': '234567'}]
+    return: 200 OK
+            400 Bad Request
+    '''
+    if not request.data:
+        abort(400)
+    
+    conn = None
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        specimen = Specimen(app.config)
+
+        result = specimen.batch_update_specimen_lab_ids(
+            driver, request.json, token)
+        conn.close()
+        if result:
+            return jsonify({'success':True}), 200
+        else:
+            return jsonify({'success':False}), 400
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
 @app.route('/specimens/exists/<uuid>', methods=['GET'])
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['GET'])
 @secured(groups="HuBMAP-read")
@@ -1207,10 +1261,19 @@ def search_specimen():
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
+        
+        # get a unique list of the groups:
+        filtered_group_uuid_list = list(set(filtered_group_uuid_list))
+        
         # remove the test group, by default
         test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
         if test_group_uuid in filtered_group_uuid_list:
             filtered_group_uuid_list.remove(test_group_uuid)
+            
+        # remove the readonly group by default
+        read_only_group = '5777527e-ec11-11e8-ab41-0af86edb4424'
+        if read_only_group in filtered_group_uuid_list:
+            filtered_group_uuid_list.remove(read_only_group)
         # if the user selects a specific group in the search filter,
         # then use it for the search
         if 'group' in request.args:

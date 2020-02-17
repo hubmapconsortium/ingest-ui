@@ -11,7 +11,7 @@ services:
     container_name: ingest-api
     init: true
     restart: always
-    # Only map port 80 or 443
+    # Map host machine port 80, 443 to container ports
     ports:
       - "80:80"
       - "443:443"
@@ -26,6 +26,12 @@ services:
       - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
+      # Mount local storage and Globus data
+      # No need to change the directories in docker container (right of :)
+      # Just change the directories on host if not the same (left of :)
+      - "/home/temp:/home/temp"
+      - "/data/test-stage:/hubmap-data/test-stage"
+      - "/data/test-data:/hubmap-data/test-data"
     networks:
       - hubmap
 
