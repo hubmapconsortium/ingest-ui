@@ -226,6 +226,7 @@ class DatasetEdit extends Component {
   };
 
   handleLookUpClick = () => {
+    //this.props.current_source_uuid_list = this.state.source_uuid_list;
     this.setState({
       LookUpShow: true
     });
@@ -358,6 +359,22 @@ class DatasetEdit extends Component {
       }
     );
   };
+  
+  getUuidList = (new_uuid_list, is_subset) => {
+    //this.setState({uuid_list: new_uuid_list}); 
+    this.setState(
+      {
+        source_uuid: this.generateDisplaySourceId(new_uuid_list, is_subset),
+        source_uuid_list: new_uuid_list,
+
+        LookUpShow: false
+      },
+      () => {
+        this.validateUUID();
+      }
+    );
+  };
+  
 
   handleAddNewCollection = () => {
     this.setState({
@@ -629,7 +646,7 @@ class DatasetEdit extends Component {
     });
   }
 
-  generateDisplaySourceId(source_uuids) {
+  generateDisplaySourceId(source_uuids, is_subset) {
     if (source_uuids.length > 1) {
       let first_lab_id = source_uuids[0].hubmap_identifier
         ? source_uuids[0].hubmap_identifier
@@ -656,8 +673,11 @@ class DatasetEdit extends Component {
         last_lab_id.lastIndexOf("-") + 1,
         last_lab_id.length
       );
-
+	  
       display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
+      if (is_subset === "subset") {
+        display_source_id = `a subset of ${id_common_part}[ between ${first_lab_id_num} and ${last_lab_id_num}]`;
+      }
       return display_source_id;
     } else {
       if (source_uuids[0].hubmap_identifier) {
@@ -1222,7 +1242,9 @@ class DatasetEdit extends Component {
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
-                    parent='dataset'
+                    parent="dataset"
+                    parentCallback = {this.getUuidList}
+                    currentSourceIds = {this.state.source_uuid_list}
                   />
                 </React.Fragment>
               )}

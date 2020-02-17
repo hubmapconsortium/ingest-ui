@@ -84,6 +84,11 @@ class IDSearchModal extends Component {
       });
   };
 
+  getUuidList = (new_uuid_list) => {
+    this.setState({uuid_list: new_uuid_list}); 
+	this.props.parentCallback(new_uuid_list, "subset");
+  };
+  
   showSibling = e => {
     // e.stopPropagation();
     // this.setState({
@@ -100,6 +105,8 @@ class IDSearchModal extends Component {
             hide={this.hideLookUpModal}
             select={this.handleSelectClick}
             uuid_list={this.state.uuid_list}
+            parentCallback = {this.getUuidList}
+            currentSourceIds={this.props.currentSourceIds}
           />
           <div className="col-sm-12">
             <div className="card text-center">

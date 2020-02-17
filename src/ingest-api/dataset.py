@@ -644,6 +644,58 @@ class Dataset(object):
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
+                #update the dataset source uuid's (if necessary)
+                
+                dataset_metadata_uuid = metadata_node[HubmapConst.UUID_ATTRIBUTE]
+                dataset_source_id_list = []
+                dataset_create_activity_uuid = None
+
+                # get a list of the current source uuids
+                stmt = """MATCH (e:Entity {{  {entitytype_attr}: 'Dataset'}})<-[activity_relations:{activity_output_rel}]-(dataset_create_activity:Activity)<-[:{activity_input_rel}]-(source_uuid_list)
+                 WHERE e.{uuid_attr} = '{uuid}' 
+                 RETURN dataset_create_activity.{uuid_attr} AS dataset_create_activity_uuid,
+                 source_uuid_list.{source_id_attr} AS source_ids""".format(entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                                                                                        activity_output_rel=HubmapConst.ACTIVITY_OUTPUT_REL,
+                                                                                        activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                                                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                                                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                                                                        uuid=uuid) 
+                
+                #print("stmt: " + stmt)
+                
+                for record in session.run(stmt):
+                    dataset_create_activity_uuid = record['dataset_create_activity_uuid']
+                    dataset_source_id_list.append(record['source_ids'])
+                
+                # check to see if any updates were made to the source uuids
+                dataset_source_id_list.sort()
+                form_source_uuid_list = eval(str(formdata['source_uuid']))
+                form_source_uuid_list.sort()
+                
+                # need to make updates
+                if dataset_source_id_list != form_source_uuid_list:
+                     # first remove the existing relations
+                    stmt = """MATCH (e)-[r:{activity_input_rel}]->(a) WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
+                    DELETE r""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                        activity_uuid=dataset_create_activity_uuid,
+                                        id_list=dataset_source_id_list)
+                    
+                    print("Delete statement: " + stmt)
+                    tx.run(stmt)
+                
+                    # next create the new relations
+                    stmt = """MATCH (e),(a)
+                    WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
+                    CREATE (e)-[r:{activity_input_rel}]->(a)""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                        activity_uuid=dataset_create_activity_uuid,
+                                        id_list=str(form_source_uuid_list))
+                    
+                    print("Create statement: " + stmt)
+                    tx.run(stmt)
                 if update_record['status'] == str(HubmapConst.DATASET_STATUS_LOCKED):
                     #the status is set...so no problem
                     # I need to retrieve the ingest_id from the call and store it in neo4j
