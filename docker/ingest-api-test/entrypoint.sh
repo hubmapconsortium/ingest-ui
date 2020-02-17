@@ -28,6 +28,10 @@ chown -R hubmap:hubmap /var/cache/nginx
 chown -R hubmap:hubmap /var/log/nginx
 chown -R hubmap:hubmap /etc/letsencrypt
 
+# When running as non-root user, we'll make sure the mounted
+# /hubmap-data directory is owned by hubmap user as well
+chown -R hubmap:hubmap /hubmap-data
+
 # Lastly we use gosu to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments
 # "$@" is a shell variable that means "all the arguments"
