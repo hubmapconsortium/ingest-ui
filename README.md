@@ -25,8 +25,10 @@ Before we go ahead to start building the docker image, we can do a check to see 
 
 ````
 cd docker
-sudo ./ingest-api-docker.sh dev check
+./ingest-api-docker.sh dev check
 ````
+
+Building the docker images and starting/stopping the contianers require to use docker daemon, you'll probably need to use `sudo` in the following steps. 
 
 To build the docker image of ingest-api:
 
