@@ -8,10 +8,10 @@ And the backend ingest API is located in this repository at `src/ingest-api`, th
 
 We have the following 4 development and deployment environments:
 
-* localhost - all the containers are running on the same localhost listing on different ports, without globus data
-* dev - similar to local, but on AWS EC2 instance with domains, with globus data
-* test - ingest-api and ingest-pipeline are running on the same AWS VM (with globus data), the rest APIs on another VM
-* prod - similar to test but for production settings
+* localhost - all the services will be deployed with docker containers including sample Neo4j and sample MySQL are running on the same localhost listing on different ports, without globus data
+* dev - all services except ingest-api will be running on AWS EC2 with SSL certificates, Neo4j and MySQL are dev versions on AWS, and ingest-api(and another nginx) will be running on PSC with domain and globus data
+* test - similar to dev but for production-like settings with Neo4j and MySQL test versions of database
+* prod - similar to test but for production settings with production versions of Neo4j and MySQL
 
 ### Local development
 
