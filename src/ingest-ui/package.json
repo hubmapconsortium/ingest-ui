@@ -1,6 +1,6 @@
 {
-  "name": "uuid-ui",
-  "version": "0.1.0",
+  "name": "ingest-ui",
+  "version": "1.7",
   "private": true,
   "homepage": ".",
   "dependencies": {
