@@ -6,15 +6,18 @@ services:
   ingest-api:
     build: ./ingest-api-prod
     # Build the image with name and tag
-    image: ingest-api:1.5
+    image: ingest-api:1.7
     hostname: ingest-api
     container_name: ingest-api
     init: true
     restart: always
     # Map host machine port 80, 443 to container ports
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:8080"
+      - "443:8443"
+    environment:
+      - HOST_GID=1000
+      - HOST_UID=1000
     volumes:
       # Mount the app config to container in order to keep it outside of the image
       - "../src/ingest-api/instance:/usr/src/app/src/instance"
@@ -29,7 +32,7 @@ services:
       # Mount local storage and Globus data
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
-      - "/home/temp:/home/temp"
+      - "/hubmap-tmp:/hubmap-tmp"
       - "/hubmap-data/test-stage:/hubmap-data/test-stage"
       - "/hubmap-data/test-data:/hubmap-data/test-data"
     networks:
