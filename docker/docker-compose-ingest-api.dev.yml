@@ -28,7 +28,6 @@ services:
       # Just change the directories on host if not the same (left of :)
       - "/hubmap-tmp:/hubmap-tmp"
       - "/hubmap-data/stage:/hubmap-data/stage"
-      - "/hubmap-data/data:/hubmap-data/data"
     networks:
       - gateway_hubmap
 
