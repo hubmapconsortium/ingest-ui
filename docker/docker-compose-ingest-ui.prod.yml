@@ -10,6 +10,7 @@ services:
     hostname: ingest-ui
     container_name: ingest-ui
     environment:
+      - DEPLOY_MODE=prod
       - HOST_GID=1000
       - HOST_UID=1000
     init: true

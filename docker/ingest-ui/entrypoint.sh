@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Use the DEPLOY_MODE value as conditions
+DEPLOY_MODE=${DEPLOY_MODE}
+
 # Pass the HOST_UID and HOST_UID from environment variables specified in the child image docker-compose,
 # defaulting to 9000 if it doesn't exist
 HOST_GID=${HOST_GID:-9000}
@@ -26,7 +29,12 @@ touch /var/run/nginx.pid
 chown -R hubmap:hubmap /var/run/nginx.pid
 chown -R hubmap:hubmap /var/cache/nginx
 chown -R hubmap:hubmap /var/log/nginx
-chown -R hubmap:hubmap /etc/letsencrypt
+
+# ingest-ui always runs behind nginx on the same container
+# No SSL in localhost mode
+if [ $DEPLOY_MODE != "localhost"  ]; then
+    chown -R hubmap:hubmap /etc/letsencrypt
+fi
 
 # Lastly we use gosu to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments
