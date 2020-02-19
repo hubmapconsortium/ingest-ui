@@ -1,0 +1,32 @@
+version: "3.7"
+
+# Will use the hostname when talking between services on the same network
+services:
+  
+  ingest-api:
+    build: ./ingest-api-localhost
+    # Build the image with name and tag
+    image: ingest-api:1.7
+    hostname: ingest-api
+    container_name: ingest-api
+    environment:
+      - HOST_GID=1000
+      - HOST_UID=1000
+    volumes:
+      # Mount the source code to container
+      - "../src/ingest-api:/usr/src/app/src"
+      # Mount the logging to container
+      - "../log:/usr/src/app/log"
+      # Mount local storage and Globus data
+      # No need to change the directories in docker container (right of :)
+      # Just change the directories on host if not the same (left of :)
+      - "/hubmap-tmp:/hubmap-tmp"
+      - "/hubmap-data/test-stage:/hubmap-data/test-stage"
+      - "/hubmap-data/test-data:/hubmap-data/test-data"
+    networks:
+      - gateway_hubmap
+
+networks:
+  # This is the network created by gateway to enable communicaton between multiple docker-compose projects
+  gateway_hubmap:
+    external: true

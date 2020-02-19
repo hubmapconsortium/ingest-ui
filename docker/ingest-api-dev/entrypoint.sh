@@ -18,6 +18,16 @@ if [ $? -ne 0 ]; then
     useradd -r -u $HOST_UID -g $HOST_GID -m hubmap
 fi
 
+# When running Nginx as a non-root user, we need to create the pid file
+# and give read and write access to /var/run/nginx.pid, /var/cache/nginx, and /var/log/nginx
+# In individual nginx *.conf, also don't listen on ports 80 or 443 because 
+# only root processes can listen to ports below 1024
+touch /var/run/nginx.pid
+chown -R hubmap:hubmap /var/run/nginx.pid
+chown -R hubmap:hubmap /var/cache/nginx
+chown -R hubmap:hubmap /var/log/nginx
+chown -R hubmap:hubmap /etc/letsencrypt
+
 # When running as non-root user, we'll make sure the mounted
 # /hubmap-data directory is owned by hubmap user as well
 chown -R hubmap:hubmap /hubmap-data

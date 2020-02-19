@@ -4,31 +4,46 @@ The HuBMAP Data Ingest Portal UI is a web application built with [React](https:/
 
 And the backend ingest API is located in this repository at `src/ingest-api`, this is a restful web service exposing calls needed for the ingest UI React application.  The API is documented [here](http://smart-api.info/ui/2628cdd76b9994d89ad98ac92a82c18b).
 
-## Deploy with other HuBMAP docker compose projects
+## Development and deployment environments
 
-### Local dev deployment
+We have the following 4 development and deployment environments:
 
-This option allows you to setup all the pieces in a containerized environment with docker and docker-compose. This requires to have the [HuBMAP Gateway](https://github.com/hubmapconsortium/gateway) running locally before starting building the Entity API docker compose project. Please follow the [instructions](https://github.com/hubmapconsortium/gateway#workflow-of-setting-up-multiple-hubmap-docker-compose-projects). It also requires the Gateway project to be configured accordingly.
+* localhost - all the services will be deployed with docker containers including sample Neo4j and sample MySQL are running on the same localhost listing on different ports, without globus data
+* dev - all services except ingest-api will be running on AWS EC2 with SSL certificates, Neo4j and MySQL are dev versions on AWS, and ingest-api(and another nginx) will be running on PSC with domain and globus data
+* test - similar to dev but for production-like settings with Neo4j and MySQL test versions of database
+* prod - similar to test but for production settings with production versions of Neo4j and MySQL
 
-### Testing and Production deployment
+### Localhost development
 
-In local development mode, all the docker containers are running on the same host machine. However, the ingest-api will be deployed on a separare host machine for testing and production due to different deployment requirements. 
+This option allows you to setup all the pieces in a containerized environment with docker and docker-compose. This requires to have the [HuBMAP Gateway](https://github.com/hubmapconsortium/gateway) running locally before starting building this docker compose project. Please follow the [instructions](https://github.com/hubmapconsortium/gateway#workflow-of-setting-up-multiple-hubmap-docker-compose-projects). It also requires the Gateway project to be configured accordingly.
 
-To build the docker image of ingest-api on that separate machine, you'll first need to Git clone the source code of this repo and change directory to the project root.
+### Deployment on dev, test, and prod
+
+In localhost mode, all the docker containers are running on the same host machine. However, the ingest-api will be deployed on a separare host machine for dev, test, and prod mode due to different deployment requirements. 
+
+Before we go ahead to start building the docker image, we can do a check to see if the required configuration file is in place:
 
 ````
 cd docker
-./docker-setup-ingest-api.test.sh
-sudo docker-compose -f docker-compose-ingest-api.test.yml build
+./ingest-api-docker.sh dev check
 ````
 
-To start up the containers:
+Building the docker images and starting/stopping the contianers require to use docker daemon, you'll probably need to use `sudo` in the following steps. 
+
+To build the docker image of ingest-api:
 
 ````
-sudo docker-compose -p ingest-api -f docker-compose-ingest-api.test.yml up -d
+sudo ./ingest-api-docker.sh dev build
 ````
 
-Note: here we specify the docker compose project with the `-p` to avoid "WARNING: Found orphan containers ..." due to the fact that docker compose uses the directory name as the default project name.
+To start up the ingest-api container (including nginx on the same container):
 
-Note: for production deployment, use `docker-setup-ingest-api.prod.sh` and also change to `docker-compose-ingest-api.prod.yml` in the above commands.
+````
+sudo ./ingest-api-docker.sh dev start
+````
 
+And stop the running container by:
+
+````
+sudo ./ingest-api-docker.sh dev stop
+````
