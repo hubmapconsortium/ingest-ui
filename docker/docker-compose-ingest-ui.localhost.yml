@@ -10,11 +10,9 @@ services:
     hostname: ingest-ui
     container_name: ingest-ui
     environment:
-      - DEPLOY_MODE=test
+      - DEPLOY_MODE=localhost
       - HOST_GID=1000
       - HOST_UID=1000
-    init: true
-    restart: always
     volumes:
       # Mount the logging to container
       - "../log:/usr/src/app/log"
