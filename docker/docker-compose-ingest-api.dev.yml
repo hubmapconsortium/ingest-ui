@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-dev
     # Build the image with name and tag
-    image: ingest-api:1.5
+    image: ingest-api:1.7
     hostname: ingest-api
     container_name: ingest-api
     environment:
@@ -17,12 +17,17 @@ services:
       - "../src/ingest-api:/usr/src/app/src"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
+      # Mount ssl certificates from host to container
+      - "/etc/letsencrypt:/etc/letsencrypt"
+      # Mount conf.d to the nginx conf.d on container
+      - "./ingest-api-dev/nginx/conf.d:/etc/nginx/conf.d"
+      # favicon.ico
+      - "./ingest-api-dev/nginx/html:/usr/share/nginx/html"
       # Mount local storage and Globus data
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
-      - "/home/temp:/home/temp"
-      - "/hubmap-data/test-stage:/hubmap-data/stage"
-      - "/hubmap-data/test-data:/hubmap-data/data"
+      - "/hubmap-tmp:/hubmap-tmp"
+      - "/hubmap-data:/hubmap-data"
     networks:
       - gateway_hubmap
 

@@ -1,11 +1,14 @@
 #!/bin/bash
 
+# Use the DEPLOY_MODE value as conditions
+DEPLOY_MODE=${DEPLOY_MODE}
+
 # Pass the HOST_UID and HOST_UID from environment variables specified in the child image docker-compose,
 # defaulting to 9000 if it doesn't exist
 HOST_GID=${HOST_GID:-9000}
 HOST_UID=${HOST_UID:-9000}
 
-echo "Starting ingest-api container with the same host user UID: $HOST_UID and GID: $HOST_GID"
+echo "Starting ingest-ui container with the same host user UID: $HOST_UID and GID: $HOST_GID"
 
 # Create a new user with the same host UID to run processes on container
 # The Filesystem doesn't really care what the user is called,
@@ -18,9 +21,20 @@ if [ $? -ne 0 ]; then
     useradd -r -u $HOST_UID -g $HOST_GID -m hubmap
 fi
 
-# When running as non-root user, we'll make sure the mounted
-# /hubmap-data directory is owned by hubmap user as well
-chown -R hubmap:hubmap /hubmap-data
+# When running Nginx as a non-root user, we need to create the pid file
+# and give read and write access to /var/run/nginx.pid, /var/cache/nginx, and /var/log/nginx
+# In individual nginx *.conf, also don't listen on ports 80 or 443 because 
+# only root processes can listen to ports below 1024
+touch /var/run/nginx.pid
+chown -R hubmap:hubmap /var/run/nginx.pid
+chown -R hubmap:hubmap /var/cache/nginx
+chown -R hubmap:hubmap /var/log/nginx
+
+# ingest-ui always runs behind nginx on the same container
+# No SSL in localhost mode
+if [ $DEPLOY_MODE != "localhost"  ]; then
+    chown -R hubmap:hubmap /etc/letsencrypt
+fi
 
 # Lastly we use gosu to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments

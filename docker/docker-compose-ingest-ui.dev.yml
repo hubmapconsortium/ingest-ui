@@ -6,9 +6,13 @@ services:
   ingest-ui:
     build: ./ingest-ui
     # Build the image with name and tag
-    image: ingest-ui:1.5
+    image: ingest-ui:1.7
     hostname: ingest-ui
     container_name: ingest-ui
+    environment:
+      - DEPLOY_MODE=dev
+      - HOST_GID=1000
+      - HOST_UID=1000
     volumes:
       # Mount the logging to container
       - "../log:/usr/src/app/log"
