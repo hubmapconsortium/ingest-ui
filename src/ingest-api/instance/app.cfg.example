@@ -8,16 +8,14 @@ NEO4J_PASSWORD = '123'
 APP_CLIENT_ID = ''
 APP_CLIENT_SECRET = ''
 
-# Globus Endpoint UUIDs
-STAGING_ENDPOINT_UUID = ''
-PUBLISH_ENDPOINT_UUID = ''
+# Globus Endpoint UUID
+GLOBUS_ENDPOINT_UUID = ''
 
 # File system settings
 # No need to modify here if deployed with docker
 # Just make sure the volume mounts in docker compose yaml mapped correctly
-LOCAL_STORAGE_DIRECTORY = '/home/temp'
-STAGING_ENDPOINT_FILEPATH = '/hubmap-data/stage'
-PUBLISH_ENDPOINT_FILEPATH = '/hubmap-data/data'
+LOCAL_STORAGE_DIRECTORY = '/hubmap-tmp'
+GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
 
 # URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container

@@ -336,8 +336,8 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = build_globus_url_for_directory(self.confdata['STAGING_ENDPOINT_UUID'], new_path)
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_UUID'], new_path)
 
                 # Create the Entity Metadata node
                 # Don't use None, it'll throw TypeError: 'NoneType' object does not support item assignment
@@ -446,7 +446,7 @@ class Dataset(object):
         nexus_token = current_token['nexus_token']
         transfer_token = current_token['transfer_token']
         auth_token = current_token['auth_token']
-        transfer_endpoint = self.confdata['STAGING_ENDPOINT_UUID']
+        transfer_endpoint = self.confdata['GLOBUS_ENDPOINT_UUID']
         userinfo = None
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
@@ -506,10 +506,10 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
-                """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                """new_path = self.get_globus_file_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = os.makedirs(new_path)"""
                 incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 incoming_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
@@ -602,7 +602,7 @@ class Dataset(object):
                 tx = session.begin_transaction()
                 #step 1: move the files to the publish directory
                 new_publish_path = self.get_publish_path(group_info['displayname'], uuid)
-                current_staging_path = self.get_staging_path(group_info['displayname'], uuid)
+                current_staging_path = self.get_globus_file_path(group_info['displayname'], uuid)
                 if publish == True:
                     #publish
                     move_directory(current_staging_path, new_publish_path)
@@ -611,7 +611,7 @@ class Dataset(object):
                 else:
                     #unpublish
                     move_directory(new_publish_path, current_staging_path)
-                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['STAGING_ENDPOINT_FILEPATH'],current_staging_path)
+                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_FILEPATH'],current_staging_path)
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_UNPUBLISHED
                 #step 2: update the metadata node
                 authcache = None
@@ -1005,7 +1005,7 @@ class Dataset(object):
         nexus_token = current_token['nexus_token']
         transfer_token = current_token['transfer_token']
         auth_token = current_token['auth_token']
-        transfer_endpoint = self.confdata['STAGING_ENDPOINT_UUID']
+        transfer_endpoint = self.confdata['GLOBUS_ENDPOINT_UUID']
         userinfo = None
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
@@ -1098,7 +1098,7 @@ class Dataset(object):
                 """
                 
                 
-                #new_path = self.get_staging_path(group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
+                #new_path = self.get_globus_file_path(group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
                 #old_path = metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
                 #copy_directory(old_path, new_path)
                 #incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_path
@@ -1145,18 +1145,11 @@ class Dataset(object):
 
     #TODO: This method needs the user's group id
     @classmethod
-    def get_staging_path(self, group_name, dataset_uuid):
-        start_dir = str(self.confdata['STAGING_ENDPOINT_FILEPATH'])
+    def get_globus_file_path(self, group_name, dataset_uuid):
+        start_dir = str(self.confdata['GLOBUS_ENDPOINT_FILEPATH'])
         ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
         return ret_dir
     
-    #TODO: This method needs the user's group id
-    @classmethod
-    def get_publish_path(self, group_name, dataset_uuid):
-        start_dir = str(self.confdata['PUBLISH_ENDPOINT_FILEPATH'])
-        ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
-        return ret_dir
-
 def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
