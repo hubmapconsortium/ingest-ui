@@ -1,9 +1,7 @@
 import React, { Component } from "react";
 import Modal from "../uuid/modal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUserShield
-} from "@fortawesome/free-solid-svg-icons";
+import { faUserShield } from "@fortawesome/free-solid-svg-icons";
 import HIPPA from "../uuid/HIPPA.jsx";
 
 class NewDatasetModal extends Component {
@@ -30,7 +28,13 @@ class NewDatasetModal extends Component {
     });
   };
 
+  showModal = () => {
+    this.setState({ show: true });
+  };
 
+  hideModal = () => {
+    this.setState({ show: false });
+  };
 
   render() {
     return (
@@ -43,48 +47,53 @@ class NewDatasetModal extends Component {
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group row">
-		              <label
-		                htmlFor="dataset_name"
-		                className="col-sm-4 col-form-label text-right"
-		              >
-		                Dataset Name 
-		              </label>
+                      <label
+                        htmlFor="dataset_name"
+                        className="col-sm-4 col-form-label text-right"
+                      >
+                        Dataset Name
+                      </label>
                       <div className="col-sm-8 col-form-label">
-		                <label name="dataset_name">{this.props.name}</label> 
-		              </div>
-                    
+                        <label name="dataset_name">{this.props.name}</label>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group row">
-		              <label
-		                htmlFor="globus_directory_url_path"
-		                className="col-sm-4 col-form-label text-right"
-		              >
-		                Dataset Globus URL 
-		              </label>
+                      <label
+                        htmlFor="globus_directory_url_path"
+                        className="col-sm-4 col-form-label text-right"
+                      >
+                        Dataset Globus URL
+                      </label>
                       <div className="col-sm-8 col-form-label">
-		                <a name="globus_directory_url_path" href={this.props.globus_directory_url_path}>Click to Upload Dataset Files</a> 
-		              </div>
-                    
+                        <a
+                          name="globus_directory_url_path"
+                          href={this.props.globus_directory_url_path}
+                        >
+                          Click to Upload Dataset Files
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div className="row">
-					<div className="alert alert-danger" role="alert">
-                        <FontAwesomeIcon icon={faUserShield} /> - Do not upload any data containing any of the {" "}
-	                    <span
-	                      style={{ cursor: "pointer" }}
-	                      className="text-primary"
-	                      onClick={this.showModal}
-	                    >
-	                      18 identifiers specified by HIPAA
-	                    </span>.
-	                </div>
-        			  <HIPPA show={this.state.show} handleClose={this.hideModal} />
+                  <div className="alert alert-danger" role="alert">
+                    <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
+                    data containing any of the{" "}
+                    <span
+                      style={{ cursor: "pointer" }}
+                      className="text-primary"
+                      onClick={this.showModal}
+                    >
+                      18 identifiers specified by HIPAA
+                    </span>
+                    .
                   </div>
+                  <HIPPA show={this.state.show} handleClose={this.hideModal} />
+                </div>
               </div>
             </div>
           </div>
@@ -92,7 +101,6 @@ class NewDatasetModal extends Component {
       </Modal>
     );
   }
-  
 }
 
 export default NewDatasetModal;

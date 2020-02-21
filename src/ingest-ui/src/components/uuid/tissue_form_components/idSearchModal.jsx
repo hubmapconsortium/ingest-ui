@@ -4,7 +4,8 @@ import axios from "axios";
 import { SAMPLE_TYPES } from "../../../constants";
 import { flattenSampleType } from "../../../utils/constants_helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
+import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import IDSearchModalMultiSelect from "./idSearchModalMultiSelect";
 
 class IDSearchModal extends Component {
   state = {};
@@ -14,6 +15,8 @@ class IDSearchModal extends Component {
     this.group = React.createRef();
     this.sampleType = React.createRef();
     this.keywords = React.createRef();
+    //this.uuid_list = [];
+    //this.handleSiblingClick = this.handleSiblingClick.bind(this);
   }
 
   componentDidMount() {
@@ -27,6 +30,8 @@ class IDSearchModal extends Component {
       LookUpShow: false
     });
   };
+  
+  //handleSiblingClick = 
 
   handleSearchClick = () => {
     const group = this.group.current.value;
@@ -79,6 +84,11 @@ class IDSearchModal extends Component {
       });
   };
 
+  getUuidList = (new_uuid_list) => {
+    this.setState({uuid_list: new_uuid_list}); 
+	this.props.parentCallback(new_uuid_list, "subset");
+  };
+  
   showSibling = e => {
     // e.stopPropagation();
     // this.setState({
@@ -90,6 +100,14 @@ class IDSearchModal extends Component {
     return (
       <Modal show={this.props.show} handleClose={this.props.hide}>
         <div className="row">
+          <IDSearchModalMultiSelect
+            show={this.state.LookUpShow}
+            hide={this.hideLookUpModal}
+            select={this.handleSelectClick}
+            uuid_list={this.state.uuid_list}
+            parentCallback = {this.getUuidList}
+            currentSourceIds={this.props.currentSourceIds}
+          />
           <div className="col-sm-12">
             <div className="card text-center">
               <div className="card-body">
@@ -290,18 +308,21 @@ class IDSearchModal extends Component {
                                 >
                                   <td>
                                     {es.length > 1 && (
-                                      <React.Fragment>
+                                      <React.Fragment key={result.hubmap_identifier}>
                                         <div className="row">
                                           <div
                                             className="col-sm-6"
-                                            onClick={this.showSibling}
                                           >
-                                            {this.state.showSibling && (
-                                              <FontAwesomeIcon icon={faMinus} />
-                                            )}
-                                            {!this.state.showSibling && (
-                                              <FontAwesomeIcon icon={faPlus} />
-                                            )}
+		                                      {/* <FontAwesomeIcon icon={faCopy} key={result.hubmap_identifier}
+				                                  onClick={e => {e.stopPropagation(); let temp_arr = es.map(e => {
+				                                  
+				                                     return { hubmap_identifier: e.hubmap_identifier };
+				                                  });
+				                                     this.setState({uuid_list: temp_arr, LookUpShow: true});
+				                                     
+				                                     //alert(temp_arr);
+				                                  } }
+                                              /> */}
                                           </div>
                                           <div className="col-sm-6">
                                             {first_lab_id} <br />

@@ -34,7 +34,7 @@ SECRET_KEY = 'a%@3k9Hdlkfjakjajf99adsf909oel'
 FLASK_APP_BASE_URI = 'http://localhost:8484/'
 
 # React app name and deployment URI (default value used for docker dev environment)
-GLOBUS_CLIENT_APP_NAME = 'HuBMAP UUID Generator'
+GLOBUS_CLIENT_APP_NAME = 'HuBMAP Data Ingest'
 # Point to remote URL for testing and production deployment
 GLOBUS_CLIENT_APP_URI = 'http://localhost:8585/'
 

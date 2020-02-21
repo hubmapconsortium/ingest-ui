@@ -38,23 +38,23 @@ class DataList extends Component {
       params: params
     };
 
-    axios
-      .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
-      .then(res => {
-        if (res.data) {
-          this.setState({
-            loading: false,
-            datasets: res.data.datasets
-          });
-        }
-      })
-      .catch(err => {
-        if (err.response === undefined) {
-        } else if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
+    // axios
+    //   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
+    //   .then(res => {
+    //     if (res.data) {
+    //       this.setState({
+    //         loading: false,
+    //         datasets: res.data.datasets
+    //       });
+    //     }
+    //   })
+    //   .catch(err => {
+    //     if (err.response === undefined) {
+    //     } else if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
 
     axios
       .get(
@@ -206,8 +206,8 @@ class DataList extends Component {
   renderLoadingSpinner() {
     if (this.state.loading) {
       return (
-        <div className="text-center">
-          <FontAwesomeIcon icon={faSpinner} spin size="6x" />
+        <div className='text-center'>
+          <FontAwesomeIcon icon={faSpinner} spin size='6x' />
         </div>
       );
     }
@@ -254,61 +254,61 @@ class DataList extends Component {
   render() {
     return (
       <React.Fragment>
-        <div className="row mt-2">
-          <div className="col-sm-4">
-            <div className="row form-group">
-              <label htmlFor="group" className="col-sm-2 col-form-label">
+        <div className='row mt-2'>
+          <div className='col-sm-4'>
+            <div className='row form-group'>
+              <label htmlFor='group' className='col-sm-2 col-form-label'>
                 Group
               </label>
-              <div className="col-sm-10">
+              <div className='col-sm-10'>
                 <select
-                  className="form-control"
-                  id="group"
-                  name="group"
+                  className='form-control'
+                  id='group'
+                  name='group'
                   value={this.state.group}
                   onChange={this.handleInputChange}
                 >
-                  <option value="All Groups">All TMCs</option>
-                  <option value="University of Florida TMC">
+                  <option value='All Groups'>All TMCs</option>
+                  <option value='University of Florida TMC'>
                     &nbsp;&nbsp;University of Florida TMC
                   </option>
-                  <option value="California Institute of Technology TMC">
+                  <option value='California Institute of Technology TMC'>
                     &nbsp;&nbsp;California Institute of Technology TMC
                   </option>
-                  <option value="Vanderbilt TMC">
+                  <option value='Vanderbilt TMC'>
                     &nbsp;&nbsp;Vanderbilt TMC
                   </option>
-                  <option value="Stanford TMC">&nbsp;&nbsp;Stanford TMC</option>
-                  <option value="University of California San Diego TMC">
+                  <option value='Stanford TMC'>&nbsp;&nbsp;Stanford TMC</option>
+                  <option value='University of California San Diego TMC'>
                     &nbsp;&nbsp;University of California San Diego TMC
                   </option>
-                  <option value="IEC Testing Group">IEC Testing Group</option>
+                  <option value='IEC Testing Group'>IEC Testing Group</option>
                 </select>
               </div>
             </div>
           </div>
-          <div className="col-sm-6">
-            <div className="row form-group">
+          <div className='col-sm-6'>
+            <div className='row form-group'>
               <input
-                type="text"
-                className="form-control"
-                name="keywords"
-                id="keywords"
-                placeholder="Search Dataset by Keywords"
+                type='text'
+                className='form-control'
+                name='keywords'
+                id='keywords'
+                placeholder='Search Dataset by Keywords'
                 value={this.state.keywords}
                 onChange={this.handleInputChange}
               />
             </div>
           </div>
-          <div className="col-sm-2 text-right">
+          <div className='col-sm-2 text-right'>
             <button
-              className="btn btn-primary btn-sm mr-2"
+              className='btn btn-primary btn-sm mr-2'
               onClick={this.handleFilterClick}
             >
               <FontAwesomeIcon icon={faFilter} /> Filter
             </button>
             <button
-              className="btn btn-danger btn-sm"
+              className='btn btn-danger btn-sm'
               onClick={this.handleClearClick}
             >
               <FontAwesomeIcon icon={faBan} /> Clear
@@ -317,18 +317,20 @@ class DataList extends Component {
         </div>
         {this.renderLoadingSpinner()}
         {this.state.loading === false && (
-          <div className="row">
-            <div className="col-sm-12 text-center">
+          <div className='row'>
+            <div className='col-sm-12 text-center'>
               {this.state.datasets.length > 0 && (
-                <table className="table table-bordered">
+                <table className='table table-bordered'>
                   <thead>
                     <tr>
-                      <th scope="col">Name</th>
-                      <th scope="col">Lab</th>
-                      <th scope="col">Collection</th>
-                      <th scope="col">Created By</th>
-                      <th scope="col">Status</th>
-                      <th scope="col" />
+                      <th scope='col'>ID</th>
+                      <th scope='col'>Name</th>
+                      <th scope='col'>Lab</th>
+                      <th scope='col'>Collection</th>
+                      <th scope='col'>Created By</th>
+                      <th scope='col'>Status</th>
+                      <th scope='col'>Action</th>
+                      <th scope='col'>Data</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -337,27 +339,25 @@ class DataList extends Component {
                         ? dataset.properties.status.toUpperCase()
                         : "";
                       let badge_class = "";
-                      let btn_text = "";
+                      let btn_text = dataset.writeable ? "Edit" : "View";
                       switch (status) {
                         case "NEW":
                           badge_class = "badge-purple";
-                          btn_text = this.state.is_curator ? "View" : "Edit";
                           break;
                         case "REOPENED":
                           badge_class = "badge-purple";
-                          btn_text = this.state.is_curator ? "View" : "Edit";
                           break;
                         case "INVALID":
                           badge_class = "badge-warning";
-                          btn_text = this.state.is_curator ? "View" : "Edit";
                           break;
                         case "QA":
                           badge_class = "badge-info";
-                          btn_text = "View";
                           break;
                         case "LOCKED":
                           badge_class = "badge-secondary";
-                          btn_text = "View";
+                          break;
+                        case "PROCESSING":
+                          badge_class = "badge-secondary";
                           break;
                         case "PROCESSING":
                           badge_class = "badge-secondary";
@@ -365,14 +365,11 @@ class DataList extends Component {
                           break;
                         case "PUBLISHED":
                           badge_class = "badge-success";
-                          btn_text = this.state.is_curator ? "View" : "Reopen";
                           break;
                         case "UNPUBLISHED":
                           badge_class = "badge-light";
-                          btn_text = this.state.is_curator ? "Publish" : "View";
                           break;
                         case "DEPRECATED":
-                          btn_text = this.state.is_curator ? "View" : "View";
                           break;
                         case "PROCESSING":
                           badge_class = "badge-secondary";
@@ -393,6 +390,7 @@ class DataList extends Component {
                       }
                       return (
                         <tr key={dataset.uuid}>
+                          <td>{dataset.entity_display_doi}</td>
                           <td>{dataset.properties.name}</td>
                           <td>{dataset.properties.provenance_group_name}</td>
                           <td>
@@ -436,12 +434,23 @@ class DataList extends Component {
                           </td>
                           <td>
                             <button
-                              className="btn btn-primary btn-sm btn-block"
+                              className='btn btn-primary btn-sm btn-block'
                               onClick={() => this.handleActionClick(dataset)}
                               data-uuid={dataset.uuid}
                             >
                               {btn_text}
                             </button>
+                          </td>
+                          <td>
+                            <a
+                              className='btn btn-link'
+                              target='_blank'
+                              href={
+                                dataset.properties.globus_directory_url_path
+                              }
+                            >
+                              Data
+                            </a>
                           </td>
                         </tr>
                       );

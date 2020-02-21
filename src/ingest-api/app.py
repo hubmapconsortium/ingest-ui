@@ -186,10 +186,20 @@ def get_datasets():
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
+        
+        # get a unique list of the groups:
+        filtered_group_uuid_list = list(set(filtered_group_uuid_list))
+
         # remove the test group, by default
         test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
         if test_group_uuid in filtered_group_uuid_list:
             filtered_group_uuid_list.remove(test_group_uuid)
+
+        # remove the readonly group by default
+        read_only_group = '5777527e-ec11-11e8-ab41-0af86edb4424'
+        if read_only_group in filtered_group_uuid_list:
+            filtered_group_uuid_list.remove(read_only_group)
+
         # if the user selects a specific group in the search filter,
         # then use it for the search
         if 'group' in request.args:
@@ -199,8 +209,8 @@ def get_datasets():
                 # reset the filtered group list
                 filtered_group_uuid_list = []
                 filtered_group_uuid_list.append(group_info['uuid'])
-                
-        dataset_list =  Dataset.search_datasets(driver, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list)
+        dataset = Dataset(app.config)        
+        dataset_list =  dataset.search_datasets(driver, token, searchterm, readonly_uuid_list, writeable_uuid_list, filtered_group_uuid_list)
         return jsonify({'datasets': dataset_list}), 200 
 
     except AuthError as e:
@@ -1355,10 +1365,19 @@ def search_specimen():
         # by default, show data from all the groups that the user can access
         filtered_group_uuid_list.extend(readonly_uuid_list)
         filtered_group_uuid_list.extend(writeable_uuid_list)
+        
+        # get a unique list of the groups:
+        filtered_group_uuid_list = list(set(filtered_group_uuid_list))
+        
         # remove the test group, by default
         test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
         if test_group_uuid in filtered_group_uuid_list:
             filtered_group_uuid_list.remove(test_group_uuid)
+            
+        # remove the readonly group by default
+        read_only_group = '5777527e-ec11-11e8-ab41-0af86edb4424'
+        if read_only_group in filtered_group_uuid_list:
+            filtered_group_uuid_list.remove(read_only_group)
         # if the user selects a specific group in the search filter,
         # then use it for the search
         if 'group' in request.args:
