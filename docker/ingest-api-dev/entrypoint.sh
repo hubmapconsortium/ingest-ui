@@ -26,7 +26,9 @@ touch /var/run/nginx.pid
 chown -R hubmap:hubmap /var/run/nginx.pid
 chown -R hubmap:hubmap /var/cache/nginx
 chown -R hubmap:hubmap /var/log/nginx
-chown -R hubmap:hubmap /etc/letsencrypt
+
+# Specific to PSC hivevm191 dev
+chown -R hubmap:hubmap /etc/pki/nginx
 
 # When running as non-root user, we'll make sure the mounted
 # /hubmap-data directory is owned by hubmap user as well

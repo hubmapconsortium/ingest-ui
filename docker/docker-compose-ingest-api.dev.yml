@@ -10,15 +10,16 @@ services:
     hostname: ingest-api
     container_name: ingest-api
     environment:
-      - HOST_GID=1000
-      - HOST_UID=1000
+      # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
+      - HOST_GID=23629
+      - HOST_UID=68728
     volumes:
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
       # Mount ssl certificates from host to container
-      - "/etc/letsencrypt:/etc/letsencrypt"
+      - "/etc/pki/nginx:/etc/pki/nginx"
       # Mount conf.d to the nginx conf.d on container
       - "./ingest-api-dev/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
@@ -27,7 +28,7 @@ services:
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
       - "/hubmap-tmp:/hubmap-tmp"
-      - "/hubmap-data:/hubmap-data"
+      - "/hive/hubmap-dev/lz:/hubmap-data"
     networks:
       - gateway_hubmap
 
