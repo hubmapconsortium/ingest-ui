@@ -33,8 +33,7 @@ services:
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
       - "/hubmap-tmp:/hubmap-tmp"
-      - "/hubmap-data/stage:/hubmap-data/stage"
-      - "/hubmap-data/data:/hubmap-data/data"
+      - "/hubmap-data:/hubmap-data"
     networks:
       - hubmap
 
