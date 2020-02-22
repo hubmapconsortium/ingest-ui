@@ -11,10 +11,12 @@ services:
     container_name: ingest-api
     init: true
     restart: always
-    # Map host machine port 80, 443 to container ports
+    # Map host machine port 80, 443 to container ports 8080 and 4430
+    # Only root can listen on ports below 1024, we use higher-numbered ports
+    # since nginx is running under non-root user hubmap
     ports:
       - "80:8080"
-      - "443:8443"
+      - "443:4430"
     environment:
       - HOST_GID=1000
       - HOST_UID=1000

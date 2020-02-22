@@ -9,6 +9,12 @@ services:
     image: ingest-api:1.7
     hostname: ingest-api
     container_name: ingest-api
+    # Map host machine port 80, 443 to container ports 8080 and 4430
+    # Only root can listen on ports below 1024, we use higher-numbered ports
+    # since nginx is running under non-root user hubmap
+    ports:
+      - "80:8080"
+      - "443:4430"
     environment:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
       - HOST_GID=23629
