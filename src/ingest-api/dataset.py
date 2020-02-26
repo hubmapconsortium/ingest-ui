@@ -976,17 +976,17 @@ class Dataset(object):
                             """
                             data = json.loads(r.content.decode())
                             submission_data = data['response']
-                            if 'overall_file_count' in submission_data:
-                                if int(submission_data['overall_file_count']) <= 0:
-                                    raise ValueError("Error: overall_file_count equals zero: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
-                            else:
-                                raise ValueError("Error: missing 'overall_file_count' from request ingest call")
-                            if 'top_folder_contents' in submission_data:
-                                top_folder_contents = submission_data['top_folder_contents']
-                                if len(top_folder_contents) == 0:
-                                    raise ValueError("Error: did not find any files for: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
-                            else:
-                                raise ValueError("Error: missing 'top_folder_contents' from request ingest call")
+#                            if 'overall_file_count' in submission_data:
+#                                if int(submission_data['overall_file_count']) <= 0:
+#                                    raise ValueError("Error: overall_file_count equals zero: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
+#                            else:
+#                                raise ValueError("Error: missing 'overall_file_count' from request ingest call")
+#                            if 'top_folder_contents' in submission_data:
+#                                top_folder_contents = submission_data['top_folder_contents']
+#                                if len(top_folder_contents) == 0:
+#                                    raise ValueError("Error: did not find any files for: {group_name}/{uuid}".format(uuid=uuid, group_name=group_info['displayname']))
+#                            else:
+#                                raise ValueError("Error: missing 'top_folder_contents' from request ingest call")
                                     
                             update_record[HubmapConst.DATASET_INGEST_ID_ATTRIBUTE] = submission_data['ingest_id']
                             update_record[HubmapConst.DATASET_RUN_ID] = submission_data['run_id']
