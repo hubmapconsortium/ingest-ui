@@ -968,7 +968,8 @@ class Dataset(object):
                         r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid),
                                                      "process" : self.confdata['INGEST_PIPELINE_DEFAULT_PROCESS'],
                                                      "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
-                                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
+                                          #headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
+                                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=AuthHelper.instance().getProcessSecret() )})
                         if r.ok == True:
                             """expect data like this:
                             {"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
