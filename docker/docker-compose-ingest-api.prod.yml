@@ -36,6 +36,8 @@ services:
       # Just change the directories on host if not the same (left of :)
       - "/hubmap-tmp:/hubmap-tmp"
       - "/hubmap-data:/hubmap-data"
+      # assets file root dir
+      - "/hubmap-assets/:/usr/src/assets"
     networks:
       - hubmap
 
