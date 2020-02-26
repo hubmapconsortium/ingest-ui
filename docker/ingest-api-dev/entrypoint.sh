@@ -34,6 +34,9 @@ chown -R hubmap:hubmap /etc/pki/nginx
 # /hubmap-data directory is owned by hubmap user as well
 chown -R hubmap:hubmap /hubmap-data
 
+# This is the file root dir for assets on dev, test, and prod
+chown -R hubmap:hubmap /usr/src/assets
+
 # Lastly we use gosu to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments
 # "$@" is a shell variable that means "all the arguments"
