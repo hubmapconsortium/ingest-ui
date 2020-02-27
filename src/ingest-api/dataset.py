@@ -782,6 +782,28 @@ class Dataset(object):
     def set_ingest_status(self, driver, json_data):
         # expect something like this:
         #{'dataset_id' : '4d3eb2a87cda705bde38495bb564c8dc', 'status': '<status>', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]} 
+          
+        """
+        #validate the incoming json
+        schema_file = '/Users/chb69/git/ingest-pipeline/src/ingest-pipeline/schemata/dataset_metadata.schema.json'
+        schema_data = None
+    
+        try:
+            #with open(sample_json) as json_sample_file:
+            #    json_data = json.load(json_sample_file)
+            new_json_data = json.load(json_data)
+            with open(schema_file) as json_schema_file:
+                schema_data = json.load(json_schema_file)
+            
+            validate(instance=new_json_data, schema=schema_data)
+        except ValidationError as ve:
+            print(ve)
+        except SchemaError as se:
+            print(se)
+        except Exception as e:
+            print(e)
+        """
+         
         if 'dataset_id' not in json_data:
             raise ValueError('cannot find dataset_id')
         dataset_id = json_data['dataset_id']
@@ -803,9 +825,31 @@ class Dataset(object):
             raise ValueError('cannot find "message" parameter')                  
         message_string = json_data['message']
         update_record['message'] = message_string
+        metadata = None
         if 'metadata' in json_data:
             metadata = json_data['metadata']
-            update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata
+        overwrite_metadata_flag = True
+        if 'overwrite_metadata' in json_data:
+            overwrite_metadata_flag = json_data['overwrite_metadata']
+        # if the overwite_metadata_flag is true then the current metadata will be replaced by
+        # the new metadata found in the json
+        # if the overwrite_metadata_flag is set to false, then merge the current metadata plus 
+        # the incoming metadata.   
+        if overwrite_metadata_flag == False:
+            current_metadata = metadata_node[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE]
+            if isinstance(current_metadata, str):
+                current_metadata = eval(current_metadata)
+            # loop through the json metadata keys
+            # this code will either:
+            # a) add missing keys to the current_metadata
+            # or b) overwrite the current metadata key with the new data from the json object
+            for key in metadata.keys():
+                current_metadata[key] = metadata[key]
+            # swap the metadata variable with the modified current_metadata
+            metadata = current_metadata
+        
+        update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata
+    
         tx = None
         with driver.session() as session:
             try:
