@@ -204,25 +204,7 @@ class Protocol extends Component {
                         <p>{this.state.protocol_doi}</p>
                       </div>
                     )}
-                    <div className="col-sm-1 my-auto text-center">
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="protocol_tooltip"
-                      />
-                      <ReactTooltip
-                        id="protocol_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <h4>
-                          The protocol used when creating the specimen. <br />
-                          This can be in the form of a protocols.io DOI, <br />
-                          an uploaded document or free text typed into the form.
-                        </h4>
-                      </ReactTooltip>
-                    </div>
+                    
                   </div>
                   <div className="form-group row">
                     <label
@@ -302,6 +284,7 @@ class Protocol extends Component {
                   </div>
                 </div>
               </div>
+			  
               <div className="row">
                 <div className="col-sm-6 offset-sm-3">
                   <span className="text-danger">{this.props.error}</span>
@@ -309,7 +292,27 @@ class Protocol extends Component {
               </div>
             </div>
           </div>
+		 
         </div>
+		<div className="protocol-quest col-sm-1 my-auto text-center">
+		  <FontAwesomeIcon
+			icon={faQuestionCircle}
+			data-tip
+			data-for="protocol_tooltip"
+		  />
+		  <ReactTooltip
+			id="protocol_tooltip"
+			place="top"
+			type="info"
+			effect="solid"
+		  >
+			<h4>
+			  The protocol used when creating the specimen. <br />
+			  This can be in the form of a protocols.io DOI, <br />
+			  an uploaded document or free text typed into the form.
+			</h4>
+		  </ReactTooltip>
+		</div>
       </div>
     );
   }

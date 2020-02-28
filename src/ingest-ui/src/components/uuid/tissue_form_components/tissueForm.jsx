@@ -1198,7 +1198,7 @@ class TissueForm extends Component {
                   </div>{" "}
                 </React.Fragment>
               )}
-              <div className="col-sm-1 my-auto text-center">
+              <div className="sample-source-quest col-sm-2 my-auto text-center">
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
@@ -1370,7 +1370,7 @@ class TissueForm extends Component {
                   </div>
                 </React.Fragment>
               )}
-              <div className="col-sm-1 my-auto text-center">
+              <div className="sample-type-quest col-sm-2 my-auto text-center">
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
