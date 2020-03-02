@@ -35,7 +35,7 @@ services:
       # Mount local storage and Globus data
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
-      - "/hubmap-tmp:/hubmap-tmp"
+      - "/hive/hubmap-test/lz/uploads:/hubmap-data/uploads"
       - "/hive/hubmap-test/lz:/hubmap-data"
     networks:
       - hubmap
