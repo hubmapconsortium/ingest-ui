@@ -36,7 +36,7 @@ services:
       # No need to change the directories in docker container (right of :)
       # Just change the directories on host if not the same (left of :)
       - "/hubmap-tmp:/hubmap-tmp"
-      - "/hive/hubmap-dev/lz:/hubmap-data"
+      - "/hive/hubmap-dev/lz:/hive/hubmap-dev/lz"
       # assets file root dir
       - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:

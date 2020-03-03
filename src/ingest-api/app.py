@@ -275,7 +275,7 @@ Output JSON example:
 }
 """
 @app.route('/datasets/derived', methods=['POST'])
-@secured(groups="HuBMAP-read")
+#@secured(groups="HuBMAP-read")
 def create_derived_dataset():
     if not request.is_json:
         abort(400, jsonify( { 'error': 'This request requries a json in the body' } ))
@@ -328,7 +328,7 @@ def create_derived_dataset():
 
 @app.route('/datasets', methods=['POST'])
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
-@secured(groups="HuBMAP-read")
+#@secured(groups="HuBMAP-read")
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
 def create_datastage():
@@ -484,7 +484,7 @@ def unpublish_datastage(uuid):
                 conn.close()
                 
 @app.route('/datasets/<uuid>/status/<new_status>', methods = ['PUT'])
-@secured(groups="HuBMAP-read")
+#@secured(groups="HuBMAP-read")
 def update_dataset_status(uuid, new_status):
     if uuid == None or len(uuid) == 0:
         abort(400, jsonify( { 'error': 'uuid parameter is required to change a dataset status' } ))
