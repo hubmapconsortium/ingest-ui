@@ -3,8 +3,6 @@ import Modal from "../modal";
 import axios from "axios";
 import { SAMPLE_TYPES } from "../../../constants";
 import { flattenSampleType } from "../../../utils/constants_helper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
 
 class IDSearchModal extends Component {
   state = {};
