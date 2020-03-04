@@ -35,6 +35,8 @@ services:
       - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
       # Mount Globus data
       - "/hive/hubmap-test/lz:/hive/hubmap-test/lz"
+      # assets
+      - "/hive/hubmap-test/assets:/usr/src/assets"
     networks:
       - hubmap
 
