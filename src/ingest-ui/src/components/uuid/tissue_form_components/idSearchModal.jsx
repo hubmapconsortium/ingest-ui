@@ -94,12 +94,6 @@ class IDSearchModal extends Component {
     return (
       <Modal show={this.props.show} handleClose={this.props.hide}>
         <div className="row">
-          <IDSearchModalMultiSelect
-            show={this.state.LookUpShow}
-            hide={this.hideLookUpModal}
-            select={this.handleSelectClick}
-            uuid_list={this.state.uuid_list}
-          />
           <div className="col-sm-12">
             <div className="card text-center">
               <div className="card-body">
