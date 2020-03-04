@@ -9,7 +9,7 @@ import { truncateString } from "../../utils/string_helper";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
-import { validateRequired, atLeastOneChecked } from "../../utils/validators";
+import { validateRequired } from "../../utils/validators";
 import {
   faUserShield,
   faExternalLinkAlt
@@ -133,7 +133,7 @@ class DatasetEdit extends Component {
         data_types = JSON.parse(
           this.props.editingDataset.properties.data_types
             .replace(/'/g, '"')
-            .replace(/\\\"/g, "'")
+            .replace(/\\"/g, "'")
         );
         other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
         data_types = data_types.filter(dt => dt.startsWith("dt_"));
@@ -277,6 +277,7 @@ class DatasetEdit extends Component {
         break;
       case "other_dt":
         this.setState({ other_dt: value });
+        break;
       default:
         break;
     }
