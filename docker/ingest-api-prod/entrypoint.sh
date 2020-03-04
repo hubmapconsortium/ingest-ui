@@ -4,6 +4,7 @@
 # defaulting to 9000 if it doesn't exist
 HOST_GID=${HOST_GID:-9000}
 HOST_UID=${HOST_UID:-9000}
+HOST_GLOBUS_MOUNT_DIR=${HOST_GLOBUS_MOUNT_DIR}
 
 echo "Starting ingest-api container with the same host user UID: $HOST_UID and GID: $HOST_GID"
 
@@ -29,8 +30,8 @@ chown -R hubmap:hubmap /var/log/nginx
 chown -R hubmap:hubmap /etc/letsencrypt
 
 # When running as non-root user, we'll make sure the mounted
-# /hubmap-data directory is owned by hubmap user as well
-chown -R hubmap:hubmap /hubmap-data
+# globus directory is owned by hubmap user as well
+chown -R hubmap:hubmap $HOST_GLOBUS_MOUNT_DIR
 
 # This is the file root dir for assets on dev, test, and prod
 chown -R hubmap:hubmap /usr/src/assets
