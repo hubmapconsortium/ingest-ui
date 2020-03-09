@@ -353,7 +353,7 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_UUID'], new_path)
 
                 # Create the Entity Metadata node
@@ -561,7 +561,7 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 """new_path = self.get_globus_file_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
@@ -1300,12 +1300,15 @@ class Dataset(object):
         ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
         return ret_dir
     
-def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID):
+def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
     try:
         new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
         os.makedirs(new_path)
+        # make a sym link too
+        sym_path = str(os.path.join(file_path_symbolic_dir, newDirUUID))
+        os.symlink(new_path, sym_path, True)
         relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
         return relative_path
     except globus_sdk.TransferAPIError as e:
