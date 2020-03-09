@@ -146,14 +146,20 @@ class Protocol extends Component {
 
   render() {
     return (
+	  
       <div className="row">
-        <div className="col-sm-2">
+        
+		<div className="col-sm-2">
           <h4 className="mt-3 mb-3">Protocol {this.props.id}</h4>
         </div>
+		
         <div className="col-sm-9">
+		  
           <div className="card mt-3 mb-3">
-            <div className="card-body">
-              <div className="row">
+            
+			<div className="card-body">
+               
+			  <div className="row">
                 {this.props.id > 1 &&
                   (!this.props.readOnly && (
                     <div className="col-sm-2 offset-sm-10 text-right">
@@ -167,9 +173,11 @@ class Protocol extends Component {
                     </div>
                   ))}
               </div>
+			  
               <div className="row">
                 <div className="col-sm-12">
-                  <div className="form-group row">
+                  
+				  <div className="form-group row">
                     <label
                       htmlFor="protocol"
                       className="col-sm-3 col-form-label text-right"
@@ -206,7 +214,8 @@ class Protocol extends Component {
                     )}
                     
                   </div>
-                  <div className="form-group row">
+                  
+				  <div className="form-group row">
                     <label
                       htmlFor="protocol_file"
                       className="col-sm-3 col-form-label text-right"
@@ -282,19 +291,23 @@ class Protocol extends Component {
                       </div>
                     )}
                   </div>
+				  
                 </div>
               </div>
 			  
-              <div className="row">
+			  <div className="row">
                 <div className="col-sm-6 offset-sm-3">
                   <span className="text-danger">{this.props.error}</span>
                 </div>
               </div>
+			  
             </div>
+			
           </div>
-		 
+		  
         </div>
-		<div className="protocol-quest col-sm-1 my-auto text-center">
+		
+		<div className="col-sm-1 my-auto text-center">
 		  <FontAwesomeIcon
 			icon={faQuestionCircle}
 			data-tip
@@ -313,7 +326,9 @@ class Protocol extends Component {
 			</h4>
 		  </ReactTooltip>
 		</div>
+		
       </div>
+	  
     );
   }
 }
