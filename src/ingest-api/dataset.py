@@ -780,13 +780,20 @@ class Dataset(object):
 
     @classmethod
     def set_ingest_status(self, driver, json_data):
-        # expect something like this:
+        """ expect something like this:
         #{'dataset_id' : '4d3eb2a87cda705bde38495bb564c8dc', 'status': '<status>', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]} 
+        files: [{ "relativePath" : "/path/to/file/example.txt",
+           "type":"filetype",
+           "size":filesize,
+           "checksum":"file-checksum"
+         }]
+         """
           
         """
         #validate the incoming json
         schema_file = '/Users/chb69/git/ingest-pipeline/src/ingest-pipeline/schemata/dataset_metadata.schema.json'
         schema_data = None
+    
     
         try:
             #with open(sample_json) as json_sample_file:
@@ -821,6 +828,9 @@ class Dataset(object):
         if json_data['status'] not in HubmapConst.DATASET_STATUS_OPTIONS:
             raise ValueError('"' + json_data['status'] + '" is not a valid status')                              
         update_record['status'] = json_data['status']
+        if 'files' in json_data:
+            file_data = json_data['files']
+            update_record[HubmapConst.DATASET_INGEST_FILE_LIST_ATTRIBUTE] = file_data
         if 'message' not in json_data:
             raise ValueError('cannot find "message" parameter')                  
         message_string = json_data['message']
