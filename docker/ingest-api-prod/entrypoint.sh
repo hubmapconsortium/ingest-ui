@@ -28,7 +28,7 @@ chown -R hubmap:hubmap /var/run/nginx.pid
 chown -R hubmap:hubmap /var/cache/nginx
 chown -R hubmap:hubmap /var/log/nginx
 
-# Specific to PSC hivevm191 dev
+# Specific to PSC hivevm193 prod
 chown -R hubmap:hubmap /etc/pki/nginx
 
 # When running as non-root user, we'll make sure the mounted
