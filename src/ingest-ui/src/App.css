@@ -106,24 +106,3 @@ caption {
   white-space: nowrap;
 }
 
-.protocol-quest{
-	margin-top: 45px !important;
-}
-
-.sample-source-quest{
-	text-align: right !important;
-	margin-left: 5%;
-	padding-right: 0px;
-}
-
-.sample-type-quest{
-	text-align: right !important;
-	margin-left: 13.5%;
-	padding-right: 0px;
-}
-
-.dataset-source-quest{
-	text-align: right !important;
-    margin-left: 5%;
-    padding-right: 0px;
-}

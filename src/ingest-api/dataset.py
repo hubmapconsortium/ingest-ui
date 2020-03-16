@@ -399,6 +399,11 @@ class Dataset(object):
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
                 
+                if 'phi' in metadata_record:
+                    metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['phi']
+                    if HubmapConst.HAS_PHI_ATTRIBUTE != 'phi':
+                        metadata_record.pop('phi', None)
+                
                 #set the status of the datastage to New
                 metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = convert_dataset_status(str(incoming_record['status']))
 
@@ -635,6 +640,11 @@ class Dataset(object):
 
                 if 'old_status' in update_record:
                     del update_record['old_status']
+
+                if 'phi' in update_record:
+                    update_record[HubmapConst.HAS_PHI_ATTRIBUTE] = update_record['phi']
+                    if HubmapConst.HAS_PHI_ATTRIBUTE != 'phi':
+                        update_record.pop('phi', None)
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 

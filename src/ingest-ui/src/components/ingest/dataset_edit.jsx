@@ -1228,7 +1228,7 @@ class DatasetEdit extends Component {
                       autoComplete='off'
                     />
                   </div>
-                  <div className='col-sm-2'>
+                  <div className='col-sm-4'>
                     <button
                       className='btn btn-link'
                       type='button'
@@ -1262,7 +1262,7 @@ class DatasetEdit extends Component {
                   </div>{" "}
                 </React.Fragment>
               )}
-              <div className='dataset-source-quest col-sm-2 my-auto text-center'>
+              <div className='col-sm-1 my-auto text-center'>
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
