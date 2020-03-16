@@ -237,6 +237,18 @@ class DatasetEdit extends Component {
     });
   };
 
+  handler = e => {
+    if(e.key === 'Tab'){
+      e.preventDefault();
+      if(this.state.collection_candidates.length > 0){
+        this.setState({
+          collection: this.state.collection_candidates[0],
+          showCollectionsDropDown: false
+        });
+      }
+    }
+  }
+
   handleInputChange = e => {
     const { name, value } = e.target;
     switch (name) {
@@ -582,6 +594,18 @@ class DatasetEdit extends Component {
       } else {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, name: "" }
+        }));
+      }
+
+      if (!this.state.collection.label) {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, collection: "required" }
+        }));
+        isValid = false;
+        resolve(isValid);
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, collection: "" }
         }));
       }
 
@@ -990,6 +1014,10 @@ class DatasetEdit extends Component {
     this.props.changeLink(this.state.globus_path, this.state.name);
   }
 
+  // renderCollection() {
+  //   if(this.state.collection)
+  // }
+
   render() {
     return (
       <React.Fragment>
@@ -1108,6 +1136,7 @@ class DatasetEdit extends Component {
                       }
                       placeholder='Collection'
                       onChange={this.handleInputChange}
+                      onKeyDown={this.handler}
                       value={this.state.collection.label}
                       autoComplete='off'
                     />
