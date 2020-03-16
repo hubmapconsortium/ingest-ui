@@ -4,7 +4,6 @@
 # defaulting to 9000 if it doesn't exist
 HOST_GID=${HOST_GID:-9000}
 HOST_UID=${HOST_UID:-9000}
-HOST_GLOBUS_MOUNT_DIR=${HOST_GLOBUS_MOUNT_DIR}
 
 echo "Starting ingest-api container with the same host user UID: $HOST_UID and GID: $HOST_GID"
 
@@ -30,13 +29,6 @@ chown -R hubmap:hubmap /var/log/nginx
 
 # Specific to PSC hivevm193 prod
 chown -R hubmap:hubmap /etc/pki/nginx
-
-# When running as non-root user, we'll make sure the mounted
-# globus directory is owned by hubmap user as well
-chown -R hubmap:hubmap $HOST_GLOBUS_MOUNT_DIR
-
-# This is the file root dir for assets on dev, test, and prod
-chown -R hubmap:hubmap /usr/src/assets
 
 # Lastly we use gosu to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments

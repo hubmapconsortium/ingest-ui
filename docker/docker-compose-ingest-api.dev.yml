@@ -21,7 +21,6 @@ services:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
       - HOST_GID=23629
       - HOST_UID=68728
-      - HOST_GLOBUS_MOUNT_DIR=/hive/hubmap-test/lz
     volumes:
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
