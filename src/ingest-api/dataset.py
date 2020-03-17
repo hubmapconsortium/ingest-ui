@@ -634,6 +634,21 @@ class Dataset(object):
                 tx = session.begin_transaction()
                 update_record = formdata
 
+                # # get current userinfo
+                try:
+                    current_token = AuthHelper.parseAuthorizationTokens(headers)
+                except:
+                    raise ValueError("Unable to parse token")
+                authcache = None
+                if AuthHelper.isInitialized() == False:
+                    authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+                else:
+                    authcache = AuthHelper.instance()
+                userinfo = authcache.getUserInfo(current_token['nexus_token'], True)
+
+                if type(userinfo) == Response and userinfo.status_code == 401:
+                    raise AuthError('token is invalid.', 401)
+
                 # put the metadata UUID into the form data
                 metadata_node = Entity.get_entity_metadata(driver, uuid)
                 update_record[HubmapConst.UUID_ATTRIBUTE] = metadata_node[HubmapConst.UUID_ATTRIBUTE]
@@ -749,6 +764,11 @@ class Dataset(object):
                     except Exception as e:
                         pprint(e)
                         raise e
+                
+                # set last updated user info
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_SUB_ATTRIBUTE] = userinfo['sub']
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_EMAIL_ATTRIBUTE] = userinfo['email']
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
                 print ("EXECUTING DATASET UPDATE: " + stmt)

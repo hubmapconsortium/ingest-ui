@@ -371,7 +371,7 @@ class DataList extends Component {
                       return (
                         <tr key={dataset.uuid}>
                           <td>{dataset.entity_display_doi}</td>
-                          <td>{dataset.properties.name}</td>
+                          <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.properties.name}</div></td>
                           <td>{dataset.properties.provenance_group_name}</td>
                           <td>
                             {dataset.properties.collection
