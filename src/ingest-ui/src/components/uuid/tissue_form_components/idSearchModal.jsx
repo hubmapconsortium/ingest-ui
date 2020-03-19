@@ -3,6 +3,7 @@ import Modal from "../modal";
 import axios from "axios";
 import { SAMPLE_TYPES } from "../../../constants";
 import { flattenSampleType } from "../../../utils/constants_helper";
+import IDSearchModalMultiSelect from "./idSearchModalMultiSelect";
 
 class IDSearchModal extends Component {
   state = {};
