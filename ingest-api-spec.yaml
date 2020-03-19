@@ -361,7 +361,7 @@ components:
           example: Dataset
         collection:
           $ref: "#/components/schemas/Collection"
-        hasPHI:
+        phi:
           type: boolean
           example: false
       xml:
