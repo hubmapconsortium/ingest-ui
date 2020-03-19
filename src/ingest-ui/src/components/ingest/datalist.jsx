@@ -356,9 +356,6 @@ class DataList extends Component {
                           break;
                         case "DEPRECATED":
                           break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          break;
                         case "ERROR":
                           badge_class = "badge-danger";
                           break;
@@ -403,6 +400,7 @@ class DataList extends Component {
                               href={
                                 dataset.properties.globus_directory_url_path
                               }
+                              rel="noopener noreferrer"
                             >
                               Data
                             </a>

@@ -3,9 +3,6 @@ import Modal from "../modal";
 import axios from "axios";
 import { SAMPLE_TYPES } from "../../../constants";
 import { flattenSampleType } from "../../../utils/constants_helper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCopy } from "@fortawesome/free-solid-svg-icons";
-import IDSearchModalMultiSelect from "./idSearchModalMultiSelect";
 
 class IDSearchModal extends Component {
   state = {};
@@ -108,6 +105,7 @@ class IDSearchModal extends Component {
             parentCallback = {this.getUuidList}
             currentSourceIds={this.props.currentSourceIds}
           />
+
           <div className="col-sm-12">
             <div className="card text-center">
               <div className="card-body">

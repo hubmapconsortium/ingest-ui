@@ -280,7 +280,7 @@ class Dataset(object):
         # 1. make sure the user has write access to the record's group
         # 2. make sure the record has a status that is writable
         if current_record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
-            if current_record['metadata_properties']['status'] in [HubmapConst.DATASET_STATUS_NEW, HubmapConst.DATASET_STATUS_ERROR]:
+            if current_record['metadata_properties']['status'] in [HubmapConst.DATASET_STATUS_NEW, HubmapConst.DATASET_STATUS_ERROR, HubmapConst.DATASET_STATUS_REOPENED]:
                 return True
         
         return False
