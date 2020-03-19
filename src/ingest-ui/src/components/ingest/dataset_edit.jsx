@@ -598,7 +598,7 @@ class DatasetEdit extends Component {
         }));
       }
 
-      if (!this.state.collection.label) {
+      if (this.state.collection !== "" && this.state.collection.label === undefined) {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, collection: "required" }
         }));
