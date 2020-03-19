@@ -9,25 +9,31 @@ services:
     image: ingest-api:1.7
     hostname: ingest-api
     container_name: ingest-api
+    # Map host machine port 80, 443 to container ports 8080 and 4430
+    # Only root can listen on ports below 1024, we use higher-numbered ports
+    # since nginx is running under non-root user hubmap
+    ports:
+      - "80:8080"
+      - "443:4430"
+      # To be used by airflow on the same machine
+      - "7777:7777"
     environment:
-      - HOST_GID=1000
-      - HOST_UID=1000
+      # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
+      - HOST_GID=23629
+      - HOST_UID=68728
     volumes:
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
       # Mount ssl certificates from host to container
-      - "/etc/letsencrypt:/etc/letsencrypt"
+      - "/etc/pki/nginx:/etc/pki/nginx"
       # Mount conf.d to the nginx conf.d on container
       - "./ingest-api-dev/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-dev/nginx/html:/usr/share/nginx/html"
-      # Mount local storage and Globus data
-      # No need to change the directories in docker container (right of :)
-      # Just change the directories on host if not the same (left of :)
-      - "/hubmap-tmp:/hubmap-tmp"
-      - "/hubmap-data:/hubmap-data"
+      # Mount Globus data
+      - "/hive/hubmap-dev/lz:/hive/hubmap-dev/lz"
     networks:
       - gateway_hubmap
 
