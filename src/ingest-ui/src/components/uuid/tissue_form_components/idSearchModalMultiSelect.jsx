@@ -78,15 +78,15 @@ class IDSearchModalMultiSelect extends Component {
     	isInitialized : 'false'};
     	
          this.changeSelection = selection => {
-             //this.setState({ selectedRows: []});
-            //var newRows = []
-           // for (var i=0;i < selection.length; i++) {
-            //  newRows.push(this.state.rows[selection[i]]);
-            //}
+             this.setState({ selectedRows: []});
+             var newRows = []
+             for (var i=0;i < selection.length; i++) {
+               newRows.push(this.state.rows[selection[i]]);
+             }
             
             
-            //this.setState({ selectedRows: selection});
-            //this.setState({ selection: selection });
+             this.setState({ selectedRows: newRows});
+             this.setState({ selection: selection });
             
         };
 
