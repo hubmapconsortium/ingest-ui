@@ -454,7 +454,7 @@ class Dataset(object):
         # 1. make sure the user has write access to the record's group
         # 2. make sure the record has a status that is writable
         if current_record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
-            if current_record['metadata_properties']['status'] in [HubmapConst.DATASET_STATUS_NEW, HubmapConst.DATASET_STATUS_ERROR]:
+            if current_record['metadata_properties']['status'] in [HubmapConst.DATASET_STATUS_NEW, HubmapConst.DATASET_STATUS_ERROR, HubmapConst.DATASET_STATUS_REOPENED]:
                 return True
         
         return False
@@ -572,6 +572,11 @@ class Dataset(object):
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
+                
+                if 'phi' in metadata_record:
+                    metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['phi']
+                    if HubmapConst.HAS_PHI_ATTRIBUTE != 'phi':
+                        metadata_record.pop('phi', None)
                 
                 #set the status of the datastage to New
                 metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = convert_dataset_status(str(incoming_record['status']))
@@ -943,12 +948,32 @@ class Dataset(object):
                 tx = session.begin_transaction()
                 update_record = formdata
 
+                # # get current userinfo
+                try:
+                    current_token = AuthHelper.parseAuthorizationTokens(headers)
+                except:
+                    raise ValueError("Unable to parse token")
+                authcache = None
+                if AuthHelper.isInitialized() == False:
+                    authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+                else:
+                    authcache = AuthHelper.instance()
+                userinfo = authcache.getUserInfo(current_token['nexus_token'], True)
+
+                if type(userinfo) == Response and userinfo.status_code == 401:
+                    raise AuthError('token is invalid.', 401)
+
                 # put the metadata UUID into the form data
                 metadata_node = Entity.get_entity_metadata(driver, uuid)
                 update_record[HubmapConst.UUID_ATTRIBUTE] = metadata_node[HubmapConst.UUID_ATTRIBUTE]
 
                 if 'old_status' in update_record:
                     del update_record['old_status']
+
+                if 'phi' in update_record:
+                    update_record[HubmapConst.HAS_PHI_ATTRIBUTE] = update_record['phi']
+                    if HubmapConst.HAS_PHI_ATTRIBUTE != 'phi':
+                        update_record.pop('phi', None)
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
@@ -1057,6 +1082,11 @@ class Dataset(object):
                     except Exception as e:
                         pprint(e)
                         raise e
+                
+                # set last updated user info
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_SUB_ATTRIBUTE] = userinfo['sub']
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_EMAIL_ATTRIBUTE] = userinfo['email']
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
                 print ("EXECUTING DATASET UPDATE: " + stmt)

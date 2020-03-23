@@ -4,6 +4,7 @@
 # defaulting to 9000 if it doesn't exist
 HOST_GID=${HOST_GID:-9000}
 HOST_UID=${HOST_UID:-9000}
+HOST_GLOBUS_MOUNT_DIR=${HOST_GLOBUS_MOUNT_DIR}
 
 echo "Starting ingest-api container with the same host user UID: $HOST_UID and GID: $HOST_GID"
 
@@ -19,8 +20,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # When running as non-root user, we'll make sure the mounted
-# /hubmap-data directory is owned by hubmap user as well
-chown -R hubmap:hubmap /hubmap-data
+# globus directory is owned by hubmap user as well
+chown -R hubmap:hubmap $HOST_GLOBUS_MOUNT_DIR
 
 # Lastly we use gosu to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments

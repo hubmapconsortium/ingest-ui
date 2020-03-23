@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-dev
     # Build the image with name and tag
-    image: ingest-api:1.7
+    image: ingest-api:1.9
     hostname: ingest-api
     container_name: ingest-api
     # Map host machine port 80, 443 to container ports 8080 and 4430
@@ -32,13 +32,8 @@ services:
       - "./ingest-api-dev/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-dev/nginx/html:/usr/share/nginx/html"
-      # Mount local storage and Globus data
-      # No need to change the directories in docker container (right of :)
-      # Just change the directories on host if not the same (left of :)
-      - "/hubmap-tmp:/hubmap-tmp"
+      # Mount Globus data
       - "/hive/hubmap-dev/lz:/hive/hubmap-dev/lz"
-      # assets file root dir
-      - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:
       - gateway_hubmap
 

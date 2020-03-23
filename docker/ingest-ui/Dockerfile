@@ -24,15 +24,13 @@ enabled=1\n'\
 # 4 - Use our nginx config file
 # 5 - Add Node.js stable release Yum Repository
 # 6 - Install Node.js (includes npm)
-# 7 - Install npm dependencies
-# 8 - Clean all yum cache
+# 7 - Clean all yum cache
 RUN yum install -y nginx && \
     rm /etc/nginx/conf.d/default.conf && \
     mv nginx.conf /etc/nginx/nginx.conf && \
     mv ingest-ui.conf /etc/nginx/conf.d && \
     curl -sL https://rpm.nodesource.com/setup_12.x | bash - && \
     yum install -y nodejs && \
-    npm install && \
     yum clean all
     
 # Change to source code directory

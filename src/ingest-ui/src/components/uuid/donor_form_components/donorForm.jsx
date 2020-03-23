@@ -418,7 +418,10 @@ class DonorForm extends Component {
             data.images.push({
               id: "image_" + i.id,
               file_name: i.file_name,
-              description: i.description
+              description: i.ref.current.image_file_description.current.value.replace(
+                /"/g,
+                '\\"'
+              )
             });
           }
         });

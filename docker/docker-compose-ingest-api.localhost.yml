@@ -6,21 +6,19 @@ services:
   ingest-api:
     build: ./ingest-api-localhost
     # Build the image with name and tag
-    image: ingest-api:1.7
+    image: ingest-api:1.9
     hostname: ingest-api
     container_name: ingest-api
     environment:
       - HOST_GID=1000
       - HOST_UID=1000
+      - HOST_GLOBUS_MOUNT_DIR=/hubmap-data
     volumes:
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
       # Mount the logging to container
       - "../log:/usr/src/app/log"
-      # Mount local storage and Globus data
-      # No need to change the directories in docker container (right of :)
-      # Just change the directories on host if not the same (left of :)
-      - "/hubmap-tmp:/hubmap-tmp"
+      # Mount Globus data
       - "/hubmap-data:/hubmap-data"
     networks:
       - gateway_hubmap

@@ -687,7 +687,10 @@ class TissueForm extends Component {
               data.images.push({
                 id: "image_" + i.id,
                 file_name: i.file_name,
-                description: i.description
+                description: i.ref.current.image_file_description.current.value.replace(
+                  /"/g,
+                  '\\"'
+                )
               });
             }
           });
@@ -1165,7 +1168,7 @@ class TissueForm extends Component {
                       autoComplete='off'
                     />
                   </div>
-                  <div className="col-sm-2">
+                  <div className="col-sm-4">
                     <button
                       className="btn btn-link"
                       type="button"
@@ -1335,8 +1338,9 @@ class TissueForm extends Component {
                       })}
                     </select>
                   </div>
-                  {this.state.specimen_type === "other" && (
-                    <div className="col-sm-3">
+                  
+                  <div className="col-sm-3">
+				    {this.state.specimen_type === "other" && (
                       <input
                         type="text"
                         name="specimen_type_other"
@@ -1351,8 +1355,8 @@ class TissueForm extends Component {
                         onChange={this.handleInputChange}
                         value={this.state.specimen_type_other}
                       />
-                    </div>
-                  )}
+                    )}  
+				  </div> 
                 </React.Fragment>
               )}
               {this.props.readOnly && (

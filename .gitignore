@@ -12,7 +12,7 @@ docker/ingest-api-prod/src
 docker/ingest-ui/src
 
 # Ignore log files created by docker
-log/*
+log/*.log
 
 # ingest-api
 src/ingest-api/instance/app.cfg

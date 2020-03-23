@@ -9,7 +9,7 @@ import { truncateString } from "../../utils/string_helper";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
-import { validateRequired, atLeastOneChecked } from "../../utils/validators";
+import { validateRequired } from "../../utils/validators";
 import {
   faUserShield,
   faExternalLinkAlt
@@ -133,7 +133,7 @@ class DatasetEdit extends Component {
         data_types = JSON.parse(
           this.props.editingDataset.properties.data_types
             .replace(/'/g, '"')
-            .replace(/\\\"/g, "'")
+            .replace(/\\"/g, "'")
         );
         other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
         data_types = data_types.filter(dt => dt.startsWith("dt_"));
@@ -226,7 +226,6 @@ class DatasetEdit extends Component {
   };
 
   handleLookUpClick = () => {
-    //this.props.current_source_uuid_list = this.state.source_uuid_list;
     this.setState({
       LookUpShow: true
     });
@@ -237,6 +236,18 @@ class DatasetEdit extends Component {
       LookUpShow: false
     });
   };
+
+  handler = e => {
+    if(e.key === 'Tab'){
+      e.preventDefault();
+      if(this.state.collection_candidates.length > 0){
+        this.setState({
+          collection: this.state.collection_candidates[0],
+          showCollectionsDropDown: false
+        });
+      }
+    }
+  }
 
   handleInputChange = e => {
     const { name, value } = e.target;
@@ -278,6 +289,7 @@ class DatasetEdit extends Component {
         break;
       case "other_dt":
         this.setState({ other_dt: value });
+        break;
       default:
         break;
     }
@@ -359,22 +371,6 @@ class DatasetEdit extends Component {
       }
     );
   };
-  
-  getUuidList = (new_uuid_list, is_subset) => {
-    //this.setState({uuid_list: new_uuid_list}); 
-    this.setState(
-      {
-        source_uuid: this.generateDisplaySourceId(new_uuid_list, is_subset),
-        source_uuid_list: new_uuid_list,
-
-        LookUpShow: false
-      },
-      () => {
-        this.validateUUID();
-      }
-    );
-  };
-  
 
   handleAddNewCollection = () => {
     this.setState({
@@ -602,6 +598,18 @@ class DatasetEdit extends Component {
         }));
       }
 
+      if (this.state.collection !== "" && this.state.collection.label === undefined) {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, collection: "required" }
+        }));
+        isValid = false;
+        resolve(isValid);
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, collection: "" }
+        }));
+      }
+
       if (!validateRequired(this.state.source_uuid)) {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, source_uuid: "required" }
@@ -646,7 +654,7 @@ class DatasetEdit extends Component {
     });
   }
 
-  generateDisplaySourceId(source_uuids, is_subset) {
+  generateDisplaySourceId(source_uuids) {
     if (source_uuids.length > 1) {
       let first_lab_id = source_uuids[0].hubmap_identifier
         ? source_uuids[0].hubmap_identifier
@@ -673,11 +681,8 @@ class DatasetEdit extends Component {
         last_lab_id.lastIndexOf("-") + 1,
         last_lab_id.length
       );
-	  
+
       display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
-      if (is_subset === "subset") {
-        display_source_id = `a subset of ${id_common_part}[ between ${first_lab_id_num} and ${last_lab_id_num}]`;
-      }
       return display_source_id;
     } else {
       if (source_uuids[0].hubmap_identifier) {
@@ -1010,6 +1015,10 @@ class DatasetEdit extends Component {
     this.props.changeLink(this.state.globus_path, this.state.name);
   }
 
+  // renderCollection() {
+  //   if(this.state.collection)
+  // }
+
   render() {
     return (
       <React.Fragment>
@@ -1128,6 +1137,7 @@ class DatasetEdit extends Component {
                       }
                       placeholder='Collection'
                       onChange={this.handleInputChange}
+                      onKeyDown={this.handler}
                       value={this.state.collection.label}
                       autoComplete='off'
                     />
@@ -1219,7 +1229,7 @@ class DatasetEdit extends Component {
                       autoComplete='off'
                     />
                   </div>
-                  <div className='col-sm-2'>
+                  <div className='col-sm-4'>
                     <button
                       className='btn btn-link'
                       type='button'
@@ -1242,9 +1252,7 @@ class DatasetEdit extends Component {
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
-                    parent="dataset"
-                    parentCallback = {this.getUuidList}
-                    currentSourceIds = {this.state.source_uuid_list}
+                    parent='dataset'
                   />
                 </React.Fragment>
               )}
