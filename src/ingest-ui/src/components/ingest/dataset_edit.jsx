@@ -362,7 +362,22 @@ class DatasetEdit extends Component {
     this.setState(
       {
         source_uuid: this.generateDisplaySourceId(ids),
-        source_uuid_list: ids.map(id => id.hubmap_identifier),
+        source_uuid_list: ids,
+
+        LookUpShow: false
+      },
+      () => {
+        this.validateUUID();
+      }
+    );
+  };
+
+  getUuidList = (new_uuid_list, is_subset) => {
+    //this.setState({uuid_list: new_uuid_list}); 
+    this.setState(
+      {
+        source_uuid: this.generateDisplaySourceId(new_uuid_list, is_subset),
+        source_uuid_list: new_uuid_list,
 
         LookUpShow: false
       },
@@ -526,7 +541,9 @@ class DatasetEdit extends Component {
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid_list,
+          source_uuid: this.state.source_uuid_list.map(
+            su => su.hubmap_identifier
+          ),
           phi: this.state.phi,
           data_types: data_types,
           description: this.state.description,
@@ -654,7 +671,7 @@ class DatasetEdit extends Component {
     });
   }
 
-  generateDisplaySourceId(source_uuids) {
+  generateDisplaySourceId(source_uuids, is_subset) {
     if (source_uuids.length > 1) {
       let first_lab_id = source_uuids[0].hubmap_identifier
         ? source_uuids[0].hubmap_identifier
@@ -683,6 +700,9 @@ class DatasetEdit extends Component {
       );
 
       display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
+      if (is_subset === "subset") {
+        display_source_id = `a subset of ${id_common_part}[ between ${first_lab_id_num} and ${last_lab_id_num}]`;
+      }
       return display_source_id;
     } else {
       if (source_uuids[0].hubmap_identifier) {
@@ -1253,6 +1273,8 @@ class DatasetEdit extends Component {
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                     parent='dataset'
+                    parentCallback = {this.getUuidList}
+                    currentSourceIds = {this.state.source_uuid_list}
                   />
                 </React.Fragment>
               )}
