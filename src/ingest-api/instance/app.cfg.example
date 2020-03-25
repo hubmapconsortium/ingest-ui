@@ -16,6 +16,7 @@ GLOBUS_ENDPOINT_UUID = ''
 # Just make sure the volume mounts in docker compose yaml mapped correctly
 LOCAL_STORAGE_DIRECTORY = '/hubmap-tmp'
 GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
+HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
 
 # URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container
