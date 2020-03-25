@@ -18,6 +18,10 @@ if [ $? -ne 0 ]; then
     useradd -r -u $HOST_UID -g $HOST_GID -m hubmap
 fi
 
+# Create the directory for file service
+mkdir /usr/src/assets
+chown -R hubmap:hubmap /usr/src/assets
+
 # When running Nginx as a non-root user, we need to create the pid file
 # and give read and write access to /var/run/nginx.pid, /var/cache/nginx, and /var/log/nginx
 # In individual nginx *.conf, also don't listen on ports 80 or 443 because 
