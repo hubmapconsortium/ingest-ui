@@ -332,7 +332,6 @@ def create_derived_dataset():
 # NOTE: The first step in the process is to create a "data stage" entity
 # A data stage entity is the entity before a dataset entity.
 def create_datastage():
-    import pdb; pdb.set_trace()
     if not request.form:
         abort(400)
     if 'data' not in request.form:
