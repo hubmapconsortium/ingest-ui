@@ -22,6 +22,9 @@ GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
 # Point to remote URL for testing and production deployment
 UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
+ENTITY_WEBSERVICE_URL = ''
+SEARCH_WEBSERVICE_URL = ''
+
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
 # This has no effect with Gateway (enabled CORS in nginx conf)
 # UUID_UI_URL = 'http://localhost:8585'
