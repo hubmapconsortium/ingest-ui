@@ -19,10 +19,6 @@ if [ $? -ne 0 ]; then
     useradd -r -u $HOST_UID -g $HOST_GID -m hubmap
 fi
 
-# Create the directory for file service
-mkdir /usr/src/assets
-chown -R hubmap:hubmap /usr/src/assets
-
 # When running as non-root user, we'll make sure the mounted
 # globus directory is owned by hubmap user as well
 chown -R hubmap:hubmap $HOST_GLOBUS_MOUNT_DIR
