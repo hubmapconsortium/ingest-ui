@@ -22,8 +22,9 @@ HUBMAP_WEBSERVICE_FILEPATH = '/hubmap-data'
 # Don't use localhost since uuid-api running on a different container
 # Point to remote URL for testing and production deployment
 UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
-ENTITY_WEBSERVICE_URL = 'http://hubmap-auth:9998'
-SEARCH_WEBSERVICE_URL = 'http://hubmap-auth:9997'
+
+ENTITY_WEBSERVICE_URL = ''
+SEARCH_WEBSERVICE_URL = ''
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
 # This has no effect with Gateway (enabled CORS in nginx conf)
