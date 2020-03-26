@@ -542,7 +542,7 @@ class DatasetEdit extends Component {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
           source_uuid: this.state.source_uuid_list.map(su => {
-              if(su instanceof String){
+              if(typeof su ==='string' || su instanceof String){
                 return su
               } else {
                 return su.hubmap_identifier
