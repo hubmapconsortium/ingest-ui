@@ -1131,7 +1131,8 @@ def create_specimen():
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_records['uuid'])
+            for samples in new_uuid_records['new_samples']:
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'], headers=request.headers)
         except:
             print('Error happended when call teh reindex web service')
 
@@ -1208,7 +1209,7 @@ def update_specimen(identifier):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record['uuid'])
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record)
         except:
             print("Error happend when calling reindex web service")
         return jsonify({'uuid': uuid}), 200 
