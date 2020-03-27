@@ -382,7 +382,7 @@ def create_datastage():
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'], headers={'Authorization': 'Bearer ' + nexus_token })
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'])
         except:
             print("Error happened when calling reindex web service")
 
