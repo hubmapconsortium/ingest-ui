@@ -314,6 +314,12 @@ def create_derived_dataset():
         new_record = dataset.create_derived_datastage(driver, nexus_token, json_data)
         conn.close()
 
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['derived_dataset_uuid'])
+        except:
+            print("Error happened when calling reindex web service")
+
         return jsonify( new_record ), 201
     except:
         msg = 'An error occurred: '
