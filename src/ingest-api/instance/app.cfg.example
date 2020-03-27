@@ -23,7 +23,9 @@ HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
 # Point to remote URL for testing and production deployment
 UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
-SEARCH_WEBSERVICE_URL = ''
+# Must no trailing slash /
+# Default works with only localhost deployment
+SEARCH_WEBSERVICE_URL = 'http://hubmap-auth:6666'
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
 # This has no effect with Gateway (enabled CORS in nginx conf)
