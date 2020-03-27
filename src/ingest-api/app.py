@@ -1129,12 +1129,16 @@ def create_specimen():
         conn.close()
         #return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
+        print('Before reindex calls')
         try:
             #reindex this node in elasticsearch
             for samples in new_uuid_records['new_samples']:
+                print(f"Begining of reindex {samples['uuid']} call")
                 rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'], headers=request.headers)
+                print(f"After reindex {samples['uuid']} call")
         except:
             print('Error happended when call teh reindex web service')
+        print('Before Return')
 
         return jsonify(new_uuid_records), 201 
 
