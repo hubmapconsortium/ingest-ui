@@ -23,7 +23,6 @@ HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
 # Point to remote URL for testing and production deployment
 UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
-ENTITY_WEBSERVICE_URL = ''
 SEARCH_WEBSERVICE_URL = ''
 
 # URL of UUID UI for Cross-Origin Resource Sharing (CORS)
