@@ -1136,6 +1136,8 @@ def create_specimen():
                 print(f"Begining of reindex {samples['uuid']} call")
                 print(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
                 rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'], headers=request.headers)
+                print(rspn)
+                print(rspn.text)
                 print(f"After reindex {samples['uuid']} call")
         except:
             print('Error happended when call teh reindex web service')
