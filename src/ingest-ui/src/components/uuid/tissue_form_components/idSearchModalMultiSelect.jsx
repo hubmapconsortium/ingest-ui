@@ -74,21 +74,24 @@ class IDSearchModalMultiSelect extends Component {
     this.childKey = 0;
     this.state = {
     	columns : [{name: 'hubmap_identifier', title: 'Sample Identifier'}],
-    	//rows: [{hubmap_identifier: 'ID1'},{hubmap_identifier: 'ID2'}],
+    	rows: [],
     	isInitialized : 'false'};
     	
-         this.changeSelection = selection => {
-             this.setState({ selectedRows: []});
-             var newRows = []
-             for (var i=0;i < selection.length; i++) {
-               newRows.push(this.state.rows[selection[i]]);
-             }
-            
-            
-             this.setState({ selectedRows: newRows});
-             this.setState({ selection: selection });
-            
-        };
+	 this.changeSelection = selection => {
+	 
+	     this.setState({ selectedRows: []});
+	     var newRows = []
+	     if (this.state.rows === undefined) {
+	       this.setState({ rows: []});
+	     }
+	     for (var i=0;i < selection.length; i++) {
+	       newRows.push(this.state.rows[selection[i]]);
+	     }
+	    
+	     this.setState({ selectedRows: newRows});
+	     this.setState({ selection: selection });
+	     //selection.stopPropagation();   
+	};
 
   };
   
@@ -103,6 +106,7 @@ class IDSearchModalMultiSelect extends Component {
     });
   };
   
+  /*
   UNSAFE_componentWillReceiveProps(nextProps) {
 	  //let {rows, columns} = this.state;
 	  let  {selection, setSelection} = [];
@@ -139,7 +143,7 @@ class IDSearchModalMultiSelect extends Component {
           
       }
   };
-
+*/
   hideLookUpModal = () => {
     this.setState({
       LookUpShow: false
