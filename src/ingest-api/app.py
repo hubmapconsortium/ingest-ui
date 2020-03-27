@@ -1135,7 +1135,7 @@ def create_specimen():
             for samples in new_uuid_records['new_samples']:
                 print(f"Begining of reindex {samples['uuid']} call")
                 print(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
-                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'], headers=request.headers)
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
                 print(rspn)
                 print(rspn.text)
                 print(f"After reindex {samples['uuid']} call")
