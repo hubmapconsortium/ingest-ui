@@ -10,8 +10,8 @@ services:
     hostname: ingest-ui
     container_name: ingest-ui
     environment:
-      - HOST_GID=1000
-      - HOST_UID=1000
+      - HOST_GID=${HOST_GID:-1000}
+      - HOST_UID=${HOST_UID:-1000}
     init: true
     restart: always
     volumes:
