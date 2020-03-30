@@ -10,8 +10,8 @@ services:
     hostname: ingest-api
     container_name: ingest-api
     environment:
-      - HOST_GID=1000
-      - HOST_UID=1000
+      - HOST_GID=${HOST_GID:-1000}
+      - HOST_UID=${HOST_UID:-1000}
       - HOST_GLOBUS_MOUNT_DIR=/hubmap-data
     volumes:
       # Mount the source code to container
