@@ -20,6 +20,8 @@ services:
       - "../log:/usr/src/app/log"
       # Mount Globus data
       - "/hubmap-data:/hubmap-data"
+      # assets
+      - "/hubmap-data/assets:/usr/src/assets"
     networks:
       - gateway_hubmap
 
