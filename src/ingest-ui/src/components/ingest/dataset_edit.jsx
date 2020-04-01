@@ -18,7 +18,8 @@ import {
 class DatasetEdit extends Component {
   state = {
     status: "",
-    id: "",
+    display_doi: "",
+    doi: "",
     name: "",
     collection: {
       uuid: "",
@@ -141,7 +142,8 @@ class DatasetEdit extends Component {
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
-          id: this.props.editingDataset.entity_display_doi,
+          display_doi: this.props.editingDataset.entity_display_doi,
+          doi: this.props.editingDataset.entity_doi,
           name: this.props.editingDataset.properties.name,
           globus_path: this.props.editingDataset.properties
             .globus_directory_url_path,
@@ -592,7 +594,9 @@ class DatasetEdit extends Component {
             )
             .then(res => {
               this.setState({
-                globus_path: res.data.globus_directory_url_path
+                globus_path: res.data.globus_directory_url_path,
+                display_doi: res.data.display_doi,
+                doi: res.data.doi
               });
               this.props.onCreated();
               this.onChangeGlobusURL();
@@ -1037,7 +1041,7 @@ class DatasetEdit extends Component {
   }
 
   onChangeGlobusURL() {
-    this.props.changeLink(this.state.globus_path, this.state.name);
+    this.props.changeLink(this.state.globus_path, {name: this.state.name, display_doi: this.state.display_doi, doi: this.state.doi});
   }
 
   // renderCollection() {
@@ -1059,7 +1063,7 @@ class DatasetEdit extends Component {
               </div>
               <div className='col-sm-10'>
                 <p>
-                  {this.props.editingDataset && "Dataset id: " + this.state.id}
+                  {this.props.editingDataset && "Dataset Display id: " + this.state.display_doi + " | " + "DOI: " + this.state.doi} 
                 </p>
                 {this.state.globus_path && (
                   <div>

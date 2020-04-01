@@ -111,8 +111,9 @@ class IngestEntrance extends Component {
     });
   };
   
-  onChangeGlobusLink(newLink, newName) {
-  	this.setState({globus_url: newLink, name: newName});
+  onChangeGlobusLink(newLink, newDataset) {
+    const {name, display_doi, doi} = newDataset;
+  	this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
   }
 
   render() {
@@ -163,6 +164,8 @@ class IngestEntrance extends Component {
             parent="dataset"
             globus_directory_url_path={this.state.globus_url}
             name={this.state.name}
+            display_doi={this.state.display_doi}
+            doi={this.state.doi}
             onDismiss={() => this.setState({ NewDatasetShow: false })}
          />
         

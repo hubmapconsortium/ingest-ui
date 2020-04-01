@@ -615,7 +615,10 @@ class Dataset(object):
                     tx.run(stmt)
                 
                 tx.commit()
-                ret_object = {'uuid' : datastage_uuid['uuid'], HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE: new_globus_path}
+                ret_object = {'uuid' : datastage_uuid['uuid'], 
+                            'display_doi': datastage_uuid['displayDoi'],
+                            'doi': datastage_uuid['doi'],
+                            HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE: new_globus_path}
                 return ret_object
             except TransactionError as te: 
                 print ('A transaction error occurred: ', te.value)
