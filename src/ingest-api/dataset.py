@@ -367,7 +367,7 @@ class Dataset(object):
                 metadata_record['name'] = json_data['derived_dataset_name']
                 # Also use the dataset data types array from input json and store as string in metadata attribute
                 metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data['derived_dataset_types'])
-                metadata_record[HubmapConst.SOURCE_UUID_ATTRIBUTE] = source_dataset_uuid
+                metadata_record[HubmapConst.SOURCE_UUID_ATTRIBUTE] = source_UUID_Data[0]['display_doi']
 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
