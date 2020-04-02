@@ -676,8 +676,48 @@ class DatasetEdit extends Component {
     });
   }
 
+  //note: this code assumes that source_uuids is a sorted list or a single value
   generateDisplaySourceId(source_uuids, is_subset) {
+    //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
+      //is_subset is a flag indicating if the source_uuid list is
+      //a consecutive set of values (ex: 1-5) or a subset of values (ex: 1,3,5)
+      is_subset = "";
+      //first, determine if the numbers are a complete sequence or a subset
+      //loop through all the values and extract the last number from the label (ex: TEST0001-RK-3)
+	  for (var i = 1; i < source_uuids.length; i++) {
+	      //assume the label is just a string
+	      var first_lab_id_subset_string = source_uuids[i-1];
+	      //in some instances, the label is not a string but an object
+	      //in this case, use the hubmap_identifier as the string
+	      if (typeof source_uuids[i-1] != "string") {
+	      	first_lab_id_subset_string = source_uuids[i-1].hubmap_identifier
+	      }
+	      //extract the last digit from the string
+	      var first_lab_id_subset = first_lab_id_subset_string.substring(
+	        first_lab_id_subset_string.lastIndexOf("-") + 1,
+	        first_lab_id_subset_string.length
+	      );
+	
+	      //in some instances, the label is not a string but an object
+	      //in this case, use the hubmap_identifier as the string
+	      var next_lab_id_subset_string = source_uuids[i];
+	      if (typeof source_uuids[i] != "string") {
+	      	next_lab_id_subset_string = source_uuids[i].hubmap_identifier
+	      }
+	      //extract the last digit from the string
+	      var next_lab_id_subset = next_lab_id_subset_string.substring(
+	        next_lab_id_subset_string.lastIndexOf("-") + 1,
+	        next_lab_id_subset_string.length
+	      );
+	    //finally, compare the digits.  If any consecutive digits are more than
+	    //one number apart, then these values represent a subset
+	    if(next_lab_id_subset - first_lab_id_subset != 1) {
+			is_subset = "subset";
+			break;
+	    }
+	  }
+	  //extract the first and last values
       let first_lab_id = source_uuids[0].hubmap_identifier
         ? source_uuids[0].hubmap_identifier
         : source_uuids[0];
@@ -709,6 +749,7 @@ class DatasetEdit extends Component {
         display_source_id = `a subset of ${id_common_part}[ between ${first_lab_id_num} and ${last_lab_id_num}]`;
       }
       return display_source_id;
+    //in this case there is only one value
     } else {
       if (source_uuids[0].hubmap_identifier) {
         return source_uuids[0].hubmap_identifier;
