@@ -322,6 +322,7 @@ class Dataset(object):
         if 'name' in userinfo.keys():
             metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
     
+    
         activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
         entity_type = HubmapConst.DATASET_TYPE_CODE
         
@@ -366,6 +367,7 @@ class Dataset(object):
                 metadata_record['name'] = json_data['derived_dataset_name']
                 # Also use the dataset data types array from input json and store as string in metadata attribute
                 metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data['derived_dataset_types'])
+                metadata_record[HubmapConst.SOURCE_UUID_ATTRIBUTE] = source_dataset_uuid
 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
