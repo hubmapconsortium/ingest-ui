@@ -220,7 +220,7 @@ class IDSearchModalMultiSelect extends Component {
                     <div className="form-group row">
 
 					{rows && (
-					      <div className="scrollbar-div">
+					      <div className="scrollbar-div col-sm-12">
 					      <Grid key={this.childKey}
 					        rows={rows}
 					        columns={columns}

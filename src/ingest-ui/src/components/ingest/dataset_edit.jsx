@@ -372,11 +372,11 @@ class DatasetEdit extends Component {
     );
   };
 
-  getUuidList = (new_uuid_list, is_subset) => {
+  getUuidList = (new_uuid_list) => {
     //this.setState({uuid_list: new_uuid_list}); 
     this.setState(
       {
-        source_uuid: this.generateDisplaySourceId(new_uuid_list, is_subset),
+        source_uuid: this.generateDisplaySourceId(new_uuid_list),
         source_uuid_list: new_uuid_list,
 
         LookUpShow: false
@@ -677,12 +677,12 @@ class DatasetEdit extends Component {
   }
 
   //note: this code assumes that source_uuids is a sorted list or a single value
-  generateDisplaySourceId(source_uuids, is_subset) {
+  generateDisplaySourceId(source_uuids) {
     //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
       //is_subset is a flag indicating if the source_uuid list is
       //a consecutive set of values (ex: 1-5) or a subset of values (ex: 1,3,5)
-      is_subset = "";
+      var is_subset = "";
       //first, determine if the numbers are a complete sequence or a subset
       //loop through all the values and extract the last number from the label (ex: TEST0001-RK-3)
 	  for (var i = 1; i < source_uuids.length; i++) {
