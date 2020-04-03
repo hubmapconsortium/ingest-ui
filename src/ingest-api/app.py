@@ -313,7 +313,7 @@ def create_datastage():
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'], headers={'Authorization': 'Bearer ' + nexus_token })
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'])
         except:
             print("Error happened when calling reindex web service")
 
@@ -1025,11 +1025,19 @@ def create_specimen():
         conn.close()
         #return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
+        print('Before reindex calls')
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_records['uuid'])
+            for samples in new_uuid_records['new_samples']:
+                print(f"Begining of reindex {samples['uuid']} call")
+                print(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
+                print(rspn)
+                print(rspn.text)
+                print(f"After reindex {samples['uuid']} call")
         except:
             print('Error happended when call teh reindex web service')
+        print('Before Return')
 
         return jsonify(new_uuid_records), 201 
 
@@ -1104,7 +1112,7 @@ def update_specimen(identifier):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record['uuid'])
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record)
         except:
             print("Error happend when calling reindex web service")
         return jsonify({'uuid': uuid}), 200 
