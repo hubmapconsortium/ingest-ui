@@ -316,7 +316,7 @@ def create_derived_dataset():
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['derived_dataset_uuid'])
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['derived_dataset_uuid'], headers=request.headers)
         except:
             print("Error happened when calling reindex web service")
 
@@ -388,7 +388,7 @@ def create_datastage():
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'])
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'], headers=request.headers)
         except:
             print("Error happened when calling reindex web service")
 
@@ -422,7 +422,7 @@ def validate_dataset(uuid):
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, , headers=request.headers)
         except:
             print("Error happened when calling reindex web service")
 
@@ -456,7 +456,7 @@ def publish_datastage(uuid):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
         except:
             print("Error happened when calling reindex web service")
 
@@ -494,7 +494,7 @@ def unpublish_datastage(uuid):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
         except:
             print("Error happened when calling reindex web service")
 
@@ -687,7 +687,7 @@ def modify_dataset(uuid):
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
         except:
             print("Error happened when calling reindex web service")
 
@@ -1141,7 +1141,7 @@ def create_specimen():
             for samples in new_uuid_records['new_samples']:
                 print(f"Begining of reindex {samples['uuid']} call")
                 print(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
-                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'], headers=request.headers)
                 print(rspn)
                 print(rspn.text)
                 print(f"After reindex {samples['uuid']} call")
@@ -1222,7 +1222,7 @@ def update_specimen(identifier):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record, headers=request.headers)
         except:
             print("Error happend when calling reindex web service")
         return jsonify({'uuid': uuid}), 200 
@@ -1269,7 +1269,7 @@ def update_specimen_lab_ids():
         for uuid, lab_id in request.json.items():
             try:
                 #reindex this node in elasticsearch
-                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid)
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid, headers=request.headers)
             except:
                 print("Error happend when calling reindex web service")
         if result:
