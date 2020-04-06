@@ -316,7 +316,7 @@ def create_derived_dataset():
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['derived_dataset_uuid'], headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['derived_dataset_uuid'], headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happened when calling reindex web service")
 
@@ -388,7 +388,7 @@ def create_datastage():
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'], headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'], headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happened when calling reindex web service")
 
@@ -422,7 +422,7 @@ def validate_dataset(uuid):
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happened when calling reindex web service")
 
@@ -456,7 +456,7 @@ def publish_datastage(uuid):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happened when calling reindex web service")
 
@@ -494,7 +494,7 @@ def unpublish_datastage(uuid):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happened when calling reindex web service")
 
@@ -687,7 +687,7 @@ def modify_dataset(uuid):
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happened when calling reindex web service")
 
@@ -1222,7 +1222,7 @@ def update_specimen(identifier):
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record, headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record, headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happend when calling reindex web service")
         return jsonify({'uuid': uuid}), 200 
@@ -1269,7 +1269,7 @@ def update_specimen_lab_ids():
         for uuid, lab_id in request.json.items():
             try:
                 #reindex this node in elasticsearch
-                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid, headers=request.headers)
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
             except:
                 print("Error happend when calling reindex web service")
         if result:
