@@ -422,7 +422,7 @@ def validate_dataset(uuid):
 
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, , headers=request.headers)
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid, headers=request.headers)
         except:
             print("Error happened when calling reindex web service")
 
