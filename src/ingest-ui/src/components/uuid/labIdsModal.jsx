@@ -79,12 +79,21 @@ class LabIDsModal extends Component {
             rui_show: false
         });
   } 
-  
-  handleClose = e => {
+
+  handleViewRUIClick = e => {
 	  this.setState({
-            rui_show: false     
-        });
-  }
+        rui_view: true,
+ 		rui_show: true,
+		rui_hide: false	
+      });
+  };
+	  
+  handleClose = e => {
+	this.setState({
+ 		rui_show: false,
+		rui_hide: true
+      });
+  };
 
   static getDerivedStateFromProps(props,current_state) {
 	if (current_state.ids !== props.ids) {
