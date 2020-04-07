@@ -127,15 +127,15 @@ class Result extends Component {
                 </div>
               </div>
               <div className="row mb-2">
-                <div className="col-sm-4 offset-sm-4">
+                <div className="col-sm-4 offset-sm-4 lab-id-modal">
                   {this.props.result["new_samples"].length > 1 && (
                     <React.Fragment>
                       <button
-                        className="btn btn-link btn-block"
-                        type="button"
+                        className="btn btn-primary  btn-block"
+                        
                         onClick={this.enterLabIDs}
                       >
-                        Assign Lab IDs
+                        Assign Lab IDs and Sample Locations
                       </button>
                       <LabIDsModal
                         show={this.state.LabIDsModalShow}
@@ -178,7 +178,8 @@ class Result extends Component {
             <div className="row">
               <div className="col-sm-4 offset-sm-4">
                 <button
-                  className="btn btn-primary btn-block"
+                  className="btn btn-link  btn-block"
+				  type="button"
                   onClick={this.handleReturnClick}
                 >
                   Return to Search

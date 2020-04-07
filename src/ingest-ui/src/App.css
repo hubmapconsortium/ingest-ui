@@ -106,3 +106,109 @@ caption {
   white-space: nowrap;
 }
 
+.checkb img{
+	padding-left:20px;
+	padding-top:10px;
+}
+
+.no-checkb{
+	padding-left:20px;
+}
+
+.add-multi {
+  width:60%;	
+}
+
+.lab-id-modal .modal-main{
+   width:60%;	
+}
+
+.locmodal {
+  position: fixed;
+  top: 40%;
+  left: 40%;
+  width: 38%;
+  height: 33%;
+  background: rgb(211, 215, 207);
+  z-index: 10;
+}
+
+
+.modal-wrapper {
+    background: white;
+    border: 1px solid #d0cccc;
+    box-shadow: 0 5px 8px 0 rgba(0,0,0,0.2), 0 7px 20px 0 rgba(0,0,0,0.17);
+    margin: 0px 0px 0;
+    transition: all .8s;
+    width: 100%;
+}
+
+.modal-wrapper h3{
+	margin:30px;
+	text-align:center;
+}
+
+.modal-body {
+    padding: 10px 35px;
+    text-align: left;
+}
+
+.close-modal-btn {
+    color: black;
+    cursor: pointer;
+    float: right;
+    font-size: 30px;
+    margin: 0;
+}
+
+.close-modal-btn:hover {
+    color: black;
+}
+
+.btn-cancel, .btn-continue {
+    background: coral;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    outline: none;
+    padding: 10px;
+}
+
+.btn-cancel {
+    background-color: #b71c1c;
+    float: left;
+}
+
+.btn-continue {
+    background-color: #1b5e20;
+    float: right;
+}
+
+.back-drop {
+    background-color: rgba(48, 49, 48, 0.42);
+    height: 100%;
+    position: fixed;
+    transition: all 1.3s;
+    width: 100%;
+}
+
+.open-modal-btn {
+    margin: 15px;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.rui {
+  z-index: 100;
+}
+
+.rui .footer{
+   background-color:greenyellow;
+}
+
+.closeScreen {
+	float:right;
+	font-weight:bold;
+	padding: 0 10px;		
+}

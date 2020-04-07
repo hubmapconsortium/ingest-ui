@@ -11,6 +11,7 @@ import {
   validateProtocolIODOI,
   validateFileType
 } from "../../../utils/validators";
+import check from './check25.jpg';
 import { getFileNameOnPath } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
 import { truncateString } from "../../../utils/string_helper";
@@ -22,6 +23,8 @@ import { SAMPLE_TYPES, ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
 import LabIDsModal from "../labIdsModal";
+import RUIModal from "./ruiModal";
+import RUIIntegration from "./ruiIntegration";
 
 class TissueForm extends Component {
   state = {
@@ -33,6 +36,7 @@ class TissueForm extends Component {
         ref: React.createRef()
       }
     ],
+	
     protocol: "",
     protocol_file: "",
     specimen_type: "",
@@ -45,8 +49,14 @@ class TissueForm extends Component {
     metadata: "",
     metadata_file: "",
     multiple_id: false,
+    rui_json: "",
+	rui_check: false,
+	rui_view: false,
+	rui_hide: true,
+	rui_location: false,
+	rui_click: false,
+	ruiDataFromRUIIntegration: null,
     sample_count: "",
-
     protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
 
@@ -72,16 +82,25 @@ class TissueForm extends Component {
       metadata: "",
       metadata_file: "",
       multiple_id: "",
+      rui_json: "",
+	  rui_check: "",
+	  rui_view: "",
+	  rui_location: "",
       sample_count: ""
     }
   };
 
+
   constructor(props) {
     super(props);
-    // create a ref to store the file Input DOM element
-    this.protocolFile = React.createRef();
+    // create a ref to store the file Input DOM element   
+	this.protocolFile = React.createRef();
     this.protocol = React.createRef();
   }
+
+  handleRUIJson = (dataFromChild) => {
+        this.setState({ ruiDataFromRUIIntegration: dataFromChild });
+  };
 
   componentDidMount() {
     const config = {
@@ -199,7 +218,7 @@ class TissueForm extends Component {
         p["ref"] = React.createRef();
         return p;
       });
-
+	  
       let images = [];
       let metadatas = [];
       try {
@@ -239,6 +258,9 @@ class TissueForm extends Component {
           author: this.props.editingEntity.properties.provenance_user_email,
           lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
           protocols: protocols_json,
+		  rui_check: this.props.editingEntity.properties.rui_check,
+		  rui_view: this.props.editingEntity.properties.rui_view,
+		  rui_location: this.props.editingEntity.properties.rui_location,
           protocol: this.props.editingEntity.properties.protocol,
           protocol_file_name: getFileNameOnPath(
             this.props.editingEntity.properties.protocol_file
@@ -299,6 +321,26 @@ class TissueForm extends Component {
         } else {
           this.setState(prevState => ({
             formErrors: { ...prevState.formErrors, lab_tissue_id: "" }
+          }));
+        }
+        break;
+	  case "rui":
+        this.setState({ rui: value });
+        if (
+          !validateRequired(value)
+        ) {
+          this.setState(prevState => ({
+            formErrors: {
+              ...prevState.formErrors,
+              rui: "required"
+            }
+          }));
+        } else {
+          this.setState(prevState => ({
+            formErrors: {
+              ...prevState.formErrors,
+              rui: ""
+            }
           }));
         }
         break;
@@ -517,7 +559,77 @@ class TissueForm extends Component {
         break;
     }
   };
+  
+  
+  trigerAddViewState = () => {
+    this.setState({
+       ...this.State,
+       rui_check: true,
+       rui_view:true
+    })
+  }
 
+  openRUIModalHandler = () => {
+        this.setState({
+            rui_show: true
+        });
+  }
+
+  closeRUIModalHandler = () => {
+        this.setState({
+            rui_show: false
+        });
+  }
+
+  handleAddRUILocation = e => {
+	// Hides the signup screen shown at startup
+   let text = {"alignment_id": "d34aea60-7a1c-4625-88ef-00946dda783f",
+					"alignment_operator_first_name": "Rebecca",
+					"alignment_operator_last_name": "Boes",
+					"alignment_datetime": "3/16/2020 9:25:38 AM",
+					"reference_organ_id": "uuid-1234-5678",
+					"tissue_position_vertices": [],
+					"tissue_position_mass_point": {
+						"x": 22.610000610351564,
+						"y": 49.72999954223633,
+						"z": 16.299999237060548
+					},
+					"tissue_object_rotation": {
+						"x": 0.0,
+						"y": 0.0,
+						"z": 0.0
+					},
+					"tissue_object_size": {
+						"x": 10.0,
+						"y": 10.0,
+						"z": 10.0
+					}
+				};
+	
+    
+    this.setState({
+		rui_click:true,
+		rui_check: true,
+		rui_json: this.ruiDataFromRUIIntegration,
+		rui_view:true,
+	});
+  };
+  
+  handleViewRUIClick = e => {
+	  this.setState({
+        rui_view: true,
+ 		rui_show: true,
+		rui_hide: false	
+      });
+  };
+	  
+  handleClose = e => {
+	this.setState({
+ 		rui_show: false,
+		rui_hide: true
+      });
+  };
+    
   handleSourceUUIDKeyDown = e => {
     const value = e.target.value;
     if (e.key === "Backspace") {
@@ -604,6 +716,7 @@ class TissueForm extends Component {
               this.state.protocol_file_name === "Choose a file"
                 ? ""
                 : this.state.protocol_file_name,
+			rui_json: this.state.rui_json,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
             source_uuid: this.state.source_uuid,
@@ -628,7 +741,7 @@ class TissueForm extends Component {
           var formData = new FormData();
           formData.append("protocol_file", this.state.protocol_file);
           formData.append("metadata_file", this.state.metadata_file);
-          this.state.protocols.forEach(i => {
+		  this.state.protocols.forEach(i => {
             if (
               i.ref.current.protocol_doi.current.value ||
               i.ref.current.protocol_file.current.files[0]
@@ -687,10 +800,7 @@ class TissueForm extends Component {
               data.images.push({
                 id: "image_" + i.id,
                 file_name: i.file_name,
-                description: i.ref.current.image_file_description.current.value.replace(
-                  /"/g,
-                  '\\"'
-                )
+                description: i.description
               });
             }
           });
@@ -1124,6 +1234,8 @@ class TissueForm extends Component {
     });
   };
 
+  
+
   render() {
     return (
       <div className="row">
@@ -1482,7 +1594,8 @@ class TissueForm extends Component {
                   )}
                 </div>
               )}
-            {this.state.protocols.map((protocol, index) => {
+            
+			{this.state.protocols.map((protocol, index) => {
               return (
                 <Protocol
                   key={protocol.id}
@@ -1547,21 +1660,36 @@ class TissueForm extends Component {
                           onChange={this.handleInputChange}
                         />
                       </div>
-                      <div className="col-sm-4">
-                        <small>
-                          Lab IDs can be assigned on the next screen after
-                          generating the HuBMAP IDs
-                        </small>
-                      </div>
+                      { this.state.source_entity && 
+			            (this.state.source_entity.specimen.organ === "LK" ||
+                        this.state.source_entity.specimen.organ === "RK") && (
+	                      <div className="col-sm-4">
+	                        <small>
+	                          Lab IDs and Sample Locations can be assigned on the next screen after
+	                          generating the HuBMAP IDs
+	                        </small>
+	                      </div>
+	                  )}
+	                  { this.state.source_entity && 
+			            (this.state.source_entity.specimen.organ !== "LK" &&
+                         this.state.source_entity.specimen.organ !== "RK") && (
+	                      <div className="col-sm-4">
+	                        <small>
+	                          Lab IDs can be assigned on the next screen after
+	                          generating the HuBMAP IDs
+	                        </small>
+	                      </div>
+	                  )}
                     </React.Fragment>
                   )}
                 </div>
-              )}
-            {!this.state.multiple_id &&
+             )}
+            { !this.state.multiple_id &&
               !this.state.editingMultiWarning &&
               (!this.props.readOnly ||
                 this.state.lab_tissue_id !== undefined) && (
-                <div className="form-group row">
+                
+				<div className="form-group row">
                   <label
                     htmlFor="lab_tissue_id"
                     className="col-sm-2 col-form-label text-right"
@@ -1599,16 +1727,19 @@ class TissueForm extends Component {
                       effect="solid"
                     >
                       <h4>
-                        An identifier used by the lab to identify the specimen,{" "}
-                        <br />
+                        An identifier used by the lab to identify the specimen,
                         this can be an identifier from the system <br />
                         used to track the specimen in the lab. This field will
                         be entered by the user.
                       </h4>
                     </ReactTooltip>
                   </div>
-                </div>
-              )}
+                </div> 
+                )
+                
+                
+            }
+          
             {this.props.editingEntity && this.props.editingEntities.length > 1 && (
               <React.Fragment>
                 <div className="form-group row">
@@ -1637,6 +1768,86 @@ class TissueForm extends Component {
                 />
               </React.Fragment>
             )}
+			{ !this.state.multiple_id &&
+              this.state.source_entity && 
+			  (this.state.source_entity.specimen.organ === "LK" ||
+               this.state.source_entity.specimen.organ === "RK" ) && (
+			  <div className="form-group row">    
+				<label                                                                                                   
+				  htmlFor="location"
+				  className="col-sm-2 col-form-label text-right"
+				>
+				  Sample Location
+				</label>
+				<div className="col-sm-4 text-center">
+				  <button
+					type="button"
+					onClick={this.handleAddRUILocation}
+					className="btn btn-primary btn-block"
+				  >
+					Register Location
+				  </button>
+				</div>
+				{ this.state.rui_click && (
+				  <RUIIntegration jsonRUI= {this.handleRUIJson} />
+				)}
+				
+				{ this.state.rui_check && (
+				  <React.Fragment>
+					<div className="col-sm-1 checkb">
+					  <img src={check}
+						   alt="check"
+						   className="check"/>
+					</div>
+					<div className="col-sm-2">
+					   <button
+							 className="btn btn-link"
+							 type="button"
+							 onClick={this.openRUIModalHandler}
+						   >
+						   View Location
+						   </button>
+					</div>
+					<RUIModal
+                      className="Modal"
+                      show={this.state.rui_show}
+                      handleClose={this.closeRUIModalHandler}> 
+                       {JSON.stringify(this.state.rui_json, null, "   ")}  
+                    </RUIModal>
+					<div className="col-sm-2">
+					</div>
+				  </React.Fragment>
+				)}
+				{ !this.state.rui_check && (
+				  <div className="col-sm-5">
+				  </div>
+				)}
+				  
+				<div className="col-sm-1 my-auto text-center">
+				  <span>
+					<FontAwesomeIcon
+						icon={faQuestionCircle}
+						data-tip
+						data-for="rui_tooltip"
+					/>
+					<ReactTooltip
+						id="rui_tooltip"
+						place="top"
+						type="info"
+						effect="solid"
+					>
+					<h4>
+						Provide formatted location data from <br />
+						CCF Location Registration Tool for <br />
+						this sample. 
+					</h4>
+					</ReactTooltip>
+				  </span>
+			    </div>
+				
+			   
+			  </div>	
+			)}
             {(!this.props.readOnly || this.state.description !== undefined) && (
               <div className="form-group row">
                 <label
