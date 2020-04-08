@@ -2,8 +2,8 @@ import React, { Component }from "react";
 
 class RUIIntegration extends Component {
   state = {
-	unityInstance:{},
-	jsonRUI: "",
+    unityInstance:{},
+    jsonRUI: "",
     rui_back: false,
     close_rui: false,
   };
@@ -18,25 +18,28 @@ class RUIIntegration extends Component {
       "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-3d-registration@staging/Build/output.json",
        {onProgress: window.UnityProgress});
     this.setState({
-	  unityInstance: unityInstance
+	    unityInstance: unityInstance
     })
     
     // Callback when a user submits their RUI data;
     // str is a JSON-encoded string.
+    var self = this;
     window.ruiRegistrationCallback = function(str) {
-		window.json = str;
+      alert(str);
+      self.setState({jsonRUI: str})
+      // alert(this.state);
     }
-    
+
     if (window.json !== undefined) {
-	  this.handleCloseScreenClick();
+	    this.handleCloseScreenClick();
     }                     
                                                     
   }
 
   handleCloseScreenClick = e => {
-	this.setState({
-		close_rui: true
-	})
+    this.setState({
+      close_rui: true
+    })
   }
 
   render () {
