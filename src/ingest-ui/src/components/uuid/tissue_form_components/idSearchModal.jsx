@@ -132,15 +132,43 @@ class IDSearchModal extends Component {
                         >
                           <option value="All Groups">All Groups</option>
                           <option value="University of Florida TMC">
-                            University of Florida TMC
+                            &nbsp;&nbsp;University of Florida TMC
                           </option>
                           <option value="California Institute of Technology TMC">
-                            California Institute of Technology TMC
+                            &nbsp;&nbsp;California Institute of Technology TMC
                           </option>
-                          <option value="Vanderbilt TMC">Vanderbilt TMC</option>
-                          <option value="Stanford TMC">Stanford TMC</option>
+                          <option value="Vanderbilt TMC">
+                            &nbsp;&nbsp;Vanderbilt TMC
+                          </option>
+                          <option value="Stanford TMC">
+                            &nbsp;&nbsp;Stanford TMC
+                          </option>
                           <option value="University of California San Diego TMC">
-                            University of California San Diego TMC
+                            &nbsp;&nbsp;University of California San Diego TMC
+                          </option>
+                          <option value="Broad Institute RTI">
+                            &nbsp;&nbsp;Broad Institute RTI
+                          </option>
+                          <option value="General Electric RTI">
+                            &nbsp;&nbsp;General Electric RTI
+                          </option>
+                          <option value="Northwestern RTI">
+                            &nbsp;&nbsp;Northwestern RTI
+                          </option>
+                          <option value="Stanford RTI">
+                            &nbsp;&nbsp;Stanford RTI
+                          </option>
+                          <option value="Cal Tech TTD">
+                            &nbsp;&nbsp;Cal Tech TTD
+                          </option>
+                          <option value="Harvard TTD">
+                            &nbsp;&nbsp;Harvard TTD
+                          </option>
+                          <option value="Purdue TTD">
+                            &nbsp;&nbsp;Purdue TTD
+                          </option>
+                          <option value="Stanford TTD">
+                            &nbsp;&nbsp;Stanford TTD
                           </option>
                           <option value="IEC Testing Group">
                             IEC Testing Group
