@@ -3,6 +3,9 @@ import Modal from "../modal";
 import axios from "axios";
 import { SAMPLE_TYPES } from "../../../constants";
 import { flattenSampleType } from "../../../utils/constants_helper";
+import IDSearchModalMultiSelect from "./idSearchModalMultiSelect";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy } from "@fortawesome/free-solid-svg-icons";
 
 class IDSearchModal extends Component {
   state = {};
@@ -81,6 +84,11 @@ class IDSearchModal extends Component {
       });
   };
 
+  getUuidList = (new_uuid_list) => {
+    this.setState({uuid_list: new_uuid_list}); 
+	this.props.parentCallback(new_uuid_list);
+  };
+  
   showSibling = e => {
     // e.stopPropagation();
     // this.setState({
@@ -92,6 +100,15 @@ class IDSearchModal extends Component {
     return (
       <Modal show={this.props.show} handleClose={this.props.hide}>
         <div className="row">
+          <IDSearchModalMultiSelect
+            show={this.state.LookUpShow}
+            hide={this.hideLookUpModal}
+            select={this.handleSelectClick}
+            uuid_list={this.state.uuid_list}
+            parentCallback = {this.getUuidList}
+            currentSourceIds={this.props.currentSourceIds}
+          />
+
           <div className="col-sm-12">
             <div className="card text-center">
               <div className="card-body">
@@ -113,17 +130,45 @@ class IDSearchModal extends Component {
                           ref={this.group}
                           value={this.state.group}
                         >
-                          <option value="All Groups">All Groups</option>
-                          <option value="University of Florida TMC">
-                            University of Florida TMC
+                          <option value="All Groups">All Components</option>
+                          <option value="Broad Institute RTI">
+                            &nbsp;&nbsp;RTI - Broad
+                          </option>
+                          <option value="General Electric RTI">
+                            &nbsp;&nbsp;RTI - GE
+                          </option>
+                          <option value="Northwestern RTI">
+                            &nbsp;&nbsp;RTI - Northwestern
+                          </option>
+                          <option value="Stanford RTI">
+                            &nbsp;&nbsp;RTI - Stanford
                           </option>
                           <option value="California Institute of Technology TMC">
-                            California Institute of Technology TMC
+                            &nbsp;&nbsp;TMC - Cal Tech
                           </option>
-                          <option value="Vanderbilt TMC">Vanderbilt TMC</option>
-                          <option value="Stanford TMC">Stanford TMC</option>
+                          <option value="Stanford TMC">
+                            &nbsp;&nbsp;TMC - Stanford
+                          </option>
                           <option value="University of California San Diego TMC">
-                            University of California San Diego TMC
+                            &nbsp;&nbsp;TMC - UCSD
+                          </option>
+                          <option value="University of Florida TMC">
+                            &nbsp;&nbsp;TMC - UFlorida
+                          </option>
+                          <option value="Vanderbilt TMC">
+                            &nbsp;&nbsp;TMC - Vanderbilt
+                          </option>
+                          <option value="Cal Tech TTD">
+                            &nbsp;&nbsp;TTD - Cal Tech
+                          </option>
+                          <option value="Harvard TTD">
+                            &nbsp;&nbsp;TTD - Harvard
+                          </option>
+                          <option value="Purdue TTD">
+                            &nbsp;&nbsp;TTD - Purdue
+                          </option>
+                          <option value="Stanford TTD">
+                            &nbsp;&nbsp;TTD - Stanford
                           </option>
                           <option value="IEC Testing Group">
                             IEC Testing Group
@@ -297,7 +342,7 @@ class IDSearchModal extends Component {
                                           <div
                                             className="col-sm-6"
                                           >
-		                                      {/* <FontAwesomeIcon icon={faCopy} key={result.hubmap_identifier}
+		                                       <FontAwesomeIcon icon={faCopy} key={result.hubmap_identifier}
 				                                  onClick={e => {e.stopPropagation(); let temp_arr = es.map(e => {
 				                                  
 				                                     return { hubmap_identifier: e.hubmap_identifier };
@@ -306,7 +351,7 @@ class IDSearchModal extends Component {
 				                                     
 				                                     //alert(temp_arr);
 				                                  } }
-                                              /> */}
+                                              /> 
                                           </div>
                                           <div className="col-sm-6">
                                             {first_lab_id} <br />

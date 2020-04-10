@@ -311,6 +311,12 @@ def create_datastage():
                 return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
         new_record = dataset.create_datastage(driver, request.headers, form_data, group_uuid)
         conn.close()
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'])
+        except:
+            print("Error happened when calling reindex web service")
+
         return jsonify( new_record ), 201
     
     except:
@@ -338,6 +344,13 @@ def validate_dataset(uuid):
         dataset = Dataset(app.config)
         new_uuid = dataset.validate_dataset(driver, uuid)
         conn.close()
+
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+        except:
+            print("Error happened when calling reindex web service")
+
         return jsonify( { 'uuid': new_uuid, 'status': 'Valid' } ), 200
     
     except:
@@ -366,6 +379,12 @@ def publish_datastage(uuid):
         group_uuid = get_group_uuid_from_request(request)        
         new_uuid = dataset.publishing_process(driver, request.headers, uuid, group_uuid, True)
         conn.close()
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+        except:
+            print("Error happened when calling reindex web service")
+
         return jsonify( { 'uuid': new_uuid } ), 204
     
     except ValueError:
@@ -398,6 +417,12 @@ def unpublish_datastage(uuid):
         group_uuid = get_group_uuid_from_request(request)        
         new_uuid = dataset.publishing_process(driver, request.headers, uuid, group_uuid, False)
         conn.close()
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+        except:
+            print("Error happened when calling reindex web service")
+
         return jsonify( { 'uuid': new_uuid } ), 204
     
     except ValueError:
@@ -549,6 +574,13 @@ def modify_dataset(uuid):
         
         new_uuid = dataset.modify_dataset(driver, request.headers, uuid, form_data, group_uuid)
         conn.close()
+
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid)
+        except:
+            print("Error happened when calling reindex web service")
+
         return jsonify( { 'uuid': new_uuid } ), 204
     
     except:
@@ -993,6 +1025,20 @@ def create_specimen():
         conn.close()
         #return jsonify({'uuid': new_uuid_record[HubmapConst.UUID_ATTRIBUTE]}), 201 
 
+        print('Before reindex calls')
+        try:
+            #reindex this node in elasticsearch
+            for samples in new_uuid_records['new_samples']:
+                print(f"Begining of reindex {samples['uuid']} call")
+                print(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + samples['uuid'])
+                print(rspn)
+                print(rspn.text)
+                print(f"After reindex {samples['uuid']} call")
+        except:
+            print('Error happended when call teh reindex web service')
+        print('Before Return')
+
         return jsonify(new_uuid_records), 201 
 
     except HubmapError as he:
@@ -1064,6 +1110,11 @@ def update_specimen(identifier):
         new_uuid_record = specimen.update_specimen(
             driver, uuid, request, json.loads(form_data), request.files, token, group_uuid)
         conn.close()
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record)
+        except:
+            print("Error happend when calling reindex web service")
         return jsonify({'uuid': uuid}), 200 
 
     except AuthError as e:
@@ -1105,6 +1156,12 @@ def update_specimen_lab_ids():
         result = specimen.batch_update_specimen_lab_ids(
             driver, request.json, token)
         conn.close()
+        for uuid, lab_id in request.json.items():
+            try:
+                #reindex this node in elasticsearch
+                rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid)
+            except:
+                print("Error happend when calling reindex web service")
         if result:
             return jsonify({'success':True}), 200
         else:

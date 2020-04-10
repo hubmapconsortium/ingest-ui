@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Pass the HOST_UID and HOST_UID from environment variables specified in the child image docker-compose,
-# defaulting to 9000 if it doesn't exist
-HOST_GID=${HOST_GID:-9000}
-HOST_UID=${HOST_UID:-9000}
+# Pass the HOST_UID and HOST_UID from environment variables specified in the child image docker-compose
+HOST_GID=${HOST_GID}
+HOST_UID=${HOST_UID}
 HOST_GLOBUS_MOUNT_DIR=${HOST_GLOBUS_MOUNT_DIR}
 
 echo "Starting ingest-api container with the same host user UID: $HOST_UID and GID: $HOST_GID"

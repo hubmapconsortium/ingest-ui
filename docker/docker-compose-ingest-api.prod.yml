@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-prod
     # Build the image with name and tag
-    image: ingest-api:1.7
+    image: ingest-api:1.9
     hostname: ingest-api
     container_name: ingest-api
     init: true
@@ -19,8 +19,8 @@ services:
       - "443:4430"
     environment:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
-      - HOST_GID=23629
-      - HOST_UID=68728
+      - HOST_GID=${HOST_GID:-23629}
+      - HOST_UID=${HOST_UID:-68728}
     volumes:
       # Mount the app config to container in order to keep it outside of the image
       - "../src/ingest-api/instance:/usr/src/app/src/instance"

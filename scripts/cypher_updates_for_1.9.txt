@@ -1,0 +1,18 @@
+CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "Broad Institute RT", label: "hubmap-broad-rti", uuid: "9c4a56ca-79ac-11ea-8359-0e41da796b5d", hubmap_identifier: "RTIBD"});
+ CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "General Electric RTI", label: "hubmap-ge-rti", uuid: "5c106f29-ea2d-11e9-85e8-0efb3ba9a670", hubmap_identifier: "RTIGE"});
+ CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "Northwestern RTI", label: "hubmap-northwestern-rti", uuid: "76755cd8-79ad-11ea-8293-0a53601d30b5", hubmap_identifier: "RTINW"});
+ CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "Stanford RTI", label: "hubmap-stanford-rti", uuid: "f5af3a5a-e93c-11e9-8559-0efb3ba9a670", hubmap_identifier: "RTIST"});
+ CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "Cal Tech TTD", label: "hubmap-caltech-ttd", uuid: "ab7db177-79ad-11ea-835a-0e41da796b5d", hubmap_identifier: "TTDCT"});
+ CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "Harvard TTD", label: "hubmap-harvard-ttd", uuid: "ca46f893-79ad-11ea-b66c-0a990c2810ad", hubmap_identifier: "TTDHV"});
+ CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "Purdue TTD", label: "hubmap-purdue-ttd", uuid: "eb5c5345-79ad-11ea-bc85-0ef992ed7ca1", hubmap_identifier: "TTDPD"});
+ CREATE (e:Entity { entitytype: "Lab", provenance_create_timestamp: TIMESTAMP(), next_identifier: "1", provenance_modified_timestamp: TIMESTAMP(),
+ displayname: "Stanford TTD", label: "hubmap-stanford-ttd", uuid: "f677f31f-79b0-11ea-8295-0a53601d30b5", hubmap_identifier: "TTDST"});
+
+ 

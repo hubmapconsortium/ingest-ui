@@ -328,7 +328,7 @@ class Dataset(object):
         nexus_token = current_token['nexus_token']
         transfer_token = current_token['transfer_token']
         auth_token = current_token['auth_token']
-        transfer_endpoint = self.confdata['STAGING_ENDPOINT_UUID']
+        transfer_endpoint = self.confdata['GLOBUS_ENDPOINT_UUID']
         userinfo = None
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
@@ -388,16 +388,21 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['STAGING_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
                 
-                """new_path = self.get_staging_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                """new_path = self.get_globus_file_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = os.makedirs(new_path)"""
                 incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 incoming_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
+                
+                if 'phi' in metadata_record:
+                    metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['phi']
+                    if HubmapConst.HAS_PHI_ATTRIBUTE != 'phi':
+                        metadata_record.pop('phi', None)
                 
                 #set the status of the datastage to New
                 metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = convert_dataset_status(str(incoming_record['status']))
@@ -482,18 +487,12 @@ class Dataset(object):
             tx = None
             try:
                 tx = session.begin_transaction()
-                #step 1: move the files to the publish directory
-                new_publish_path = self.get_publish_path(group_info['displayname'], uuid)
-                current_staging_path = self.get_staging_path(group_info['displayname'], uuid)
+                #step 1: set the status
                 if publish == True:
                     #publish
-                    move_directory(current_staging_path, new_publish_path)
-                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['PUBLISH_ENDPOINT_FILEPATH'],new_publish_path)
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
                 else:
                     #unpublish
-                    move_directory(new_publish_path, current_staging_path)
-                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['STAGING_ENDPOINT_FILEPATH'],current_staging_path)
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_UNPUBLISHED
                 #step 2: update the metadata node
                 authcache = None
@@ -635,15 +634,87 @@ class Dataset(object):
                 tx = session.begin_transaction()
                 update_record = formdata
 
+                # # get current userinfo
+                try:
+                    current_token = AuthHelper.parseAuthorizationTokens(headers)
+                except:
+                    raise ValueError("Unable to parse token")
+                authcache = None
+                if AuthHelper.isInitialized() == False:
+                    authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
+                else:
+                    authcache = AuthHelper.instance()
+                userinfo = authcache.getUserInfo(current_token['nexus_token'], True)
+
+                if type(userinfo) == Response and userinfo.status_code == 401:
+                    raise AuthError('token is invalid.', 401)
+
                 # put the metadata UUID into the form data
                 metadata_node = Entity.get_entity_metadata(driver, uuid)
                 update_record[HubmapConst.UUID_ATTRIBUTE] = metadata_node[HubmapConst.UUID_ATTRIBUTE]
 
                 if 'old_status' in update_record:
                     del update_record['old_status']
+
+                if 'phi' in update_record:
+                    update_record[HubmapConst.HAS_PHI_ATTRIBUTE] = update_record['phi']
+                    if HubmapConst.HAS_PHI_ATTRIBUTE != 'phi':
+                        update_record.pop('phi', None)
                 
                 update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
+                #update the dataset source uuid's (if necessary)
+                
+                dataset_metadata_uuid = metadata_node[HubmapConst.UUID_ATTRIBUTE]
+                dataset_source_id_list = []
+                dataset_create_activity_uuid = None
+
+                # get a list of the current source uuids
+                stmt = """MATCH (e:Entity {{  {entitytype_attr}: 'Dataset'}})<-[activity_relations:{activity_output_rel}]-(dataset_create_activity:Activity)<-[:{activity_input_rel}]-(source_uuid_list)
+                 WHERE e.{uuid_attr} = '{uuid}' 
+                 RETURN dataset_create_activity.{uuid_attr} AS dataset_create_activity_uuid,
+                 source_uuid_list.{source_id_attr} AS source_ids""".format(entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                                                                                        activity_output_rel=HubmapConst.ACTIVITY_OUTPUT_REL,
+                                                                                        activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                                                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                                                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                                                                        uuid=uuid) 
+                
+                #print("stmt: " + stmt)
+                
+                for record in session.run(stmt):
+                    dataset_create_activity_uuid = record['dataset_create_activity_uuid']
+                    dataset_source_id_list.append(record['source_ids'])
+                
+                # check to see if any updates were made to the source uuids
+                dataset_source_id_list.sort()
+                form_source_uuid_list = eval(str(formdata['source_uuid']))
+                form_source_uuid_list.sort()
+                
+                # need to make updates
+                if dataset_source_id_list != form_source_uuid_list:
+                     # first remove the existing relations
+                    stmt = """MATCH (e)-[r:{activity_input_rel}]->(a) WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
+                    DELETE r""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                        activity_uuid=dataset_create_activity_uuid,
+                                        id_list=dataset_source_id_list)
+                    
+                    print("Delete statement: " + stmt)
+                    tx.run(stmt)
+                
+                    # next create the new relations
+                    stmt = """MATCH (e),(a)
+                    WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
+                    CREATE (e)-[r:{activity_input_rel}]->(a)""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                        activity_uuid=dataset_create_activity_uuid,
+                                        id_list=str(form_source_uuid_list))
+                    
+                    print("Create statement: " + stmt)
+                    tx.run(stmt)
                 if update_record['status'] == str(HubmapConst.DATASET_STATUS_LOCKED):
                     #the status is set...so no problem
                     # I need to retrieve the ingest_id from the call and store it in neo4j
@@ -693,6 +764,11 @@ class Dataset(object):
                     except Exception as e:
                         pprint(e)
                         raise e
+                
+                # set last updated user info
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_SUB_ATTRIBUTE] = userinfo['sub']
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_EMAIL_ATTRIBUTE] = userinfo['email']
+                update_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
                 print ("EXECUTING DATASET UPDATE: " + stmt)
@@ -803,7 +879,7 @@ class Dataset(object):
         nexus_token = current_token['nexus_token']
         transfer_token = current_token['transfer_token']
         auth_token = current_token['auth_token']
-        transfer_endpoint = self.confdata['STAGING_ENDPOINT_UUID']
+        transfer_endpoint = self.confdata['GLOBUS_ENDPOINT_UUID']
         userinfo = None
         userinfo = authcache.getUserInfo(nexus_token, True)
         if userinfo is Response:
@@ -896,7 +972,7 @@ class Dataset(object):
                 """
                 
                 
-                #new_path = self.get_staging_path(group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
+                #new_path = self.get_globus_file_path(group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
                 #old_path = metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
                 #copy_directory(old_path, new_path)
                 #incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_path
@@ -941,19 +1017,12 @@ class Dataset(object):
                 tx.rollback()
 
 
-    #TODO: This method needs the user's group id
     @classmethod
-    def get_staging_path(self, group_name, dataset_uuid):
-        start_dir = str(self.confdata['STAGING_ENDPOINT_FILEPATH'])
+    def get_globus_file_path(self, group_name, dataset_uuid):
+        start_dir = str(self.confdata['GLOBUS_ENDPOINT_FILEPATH'])
         ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
         return ret_dir
     
-    #TODO: This method needs the user's group id
-    @classmethod
-    def get_publish_path(self, group_name, dataset_uuid):
-        start_dir = str(self.confdata['PUBLISH_ENDPOINT_FILEPATH'])
-        ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
-        return ret_dir
 
 def make_new_dataset_directory(file_path_root_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:

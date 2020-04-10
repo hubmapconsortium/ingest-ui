@@ -79,11 +79,11 @@ class Specimen:
         metadata_userinfo = {}
 
         if 'sub' in userinfo.keys():
-            metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = userinfo['sub']
+            metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_SUB_ATTRIBUTE] = userinfo['sub']
         if 'username' in userinfo.keys():
-            metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = userinfo['email']
+            metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_USER_EMAIL_ATTRIBUTE] = userinfo['email']
         if 'name' in userinfo.keys():
-            metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
+            metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
         # ex: <data_parent_directory>/<group UUID>
         data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
@@ -148,9 +148,13 @@ class Specimen:
                 metadata_record = incoming_record
                 # don't change the type of this node
                 metadata_record.pop(HubmapConst.ENTITY_TYPE_ATTRIBUTE)
-                metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
-                metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
-                metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+                # metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
+                # metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
+                # metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
+                # set last updated user when updating specimen
+                metadata_record[HubmapConst.PROVENANCE_LAST_UPDATED_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_SUB_ATTRIBUTE]
+                metadata_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_USER_EMAIL_ATTRIBUTE]
+                metadata_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid

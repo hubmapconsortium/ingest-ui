@@ -237,6 +237,18 @@ class DatasetEdit extends Component {
     });
   };
 
+  handler = e => {
+    if(e.key === 'Tab'){
+      e.preventDefault();
+      if(this.state.collection_candidates.length > 0){
+        this.setState({
+          collection: this.state.collection_candidates[0],
+          showCollectionsDropDown: false
+        });
+      }
+    }
+  }
+
   handleInputChange = e => {
     const { name, value } = e.target;
     switch (name) {
@@ -350,7 +362,22 @@ class DatasetEdit extends Component {
     this.setState(
       {
         source_uuid: this.generateDisplaySourceId(ids),
-        source_uuid_list: ids.map(id => id.hubmap_identifier),
+        source_uuid_list: ids,
+
+        LookUpShow: false
+      },
+      () => {
+        this.validateUUID();
+      }
+    );
+  };
+
+  getUuidList = (new_uuid_list) => {
+    //this.setState({uuid_list: new_uuid_list}); 
+    this.setState(
+      {
+        source_uuid: this.generateDisplaySourceId(new_uuid_list),
+        source_uuid_list: new_uuid_list,
 
         LookUpShow: false
       },
@@ -514,7 +541,14 @@ class DatasetEdit extends Component {
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid_list,
+          source_uuid: this.state.source_uuid_list.map(su => {
+              if(typeof su ==='string' || su instanceof String){
+                return su
+              } else {
+                return su.hubmap_identifier
+              }
+            }
+          ),
           phi: this.state.phi,
           data_types: data_types,
           description: this.state.description,
@@ -586,6 +620,18 @@ class DatasetEdit extends Component {
         }));
       }
 
+      if (this.state.collection !== "" && this.state.collection.label === undefined) {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, collection: "required" }
+        }));
+        isValid = false;
+        resolve(isValid);
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, collection: "" }
+        }));
+      }
+
       if (!validateRequired(this.state.source_uuid)) {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, source_uuid: "required" }
@@ -630,8 +676,48 @@ class DatasetEdit extends Component {
     });
   }
 
+  //note: this code assumes that source_uuids is a sorted list or a single value
   generateDisplaySourceId(source_uuids) {
+    //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
+      //is_subset is a flag indicating if the source_uuid list is
+      //a consecutive set of values (ex: 1-5) or a subset of values (ex: 1,3,5)
+      var is_subset = "";
+      //first, determine if the numbers are a complete sequence or a subset
+      //loop through all the values and extract the last number from the label (ex: TEST0001-RK-3)
+	  for (var i = 1; i < source_uuids.length; i++) {
+	      //assume the label is just a string
+	      var first_lab_id_subset_string = source_uuids[i-1];
+	      //in some instances, the label is not a string but an object
+	      //in this case, use the hubmap_identifier as the string
+	      if (typeof source_uuids[i-1] != "string") {
+	      	first_lab_id_subset_string = source_uuids[i-1].hubmap_identifier
+	      }
+	      //extract the last digit from the string
+	      var first_lab_id_subset = first_lab_id_subset_string.substring(
+	        first_lab_id_subset_string.lastIndexOf("-") + 1,
+	        first_lab_id_subset_string.length
+	      );
+	
+	      //in some instances, the label is not a string but an object
+	      //in this case, use the hubmap_identifier as the string
+	      var next_lab_id_subset_string = source_uuids[i];
+	      if (typeof source_uuids[i] != "string") {
+	      	next_lab_id_subset_string = source_uuids[i].hubmap_identifier
+	      }
+	      //extract the last digit from the string
+	      var next_lab_id_subset = next_lab_id_subset_string.substring(
+	        next_lab_id_subset_string.lastIndexOf("-") + 1,
+	        next_lab_id_subset_string.length
+	      );
+	    //finally, compare the digits.  If any consecutive digits are more than
+	    //one number apart, then these values represent a subset
+	    if(next_lab_id_subset - first_lab_id_subset != 1) {
+			is_subset = "subset";
+			break;
+	    }
+	  }
+	  //extract the first and last values
       let first_lab_id = source_uuids[0].hubmap_identifier
         ? source_uuids[0].hubmap_identifier
         : source_uuids[0];
@@ -659,7 +745,11 @@ class DatasetEdit extends Component {
       );
 
       display_source_id = `${id_common_part}[${first_lab_id_num} through ${last_lab_id_num}]`;
+      if (is_subset === "subset") {
+        display_source_id = `a subset of ${id_common_part}[ between ${first_lab_id_num} and ${last_lab_id_num}]`;
+      }
       return display_source_id;
+    //in this case there is only one value
     } else {
       if (source_uuids[0].hubmap_identifier) {
         return source_uuids[0].hubmap_identifier;
@@ -991,6 +1081,10 @@ class DatasetEdit extends Component {
     this.props.changeLink(this.state.globus_path, this.state.name);
   }
 
+  // renderCollection() {
+  //   if(this.state.collection)
+  // }
+
   render() {
     return (
       <React.Fragment>
@@ -1109,6 +1203,7 @@ class DatasetEdit extends Component {
                       }
                       placeholder='Collection'
                       onChange={this.handleInputChange}
+                      onKeyDown={this.handler}
                       value={this.state.collection.label}
                       autoComplete='off'
                     />
@@ -1200,7 +1295,7 @@ class DatasetEdit extends Component {
                       autoComplete='off'
                     />
                   </div>
-                  <div className='col-sm-2'>
+                  <div className='col-sm-4'>
                     <button
                       className='btn btn-link'
                       type='button'
@@ -1224,6 +1319,8 @@ class DatasetEdit extends Component {
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                     parent='dataset'
+                    parentCallback = {this.getUuidList}
+                    currentSourceIds = {this.state.source_uuid_list}
                   />
                 </React.Fragment>
               )}
