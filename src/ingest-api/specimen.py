@@ -199,17 +199,40 @@ class Specimen:
                     tx.rollback()
     
     @classmethod
-    def batch_update_specimen_lab_ids(cls, driver, incoming_record, token):
+    def batch_update_specimen_lab_ids(cls, driver, incoming_records, token):
         conn = Neo4jConnection(cls.confdata['NEO4J_SERVER'], cls.confdata['NEO4J_USERNAME'], cls.confdata['NEO4J_PASSWORD'])
         with driver.session() as session:
             tx = None
             try:
                 tx = session.begin_transaction()
                 
-                for uuid, lab_id in incoming_record.items():
-                    id = {HubmapConst.UUID_ATTRIBUTE: uuid, HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE: lab_id}
+                for item in incoming_records:
+                    if 'uuid' not in item:
+                        raise ValueError('Error: missing uuid from data')
+                    uuid = item['uuid']
+                    # verify uuid
+                    ug = UUID_Generator(cls.confdata['UUID_WEBSERVICE_URL'])
+                    metadata_uuid = None
+                    try:
+                        hmuuid_data = ug.getUUID(token, uuid)
+                        if len(hmuuid_data) != 1:
+                            raise ValueError("Could not find information for identifier" + uuid)
+                        specimen_metadata = Entity.get_entity_metadata(driver, uuid)
+                        metadata_uuid = specimen_metadata['uuid']
+                    except:
+                        raise ValueError('Unable to resolve UUID for: ' + uuid)
+                    update_record = {HubmapConst.UUID_ATTRIBUTE: metadata_uuid}
+                    if 'lab_identifier' in item:
+                       update_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = item['lab_identifier']
+                    if 'rui_json' in item:
+                        # strip out newlines
+                        rui_json = str(item['rui_json']).replace('\n', '')
+                        update_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = rui_json
+                    if HubmapConst.RUI_LOCATION_ATTRIBUTE not in update_record and HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE not in update_record:
+                        raise ValueError('Error: cannot update uuid: ' + uuid + ': no data found for specimen identifier and RUI data')
+                         
                     stmt = Neo4jConnection.get_update_statement(
-                        id, True)
+                        update_record, True)
                     tx.run(stmt)
                 tx.commit()
                 return True
