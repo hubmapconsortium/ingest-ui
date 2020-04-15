@@ -1,3 +1,5 @@
+from indexer import Indexer
+
 print("Please select below:")
 print("1. Pull Neo4j data from prod to test")
 print("2. Pull UUID data from prod to test")
@@ -14,6 +16,10 @@ if option == 1:
 elif option == 2:
     pass
 elif option == 3:
-    pass
+    start = time.time()
+    indexer = Indexer(index_name, config['ELASTICSEARCH']['ELASTICSEARCH_DOMAIN_ENDPOINT'], config['ELASTICSEARCH']['ENTITY_WEBSERVICE_URL'])
+    indexer.main()
+    end = time.time()
+    print(end - start)
 else:
     print("Unknown option selected")
