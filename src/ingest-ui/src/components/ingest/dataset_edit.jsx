@@ -1483,12 +1483,62 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_codex'
+                          name='dt_AF'
+                          id='dt_af'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_AF")}
+                        />
+                        <label className='form-check-label' htmlFor='dt_af'>
+                          Autofluorescence Microscopy
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_ATACseq-bulk'
+                          id='dt_atacseqbulk'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_ATACseq-bulk")}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_atacseqbulk'
+                        >
+                          ATACseq(Bulk)
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_MxIF'
+                          id='dt_mxif'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has(
+                            "dt_MxIF"
+                          )}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_mxif'
+                        >
+                          Multiplexex Immunofluorescence Microscopy
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_CODEX'
                           id='dt_codex'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_codex")}
+                          checked={this.state.data_types.has("dt_CODEX")}
                         />
-                        <label className='form-check-label' htmlFor='dt_codex'>
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_codex'
+                        >
                           CODEX
                         </label>
                       </div>
@@ -1496,108 +1546,58 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_lightsheet'
-                          id='dt_lightsheet'
+                          name='dt_IMC'
+                          id='dt_imc'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_lightsheet")}
+                          checked={this.state.data_types.has("dt_IMC")}
+                        />
+                        <label className='form-check-label' htmlFor='dt_imc'>
+                            Imaging Mass Cytomtry
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_MALDI-IMS-neg'
+                          id='dt_maldiimsneg'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_MALDI-IMS-neg")}
                         />
                         <label
                           className='form-check-label'
-                          htmlFor='dt_lightsheet'
+                          htmlFor='dt_maldiimsneg'
                         >
-                          Lightsheet
+                          MALDI IMS neg
                         </label>
                       </div>
                       <div className='form-group form-check'>
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_autoflorescence'
-                          id='dt_autoflorescence'
+                          name='dt_MALDI-IMS-pos'
+                          id='dt_maldiimspos'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has(
-                            "dt_autoflorescence"
-                          )}
+                          checked={this.state.data_types.has("dt_MALDI-IMS-pos")}
                         />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_autoflorescence'
-                        >
-                          AutoFlorescence
+                        <label className='form-check-label' htmlFor='dt_maldiimspos'>
+                          MALDI IMS pos
                         </label>
                       </div>
                       <div className='form-group form-check'>
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_maldiims'
-                          id='dt_maldiims'
+                          name='dt_PAS'
+                          id='dt_pas'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_maldiims")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_maldiims'
-                        >
-                          MALDI-IMS
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_lcms'
-                          id='dt_lcms'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_lcms")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_lcms'>
-                          LC-MS
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_nanodesi'
-                          id='dt_nanodesi'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_nanodesi")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_nanodesi'
-                        >
-                          NanoDESI
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_ims'
-                          id='dt_ims'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_ims")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_ims'>
-                          IMS
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_nanopots'
-                          id='dt_nanopots'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_nanopots")}
+                          checked={this.state.data_types.has("dt_PAS")}
                         />
                         <label
                           className='form-check-label'
                           htmlFor='dt_nanopots'
                         >
-                          nanoPOTS
+                          PAS Stained Microscopy
                         </label>
                       </div>
                     </div>
@@ -1606,220 +1606,188 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_tmtlcms'
+                          name='dt_bulk-RNA'
+                          id='dt_bulkrna'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_bulk-RNA")}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_bulkrna'
+                        >
+                          bulk-RNA
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_SNAREseq'
+                          id='dt_snareseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_SNAREseq")}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_snareseq'
+                        >
+                          SNAREseq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_TMT-LC-MS'
                           id='dt_tmtlcms'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_tmtlcms")}
+                          checked={this.state.data_types.has("dt_TMT-LC-MS")}
+                        />
+                        <label className='form-check-label' htmlFor='dt_tmtlcms'>
+                          TMT LC-MS
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_Targeted-Shotgun-LC-MS'
+                          id='dt_targetedshotgunlcms'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_Targeted-Shotgun-LC-MS")}
                         />
                         <label
                           className='form-check-label'
-                          htmlFor='dt_tmtlcms'
+                          htmlFor='dt_targetedshotgunlcms'
                         >
-                          TMT-LC-MS
+                          Targeted Shotgun / Flow-injection LC-MS
                         </label>
                       </div>
                       <div className='form-group form-check'>
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_hilicrpmc'
-                          id='dt_hilicrpmc'
+                          name='dt_LC-MS-untargeted'
+                          id='dt_lcmsuntargeted'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_hilicrpmc")}
+                          checked={this.state.data_types.has("dt_LC-MS-untargeted")}
+                        />
+                        <label className='form-check-label' htmlFor='dt_lcmsuntargeted'>
+                          Untargeted LC-MS
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_WGS'
+                          id='dt_wgs'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_WGS")}
                         />
                         <label
                           className='form-check-label'
-                          htmlFor='dt_hilicrpmc'
+                          htmlFor='dt_wgs'
                         >
-                          HILIC RPMC
+                          Whole Genome Sequencing
                         </label>
                       </div>
                       <div className='form-group form-check'>
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_sciex'
-                          id='dt_sciex'
+                          name='dt_scRNA-Seq-10x'
+                          id='dt_scrnaseq10x'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_sciex")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_sciex'>
-                          SCIEX
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_metabolomics'
-                          id='dt_metabolomics'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_metabolomics")}
+                          checked={this.state.data_types.has("dt_scRNA-Seq-10x")}
                         />
                         <label
                           className='form-check-label'
-                          htmlFor='dt_metabolomics'
+                          htmlFor='dt_scrnaseq10x'
                         >
-                          metabolomics
+                          scRNA-Seq(10xGenomics)
                         </label>
                       </div>
                       <div className='form-group form-check'>
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_10x'
-                          id='dt_10x'
+                          name='dt_sciATACseq'
+                          id='dt_sciatacseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_10x")}
+                          checked={this.state.data_types.has("dt_sciATACseq")}
                         />
-                        <label className='form-check-label' htmlFor='dt_10x'>
-                          10x
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_sciatacseq'
+                        >
+                          sciATAseq
+                        </label>
+                      </div>
+                    </div>
+                    <div className='col-sm-4'>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_sciRNAseq'
+                          id='dt_scirnaseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_sciRNAseq")}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_scirnaseq'
+                        >
+                          sciRNAseq
                         </label>
                       </div>
                       <div className='form-group form-check'>
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_snrnaseq'
-                          id='dt_snrnaseq'
+                          name='dt_seqFish'
+                          id='dt_seqfish'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_snrnaseq")}
+                          checked={this.state.data_types.has("dt_seqFish")}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_seqfish'
+                        >
+                          seqFish
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_snATACseq'
+                          id='dt_snatacseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_snATACseq")}
+                        />
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_snatacseq'
+                        >
+                          snATACseq
+                        </label>
+                      </div>
+                      <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_snRNAseq'
+                          id='dt_snranseq'
+                          onClick={this.handleInputChange}
+                          checked={this.state.data_types.has("dt_snRNAseq")}
                         />
                         <label
                           className='form-check-label'
                           htmlFor='dt_snrnaseq'
                         >
                           snRNAseq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_bulkrnaseq'
-                          id='dt_bulkrnaseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_bulkrnaseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_bulkrnaseq'
-                        >
-                          Bulk RNA-seq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_bulkatacseq'
-                          id='dt_bulkatacseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_bulkatacseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_bulkatacseq'
-                        >
-                          Bulk ATAC-seq
-                        </label>
-                      </div>
-                    </div>
-                    <div className='col-sm-4'>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_scatacdeq'
-                          id='dt_scatacdeq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_scatacdeq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_scatacdeq'
-                        >
-                          scATAC-seq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_bulkwgs'
-                          id='dt_bulkwgs'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_bulkwgs")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_bulkwgs'
-                        >
-                          Bulk WGS
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_snareseq2cas'
-                          id='dt_snareseq2cas'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_snareseq2cas")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_snareseq2cas'
-                        >
-                          SNARE-Seq2: Chromatin Accessibility seq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_snareseq2s'
-                          id='dt_snareseq2s'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_snareseq2s")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_snareseq2s'
-                        >
-                          SNARE-Seq2: snRNAseq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_sciatacseq'
-                          id='dt_sciatacseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_sciatacseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_sciatacseq'
-                        >
-                          sci-ATACseq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_scirnaseq'
-                          id='dt_scirnaseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_scirnaseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_scirnaseq'
-                        >
-                          sci-RNAseq
                         </label>
                       </div>
                       <div className='form-group form-check'>
