@@ -8,10 +8,6 @@ class RUIIntegration extends Component {
     close_rui: false,
   };
 
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {  
     window.hideSignupScreen = true;
     const unityInstance = window.UnityLoader.instantiate("unityContainer", 
@@ -25,14 +21,10 @@ class RUIIntegration extends Component {
     // str is a JSON-encoded string.
     var self = this;
     window.ruiRegistrationCallback = function(str) {
-      alert(str);
       self.setState({jsonRUI: str})
-      // alert(this.state);
+      self.props.jsonRUI(str);
+	  self.handleCloseScreenClick();
     }
-
-    if (window.json !== undefined) {
-	    this.handleCloseScreenClick();
-    }                     
                                                     
   }
 
@@ -57,7 +49,7 @@ class RUIIntegration extends Component {
 		          >
                   Close
              </div>
-			 <div>{this.props.jsonRUI}</div>
+			 <div>{this.state.jsonRUI}</div>
              <div className="title">RUI-Web</div>
           </React.Fragment>
          </div>

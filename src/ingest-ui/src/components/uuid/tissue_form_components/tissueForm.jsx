@@ -55,7 +55,6 @@ class TissueForm extends Component {
 	rui_hide: true,
 	rui_location: false,
 	rui_click: false,
-	ruiDataFromRUIIntegration: null,
     sample_count: "",
     protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
@@ -99,7 +98,11 @@ class TissueForm extends Component {
   }
 
   handleRUIJson = (dataFromChild) => {
-        this.setState({ ruiDataFromRUIIntegration: dataFromChild });
+        this.setState({ 
+			rui_json: dataFromChild,
+			rui_check: true,
+			rui_view: true
+		});
   };
 
   componentDidMount() {
@@ -143,7 +146,8 @@ class TissueForm extends Component {
             res.data.siblingid_list.push({
               hubmap_identifier: this.props.editingEntity.hubmap_identifier,
               uuid: this.props.editingEntity.uuid,
-              lab_tissue_id: this.props.editingEntity.lab_tissue_id || ""
+              lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id || "",
+              rui_json: this.props.editingEntity.properties.rui_json || ""
             });
             res.data.siblingid_list.sort((a, b) => {
               if (
@@ -188,7 +192,7 @@ class TissueForm extends Component {
 
             if (first_lab_id !== null) {
               this.setState({
-                editingMultiWarning: `Editing affect the ${
+                editingMultiWarning: `Editing affects the ${
                   res.data.siblingid_list.length
                 } ${
                   flattenSampleType(SAMPLE_TYPES)[
@@ -467,7 +471,7 @@ class TissueForm extends Component {
         }
         break;
       case "source_uuid":
-        // this.setState({ source_uuid: value });
+          this.setState({ source_uuid: value });
         // // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
         // // if (patt.test(value)) {
         // //   this.setState({ source_uuid: value + "-" });
@@ -582,36 +586,8 @@ class TissueForm extends Component {
   }
 
   handleAddRUILocation = e => {
-	// Hides the signup screen shown at startup
-   let text = {"alignment_id": "d34aea60-7a1c-4625-88ef-00946dda783f",
-					"alignment_operator_first_name": "Rebecca",
-					"alignment_operator_last_name": "Boes",
-					"alignment_datetime": "3/16/2020 9:25:38 AM",
-					"reference_organ_id": "uuid-1234-5678",
-					"tissue_position_vertices": [],
-					"tissue_position_mass_point": {
-						"x": 22.610000610351564,
-						"y": 49.72999954223633,
-						"z": 16.299999237060548
-					},
-					"tissue_object_rotation": {
-						"x": 0.0,
-						"y": 0.0,
-						"z": 0.0
-					},
-					"tissue_object_size": {
-						"x": 10.0,
-						"y": 10.0,
-						"z": 10.0
-					}
-				};
-	
-    
     this.setState({
 		rui_click:true,
-		rui_check: true,
-		rui_json: this.ruiDataFromRUIIntegration,
-		rui_view:true,
 	});
   };
   
@@ -1085,7 +1061,7 @@ class TissueForm extends Component {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, organ_other: "" }
         }));
-      }
+      } 
 
       this.state.images.forEach((image, index) => {
         if (
@@ -1127,7 +1103,7 @@ class TissueForm extends Component {
             isValid = false;
             metadata.ref.current.validate();
           }
-        });
+        }); 
       }
 
       this.state.metadatas.forEach((metadata, index) => {
@@ -1226,7 +1202,8 @@ class TissueForm extends Component {
       return new_ids.push({
         hubmap_identifier: id.hubmap_identifier,
         uuid: id.uuid,
-        lab_tissue_id: e[id.uuid]
+        lab_tissue_id: id.properties.lab_tissue_id,
+        rui_json: id.properties.rui_json
       });
     });
     this.setState({
@@ -1274,7 +1251,7 @@ class TissueForm extends Component {
                         "form-control " +
                         this.errorClass(this.state.formErrors.source_uuid)
                       }
-                      value={this.state.source_uuid}
+                      value={this.state.source_uuid || ''}
                       onChange={this.handleInputChange}
                       onFocus={this.handleLookUpClick}
                       autoComplete='off'
@@ -1812,7 +1789,7 @@ class TissueForm extends Component {
                       className="Modal"
                       show={this.state.rui_show}
                       handleClose={this.closeRUIModalHandler}> 
-                       {JSON.stringify(this.state.rui_json, null, "   ")}  
+                       {this.state.rui_json}  
                     </RUIModal>
 					<div className="col-sm-2">
 					</div>
