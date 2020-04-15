@@ -203,7 +203,7 @@ class LabIDsModal extends Component {
                           id={id.uuid}
                           value={this.state.assigned_ids[id.uuid] || ''}
 						  onChange={this.handleInputChange}
-				          onClick={this.handleInputChange}
+				      
                         />
                       </div>
 					  <div className="col-sm-2 text-center">
