@@ -17,6 +17,8 @@ services:
     ports:
       - "80:8080"
       - "443:4430"
+      # ingest-pipeline
+      - "5555:5555"
     environment:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
       - HOST_GID=${HOST_GID:-23629}
