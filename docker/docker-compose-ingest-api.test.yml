@@ -34,6 +34,8 @@ services:
       - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
+      # Airflow static files
+      - "/hive/users/hive/hubmap/hivevm192-test/airflow/venv/lib/python3.6/site-packages/airflow/www:/airflow-www"
       # Mount Globus data
       - "/hive/hubmap-test/lz:/hive/hubmap-test/lz"
       # assets
