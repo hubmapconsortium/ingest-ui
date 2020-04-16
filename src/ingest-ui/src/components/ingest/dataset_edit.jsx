@@ -1483,10 +1483,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_AF'
+                          name='AF'
                           id='dt_af'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_AF")}
+                          checked={this.state.data_types.has("AF")}
                         />
                         <label className='form-check-label' htmlFor='dt_af'>
                           Autofluorescence Microscopy
@@ -1496,10 +1496,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_ATACseq-bulk'
+                          name='ATACseq-bulk'
                           id='dt_atacseqbulk'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_ATACseq-bulk")}
+                          checked={this.state.data_types.has("ATACseq-bulk")}
                         />
                         <label
                           className='form-check-label'
@@ -1512,11 +1512,11 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_MxIF'
+                          name='MxIF'
                           id='dt_mxif'
                           onClick={this.handleInputChange}
                           checked={this.state.data_types.has(
-                            "dt_MxIF"
+                            "MxIF"
                           )}
                         />
                         <label
@@ -1530,10 +1530,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_CODEX'
+                          name='CODEX'
                           id='dt_codex'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_CODEX")}
+                          checked={this.state.data_types.has("CODEX")}
                         />
                         <label
                           className='form-check-label'
@@ -1546,10 +1546,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_IMC'
+                          name='IMC'
                           id='dt_imc'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_IMC")}
+                          checked={this.state.data_types.has("IMC")}
                         />
                         <label className='form-check-label' htmlFor='dt_imc'>
                             Imaging Mass Cytomtry
@@ -1559,10 +1559,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_MALDI-IMS-neg'
+                          name='MALDI-IMS-neg'
                           id='dt_maldiimsneg'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_MALDI-IMS-neg")}
+                          checked={this.state.data_types.has("MALDI-IMS-neg")}
                         />
                         <label
                           className='form-check-label'
@@ -1575,10 +1575,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_MALDI-IMS-pos'
+                          name='MALDI-IMS-pos'
                           id='dt_maldiimspos'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_MALDI-IMS-pos")}
+                          checked={this.state.data_types.has("MALDI-IMS-pos")}
                         />
                         <label className='form-check-label' htmlFor='dt_maldiimspos'>
                           MALDI IMS pos
@@ -1588,10 +1588,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_PAS'
+                          name='PAS'
                           id='dt_pas'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_PAS")}
+                          checked={this.state.data_types.has("PAS")}
                         />
                         <label
                           className='form-check-label'
@@ -1606,10 +1606,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_bulk-RNA'
+                          name='bulk-RNA'
                           id='dt_bulkrna'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_bulk-RNA")}
+                          checked={this.state.data_types.has("bulk-RNA")}
                         />
                         <label
                           className='form-check-label'
@@ -1622,10 +1622,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_SNAREseq'
+                          name='SNAREseq'
                           id='dt_snareseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_SNAREseq")}
+                          checked={this.state.data_types.has("SNAREseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1638,10 +1638,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_TMT-LC-MS'
+                          name='TMT-LC-MS'
                           id='dt_tmtlcms'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_TMT-LC-MS")}
+                          checked={this.state.data_types.has("TMT-LC-MS")}
                         />
                         <label className='form-check-label' htmlFor='dt_tmtlcms'>
                           TMT LC-MS
@@ -1651,10 +1651,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_Targeted-Shotgun-LC-MS'
+                          name='Targeted-Shotgun-LC-MS'
                           id='dt_targetedshotgunlcms'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_Targeted-Shotgun-LC-MS")}
+                          checked={this.state.data_types.has("Targeted-Shotgun-LC-MS")}
                         />
                         <label
                           className='form-check-label'
@@ -1667,10 +1667,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_LC-MS-untargeted'
+                          name='LC-MS-untargeted'
                           id='dt_lcmsuntargeted'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_LC-MS-untargeted")}
+                          checked={this.state.data_types.has("LC-MS-untargeted")}
                         />
                         <label className='form-check-label' htmlFor='dt_lcmsuntargeted'>
                           Untargeted LC-MS
@@ -1680,10 +1680,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_WGS'
+                          name='WGS'
                           id='dt_wgs'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_WGS")}
+                          checked={this.state.data_types.has("WGS")}
                         />
                         <label
                           className='form-check-label'
@@ -1696,10 +1696,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_scRNA-Seq-10x'
+                          name='scRNA-Seq-10x'
                           id='dt_scrnaseq10x'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_scRNA-Seq-10x")}
+                          checked={this.state.data_types.has("scRNA-Seq-10x")}
                         />
                         <label
                           className='form-check-label'
@@ -1712,10 +1712,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_sciATACseq'
+                          name='sciATACseq'
                           id='dt_sciatacseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_sciATACseq")}
+                          checked={this.state.data_types.has("sciATACseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1730,10 +1730,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_sciRNAseq'
+                          name='sciRNAseq'
                           id='dt_scirnaseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_sciRNAseq")}
+                          checked={this.state.data_types.has("sciRNAseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1746,10 +1746,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_seqFish'
+                          name='seqFish'
                           id='dt_seqfish'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_seqFish")}
+                          checked={this.state.data_types.has("seqFish")}
                         />
                         <label
                           className='form-check-label'
@@ -1762,10 +1762,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_snATACseq'
+                          name='snATACseq'
                           id='dt_snatacseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_snATACseq")}
+                          checked={this.state.data_types.has("snATACseq")}
                         />
                         <label
                           className='form-check-label'
@@ -1778,10 +1778,10 @@ class DatasetEdit extends Component {
                         <input
                           type='checkbox'
                           className='form-check-input'
-                          name='dt_snRNAseq'
+                          name='snRNAseq'
                           id='dt_snranseq'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_snRNAseq")}
+                          checked={this.state.data_types.has("snRNAseq")}
                         />
                         <label
                           className='form-check-label'
