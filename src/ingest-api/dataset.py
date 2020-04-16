@@ -849,6 +849,10 @@ class Dataset(object):
         metadata = None
         if 'metadata' in json_data:
             metadata = json_data['metadata']
+            update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata
+            if 'file_info_alt_path' in metadata:
+                update_record[HubmapConst.DATASET_INGEST_FILE_LIST_ATTRIBUTE] = self.get_file_list(metadata['file_info_alt_path'])
+                update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE].pop('file_info_alt_path')
         overwrite_metadata_flag = True
         if 'overwrite_metadata' in json_data:
             overwrite_metadata_flag = json_data['overwrite_metadata']
@@ -891,6 +895,32 @@ class Dataset(object):
                 for x in sys.exc_info():
                     print (x)
                 tx.rollback()
+
+    @classmethod
+    def get_file_list(self, file_path):
+        f = None
+        try:
+            with open(file_path) as f:
+                data = json.load(f)
+                if 'files' in data:
+                    return data['files']
+                else:
+                    raise ValueError('Cannot find the \'files\' attribute in: ' + file_path)
+        except json.JSONDecodeError as jde:
+            print ('Cannot decode JSON in file: ' + file_path)
+            raise            
+        except FileNotFoundError as fnfe:
+            print ('Cannot find file: ' + file_path)
+            raise
+        except PermissionError as pe:
+            print ('Cannot access file: ' + file_path)
+            raise
+        except:
+            print ('A general error occurred: ', sys.exc_info()[0])
+            raise            
+        finally:
+            if f != None:
+                f.close()    
 
     @classmethod
     def get_metadata_uuid_for_ingest_id(self, driver, ingest_id):
