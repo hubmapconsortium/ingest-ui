@@ -4,9 +4,9 @@ import csv
 from neo4j_connection import Neo4jConnection
 
 config = {
-    'NEO4J_SERVER': 'bolt://18.205.215.12:7687',
-    'NEO4J_USERNAME': 'neo4j',
-    'NEO4J_PASSWORD': 'td8@-F7yC8cjrJ?3'
+    'NEO4J_SERVER': 'bolt://0.0.0.0:1234',
+    'NEO4J_USERNAME': 'user',
+    'NEO4J_PASSWORD': 'password'
 }
 
 with open('assay_types.csv') as csvfile:

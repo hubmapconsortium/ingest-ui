@@ -268,21 +268,49 @@ class DataList extends Component {
                   value={this.state.group}
                   onChange={this.handleInputChange}
                 >
-                  <option value='All Groups'>All TMCs</option>
-                  <option value='University of Florida TMC'>
-                    &nbsp;&nbsp;University of Florida TMC
+                  <option value="All Groups">All Components</option>
+                  <option value="Broad Institute RTI">
+                    &nbsp;&nbsp;RTI - Broad
                   </option>
-                  <option value='California Institute of Technology TMC'>
-                    &nbsp;&nbsp;California Institute of Technology TMC
+                  <option value="General Electric RTI">
+                    &nbsp;&nbsp;RTI - GE
                   </option>
-                  <option value='Vanderbilt TMC'>
-                    &nbsp;&nbsp;Vanderbilt TMC
+                  <option value="Northwestern RTI">
+                    &nbsp;&nbsp;RTI - Northwestern
                   </option>
-                  <option value='Stanford TMC'>&nbsp;&nbsp;Stanford TMC</option>
-                  <option value='University of California San Diego TMC'>
-                    &nbsp;&nbsp;University of California San Diego TMC
+                  <option value="Stanford RTI">
+                    &nbsp;&nbsp;RTI - Stanford
                   </option>
-                  <option value='IEC Testing Group'>IEC Testing Group</option>
+                  <option value="California Institute of Technology TMC">
+                    &nbsp;&nbsp;TMC - Cal Tech
+                  </option>
+                  <option value="Stanford TMC">
+                    &nbsp;&nbsp;TMC - Stanford
+                  </option>
+                  <option value="University of California San Diego TMC">
+                    &nbsp;&nbsp;TMC - UCSD
+                  </option>
+                  <option value="University of Florida TMC">
+                    &nbsp;&nbsp;TMC - UFlorida
+                  </option>
+                  <option value="Vanderbilt TMC">
+                    &nbsp;&nbsp;TMC - Vanderbilt
+                  </option>
+                  <option value="Cal Tech TTD">
+                    &nbsp;&nbsp;TTD - Cal Tech
+                  </option>
+                  <option value="Harvard TTD">
+                    &nbsp;&nbsp;TTD - Harvard
+                  </option>
+                  <option value="Purdue TTD">
+                    &nbsp;&nbsp;TTD - Purdue
+                  </option>
+                  <option value="Stanford TTD">
+                    &nbsp;&nbsp;TTD - Stanford
+                  </option>
+                  <option value="IEC Testing Group">
+                    IEC Testing Group
+                  </option>
                 </select>
               </div>
             </div>
