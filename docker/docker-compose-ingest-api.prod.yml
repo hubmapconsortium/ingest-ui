@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-prod
     # Build the image with name and tag
-    image: ingest-api:1.9
+    image: ingest-api:1.10
     hostname: ingest-api
     container_name: ingest-api
     init: true
