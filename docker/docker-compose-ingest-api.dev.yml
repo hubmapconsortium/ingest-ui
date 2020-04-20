@@ -37,9 +37,7 @@ services:
       # assets
       - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:
-      - gateway_hubmap
+      - hubmap
 
 networks:
-  # This is the network created by gateway to enable communicaton between multiple docker-compose projects
-  gateway_hubmap:
-    external: true
+  hubmap:
