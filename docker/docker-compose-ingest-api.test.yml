@@ -20,6 +20,8 @@ services:
       # ingest-pipeline
       - "5555:5555"
       - "5556:5556"
+      # ingest-api on http 7777 to be used by airflow
+      - "7777:7777"
     environment:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
       - HOST_GID=${HOST_GID:-23629}
