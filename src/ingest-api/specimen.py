@@ -217,11 +217,12 @@ class Specimen:
                         hmuuid_data = ug.getUUID(token, uuid)
                         if len(hmuuid_data) != 1:
                             raise ValueError("Could not find information for identifier" + uuid)
-                        specimen_metadata = Entity.get_entity_metadata(driver, uuid)
-                        metadata_uuid = specimen_metadata['uuid']
+                        #specimen_metadata = Entity.get_entity_metadata(driver, uuid)
+                        #metadata_uuid = specimen_metadata['uuid']
                     except:
                         raise ValueError('Unable to resolve UUID for: ' + uuid)
-                    update_record = {HubmapConst.UUID_ATTRIBUTE: metadata_uuid}
+
+                    update_record = {HubmapConst.UUID_ATTRIBUTE: uuid}
                     if 'lab_identifier' in item:
                        update_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = item['lab_identifier']
                     if 'rui_json' in item:
