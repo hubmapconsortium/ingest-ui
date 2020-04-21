@@ -436,10 +436,10 @@ class DataList extends Component {
                               className={"badge " + badge_class}
                               data-tip
                               data-for={"status_tooltip_" + dataset.uuid}
-                              onClick={() =>
+                              onClick={status == 'ERROR' ? () =>
                                 this.showErrorMsgModal(
                                   dataset.properties.message
-                                )
+                                ) : null
                               }
                             >
                               {status}
