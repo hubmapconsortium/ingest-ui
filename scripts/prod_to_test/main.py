@@ -17,7 +17,7 @@ elif option == 2:
     pass
 elif option == 3:
     start = time.time()
-    indexer = Indexer(index_name, config['ELASTICSEARCH']['ELASTICSEARCH_DOMAIN_ENDPOINT'], config['ELASTICSEARCH']['ENTITY_WEBSERVICE_URL'])
+    indexer = Indexer(index_name, config['ELASTICSEARCH_DOMAIN_ENDPOINT'], config['ENTITY_WEBSERVICE_URL'])
     indexer.main()
     end = time.time()
     print(end - start)
