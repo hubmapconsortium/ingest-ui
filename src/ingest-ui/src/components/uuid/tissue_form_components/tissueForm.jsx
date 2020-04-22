@@ -260,11 +260,11 @@ class TissueForm extends Component {
       this.setState(
         {
           author: this.props.editingEntity.properties.provenance_user_email,
-          lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
+          lab_tissue_id: this.props.editingEntity.lab_tissue_id,
           protocols: protocols_json,
 		  rui_check: this.props.editingEntity.properties.rui_check,
 		  rui_view: this.props.editingEntity.properties.rui_view,
-		  rui_location: this.props.editingEntity.properties.rui_location,
+		  rui_location: this.props.editingEntity.rui_location,
           protocol: this.props.editingEntity.properties.protocol,
           protocol_file_name: getFileNameOnPath(
             this.props.editingEntity.properties.protocol_file
