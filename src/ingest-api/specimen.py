@@ -225,9 +225,9 @@ class Specimen:
                     update_record = {HubmapConst.UUID_ATTRIBUTE: uuid}
                     if 'lab_identifier' in item:
                        update_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = item['lab_identifier']
-                    if 'rui_json' in item:
+                    if 'rui_location' in item:
                         # strip out newlines
-                        rui_json = str(item['rui_json']).replace('\n', '')
+                        rui_json = str(item['rui_location']).replace('\n', '')
                         update_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = rui_json
                     if HubmapConst.RUI_LOCATION_ATTRIBUTE not in update_record and HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE not in update_record:
                         raise ValueError('Error: cannot update uuid: ' + uuid + ': no data found for specimen identifier and RUI data')
@@ -982,8 +982,10 @@ class Specimen:
                                 data_record['datatype'] = record['datatype']
                                 data_record['properties'] = record['metadata_properties']
                                 data_record['hubmap_identifier'] = record['hubmap_identifier']
-                                data_record['lab_tissue_id'] = record['lab_tissue_id']
-                                data_record['rui_location'] = record['rui_location']
+                                if record.get('lab_tissue_id', None) != None:
+                                    data_record['properties']['lab_tissue_id'] = record['lab_tissue_id']
+                                if record.get('rui_location', None) != None:
+                                    data_record['properties']['rui_location'] = record['rui_location']
                                 # determine if the record is writable by the current user
                                 data_record['writeable'] = False
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
