@@ -49,7 +49,6 @@ class TissueForm extends Component {
     metadata: "",
     metadata_file: "",
     multiple_id: false,
-    rui_json: "",
 	rui_check: false,
 	rui_view: false,
 	rui_hide: true,
@@ -81,7 +80,6 @@ class TissueForm extends Component {
       metadata: "",
       metadata_file: "",
       multiple_id: "",
-      rui_json: "",
 	  rui_check: "",
 	  rui_view: "",
       sample_count: ""
@@ -98,7 +96,7 @@ class TissueForm extends Component {
 
   handleRUIJson = (dataFromChild) => {
         this.setState({ 
-			rui_json: dataFromChild,
+			rui_location: dataFromChild,
 			rui_check: true,
 			rui_view: true
 		});
@@ -1817,7 +1815,7 @@ class TissueForm extends Component {
                       className="Modal"
                       show={this.state.rui_show}
                       handleClose={this.closeRUIModalHandler}> 
-                       {this.state.rui_json}  
+                       {this.state.rui_location}  
                     </RUIModal>
 					<div className="col-sm-2">
 					</div>
