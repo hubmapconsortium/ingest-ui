@@ -45,6 +45,7 @@ class Specimen:
     def update_specimen(self, driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         metadata_uuid = None
+        entity_record = None
         try:
             metadata_obj = Entity.get_entity_metadata(driver, uuid)
             #metadata_obj = Entity.get_entity(driver, uuid)
@@ -145,6 +146,15 @@ class Specimen:
                     protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
                     incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                 
+                if 'rui_location' in incoming_record or 'lab_tissue_id' in incoming_record:
+                    entity_record = {}
+                    entity_record[HubmapConst.UUID_ATTRIBUTE] = uuid
+                    if 'rui_location' in incoming_record:
+                        entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = incoming_record['rui_location']
+                        incoming_record.pop('rui_location')
+                    if 'lab_tissue_id' in incoming_record:
+                        entity_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = incoming_record['lab_tissue_id']
+                        incoming_record.pop('lab_tissue_id')
                 metadata_record = incoming_record
                 # don't change the type of this node
                 metadata_record.pop(HubmapConst.ENTITY_TYPE_ATTRIBUTE)
