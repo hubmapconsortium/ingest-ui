@@ -53,8 +53,8 @@ class TissueForm extends Component {
 	rui_check: false,
 	rui_view: false,
 	rui_hide: true,
-	rui_location: false,
 	rui_click: false,
+	rui_location: "",
     sample_count: "",
     protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
@@ -84,7 +84,6 @@ class TissueForm extends Component {
       rui_json: "",
 	  rui_check: "",
 	  rui_view: "",
-	  rui_location: "",
       sample_count: ""
     }
   };
@@ -147,7 +146,7 @@ class TissueForm extends Component {
               hubmap_identifier: this.props.editingEntity.hubmap_identifier,
               uuid: this.props.editingEntity.uuid,
               lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id || "",
-              rui_json: this.props.editingEntity.properties.rui_json || ""
+              rui_location: this.props.editingEntity.properties.rui_location || ""
             });
             res.data.siblingid_list.sort((a, b) => {
               if (
@@ -183,7 +182,8 @@ class TissueForm extends Component {
 
             this.setState({
               entities: this.props.editingEntities,
-              ids: res.data.siblingid_list
+              ids: res.data.siblingid_list,
+			  multiple_id: this.props.editingEntities.length > 1 ? true: false
             });
             const first_lab_id = res.data.siblingid_list[0].hubmap_identifier;
             const last_lab_id =
@@ -260,11 +260,9 @@ class TissueForm extends Component {
       this.setState(
         {
           author: this.props.editingEntity.properties.provenance_user_email,
-          lab_tissue_id: this.props.editingEntity.lab_tissue_id,
-          protocols: protocols_json,
-		  rui_check: this.props.editingEntity.properties.rui_check,
-		  rui_view: this.props.editingEntity.properties.rui_view,
-		  rui_location: this.props.editingEntity.rui_location,
+          lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
+          rui_location: this.props.editingEntity.properties.rui_location || "",
+		  protocols: protocols_json,
           protocol: this.props.editingEntity.properties.protocol,
           protocol_file_name: getFileNameOnPath(
             this.props.editingEntity.properties.protocol_file
@@ -692,7 +690,7 @@ class TissueForm extends Component {
               this.state.protocol_file_name === "Choose a file"
                 ? ""
                 : this.state.protocol_file_name,
-			rui_json: this.state.rui_json,
+			rui_location: this.state.rui_location,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
             source_uuid: this.state.source_uuid,
@@ -1198,20 +1196,20 @@ class TissueForm extends Component {
 
   handleLabIdsUpdate = e => {
     let new_ids = [];
-    this.state.ids.map(id => {
+    this.state.entities.map(id => {
       return new_ids.push({
         hubmap_identifier: id.hubmap_identifier,
         uuid: id.uuid,
         lab_tissue_id: id.properties.lab_tissue_id,
-        rui_json: id.properties.rui_json
+        rui_location: id.properties.rui_location,
+		update: id.properties.rui_location ? true : false
       });
     });
     this.setState({
-      ids: new_ids
+      ids: new_ids,
+      LabIDsModalShow: true
     });
   };
-
-  
 
   render() {
     return (
@@ -1712,12 +1710,11 @@ class TissueForm extends Component {
                     </ReactTooltip>
                   </div>
                 </div> 
-                )
-                
-                
+                )        
             }
           
-            {this.props.editingEntity && this.props.editingEntities.length > 1 && (
+            {this.props.editingEntity && this.props.editingEntities.length > 1 && 
+              this.props.editingEntity.properties.rui_location === "" && (
               <React.Fragment>
                 <div className="form-group row">
                   <label
@@ -1745,10 +1742,41 @@ class TissueForm extends Component {
                 />
               </React.Fragment>
             )}
-			{ !this.state.multiple_id &&
+            {this.props.editingEntity && this.props.editingEntities.length > 1 &&
+             this.props.editingEntity.properties.rui_location !== "" && (
+              <React.Fragment>
+                <div className="form-group row">
+                  <label
+                    htmlFor="lab_tissue_id"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Lab Sample Id
+                  </label>
+                  <div className="col-sm-9">
+                    <button
+                      type="button"
+                      className="btn btn-link"
+                      onClick={this.handleLabIdsUpdate}
+                      disabled={this.props.readOnly}
+                    >
+                      Edit Sample IDs and Locations
+                    </button>
+                  </div>
+                </div>
+                <LabIDsModal
+                  show={this.state.LabIDsModalShow}
+                  hide={this.hideLabIDsModal}
+                  ids={this.state.ids}
+                  update={this.handleLabIdsUpdate}
+                />
+              </React.Fragment>
+            )}
+			{ !this.props.editingEntity &&
+			  !this.state.multiple_id &&
               this.state.source_entity && 
 			  (this.state.source_entity.specimen.organ === "LK" ||
-               this.state.source_entity.specimen.organ === "RK" ) && (
+               this.state.source_entity.specimen.organ === "RK" ) && 
+               (
 			  <div className="form-group row">    
 				<label                                                                                                   
 				  htmlFor="location"
@@ -1766,7 +1794,7 @@ class TissueForm extends Component {
 				  </button>
 				</div>
 				{ this.state.rui_click && (
-				  <RUIIntegration jsonRUI= {this.handleRUIJson} />
+				  <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
 				)}
 				
 				{ this.state.rui_check && (
@@ -1823,6 +1851,76 @@ class TissueForm extends Component {
 			    </div>
 				
 			   
+			  </div>	
+			)}
+			 { this.props.editingEntity &&
+				!this.state.multiple_id &&
+              this.state.source_entity && 
+			  (
+			  <div className="form-group row">    
+				<label                                                                                                   
+				  htmlFor="location"
+				  className="col-sm-2 col-form-label text-right"
+				>
+				  Sample Location
+				</label>
+				
+				  <React.Fragment>
+					
+					<div className="col-sm-3">
+					   <button
+							 className="btn btn-link"
+							 type="button"
+							 onClick={this.openRUIModalHandler}
+						   >
+						   View Location
+						   </button>
+					</div>
+					<RUIModal
+                      className="Modal"
+                      show={this.state.rui_show}
+                      handleClose={this.closeRUIModalHandler}> 
+                       { this.props.editingEntity.properties.rui_location}
+                    </RUIModal>
+					<div className="col-sm-2">
+					</div>
+				  </React.Fragment>
+				
+				
+				<div className="col-sm-4 text-center">
+				  <button
+					type="button"
+					onClick={this.handleAddRUILocation}
+					className="btn btn-primary btn-block"
+				  >
+					Modify Location Information
+				  </button>
+				</div>
+				{ this.state.rui_click && (
+				   <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
+	            )}
+				<div className="col-sm-1 my-auto text-center">
+				  <span>
+					<FontAwesomeIcon
+						icon={faQuestionCircle}
+						data-tip
+						data-for="rui_tooltip"
+					/>
+					<ReactTooltip
+						id="rui_tooltip"
+						place="top"
+						type="info"
+						effect="solid"
+					>
+					<h4>
+						Provide formatted location data from <br />
+						CCF Location Registration Tool for <br />
+						this sample. 
+					</h4>
+					</ReactTooltip>
+				  </span>
+			    </div>
+				 
 			  </div>	
 			)}
             {(!this.props.readOnly || this.state.description !== undefined) && (

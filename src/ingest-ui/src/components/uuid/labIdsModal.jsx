@@ -42,7 +42,6 @@ class LabIDsModal extends Component {
 			rui_view: true,
 			activate_input:true
 		});
-		
   };
 
   handleAddRUILocation = name => {
@@ -95,7 +94,10 @@ class LabIDsModal extends Component {
 			assigned_ids[x.uuid] = "";
 	 	  }
 		  else { assigned_ids[x.uuid] = x.lab_tissue_id; }
-           rui_locations[x.uuid] = "";
+          if (x.rui_location === undefined){
+			rui_locations[x.uuid] = "";
+	 	  }
+		  else { rui_locations[x.uuid] = x.rui_location; }          
           return x;
         });
       }
@@ -113,7 +115,7 @@ class LabIDsModal extends Component {
       sample["lab_identifier"] = this.state.assigned_ids[x];
       Object.keys(this.state.rui_locations).map(y => { 
         if (x === y) {
-          sample["rui_json"] = this.state.rui_locations[y];
+          sample["rui_location"] = this.state.rui_locations[y];
         }
         return sample;
       });
@@ -195,7 +197,26 @@ class LabIDsModal extends Component {
             <div className='card text-center'>
               <div className='card-body scrollbar-div'>
                 <h5 className='card-title'>Assign Lab IDs and Sample Location</h5><br />
-                { 
+                  { this.state.ids && (
+	                <div className="form-group row">
+				    <span className='col-sm-5 col-form-label text-right mod-id'>Lab Sample Id</span>
+                    {this.state.ids.some(e => e.update === true) && (
+					  <React.Fragment>
+			             <span className='col-form-label text-right mod-view1'>View JSON</span>
+					    <span className='col-form-label text-right mod-check'>Success</span>
+					    <span className='col-sm-2 col-form-label text-right mod-reg'>Register Location</span>
+					  </React.Fragment>
+                    )}
+					{this.state.ids.some(e => e.update === undefined) && (
+					  <React.Fragment>
+				        <span className='col-sm-2 col-form-label text-right mod-reg1'>Register Location</span>
+					    <span className='col-form-label text-right mod-check'>Success</span>
+			            <span className='col-form-label text-right mod-view'>View JSON</span>
+					  </React.Fragment>
+                    )}
+				  </div>
+		        )}
+				{ 
 				  this.state.ids &&
                   this.state.ids.map(id => (
                     <div key={id.hubmap_identifier} className='form-group row'>
@@ -212,7 +233,76 @@ class LabIDsModal extends Component {
                           value={this.state.assigned_ids[id.uuid] || ''}
                         />
                       </div>
-					  <div className="col-sm-2 text-center">
+                      { id.update && (
+	                    <React.Fragment>
+				        <div className="col-sm-2">
+							   <button
+								 className="btn btn-link"
+								 type="button"
+								 onClick={() => this.openRUIModalHandler(id.uuid)}
+							   >
+							   View 
+							   </button>
+					    </div>
+	                    <React.Fragment>
+	                    <RUIModal
+	                            className="Modal"
+	                            show={this.state.rui_show}
+	                            handleClose={this.closeRUIModalHandler}> 
+	                            {this.state.rui_locations[id.uuid]}  
+	                    </RUIModal>
+						</React.Fragment>
+						<div className="col-sm-1 checkb">
+						  <img src={check} 
+							   alt="check"
+							   className="check"/>
+						</div>
+						  { !this.state.rui_check && (
+				        <div className="col-sm-2 nocheckb">
+				        </div>
+				        )}
+						
+						 <div className="col-sm-2 text-center">
+						 	<button
+							  type="button"		
+							  onClick={() => this.handleAddRUILocation(id.uuid)}
+							  className="btn btn-primary"
+							  >
+							   Modify Location Information
+							</button>
+						 </div>
+				         { this.state.rui_click[id.uuid] && (
+					        <React.Fragment>
+					         <RUIIntegration handleJsonRUI={this.handleRUIJson} />
+							</React.Fragment>
+					     )}
+                         <div className="col-sm-1 my-auto text-center">
+							<span>
+							  <FontAwesomeIcon
+								icon={faQuestionCircle}
+								data-tip
+								data-for="rui_tooltip"
+							   />
+							   <ReactTooltip
+								  id="rui_tooltip"
+								  place="top"
+								  type="info"
+								  effect="solid"
+								>
+								  <h4>
+								   Provide formatted location data from <br />
+								   CCF Location Registration Tool for <br />
+								   this sample. 
+								  </h4>
+								</ReactTooltip>
+							  </span>
+						   </div>
+						</React.Fragment>
+                  )}
+				  
+				  { !id.update && (
+					  <React.Fragment>
+					 <div className="col-sm-2 text-center">
 						<button
 						  type="button"		
 						  onClick={() => this.handleAddRUILocation(id.uuid)}
@@ -220,40 +310,43 @@ class LabIDsModal extends Component {
 						>
 						  Register Location
 						</button>
-					  </div>
-			          {this.state.rui_click[id.uuid] && (
-				         <RUIIntegration handleJsonRUI={this.handleRUIJson} />
+					</div>	
+                        { this.state.rui_click[id.uuid] && (
+	                       <React.Fragment>
+				               <RUIIntegration handleJsonRUI={this.handleRUIJson} />
+						   </React.Fragment>
 				        )}
-					  { this.state.rui_check && 
-						this.state.rui_locations[id.uuid] !== "" && (
-					    <React.Fragment>
-						<div className="col-sm-1 checkb">
-						  <img src={check} 
+                    
+					   { this.state.rui_check && 
+						 this.state.rui_locations[id.uuid] !== "" && (
+					       <React.Fragment>
+						   <div className="col-sm-1 checkb">
+						     <img src={check} 
 							   alt="check"
 							   className="check"/>
-						</div>
-						<div className="col-sm-1">
+						  </div>
+						  <div className="col-sm-1">
 						   <button
 							 className="btn btn-link"
 							 type="button"
 							 onClick={() => this.openRUIModalHandler(id.uuid)}
-						   >
-						   View 
+						    >
+						    View 
 						   </button>
-						 </div>
+						 </div>	     
 					     <RUIModal
                             className="Modal"
                             show={this.state.rui_show}
                             handleClose={this.closeRUIModalHandler}> 
-                            {this.state.rui_locations[id.uuid]}  
+                            JSON.stringify({this.state.rui_locations[id.uuid]},undefined, 4);  
                          </RUIModal>
-						 </React.Fragment>
+						</React.Fragment>
 					  )}
 					  { !this.state.rui_check && (
 				        <div className="col-sm-2 nocheckb">
 				        </div>
 				      )}
-					  
+					 
 					  <div className="col-sm-1 my-auto text-center">
 						<span>
 						  <FontAwesomeIcon
@@ -274,9 +367,12 @@ class LabIDsModal extends Component {
 							  </h4>
 							</ReactTooltip>
 						  </span>
-					    </div>
-                  </div>
-                ))}
+					    </div> 
+	                  </React.Fragment>
+				    )}
+                   
+				   </div>
+                ) ) }
                 {this.state.submit_error && (
                   <div className='row'>
                     <div className='col-sm-12 text-center'>

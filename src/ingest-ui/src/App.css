@@ -34,7 +34,7 @@
   padding: 1em;
   position: fixed;
   background: white;
-  width: 80%;
+  width: 85%;
   height: auto;
   top: 50%;
   left: 50%;
@@ -211,4 +211,20 @@ caption {
 	float:right;
 	font-weight:bold;
 	padding: 0 10px;		
+}
+
+.mod-id, .mod-view,.mod-check, 
+.mod-reg, .mod-reg1,.mod-view1{
+	width:125px;
+	font-size:1.0em;
+	font-weight:bold;
+}
+
+.mod-id {
+	width:350px;
+	margin-left: -120px;
+}
+
+.mod-reg1, .mod-view1{
+	margin-left:95px;	
 }
