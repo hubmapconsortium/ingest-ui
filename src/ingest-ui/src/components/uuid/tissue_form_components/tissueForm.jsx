@@ -53,6 +53,7 @@ class TissueForm extends Component {
 	rui_view: false,
 	rui_hide: true,
 	rui_click: false,
+	rui_show:false,
 	rui_location: "",
     sample_count: "",
     protocol_file_name: "Choose a file",
@@ -98,7 +99,8 @@ class TissueForm extends Component {
         this.setState({ 
 			rui_location: dataFromChild,
 			rui_check: true,
-			rui_view: true
+			rui_view: true,
+			rui_click:false
 		});
   };
 
@@ -1851,7 +1853,7 @@ class TissueForm extends Component {
 			   
 			  </div>	
 			)}
-			 { this.props.editingEntity &&
+			{ this.props.editingEntity &&
 				!this.state.multiple_id &&
               this.state.source_entity && 
 			  (
@@ -1878,25 +1880,58 @@ class TissueForm extends Component {
                       className="Modal"
                       show={this.state.rui_show}
                       handleClose={this.closeRUIModalHandler}> 
-                       { this.props.editingEntity.properties.rui_location}
+                       { this.state.rui_location}
                     </RUIModal>
 					<div className="col-sm-2">
 					</div>
 				  </React.Fragment>
-				
-				
-				<div className="col-sm-4 text-center">
-				  <button
-					type="button"
-					onClick={this.handleAddRUILocation}
-					className="btn btn-primary btn-block"
-				  >
-					Modify Location Information
-				  </button>
-				</div>
-				{ this.state.rui_click && (
-				   <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
-	            )}
+		          
+				  { !this.props.readOnly && 
+					this.state.rui_check && (
+					<React.Fragment>
+					  <div className="col-sm-1 checkb">
+					    <img src={check}
+						     alt="check"
+						     className="check"/>
+					  </div>
+					  <div className="col-sm-3 text-center">
+				        <button
+					      type="button"
+					      onClick={this.handleAddRUILocation}
+					      className="btn btn-primary btn-block"
+				         >
+					     Modify Location Information
+				         </button>
+				       </div>
+					 </React.Fragment>
+		          )}
+		
+				  { !this.props.readOnly && 
+					!this.state.rui_check && (
+				    <React.Fragment>
+				      <div className="col-sm-4 text-center">
+				        <button
+					      type="button"
+					      onClick={this.handleAddRUILocation}
+					      className="btn btn-primary btn-block"
+				         >
+					     Modify Location Information
+				         </button>
+				       </div>
+					 </React.Fragment>
+                   )}
+                     
+				   {  !this.props.readOnly && 
+					  this.state.rui_click && (
+				        <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
+	                  
+
+                   )}
+				   { this.props.readOnly && (
+					  <div className="col-sm-4">
+					  </div>
+				   )}
+                  
 				<div className="col-sm-1 my-auto text-center">
 				  <span>
 					<FontAwesomeIcon
