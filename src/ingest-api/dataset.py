@@ -372,6 +372,9 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
+                # Set the 'phi' attribute with default value as "no"
+                metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "no"
+                
                 # Set the default status to New
                 metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = convert_dataset_status("New")
 

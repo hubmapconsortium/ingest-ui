@@ -15,7 +15,7 @@ services:
     ports:
       - "80:8080"
       - "443:4430"
-      # To be used by airflow on the same machine
+      # ingest-api on http 7777 to be used by airflow
       - "7777:7777"
     environment:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
@@ -37,9 +37,7 @@ services:
       # assets
       - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:
-      - gateway_hubmap
+      - hubmap
 
 networks:
-  # This is the network created by gateway to enable communicaton between multiple docker-compose projects
-  gateway_hubmap:
-    external: true
+  hubmap:
