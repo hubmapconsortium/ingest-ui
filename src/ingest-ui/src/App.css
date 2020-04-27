@@ -213,18 +213,38 @@ caption {
 	padding: 0 10px;		
 }
 
-.mod-id, .mod-view,.mod-check, 
-.mod-reg, .mod-reg1,.mod-view1{
-	width:125px;
+.mod-id, .mod-check1, .mod-reg1, .mod-view2, 
+.mod-reg2, .mod-check2, .mod-view1{
 	font-size:1.0em;
 	font-weight:bold;
 }
 
-.mod-id {
-	width:350px;
-	margin-left: -120px;
+.mod-view1 {
+	width:125px;
 }
 
-.mod-reg1, .mod-view1{
+.mod-id {
+	width:350px;
+	margin-left: -150px;
+}
+
+.mod-reg2,
+{ 
 	margin-left:95px;	
 }
+
+.mod-reg1{ 
+	margin-left:-60px;	
+}
+
+.mod-view1{
+	margin-left:115px;	
+}
+.mod-check1, .mod-reg1 {
+	width:120px;
+}
+
+.mod-check1{
+	margin-left:0px;
+}
+

@@ -185,15 +185,15 @@ class TissueForm extends Component {
               ids: res.data.siblingid_list,
 			  multiple_id: this.props.editingEntities.length > 1 ? true: false
             });
-            const first_lab_id = res.data.siblingid_list[0].hubmap_identifier;
+            const first_lab_id = this.props.editingEntities[0].hubmap_identifier;
             const last_lab_id =
-              res.data.siblingid_list[res.data.siblingid_list.length - 1]
+              this.props.editingEntities[this.props.editingEntities.length - 1]
                 .hubmap_identifier;
 
-            if (first_lab_id !== null) {
+            if (this.props.editingEntities.length > 1) {
               this.setState({
                 editingMultiWarning: `Editing affects the ${
-                  res.data.siblingid_list.length
+                  this.props.editingEntities.length
                 } ${
                   flattenSampleType(SAMPLE_TYPES)[
                     this.props.editingEntity.properties.specimen_type
@@ -694,7 +694,7 @@ class TissueForm extends Component {
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
             source_uuid: this.state.source_uuid,
-            organ: this.state.organ,
+            organ: this.state.organ || this.state.source_entity.specimen.organ || "",
             organ_other: this.state.organ_other,
             visit: this.state.visit,
             sample_count: this.state.sample_count,
@@ -1202,11 +1202,12 @@ class TissueForm extends Component {
         uuid: id.uuid,
         lab_tissue_id: id.properties.lab_tissue_id,
         rui_location: id.properties.rui_location,
-		update: id.properties.rui_location ? true : false
+		update: id.properties.rui_location ? true : false,
+		organ: this.state.source_entity.specimen.organ || ""
       });
     });
     this.setState({
-      ids: new_ids,
+      ids:new_ids,
       LabIDsModalShow: true
     });
   };
