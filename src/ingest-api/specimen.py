@@ -202,6 +202,13 @@ class Specimen:
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
+                
+                # some of the data is written to the entity node.  Update the entity node if necessary.
+                if entity_record != None:
+                    stmt = Neo4jConnection.get_update_statement(
+                        entity_record, True)
+                    tx.run(stmt)
+                    
                 tx.commit()
                 return uuid
             except TransactionError as te:
@@ -872,18 +879,18 @@ class Specimen:
         sibling_return_list = []
         with driver.session() as session:
             try:
-                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier, sibling.{LAB_TISSUE_ID} AS sibling_lab_tissue_id, sibling.{RUI_LOCATION_ATTR} AS sibling_rui_location".format(
+                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME}) OPTIONAL MATCH (a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier, sibling.{LAB_TISSUE_ID} AS sibling_lab_tissue_id, sibling.{RUI_LOCATION_ATTR} AS sibling_rui_location".format(
                     UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
                     uuid=uuid, ACTIVITY_NODE_NAME=HubmapConst.ACTIVITY_NODE_NAME, LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
                     ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, LAB_TISSUE_ID =HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, RUI_LOCATION_ATTR=HubmapConst.RUI_LOCATION_ATTRIBUTE)    
                 for record in session.run(stmt):
                     sibling_record = {}
-                    sibling_record['uuid'] = record['sibling_uuid']
-                    sibling_record['hubmap_identifier'] = record['sibling_hubmap_identifier']
-                    if 'sibling_lab_tissue_id' in record:
-                        sibling_record['lab_tissue_id'] = record['sibling_lab_tissue_id']
-                    if 'rui_location' in record:
-                        sibling_record['rui_location'] = record['rui_location']
+                    sibling_record['uuid'] = record.get('sibling_uuid')
+                    sibling_record['hubmap_identifier'] = record.get('sibling_hubmap_identifier')
+                    if record.get('sibling_lab_tissue_id') != None:
+                        sibling_record['lab_tissue_id'] = record.get('sibling_lab_tissue_id')
+                    if record.get('sibling_rui_location') != None:
+                        sibling_record['rui_location'] = record.get('sibling_rui_location')
                     sibling_return_list.append(sibling_record)
                 return sibling_return_list
             except ConnectionError as ce:
