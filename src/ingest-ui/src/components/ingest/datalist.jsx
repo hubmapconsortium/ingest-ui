@@ -498,7 +498,7 @@ class DataList extends Component {
           <div className="row">
             <div className="col-sm-12 text-center alert alert-danger">
               <h4>ERROR</h4>
-              <p>{this.state.statusErrorMsg}</p>
+              <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
             </div>
           </div>
         </Modal>
