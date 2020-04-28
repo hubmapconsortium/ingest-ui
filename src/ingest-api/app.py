@@ -257,6 +257,79 @@ def get_dataset(identifier):
             if conn.get_driver().closed() == False:
                 conn.close()
 
+@app.route('/datasets/ingest', methods=['POST'])
+#@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
+@secured(groups="HuBMAP-read")
+def ingest_dataset():
+    if not request.json:
+        abort(400)
+    
+    #build a dataset from the json
+    conn = None
+    new_dataset_list = []
+    try:
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        dataset = Dataset(app.config)
+        current_token = None
+        nexus_token = None
+        try:
+            current_token = AuthHelper.parseAuthorizationTokens(request.headers)
+        except:
+            raise ValueError("Unable to parse token")
+        if 'nexus_token' in current_token:
+            nexus_token = current_token['nexus_token']
+        else:
+            nexus_token = current_token
+        test_group_uuid = '5bd084c8-edc2-11e8-802f-0e368f3075e8'
+        if not is_user_in_group(nexus_token, test_group_uuid):
+            return Response('Unauthorized: Current user is not a member of a group allowed to directly upload datasets', 401)
+        json_data = request.json
+        """if 'user_group_uuid' in json_data:
+            if is_user_in_group(nexus_token, json_data['user_group_uuid']):
+                group_uuid = json_data['user_group_uuid']
+                entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
+                grp_info = None
+                try:
+                    grp_info = entity.get_group_by_identifier(group_uuid)
+                except ValueError as ve:
+                    return Response('Unauthorized: Cannot find information on group: ' + str(group_uuid), 401)
+                if grp_info['generateuuid'] == False:
+                    return Response('Unauthorized: This group {grp_info} is not a group with write privileges.'.format(grp_info=grp_info), 401)
+            else:
+                return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
+        else:
+            #manually find the group id given the current user:
+            entity = Entity(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
+            group_list = entity.get_user_groups(nexus_token)
+            for grp in group_list:
+                if grp['generateuuid'] == True:
+                    group_uuid = grp['uuid']
+                    break
+
+            if group_uuid == None:
+                return Response('Unauthorized: Current user is not a member of a group allowed to create new specimens', 401)
+        """
+        new_record = dataset.ingest_datastage(driver, request.headers, json_data, nexus_token)
+        conn.close()
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'])
+        except:
+            print("Error happened when calling reindex web service")
+
+        return jsonify( new_record ), 201
+    
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
 @app.route('/datasets', methods=['POST'])
 #@cross_origin(origins=[app.config['UUID_UI_URL']], methods=['POST', 'GET'])
 @secured(groups="HuBMAP-read")

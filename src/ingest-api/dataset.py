@@ -206,7 +206,8 @@ class Dataset(object):
     def get_create_metadata_statement(metadata_record, current_token, dataset_uuid, metadata_userinfo, provenance_group):
         metadata_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] = HubmapConst.METADATA_TYPE_CODE
         metadata_record[HubmapConst.REFERENCE_UUID_ATTRIBUTE] = dataset_uuid
-        metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
+        if HubmapConst.PROVENANCE_SUB_ATTRIBUTE in metadata_userinfo:
+            metadata_record[HubmapConst.PROVENANCE_SUB_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_SUB_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE]
         metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group['name']
@@ -288,6 +289,157 @@ class Dataset(object):
         
             
         #print(str(userinfo) + ' is curator: ' + str(is_data_curator))
+
+    @classmethod
+    def ingest_datastage(self, driver, headers, incoming_record, nexus_token):
+        collection_uuid = None
+        conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        # check all the incoming UUID's to make sure they exist
+        incoming_sourceUUID_string = str(incoming_record['source_uuids']).strip()
+        if incoming_sourceUUID_string == None or len(incoming_sourceUUID_string) == 0:
+            raise ValueError('Error: sourceUUID must be set to create a tissue')
+        source_UUID_Data = []
+        ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
+        try:
+            incoming_sourceUUID_list = []
+            if str(incoming_sourceUUID_string).startswith('['):
+                incoming_sourceUUID_list = eval(incoming_sourceUUID_string)
+            else:
+                incoming_sourceUUID_list.append(incoming_sourceUUID_string)
+            for sourceID in incoming_sourceUUID_list:
+                hmuuid_data = ug.getUUID(nexus_token, sourceID)
+                if len(hmuuid_data) != 1:
+                    raise ValueError("Could not find information for identifier" + sourceID)
+                source_UUID_Data.append(hmuuid_data)
+        except:
+            raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
+
+        #validate data
+        required_field_list = ['dataset_name','dataset_description','source_uuids',
+                               'data_types', 'creator_email','creator_name',
+                               'group_uuid', 'group_name', 'contains_human_genomic_sequences']
+        for attribute in required_field_list:
+            if attribute not in incoming_record:
+                raise ValueError('Missing required field: '+ attribute)
+
+        transfer_endpoint = self.confdata['GLOBUS_ENDPOINT_UUID']
+        provenance_group = None
+        data_directory = None
+        specimen_uuid_record_list = None
+        metadata_record = None
+        metadata = Metadata(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
+        try:
+            provenance_group = metadata.get_group_by_identifier(incoming_record['group_uuid'])
+        except ValueError as ve:
+            raise ve
+        metadata_userinfo = {}
+        
+        if 'dataset_collection_uuid' in incoming_record and (len(str(incoming_record['dataset_collection_uuid'])) > 0):
+            try:
+                collection_info = Entity.get_entity(driver, incoming_record['dataset_collection_uuid'])
+            except ValueError as ve:
+                raise ve
+            
+        metadata_userinfo[HubmapConst.PROVENANCE_USER_EMAIL_ATTRIBUTE] = incoming_record['creator_email']
+        metadata_userinfo[HubmapConst.PROVENANCE_USER_DISPLAYNAME_ATTRIBUTE] = incoming_record['creator_name']
+        activity_type = HubmapConst.DATASET_CREATE_ACTIVITY_TYPE_CODE
+        entity_type = HubmapConst.DATASET_TYPE_CODE
+        
+        
+        with driver.session() as session:
+            datastage_uuid_record_list = None
+            datastage_uuid = None
+            try: 
+                datastage_uuid_record_list = ug.getNewUUID(nexus_token, entity_type)
+                if (datastage_uuid_record_list == None) or (len(datastage_uuid_record_list) == 0):
+                    raise ValueError("UUID service did not return a value")
+                datastage_uuid = datastage_uuid_record_list[0]
+            except requests.exceptions.ConnectionError as ce:
+                raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+            tx = None
+            try:
+                tx = session.begin_transaction()
+                # create the data stage
+                dataset_entity_record = {HubmapConst.UUID_ATTRIBUTE : datastage_uuid[HubmapConst.UUID_ATTRIBUTE],
+                                         HubmapConst.DOI_ATTRIBUTE : datastage_uuid[HubmapConst.DOI_ATTRIBUTE],
+                                         HubmapConst.DISPLAY_DOI_ATTRIBUTE : datastage_uuid['displayDoi'],
+                                         HubmapConst.ENTITY_TYPE_ATTRIBUTE : entity_type}
+                
+                stmt = Neo4jConnection.get_create_statement(
+                    dataset_entity_record, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
+                print('Dataset Create statement: ' + stmt)
+                tx.run(stmt)
+                
+                # setup initial Landing Zone directory for the new datastage
+                group_display_name = provenance_group['displayname']
+
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
+                
+                """new_path = self.get_globus_file_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = os.makedirs(new_path)"""
+                incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
+                incoming_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
+                
+                # use the remaining attributes to create the Entity Metadata node
+                metadata_record = incoming_record
+                
+                if 'contains_human_genomic_sequences' in metadata_record:
+                    metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['contains_human_genomic_sequences']
+                    if HubmapConst.HAS_PHI_ATTRIBUTE != 'contains_human_genomic_sequences':
+                        metadata_record.pop('contains_human_genomic_sequences', None)
+                
+                #set the status of the datastage to New
+                metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_NEW
+
+                metadata_uuid_record_list = None
+                metadata_uuid_record = None
+                try: 
+                    metadata_uuid_record_list = ug.getNewUUID(nexus_token, HubmapConst.METADATA_TYPE_CODE)
+                    if (metadata_uuid_record_list == None) or (len(metadata_uuid_record_list) != 1):
+                        raise ValueError("UUID service did not return a value")
+                    metadata_uuid_record = metadata_uuid_record_list[0]
+                except requests.exceptions.ConnectionError as ce:
+                    raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+
+
+                metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+
+                stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                tx.run(stmt)
+                # step 4: create the associated activity
+                activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
+                sourceUUID_list = []
+                for source_uuid in source_UUID_Data:
+                    sourceUUID_list.append(source_uuid[0]['hmuuid'])
+                activity_object = activity.get_create_activity_statements(nexus_token, activity_type, sourceUUID_list, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
+                activity_uuid = activity_object['activity_uuid']
+                for stmt in activity_object['statements']: 
+                    tx.run(stmt)                
+                # step 4: create all relationships
+                stmt = Neo4jConnection.create_relationship_statement(
+                    datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, metadata_record[HubmapConst.UUID_ATTRIBUTE])
+                tx.run(stmt)
+                if 'collection_uuid' in incoming_record:
+                    stmt = Neo4jConnection.create_relationship_statement(
+                        datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.IN_COLLECTION_REL, incoming_record['collection_uuid'])
+                    tx.run(stmt)
+                
+                tx.commit()
+                ret_object = {'uuid' : datastage_uuid['uuid'], HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE: new_globus_path}
+                return ret_object
+            except TransactionError as te: 
+                print ('A transaction error occurred: ', te.value)
+                tx.rollback()
+            except CypherError as cse:
+                print ('A Cypher error was encountered: ', cse.message)
+                tx.rollback()                
+            except:
+                print ('A general error occurred: ')
+                for x in sys.exc_info():
+                    print (x)
+                tx.rollback()
         
     
     @classmethod
