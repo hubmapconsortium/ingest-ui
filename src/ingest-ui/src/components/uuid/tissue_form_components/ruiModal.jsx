@@ -2,22 +2,16 @@ import React, { Component }from "react";
 
 
 class RUIModal extends Component {
-  // UNSAFE_componentWillReceiveProps(nextProps) {
-  //   this.setState({ ids: nextProps.ids });
-
+  
   state = {};
 
- 
-  // }
   render() {
 	const { handleClose, show } = this.props;
     const showHideClassname = show
       ? "locmodal display-block"
       : "locmodal display-none";
 
-	
-    return (
-      
+    return (      
       <div className={showHideClassname}>
        <div className="modal-wrapper"
           style={{
@@ -29,11 +23,9 @@ class RUIModal extends Component {
           <h3>Sample Location Information</h3>
         </div>
         <div className="modal-body">
-         
-            <pre> 
+           <pre> 
 		      {this.props.children}
 		    </pre>
-         
         </div>
         <div className="row">
             <div className="col-sm-12 text-center">

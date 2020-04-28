@@ -30,11 +30,22 @@
   z-index: 10;
 }
 
-.modal-main {
+.modal-organ {
   padding: 1em;
   position: fixed;
   background: white;
   width: 85%;
+  height: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal-main {
+  padding: 1em;
+  position: fixed;
+  background: white;
+  width: 50%;
   height: auto;
   top: 50%;
   left: 50%;
@@ -133,7 +144,6 @@ caption {
   z-index: 10;
 }
 
-
 .modal-wrapper {
     background: white;
     border: 1px solid #d0cccc;
@@ -228,8 +238,7 @@ caption {
 	margin-left: -150px;
 }
 
-.mod-reg2,
-{ 
+.mod-reg2{ 
 	margin-left:95px;	
 }
 

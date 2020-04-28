@@ -44,7 +44,8 @@ class RUIIntegration extends Component {
             <div
               id='unityContainer'
               style={{ width: 1920, height: 1080 }}
-            ></div>
+            >
+            </div>
             <div className='footer'>
               <React.Fragment>
                 <div className='webgl-logo'></div>

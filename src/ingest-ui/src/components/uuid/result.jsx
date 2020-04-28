@@ -128,20 +128,44 @@ class Result extends Component {
               </div>
               <div className="row mb-2">
                 <div className="col-sm-4 offset-sm-4 lab-id-modal">
-                  {this.props.result["new_samples"].length > 1 && (
+                  {this.props.result["new_samples"].length > 1 && 
+                   (this.props.result.sample_metadata.organ  === "RK" ||
+                    this.props.result.sample_metadata.organ  === "LK") && (
                     <React.Fragment>
-                      <button
+						<button
                         className="btn btn-primary  btn-block"
-                        
                         onClick={this.enterLabIDs}
-                      >
-                        Assign Lab IDs and Sample Locations
+                        >
+					        Assign Lab IDs and Sample Locations
+
                       </button>
                       <LabIDsModal
                         show={this.state.LabIDsModalShow}
                         hide={this.hideLabIDsModal}
                         ids={this.props.result["new_samples"]}
                         submit={this.handleSubmit}
+                        organ={this.props.result.sample_metadata.organ}
+                      />
+                    </React.Fragment>
+                  )}
+                  {this.props.result["new_samples"].length > 1 && 
+                   (this.props.result.sample_metadata.organ  !== "RK" &&
+                    this.props.result.sample_metadata.organ  !== "LK") && (
+                    <React.Fragment>
+						<button
+                        className="btn btn-primary  btn-block"
+                        onClick={this.enterLabIDs}
+                        >
+					        Assign Lab IDs
+
+                      </button>
+                  
+                      <LabIDsModal
+                        show={this.state.LabIDsModalShow}
+                        hide={this.hideLabIDsModal}
+                        ids={this.props.result["new_samples"]}
+                        submit={this.handleSubmit}
+                        organ={this.props.result.sample_metadata.organ}
                       />
                     </React.Fragment>
                   )}

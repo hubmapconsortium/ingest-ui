@@ -24,7 +24,7 @@ class LabIDsModal extends Component {
     rui_locations:{name: ''} ,
     sample_name: ""
   };
-  
+
   handleRUIJson = dataFromChild => {
 		const {rui_locations} = { ...this.state };
         const currentState = rui_locations; 
@@ -98,7 +98,6 @@ class LabIDsModal extends Component {
       let assigned_ids = {};
       let rui_locations = {};
 	  let rui_checks = {};
-      //if(props.ids !== undefined){
 	      if (props.ids) {
 	        props.ids.map(x => {
 		      if (x.lab_tissue_id === undefined){
@@ -118,13 +117,11 @@ class LabIDsModal extends Component {
 	      }
 	      
 	      return { ids: props.ids, assigned_ids: assigned_ids, rui_locations: rui_locations, rui_checks: rui_checks };
-      //}
     }
     return null;
   }  
 
   createSampleList = () => {
-	
 	let labIds_locations = [];
     Object.keys(this.state.assigned_ids).map(x => { 
       let sample = {};
@@ -158,7 +155,6 @@ class LabIDsModal extends Component {
   }
 
   handleSubmit = () => {
-      
       this.setState(
       {
         submitting: true,
@@ -198,39 +194,31 @@ class LabIDsModal extends Component {
     );
   };
 
-    static newMethod() {
-        return {};
-    }
-
-  _render(obj){
-	  var json = JSON.stringify({obj}, undefined, 4);
-	  return <code>{json}</code>
-   }
-
-
   render() {
     return (
       <Modal
         dialogClassName="add-multi"
         show={this.props.show}
         handleClose={this.props.hide}
+        organ={this.props.show &&  
+	           this.props.ids && 
+               (this.props.organ === "LK" || this.props.organ === "RK"? true : false)}
       >
-        <div className='row'>
-          <div className='col-sm-12'>
-            <div className='card text-center'>
-              <div className='card-body scrollbar-div'>
-            
-              {this.props.show === true && 
-                (this.state.ids.some(e => e.organ === "LK") ||
-			    this.state.ids.some(e => e.organ === "RK")) && (
+      <div className='row'>
+        <div className='col-sm-12'>
+          <div className='card text-center'>
+            <div className='card-body scrollbar-div'>
+             {this.props.show === true && 
+              (this.props.organ === "LK"||
+			   this.props.organ === "RK") && (
                 <React.Fragment>
                 <h5 className='card-title'>Assign Lab IDs and Sample Location</h5><br />
-                  { this.state.ids && (
-	                <div className="form-group row">
+                {this.state.ids && (
+	              <div className="form-group row">
 				    <span className='col-sm-5 col-form-label text-right mod-id'>Lab Sample Id</span>
                     {this.state.ids.some(e => e.update === true) && (
 					  <React.Fragment>
-			             <span className='col-sm-1 col-form-label text-right mod-view1'>View JSON</span>
+			            <span className='col-sm-1 col-form-label text-right mod-view1'>View JSON</span>
 					    <span className='col-sm-1 col-form-label text-right mod-check1'>Success</span>
 					    <span className='col-sm-2 col-form-label text-right mod-reg1'>Register Location</span>
 					  </React.Fragment>
@@ -260,7 +248,7 @@ class LabIDsModal extends Component {
                             value={this.state.assigned_ids[id.uuid] || ''}
                           />
                         </div>
-                        { id.update && (
+                        {id.update && (
 	                      <React.Fragment>
 				            <div className="col-sm-1">
 							   <button
@@ -271,7 +259,7 @@ class LabIDsModal extends Component {
 							   View 
 							   </button>
 					        </div>
-	                        { this.state.sample_name === id.uuid && (
+	                        {this.state.sample_name === id.uuid && (
 	                          <React.Fragment>
                                 <RUIModal
 	                              className="Modal"
@@ -295,7 +283,7 @@ class LabIDsModal extends Component {
 							   Modify Location Information
 							 </button>
 						   </div>
-				           { this.state.rui_click[id.uuid] && (
+				           {this.state.rui_click[id.uuid] && (
 					         <React.Fragment>
 					           <RUIIntegration handleJsonRUI={this.handleRUIJson} />
 							 </React.Fragment>
@@ -322,7 +310,7 @@ class LabIDsModal extends Component {
 						   </div>
 						</React.Fragment>
                       )}
-				      { !id.update && (
+				      {!id.update && (
 					    <React.Fragment>
 					      <div className="col-sm-2 text-center">
 						    <button
@@ -333,13 +321,13 @@ class LabIDsModal extends Component {
 						    Register Location
 						    </button>
 					     </div>	
-                         { this.state.rui_click[id.uuid] && (
+                         {this.state.rui_click[id.uuid] && (
 	                       <React.Fragment>
 				               <RUIIntegration handleJsonRUI={this.handleRUIJson} />
 						   </React.Fragment>
 				         )}
-					     { this.state.rui_checks[id.uuid] && 
-						   this.state.rui_locations[id.uuid] !== "" && (
+					     {this.state.rui_checks[id.uuid] && 
+						  this.state.rui_locations[id.uuid] !== "" && (
 					       <React.Fragment>
 						     <div className="col-sm-1 checkb">
 						       <img src={check} 
@@ -359,11 +347,11 @@ class LabIDsModal extends Component {
                                className="Modal"
                                show={this.state.rui_show}
                                handleClose={this.closeRUIModalHandler}> 
-                               { this._render(this.state.rui_locations[id.uuid] )} 
+                               {this.state.rui_locations[id.uuid]} 
                              </RUIModal>
 						   </React.Fragment>
 					     )}
-					     { !this.state.rui_checks[id.uuid] && (
+					     {!this.state.rui_checks[id.uuid] && (
 				           <div className="col-sm-2 nocheckb">
 				           </div>
 				         )}
@@ -394,24 +382,23 @@ class LabIDsModal extends Component {
                  ))}
 			     </React.Fragment>
                )}
-			   { this.props.show === true &&
-				 (this.state.ids.some(e => e.organ !== "LK") &&
-				  this.state.ids.some(e => e.organ !== "RK")) && (
+			   {this.props.show === true &&
+				 (this.props.organ !== "LK" &&
+				  this.props.organ !== "RK") && (
 				    <React.Fragment>
 					<h5 className='card-title'>Assign Lab IDs</h5>
 					<br />
 					<div className="form-group row">
-				      <span className='col-sm-5 col-form-label text-right mod-id'>Lab Sample Id</span> 
+				      <span className='col-sm-10 col-form-label text-right mod-id'>Lab Sample Id</span> 
                     </div> 
 					
-			      { this.state.ids &&
-                     this.state.ids.map(id => (
-					 
+			      {this.state.ids &&
+                   this.state.ids.map(id => ( 
                        <div key={id.hubmap_identifier} className='form-group row'>
-                         <label className='col-sm-2 col-form-label text-right'>
+                         <label className='col-sm-4 col-form-label text-right'>
                             {id.hubmap_identifier}
                          </label>
-                         <div className='col-sm-3'>
+                         <div className='col-sm-6'>
                             <input
                               type='text'
                               name={id.uuid}
@@ -441,9 +428,9 @@ class LabIDsModal extends Component {
                    </div>
                  </div>
                )}
-             <div className='form-group row'>
-             <div className='col-sm-12 text-center'>
-                <button
+               <div className='form-group row'>
+               <div className='col-sm-12 text-center'>
+                 <button
                    className='btn btn-primary'
                    onClick={this.handleSubmit}
                    disabled={this.state.submitting}
@@ -468,3 +455,4 @@ class LabIDsModal extends Component {
 }
 
 export default LabIDsModal;
+ 
