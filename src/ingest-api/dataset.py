@@ -368,7 +368,7 @@ class Dataset(object):
                 
                 stmt = Neo4jConnection.get_create_statement(
                     dataset_entity_record, HubmapConst.ENTITY_NODE_NAME, entity_type, True)
-                print('Dataset Create statement: ' + stmt)
+                print('Dataset Ingest Create statement: ' + stmt)
                 tx.run(stmt)
                 
                 # setup initial Landing Zone directory for the new datastage
@@ -377,8 +377,6 @@ class Dataset(object):
                 new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
                 
-                """new_path = self.get_globus_file_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = os.makedirs(new_path)"""
                 incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 incoming_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
@@ -389,6 +387,11 @@ class Dataset(object):
                     metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['contains_human_genomic_sequences']
                     if HubmapConst.HAS_PHI_ATTRIBUTE != 'contains_human_genomic_sequences':
                         metadata_record.pop('contains_human_genomic_sequences', None)
+
+                if 'metadata' in metadata_record:
+                    metadata_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata_record['metadata']
+                    if HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE != 'metadata':
+                        metadata_record.pop('metadata', None)
                 
                 #set the status of the datastage to New
                 metadata_record[HubmapConst.DATASET_STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_NEW
