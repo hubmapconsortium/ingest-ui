@@ -589,7 +589,7 @@ class Dataset(object):
                 for source_uuid in source_UUID_Data:
                     source_uuids_list.append(source_uuid[0]['hubmapId'])
 
-                metadata_record['source_uuids'] = source_uuids_list
+                metadata_record['source_uuid'] = source_uuids_list
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 
                 # change dataset_name to name
