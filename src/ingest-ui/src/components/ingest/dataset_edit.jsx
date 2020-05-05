@@ -252,7 +252,7 @@ class DatasetEdit extends Component {
   }
 
   handleInputChange = e => {
-    const { name, value } = e.target;
+    const { id, name, value } = e.target;
     switch (name) {
       case "name":
         this.setState({
@@ -295,8 +295,8 @@ class DatasetEdit extends Component {
       default:
         break;
     }
-    if (name.startsWith("dt")) {
-      if (name === "dt_other") {
+    if (id.startsWith("dt")) {
+      if (id === "dt_other") {
         this.setState({
           other_datatype: e.target.checked
         });
