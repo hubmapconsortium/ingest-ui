@@ -553,7 +553,7 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
                 
                 incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
@@ -584,10 +584,18 @@ class Dataset(object):
                     metadata_uuid_record = metadata_uuid_record_list[0]
                 except requests.exceptions.ConnectionError as ce:
                     raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
+                
+                source_uuids_list = []
+                for source_uuid in source_UUID_Data:
+                    source_uuids_list.append(source_uuid[0]['hubmapId'])
 
-
+                metadata_record['source_uuid'] = source_uuids_list
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
-
+                
+                # change dataset_name to name
+                if 'dataset_name' in metadata_record:
+                    metadata_record['name'] = metadata_record['dataset_name']
+                    metadata_record.pop('dataset_name')
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
                 # step 4: create the associated activity
