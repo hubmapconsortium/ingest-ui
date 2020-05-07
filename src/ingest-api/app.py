@@ -29,6 +29,9 @@ from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_error import HubmapError
 
 from pprint import pprint
+import email
+from ctypes.test.test_pickling import name
+from cProfile import label
 
 
 # Specify the absolute path of the instance folder and use the config file relative to the instance path
@@ -849,7 +852,40 @@ def create_collection():
             if conn.get_driver().closed() == False:
                 conn.close()
 
+@app.route('/new-collection', methods = ['POST'])
+@secured(groups="HuBMAP-read")
+def create_collection_json():
+    conn = None
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        data = request.get_json()
+        if not 'label' in data:
+            return Response("Required field missing: label.", 400)
+        if not 'description' in data:
+            return Response("Required field missing: description", 400)
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        collection = Collection(app.config)
+        
+        collection_uuid = Collection.create_collection(driver, token, data)
+        
+        conn.close()
+        return jsonify({ 'uuid': collection_uuid}), 201 
 
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+                
+                
 @app.route('/collections/<uuid>', methods = ['PUT'])
 @secured(groups="HuBMAP-read")
 def update_collection():
