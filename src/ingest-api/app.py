@@ -29,9 +29,6 @@ from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_error import HubmapError
 
 from pprint import pprint
-import email
-from ctypes.test.test_pickling import name
-from cProfile import label
 
 
 # Specify the absolute path of the instance folder and use the config file relative to the instance path
