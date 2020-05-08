@@ -1005,9 +1005,9 @@ class Dataset(object):
         if json_data['status'] not in HubmapConst.DATASET_STATUS_OPTIONS:
             raise ValueError('"' + json_data['status'] + '" is not a valid status')                              
         update_record['status'] = json_data['status']
-        if 'files' in json_data:
-            file_data = json_data['files']
-            update_record[HubmapConst.DATASET_INGEST_FILE_LIST_ATTRIBUTE] = file_data
+        #if 'files' in json_data:
+        #    file_data = json_data['files']
+        #    update_record[HubmapConst.DATASET_INGEST_FILE_LIST_ATTRIBUTE] = file_data
         if 'message' not in json_data:
             raise ValueError('cannot find "message" parameter')                  
         message_string = json_data['message']
@@ -1015,10 +1015,9 @@ class Dataset(object):
         metadata = None
         if 'metadata' in json_data:
             metadata = json_data['metadata']
+            if 'files_info_alt_path' in metadata:
+                metadata['files'] = self.get_file_list(metadata['files_info_alt_path'])
             update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE] = metadata
-            if 'file_info_alt_path' in metadata:
-                update_record[HubmapConst.DATASET_INGEST_FILE_LIST_ATTRIBUTE] = self.get_file_list(metadata['file_info_alt_path'])
-                update_record[HubmapConst.DATASET_INGEST_METADATA_ATTRIBUTE].pop('file_info_alt_path')
         overwrite_metadata_flag = True
         if 'overwrite_metadata' in json_data:
             overwrite_metadata_flag = json_data['overwrite_metadata']
