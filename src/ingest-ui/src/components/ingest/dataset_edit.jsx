@@ -6,7 +6,7 @@ import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 import { truncateString } from "../../utils/string_helper";
-import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES, DATA_TYPES } from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
@@ -136,8 +136,9 @@ class DatasetEdit extends Component {
             .replace(/'/g, '"')
             .replace(/\\"/g, "'")
         );
-        other_dt = data_types.filter(dt => !dt.startsWith("dt_"))[0];
-        data_types = data_types.filter(dt => dt.startsWith("dt_"));
+        const data_type_options = new Set(DATA_TYPES);
+        other_dt = data_types.filter(dt => !data_type_options.has(dt))[0];
+        data_types = data_types.filter(dt => data_type_options.has(dt));
       }
       this.setState(
         {
