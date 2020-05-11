@@ -561,6 +561,9 @@ class Dataset(object):
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
+
+                # set the right collection uuid field
+                metadata_record['collection_uuid'] = incoming_record.get('dataset_collection_uuid', None)
                 
                 if 'contains_human_genomic_sequences' in metadata_record:
                     phi_val = metadata_record['contains_human_genomic_sequences']
