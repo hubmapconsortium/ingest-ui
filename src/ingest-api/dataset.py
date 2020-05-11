@@ -495,7 +495,7 @@ class Dataset(object):
             raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
 
         #validate data
-        required_field_list = ['dataset_name','dataset_description','source_uuids',
+        required_field_list = ['dataset_name','source_uuids',
                                'data_types', 'creator_email','creator_name',
                                'group_uuid', 'group_name', 'contains_human_genomic_sequences']
         for attribute in required_field_list:
@@ -563,7 +563,24 @@ class Dataset(object):
                 metadata_record = incoming_record
                 
                 if 'contains_human_genomic_sequences' in metadata_record:
-                    metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['contains_human_genomic_sequences']
+                    phi_val = metadata_record['contains_human_genomic_sequences']
+                    if phi_val is None:
+                        metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "yes"
+                    elif isinstance(phi_val, bool):
+                        if phi_val:
+                            metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "yes"
+                        else:
+                            metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "no"
+                    elif isinstance(phi_val, str):
+                        if phi_val.lower().strip() == 'true':
+                            metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "yes"
+                        elif phi_val.lower().strip() == 'false':
+                            metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "no"
+                        else:
+                            metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['contains_human_genomic_sequences']
+                    else:
+                        metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = metadata_record['contains_human_genomic_sequences']
+                        
                     if HubmapConst.HAS_PHI_ATTRIBUTE != 'contains_human_genomic_sequences':
                         metadata_record.pop('contains_human_genomic_sequences', None)
 
@@ -592,10 +609,14 @@ class Dataset(object):
                 metadata_record['source_uuid'] = source_uuids_list
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 
-                # change dataset_name to name
+                # change dataset_name to name and dataset_description to description
                 if 'dataset_name' in metadata_record:
                     metadata_record['name'] = metadata_record['dataset_name']
                     metadata_record.pop('dataset_name')
+                if 'dataset_description' in metadata_record:
+                    metadata_record['description'] = metadata_record['dataset_description']
+                    metadata_record.pop('dataset_description')
+
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
                 # step 4: create the associated activity
@@ -611,9 +632,9 @@ class Dataset(object):
                 stmt = Neo4jConnection.create_relationship_statement(
                     datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.HAS_METADATA_REL, metadata_record[HubmapConst.UUID_ATTRIBUTE])
                 tx.run(stmt)
-                if 'collection_uuid' in incoming_record:
+                if 'dataset_collection_uuid' in incoming_record:
                     stmt = Neo4jConnection.create_relationship_statement(
-                        datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.IN_COLLECTION_REL, incoming_record['collection_uuid'])
+                        datastage_uuid[HubmapConst.UUID_ATTRIBUTE], HubmapConst.IN_COLLECTION_REL, incoming_record['dataset_collection_uuid'])
                     tx.run(stmt)
                 
                 tx.commit()
