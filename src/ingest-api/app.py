@@ -287,7 +287,7 @@ def ingest_dataset():
         conn.close()
         try:
             #reindex this node in elasticsearch
-            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'])
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_record['uuid'], headers={'Authorization': request.headers["AUTHORIZATION"]})
         except:
             print("Error happened when calling reindex web service")
 
