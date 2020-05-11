@@ -1083,9 +1083,11 @@ class Dataset(object):
                 tx.rollback()
 
     @classmethod
-    def get_file_list(self, file_path):
+    def get_file_list(self, orig_file_path):
         f = None
         try:
+            # join the incoming file path with the WORKFLOW_SCRATCH location
+            file_path = os.path.join(self.confdata['WORKFLOW_SCRATCH'], orig_file_path)
             with open(file_path) as f:
                 data = json.load(f)
                 if 'files' in data:
