@@ -32,6 +32,8 @@ services:
       - "./ingest-api-prod/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-prod/nginx/html:/usr/share/nginx/html"
+      # Workflow scrath directory
+      - "/hive/hubmap/scratch:/hubmap-scratch"
       # Mount Globus data
       - "/hive/hubmap/lz:/hive/hubmap/lz"
       # assets

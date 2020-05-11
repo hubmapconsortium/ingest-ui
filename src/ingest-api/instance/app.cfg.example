@@ -21,6 +21,7 @@ GLOBUS_ENDPOINT_UUID = ''
 LOCAL_STORAGE_DIRECTORY = '/hubmap-tmp'
 GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
 HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
+WORKFLOW_SCRATCH = '/hubmap-scratch'
 
 # URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container

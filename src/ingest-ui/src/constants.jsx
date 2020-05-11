@@ -95,3 +95,8 @@ export const ORGAN_TYPES = {
   UR: "Ureter",
   OT: "Other"
 };
+
+export const DATA_TYPES = ['AF', 'ATACseq-bulk', 'MxIF', 'CODEX', 'IMC', 'MALDI-IMS-neg',
+'MALDI-IMS-pos', 'PAS', 'bulk-RNA', 'SNAREseq', 'TMT-LC-MS', 'Targeted-Shotgun-LC-MS',
+'LC-MS-untargeted', 'WGS', 'scRNA-Seq-10x', 'sciATACseq', 'sciRNAseq', 'seqFish',
+'snATACseq', 'snRNAseq']
