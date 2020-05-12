@@ -22,6 +22,8 @@ services:
       - "/hubmap-data:/hubmap-data"
       # assets
       - "/hubmap-data/assets:/usr/src/assets"
+      # Workflow scratch
+      - "/hubmap-scratch:/hubmap-scratch"
     networks:
       - gateway_hubmap
 
