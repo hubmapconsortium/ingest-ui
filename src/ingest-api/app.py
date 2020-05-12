@@ -604,6 +604,14 @@ def update_ingest_status():
         #{'dataset_id' : '287d61b60b806fdf54916e3b7795ad5a', 'status': '<', 'message': 'the process ran', 'metadata': [maybe some metadata stuff]}
         status_obj = dataset.set_ingest_status(driver, request.json)
         conn.close()
+
+        print('Before reindex calls')
+        try:
+            #reindex this node in elasticsearch
+            uuid = request.json['dataset_id']
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
+        except:
+            print('Error occurred when call the reindex web service')
         return jsonify( { 'result' : status_obj } ), 200
     
     except ValueError as ve:
