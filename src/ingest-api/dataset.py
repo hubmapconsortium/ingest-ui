@@ -303,16 +303,8 @@ class Dataset(object):
         # Decide the provenance group UUID
         provenance_group = None
 
-        # See if provenance_group_uuid of the source dataset exists in the list of group uuids from the user info.
-        # Also check if the user is_system_account is True.  If it is True then just copy the proveance_group from the original dataset 
-        # If so, use the provenance_group_uuid for the derived dataset. If not, throw an error.
-        try:
-            if source_dataset_provenance_group_uuid in userinfo['hmgroupids'] or ('is_system_account' in userinfo and userinfo['is_system_account'] == True):
-                metadata = Metadata(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
-                provenance_group = metadata.get_group_by_identifier(source_dataset_provenance_group_uuid)
-        except ValueError as ve:
-            print("This user has no group access to create this derived dataset from source dataset UUID: " + source_dataset_uuid)
-            raise ve
+        metadata = Metadata(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'], self.confdata['UUID_WEBSERVICE_URL'])
+        provenance_group = metadata.get_group_by_identifier(source_dataset_provenance_group_uuid)
 
         metadata_userinfo = {}
 
