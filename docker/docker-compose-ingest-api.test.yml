@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-test
     # Build the image with name and tag
-    image: ingest-api:1.9
+    image: ingest-api:1.10
     hostname: ingest-api
     container_name: ingest-api
     init: true
@@ -17,10 +17,15 @@ services:
     ports:
       - "80:8080"
       - "443:4430"
+      # ingest-pipeline
+      - "5555:5555"
+      - "5556:5556"
+      # ingest-api on http 7777 to be used by airflow
+      - "7777:7777"
     environment:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
-      - HOST_GID=23629
-      - HOST_UID=68728
+      - HOST_GID=${HOST_GID:-23629}
+      - HOST_UID=${HOST_UID:-68728}
     volumes:
       # Mount the app config to container in order to keep it outside of the image
       - "../src/ingest-api/instance:/usr/src/app/src/instance"
@@ -32,6 +37,12 @@ services:
       - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
+      # Workflow scrath directory
+      - "/hive/hubmap-test/scratch:/hubmap-scratch"
+      # Airflow static files
+      - "/hive/users/hive/hubmap/hivevm192-test/airflow/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
+      # Flower static files
+      - "/hive/users/hive/hubmap/hivevm192-test/airflow/venv/lib/python3.6/site-packages/flower:/flower-static"
       # Mount Globus data
       - "/hive/hubmap-test/lz:/hive/hubmap-test/lz"
       # assets

@@ -1,0 +1,8 @@
+{
+	"dataset_id" : "12345678123456781234567812345678",
+	"status" : "processing",
+	"message": "test message",
+	"metadata": {"key1":"value1","key2":"value2"},
+	"overwrite_metadata": true,
+	"file_data": [{"name": "file1","rel_path":"/hive/lz/dir1/file1", "size": 48586, "sha1sum":"da39a3ee5e6b4b0d3255bfef95601890afd807091"},{"name": "file2","rel_path":"/hive/lz/dir1/file2", "size": 12346, "sha1sum":"22765aee5e6b4b1a4255bfef42454545afd807091"}]
+}

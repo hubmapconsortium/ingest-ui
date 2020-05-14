@@ -6,12 +6,12 @@ services:
   ingest-api:
     build: ./ingest-api-localhost
     # Build the image with name and tag
-    image: ingest-api:1.9
+    image: ingest-api:1.10
     hostname: ingest-api
     container_name: ingest-api
     environment:
-      - HOST_GID=1000
-      - HOST_UID=1000
+      - HOST_GID=${HOST_GID:-1000}
+      - HOST_UID=${HOST_UID:-1000}
       - HOST_GLOBUS_MOUNT_DIR=/hubmap-data
     volumes:
       # Mount the source code to container
@@ -20,6 +20,10 @@ services:
       - "../log:/usr/src/app/log"
       # Mount Globus data
       - "/hubmap-data:/hubmap-data"
+      # assets
+      - "/hubmap-data/assets:/usr/src/assets"
+      # Workflow scratch
+      - "/hubmap-scratch:/hubmap-scratch"
     networks:
       - gateway_hubmap
 

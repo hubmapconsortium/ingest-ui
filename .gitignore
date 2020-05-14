@@ -43,3 +43,5 @@ src/ingest-ui/yarn-error.log*
 src/ingest-ui/build/*
 !src/ingest-ui/build/README.md
 
+#script config
+scripts/prod_to_test/config.py
