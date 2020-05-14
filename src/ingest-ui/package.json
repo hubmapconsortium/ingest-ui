@@ -17,6 +17,7 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-idle-timer": "^4.2.11",
+    "react-router-dom": "^5.1.2",
     "react-tooltip": "^3.11.1"
   },
   "devDependencies": {

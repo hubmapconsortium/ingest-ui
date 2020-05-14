@@ -1,10 +1,17 @@
 import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
+import ViewCollectionModal from "./viewCollectionModal";
 import axios from "axios";
 import ReactTooltip from "react-tooltip";
 import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
+import {
+  BrowserRouter as Router,
+  Route,
+  Link
+} from "react-router-dom";
+
 
 class DataList extends Component {
   state = {
@@ -213,33 +220,44 @@ class DataList extends Component {
     }
   }
 
-  handleActionClick = e => {
-    // const uuid = e.target.getAttribute("data-uuid");
-    // const config = {
-    //   headers: {
-    //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-    //     "Content-Type": "multipart/form-data"
-    //   }
-    // };
+  handleViewCollectionModal = collection => e => {
+    this.setState({
+      ViewCollectionShow: true,
+      collection:collection
+    });
+    {/*const config = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        MAuthorization: "MBearer " + localStorage.getItem("info"),
+        "Content-Type": "application/json"
+      }
+    };
 
-    // axios
-    //   .get(
-    //     `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}`,
-    //     config
-    //   )
-    //   .then(res => {
-    //     if (res.data) {
-    //       console.log(res.data);
-    //     }
-    //   })
-    //   .catch(err => {
-    //     if (err.response === undefined) {
-    //     } else if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
+    axios
+      .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${collection}`, config)
+      .then(res => {
+        this.setState({
+          collection: res.data
+        });
+      })
+      .catch(err => {
+        if (err.response === undefined) {
+        } else if (err.response.status === 401) {
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload();
+        }
+      });*/}    
+  };
+
+  hideViewCollectionModal = () => {
+    this.setState({
+      ViewCollectionShow: false
+    });
+  };
+
+  handleActionClick = e => {
+    
     this.props.viewEdit(e);
   };
 
@@ -422,9 +440,18 @@ class DataList extends Component {
                           <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.properties.name}</div></td>
                           <td>{dataset.properties.provenance_group_name}</td>
                           <td>
-                            {dataset.properties.collection
-                              ? dataset.properties.collection.label
-                              : ""}
+                            <button
+                              className='btn btn-link'
+                              type='button'
+                              onClick={this.handleViewCollectionModal(dataset.properties.collection)}
+                            >
+                            {dataset.properties.collection ? dataset.properties.collection.label: ""}
+                            </button>
+                            <ViewCollectionModal
+                              show={this.state.ViewCollectionShow}
+                              hide={this.hideViewCollectionModal}
+                              collection={this.state.collection}
+                            />
                           </td>
                           <td>{dataset.created_by}</td>
                           <td>
@@ -463,7 +490,7 @@ class DataList extends Component {
                           <td>
                             <button
                               className='btn btn-primary btn-sm btn-block'
-                              onClick={() => this.handleActionClick(dataset)}
+                              onClick={() => this.handleActionClick(dataset)}  
                               data-uuid={dataset.uuid}
                             >
                               {btn_text}

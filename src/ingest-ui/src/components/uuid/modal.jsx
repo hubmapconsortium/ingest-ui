@@ -20,7 +20,7 @@ class Modal extends Component {
                 type="button"
                 onClick={handleClose}
               >
-                close
+                Close
               </button>
             </div>
           </div>
