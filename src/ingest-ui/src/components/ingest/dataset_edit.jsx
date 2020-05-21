@@ -109,7 +109,7 @@ class DatasetEdit extends Component {
             return g.displayname;
           });
         this.setState({
-          group: display_names[0]
+          groups: display_names
         });
       })
       .catch(err => {
@@ -766,7 +766,7 @@ class DatasetEdit extends Component {
 
   renderButtons() {
     if (this.props.editingDataset) {
-      if (!this.state.group || !this.props.editingDataset.writeable) {
+      if (!this.state.groups || !this.props.editingDataset.writeable) {
         return (
           <div className='row'>
             <div className='col-sm-2 offset-sm-10'>
@@ -997,7 +997,7 @@ class DatasetEdit extends Component {
                   </button>
                 </div>
                 <div className='col-sm-4 text-center'>
-                  <button
+                  {this.state.groups.includes(process.env.REACT_APP_HUBMAP_DATA_ADMIN_GROUP) && (<button
                     type='button'
                     className='btn btn-primary btn-block'
                     disabled={this.state.submitting}
@@ -1012,7 +1012,7 @@ class DatasetEdit extends Component {
                       />
                     )}
                     {!this.state.submitting && "Submit"}
-                  </button>
+                  </button>)}
                 </div>
                 <div className='col-sm-2 text-right'>
                   <button
@@ -1237,7 +1237,7 @@ class DatasetEdit extends Component {
                     )}
                   </div>
                   <div className='col-sm-2 my-auto text-right'>
-                    {this.state.group && (
+                    {this.state.groups && (
                       <button
                         className='btn btn-primary'
                         type='button'
