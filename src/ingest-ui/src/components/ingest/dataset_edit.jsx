@@ -756,7 +756,7 @@ class DatasetEdit extends Component {
       return display_source_id;
     //in this case there is only one value
     } else {
-      if (source_uuids[0].hubmap_identifier) {
+      if (source_uuids && source_uuids[0] && source_uuids[0].hubmap_identifier) {
         return source_uuids[0].hubmap_identifier;
       } else {
         return source_uuids[0];
