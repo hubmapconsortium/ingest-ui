@@ -30,7 +30,8 @@
   z-index: 10;
 }
 
-.modal-organ {
+
+.modal-main, .modal-organ {
   padding: 1em;
   position: fixed;
   background: white;
@@ -39,17 +40,15 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  overflow:scroll;
 }
 
 .modal-main {
-  padding: 1em;
-  position: fixed;
-  background: white;
-  width: 50%;
-  height: auto;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  width: 60%;
+}
+
+#unityContainer {
+  overflow:scroll;
 }
 
 .display-block {

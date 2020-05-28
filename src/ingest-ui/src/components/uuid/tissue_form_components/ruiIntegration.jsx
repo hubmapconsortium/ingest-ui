@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import "../../../App.css";
 
 class RUIIntegration extends Component {
   state = {
@@ -38,7 +39,7 @@ class RUIIntegration extends Component {
 
   render() {
     return (
-      <div className='webgl-content rui'>
+      <div className='webgl-content rui' >
         {!this.state.close_rui && (
           <React.Fragment>
             <div
