@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-dev
     # Build the image with name and tag
-    image: ingest-api:1.9
+    image: ingest-api:1.10
     hostname: ingest-api
     container_name: ingest-api
     # Map host machine port 80, 443 to container ports 8080 and 4430
@@ -15,7 +15,7 @@ services:
     ports:
       - "80:8080"
       - "443:4430"
-      # To be used by airflow on the same machine
+      # ingest-api on http 7777 to be used by airflow
       - "7777:7777"
     environment:
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
@@ -32,14 +32,14 @@ services:
       - "./ingest-api-dev/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-dev/nginx/html:/usr/share/nginx/html"
+      # Workflow scrath directory
+      - "/hive/hubmap-dev/scratch:/hubmap-scratch"
       # Mount Globus data
       - "/hive/hubmap-dev/lz:/hive/hubmap-dev/lz"
       # assets
       - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:
-      - gateway_hubmap
+      - hubmap
 
 networks:
-  # This is the network created by gateway to enable communicaton between multiple docker-compose projects
-  gateway_hubmap:
-    external: true
+  hubmap:

@@ -1,3 +1,7 @@
+# Set to True for local non-docker development
+# Set to False when deployment with docker (Gateway nginx handles CORS)
+ENABLE_CORS = False
+
 # Neo4j connection (default value used for docker dev environment)
 # Point to remote neo4j for testing and production deployment
 NEO4J_SERVER = 'bolt://hubmap-neo4j:7687'
@@ -11,12 +15,16 @@ APP_CLIENT_SECRET = ''
 # Globus Endpoint UUID
 GLOBUS_ENDPOINT_UUID = ''
 
+# Admin group UUID
+HUBMAP_DATA_ADMIN_UUID = ''
+
 # File system settings
 # No need to modify here if deployed with docker
 # Just make sure the volume mounts in docker compose yaml mapped correctly
 LOCAL_STORAGE_DIRECTORY = '/hubmap-tmp'
 GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
 HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
+WORKFLOW_SCRATCH = '/hubmap-scratch'
 
 # URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container
@@ -26,10 +34,6 @@ UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 # Must no trailing slash /
 # Default works with only localhost deployment
 SEARCH_WEBSERVICE_URL = 'http://hubmap-auth:6666'
-
-# URL of UUID UI for Cross-Origin Resource Sharing (CORS)
-# This has no effect with Gateway (enabled CORS in nginx conf)
-# UUID_UI_URL = 'http://localhost:8585'
 
 # For UI login/logout
 # Flask app session key
@@ -42,3 +46,11 @@ FLASK_APP_BASE_URI = 'http://localhost:8484/'
 GLOBUS_CLIENT_APP_NAME = 'HuBMAP Data Ingest'
 # Point to remote URL for testing and production deployment
 GLOBUS_CLIENT_APP_URI = 'http://localhost:8585/'
+
+# URL for the ingest pipeline API.  No trailing '/'
+INGEST_PIPELINE_URL = 'http://ingest-pipeline:8789/api/hubmap'
+# internal test: INGEST_PIPELINE_URL = 'http://localhost:5005/datasets/submissions'
+
+# Default processing type for ingest pipeline API.
+INGEST_PIPELINE_DEFAULT_PROCESS = 'SCAN.AND.BEGIN.PROCESSING'
+

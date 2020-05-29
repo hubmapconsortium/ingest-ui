@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-localhost
     # Build the image with name and tag
-    image: ingest-api:1.9
+    image: ingest-api:1.10
     hostname: ingest-api
     container_name: ingest-api
     environment:
@@ -22,6 +22,8 @@ services:
       - "/hubmap-data:/hubmap-data"
       # assets
       - "/hubmap-data/assets:/usr/src/assets"
+      # Workflow scratch
+      - "/hubmap-scratch:/hubmap-scratch"
     networks:
       - gateway_hubmap
 
