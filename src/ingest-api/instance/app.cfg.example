@@ -16,7 +16,7 @@ APP_CLIENT_SECRET = ''
 GLOBUS_ENDPOINT_UUID = ''
 
 # Admin group UUID
-HUBMAP_DATA_ADMIN_UUID = ''
+HUBMAP_DATA_ADMIN_GROUP_UUID = ''
 
 # File system settings
 # No need to modify here if deployed with docker
