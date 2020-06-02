@@ -14,6 +14,7 @@ import {
   faUserShield,
   faExternalLinkAlt
 } from "@fortawesome/free-solid-svg-icons";
+import Modal from "../uuid/modal";
 
 class DatasetEdit extends Component {
   state = {
@@ -109,7 +110,7 @@ class DatasetEdit extends Component {
             return g.displayname;
           });
         this.setState({
-          group: display_names[0]
+          groups: display_names
         });
       })
       .catch(err => {
@@ -162,7 +163,9 @@ class DatasetEdit extends Component {
           data_types: new Set(data_types),
           other_datatype: other_dt !== undefined,
           other_dt: other_dt,
-          description: this.props.editingDataset.properties.description
+          description: this.props.editingDataset.properties.description,
+          errorMsgShow: this.props.editingDataset.properties.status.toLowerCase() === "error" && this.props.editingDataset.properties.message ? true : false,
+          statusErrorMsg: this.props.editingDataset.properties.message
         },
         () => {
           switch (this.state.status.toUpperCase()) {
@@ -226,6 +229,14 @@ class DatasetEdit extends Component {
 
   hideModal = () => {
     this.setState({ show: false });
+  };
+
+  showErrorMsgModal = msg => {
+    this.setState({ errorMsgShow: true, statusErrorMsg: msg });
+  };
+
+  hideErrorMsgModal = () => {
+    this.setState({ errorMsgShow: false });
   };
 
   handleLookUpClick = () => {
@@ -756,7 +767,7 @@ class DatasetEdit extends Component {
       return display_source_id;
     //in this case there is only one value
     } else {
-      if (source_uuids[0].hubmap_identifier) {
+      if (source_uuids && source_uuids[0] && source_uuids[0].hubmap_identifier) {
         return source_uuids[0].hubmap_identifier;
       } else {
         return source_uuids[0];
@@ -766,7 +777,7 @@ class DatasetEdit extends Component {
 
   renderButtons() {
     if (this.props.editingDataset) {
-      if (!this.state.group || !this.props.editingDataset.writeable) {
+      if (!this.state.groups || !this.props.editingDataset.writeable) {
         return (
           <div className='row'>
             <div className='col-sm-2 offset-sm-10'>
@@ -997,7 +1008,7 @@ class DatasetEdit extends Component {
                   </button>
                 </div>
                 <div className='col-sm-4 text-center'>
-                  <button
+                  {this.state.groups.includes(process.env.REACT_APP_HUBMAP_DATA_ADMIN_GROUP) && (<button
                     type='button'
                     className='btn btn-primary btn-block'
                     disabled={this.state.submitting}
@@ -1012,7 +1023,7 @@ class DatasetEdit extends Component {
                       />
                     )}
                     {!this.state.submitting && "Submit"}
-                  </button>
+                  </button>)}
                 </div>
                 <div className='col-sm-2 text-right'>
                   <button
@@ -1098,7 +1109,7 @@ class DatasetEdit extends Component {
             <div className='row mt-3 mb-3'>
               <div className='col-sm-2'>
                 <h3 className='float-right'>
-                  <span className={"badge " + this.state.badge_class}>
+                  <span className={"badge " + this.state.badge_class} style={{ cursor: "pointer" }} onClick={() => this.showErrorMsgModal(this.props.editingDataset.properties.message)}>
                     {this.state.status}
                   </span>
                 </h3>
@@ -1237,7 +1248,7 @@ class DatasetEdit extends Component {
                     )}
                   </div>
                   <div className='col-sm-2 my-auto text-right'>
-                    {this.state.group && (
+                    {this.state.groups && (
                       <button
                         className='btn btn-primary'
                         type='button'
@@ -1951,6 +1962,17 @@ class DatasetEdit extends Component {
           {this.state.is_curator !== null && this.renderButtons()}
         </form>
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
+        <Modal
+          show={this.state.errorMsgShow}
+          handleClose={this.hideErrorMsgModal}
+        >
+          <div className="row">
+            <div className="col-sm-12 text-center alert">
+              <h4>{this.props.editingDataset.properties.status.toUpperCase()}</h4>
+              <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
+            </div>
+          </div>
+        </Modal>
       </React.Fragment>
     );
   }

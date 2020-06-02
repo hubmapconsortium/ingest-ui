@@ -708,7 +708,6 @@ def get_group_uuid_from_request(request):
         for x in sys.exc_info():
             msg += x
         abort(400, msg)
-    
 
 @app.route('/datasets/<uuid>', methods = ['PUT'])
 @secured(groups="HuBMAP-read")
@@ -717,17 +716,26 @@ def modify_dataset(uuid):
         abort(400, jsonify( { 'error': 'uuid parameter is required to modify a dataset' } ))
     if 'data' not in request.form:
         abort(400, jsonify( { 'error': 'form data is required to modify a dataset' } ))
+
+    current_token = None
+    try:
+        current_token = AuthHelper.parseAuthorizationTokens(request.headers)
+    except:
+        raise ValueError("Unable to parse token")
+    nexus_token = current_token['nexus_token']
+
     conn = None
     new_uuid = None
     try:
-        
         group_uuid = get_group_uuid_from_request(request)    
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset = Dataset(app.config)
         
         form_data = json.loads(request.form['data'])
-        
+        if form_data['status'] == 'processing' and not is_user_in_group(nexus_token, app.config['HUBMAP_DATA_ADMIN_GROUP_UUID']):
+            return jsonify( { 'error': 'user need to be a hubmap data admin to submit a datatset' }), 403
+
         new_uuid = dataset.modify_dataset(driver, request.headers, uuid, form_data, group_uuid)
         conn.close()
 
