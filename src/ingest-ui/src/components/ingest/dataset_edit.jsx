@@ -318,18 +318,20 @@ class DatasetEdit extends Component {
           });
         }
       }
-      if (e.target.checked) {
-        const data_types = this.state.data_types;
-        data_types.add(name);
-        this.setState({
-          data_types: data_types
-        });
-      } else {
-        const data_types = this.state.data_types;
-        data_types.delete(name);
-        this.setState({
-          data_types: data_types
-        });
+      else {
+        if (e.target.checked) {
+          const data_types = this.state.data_types;
+          data_types.add(name);
+          this.setState({
+            data_types: data_types
+          });
+        } else {
+          const data_types = this.state.data_types;
+          data_types.delete(name);
+          this.setState({
+            data_types: data_types
+          });
+        }
       }
     }
   };
@@ -676,7 +678,7 @@ class DatasetEdit extends Component {
       }
 
       if (
-        this.state.data_types.has("dt_other") &&
+        this.state.other_datatype &&
         !validateRequired(this.state.other_dt)
       ) {
         this.setState(prevState => ({
@@ -1850,7 +1852,7 @@ class DatasetEdit extends Component {
                           name='dt_other'
                           id='dt_other'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_other")}
+                          checked={this.state.other_datatype}
                         />
                         <label className='form-check-label' htmlFor='dt_other'>
                           Other
