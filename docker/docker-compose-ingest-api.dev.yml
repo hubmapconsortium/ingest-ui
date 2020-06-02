@@ -6,7 +6,7 @@ services:
   ingest-api:
     build: ./ingest-api-dev
     # Build the image with name and tag
-    image: ingest-api:1.10
+    image: ingest-api:1.11
     hostname: ingest-api
     container_name: ingest-api
     # Map host machine port 80, 443 to container ports 8080 and 4430
