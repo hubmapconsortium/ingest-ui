@@ -1,15 +1,41 @@
 import React, { Component } from "react";
 import "../../../App.css";
 
+
 class RUIIntegration extends Component {
-  state = {
-    unityInstance: {},
-    jsonRUI: "",
-    rui_back: false,
-    close_rui: false,
-  };
+  
+  constructor(){
+    super();
+
+    this.state = {
+      unityInstance: {},
+      jsonRUI: "",
+      rui_back: false,
+      close_rui: false,
+      width:1820,
+      height:1012,
+      mounted:false,
+      }
+  }
+  /**
+   * Calculate & Update state of new dimensions
+   */
+  updateDimensions() {
+    if(window.innerWidth < 500) {
+      this.setState({ width: 1100, height: 647 });
+    } else {
+      let update_width  = window.innerWidth-100;
+      let update_height = Math.round(update_width/1.8);
+      this.setState({ width: update_width, height: update_height });
+    }
+  }
+
+  /**
+   * Remove event listener
+   */
 
   componentDidMount() {
+    
     window.hideSignupScreen = true;
     const unityInstance = window.UnityLoader.instantiate(
       "unityContainer",
@@ -19,7 +45,7 @@ class RUIIntegration extends Component {
     this.setState({
       unityInstance: unityInstance,
     });
-
+    
     // Callback when a user submits their RUI data;
     // str is a JSON-encoded string.
     var self = this;
@@ -28,7 +54,17 @@ class RUIIntegration extends Component {
       self.props.handleJsonRUI(str);
       self.handleCloseScreenClick();
     };
+    this.updateDimensions();
+    window.addEventListener("resize", this.updateDimensions.bind(this));
+    this.setState({
+      mounted: true,
+    });
   }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateDimensions.bind(this));
+  }
+
 
   handleCloseScreenClick = (e) => {
     this.state.unityInstance.Quit();
@@ -37,14 +73,17 @@ class RUIIntegration extends Component {
     });
   };
 
+
   render() {
     return (
       <div className='webgl-content rui' >
-        {!this.state.close_rui && (
+        {!this.state.close_rui  && 
+         (
           <React.Fragment>
             <div
               id='unityContainer'
-              style={{ width: 1920, height: 1080 }}
+              style={{ width: this.state.width, height: this.state.height }}
+              
             >
             </div>
             <div className='footer'>
@@ -68,3 +107,5 @@ class RUIIntegration extends Component {
 }
 
 export default RUIIntegration;
+
+//{/** width = {this.state.width} height= {this.state.height} **/}

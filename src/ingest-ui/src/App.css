@@ -40,7 +40,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  overflow:scroll;
+  overflow:visible;
 }
 
 .modal-main {
@@ -141,6 +141,7 @@ caption {
   height: 33%;
   background: rgb(211, 215, 207);
   z-index: 10;
+  overflow:scroll;
 }
 
 .modal-wrapper {
@@ -150,6 +151,7 @@ caption {
     margin: 0px 0px 0;
     transition: all .8s;
     width: 100%;
+    overflow:scroll;
 }
 
 .modal-wrapper h3{
