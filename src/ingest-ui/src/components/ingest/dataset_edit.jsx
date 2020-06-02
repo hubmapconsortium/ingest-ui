@@ -1968,7 +1968,7 @@ class DatasetEdit extends Component {
         >
           <div className="row">
             <div className="col-sm-12 text-center alert">
-              <h4>{this.props.editingDataset.properties.status.toUpperCase()}</h4>
+              <h4>{(this.props.editingDataset && this.props.editingDataset.properties.status.toUpperCase()) || "STATUS"}</h4>
               <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
             </div>
           </div>
