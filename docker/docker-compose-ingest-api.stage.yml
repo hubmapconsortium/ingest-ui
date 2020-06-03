@@ -1,0 +1,45 @@
+version: "3.7"
+
+# Will use the hostname when talking between services on the same network
+services:
+  
+  ingest-api:
+    build: ./ingest-api-prod
+    # Build the image with name and tag
+    image: ingest-api:1.11
+    hostname: ingest-api
+    container_name: ingest-api
+    init: true
+    restart: always
+    # Map host machine port 80, 443 to container ports 8080 and 4430
+    # Only root can listen on ports below 1024, we use higher-numbered ports
+    # since nginx is running under non-root user hubmap
+    ports:
+      - "80:8080"
+      - "443:4430"
+    environment:
+      # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
+      - HOST_GID=${HOST_GID:-23629}
+      - HOST_UID=${HOST_UID:-68728}
+    volumes:
+      # Mount the app config to container in order to keep it outside of the image
+      - "../src/ingest-api/instance:/usr/src/app/src/instance"
+      # Mount the logging to container
+      - "../log:/usr/src/app/log"
+      # Mount ssl certificates from host to container
+      - "/etc/pki/nginx:/etc/pki/nginx"
+      # Mount conf.d to the nginx conf.d on container
+      - "./ingest-api-prod/nginx/conf.d:/etc/nginx/conf.d"
+      # favicon.ico
+      - "./ingest-api-prod/nginx/html:/usr/share/nginx/html"
+      # Workflow scrath directory
+      - "/hive/hubmap/scratch:/hubmap-scratch"
+      # Mount Globus data
+      - "/hive/hubmap/lz:/hive/hubmap/lz"
+      # assets
+      - "/hive/hubmap/assets:/usr/src/assets"
+    networks:
+      - hubmap
+
+networks:
+  hubmap:
