@@ -1742,7 +1742,7 @@ class TissueForm extends Component {
                   hide={this.hideLabIDsModal}
                   ids={this.state.ids}
                   update={this.handleLabIdsUpdate}
-				  organ={this.props.editingEntity.properties.organ}
+				          organ={this.props.editingEntity.properties.organ}
                 />
               </React.Fragment>
             )}
@@ -1905,6 +1905,9 @@ class TissueForm extends Component {
 					     Modify Location Information
 				         </button>
 				       </div>
+               { this.state.rui_click && (
+				          <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
+				        )} 
 					 </React.Fragment>
 		          )}
 		
@@ -1920,12 +1923,15 @@ class TissueForm extends Component {
 					     Modify Location Information
 				         </button>
 				       </div>
+               { this.state.rui_click && (
+				          <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
+				        )}
 					 </React.Fragment>
                    )}
-				   {  !this.props.readOnly && 
+				  {/**  {  !this.props.readOnly && 
 					  this.state.rui_click && (
 				        <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
-                   )}
+                   )} **/}
 				   { this.props.readOnly && (
 					  <div className="col-sm-4">
 					  </div>

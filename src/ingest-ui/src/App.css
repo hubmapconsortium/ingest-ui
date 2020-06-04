@@ -141,7 +141,7 @@ caption {
   height: 33%;
   background: rgb(211, 215, 207);
   z-index: 10;
-  overflow:scroll;
+  
 }
 
 .modal-wrapper {
@@ -240,7 +240,7 @@ caption {
 }
 
 .mod-reg2{ 
-	margin-left:95px;	
+	margin-left:75px;	
 }
 
 .mod-reg1{ 
@@ -256,5 +256,13 @@ caption {
 
 .mod-check1{
 	margin-left:0px;
+}
+
+.mod-check2 {
+   margin-left:120px;
+}
+
+.mod-view2 {
+  margin-left:85px;
 }
 
