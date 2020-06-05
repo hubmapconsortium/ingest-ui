@@ -12,6 +12,7 @@ class RUIIntegration extends Component {
       jsonRUI: "",
       rui_back: false,
       close_rui: false,
+      close_link: true,
       width:1820,
       height:1012,
       mounted:false,
@@ -53,6 +54,7 @@ class RUIIntegration extends Component {
       self.setState({ jsonRUI: str });
       self.props.handleJsonRUI(str);
       self.handleCloseScreenClick();
+      //self.setState({close_rui:false});
     };
     this.updateDimensions();
     window.addEventListener("resize", this.updateDimensions.bind(this));
@@ -67,17 +69,19 @@ class RUIIntegration extends Component {
 
 
   handleCloseScreenClick = (e) => {
-    this.state.unityInstance.Quit();
+    
     this.setState({
       close_rui: true,
+      
     });
+    this.state.unityInstance.Quit();
   };
 
 
   render() {
     return (
       <div className='webgl-content rui' >
-        {!this.state.close_rui  && 
+       {!this.state.close_rui   &&
          (
           <React.Fragment>
             <div
@@ -89,18 +93,18 @@ class RUIIntegration extends Component {
             <div className='footer'>
               <React.Fragment>
                 <div className='webgl-logo'></div>
-                <div
+                {/**<div
                   className='closeScreen'
                   onClick={this.handleCloseScreenClick}
                 >
                   Close
-                </div>
+                </div> **/}
                 <div>{this.state.jsonRUI}</div>
                 <div className='title'>RUI-Web</div>
               </React.Fragment>
             </div>
           </React.Fragment>
-        )}
+         )}
       </div>
     );
   }

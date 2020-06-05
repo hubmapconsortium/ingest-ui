@@ -141,7 +141,7 @@ caption {
   height: 33%;
   background: rgb(211, 215, 207);
   z-index: 10;
-  
+  overflow:scroll;
 }
 
 .modal-wrapper {
