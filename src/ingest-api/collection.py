@@ -1,13 +1,16 @@
 from neo4j import TransactionError, CypherError
 import sys
-import os
-import configparser
+import traceback
+import pprint
+import json
+from py2neo import Graph
 
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
 from hubmap_commons.entity import Entity
-
+from hubmap_commons.exceptions import HTTPException
+from hubmap_commons import string_helper
 
 class Collection(object):
     '''
@@ -15,10 +18,59 @@ class Collection(object):
     '''
 
     confdata = {}
-    
+        
     @classmethod
     def __init__(self, config):
         self.confdata = config
+        self.allowed_collection_update_attributes = [HubmapConst.NAME_ATTRIBUTE, HubmapConst.DESCRIPTION_ATTRIBUTE, HubmapConst.COLLECTION_DOI_REGISTERED_ATTRIBUTE, HubmapConst.COLLECTION_CREATORS_ATTRIBUTE]
+        self.allowed_creator_attributes = [HubmapConst.CREATOR_FIRST_NAME_ATTRIBUTE, HubmapConst.CREATOR_LAST_NAME_ATTRIBUTE, HubmapConst.CREATOR_ORCID_ID_ATTRIBUTE, HubmapConst.CREATOR_AFFILIATION_ATTRIBUTE, HubmapConst.CREATOR_FULL_NAME_ATTRIBUTE, HubmapConst.CREATOR_MIDDLE_INITIAL_ATTRIBUTE]
+
+
+    @classmethod
+    def get_py2neo_conn(self):
+        graph = Graph(self.confdata['NEO4J_SERVER'], auth=(self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD']))
+        return(graph)
+    
+    @classmethod
+    def update_collection(self, uuid, record):
+        if (HubmapConst.UUID_ATTRIBUTE in record or
+            HubmapConst.DOI_ATTRIBUTE in record or
+            HubmapConst.DISPLAY_DOI_ATTRIBUTE in record or
+            HubmapConst.ENTITY_TYPE_ATTRIBUTE in record):
+            raise HTTPException("ID attributes cannot be changed", 400)
+        
+        not_allowed = []
+        for attrib in record.keys():
+            if not attrib in self.allowed_collection_update_attributes:
+                not_allowed.append(attrib)
+                
+        if len(not_allowed) > 0:
+            raise HTTPException("Attribute(s) not allowed: " + string_helper.listToDelimited(not_allowed, " "), 400)
+        
+        if HubmapConst.COLLECTION_CREATORS_ATTRIBUTE in record:
+            creators = record[HubmapConst.COLLECTION_CREATORS_ATTRIBUTE]
+            for creator in creators:
+                for attrib in creator.keys():
+                    if not attrib in self.allowed_creator_attributes and not attrib in not_allowed:
+                        not_allowed.append(attrib)
+            
+            if len(not_allowed) > 0:
+                raise HTTPException("Creator Aattribute(s) not allowed: " +  string_helper.listToDelimited(not_allowed, " "), 400)
+            
+        save_record = {}
+        for attrib in record.keys():
+            if attrib == HubmapConst.COLLECTION_CREATORS_ATTRIBUTE:
+                save_record[attrib] = json.dumps(record[attrib])
+            else:
+                save_record[attrib] = record[attrib]
+        
+        
+        rval = self.get_py2neo_conn().run("match(c:Collection {uuid: {uuid}}) set c += {params} return c.uuid", uuid=uuid, params=save_record).data()
+        if len(rval) == 0:
+            raise HTTPException("Update failed for collection with uuid " + uuid + ".  UUID possibly not found.", 400)
+        else:
+            if rval[0]['c.uuid'] != uuid:
+                raise HTTPException("Update failed, wrong uuid returned while trying to update " + uuid + " returned: " + rval[0]['c.uuid'])  
 
     
     @classmethod

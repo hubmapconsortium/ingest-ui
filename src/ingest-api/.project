@@ -3,6 +3,7 @@
 	<name>datainjest-api</name>
 	<comment></comment>
 	<projects>
+		<project>hubmap-commons</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
