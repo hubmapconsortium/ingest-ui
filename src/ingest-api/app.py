@@ -23,7 +23,6 @@ from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.hubmap_error import HubmapError
 from hubmap_commons.exceptions import HTTPException
-from hubmap_commons import file_helper
 
 import time
 import logging
@@ -52,7 +51,6 @@ else:
 @app.before_first_request
 def init():
     global logger
-    global worker
     try:
         logger = logging.getLogger('ingest.service')
         logger.setLevel(logging.INFO)
