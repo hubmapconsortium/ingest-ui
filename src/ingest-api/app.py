@@ -1370,12 +1370,13 @@ def update_specimen_lab_ids():
         result = specimen.batch_update_specimen_lab_ids(
             driver, request.json, token)
         conn.close()
-        for uuid, lab_id in request.json.items():
+        for item in request.json:
+            uuid = item['uuid']
             try:
                 #reindex this node in elasticsearch
                 rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
             except:
-                print("Error happend when calling reindex web service")
+                print("Error happened when calling reindex web service")
         if result:
             return jsonify({'success':True}), 200
         else:

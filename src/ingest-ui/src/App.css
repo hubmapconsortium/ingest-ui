@@ -30,15 +30,25 @@
   z-index: 10;
 }
 
-.modal-main {
+
+.modal-main, .modal-organ {
   padding: 1em;
   position: fixed;
   background: white;
-  width: 80%;
+  width: 85%;
   height: auto;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  overflow:visible;
+}
+
+.modal-main {
+  width: 60%;
+}
+
+#unityContainer {
+  overflow:scroll;
 }
 
 .display-block {
@@ -104,5 +114,155 @@ caption {
 
 .nowrap {
   white-space: nowrap;
+}
+
+.checkb img{
+	padding-left:20px;
+	padding-top:10px;
+}
+
+.no-checkb{
+	padding-left:20px;
+}
+
+.add-multi {
+  width:60%;	
+}
+
+.lab-id-modal .modal-main{
+   width:60%;	
+}
+
+.locmodal {
+  position: fixed;
+  top: 40%;
+  left: 40%;
+  width: 38%;
+  height: 33%;
+  background: rgb(211, 215, 207);
+  z-index: 10;
+  overflow:scroll;
+}
+
+.modal-wrapper {
+    background: white;
+    border: 1px solid #d0cccc;
+    box-shadow: 0 5px 8px 0 rgba(0,0,0,0.2), 0 7px 20px 0 rgba(0,0,0,0.17);
+    margin: 0px 0px 0;
+    transition: all .8s;
+    width: 100%;
+    overflow:scroll;
+}
+
+.modal-wrapper h3{
+	margin:30px;
+	text-align:center;
+}
+
+.modal-body {
+    padding: 10px 35px;
+    text-align: left;
+}
+
+.close-modal-btn {
+    color: black;
+    cursor: pointer;
+    float: right;
+    font-size: 30px;
+    margin: 0;
+}
+
+.close-modal-btn:hover {
+    color: black;
+}
+
+.btn-cancel, .btn-continue {
+    background: coral;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    outline: none;
+    padding: 10px;
+}
+
+.btn-cancel {
+    background-color: #b71c1c;
+    float: left;
+}
+
+.btn-continue {
+    background-color: #1b5e20;
+    float: right;
+}
+
+.back-drop {
+    background-color: rgba(48, 49, 48, 0.42);
+    height: 100%;
+    position: fixed;
+    transition: all 1.3s;
+    width: 100%;
+}
+
+.open-modal-btn {
+    margin: 15px;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.rui {
+  z-index: 100;
+}
+
+.rui .footer{
+   background-color:greenyellow;
+}
+
+.closeScreen {
+	float:right;
+	font-weight:bold;
+	padding: 0 10px;		
+}
+
+.mod-id, .mod-check1, .mod-reg1, .mod-view2, 
+.mod-reg2, .mod-check2, .mod-view1{
+	font-size:1.0em;
+	font-weight:bold;
+}
+
+.mod-view1 {
+	width:125px;
+}
+
+.mod-id {
+	width:350px;
+	margin-left: -150px;
+}
+
+.mod-reg2{ 
+	margin-left:75px;	
+}
+
+.mod-reg1{ 
+	margin-left:-60px;	
+}
+
+.mod-view1{
+	margin-left:115px;	
+}
+.mod-check1, .mod-reg1 {
+	width:120px;
+}
+
+.mod-check1{
+	margin-left:0px;
+}
+
+.mod-check2 {
+   margin-left:120px;
+}
+
+.mod-view2 {
+  margin-left:85px;
 }
 

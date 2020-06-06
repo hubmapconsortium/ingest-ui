@@ -127,21 +127,45 @@ class Result extends Component {
                 </div>
               </div>
               <div className="row mb-2">
-                <div className="col-sm-4 offset-sm-4">
-                  {this.props.result["new_samples"].length > 1 && (
+                <div className="col-sm-4 offset-sm-4 lab-id-modal">
+                  {this.props.result["new_samples"].length > 1 && 
+                   (this.props.result.sample_metadata.organ  === "RK" ||
+                    this.props.result.sample_metadata.organ  === "LK") && (
                     <React.Fragment>
-                      <button
-                        className="btn btn-link btn-block"
-                        type="button"
+						<button
+                        className="btn btn-primary  btn-block"
                         onClick={this.enterLabIDs}
-                      >
-                        Assign Lab IDs
+                        >
+					        Assign Lab IDs and Sample Locations
+
                       </button>
                       <LabIDsModal
                         show={this.state.LabIDsModalShow}
                         hide={this.hideLabIDsModal}
                         ids={this.props.result["new_samples"]}
                         submit={this.handleSubmit}
+                        organ={this.props.result.sample_metadata.organ}
+                      />
+                    </React.Fragment>
+                  )}
+                  {this.props.result["new_samples"].length > 1 && 
+                   (this.props.result.sample_metadata.organ  !== "RK" &&
+                    this.props.result.sample_metadata.organ  !== "LK") && (
+                    <React.Fragment>
+						<button
+                        className="btn btn-primary  btn-block"
+                        onClick={this.enterLabIDs}
+                        >
+					        Assign Lab IDs
+
+                      </button>
+                  
+                      <LabIDsModal
+                        show={this.state.LabIDsModalShow}
+                        hide={this.hideLabIDsModal}
+                        ids={this.props.result["new_samples"]}
+                        submit={this.handleSubmit}
+                        organ={this.props.result.sample_metadata.organ}
                       />
                     </React.Fragment>
                   )}
@@ -178,7 +202,8 @@ class Result extends Component {
             <div className="row">
               <div className="col-sm-4 offset-sm-4">
                 <button
-                  className="btn btn-primary btn-block"
+                  className="btn btn-link  btn-block"
+				  type="button"
                   onClick={this.handleReturnClick}
                 >
                   Return to Search
