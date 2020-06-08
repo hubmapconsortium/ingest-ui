@@ -257,7 +257,6 @@ class DataList extends Component {
   };
 
   handleActionClick = e => {
-    
     this.props.viewEdit(e);
   };
 
