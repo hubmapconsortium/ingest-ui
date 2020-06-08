@@ -1171,12 +1171,20 @@ class Dataset(object):
                     current_token = AuthHelper.parseAuthorizationTokens(headers)
                 except:
                     raise ValueError("Unable to parse token")
+                
+                
                 authcache = None
                 if AuthHelper.isInitialized() == False:
                     authcache = AuthHelper.create(self.confdata['APP_CLIENT_ID'], self.confdata['APP_CLIENT_SECRET'])
                 else:
                     authcache = AuthHelper.instance()
-                userinfo = authcache.getUserInfo(current_token['nexus_token'], True)
+                
+                userinfo = None
+                nexus_token = current_token
+                if 'nexus_token' in current_token:
+                   nexus_token =  current_token['nexus_token']
+                   
+                userinfo = authcache.getUserInfo(nexus_token, True)
 
                 if type(userinfo) == Response and userinfo.status_code == 401:
                     raise AuthError('token is invalid.', 401)
@@ -1253,13 +1261,8 @@ class Dataset(object):
                     # I need to retrieve the ingest_id from the call and store it in neo4j
                     # /datasets/submissions/request_ingest 
                     try:
-                        current_token = None
-                        try:
-                            current_token = AuthHelper.parseAuthorizationTokens(headers)
-                        except:
-                            raise ValueError("Unable to parse token")
                         prov = Provenance(self.confdata['APP_CLIENT_ID'],self.confdata['APP_CLIENT_SECRET'], None)
-                        group_info = prov.get_group_by_identifier(group_uuid)
+                        group_info = prov.get_group_by_identifier(metadata_node['provenance_group_uuid'])
                         # take the incoming uuid_type and uppercase it
                         url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
                         print('sending request_ingest to: ' + url)
