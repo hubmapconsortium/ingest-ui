@@ -848,10 +848,10 @@ class TissueForm extends Component {
           if (res.data) {
             this.setState(prevState => ({
               source_entity: res.data,
- 			  organ:res.data.specimen.organ,
+ 			  // organ:res.data.specimen.organ,
               formErrors: { ...prevState.formErrors, source_uuid: "valid" }
             }));
-            this.setState({organ:res.data.specimen.organ})
+            // this.setState({organ:res.data.specimen.organ})
             return isValid;
           } else {
             this.setState(prevState => ({
