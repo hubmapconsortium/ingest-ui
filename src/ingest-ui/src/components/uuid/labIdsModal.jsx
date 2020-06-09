@@ -182,7 +182,9 @@ class LabIDsModal extends Component {
                 success: true
               }
             ,() => {
-              this.props.onSaveLocation(true);
+              if (this.props.onSaveLocation){
+                this.props.onSaveLocation(true);
+              }
               this.props.hide();
             });
           })
