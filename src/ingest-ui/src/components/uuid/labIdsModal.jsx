@@ -12,9 +12,7 @@ import axios from "axios";
 import RUIIntegration from "./tissue_form_components/ruiIntegration";
 
 class LabIDsModal extends Component {
-  // UNSAFE_componentWillReceiveProps(nextProps) {
-  //   this.setState({ ids: nextProps.ids });
-  // }
+  
   state = {
     rui_json: "",
     rui_click: {name: ''} ,
@@ -184,8 +182,8 @@ class LabIDsModal extends Component {
                 success: true
               }
             ,() => {
+              this.props.onSaveLocation(true);
               this.props.hide();
-              // this.props.update(formData);
             });
           })
           .catch(error => {
