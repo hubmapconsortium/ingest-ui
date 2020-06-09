@@ -1562,6 +1562,57 @@ class Dataset(object):
         ret_dir = os.path.join(start_dir, group_name, dataset_uuid)
         return ret_dir
     
+    @classmethod
+    def get_access_level(self, nexus_token, metadata_info):
+        incoming_sourceUUID_string = str(metadata_info['source_uuids']).strip()
+        if incoming_sourceUUID_string == None or len(incoming_sourceUUID_string) == 0:
+            raise ValueError('Error: sourceUUID must be set to determine access level')
+        source_UUID_Data = []
+        ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
+        try:
+            incoming_sourceUUID_list = []
+            if str(incoming_sourceUUID_string).startswith('['):
+                incoming_sourceUUID_list = eval(incoming_sourceUUID_string)
+            else:
+                incoming_sourceUUID_list.append(incoming_sourceUUID_string)
+            for sourceID in incoming_sourceUUID_list:
+                hmuuid_data = ug.getUUID(nexus_token, sourceID)
+                if len(hmuuid_data) != 1:
+                    raise ValueError("Could not find information for identifier" + sourceID)
+                source_UUID_Data.append(hmuuid_data)
+        except:
+            raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
+        
+        is_dataset_genomic_sequence = False
+        is_donor_open_consent = False
+        is_dataset_protected_data = False
+        is_dataset_published = False
+        
+        if HubmapConst.DATASET_STATUS_ATTRIBUTE in metadata_info:
+            is_dataset_published = metadata_info[HubmapConst.DATASET_STATUS_ATTRIBUTE] == HubmapConst.DATASET_STATUS_PUBLISHED
+        
+        if HubmapConst.DATASET_DATA_ACCESS_LEVEL in metadata_info:
+            is_dataset_protected_data = metadata_info[HubmapConst.DATASET_STATUS_ATTRIBUTE] == HubmapConst.DATASET_ACCESS_LEVEL_PROTECTED
+        
+        # NOTE: this should be changed to HubmapConst.DATASET_CONTAINS_GENOMIC_DATA in the future
+        if HubmapConst.HAS_PHI_ATTRIBUTE in metadata_info:
+            is_dataset_genomic_sequence = str(metadata_info[HubmapConst.HAS_PHI_ATTRIBUTE]).lower() == 'yes'
+        
+        if is_dataset_protected_data == True:
+            return HubmapConst.DATASET_ACCESS_LEVEL_PROTECTED
+        
+        if is_dataset_genomic_sequence == True and is_donor_open_consent == False:
+            return HubmapConst.DATASET_ACCESS_LEVEL_PROTECTED
+        
+        if is_dataset_protected_data == False and is_dataset_published == False:
+            return HubmapConst.DATASET_ACCESS_LEVEL_CONSORTIUM
+        
+        if is_dataset_protected_data == False and is_dataset_published == True:
+            return HubmapConst.DATASET_ACCESS_LEVEL_PUBLIC
+        
+        return HubmapConst.DATASET_ACCESS_LEVEL_CONSORTIUM
+        
+    
 def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
