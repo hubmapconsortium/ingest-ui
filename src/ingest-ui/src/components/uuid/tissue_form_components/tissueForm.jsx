@@ -92,7 +92,7 @@ class TissueForm extends Component {
     // create a ref to store the file Input DOM element   
 	  this.protocolFile = React.createRef();
     this.protocol = React.createRef();
-    //this.handleSavedLocations = this.handleSavedLocations.bind(this);
+   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
   }
 
   handleRUIJson = (dataFromChild) => {
@@ -1751,7 +1751,7 @@ class TissueForm extends Component {
                   ids={this.state.ids}
                   update={this.handleLabIdsUpdate}
                   organ={this.props.editingEntity.properties.organ}
-                  onSaveLocation={this.handleSavedLocations.bind(this)}
+                  onSaveLocation={this.handleSavedLocations}
                 />
               </React.Fragment>
             )}
@@ -1785,7 +1785,7 @@ class TissueForm extends Component {
                   ids={this.state.ids}
                   update={this.handleLabIdsUpdate}
                   organ={this.props.editingEntity.properties.organ}
-                  onSaveLocation={this.handleSavedLocations.bind(this)}
+                  onSaveLocation={this.handleSavedLocations}
                 />
               </React.Fragment>
             )}
