@@ -848,10 +848,12 @@ class TissueForm extends Component {
           if (res.data) {
             this.setState(prevState => ({
               source_entity: res.data,
- 			  // organ:res.data.specimen.organ,
+         // organ:res.data.specimen.organ,
+         //organ:res.data.specimen.organ,
               formErrors: { ...prevState.formErrors, source_uuid: "valid" }
             }));
             // this.setState({organ:res.data.specimen.organ})
+            //this.setState({organ:res.data.specimen.organ})
             return isValid;
           } else {
             this.setState(prevState => ({
@@ -1746,9 +1748,11 @@ class TissueForm extends Component {
                 />
               </React.Fragment>
             )}
-            { this.state.ids && 
-			  (this.props.editingEntity && this.props.editingEntities.length > 1 &&
-               (this.state.organ === "RK" || this.state.organ == "LK") ) && (
+            { this.props.editingEntity &&
+				     this.state.multiple_id &&
+             this.state.source_entity !== undefined &&
+            (this.state.source_entity.specimen.organ === "LK" ||
+              this.state.source_entity.specimen.organ === "RK") && (
               <React.Fragment>
                 <div className="form-group row">
                   <label
@@ -1778,10 +1782,13 @@ class TissueForm extends Component {
               </React.Fragment>
             )}
 			{ !this.props.editingEntity &&
-			  !this.state.multiple_id &&
-			  (this.state.organ === "LK" ||
-               this.state.organ === "RK" ) && 
-               (
+        !this.state.multiple_id &&
+        //!this.state.specimen_type === "organ" &&
+       // ((this.state.organ === "LK" || this.state.organ === "RK") ||
+         this.state.source_entity !== undefined &&
+         (this.state.source_entity.specimen.organ === "LK" ||
+          this.state.source_entity.specimen.organ === "RK") && 
+          (
 			  <div className="form-group row">    
 				<label                                                                                                   
 				  htmlFor="location"
@@ -1855,11 +1862,13 @@ class TissueForm extends Component {
 			    </div>
 			  </div>	
 			)}
-			{ this.props.editingEntity &&
+			{  this.props.editingEntity &&
 				!this.state.multiple_id &&
-				 (this.state.organ === "LK" ||
-               this.state.organ === "RK" )
-               && 
+			//	 ((this.state.organ === "LK" ||
+      //   this.state.organ === "RK" ) ||
+         this.state.source_entity !== undefined &&
+         (this.state.source_entity.specimen.organ === "LK" ||
+          this.state.source_entity.specimen.organ === "RK") && 
 			  (
 			  <div className="form-group row">    
 				<label                                                                                                   
