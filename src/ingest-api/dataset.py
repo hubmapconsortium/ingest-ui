@@ -18,6 +18,7 @@ from pprint import pprint
 import shutil
 import json
 import traceback
+from specimen import Specimen
 
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_const import HubmapConst 
@@ -1563,11 +1564,17 @@ class Dataset(object):
         return ret_dir
     
     @classmethod
-    def get_access_level(self, nexus_token, metadata_info):
-        incoming_sourceUUID_string = str(metadata_info['source_uuids']).strip()
+    def get_access_level(self, nexus_token, driver, metadata_info):
+        incoming_sourceUUID_string = None
+        if 'source_uuids' in metadata_info:
+            incoming_sourceUUID_string = str(metadata_info['source_uuids']).strip()
+        elif 'source_uuid' in metadata_info:
+            incoming_sourceUUID_string = str(metadata_info['source_uuid']).strip()
         if incoming_sourceUUID_string == None or len(incoming_sourceUUID_string) == 0:
             raise ValueError('Error: sourceUUID must be set to determine access level')
         source_UUID_Data = []
+        uuid_list = []
+        donor_list = []
         ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         try:
             incoming_sourceUUID_list = []
@@ -1580,6 +1587,8 @@ class Dataset(object):
                 if len(hmuuid_data) != 1:
                     raise ValueError("Could not find information for identifier" + sourceID)
                 source_UUID_Data.append(hmuuid_data)
+                uuid_list.append(hmuuid_data[0]['hmuuid'])
+            donor_list = Specimen.get_donor(driver, uuid_list)
         except:
             raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
         
@@ -1684,4 +1693,40 @@ def convert_dataset_status(raw_status):
     elif str(raw_status).upper() == str(HubmapConst.DATASET_STATUS_HOLD).upper():
         new_status = HubmapConst.DATASET_STATUS_HOLD
     return new_status
+
+if __name__ == "__main__":
+    NEO4J_SERVER = 'bolt://localhost:7687'
+    NEO4J_USERNAME = 'neo4j'
+    NEO4J_PASSWORD = '123'
+    conn = Neo4jConnection(NEO4J_SERVER, NEO4J_USERNAME, NEO4J_PASSWORD)
+    nexus_token = 'Ag7lnbmBgd4w8E4B7QQeX68xwo2qrMmx9zolGyBDWJGqdQwNX1FWC08D91Bzk4G2qeBOlDDdMWGaE0Hz2w5PMiM3Ob'
+    driver = conn.get_driver()
+    
+    UUID_WEBSERVICE_URL = 'http://localhost:5001/hmuuid'
+
+    conf_data = {'NEO4J_SERVER' : NEO4J_SERVER, 'NEO4J_USERNAME': NEO4J_USERNAME, 
+                 'NEO4J_PASSWORD': NEO4J_PASSWORD, 'UUID_WEBSERVICE_URL' : UUID_WEBSERVICE_URL}
+    
+    protected_dataset_uuid = '62c461245ee413fc5eed0f1f31853139'
+    consortium_dataset_uuid = 'f1fc56fe8e39a9c05328d905d1c4498e'
+    open_consent_dataset_uuid = 'd22bdd1ed6908894dbfd4e17c668112e'
+    
+    protected_dataset_info = Dataset.get_dataset(driver, protected_dataset_uuid)
+    consortium_dataset_info = Dataset.get_dataset(driver, consortium_dataset_uuid)
+    open_consent_dataset_info = Dataset.get_dataset(driver, open_consent_dataset_uuid)
+    
+    dataset = Dataset(conf_data)
+    
+    print("Protected uuid: " + protected_dataset_uuid)
+    access_level = dataset.get_access_level(nexus_token, driver, protected_dataset_info)
+    print ("Access level : " + str(access_level))
+
+    print("Consortium uuid: " + consortium_dataset_uuid)
+    access_level = dataset.get_access_level(nexus_token, driver, consortium_dataset_info)
+    print ("Access level : " + str(access_level))
+
+    print("Open consent uuid: " + open_consent_dataset_uuid)
+    access_level = dataset.get_access_level(nexus_token, driver, open_consent_dataset_info)
+    print ("Access level : " + str(access_level))
+    
 

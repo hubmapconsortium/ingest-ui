@@ -851,6 +851,36 @@ class Specimen:
             except:
                 print('A general error occurred: ')
                 traceback.print_exc()
+
+    @staticmethod
+    def get_donor(driver, uuid_list):
+        donor_return_list = []
+        with driver.session() as session:
+            try:
+                for uuid in uuid_list:
+                    stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(e) WHERE e.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' RETURN donor.{UUID_ATTRIBUTE} AS donor_uuid".format(
+                        UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                        uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
+                    for record in session.run(stmt):
+                        donor_record = {}
+                        donor_uuid = record['donor_uuid']
+                        donor_record = Entity.get_entity(driver, donor_uuid)
+                        #donor_metadata = Entity.get_entity_metadata(driver, donor_uuid)
+                        #donor_record['metadata'] = donor_metadata
+                        donor_return_list.append(donor_record)
+                return donor_return_list
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
     
     @staticmethod
     def upload_file_data(request, file_key, directory_path):
@@ -1055,4 +1085,18 @@ def initialize_lab_identifiers(driver):
             if tx.closed() == False:
                 tx.rollback()
             
+if __name__ == "__main__":
+    NEO4J_SERVER = ''
+    NEO4J_USERNAME = ''
+    NEO4J_PASSWORD = ''
+    conn = Neo4jConnection(NEO4J_SERVER, NEO4J_USERNAME, NEO4J_PASSWORD)
+    driver = conn.get_driver()
+    
+    uuid_list = ['c1e69dc0e6b3c1ba0773ba337661791a']
+    
+    donor_data = Specimen.get_donor(driver, uuid_list)
+    
+    print("Donor:")
+    print(donor_data)
+    
 
