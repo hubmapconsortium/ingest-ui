@@ -35,9 +35,9 @@ services:
       # Workflow scrath directory
       - "/hive/hubmap/scratch:/hubmap-scratch"
       # Airflow static files
-      - "/hive/users/hive/hubmap/hivevm193-prod/airflow/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
+      - "/hive/users/hive/hubmap/hivevm193-prod/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
       # Flower static files
-      - "/hive/users/hive/hubmap/hivevm193-prod/airflow/venv/lib/python3.6/site-packages/flower:/flower-static"
+      - "/hive/users/hive/hubmap/hivevm193-prod/venv/lib/python3.6/site-packages/flower:/flower-static"
       # Mount Globus data
       - "/hive/hubmap/lz:/hive/hubmap/lz"
       # assets
