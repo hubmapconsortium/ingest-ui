@@ -37,7 +37,7 @@ class DatasetEdit extends Component {
     data_types: new Set(),
     other_datatype: false,
     other_dt: "",
-	protected_access_level: false,
+	is_protected: false,
 
     formErrors: {
       name: "",
@@ -142,11 +142,11 @@ class DatasetEdit extends Component {
         data_types = data_types.filter(dt => data_type_options.has(dt));
       }
 	  this.setState({
-		protected_access_level: false
+		is_protected: false
       });
-	  if (this.props.editingDataset.properties.protected_access_level) {
+	  if (this.props.editingDataset.properties.is_protected) {
 		  this.setState({
-		  	protected_access_level: this.props.editingDataset.properties.protected_access_level.toLowerCase() === "true" ? true: false
+		  	is_protected: this.props.editingDataset.properties.is_protected.toLowerCase() === "true" ? true: false
 		  });
 	  }
       this.setState(
@@ -298,9 +298,9 @@ class DatasetEdit extends Component {
           new_status: value
         });
         break;
-	  case "protected_access_level":
+	  case "is_protected":
 		this.setState({
-		  protected_access_level: e.target.checked
+		  is_protected: e.target.checked
 		});
 		break;
       case "other_dt":
@@ -569,7 +569,7 @@ class DatasetEdit extends Component {
           data_types: data_types,
           description: this.state.description,
           status: i,
-		  protected_access_level: this.state.protected_access_level
+		  is_protected: this.state.is_protected
         };
 
         var formData = new FormData();
@@ -1525,7 +1525,7 @@ class DatasetEdit extends Component {
 
             <div className='form-group row'>
               <label
-                htmlFor='protected_access_level'
+                htmlFor='is_protected'
                 className='col-sm-2 col-form-label text-right'
               >
                 Protected Access
@@ -1536,12 +1536,12 @@ class DatasetEdit extends Component {
                     <input
                       className='form-check-input'
                       type='checkbox'
-                      name='protected_access_level'
-                      id='protected_access_level'
-                      checked={this.state.protected_access_level}
+                      name='is_protected'
+                      id='is_protected'
+                      checked={this.state.is_protected}
                       onChange={this.handleInputChange}
                     />
-                    <label className='form-check-label' htmlFor='protected_access_level'>
+                    <label className='form-check-label' htmlFor='is_protected'>
                       This dataset is currently granted <strong>protected</strong> status.  <br/>In order to access the data in this dataset you must contact: <a href='mailto:[placeholder]@hubmapconsortium.org'>[placeholder]@hubmapconsortium.org</a>  
                     </label>
                   </div>
@@ -1549,7 +1549,7 @@ class DatasetEdit extends Component {
               )}
               {this.props.readOnly && (
                 <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.protected_access_level}</p>
+                  <p>{this.state.is_protected}</p>
                 </div>
               )}
 			</div>

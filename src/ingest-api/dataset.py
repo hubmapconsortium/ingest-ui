@@ -778,6 +778,8 @@ class Dataset(object):
 
 
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+                access_level = self.get_access_level(nexus_token, driver, metadata_record)
+                metadata_record[HubmapConst.DATASET_DATA_ACCESS_LEVEL] = access_level
 
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
@@ -1600,8 +1602,8 @@ class Dataset(object):
         if HubmapConst.DATASET_STATUS_ATTRIBUTE in metadata_info:
             is_dataset_published = metadata_info[HubmapConst.DATASET_STATUS_ATTRIBUTE] == HubmapConst.DATASET_STATUS_PUBLISHED
         
-        if HubmapConst.DATASET_DATA_ACCESS_LEVEL in metadata_info:
-            is_dataset_protected_data = metadata_info[HubmapConst.DATASET_STATUS_ATTRIBUTE] == HubmapConst.DATASET_ACCESS_LEVEL_PROTECTED
+        if HubmapConst.DATASET_IS_PROTECTED in metadata_info:
+            is_dataset_protected_data = str(metadata_info[HubmapConst.DATASET_IS_PROTECTED]).lower() == 'true'
         
         # NOTE: this should be changed to HubmapConst.DATASET_CONTAINS_GENOMIC_DATA in the future
         if HubmapConst.HAS_PHI_ATTRIBUTE in metadata_info:
