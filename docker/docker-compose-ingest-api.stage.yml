@@ -4,7 +4,7 @@ version: "3.7"
 services:
   
   ingest-api:
-    build: ./ingest-api-prod
+    build: ./ingest-api-stage
     # Build the image with name and tag
     image: ingest-api:1.11
     hostname: ingest-api
@@ -29,15 +29,15 @@ services:
       # Mount ssl certificates from host to container
       - "/etc/pki/nginx:/etc/pki/nginx"
       # Mount conf.d to the nginx conf.d on container
-      - "./ingest-api-prod/nginx/conf.d:/etc/nginx/conf.d"
+      - "./ingest-api-stage/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
-      - "./ingest-api-prod/nginx/html:/usr/share/nginx/html"
+      - "./ingest-api-stage/nginx/html:/usr/share/nginx/html"
       # Workflow scrath directory
-      - "/hive/hubmap/scratch:/hubmap-scratch"
+      - "/hive/hubmap-stage/scratch:/hubmap-scratch"
       # Mount Globus data
-      - "/hive/hubmap/lz:/hive/hubmap/lz"
+      - "/hive/hubmap-stage/protected:/hive/hubmap/protected"
       # assets
-      - "/hive/hubmap/assets:/usr/src/assets"
+      - "/hive/hubmap-stage/assets:/usr/src/assets"
     networks:
       - hubmap
 
