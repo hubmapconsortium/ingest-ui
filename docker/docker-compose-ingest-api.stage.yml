@@ -35,7 +35,7 @@ services:
       # Workflow scrath directory
       - "/hive/hubmap-stage/scratch:/hubmap-scratch"
       # Mount Globus data
-      - "/hive/hubmap-stage/lz:/hive/hubmap/lz"
+      - "/hive/hubmap-stage/protected:/hive/hubmap/protected"
       # assets
       - "/hive/hubmap-stage/assets:/usr/src/assets"
     networks:
