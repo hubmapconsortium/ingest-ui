@@ -4,7 +4,7 @@ version: "3.7"
 services:
   
   ingest-api:
-    build: ./ingest-api-prod
+    build: ./ingest-api-stage
     # Build the image with name and tag
     image: ingest-api:1.11
     hostname: ingest-api
