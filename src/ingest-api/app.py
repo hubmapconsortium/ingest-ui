@@ -685,7 +685,10 @@ def get_group_uuid_from_request(request):
             current_token = AuthHelper.parseAuthorizationTokens(request.headers)
         except:
             raise ValueError("Unable to parse token")
-        nexus_token = current_token['nexus_token']
+        
+        nexus_token = current_token
+        if 'nexus_token' in current_token:
+            nexus_token = current_token['nexus_token']
 
         # determine the group UUID to use when creating the dataset
         group_uuid = None
@@ -734,7 +737,11 @@ def modify_dataset(uuid):
         current_token = AuthHelper.parseAuthorizationTokens(request.headers)
     except:
         raise ValueError("Unable to parse token")
-    nexus_token = current_token['nexus_token']
+    
+    nexus_token = current_token
+    
+    if 'nexus_token' in current_token:
+        nexus_token = current_token['nexus_token']
 
     conn = None
     new_uuid = None
