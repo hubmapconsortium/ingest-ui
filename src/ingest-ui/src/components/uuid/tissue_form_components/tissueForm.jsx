@@ -90,8 +90,9 @@ class TissueForm extends Component {
   constructor(props) {
     super(props);
     // create a ref to store the file Input DOM element   
-	this.protocolFile = React.createRef();
+	  this.protocolFile = React.createRef();
     this.protocol = React.createRef();
+   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
   }
 
   handleRUIJson = (dataFromChild) => {
@@ -790,7 +791,7 @@ class TissueForm extends Component {
             }
           };
 
-          if (this.props.editingEntity) {
+          if (this.props.editingEntity && !this.state.LocationSaved ){
             axios
               .put(
                 `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}`,
@@ -1187,6 +1188,11 @@ class TissueForm extends Component {
         this.validateUUID();
       }
     );
+  };
+
+
+  handleSavedLocations = (e) =>{
+    this.setState({LocationSaved: true });
   };
 
   handleEditLabIDs = () => {
@@ -1744,7 +1750,8 @@ class TissueForm extends Component {
                   hide={this.hideLabIDsModal}
                   ids={this.state.ids}
                   update={this.handleLabIdsUpdate}
-				          organ={this.props.editingEntity.properties.organ}
+                  organ={this.props.editingEntity.properties.organ}
+                  onSaveLocation={this.handleSavedLocations}
                 />
               </React.Fragment>
             )}
@@ -1778,6 +1785,7 @@ class TissueForm extends Component {
                   ids={this.state.ids}
                   update={this.handleLabIdsUpdate}
                   organ={this.props.editingEntity.properties.organ}
+                  onSaveLocation={this.handleSavedLocations}
                 />
               </React.Fragment>
             )}
