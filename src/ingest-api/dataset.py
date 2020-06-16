@@ -484,7 +484,7 @@ class Dataset(object):
                     raise ValueError("Could not find information for identifier" + sourceID)
                 source_UUID_Data.append(hmuuid_data)
         except:
-            raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
+            raise ValueError('Unable to resolve UUID for: ' + incoming_sourceUUID_string)
 
         #validate data
         required_field_list = ['dataset_name','source_uuids',
@@ -676,7 +676,7 @@ class Dataset(object):
                     raise ValueError("Could not find information for identifier" + sourceID)
                 source_UUID_Data.append(hmuuid_data)
         except:
-            raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
+            raise ValueError('Unable to resolve UUID for: ' + incoming_sourceUUID_string)
 
         authcache = None
         if AuthHelper.isInitialized() == False:
@@ -778,7 +778,7 @@ class Dataset(object):
 
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
                 access_level = self.get_access_level(nexus_token, driver, metadata_record)
-                metadata_record[HubmapConst.DATASET_DATA_ACCESS_LEVEL] = access_level
+                metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
 
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
@@ -950,28 +950,6 @@ class Dataset(object):
         else:
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
      
-    @classmethod
-    def get_metadata_uuid_for_ingest_id(self, driver, ingest_id):
-        stmt = "MATCH (e {" + HubmapConst.DATASET_INGEST_ID_ATTRIBUTE + ": '" + ingest_id + "'}) RETURN e." + HubmapConst.UUID_ATTRIBUTE + " AS uuid" 
-        record_list = []
-        with driver.session() as session:
-            try:
-                for record in session.run(stmt):
-                    dataset_record = {}
-                    dataset_record['uuid'] = record['uuid']
-                    record_list.append(dataset_record)
-                if len(record_list) == 1:
-                   return record_list[0]['uuid']
-                else:
-                   if len(record_list) == 0:
-                       raise ValueError('Error: Cannot find dataset with ingest_id of: ' + ingest_id)
-                   else:
-                       raise ValueError('Error: Found multiple datasets with ingest_id of: ' + ingest_id)
-                       
-            except CypherError as cse:
-                raise cse
-            except Exception as e:
-                raise e
 
     @classmethod
     def set_ingest_status(self, driver, json_data):
@@ -1012,7 +990,6 @@ class Dataset(object):
         uuid = None
         update_record = {}
         try:
-            #uuid = self.get_metadata_uuid_for_ingest_id(driver, ingest_id)
             metadata_node = Entity.get_entity_metadata(driver, dataset_id)
             uuid = metadata_node['uuid']
         except:
@@ -1107,28 +1084,6 @@ class Dataset(object):
             if f != None:
                 f.close()    
 
-    @classmethod
-    def get_metadata_uuid_for_ingest_id(self, driver, ingest_id):
-        stmt = "MATCH (e {" + HubmapConst.DATASET_INGEST_ID_ATTRIBUTE + ": '" + ingest_id + "'}) RETURN e." + HubmapConst.UUID_ATTRIBUTE + " AS uuid" 
-        record_list = []
-        with driver.session() as session:
-            try:
-                for record in session.run(stmt):
-                    dataset_record = {}
-                    dataset_record['uuid'] = record['uuid']
-                    record_list.append(dataset_record)
-                if len(record_list) == 1:
-                   return record_list[0]['uuid']
-                else:
-                   if len(record_list) == 0:
-                       raise ValueError('Error: Cannot find dataset with ingest_id of: ' + ingest_id)
-                   else:
-                       raise ValueError('Error: Found multiple datasets with ingest_id of: ' + ingest_id)
-                       
-            except CypherError as cse:
-                raise cse
-            except Exception as e:
-                raise e
         
 
     @classmethod
@@ -1312,7 +1267,7 @@ class Dataset(object):
                 update_record[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
                 
                 access_level = self.get_access_level(nexus_token, driver, update_record)
-                update_record[HubmapConst.DATASET_DATA_ACCESS_LEVEL] = access_level
+                update_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
 
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
@@ -1595,7 +1550,7 @@ class Dataset(object):
                 uuid_list.append(hmuuid_data[0]['hmuuid'])
             donor_list = Dataset.get_donor_by_specimen_list(driver, uuid_list)
         except:
-            raise ValueError('Unable to resolve UUID for: ' + sourceUUID)
+            raise ValueError('Unable to resolve UUID for: ' + incoming_sourceUUID_string)
         
         is_dataset_genomic_sequence = False
         is_donor_open_consent = False
@@ -1634,65 +1589,65 @@ class Dataset(object):
         
         return HubmapConst.ACCESS_LEVEL_CONSORTIUM
 
-@staticmethod
-def get_donor_by_specimen_list(driver, uuid_list):
-    donor_return_list = []
-    with driver.session() as session:
-        try:
-            for uuid in uuid_list:
-                stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(e) WHERE e.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' RETURN donor.{UUID_ATTRIBUTE} AS donor_uuid".format(
-                    UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
-                    uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
-                for record in session.run(stmt):
-                    donor_record = {}
-                    donor_uuid = record['donor_uuid']
-                    donor_record = Entity.get_entity(driver, donor_uuid)
-                    #donor_metadata = Entity.get_entity_metadata(driver, donor_uuid)
-                    #donor_record['metadata'] = donor_metadata
-                    donor_return_list.append(donor_record)
-            return donor_return_list
-        except ConnectionError as ce:
-            print('A connection error occurred: ', str(ce.args[0]))
-            raise ce
-        except ValueError as ve:
-            print('A value error occurred: ', ve.value)
-            raise ve
-        except CypherError as cse:
-            print('A Cypher error was encountered: ', cse.message)
-            raise cse
-        except:
-            print('A general error occurred: ')
-            traceback.print_exc()
-
-@staticmethod
-def get_datasets_by_donor(driver, donor_uuid_list):
-    donor_return_list = []
-    with driver.session() as session:
-        try:
-            for uuid in uuid_list:
-                stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(dataset) WHERE donor.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' and dataset.{ENTITY_TYPE_ATTRIBUTE} = 'Dataset' RETURN DISTINCT dataset.{UUID_ATTRIBUTE} AS dataset_uuid".format(
-                    UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
-                    uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
-                for record in session.run(stmt):
-                    dataset_record = {}
-                    dataset_uuid = record['dataset_uuid']
-                    dataset_record = Entity.get_entity(driver, dataset_uuid)
-                    donor_return_list.append(dataset_record)
-            # NOTE: in the future we might need to convert this to a set to ensure uniqueness
-            # across multiple donors.  But this is not a case right now.
-            return donor_return_list
-        except ConnectionError as ce:
-            print('A connection error occurred: ', str(ce.args[0]))
-            raise ce
-        except ValueError as ve:
-            print('A value error occurred: ', ve.value)
-            raise ve
-        except CypherError as cse:
-            print('A Cypher error was encountered: ', cse.message)
-            raise cse
-        except:
-            print('A general error occurred: ')
-            traceback.print_exc()
+    @staticmethod
+    def get_donor_by_specimen_list(driver, uuid_list):
+        donor_return_list = []
+        with driver.session() as session:
+            try:
+                for uuid in uuid_list:
+                    stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(e) WHERE e.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' RETURN donor.{UUID_ATTRIBUTE} AS donor_uuid".format(
+                        UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                        uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
+                    for record in session.run(stmt):
+                        donor_record = {}
+                        donor_uuid = record['donor_uuid']
+                        donor_record = Entity.get_entity(driver, donor_uuid)
+                        #donor_metadata = Entity.get_entity_metadata(driver, donor_uuid)
+                        #donor_record['metadata'] = donor_metadata
+                        donor_return_list.append(donor_record)
+                return donor_return_list
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
+    
+    @staticmethod
+    def get_datasets_by_donor(driver, donor_uuid_list):
+        donor_return_list = []
+        with driver.session() as session:
+            try:
+                for uuid in uuid_list:
+                    stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(dataset) WHERE donor.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' and dataset.{ENTITY_TYPE_ATTRIBUTE} = 'Dataset' RETURN DISTINCT dataset.{UUID_ATTRIBUTE} AS dataset_uuid".format(
+                        UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                        uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
+                    for record in session.run(stmt):
+                        dataset_record = {}
+                        dataset_uuid = record['dataset_uuid']
+                        dataset_record = Entity.get_entity(driver, dataset_uuid)
+                        donor_return_list.append(dataset_record)
+                # NOTE: in the future we might need to convert this to a set to ensure uniqueness
+                # across multiple donors.  But this is not a case right now.
+                return donor_return_list
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
         
     
 def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, groupDisplayname, newDirUUID):
