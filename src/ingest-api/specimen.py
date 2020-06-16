@@ -1022,6 +1022,23 @@ class Specimen:
 
         return return_list                    
 
+    @staticmethod
+    def update_metadata_access_levels(driver, datasets = []):
+        """
+        for each dataset:
+            get all donor, sample and collection
+        
+        update these donor, sample and collection by their dataset
+        """
+        entity_uuids = set()
+        for uuid in datasets:
+            ans = Entity.get_ancestors(driver, '26040ef5c7b7e265d9bab019f7a52188')
+            for an in ans:
+                entity_uuids.add(an['uuid'])
+
+        print("Done")
+
+    
 
 def create_site_directories(parent_folder):
     hubmap_groups = AuthCache.getHMGroups()
@@ -1086,17 +1103,19 @@ def initialize_lab_identifiers(driver):
                 tx.rollback()
             
 if __name__ == "__main__":
-    NEO4J_SERVER = ''
-    NEO4J_USERNAME = ''
-    NEO4J_PASSWORD = ''
+    NEO4J_SERVER = 'bolt://18.205.215.12:7687'
+    NEO4J_USERNAME = 'neo4j'
+    NEO4J_PASSWORD = 's4S^Y@pQ&_cc*HE@'
     conn = Neo4jConnection(NEO4J_SERVER, NEO4J_USERNAME, NEO4J_PASSWORD)
     driver = conn.get_driver()
     
-    uuid_list = ['c1e69dc0e6b3c1ba0773ba337661791a']
+    # uuid_list = ['c1e69dc0e6b3c1ba0773ba337661791a']
     
-    donor_data = Specimen.get_donor(driver, uuid_list)
+    # donor_data = Specimen.get_donor(driver, uuid_list)
     
-    print("Donor:")
-    print(donor_data)
+    # print("Donor:")
+    # print(donor_data)
+
+    Specimen.update_metadata_access_levels(driver)
     
 
