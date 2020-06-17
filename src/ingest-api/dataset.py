@@ -28,6 +28,7 @@ from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.activity import Activity
 from hubmap_commons.provenance import Provenance
+from builtins import staticmethod
 
 class Dataset(object):
     '''
@@ -1618,20 +1619,71 @@ class Dataset(object):
             except:
                 print('A general error occurred: ')
                 traceback.print_exc()
+
+    @staticmethod
+    def get_datasets_by_collection(driver, collection_uuid):
+        try:
+            entity_and_children = Entity.get_entities_and_children_by_relationship(driver, collection_uuid, HubmapConst.IN_COLLECTION_REL)
+            if entity_and_children != None:
+                if 'items' in entity_and_children:
+                    return  entity_and_children['items']
+            return []
+        except Exception as e:
+            raise e
     
     @staticmethod
     def get_datasets_by_donor(driver, donor_uuid_list):
         donor_return_list = []
+        try:
+            donor_return_list = Dataset.get_datasets_by_type(driver, 'Donor', donor_uuid_list)
+            return donor_return_list
+        except ConnectionError as ce:
+            print('A connection error occurred: ', str(ce.args[0]))
+            raise ce
+        except ValueError as ve:
+            print('A value error occurred: ', ve.value)
+            raise ve
+        except CypherError as cse:
+            print('A Cypher error was encountered: ', cse.message)
+            raise cse
+        except:
+            print('A general error occurred: ')
+            traceback.print_exc()
+
+    @staticmethod
+    def get_datasets_by_sample(driver, sample_uuid_list):
+        donor_return_list = []
+        try:
+            donor_return_list = Dataset.get_datasets_by_type(driver, 'Sample', sample_uuid_list)
+            return donor_return_list
+        except ConnectionError as ce:
+            print('A connection error occurred: ', str(ce.args[0]))
+            raise ce
+        except ValueError as ve:
+            print('A value error occurred: ', ve.value)
+            raise ve
+        except CypherError as cse:
+            print('A Cypher error was encountered: ', cse.message)
+            raise cse
+        except:
+            print('A general error occurred: ')
+            traceback.print_exc()
+    
+    @staticmethod
+    def get_datasets_by_type(driver, type_string, identifier_uuid_list):
+        donor_return_list = []
         with driver.session() as session:
             try:
-                for uuid in uuid_list:
-                    stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(dataset) WHERE donor.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' and dataset.{ENTITY_TYPE_ATTRIBUTE} = 'Dataset' RETURN DISTINCT dataset.{UUID_ATTRIBUTE} AS dataset_uuid".format(
+                for uuid in identifier_uuid_list:
+                    stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(dataset) WHERE donor.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = '{type_string}' and dataset.{ENTITY_TYPE_ATTRIBUTE} = 'Dataset' RETURN DISTINCT dataset.{UUID_ATTRIBUTE} AS dataset_uuid".format(
                         UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
-                        uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
+                        uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL, type_string=type_string)    
                     for record in session.run(stmt):
                         dataset_record = {}
                         dataset_uuid = record['dataset_uuid']
                         dataset_record = Entity.get_entity(driver, dataset_uuid)
+                        metadata_record = Entity.get_entity_metadata(driver, dataset_uuid)
+                        dataset_record['properties'] = metadata_record
                         donor_return_list.append(dataset_record)
                 # NOTE: in the future we might need to convert this to a set to ensure uniqueness
                 # across multiple donors.  But this is not a case right now.
@@ -1727,7 +1779,7 @@ if __name__ == "__main__":
     NEO4J_USERNAME = 'neo4j'
     NEO4J_PASSWORD = '123'
     conn = Neo4jConnection(NEO4J_SERVER, NEO4J_USERNAME, NEO4J_PASSWORD)
-    nexus_token = 'Ag7lnbmBgd4w8E4B7QQeX68xwo2qrMmx9zolGyBDWJGqdQwNX1FWC08D91Bzk4G2qeBOlDDdMWGaE0Hz2w5PMiM3Ob'
+    nexus_token = 'AgNkroqO86BbgjPxYk9Md20r8lKJ04WxzJnqrm7xWvDKg1lvgbtgCwnxdYBNYw85OkGmoo1wxPb4GMfjO8dakf24g7'
     driver = conn.get_driver()
     
     UUID_WEBSERVICE_URL = 'http://localhost:5001/hmuuid'
@@ -1735,6 +1787,22 @@ if __name__ == "__main__":
     conf_data = {'NEO4J_SERVER' : NEO4J_SERVER, 'NEO4J_USERNAME': NEO4J_USERNAME, 
                  'NEO4J_PASSWORD': NEO4J_PASSWORD, 'UUID_WEBSERVICE_URL' : UUID_WEBSERVICE_URL}
     
+    dataset = Dataset(conf_data)
+    
+    sample_uuid_with_dataset = '909e2600643f8a6f5b60be9d7a7755ac'
+    collection_uuid_with_dataset = '48fb4423ea9c2b8aaf3c4f0be5ac1c98'
+    donor_uuid_with_dataset = 'a9175b3b41ef3cb88afa0cb1fff0f4e7'
+    
+    datasets_for_collection = Dataset.get_datasets_by_collection(driver, collection_uuid_with_dataset)
+    print("Collections: " + str(datasets_for_collection))
+    
+    datasets_for_donor = Dataset.get_datasets_by_donor(driver, [donor_uuid_with_dataset])
+    print("Donor: " + str(datasets_for_donor))
+
+    datasets_for_sample = Dataset.get_datasets_by_sample(driver, [sample_uuid_with_dataset])
+    print("Sample: " + str(datasets_for_sample))
+    
+    """
     protected_dataset_uuid = '62c461245ee413fc5eed0f1f31853139'
     consortium_dataset_uuid = 'f1fc56fe8e39a9c05328d905d1c4498e'
     open_consent_dataset_uuid = 'd22bdd1ed6908894dbfd4e17c668112e'
@@ -1743,7 +1811,6 @@ if __name__ == "__main__":
     consortium_dataset_info = Dataset.get_dataset(driver, consortium_dataset_uuid)
     open_consent_dataset_info = Dataset.get_dataset(driver, open_consent_dataset_uuid)
     
-    dataset = Dataset(conf_data)
     
     print("Protected uuid: " + protected_dataset_uuid)
     access_level = dataset.get_access_level(nexus_token, driver, protected_dataset_info)
@@ -1756,5 +1823,5 @@ if __name__ == "__main__":
     print("Open consent uuid: " + open_consent_dataset_uuid)
     access_level = dataset.get_access_level(nexus_token, driver, open_consent_dataset_info)
     print ("Access level : " + str(access_level))
-    
+    """
 
