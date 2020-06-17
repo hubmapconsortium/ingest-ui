@@ -28,7 +28,6 @@ from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.activity import Activity
 from hubmap_commons.provenance import Provenance
-from builtins import staticmethod
 
 class Dataset(object):
     '''
@@ -1158,8 +1157,8 @@ class Dataset(object):
                     update_record[HubmapConst.HAS_PHI_ATTRIBUTE] = update_record['phi']
                     if HubmapConst.HAS_PHI_ATTRIBUTE != 'phi':
                         update_record.pop('phi', None)
-                
-                update_record['status'] = convert_dataset_status(str(update_record['status']))
+                if 'status' in update_record:
+                    update_record['status'] = convert_dataset_status(str(update_record['status']))
                 
                 #update the dataset source uuid's (if necessary)
                 
@@ -1186,35 +1185,37 @@ class Dataset(object):
                 
                 # check to see if any updates were made to the source uuids
                 dataset_source_id_list.sort()
-                form_source_uuid_list = eval(str(formdata['source_uuid']))
-                form_source_uuid_list.sort()
+                form_source_uuid_list = []
+                if 'source_uuid' in formdata:
+                    form_source_uuid_list = eval(str(formdata['source_uuid']))
+                    form_source_uuid_list.sort()
                 
-                # need to make updates
-                if dataset_source_id_list != form_source_uuid_list:
-                     # first remove the existing relations
-                    stmt = """MATCH (e)-[r:{activity_input_rel}]->(a) WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
-                    DELETE r""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
-                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
-                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
-                                        activity_uuid=dataset_create_activity_uuid,
-                                        id_list=dataset_source_id_list)
+                    # need to make updates
+                    if dataset_source_id_list != form_source_uuid_list:
+                         # first remove the existing relations
+                        stmt = """MATCH (e)-[r:{activity_input_rel}]->(a) WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
+                        DELETE r""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                            uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                            source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                            activity_uuid=dataset_create_activity_uuid,
+                                            id_list=dataset_source_id_list)
+                        
+                        print("Delete statement: " + stmt)
+                        tx.run(stmt)
                     
-                    print("Delete statement: " + stmt)
-                    tx.run(stmt)
-                
-                    # next create the new relations
-                    stmt = """MATCH (e),(a)
-                    WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
-                    CREATE (e)-[r:{activity_input_rel}]->(a)""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
-                                        uuid_attr=HubmapConst.UUID_ATTRIBUTE,
-                                        source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
-                                        activity_uuid=dataset_create_activity_uuid,
-                                        id_list=str(form_source_uuid_list))
-                    
-                    print("Create statement: " + stmt)
-                    tx.run(stmt)
+                        # next create the new relations
+                        stmt = """MATCH (e),(a)
+                        WHERE e.{source_id_attr} IN {id_list} AND a.{uuid_attr} = '{activity_uuid}'
+                        CREATE (e)-[r:{activity_input_rel}]->(a)""".format(activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
+                                            uuid_attr=HubmapConst.UUID_ATTRIBUTE,
+                                            source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                            activity_uuid=dataset_create_activity_uuid,
+                                            id_list=str(form_source_uuid_list))
+                        
+                        print("Create statement: " + stmt)
+                        tx.run(stmt)
 
-                if update_record['status'] == str(HubmapConst.DATASET_STATUS_PROCESSING):
+                if 'status' in update_record and update_record['status'] == str(HubmapConst.DATASET_STATUS_PROCESSING):
                     #the status is set...so no problem
                     # I need to retrieve the ingest_id from the call and store it in neo4j
                     # /datasets/submissions/request_ingest 

@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 from flask import json
 import traceback
 from flask import Response
-#from dataset import Dataset
+from dataset import Dataset
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
 from hubmap_commons.uuid_generator import UUID_Generator
@@ -165,17 +165,29 @@ class Specimen:
                 # if the open_consent flag changes, you need to check the access level on any
                 # child datasets
                 entity_record = Entity.get_entity(driver, uuid)
+                existing_open_consent = False
+                if HubmapConst.DONOR_OPEN_CONSENT in metadata_obj:
+                    existing_open_consent = metadata_obj[HubmapConst.DONOR_OPEN_CONSENT]
+
+                new_open_consent = False
+                if HubmapConst.DONOR_OPEN_CONSENT in metadata_record:
+                    new_open_consent = metadata_record[HubmapConst.DONOR_OPEN_CONSENT]
+                
                 if entity_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] == 'Donor':
                     if HubmapConst.DONOR_OPEN_CONSENT in metadata_record:
-                        uuid_list = []
-                        uuid_list.append(uuid)
-                        dataset_list = Dataset.get_datasets_by_donor(uuid_list)
-                        for ds in dataset_list:
-                            dataset = Dataset(self.confdata)
-                            dataset_record = {HubmapConst.UUID_ATTRIBUTE: ds[HubmapConst.UUID_ATTRIBUTE]}
-                            
-                            # the dataset access level will be reset using the modify_dataset method
-                            dataset.modify_dataset(driver, current_token, ds[HubmapConst.UUID_ATTRIBUTE], dataset_record)
+                        #only update if the flag has changed
+                        if new_open_consent != existing_open_consent: 
+                            uuid_list = []
+                            uuid_list.append(uuid)
+                            dataset_list = Dataset.get_datasets_by_donor(driver, uuid_list)
+                            for ds in dataset_list:
+                                dataset = Dataset(self.confdata)
+                                dataset_record = {HubmapConst.UUID_ATTRIBUTE: ds[HubmapConst.UUID_ATTRIBUTE],
+                                                  HubmapConst.SOURCE_UUID_ATTRIBUTE: ds['properties'][HubmapConst.SOURCE_UUID_ATTRIBUTE]}
+                                
+                                # the dataset access level will be reset using the modify_dataset method
+                                dataset.modify_dataset(driver, request.headers, ds[HubmapConst.UUID_ATTRIBUTE], dataset_record, groupUUID)
+                                #    def modify_dataset(self, driver, headers, uuid, formdata, group_uuid):
 
 
                 if 'metadata' in metadata_record.keys():
