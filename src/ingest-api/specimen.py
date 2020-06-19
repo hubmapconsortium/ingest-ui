@@ -1032,9 +1032,12 @@ class Specimen:
         """
         entity_uuids = set()
         for uuid in datasets:
-            ans = Entity.get_ancestors(driver, '26040ef5c7b7e265d9bab019f7a52188')
+            ans = Entity.get_ancestors(driver, uuid)
             for an in ans:
-                entity_uuids.add(an['uuid'])
+                entity_uuids.add((an['uuid'], an['entitytype']))
+        
+        import pdb; pdb.set_trace()
+
 
         print("Done")
 
@@ -1116,6 +1119,6 @@ if __name__ == "__main__":
     # print("Donor:")
     # print(donor_data)
 
-    Specimen.update_metadata_access_levels(driver)
+    Specimen.update_metadata_access_levels(driver, ['26040ef5c7b7e265d9bab019f7a52188', '90a3630e7d6afc4b335eb586dab4304a'])
     
 
