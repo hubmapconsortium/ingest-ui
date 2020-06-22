@@ -14,6 +14,7 @@ import {
   faUserShield,
   faExternalLinkAlt
 } from "@fortawesome/free-solid-svg-icons";
+import Modal from "../uuid/modal";
 
 class DatasetEdit extends Component {
   state = {
@@ -171,7 +172,10 @@ class DatasetEdit extends Component {
           data_types: new Set(data_types),
           other_datatype: other_dt !== undefined,
           other_dt: other_dt,
-          description: this.props.editingDataset.properties.description        },
+          description: this.props.editingDataset.properties.description,
+          errorMsgShow: this.props.editingDataset.properties.status.toLowerCase() === "error" && this.props.editingDataset.properties.message ? true : false,
+          statusErrorMsg: this.props.editingDataset.properties.message
+        },
         () => {
           switch (this.state.status.toUpperCase()) {
             case "NEW":
@@ -234,6 +238,14 @@ class DatasetEdit extends Component {
 
   hideModal = () => {
     this.setState({ show: false });
+  };
+
+  showErrorMsgModal = msg => {
+    this.setState({ errorMsgShow: true, statusErrorMsg: msg });
+  };
+
+  hideErrorMsgModal = () => {
+    this.setState({ errorMsgShow: false });
   };
 
   handleLookUpClick = () => {
@@ -320,18 +332,20 @@ class DatasetEdit extends Component {
           });
         }
       }
-      if (e.target.checked) {
-        const data_types = this.state.data_types;
-        data_types.add(name);
-        this.setState({
-          data_types: data_types
-        });
-      } else {
-        const data_types = this.state.data_types;
-        data_types.delete(name);
-        this.setState({
-          data_types: data_types
-        });
+      else {
+        if (e.target.checked) {
+          const data_types = this.state.data_types;
+          data_types.add(name);
+          this.setState({
+            data_types: data_types
+          });
+        } else {
+          const data_types = this.state.data_types;
+          data_types.delete(name);
+          this.setState({
+            data_types: data_types
+          });
+        }
       }
     }
   };
@@ -679,7 +693,7 @@ class DatasetEdit extends Component {
       }
 
       if (
-        this.state.data_types.has("dt_other") &&
+        this.state.other_datatype &&
         !validateRequired(this.state.other_dt)
       ) {
         this.setState(prevState => ({
@@ -1112,7 +1126,7 @@ class DatasetEdit extends Component {
             <div className='row mt-3 mb-3'>
               <div className='col-sm-2'>
                 <h3 className='float-right'>
-                  <span className={"badge " + this.state.badge_class}>
+                  <span className={"badge " + this.state.badge_class} style={{ cursor: "pointer" }} onClick={() => this.showErrorMsgModal(this.props.editingDataset.properties.message)}>
                     {this.state.status}
                   </span>
                 </h3>
@@ -1885,7 +1899,7 @@ class DatasetEdit extends Component {
                           name='dt_other'
                           id='dt_other'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_other")}
+                          checked={this.state.other_datatype}
                         />
                         <label className='form-check-label' htmlFor='dt_other'>
                           Other
@@ -1997,6 +2011,17 @@ class DatasetEdit extends Component {
           {this.state.is_curator !== null && this.renderButtons()}
         </form>
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
+        <Modal
+          show={this.state.errorMsgShow}
+          handleClose={this.hideErrorMsgModal}
+        >
+          <div className="row">
+            <div className="col-sm-12 text-center alert">
+              <h4>{(this.props.editingDataset && this.props.editingDataset.properties.status.toUpperCase()) || "STATUS"}</h4>
+              <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
+            </div>
+          </div>
+        </Modal>
       </React.Fragment>
     );
   }

@@ -47,6 +47,7 @@ class Specimen:
     def update_specimen(self, driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         metadata_uuid = None
+        entity_record = None
         try:
             metadata_obj = Entity.get_entity_metadata(driver, uuid)
             #metadata_obj = Entity.get_entity(driver, uuid)
@@ -88,11 +89,17 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
         # ex: <data_parent_directory>/<group UUID>
+
+        
         data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
+
+        
         #get a link to the subdirectory within data directory using the current uuid
         # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
         # We need to allow this method to create a new directory.  It is possible that an earlier
         # specimen didn't have any files when it was initially created
+
+        
         data_directory = get_data_directory(data_directory, uuid, True)
 
         with driver.session() as session:
@@ -147,6 +154,15 @@ class Specimen:
                     protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
                     incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                 
+                if 'rui_location' in incoming_record or 'lab_tissue_id' in incoming_record:
+                    entity_record = {}
+                    entity_record[HubmapConst.UUID_ATTRIBUTE] = uuid
+                    if 'rui_location' in incoming_record:
+                        entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = incoming_record['rui_location']
+                        incoming_record.pop('rui_location')
+                    if 'lab_tissue_id' in incoming_record:
+                        entity_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = incoming_record['lab_tissue_id']
+                        incoming_record.pop('lab_tissue_id')
                 metadata_record = incoming_record
                 # don't change the type of this node
                 metadata_record.pop(HubmapConst.ENTITY_TYPE_ATTRIBUTE)
@@ -214,6 +230,13 @@ class Specimen:
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
+                
+                # some of the data is written to the entity node.  Update the entity node if necessary.
+                if entity_record != None:
+                    stmt = Neo4jConnection.get_update_statement(
+                        entity_record, True)
+                    tx.run(stmt)
+                    
                 tx.commit()
                 return uuid
             except TransactionError as te:
@@ -231,17 +254,41 @@ class Specimen:
                     tx.rollback()
     
     @classmethod
-    def batch_update_specimen_lab_ids(cls, driver, incoming_record, token):
+    def batch_update_specimen_lab_ids(cls, driver, incoming_records, token):
         conn = Neo4jConnection(cls.confdata['NEO4J_SERVER'], cls.confdata['NEO4J_USERNAME'], cls.confdata['NEO4J_PASSWORD'])
         with driver.session() as session:
             tx = None
             try:
                 tx = session.begin_transaction()
                 
-                for uuid, lab_id in incoming_record.items():
-                    id = {HubmapConst.UUID_ATTRIBUTE: uuid, HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE: lab_id}
+                for item in incoming_records:
+                    if 'uuid' not in item:
+                        raise ValueError('Error: missing uuid from data')
+                    uuid = item['uuid']
+                    # verify uuid
+                    ug = UUID_Generator(cls.confdata['UUID_WEBSERVICE_URL'])
+                    metadata_uuid = None
+                    try:
+                        hmuuid_data = ug.getUUID(token, uuid)
+                        if len(hmuuid_data) != 1:
+                            raise ValueError("Could not find information for identifier" + uuid)
+                        #specimen_metadata = Entity.get_entity_metadata(driver, uuid)
+                        #metadata_uuid = specimen_metadata['uuid']
+                    except:
+                        raise ValueError('Unable to resolve UUID for: ' + uuid)
+
+                    update_record = {HubmapConst.UUID_ATTRIBUTE: uuid}
+                    if 'lab_identifier' in item:
+                       update_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = item['lab_identifier']
+                    if 'rui_location' in item:
+                        # strip out newlines
+                        rui_json = str(item['rui_location']).replace('\n', '')
+                        update_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = rui_json
+                    if HubmapConst.RUI_LOCATION_ATTRIBUTE not in update_record and HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE not in update_record:
+                        raise ValueError('Error: cannot update uuid: ' + uuid + ': no data found for specimen identifier and RUI data')
+                         
                     stmt = Neo4jConnection.get_update_statement(
-                        id, True)
+                        update_record, True)
                     tx.run(stmt)
                 tx.commit()
                 return True
@@ -860,15 +907,18 @@ class Specimen:
         sibling_return_list = []
         with driver.session() as session:
             try:
-                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier, sibling.{LAB_TISSUE_ID} AS sibling_lab_tissue_id".format(
+                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME}) OPTIONAL MATCH (a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier, sibling.{LAB_TISSUE_ID} AS sibling_lab_tissue_id, sibling.{RUI_LOCATION_ATTR} AS sibling_rui_location".format(
                     UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
                     uuid=uuid, ACTIVITY_NODE_NAME=HubmapConst.ACTIVITY_NODE_NAME, LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
-                    ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, LAB_TISSUE_ID =HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)    
+                    ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, LAB_TISSUE_ID =HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, RUI_LOCATION_ATTR=HubmapConst.RUI_LOCATION_ATTRIBUTE)    
                 for record in session.run(stmt):
                     sibling_record = {}
-                    sibling_record['uuid'] = record['sibling_uuid']
-                    sibling_record['hubmap_identifier'] = record['sibling_hubmap_identifier']
-                    sibling_record['lab_tissue_id'] = record['sibling_lab_tissue_id']
+                    sibling_record['uuid'] = record.get('sibling_uuid')
+                    sibling_record['hubmap_identifier'] = record.get('sibling_hubmap_identifier')
+                    if record.get('sibling_lab_tissue_id') != None:
+                        sibling_record['lab_tissue_id'] = record.get('sibling_lab_tissue_id')
+                    if record.get('sibling_rui_location') != None:
+                        sibling_record['rui_location'] = record.get('sibling_rui_location')
                     sibling_return_list.append(sibling_record)
                 return sibling_return_list
             except ConnectionError as ce:
@@ -966,11 +1016,11 @@ class Specimen:
         stmt_list = []
         if search_term == None:
             stmt1 = """MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
-            RETURN COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            RETURN COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{rui_location_attr} AS rui_location, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, rui_location_attr=HubmapConst.RUI_LOCATION_ATTRIBUTE)
             stmt_list = [stmt1]
         else:
             # use the full text indexing if searching for a term
@@ -979,21 +1029,21 @@ class Specimen:
             order_by_clause = "score DESC, "    
             stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
             MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
-            RETURN score, COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            RETURN score, COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{rui_location_attr} AS rui_location, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, rui_location_attr=HubmapConst.RUI_LOCATION_ATTRIBUTE)
     
             provenance_group_uuid_clause = provenance_group_uuid_clause.replace('lucene_node.', 'metadata_node.')
 
             stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
             MATCH (metadata_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
-            RETURN score, COALESCE(lucene_node.{hubmapid_attr}, lucene_node.{display_doi_attr}) AS hubmap_identifier, lucene_node.{lab_tissue_id_attr} AS lab_tissue_id, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
+            RETURN score, COALESCE(lucene_node.{hubmapid_attr}, lucene_node.{display_doi_attr}) AS hubmap_identifier, lucene_node.{lab_tissue_id_attr} AS lab_tissue_id, lucene_node.{rui_location_attr} AS rui_location, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, rui_location_attr=HubmapConst.RUI_LOCATION_ATTRIBUTE)
     
             stmt_list = [stmt1, stmt2]
         return_list = []
@@ -1017,7 +1067,10 @@ class Specimen:
                                 data_record['datatype'] = record['datatype']
                                 data_record['properties'] = record['metadata_properties']
                                 data_record['hubmap_identifier'] = record['hubmap_identifier']
-                                data_record['lab_tissue_id'] = record['lab_tissue_id']
+                                if record.get('lab_tissue_id', None) != None:
+                                    data_record['properties']['lab_tissue_id'] = record['lab_tissue_id']
+                                if record.get('rui_location', None) != None:
+                                    data_record['properties']['rui_location'] = record['rui_location']
                                 # determine if the record is writable by the current user
                                 data_record['writeable'] = False
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
