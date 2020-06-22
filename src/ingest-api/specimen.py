@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 from flask import json
 import traceback
 from flask import Response
+from typing import List
 from dataset import Dataset
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
@@ -1054,25 +1055,90 @@ class Specimen:
         return return_list                    
 
     @staticmethod
-    def update_metadata_access_levels(driver, datasets = []):
+    def update_metadata_access_levels(driver, datasets: List[str] = []):
+        """ Function to update data_access_level attribute for entities base on datasets' uuid
+
+        Args:
+            driver: Neo4j connection driver
+            datasets: A list of dataset uuid
+        Returns:
+            
         """
-        for each dataset:
-            get all donor, sample and collection
+        try:
+            entity_uuids = set()
+            for uuid in datasets:
+                ans = Entity.get_ancestors(driver, uuid)
+                for an in ans:
+                    if an['entitytype'].lower() != 'dataset':
+                        entity_uuids.add((an['uuid'], an['entitytype']))
+                col = Entity.get_collection(driver, uuid)
+                if col is not None:
+                    entity_uuids.add((col['uuid'], col['entitytype']))
+
+            for uuid, entity_type in entity_uuids:
+                if entity_type.lower() != 'dataset':
+                    uuid_arg = uuid if entity_type.lower() == 'collection' else [uuid]
+                    datasets = getattr(Dataset, f'get_datasets_by_{entity_type.lower()}')(driver, uuid_arg)
+                    data_access_level = Specimen.__metadata_get_access_level_by_datasets(datasets)
+                    # import pdb; pdb.set_trace()
+                    Specimen.__update_access_level(driver = driver, uuid = uuid, 
+                                                   entity_type = entity_type, 
+                                                   data_access_level = data_access_level)
+        except:
+            raise Exception("unexcepted error")
+
+    @staticmethod
+    def __metadata_get_access_level_by_datasets(datasets = []):
+        """ Funtion determind the data_access_level
         
-        update these donor, sample and collection by their dataset
+        Args:
+            datasets: a lists of dataset node with metadat info in 'properties' key
+
+        Return:
+            HubmapConst.ACCESS_LEVEL_PUBLIC or HubmapConst.ACCESS_LEVEL_CONSORTIUM
         """
-        entity_uuids = set()
-        for uuid in datasets:
-            ans = Entity.get_ancestors(driver, uuid)
-            for an in ans:
-                entity_uuids.add((an['uuid'], an['entitytype']))
-        
-        import pdb; pdb.set_trace()
+        return HubmapConst.ACCESS_LEVEL_PUBLIC \
+                    if any([True for d in datasets  \
+                        if 'properties' in d and HubmapConst.DATA_ACCESS_LEVEL in d['properties'] \
+                        and d['properties'][HubmapConst.DATA_ACCESS_LEVEL] == HubmapConst.ACCESS_LEVEL_PUBLIC]) \
+                    else HubmapConst.ACCESS_LEVEL_CONSORTIUM
 
+    @staticmethod
+    def __update_access_level(driver, uuid, entity_type, data_access_level):
+        """ Function to update the data_access_level attribute
 
-        print("Done")
+        Args:
+            driver: Neo4j DB driver
+            uuid: The uuid of the node
+            entity_type: The type of the node
+            data_access_level: The data access_level
 
-    
+        Return:
+
+        """
+        with driver.session() as session:
+            try:
+                if entity_type.lower() in ['donor', 'sample']:
+                    stmt = f"""MATCH (e {{uuid: '{uuid}'}})-[:{HubmapConst.HAS_METADATA_REL}]->(m) 
+                        SET m.{HubmapConst.DATA_ACCESS_LEVEL} = '{data_access_level.lower()}' RETURN e, m"""
+                elif entity_type.lower() == 'collection':
+                    stmt = f"""MATCH (c {{uuid: '{uuid}'}})
+                        SET c.{HubmapConst.DATA_ACCESS_LEVEL} = '{data_access_level.lower()}' RETURN c"""
+                else:
+                    raise ValueError(f"Cannot update data_access_level attribute for '{entity_type}' type")
+                session.run(stmt)
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()    
 
 def create_site_directories(parent_folder):
     hubmap_groups = AuthCache.getHMGroups()
@@ -1137,9 +1203,9 @@ def initialize_lab_identifiers(driver):
                 tx.rollback()
             
 if __name__ == "__main__":
-    NEO4J_SERVER = 'bolt://18.205.215.12:7687'
+    NEO4J_SERVER = 'bolt://12.123.12.123:3213'
     NEO4J_USERNAME = 'neo4j'
-    NEO4J_PASSWORD = 's4S^Y@pQ&_cc*HE@'
+    NEO4J_PASSWORD = '123'
     conn = Neo4jConnection(NEO4J_SERVER, NEO4J_USERNAME, NEO4J_PASSWORD)
     driver = conn.get_driver()
     
@@ -1150,6 +1216,7 @@ if __name__ == "__main__":
     # print("Donor:")
     # print(donor_data)
 
-    Specimen.update_metadata_access_levels(driver, ['26040ef5c7b7e265d9bab019f7a52188', '90a3630e7d6afc4b335eb586dab4304a'])
+    #  '26040ef5c7b7e265d9bab019f7a52188', '90a3630e7d6afc4b335eb586dab4304a'
+    Specimen.update_metadata_access_levels(driver, ['26040ef5c7b7e265d9bab019f7a52188'])
     
 
