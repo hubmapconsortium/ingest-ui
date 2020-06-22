@@ -89,7 +89,7 @@ class Specimen:
         # ex: <data_parent_directory>/<group UUID>
 
         
-        #data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
+        data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
 
         
         #get a link to the subdirectory within data directory using the current uuid
@@ -98,7 +98,7 @@ class Specimen:
         # specimen didn't have any files when it was initially created
 
         
-        #data_directory = get_data_directory(data_directory, uuid, True)
+        data_directory = get_data_directory(data_directory, uuid, True)
 
         with driver.session() as session:
             tx = None
@@ -122,11 +122,7 @@ class Specimen:
                 if 'images' in incoming_record:
                     current_imagefiles = incoming_record['images']
                 all_files = Specimen.build_complete_file_list(current_metadatafiles, current_protocolfile, current_imagefiles)
-                data_directory = None
-                if all_files[0] != '':
-                    data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
-                    data_directory = get_data_directory(data_directory, uuid, True)
-                    Specimen.cleanup_files(data_directory, all_files)
+                Specimen.cleanup_files(data_directory, all_files)
                 # append the current UUID to the data_directory to avoid filename collisions.
                 if 'metadata_file' in file_list:
                     metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
