@@ -18,6 +18,7 @@ from pprint import pprint
 import shutil
 import json
 import traceback
+import posix1e
 
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_const import HubmapConst 
@@ -28,6 +29,7 @@ from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.activity import Activity
 from hubmap_commons.provenance import Provenance
+from hubmap_commons.file_helper import linkDir, unlinkDir, mkDir
 
 class Dataset(object):
     '''
@@ -348,8 +350,6 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_UUID'], new_path)
 
                 # Create the Entity Metadata node
                 # Don't use None, it'll throw TypeError: 'NoneType' object does not support item assignment
@@ -362,8 +362,6 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data['derived_dataset_types'])
                 metadata_record[HubmapConst.SOURCE_UUID_ATTRIBUTE] = source_UUID_Data[0][0]['doiSuffix']
 
-                metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
-                metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # Set the 'phi' attribute with default value as "no"
                 metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "no"
@@ -382,6 +380,17 @@ class Dataset(object):
                     raise ConnectionError("Unable to connect to the UUID service: " + str(ce.args[0]))
 
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+
+                access_level = self.get_access_level(nexus_token, driver, metadata_record)
+                metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+                webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
+                if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
+                    webservice_file_path = None
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_UUID'], new_path)
+
+                metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
+                metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
 
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
@@ -545,15 +554,28 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = build_globus_url_for_directory(transfer_endpoint,new_path)
-                
-                incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
-                incoming_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
+
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
 
+
+                access_level = self.get_access_level(nexus_token, driver, metadata_record)
+                metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+
+                webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
+                if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
+                    webservice_file_path = None
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
+                
+                metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
+                metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
+                
+                # move the files if the access level changes
+                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+
+                
                 # set the right collection uuid field
                 metadata_record['collection_uuid'] = incoming_record.get('dataset_collection_uuid', None)
                 
@@ -746,13 +768,6 @@ class Dataset(object):
                 # setup initial Landing Zone directory for the new datastage
                 group_display_name = provenance_group['displayname']
 
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']), group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
-                
-                """new_path = self.get_globus_file_path(group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = os.makedirs(new_path)"""
-                incoming_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
-                incoming_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # use the remaining attributes to create the Entity Metadata node
                 metadata_record = incoming_record
@@ -777,8 +792,24 @@ class Dataset(object):
 
 
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid_record[HubmapConst.UUID_ATTRIBUTE]
+                old_access_level = None
+                if HubmapConst.DATA_ACCESS_LEVEL in metadata_record:
+                    old_access_level = metadata_record[HubmapConst.DATA_ACCESS_LEVEL]
                 access_level = self.get_access_level(nexus_token, driver, metadata_record)
                 metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+
+                webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
+                if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
+                    webservice_file_path = None
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
+                
+                metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
+                metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
+                
+                # move the files if the access level changes
+                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+
 
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 tx.run(stmt)
@@ -1117,6 +1148,9 @@ class Dataset(object):
    
     @classmethod
     def modify_dataset(self, driver, headers, uuid, formdata, group_uuid):
+        # added this import statement to avoid a circular reference in import statements
+        from specimen import Specimen
+        group_info = None
         with driver.session() as session:
             tx = None
             try:
@@ -1165,6 +1199,10 @@ class Dataset(object):
                 dataset_metadata_uuid = metadata_node[HubmapConst.UUID_ATTRIBUTE]
                 dataset_source_id_list = []
                 dataset_create_activity_uuid = None
+                
+                prov = Provenance(self.confdata['APP_CLIENT_ID'],self.confdata['APP_CLIENT_SECRET'], None)
+                group_info = prov.get_group_by_identifier(metadata_node['provenance_group_uuid'])
+
 
                 # get a list of the current source uuids
                 stmt = """MATCH (e:Entity {{  {entitytype_attr}: 'Dataset'}})<-[activity_relations:{activity_output_rel}]-(dataset_create_activity:Activity)<-[:{activity_input_rel}]-(source_uuid_list)
@@ -1220,8 +1258,6 @@ class Dataset(object):
                     # I need to retrieve the ingest_id from the call and store it in neo4j
                     # /datasets/submissions/request_ingest 
                     try:
-                        prov = Provenance(self.confdata['APP_CLIENT_ID'],self.confdata['APP_CLIENT_SECRET'], None)
-                        group_info = prov.get_group_by_identifier(metadata_node['provenance_group_uuid'])
                         # take the incoming uuid_type and uppercase it
                         url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
                         print('sending request_ingest to: ' + url)
@@ -1270,6 +1306,17 @@ class Dataset(object):
                 
                 access_level = self.get_access_level(nexus_token, driver, update_record)
                 update_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+                Specimen.update_metadata_access_levels(driver, [uuid])
+                
+                # remove a symlink if the access level is protected
+                if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
+                    sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
+                    if os.path.exists(sym_link_path):
+                        unlinkDir(sym_link_path)
+                    
+
+                # move the files if the access level changes
+                self.set_dir_permissions(access_level, uuid, group_info['displayname'])
 
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
@@ -1589,7 +1636,48 @@ class Dataset(object):
         if is_dataset_protected_data == False and is_dataset_published == True:
             return HubmapConst.ACCESS_LEVEL_PUBLIC
         
-        return HubmapConst.ACCESS_LEVEL_CONSORTIUM
+        # this is the default access level
+        return HubmapConst.ACCESS_LEVEL_PROTECTED
+
+    #NOTE: I need to run this in the operating system to get the posix1e code to work:
+    #sudo apt-get install libacl1-dev
+    @classmethod
+    def set_dir_permissions(self, access_level, dataset_uuid, group_display_name):
+        try:
+            #first, remove any existing links
+            public_path = os.path.join(self.confdata['GLOBUS_PUBLIC_ENDPOINT_FILEPATH'], dataset_uuid)
+            if os.path.exists(public_path):
+                unlinkDir(public_path)
+            consortium_path = os.path.join(self.confdata['GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH'], dataset_uuid)
+            if os.path.exists(consortium_path):
+                unlinkDir(consortium_path)
+            protected_path = os.path.join(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], group_display_name, dataset_uuid)
+            if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
+                acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x'.format(
+                    hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
+                    seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'])
+                acl = posix1e.ACL(text=acl_text)
+                acl.applyto(protected_path)
+            if access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
+                linkDir(protected_path, consortium_path)
+                acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
+                    hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
+                    seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
+                    consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
+                acl = posix1e.ACL(text=acl_text)
+                acl.applyto(protected_path)
+            if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
+                linkDir(protected_path, public_path)
+                acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
+                    hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
+                    seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
+                    consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
+                acl = posix1e.ACL(text=acl_text)
+                acl.applyto(protected_path)
+        except Exception as e:
+            raise e
+        
+
 
     @staticmethod
     def get_donor_by_specimen_list(driver, uuid_list):
@@ -1702,7 +1790,8 @@ class Dataset(object):
                 print('A general error occurred: ')
                 traceback.print_exc()
         
-    
+#NOTE: the file_path_symbolic_dir needs to be optional.  If it is None, do not add the symbolic link
+# somewhere else in the code, check the access level.  If the level is protected there is no symbolic link
 def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, groupDisplayname, newDirUUID):
     if newDirUUID == None or len(str(newDirUUID)) == 0:
         raise ValueError('The dataset UUID must have a value')
@@ -1710,8 +1799,9 @@ def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, group
         new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
         os.makedirs(new_path)
         # make a sym link too
-        sym_path = str(os.path.join(file_path_symbolic_dir, newDirUUID))
-        os.symlink(new_path, sym_path, True)
+        if file_path_symbolic_dir != None:
+            sym_path = str(os.path.join(file_path_symbolic_dir, newDirUUID))
+            os.symlink(new_path, sym_path, True)
         relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
         return relative_path
     except globus_sdk.TransferAPIError as e:
@@ -1786,9 +1876,31 @@ if __name__ == "__main__":
     UUID_WEBSERVICE_URL = 'http://localhost:5001/hmuuid'
 
     conf_data = {'NEO4J_SERVER' : NEO4J_SERVER, 'NEO4J_USERNAME': NEO4J_USERNAME, 
-                 'NEO4J_PASSWORD': NEO4J_PASSWORD, 'UUID_WEBSERVICE_URL' : UUID_WEBSERVICE_URL}
-    
+                 'NEO4J_PASSWORD': NEO4J_PASSWORD, 'UUID_WEBSERVICE_URL' : UUID_WEBSERVICE_URL,
+                 'GLOBUS_PUBLIC_ENDPOINT_FILEPATH' : '/hive/hubmap-dev/public',
+                 'GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH': '/hive/hubmap-dev/consortium',
+                 'GLOBUS_PROTECTED_ENDPOINT_FILEPATH': '/hive/hubmap-dev/lz',
+                 'GLOBUS_BASE_FILE_USER_NAME' : 'hive_base',
+                 'GLOBUS_ADMIN_FILE_USER_NAME' : 'hive_admin',
+                 'GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME' : 'genomic_temp',
+                 'GLOBUS_CONSORTIUM_FILE_GROUP_NAME' : 'consort_temp'
+                 }
     dataset = Dataset(conf_data)
+    
+    group_display_name = 'IEC Testing Group'
+    consort_dataset_uuid = '909e2600643f8a6f5b60be9d7a7755ac_consort'
+    protected_dataset_uuid = '48fb4423ea9c2b8aaf3c4f0be5ac1c98_protected'
+    public_dataset_uuid = 'a9175b3b41ef3cb88afa0cb1fff0f4e7_public'
+    
+    
+    dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_CONSORTIUM, consort_dataset_uuid, group_display_name)
+    dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PROTECTED, protected_dataset_uuid, group_display_name)
+    dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, public_dataset_uuid, group_display_name)
+
+    #dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_CONSORTIUM, public_dataset_uuid, group_display_name)
+
+    
+    """
     
     sample_uuid_with_dataset = '909e2600643f8a6f5b60be9d7a7755ac'
     collection_uuid_with_dataset = '48fb4423ea9c2b8aaf3c4f0be5ac1c98'
@@ -1802,6 +1914,8 @@ if __name__ == "__main__":
 
     datasets_for_sample = Dataset.get_datasets_by_sample(driver, [sample_uuid_with_dataset])
     print("Sample: " + str(datasets_for_sample))
+    """
+    
     
     """
     protected_dataset_uuid = '62c461245ee413fc5eed0f1f31853139'

@@ -15,7 +15,6 @@ from flask import json
 import traceback
 from flask import Response
 from typing import List
-from dataset import Dataset
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
 from hubmap_commons.uuid_generator import UUID_Generator
@@ -45,6 +44,8 @@ class Specimen:
 
     @classmethod
     def update_specimen(self, driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
+        # using this deferred import statement to avoid a circular reference
+        from dataset import Dataset
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         metadata_uuid = None
         entity_record = None
@@ -1109,6 +1110,7 @@ class Specimen:
 
     @staticmethod
     def update_metadata_access_levels(driver, datasets: List[str] = []):
+        from dataset import Dataset
         """ Function to update data_access_level attribute for entities base on datasets' uuid
 
         Args:

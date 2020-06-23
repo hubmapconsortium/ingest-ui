@@ -9,4 +9,5 @@ neo4j==1.7.2
 jsonschema==3.2.0
 jsonref==0.1
 py2neo==4.3.0
+pylibacl==0.5.4
 git+git://github.com/hubmapconsortium/commons.git@master#egg=hubmap-commons
