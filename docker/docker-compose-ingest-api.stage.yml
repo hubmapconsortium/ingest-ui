@@ -39,6 +39,10 @@ services:
       - "./ingest-api-stage/nginx/html:/usr/share/nginx/html"
       # Workflow scrath directory
       - "/hive/hubmap-stage/scratch:/hubmap-scratch"
+      # Airflow static files
+      - "/hive/users/hive/hubmap/hivevm195-stage/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
+      # Flower static files
+      - "/hive/users/hive/hubmap/hivevm195-stage/venv/lib/python3.6/site-packages/flower:/flower-static"
       # Mount Globus data
       - "/hive/hubmap-stage/protected:/hive/hubmap/protected"
       # assets
