@@ -26,6 +26,23 @@ GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
 HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
 WORKFLOW_SCRATCH = '/hubmap-scratch'
 
+#UUIDs of the Globus endpoints (shown are for DEV)
+GLOBUS_PUBLIC_ENDPOINT_UUID = 'a00a00b8-d1d1-4ab9-b915-0bada54c27a3'
+GLOBUS_CONSORTIUM_ENDPOINT_UUID = '3cb7d673-a3db-40e9-8376-f2ead6cb5a45'
+GLOBUS_PROTECTED_ENDPOINT_UUID = 'bdaf8547-aab3-4142-97bd-0a16d5cd9f58'
+
+#File paths of the Globus endpoints (shown are for DEV)
+GLOBUS_PUBLIC_ENDPOINT_FILEPATH = '/hive/hubmap-dev/public'
+GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH = '/hive/hubmap-dev/consortium'
+GLOBUS_PROTECTED_ENDPOINT_FILEPATH = '/hive/hubmap-dev/lz'
+
+#File Access Control List Settings
+GLOBUS_BASE_FILE_USER_NAME = 'hive'
+GLOBUS_ADMIN_FILE_USER_NAME = 'shirey'
+GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME = 'hubseq'
+GLOBUS_CONSORTIUM_FILE_GROUP_NAME = 'hubmap'
+
+
 # URL for talking to UUID API (default value used for docker dev environment)
 # Don't use localhost since uuid-api running on a different container
 # Point to remote URL for testing and production deployment

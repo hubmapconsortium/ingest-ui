@@ -38,6 +38,7 @@ class DatasetEdit extends Component {
     data_types: new Set(),
     other_datatype: false,
     other_dt: "",
+	is_protected: false,
 
     formErrors: {
       name: "",
@@ -141,6 +142,14 @@ class DatasetEdit extends Component {
         other_dt = data_types.filter(dt => !data_type_options.has(dt))[0];
         data_types = data_types.filter(dt => data_type_options.has(dt));
       }
+	  this.setState({
+		is_protected: false
+      });
+	  if (this.props.editingDataset.properties.is_protected) {
+		  this.setState({
+		  	is_protected: this.props.editingDataset.properties.is_protected.toLowerCase() === "true" ? true: false
+		  });
+	  }
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -301,6 +310,11 @@ class DatasetEdit extends Component {
           new_status: value
         });
         break;
+	  case "is_protected":
+		this.setState({
+		  is_protected: e.target.checked
+		});
+		break;
       case "other_dt":
         this.setState({ other_dt: value });
         break;
@@ -568,7 +582,8 @@ class DatasetEdit extends Component {
           phi: this.state.phi,
           data_types: data_types,
           description: this.state.description,
-          status: i
+          status: i,
+		  is_protected: this.state.is_protected
         };
 
         var formData = new FormData();
@@ -1521,6 +1536,38 @@ class DatasetEdit extends Component {
                 </span>
               </div>
             </div>
+
+            <div className='form-group row'>
+              <label
+                htmlFor='is_protected'
+                className='col-sm-2 col-form-label text-right'
+              >
+                Protected Access
+              </label>
+              {!this.props.readOnly && (
+                <div className='col-sm-9'>
+                  <div className='form-check form-check-inline'>
+                    <input
+                      className='form-check-input'
+                      type='checkbox'
+                      name='is_protected'
+                      id='is_protected'
+                      checked={this.state.is_protected}
+                      onChange={this.handleInputChange}
+                    />
+                    <label className='form-check-label' htmlFor='is_protected'>
+                      This dataset is currently granted <strong>protected</strong> status.  <br/>In order to access the data in this dataset you must contact: <a href='mailto:[placeholder]@hubmapconsortium.org'>[placeholder]@hubmapconsortium.org</a>  
+                    </label>
+                  </div>
+                </div>
+              )}
+              {this.props.readOnly && (
+                <div className='col-sm-9 col-form-label'>
+                  <p>{this.state.is_protected}</p>
+                </div>
+              )}
+			</div>
+
           </div>
           <div className='form-group row'>
             <label

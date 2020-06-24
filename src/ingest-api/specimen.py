@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 from flask import json
 import traceback
 from flask import Response
+from typing import List
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
 from hubmap_commons.uuid_generator import UUID_Generator
@@ -43,6 +44,8 @@ class Specimen:
 
     @classmethod
     def update_specimen(self, driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
+        # using this deferred import statement to avoid a circular reference
+        from dataset import Dataset
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         metadata_uuid = None
         entity_record = None
@@ -174,6 +177,36 @@ class Specimen:
                 metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid
+                
+                # check if this is a Donor specimen
+                # if a donor, check if the open_consent flag is changing
+                # if the open_consent flag changes, you need to check the access level on any
+                # child datasets
+                entity_record = Entity.get_entity(driver, uuid)
+                existing_open_consent = False
+                if HubmapConst.DONOR_OPEN_CONSENT in metadata_obj:
+                    existing_open_consent = metadata_obj[HubmapConst.DONOR_OPEN_CONSENT]
+
+                new_open_consent = False
+                if HubmapConst.DONOR_OPEN_CONSENT in metadata_record:
+                    new_open_consent = metadata_record[HubmapConst.DONOR_OPEN_CONSENT]
+                
+                if entity_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] == 'Donor':
+                    if HubmapConst.DONOR_OPEN_CONSENT in metadata_record:
+                        #only update if the flag has changed
+                        if new_open_consent != existing_open_consent: 
+                            uuid_list = []
+                            uuid_list.append(uuid)
+                            dataset_list = Dataset.get_datasets_by_donor(driver, uuid_list)
+                            for ds in dataset_list:
+                                dataset = Dataset(self.confdata)
+                                dataset_record = {HubmapConst.UUID_ATTRIBUTE: ds[HubmapConst.UUID_ATTRIBUTE],
+                                                  HubmapConst.SOURCE_UUID_ATTRIBUTE: ds['properties'][HubmapConst.SOURCE_UUID_ATTRIBUTE]}
+                                
+                                # the dataset access level will be reset using the modify_dataset method
+                                dataset.modify_dataset(driver, request.headers, ds[HubmapConst.UUID_ATTRIBUTE], dataset_record, groupUUID)
+                                #    def modify_dataset(self, driver, headers, uuid, formdata, group_uuid):
+
 
                 if 'metadata' in metadata_record.keys():
                     # check if metadata contains valid data
@@ -901,6 +934,36 @@ class Specimen:
             except:
                 print('A general error occurred: ')
                 traceback.print_exc()
+
+    @staticmethod
+    def get_donor(driver, uuid_list):
+        donor_return_list = []
+        with driver.session() as session:
+            try:
+                for uuid in uuid_list:
+                    stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(e) WHERE e.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' RETURN donor.{UUID_ATTRIBUTE} AS donor_uuid".format(
+                        UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                        uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
+                    for record in session.run(stmt):
+                        donor_record = {}
+                        donor_uuid = record['donor_uuid']
+                        donor_record = Entity.get_entity(driver, donor_uuid)
+                        #donor_metadata = Entity.get_entity_metadata(driver, donor_uuid)
+                        #donor_record['metadata'] = donor_metadata
+                        donor_return_list.append(donor_record)
+                return donor_return_list
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
     
     @staticmethod
     def upload_file_data(request, file_key, directory_path):
@@ -1045,6 +1108,92 @@ class Specimen:
 
         return return_list                    
 
+    @staticmethod
+    def update_metadata_access_levels(driver, datasets: List[str] = []):
+        from dataset import Dataset
+        """ Function to update data_access_level attribute for entities base on datasets' uuid
+
+        Args:
+            driver: Neo4j connection driver
+            datasets: A list of dataset uuid
+        Returns:
+            
+        """
+        try:
+            entity_uuids = set()
+            for uuid in datasets:
+                ans = Entity.get_ancestors(driver, uuid)
+                for an in ans:
+                    if an['entitytype'].lower() != 'dataset':
+                        entity_uuids.add((an['uuid'], an['entitytype']))
+                col = Entity.get_collection(driver, uuid)
+                if col is not None:
+                    entity_uuids.add((col['uuid'], col['entitytype']))
+
+            for uuid, entity_type in entity_uuids:
+                if entity_type.lower() != 'dataset':
+                    uuid_arg = uuid if entity_type.lower() == 'collection' else [uuid]
+                    datasets = getattr(Dataset, f'get_datasets_by_{entity_type.lower()}')(driver, uuid_arg)
+                    data_access_level = Specimen.__metadata_get_access_level_by_datasets(datasets)
+                    # import pdb; pdb.set_trace()
+                    Specimen.__update_access_level(driver = driver, uuid = uuid, 
+                                                   entity_type = entity_type, 
+                                                   data_access_level = data_access_level)
+        except:
+            raise Exception("unexcepted error")
+
+    @staticmethod
+    def __metadata_get_access_level_by_datasets(datasets = []):
+        """ Funtion determind the data_access_level
+        
+        Args:
+            datasets: a lists of dataset node with metadat info in 'properties' key
+
+        Return:
+            HubmapConst.ACCESS_LEVEL_PUBLIC or HubmapConst.ACCESS_LEVEL_CONSORTIUM
+        """
+        return HubmapConst.ACCESS_LEVEL_PUBLIC \
+                    if any([True for d in datasets  \
+                        if 'properties' in d and HubmapConst.DATA_ACCESS_LEVEL in d['properties'] \
+                        and d['properties'][HubmapConst.DATA_ACCESS_LEVEL] == HubmapConst.ACCESS_LEVEL_PUBLIC]) \
+                    else HubmapConst.ACCESS_LEVEL_CONSORTIUM
+
+    @staticmethod
+    def __update_access_level(driver, uuid, entity_type, data_access_level):
+        """ Function to update the data_access_level attribute
+
+        Args:
+            driver: Neo4j DB driver
+            uuid: The uuid of the node
+            entity_type: The type of the node
+            data_access_level: The data access_level
+
+        Return:
+
+        """
+        with driver.session() as session:
+            try:
+                if entity_type.lower() in ['donor', 'sample']:
+                    stmt = f"""MATCH (e {{uuid: '{uuid}'}})-[:{HubmapConst.HAS_METADATA_REL}]->(m) 
+                        SET m.{HubmapConst.DATA_ACCESS_LEVEL} = '{data_access_level.lower()}' RETURN e, m"""
+                elif entity_type.lower() == 'collection':
+                    stmt = f"""MATCH (c {{uuid: '{uuid}'}})
+                        SET c.{HubmapConst.DATA_ACCESS_LEVEL} = '{data_access_level.lower()}' RETURN c"""
+                else:
+                    raise ValueError(f"Cannot update data_access_level attribute for '{entity_type}' type")
+                session.run(stmt)
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()    
 
 def create_site_directories(parent_folder):
     hubmap_groups = AuthCache.getHMGroups()
@@ -1108,4 +1257,21 @@ def initialize_lab_identifiers(driver):
             if tx.closed() == False:
                 tx.rollback()
             
+if __name__ == "__main__":
+    NEO4J_SERVER = 'bolt://12.123.12.123:3213'
+    NEO4J_USERNAME = 'neo4j'
+    NEO4J_PASSWORD = '123'
+    conn = Neo4jConnection(NEO4J_SERVER, NEO4J_USERNAME, NEO4J_PASSWORD)
+    driver = conn.get_driver()
+    
+    # uuid_list = ['c1e69dc0e6b3c1ba0773ba337661791a']
+    
+    # donor_data = Specimen.get_donor(driver, uuid_list)
+    
+    # print("Donor:")
+    # print(donor_data)
+
+    #  '26040ef5c7b7e265d9bab019f7a52188', '90a3630e7d6afc4b335eb586dab4304a'
+    Specimen.update_metadata_access_levels(driver, ['26040ef5c7b7e265d9bab019f7a52188'])
+    
 
