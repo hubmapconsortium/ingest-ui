@@ -18,7 +18,7 @@ from pprint import pprint
 import shutil
 import json
 import traceback
-import posix1e
+import subprocess
 
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_const import HubmapConst 
@@ -1639,8 +1639,6 @@ class Dataset(object):
         # this is the default access level
         return HubmapConst.ACCESS_LEVEL_PROTECTED
 
-    #NOTE: I need to run this in the operating system to get the posix1e code to work:
-    #sudo apt-get install libacl1-dev
     @classmethod
     def set_dir_permissions(self, access_level, dataset_uuid, group_display_name):
         try:
@@ -1656,24 +1654,31 @@ class Dataset(object):
                 acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'])
-                acl = posix1e.ACL(text=acl_text)
-                acl.applyto(protected_path)
+                subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
+                #acl = posix1e.ACL(text=acl_text)
+                #acl.applyto(protected_path)
             if access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
                 linkDir(protected_path, consortium_path)
                 acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
-                acl = posix1e.ACL(text=acl_text)
-                acl.applyto(protected_path)
+                subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
+                #acl = posix1e.ACL(text=acl_text)
+                #acl.applyto(protected_path)
             if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
                 linkDir(protected_path, public_path)
                 acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
-                acl = posix1e.ACL(text=acl_text)
-                acl.applyto(protected_path)
+                subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
+                #acl = posix1e.ACL(text=acl_text)
+                #acl.applyto(protected_path)
+        except ValueError as ve:
+            raise ve
+        except OSError as oserr:
+            raise oserr        
         except Exception as e:
             raise e
         
