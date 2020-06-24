@@ -573,7 +573,7 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # move the files if the access level changes
-                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+                #self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
 
                 
                 # set the right collection uuid field
@@ -808,7 +808,7 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # move the files if the access level changes
-                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+                #self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
 
 
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
@@ -1316,7 +1316,7 @@ class Dataset(object):
                     
 
                 # move the files if the access level changes
-                self.set_dir_permissions(access_level, uuid, group_info['displayname'])
+                #self.set_dir_permissions(access_level, uuid, group_info['displayname'])
 
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
@@ -1655,8 +1655,6 @@ class Dataset(object):
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'])
                 subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
-                #acl = posix1e.ACL(text=acl_text)
-                #acl.applyto(protected_path)
             if access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
                 linkDir(protected_path, consortium_path)
                 acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
@@ -1664,8 +1662,6 @@ class Dataset(object):
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
                 subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
-                #acl = posix1e.ACL(text=acl_text)
-                #acl.applyto(protected_path)
             if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
                 linkDir(protected_path, public_path)
                 acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
@@ -1673,8 +1669,6 @@ class Dataset(object):
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
                 subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
-                #acl = posix1e.ACL(text=acl_text)
-                #acl.applyto(protected_path)
         except ValueError as ve:
             raise ve
         except OSError as oserr:
