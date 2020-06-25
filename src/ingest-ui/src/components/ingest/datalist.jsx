@@ -45,24 +45,6 @@ class DataList extends Component {
       params: params
     };
 
-    // axios
-    //   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
-    //   .then(res => {
-    //     if (res.data) {
-    //       this.setState({
-    //         loading: false,
-    //         datasets: res.data.datasets
-    //       });
-    //     }
-    //   })
-    //   .catch(err => {
-    //     if (err.response === undefined) {
-    //     } else if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
-
     axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/userroles`,
@@ -97,7 +79,7 @@ class DataList extends Component {
           });
         this.setState(
           {
-            group: display_names[0]
+            group: this.state.group || display_names[0]
           },
           () => {
             this.handleFilterClick();
@@ -438,7 +420,7 @@ class DataList extends Component {
                           <td>{dataset.entity_display_doi}</td>
                           <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.properties.name}</div></td>
                           <td>{dataset.properties.provenance_group_name}</td>
-                          <td>
+                          {/** <td>
                             <button
                               className='btn btn-link'
                               type='button'
@@ -451,6 +433,11 @@ class DataList extends Component {
                               hide={this.hideViewCollectionModal}
                               collection={this.state.collection}
                             />
+                          </td>*/}
+			  <td>
+                            {dataset.properties.collection
+                              ? dataset.properties.collection.label
+                              : ""}
                           </td>
                           <td>{dataset.created_by}</td>
                           <td>
@@ -476,12 +463,12 @@ class DataList extends Component {
                                   type="error"
                                   effect="solid"
                                 >
-                                  <p>
-                                    {truncateString(
-                                      dataset.properties.message,
-                                      250
-                                    ) || "Error"}
-                                  </p>
+                                  <div style={{width: "50em", whiteSpace: "initial" }}>
+                                  {truncateString(
+                                    dataset.properties.message,
+                                    350
+                                  ) || "Error"}
+                                  </div>
                                 </ReactTooltip>
                               )}
                             </span>

@@ -23,7 +23,7 @@ class ErrorPage extends React.Component{
 
 
     render(){
-      return 
+      return (
 		<div className="errHeader"><h3>You have encountered a HuBMAP Error:</h3>
           <div className="errBody">
          	{this.state.description}
@@ -34,5 +34,6 @@ class ErrorPage extends React.Component{
             <Link to="/Home">Home </Link>
          </div>
        </div>
+       )
     }
 }export default ErrorPage;

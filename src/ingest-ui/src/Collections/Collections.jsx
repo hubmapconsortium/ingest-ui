@@ -322,8 +322,7 @@ export default class Collections extends Component {
                             <th scope='col'>Collection</th>
                             <th scope='col'>Description</th>
                             <th scope='col'>View Collection</th>
-                            <th scope='col'>Collection UUID</th>
-                            <th scope='col'>Generate Error Page</th>
+                            
                           </tr>
                         </thead>
                         <tbody>
@@ -348,7 +347,7 @@ export default class Collections extends Component {
                                     data-uuid={collection.uuid}
                                   >View</button>   */}
                                 </td>
-                                <td>{collection.uuid}</td>
+                                
                                 
                               {/**   <td>
                                    <a
