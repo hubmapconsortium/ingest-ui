@@ -41,15 +41,26 @@
   transform: translate(-50%, -50%);
 }
 
-.modal-main {
+
+.modal-main, .modal-organ {
   padding: 1em;
   position: fixed;
   background: white;
-  width: 50%;
+  width: 85%;
+
   height: auto;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  overflow:visible;
+}
+
+.modal-main {
+  width: 60%;
+}
+
+#unityContainer {
+  overflow:scroll;
 }
 
 .display-block {
@@ -142,6 +153,9 @@ caption {
   height: 33%;
   background: rgb(211, 215, 207);
   z-index: 10;
+
+  overflow:scroll;
+
 }
 
 .modal-wrapper {
@@ -151,6 +165,9 @@ caption {
     margin: 0px 0px 0;
     transition: all .8s;
     width: 100%;
+
+    overflow:scroll;
+
 }
 
 .modal-wrapper h3{
@@ -224,7 +241,11 @@ caption {
 }
 
 .mod-id, .mod-check1, .mod-reg1, .mod-view2, 
+
 .mod-reg2, .mod-check2, .mod-view1, .col-title{
+
+/**.mod-reg2, .mod-check2, .mod-view1{*/
+
 	font-size:1.0em;
 	font-weight:bold;
 }
@@ -239,7 +260,9 @@ caption {
 }
 
 .mod-reg2{ 
+
 	margin-left:95px;	
+
 }
 
 .mod-reg1{ 
@@ -284,5 +307,43 @@ caption {
 
  #content {
     padding:20px 0;
+ }
+
+.mod-check2 {
+   margin-left:120px;
 }
+
+.mod-view2 {
+  margin-left:85px;
+
+}
+
+.errHeader{
+	margin-top:40px;
+	text-align:center;
+	font-weight:bold;
+}
+
+.errBody{
+	margin:30px;
+	font-size:1.2em;
+	color:#821a1a;
+}
+
+.Collection a, a:not([href]).ttip{
+	color:blue;
+}
+
+.colcontainer{
+	columns:2 auto;
+}
+
+.dataset{
+	margin-left:-7px;
+}
+
+.Collection h4{
+	font-weight:bold;
+}
+
 

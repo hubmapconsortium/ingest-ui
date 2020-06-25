@@ -15,6 +15,7 @@
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
     "react": "^16.11.0",
+    "react-bootstrap": "^1.0.1",
     "react-dom": "^16.11.0",
     "react-idle-timer": "^4.2.11",
     "react-router-dom": "^5.1.2",
