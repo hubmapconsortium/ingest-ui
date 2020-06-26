@@ -141,12 +141,12 @@ export default class Collections extends Component {
     this.setState({ loading: true });
 
     axios
-      .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
+      .get(`${process.env.REACT_APP_ENTITY_API_URL}/collections`, config)
       .then(res => {
         if (res.data) {
           this.setState({
             loading: false,
-            collections: res.data.collections,
+            collections: res.data,
             viewCollection:false,
             viewCollections:true
           });
@@ -177,12 +177,12 @@ export default class Collections extends Component {
         };
 
         axios
-          .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
+          .get(`${process.env.REACT_APP_ENTITY_API_URL}/collections`, config)
           .then(res => {
             if (res.data) {
               this.setState({
                 loading: false,
-                collections: res.data.collections,
+                collections: res.data.items,
                 viewCollection:false,
                 viewCollections:true
               });
@@ -326,7 +326,7 @@ export default class Collections extends Component {
                           {this.state.collections.map(collection => {
                             return (
                               <tr key={collection.uuid}>
-                                <td>{collection.label}</td>
+                                <td>{collection.name}</td>
                                 <td>{collection.description}</td>
                                 <td>
                                   
@@ -337,7 +337,7 @@ export default class Collections extends Component {
                                 
                              		
                               		rel="noopener noreferrer"
-                           		  > View Collection </a>
+                           		  > View </a>
                                  {/** <button
                                     className='btn  btn-link btn-sm'
                                     onClick={() => this.handleViewCollection(collection)}
