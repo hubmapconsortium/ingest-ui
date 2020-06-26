@@ -1,16 +1,8 @@
 import React, { Component } from "react";
-import { Router, Switch, Route, useParams } from "react-router-dom";
-import EntityList from "./components/uuid/entityList";
-import DonorForm from "./components/uuid/donor_form_components/donorForm";
-import TissueForm from "./components/uuid/tissue_form_components/tissueForm";
-import DataList from "./components/ingest/datalist";
-import DatasetEdit from "./components/ingest/dataset_edit";
-import NewDatasetModal from "./components/ingest/newDatasetModal";
+import { Router, Switch, Route } from "react-router-dom";
 import Collections from "./Collections/Collections";
 import Collection from "./Collections/Collection";
 import ErrorPage from './utils/error_page';
-//import Samples from "./Samples/Samples";
-//import Datasets from "./Datasets/Datasets";
 import Home from "./Home/Home";
 import history from './history';
 

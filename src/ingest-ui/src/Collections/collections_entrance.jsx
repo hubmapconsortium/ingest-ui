@@ -1,8 +1,6 @@
 import React, { Component } from "react";
-import DataList from "../components/ingest/datalist";
-import DatasetEdit from "../components/ingest/dataset_edit";
 import Collections from "./Collections";
-import Collection from "./Collection";
+//import Collection from "./Collection";
 import axios from "axios";
 
 

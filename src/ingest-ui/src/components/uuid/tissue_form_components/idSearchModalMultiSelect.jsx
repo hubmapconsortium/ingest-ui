@@ -1,6 +1,6 @@
 import React, { Component} from "react";
 import Modal from "../modal";
-import axios from "axios";
+//import axios from "axios";
 
 import { SelectionState } from '@devexpress/dx-react-grid';
 import {
@@ -11,7 +11,7 @@ import {
   Grid,
   Table,
   TableHeaderRow,
-  TableSelection,
+  //TableSelection,
 } from '@devexpress/dx-react-grid-bootstrap4';
 
 
@@ -185,11 +185,12 @@ class IDSearchModalMultiSelect extends Component {
 	    }
 	    return 0;
 	  });
-      this.state.selectedRows = sortedResults;
+      //this.state.selectedRows = sortedResults;
 	  this.props.parentCallback(this.state.selectedRows);
       this.setState({
       //HuBMAPIDResults: Object.values(this.state.selection),
-      LookUpShow: false
+      	LookUpShow: false,
+      	selectedRows:sortedResults
     });
   };
   
@@ -202,8 +203,9 @@ class IDSearchModalMultiSelect extends Component {
           return(<div></div>);
         } else {
           rows = this.props.uuid_list;
-          this.state.rows = rows;
-          
+          this.setState({
+         	rows: rows
+          });
 	       
         }
     return (

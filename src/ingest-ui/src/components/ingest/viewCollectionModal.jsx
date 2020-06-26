@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import Modal from "../uuid/modal";
-import axios from "axios";
-import {
-  BrowserRouter as Router,
-  Route,
-  Link
-} from "react-router-dom";
+//import axios from "axios";
+//import {
+//  BrowserRouter as Router,
+//  Route,
+ // Link
+//} from "react-router-dom";
 
 class ViewCollectionModal extends React.Component {
      

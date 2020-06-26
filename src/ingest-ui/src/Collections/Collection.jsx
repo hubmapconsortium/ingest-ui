@@ -1,16 +1,16 @@
 import React, { Component } from "react";
-import { Router, Switch, Route, useParams } from "react-router-dom";
-import DatasetEdit from "../components/ingest/dataset_edit";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faQuestionCircle,
-  faSpinner,
-  faPlus
-} from "@fortawesome/free-solid-svg-icons";
+//import { Router, Switch, Route, useParams } from "react-router-dom";
+//import DatasetEdit from "../components/ingest/dataset_edit";
+//import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+//import {
+//  faQuestionCircle,
+//  faSpinner,
+//  faPlus
+//} from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
-import { Button } from 'react-bootstrap';
+////import { Button } from 'react-bootstrap';
 import axios from "axios";
-import history from './../history';
+//import history from './../history';
 //import "./Home.css";
 
 
@@ -342,11 +342,11 @@ export default class Collection extends Component {
               <div className="col-sm-12">
                 <div className="card">
                   <div className="card-body">
-                     <div className="form-group row">
+                     <div className="form-group">
                       
-                             <h4>{this.state.name}</h4>
+                             <h4>{this.state.name}</h4><br />
  						  <p>{this.state.description}</p>
-                          {!this.state.children || this.state.children.length <= 0 && (
+                          {(!this.state.children || this.state.children.length <= 0) && (
 							<div className="text-center col-sm-12">
 							   <h5 className="text-center">There is no data attached to this collection</h5>
 			                </div> 

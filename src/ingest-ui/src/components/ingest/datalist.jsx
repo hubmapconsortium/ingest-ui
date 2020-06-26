@@ -1,16 +1,12 @@
 import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
-import ViewCollectionModal from "./viewCollectionModal";
+//import ViewCollectionModal from "./viewCollectionModal";
 import axios from "axios";
 import ReactTooltip from "react-tooltip";
 import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
-import {
-  BrowserRouter as Router,
-  Route,
-  Link
-} from "react-router-dom";
+
 
 
 class DataList extends Component {
@@ -207,29 +203,7 @@ class DataList extends Component {
       ViewCollectionShow: true,
       collection:collection
     });
-    {/*const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        MAuthorization: "MBearer " + localStorage.getItem("info"),
-        "Content-Type": "application/json"
-      }
-    };
-
-    axios
-      .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${collection}`, config)
-      .then(res => {
-        this.setState({
-          collection: res.data
-        });
-      })
-      .catch(err => {
-        if (err.response === undefined) {
-        } else if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });*/}    
+ 
   };
 
   hideViewCollectionModal = () => {
@@ -385,9 +359,6 @@ class DataList extends Component {
                           break;
                         case "PROCESSING":
                           badge_class = "badge-secondary";
-                          break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
                           btn_text = "View";
                           break;
                         case "PUBLISHED":
@@ -398,13 +369,10 @@ class DataList extends Component {
                           break;
                         case "DEPRECATED":
                           break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          btn_text = "View";
-                          break;
                         case "ERROR":
                           badge_class = "badge-danger";
                           btn_text = "View";
+ 						  break;
                         case "HOLD":
                           badge_class = "badge-dark";
                           btn_text = this.state.is_curator ? "View" : "View";
@@ -449,7 +417,7 @@ class DataList extends Component {
                               className={"badge " + badge_class}
                               data-tip
                               data-for={"status_tooltip_" + dataset.uuid}
-                              onClick={status == 'ERROR' ? () =>
+                              onClick={status === 'ERROR' ? () =>
                                 this.showErrorMsgModal(
                                   dataset.properties.message
                                 ) : null

@@ -1,14 +1,14 @@
 import React, { Component } from "react";
-import { Button } from 'react-bootstrap';
+//import { Button } from 'react-bootstrap';
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
-import ReactTooltip from "react-tooltip";
-import Collection from "./Collection";
-import DatasetEdit from "../components/ingest/dataset_edit";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+//import ReactTooltip from "react-tooltip";
+//import Collection from "./Collection";
+//import DatasetEdit from "../components/ingest/dataset_edit";
 //import DataList from "../components/ingest/datalist";
 import Modal from "../components/uuid/modal";
-import history from './../history';
+//import history from './../history';
 //import "./Home.css";
 
 export default class Collections extends Component {
@@ -209,9 +209,6 @@ export default class Collections extends Component {
     }
   }
 
-  
-
-
   handleViewCollection = e => {
     //this.props.viewCollection(e);
     let uuid = e.uuid;
@@ -308,13 +305,13 @@ export default class Collections extends Component {
           {this.state.viewCollections && !this.state.viewCollection  &&(
             <div className="lander main-content"><br />
               <div className="col-sm-12">
-                  <h4>HuBMAP Collections</h4><hr></hr>
+                  <h3>HuBMAP Collections</h3>
                 </div>
               <React.Fragment>
               {this.renderLoadingSpinner()}
               {this.state.loading === false && (
                 <div className='row'>
-                  <div className='col-sm-12 text-center'>
+                  <div className='col-sm-12'>
                     {this.state.collections.length > 0 && (
                       <table className='table table-bordered'>
                         <thead>
@@ -375,7 +372,7 @@ export default class Collections extends Component {
                 handleClose={this.hideErrorMsgModal}
               >
                 <div className="row">
-                  <div className="col-sm-12 text-center alert alert-danger">
+                  <div className="col-sm-12 alert alert-danger">
                     <h4>ERROR</h4>
                     <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
                   </div>

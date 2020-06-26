@@ -1,7 +1,5 @@
 import React, { Component }from 'react';
 import './App.css';
-import Collections from './Collections/Collections';
-import Collection from './Collections/Collection';
 import Navigation from './components/Navbar.js';
 import Routes from './Routes';
 import Login from './components/uuid/login';
@@ -32,9 +30,18 @@ class App extends Component {
       localStorage.setItem("isAuthenticated", false);
     }
 
+    //set the system state if the URL includes 'collections'
+      if (window.location.href.includes("/collections/")){
+		this.setState({
+      		system: "collection"
+    	});
+      }
+
+
     // IE doesn't support the URL api
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
+
 
     if (info !== null) {
       localStorage.setItem("info", info);
@@ -68,7 +75,10 @@ class App extends Component {
 
   componentDidMount() {
     if (localStorage.getItem("info") !== null) {
-      const config = {
+      
+	  
+
+	  const config = {
         headers: {
           Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
@@ -192,9 +202,8 @@ class App extends Component {
         <div className="dataopts">
           {this.state.registered === true &&
             this.state.allowed === true &&
-            (this.state.system === "uuid" ||
-             this.state.system ==="ingest") ||
-             this.state.system === "" && (
+            this.state.system === "" 
+              && (
               <div className="row">
                 <div className="col-sm-6">
                   <div className="card">
@@ -328,7 +337,7 @@ class App extends Component {
 
   // Display the final output
   render() {
-    const system = this.state.system;
+    //const system = this.state.system;
     return (
       <div>
         <IdleTimer
@@ -356,11 +365,12 @@ class App extends Component {
         </Modal>
         {this.renderHeader()}
         <div id="content" className="container">
+           {this.renderContent()}
            <div className="App">
              {/**  <Navigation /> */}
 	          <Routes />
 	       </div>
-		  {this.renderContent()}
+		  
 		</div>
 	   
       </div>
