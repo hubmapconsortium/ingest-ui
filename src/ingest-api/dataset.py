@@ -1208,11 +1208,12 @@ class Dataset(object):
                 stmt = """MATCH (e:Entity {{  {entitytype_attr}: 'Dataset'}})<-[activity_relations:{activity_output_rel}]-(dataset_create_activity:Activity)<-[:{activity_input_rel}]-(source_uuid_list)
                  WHERE e.{uuid_attr} = '{uuid}' 
                  RETURN dataset_create_activity.{uuid_attr} AS dataset_create_activity_uuid,
-                 source_uuid_list.{source_id_attr} AS source_ids""".format(entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                 COALESCE(source_uuid_list.{source_id_attr},source_uuid_list.{display_doi_attr}) AS source_ids""".format(entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
                                                                                         activity_output_rel=HubmapConst.ACTIVITY_OUTPUT_REL,
                                                                                         activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
                                                                                         uuid_attr=HubmapConst.UUID_ATTRIBUTE,
                                                                                         source_id_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
+                                                                                        display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,
                                                                                         uuid=uuid) 
                 
                 #print("stmt: " + stmt)
