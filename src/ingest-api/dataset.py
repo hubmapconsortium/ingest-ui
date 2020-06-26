@@ -566,7 +566,9 @@ class Dataset(object):
                 webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
                 if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                     webservice_file_path = None
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                # We need to change this to use the PROTECTED ENDPOINT
+                #new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
@@ -801,7 +803,9 @@ class Dataset(object):
                 webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
                 if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                     webservice_file_path = None
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                # We need to change this to use the PROTECTED ENDPOINT
+                #new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
