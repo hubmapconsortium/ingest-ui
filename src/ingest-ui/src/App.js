@@ -337,6 +337,7 @@ class App extends Component {
 
   // Display the final output
   render() {
+	const collections =   window.location.href.includes("/collections")?true:false;
     //const system = this.state.system;
     return (
       <div>
@@ -365,7 +366,9 @@ class App extends Component {
         </Modal>
         {this.renderHeader()}
         <div id="content" className="container">
-           {this.renderContent()}
+			{!collections && (
+              this.renderContent()
+			)}
            <div className="App">
              {/**  <Navigation /> */}
 	          <Routes />

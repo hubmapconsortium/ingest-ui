@@ -354,26 +354,43 @@ export default class Collection extends Component {
 					      {this.state.creators && this.state.creators.length > 0 && (
 						     <React.Fragment>
 							
-							<h5>Creators: </h5>
+							<h5>Creator(s): </h5>
 							
 							<div className="colcontainer">
 						     {this.state.creators.map(creator => {
                                  return (
 									<React.Fragment>
-	                                  <span className="col-sm-2"><a className="ttip" data-tip data-for='name'>{creator.name}</a>,&nbsp;&nbsp;{creator.affiliation}</span><br />
+	                                  <span className="col-sm-2"><a className="ttip" data-tip={creator.orcid_id} data-for='name'>{creator.name}</a>,&nbsp;&nbsp;{creator.affiliation}</span><br />
 										<ReactTooltip
 						                  id="name"
 						                  place="top"
 						                  type="info"
 						                  effect="solid"
-						                >
-						                  <span>
-						                    ORCID ID: {creator.orcid_id}
-						                  </span>
-						                </ReactTooltip>
-									  </React.Fragment> 
-                                 );
-                             })}
+										  getContent={dataTip => dataTip}
+						                />
+										{/**} {this.state.creators.map(cr => {
+                             			   return (
+											 <div key={cr.name}>
+										     {creator.name === cr.name && (
+												<span>
+												  ORCID ID: {cr.orcid_id}
+												</span>
+											 )}
+						                     </div>
+										  )}
+								        )} 
+						                </ReactTooltip> */}
+                                  </React.Fragment>
+                             )})}
+
+
+
+
+
+
+
+
+
 							</div> 
 						  </React.Fragment>
 				          )}
