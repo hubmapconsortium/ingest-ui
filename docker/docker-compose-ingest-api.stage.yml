@@ -4,7 +4,7 @@ version: "3.7"
 services:
   
   ingest-api:
-    build: ./ingest-api-test
+    build: ./ingest-api-stage
     # Build the image with name and tag
     image: ingest-api:1.11
     hostname: ingest-api
@@ -34,19 +34,19 @@ services:
       # Mount ssl certificates from host to container
       - "/etc/pki/nginx:/etc/pki/nginx"
       # Mount conf.d to the nginx conf.d on container
-      - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
+      - "./ingest-api-stage/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
-      - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
+      - "./ingest-api-stage/nginx/html:/usr/share/nginx/html"
       # Workflow scrath directory
-      - "/hive/hubmap-test/scratch:/hubmap-scratch"
+      - "/hive/hubmap-stage/scratch:/hubmap-scratch"
       # Airflow static files
-      - "/hive/users/hive/hubmap/hivevm192-test/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
+      - "/hive/users/hive/hubmap/hivevm195-stage/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
       # Flower static files
-      - "/hive/users/hive/hubmap/hivevm192-test/venv/lib/python3.6/site-packages/flower:/flower-static"
+      - "/hive/users/hive/hubmap/hivevm195-stage/venv/lib/python3.6/site-packages/flower:/flower-static"
       # Mount Globus data
-      - "/hive/hubmap-test/lz:/hive/hubmap-test/lz"
+      - "/hive/hubmap-stage/protected:/hive/hubmap-stage/protected"
       # assets
-      - "/hive/hubmap-test/assets:/usr/src/assets"
+      - "/hive/hubmap-stage/assets:/usr/src/assets"
     networks:
       - hubmap
 

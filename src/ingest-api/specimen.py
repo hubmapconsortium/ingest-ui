@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 from flask import json
 import traceback
 from flask import Response
+from typing import List
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
 from hubmap_commons.uuid_generator import UUID_Generator
@@ -43,8 +44,11 @@ class Specimen:
 
     @classmethod
     def update_specimen(self, driver, uuid, request, incoming_record, file_list, current_token, groupUUID):
+        # using this deferred import statement to avoid a circular reference
+        from dataset import Dataset
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         metadata_uuid = None
+        entity_record = None
         try:
             metadata_obj = Entity.get_entity_metadata(driver, uuid)
             #metadata_obj = Entity.get_entity(driver, uuid)
@@ -86,11 +90,17 @@ class Specimen:
             metadata_userinfo[HubmapConst.PROVENANCE_LAST_UPDATED_USER_DISPLAYNAME_ATTRIBUTE] = userinfo['name']
         #get a link to the data directory using the group uuid
         # ex: <data_parent_directory>/<group UUID>
+
+        
         data_directory = get_data_directory(self.confdata['LOCAL_STORAGE_DIRECTORY'], provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE])
+
+        
         #get a link to the subdirectory within data directory using the current uuid
         # ex: <data_parent_directory>/<group UUID>/<specimen uuid>
         # We need to allow this method to create a new directory.  It is possible that an earlier
         # specimen didn't have any files when it was initially created
+
+        
         data_directory = get_data_directory(data_directory, uuid, True)
 
         with driver.session() as session:
@@ -145,6 +155,15 @@ class Specimen:
                     protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
                     incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
                 
+                if 'rui_location' in incoming_record or 'lab_tissue_id' in incoming_record:
+                    entity_record = {}
+                    entity_record[HubmapConst.UUID_ATTRIBUTE] = uuid
+                    if 'rui_location' in incoming_record:
+                        entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = incoming_record['rui_location']
+                        incoming_record.pop('rui_location')
+                    if 'lab_tissue_id' in incoming_record:
+                        entity_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = incoming_record['lab_tissue_id']
+                        incoming_record.pop('lab_tissue_id')
                 metadata_record = incoming_record
                 # don't change the type of this node
                 metadata_record.pop(HubmapConst.ENTITY_TYPE_ATTRIBUTE)
@@ -158,6 +177,36 @@ class Specimen:
                 metadata_record[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE]
                 metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE] = provenance_group[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]
                 metadata_record[HubmapConst.UUID_ATTRIBUTE] = metadata_uuid
+                
+                # check if this is a Donor specimen
+                # if a donor, check if the open_consent flag is changing
+                # if the open_consent flag changes, you need to check the access level on any
+                # child datasets
+                entity_record = Entity.get_entity(driver, uuid)
+                existing_open_consent = False
+                if HubmapConst.DONOR_OPEN_CONSENT in metadata_obj:
+                    existing_open_consent = metadata_obj[HubmapConst.DONOR_OPEN_CONSENT]
+
+                new_open_consent = False
+                if HubmapConst.DONOR_OPEN_CONSENT in metadata_record:
+                    new_open_consent = metadata_record[HubmapConst.DONOR_OPEN_CONSENT]
+                
+                if entity_record[HubmapConst.ENTITY_TYPE_ATTRIBUTE] == 'Donor':
+                    if HubmapConst.DONOR_OPEN_CONSENT in metadata_record:
+                        #only update if the flag has changed
+                        if new_open_consent != existing_open_consent: 
+                            uuid_list = []
+                            uuid_list.append(uuid)
+                            dataset_list = Dataset.get_datasets_by_donor(driver, uuid_list)
+                            for ds in dataset_list:
+                                dataset = Dataset(self.confdata)
+                                dataset_record = {HubmapConst.UUID_ATTRIBUTE: ds[HubmapConst.UUID_ATTRIBUTE],
+                                                  HubmapConst.SOURCE_UUID_ATTRIBUTE: ds['properties'][HubmapConst.SOURCE_UUID_ATTRIBUTE]}
+                                
+                                # the dataset access level will be reset using the modify_dataset method
+                                dataset.modify_dataset(driver, request.headers, ds[HubmapConst.UUID_ATTRIBUTE], dataset_record, groupUUID)
+                                #    def modify_dataset(self, driver, headers, uuid, formdata, group_uuid):
+
 
                 if 'metadata' in metadata_record.keys():
                     # check if metadata contains valid data
@@ -182,6 +231,13 @@ class Specimen:
                 stmt = Neo4jConnection.get_update_statement(
                     metadata_record, True)
                 tx.run(stmt)
+                
+                # some of the data is written to the entity node.  Update the entity node if necessary.
+                if entity_record != None:
+                    stmt = Neo4jConnection.get_update_statement(
+                        entity_record, True)
+                    tx.run(stmt)
+                    
                 tx.commit()
                 return uuid
             except TransactionError as te:
@@ -199,17 +255,41 @@ class Specimen:
                     tx.rollback()
     
     @classmethod
-    def batch_update_specimen_lab_ids(cls, driver, incoming_record, token):
+    def batch_update_specimen_lab_ids(cls, driver, incoming_records, token):
         conn = Neo4jConnection(cls.confdata['NEO4J_SERVER'], cls.confdata['NEO4J_USERNAME'], cls.confdata['NEO4J_PASSWORD'])
         with driver.session() as session:
             tx = None
             try:
                 tx = session.begin_transaction()
                 
-                for uuid, lab_id in incoming_record.items():
-                    id = {HubmapConst.UUID_ATTRIBUTE: uuid, HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE: lab_id}
+                for item in incoming_records:
+                    if 'uuid' not in item:
+                        raise ValueError('Error: missing uuid from data')
+                    uuid = item['uuid']
+                    # verify uuid
+                    ug = UUID_Generator(cls.confdata['UUID_WEBSERVICE_URL'])
+                    metadata_uuid = None
+                    try:
+                        hmuuid_data = ug.getUUID(token, uuid)
+                        if len(hmuuid_data) != 1:
+                            raise ValueError("Could not find information for identifier" + uuid)
+                        #specimen_metadata = Entity.get_entity_metadata(driver, uuid)
+                        #metadata_uuid = specimen_metadata['uuid']
+                    except:
+                        raise ValueError('Unable to resolve UUID for: ' + uuid)
+
+                    update_record = {HubmapConst.UUID_ATTRIBUTE: uuid}
+                    if 'lab_identifier' in item:
+                       update_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = item['lab_identifier']
+                    if 'rui_location' in item:
+                        # strip out newlines
+                        rui_json = str(item['rui_location']).replace('\n', '')
+                        update_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = rui_json
+                    if HubmapConst.RUI_LOCATION_ATTRIBUTE not in update_record and HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE not in update_record:
+                        raise ValueError('Error: cannot update uuid: ' + uuid + ': no data found for specimen identifier and RUI data')
+                         
                     stmt = Neo4jConnection.get_update_statement(
-                        id, True)
+                        update_record, True)
                     tx.run(stmt)
                 tx.commit()
                 return True
@@ -828,17 +908,50 @@ class Specimen:
         sibling_return_list = []
         with driver.session() as session:
             try:
-                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier, sibling.{LAB_TISSUE_ID} AS sibling_lab_tissue_id".format(
+                stmt = "MATCH (e:{ENTITY_NODE_NAME} {{ {UUID_ATTRIBUTE}: '{uuid}' }})<-[:{ACTIVITY_OUTPUT_REL}]-(a:{ACTIVITY_NODE_NAME}) OPTIONAL MATCH (a:{ACTIVITY_NODE_NAME})-[:{ACTIVITY_OUTPUT_REL}]->(sibling:{ENTITY_NODE_NAME}) RETURN sibling.{UUID_ATTRIBUTE} AS sibling_uuid, sibling.{LAB_IDENTIFIER_ATTRIBUTE} AS sibling_hubmap_identifier, sibling.{LAB_TISSUE_ID} AS sibling_lab_tissue_id, sibling.{RUI_LOCATION_ATTR} AS sibling_rui_location".format(
                     UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_NODE_NAME=HubmapConst.ENTITY_NODE_NAME, 
                     uuid=uuid, ACTIVITY_NODE_NAME=HubmapConst.ACTIVITY_NODE_NAME, LAB_IDENTIFIER_ATTRIBUTE=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,
-                    ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, LAB_TISSUE_ID =HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)    
+                    ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, LAB_TISSUE_ID =HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, RUI_LOCATION_ATTR=HubmapConst.RUI_LOCATION_ATTRIBUTE)    
                 for record in session.run(stmt):
                     sibling_record = {}
-                    sibling_record['uuid'] = record['sibling_uuid']
-                    sibling_record['hubmap_identifier'] = record['sibling_hubmap_identifier']
-                    sibling_record['lab_tissue_id'] = record['sibling_lab_tissue_id']
+                    sibling_record['uuid'] = record.get('sibling_uuid')
+                    sibling_record['hubmap_identifier'] = record.get('sibling_hubmap_identifier')
+                    if record.get('sibling_lab_tissue_id') != None:
+                        sibling_record['lab_tissue_id'] = record.get('sibling_lab_tissue_id')
+                    if record.get('sibling_rui_location') != None:
+                        sibling_record['rui_location'] = record.get('sibling_rui_location')
                     sibling_return_list.append(sibling_record)
                 return sibling_return_list
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()
+
+    @staticmethod
+    def get_donor(driver, uuid_list):
+        donor_return_list = []
+        with driver.session() as session:
+            try:
+                for uuid in uuid_list:
+                    stmt = "MATCH (donor)-[:{ACTIVITY_INPUT_REL}*]->(activity)-[:{ACTIVITY_INPUT_REL}|:{ACTIVITY_OUTPUT_REL}*]->(e) WHERE e.{UUID_ATTRIBUTE} = '{uuid}' and donor.{ENTITY_TYPE_ATTRIBUTE} = 'Donor' RETURN donor.{UUID_ATTRIBUTE} AS donor_uuid".format(
+                        UUID_ATTRIBUTE=HubmapConst.UUID_ATTRIBUTE, ENTITY_TYPE_ATTRIBUTE=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                        uuid=uuid, ACTIVITY_OUTPUT_REL=HubmapConst.ACTIVITY_OUTPUT_REL, ACTIVITY_INPUT_REL=HubmapConst.ACTIVITY_INPUT_REL)    
+                    for record in session.run(stmt):
+                        donor_record = {}
+                        donor_uuid = record['donor_uuid']
+                        donor_record = Entity.get_entity(driver, donor_uuid)
+                        #donor_metadata = Entity.get_entity_metadata(driver, donor_uuid)
+                        #donor_record['metadata'] = donor_metadata
+                        donor_return_list.append(donor_record)
+                return donor_return_list
             except ConnectionError as ce:
                 print('A connection error occurred: ', str(ce.args[0]))
                 raise ce
@@ -904,11 +1017,11 @@ class Specimen:
         stmt_list = []
         if search_term == None:
             stmt1 = """MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
-            RETURN COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            RETURN COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{rui_location_attr} AS rui_location, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, rui_location_attr=HubmapConst.RUI_LOCATION_ATTRIBUTE)
             stmt_list = [stmt1]
         else:
             # use the full text indexing if searching for a term
@@ -917,21 +1030,21 @@ class Specimen:
             order_by_clause = "score DESC, "    
             stmt1 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
             MATCH (lucene_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(entity_node) WHERE {entity_type_clause} {provenance_group_uuid_clause}
-            RETURN score, COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
+            RETURN score, COALESCE(entity_node.{hubmapid_attr}, entity_node.{display_doi_attr}) AS hubmap_identifier, entity_node.{lab_tissue_id_attr} AS lab_tissue_id, entity_node.{rui_location_attr} AS rui_location, entity_node.{uuid_attr} AS entity_uuid, entity_node.{entitytype_attr} AS datatype, entity_node.{doi_attr} AS entity_doi, entity_node.{display_doi_attr} as entity_display_doi, properties(lucene_node) AS metadata_properties, lucene_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, rui_location_attr=HubmapConst.RUI_LOCATION_ATTRIBUTE)
     
             provenance_group_uuid_clause = provenance_group_uuid_clause.replace('lucene_node.', 'metadata_node.')
 
             stmt2 = """CALL db.index.fulltext.queryNodes('{lucence_index_name}', '{search_term}') YIELD node AS lucene_node, score 
             MATCH (metadata_node:Metadata {{entitytype: 'Metadata'}})<-[:HAS_METADATA]-(lucene_node) WHERE {lucene_type_clause} {provenance_group_uuid_clause}
-            RETURN score, COALESCE(lucene_node.{hubmapid_attr}, lucene_node.{display_doi_attr}) AS hubmap_identifier, lucene_node.{lab_tissue_id_attr} AS lab_tissue_id, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
+            RETURN score, COALESCE(lucene_node.{hubmapid_attr}, lucene_node.{display_doi_attr}) AS hubmap_identifier, lucene_node.{lab_tissue_id_attr} AS lab_tissue_id, lucene_node.{rui_location_attr} AS rui_location, lucene_node.{uuid_attr} AS entity_uuid, lucene_node.{entitytype_attr} AS datatype, lucene_node.{doi_attr} AS entity_doi, lucene_node.{display_doi_attr} as entity_display_doi, properties(metadata_node) AS metadata_properties, metadata_node.{provenance_timestamp} AS modified_timestamp
             ORDER BY score DESC, modified_timestamp DESC""".format(metadata_clause=metadata_clause,entity_type_clause=entity_type_clause,lucene_type_clause=lucene_type_clause,lucence_index_name=lucence_index_name,search_term=search_term,
                 uuid_attr=HubmapConst.UUID_ATTRIBUTE, entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, activitytype_attr=HubmapConst.ACTIVITY_TYPE_ATTRIBUTE, doi_attr=HubmapConst.DOI_ATTRIBUTE, 
                 display_doi_attr=HubmapConst.DISPLAY_DOI_ATTRIBUTE,provenance_timestamp=HubmapConst.PROVENANCE_MODIFIED_TIMESTAMP_ATTRIBUTE, 
-                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE)
+                hubmapid_attr=HubmapConst.LAB_IDENTIFIER_ATTRIBUTE,provenance_group_uuid_clause=provenance_group_uuid_clause, lab_tissue_id_attr=HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE, rui_location_attr=HubmapConst.RUI_LOCATION_ATTRIBUTE)
     
             stmt_list = [stmt1, stmt2]
         return_list = []
@@ -955,7 +1068,10 @@ class Specimen:
                                 data_record['datatype'] = record['datatype']
                                 data_record['properties'] = record['metadata_properties']
                                 data_record['hubmap_identifier'] = record['hubmap_identifier']
-                                data_record['lab_tissue_id'] = record['lab_tissue_id']
+                                if record.get('lab_tissue_id', None) != None:
+                                    data_record['properties']['lab_tissue_id'] = record['lab_tissue_id']
+                                if record.get('rui_location', None) != None:
+                                    data_record['properties']['rui_location'] = record['rui_location']
                                 # determine if the record is writable by the current user
                                 data_record['writeable'] = False
                                 if record['metadata_properties']['provenance_group_uuid'] in writeable_uuid_list:
@@ -992,6 +1108,92 @@ class Specimen:
 
         return return_list                    
 
+    @staticmethod
+    def update_metadata_access_levels(driver, datasets: List[str] = []):
+        from dataset import Dataset
+        """ Function to update data_access_level attribute for entities base on datasets' uuid
+
+        Args:
+            driver: Neo4j connection driver
+            datasets: A list of dataset uuid
+        Returns:
+            
+        """
+        try:
+            entity_uuids = set()
+            for uuid in datasets:
+                ans = Entity.get_ancestors(driver, uuid)
+                for an in ans:
+                    if an['entitytype'].lower() != 'dataset':
+                        entity_uuids.add((an['uuid'], an['entitytype']))
+                col = Entity.get_collection(driver, uuid)
+                if col is not None:
+                    entity_uuids.add((col['uuid'], col['entitytype']))
+
+            for uuid, entity_type in entity_uuids:
+                if entity_type.lower() != 'dataset':
+                    uuid_arg = uuid if entity_type.lower() == 'collection' else [uuid]
+                    datasets = getattr(Dataset, f'get_datasets_by_{entity_type.lower()}')(driver, uuid_arg)
+                    data_access_level = Specimen.__metadata_get_access_level_by_datasets(datasets)
+                    # import pdb; pdb.set_trace()
+                    Specimen.__update_access_level(driver = driver, uuid = uuid, 
+                                                   entity_type = entity_type, 
+                                                   data_access_level = data_access_level)
+        except:
+            raise Exception("unexcepted error")
+
+    @staticmethod
+    def __metadata_get_access_level_by_datasets(datasets = []):
+        """ Funtion determind the data_access_level
+        
+        Args:
+            datasets: a lists of dataset node with metadat info in 'properties' key
+
+        Return:
+            HubmapConst.ACCESS_LEVEL_PUBLIC or HubmapConst.ACCESS_LEVEL_CONSORTIUM
+        """
+        return HubmapConst.ACCESS_LEVEL_PUBLIC \
+                    if any([True for d in datasets  \
+                        if 'properties' in d and HubmapConst.DATA_ACCESS_LEVEL in d['properties'] \
+                        and d['properties'][HubmapConst.DATA_ACCESS_LEVEL] == HubmapConst.ACCESS_LEVEL_PUBLIC]) \
+                    else HubmapConst.ACCESS_LEVEL_CONSORTIUM
+
+    @staticmethod
+    def __update_access_level(driver, uuid, entity_type, data_access_level):
+        """ Function to update the data_access_level attribute
+
+        Args:
+            driver: Neo4j DB driver
+            uuid: The uuid of the node
+            entity_type: The type of the node
+            data_access_level: The data access_level
+
+        Return:
+
+        """
+        with driver.session() as session:
+            try:
+                if entity_type.lower() in ['donor', 'sample']:
+                    stmt = f"""MATCH (e {{uuid: '{uuid}'}})-[:{HubmapConst.HAS_METADATA_REL}]->(m) 
+                        SET m.{HubmapConst.DATA_ACCESS_LEVEL} = '{data_access_level.lower()}' RETURN e, m"""
+                elif entity_type.lower() == 'collection':
+                    stmt = f"""MATCH (c {{uuid: '{uuid}'}})
+                        SET c.{HubmapConst.DATA_ACCESS_LEVEL} = '{data_access_level.lower()}' RETURN c"""
+                else:
+                    raise ValueError(f"Cannot update data_access_level attribute for '{entity_type}' type")
+                session.run(stmt)
+            except ConnectionError as ce:
+                print('A connection error occurred: ', str(ce.args[0]))
+                raise ce
+            except ValueError as ve:
+                print('A value error occurred: ', ve.value)
+                raise ve
+            except CypherError as cse:
+                print('A Cypher error was encountered: ', cse.message)
+                raise cse
+            except:
+                print('A general error occurred: ')
+                traceback.print_exc()    
 
 def create_site_directories(parent_folder):
     hubmap_groups = AuthCache.getHMGroups()
@@ -1055,4 +1257,21 @@ def initialize_lab_identifiers(driver):
             if tx.closed() == False:
                 tx.rollback()
             
+if __name__ == "__main__":
+    NEO4J_SERVER = 'bolt://12.123.12.123:3213'
+    NEO4J_USERNAME = 'neo4j'
+    NEO4J_PASSWORD = '123'
+    conn = Neo4jConnection(NEO4J_SERVER, NEO4J_USERNAME, NEO4J_PASSWORD)
+    driver = conn.get_driver()
+    
+    # uuid_list = ['c1e69dc0e6b3c1ba0773ba337661791a']
+    
+    # donor_data = Specimen.get_donor(driver, uuid_list)
+    
+    # print("Donor:")
+    # print(donor_data)
+
+    #  '26040ef5c7b7e265d9bab019f7a52188', '90a3630e7d6afc4b335eb586dab4304a'
+    Specimen.update_metadata_access_levels(driver, ['26040ef5c7b7e265d9bab019f7a52188'])
+    
 

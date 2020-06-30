@@ -8,11 +8,13 @@
 docker/ingest-api-localhost/src
 docker/ingest-api-dev/src
 docker/ingest-api-test/src
+docker/ingest-api-stage/src
 docker/ingest-api-prod/src
 docker/ingest-ui/src
 
 # Ignore log files created by docker
 log/*.log
+src/log/*.log
 
 # ingest-api
 src/ingest-api/instance/app.cfg

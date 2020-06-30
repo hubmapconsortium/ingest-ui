@@ -30,6 +30,7 @@
   z-index: 10;
 }
 
+<<<<<<< HEAD
 .modal-organ {
   padding: 1em;
   position: fixed;
@@ -41,13 +42,18 @@
   transform: translate(-50%, -50%);
 }
 
+=======
+>>>>>>> 0bafefb8b6dc2a10d22f9091ea2e865ac52a8c5f
 
 .modal-main, .modal-organ {
   padding: 1em;
   position: fixed;
   background: white;
   width: 85%;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0bafefb8b6dc2a10d22f9091ea2e865ac52a8c5f
   height: auto;
   top: 50%;
   left: 50%;
@@ -56,7 +62,11 @@
 }
 
 .modal-main {
+<<<<<<< HEAD
   width: 60%;
+=======
+  width: 80%;
+>>>>>>> 0bafefb8b6dc2a10d22f9091ea2e865ac52a8c5f
 }
 
 #unityContainer {
@@ -153,8 +163,8 @@ caption {
   height: 33%;
   background: rgb(211, 215, 207);
   z-index: 10;
-
   overflow:scroll;
+
 
 }
 
@@ -165,9 +175,7 @@ caption {
     margin: 0px 0px 0;
     transition: all .8s;
     width: 100%;
-
     overflow:scroll;
-
 }
 
 .modal-wrapper h3{
@@ -241,11 +249,8 @@ caption {
 }
 
 .mod-id, .mod-check1, .mod-reg1, .mod-view2, 
-
 .mod-reg2, .mod-check2, .mod-view1, .col-title{
-
 /**.mod-reg2, .mod-check2, .mod-view1{*/
-
 	font-size:1.0em;
 	font-weight:bold;
 }
@@ -260,9 +265,7 @@ caption {
 }
 
 .mod-reg2{ 
-
 	margin-left:95px;	
-
 }
 
 .mod-reg1{ 
@@ -279,6 +282,7 @@ caption {
 .mod-check1{
 	margin-left:0px;
 }
+
 
 .text-left{
 	padding-top:7px;
