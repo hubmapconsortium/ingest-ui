@@ -30,7 +30,6 @@
   z-index: 10;
 }
 
-<<<<<<< HEAD
 .modal-organ {
   padding: 1em;
   position: fixed;
@@ -42,18 +41,14 @@
   transform: translate(-50%, -50%);
 }
 
-=======
->>>>>>> 0bafefb8b6dc2a10d22f9091ea2e865ac52a8c5f
+
 
 .modal-main, .modal-organ {
   padding: 1em;
   position: fixed;
   background: white;
   width: 85%;
-<<<<<<< HEAD
 
-=======
->>>>>>> 0bafefb8b6dc2a10d22f9091ea2e865ac52a8c5f
   height: auto;
   top: 50%;
   left: 50%;
@@ -62,11 +57,9 @@
 }
 
 .modal-main {
-<<<<<<< HEAD
+
   width: 60%;
-=======
-  width: 80%;
->>>>>>> 0bafefb8b6dc2a10d22f9091ea2e865ac52a8c5f
+
 }
 
 #unityContainer {
