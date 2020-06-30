@@ -341,8 +341,10 @@ class LabIDsModal extends Component {
                                 </RUIModal>
                               </React.Fragment>
                           )}
+
                           {(!this.state.rui_checks[id.uuid] ||
                             this.state.rui_locations[id.uuid] === "") && (
+
                             <div className="col-sm-2 nocheckb">
                             </div>
                           )}
