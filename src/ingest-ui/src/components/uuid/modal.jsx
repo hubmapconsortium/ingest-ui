@@ -4,14 +4,17 @@ class Modal extends Component {
   state = {};
 
   render() {
-    const { handleClose, show, children } = this.props;
+    const { organ, handleClose, show, children } = this.props;
+    const  showRUILocation = organ 
+      ? "modal-organ"
+      : "modal-main";
     const showHideClassname = show
       ? "mymodal display-block"
       : "mymodal display-none";
 
     return (
       <div className={showHideClassname}>
-        <section className="modal-main">
+        <section className={showRUILocation}>
           {children}
           <div className="row">
             <div className="col-sm-12 text-center">
@@ -20,7 +23,7 @@ class Modal extends Component {
                 type="button"
                 onClick={handleClose}
               >
-                close
+                Close
               </button>
             </div>
           </div>

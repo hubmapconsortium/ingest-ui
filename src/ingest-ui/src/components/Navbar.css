@@ -1,0 +1,23 @@
+
+.btn-space {
+    margin-right: 5px;
+}
+
+
+.App .navbar-dark .navbar-nav .nav-link{
+    font-weight:bold;   
+    color: rgba(255, 255, 255, 1.0);
+}
+
+.App .bg-primary, .App .button-primary {
+    background-color: #444a65 !important;
+}
+
+ .container {
+    width:100%;
+    padding:20px 0 20px;
+}
+
+ #content {
+    padding:20px 0;
+}

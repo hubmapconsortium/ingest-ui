@@ -14,6 +14,7 @@ import {
   faUserShield,
   faExternalLinkAlt
 } from "@fortawesome/free-solid-svg-icons";
+import Modal from "../uuid/modal";
 
 class DatasetEdit extends Component {
   state = {
@@ -37,6 +38,7 @@ class DatasetEdit extends Component {
     data_types: new Set(),
     other_datatype: false,
     other_dt: "",
+	is_protected: false,
 
     formErrors: {
       name: "",
@@ -140,6 +142,14 @@ class DatasetEdit extends Component {
         other_dt = data_types.filter(dt => !data_type_options.has(dt))[0];
         data_types = data_types.filter(dt => data_type_options.has(dt));
       }
+	  this.setState({
+		is_protected: false
+      });
+	  if (this.props.editingDataset.properties.is_protected) {
+		  this.setState({
+		  	is_protected: this.props.editingDataset.properties.is_protected.toLowerCase() === "true" ? true: false
+		  });
+	  }
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -162,7 +172,9 @@ class DatasetEdit extends Component {
           data_types: new Set(data_types),
           other_datatype: other_dt !== undefined,
           other_dt: other_dt,
-          description: this.props.editingDataset.properties.description
+          description: this.props.editingDataset.properties.description,
+          errorMsgShow: this.props.editingDataset.properties.status.toLowerCase() === "error" && this.props.editingDataset.properties.message ? true : false,
+          statusErrorMsg: this.props.editingDataset.properties.message
         },
         () => {
           switch (this.state.status.toUpperCase()) {
@@ -228,6 +240,14 @@ class DatasetEdit extends Component {
     this.setState({ show: false });
   };
 
+  showErrorMsgModal = msg => {
+    this.setState({ errorMsgShow: true, statusErrorMsg: msg });
+  };
+
+  hideErrorMsgModal = () => {
+    this.setState({ errorMsgShow: false });
+  };
+
   handleLookUpClick = () => {
     this.setState({
       LookUpShow: true
@@ -290,6 +310,11 @@ class DatasetEdit extends Component {
           new_status: value
         });
         break;
+	  case "is_protected":
+		this.setState({
+		  is_protected: e.target.checked
+		});
+		break;
       case "other_dt":
         this.setState({ other_dt: value });
         break;
@@ -307,18 +332,20 @@ class DatasetEdit extends Component {
           });
         }
       }
-      if (e.target.checked) {
-        const data_types = this.state.data_types;
-        data_types.add(name);
-        this.setState({
-          data_types: data_types
-        });
-      } else {
-        const data_types = this.state.data_types;
-        data_types.delete(name);
-        this.setState({
-          data_types: data_types
-        });
+      else {
+        if (e.target.checked) {
+          const data_types = this.state.data_types;
+          data_types.add(name);
+          this.setState({
+            data_types: data_types
+          });
+        } else {
+          const data_types = this.state.data_types;
+          data_types.delete(name);
+          this.setState({
+            data_types: data_types
+          });
+        }
       }
     }
   };
@@ -555,7 +582,8 @@ class DatasetEdit extends Component {
           phi: this.state.phi,
           data_types: data_types,
           description: this.state.description,
-          status: i
+          status: i,
+		  is_protected: this.state.is_protected
         };
 
         var formData = new FormData();
@@ -665,7 +693,7 @@ class DatasetEdit extends Component {
       }
 
       if (
-        this.state.data_types.has("dt_other") &&
+        this.state.other_datatype &&
         !validateRequired(this.state.other_dt)
       ) {
         this.setState(prevState => ({
@@ -717,7 +745,7 @@ class DatasetEdit extends Component {
 	      );
 	    //finally, compare the digits.  If any consecutive digits are more than
 	    //one number apart, then these values represent a subset
-	    if(next_lab_id_subset - first_lab_id_subset != 1) {
+	    if(next_lab_id_subset - first_lab_id_subset !== 1) {
 			is_subset = "subset";
 			break;
 	    }
@@ -1098,7 +1126,7 @@ class DatasetEdit extends Component {
             <div className='row mt-3 mb-3'>
               <div className='col-sm-2'>
                 <h3 className='float-right'>
-                  <span className={"badge " + this.state.badge_class}>
+                  <span className={"badge " + this.state.badge_class} style={{ cursor: "pointer" }} onClick={() => this.showErrorMsgModal(this.props.editingDataset.properties.message)}>
                     {this.state.status}
                   </span>
                 </h3>
@@ -1508,6 +1536,38 @@ class DatasetEdit extends Component {
                 </span>
               </div>
             </div>
+
+            <div className='form-group row'>
+              <label
+                htmlFor='is_protected'
+                className='col-sm-2 col-form-label text-right'
+              >
+                Protected Access
+              </label>
+              {!this.props.readOnly && (
+                <div className='col-sm-9'>
+                  <div className='form-check form-check-inline'>
+                    <input
+                      className='form-check-input'
+                      type='checkbox'
+                      name='is_protected'
+                      id='is_protected'
+                      checked={this.state.is_protected}
+                      onChange={this.handleInputChange}
+                    />
+                    <label className='form-check-label' htmlFor='is_protected'>
+                      This dataset is currently granted <strong>protected</strong> status.  <br/>In order to access the data in this dataset you must contact: <a href='mailto:[placeholder]@hubmapconsortium.org'>[placeholder]@hubmapconsortium.org</a>  
+                    </label>
+                  </div>
+                </div>
+              )}
+              {this.props.readOnly && (
+                <div className='col-sm-9 col-form-label'>
+                  <p>{this.state.is_protected}</p>
+                </div>
+              )}
+			</div>
+
           </div>
           <div className='form-group row'>
             <label
@@ -1839,7 +1899,7 @@ class DatasetEdit extends Component {
                           name='dt_other'
                           id='dt_other'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("dt_other")}
+                          checked={this.state.other_datatype}
                         />
                         <label className='form-check-label' htmlFor='dt_other'>
                           Other
@@ -1951,6 +2011,17 @@ class DatasetEdit extends Component {
           {this.state.is_curator !== null && this.renderButtons()}
         </form>
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
+        <Modal
+          show={this.state.errorMsgShow}
+          handleClose={this.hideErrorMsgModal}
+        >
+          <div className="row">
+            <div className="col-sm-12 text-center alert">
+              <h4>{(this.props.editingDataset && this.props.editingDataset.properties.status.toUpperCase()) || "STATUS"}</h4>
+              <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
+            </div>
+          </div>
+        </Modal>
       </React.Fragment>
     );
   }

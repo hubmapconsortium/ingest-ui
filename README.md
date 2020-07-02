@@ -10,14 +10,15 @@ We have the following 4 development and deployment environments:
 
 * localhost - all the services will be deployed with docker containers including sample Neo4j and sample MySQL are running on the same localhost listing on different ports, without globus data
 * dev - all services except ingest-api will be running on AWS EC2 with SSL certificates, Neo4j and MySQL are dev versions on AWS, and ingest-api(and another nginx) will be running on PSC with domain and globus data
-* test - similar to dev but for production-like settings with Neo4j and MySQL test versions of database
+* test - similar to dev with a focus on testing and connects to Neo4j and MySQL test versions of database
+* stage - as similar to the production environment as it can be.
 * prod - similar to test but for production settings with production versions of Neo4j and MySQL
 
 ### Localhost development
 
 This option allows you to setup all the pieces in a containerized environment with docker and docker-compose. This requires to have the [HuBMAP Gateway](https://github.com/hubmapconsortium/gateway) running locally before starting building this docker compose project. Please follow the [instructions](https://github.com/hubmapconsortium/gateway#workflow-of-setting-up-multiple-hubmap-docker-compose-projects). It also requires the Gateway project to be configured accordingly.
 
-### Deployment on dev, test, and prod
+### Deployment on dev, test, stage, and prod
 
 In localhost mode, all the docker containers are running on the same host machine. However, the ingest-api will be deployed on a separare host machine for dev, test, and prod mode due to different deployment requirements. 
 

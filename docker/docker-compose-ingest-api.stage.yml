@@ -44,7 +44,7 @@ services:
       # Flower static files
       - "/hive/users/hive/hubmap/hivevm195-stage/venv/lib/python3.6/site-packages/flower:/flower-static"
       # Mount Globus data
-      - "/hive/hubmap-stage/protected:/hive/hubmap/protected"
+      - "/hive/hubmap-stage/protected:/hive/hubmap-stage/protected"
       # assets
       - "/hive/hubmap-stage/assets:/usr/src/assets"
     networks:

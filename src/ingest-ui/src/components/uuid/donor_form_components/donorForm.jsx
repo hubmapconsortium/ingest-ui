@@ -48,7 +48,8 @@ class DonorForm extends Component {
       protocol: "",
       protocol_file: "",
       description: "",
-      metadata_file: ""
+      metadata_file: "",
+	  open_consent: false,
     },
 
     show: false
@@ -108,6 +109,16 @@ class DonorForm extends Component {
             .replace(/'/g, '"')
         );
       } catch (e) {}
+
+	  this.setState({
+		open_consent: false
+      });
+	  if (this.props.editingEntity.properties.open_consent) {
+		  this.setState({
+		  	open_consent: this.props.editingEntity.properties.open_consent.toLowerCase() === "true" ? true: false
+		  });
+	  }
+
       this.setState({
         author: this.props.editingEntity.properties.provenance_user_email,
         visit: this.props.editingEntity.properties.visit,
@@ -286,6 +297,11 @@ class DonorForm extends Component {
           selected_group: value
         });
         break;
+	  case "open_consent":
+		this.setState({
+		  open_consent: e.target.checked
+		});
+		break;
       default:
         break;
     }
@@ -374,7 +390,8 @@ class DonorForm extends Component {
               ? ""
               : this.state.metadata_file_name,
           images: [],
-          metadatas: []
+          metadatas: [],
+		  open_consent: this.state.open_consent
         };
         if (this.state.selected_group) {
           data["user_group_uuid"] = this.state.selected_group;
@@ -1033,6 +1050,39 @@ class DonorForm extends Component {
                   )}
                 </div>
               )}
+          {(!this.props.readOnly ||
+            this.state.open_consent !== undefined) && (
+            <div className='form-group row'>
+              <label
+                htmlFor='protected_access_level'
+                className='col-sm-3 col-form-label text-right'
+              >
+                Open Consent
+              </label>
+              {!this.props.readOnly && (
+                <div className='col-sm-9'>
+                  <div className='form-check form-check-inline'>
+                    <input
+                      className='form-check-input'
+                      type='checkbox'
+                      name='open_consent'
+                      id='open_consent'
+                      checked={this.state.open_consent}
+                      onChange={this.handleInputChange}
+                    />
+                    <label className='form-check-label' htmlFor='open_consent'>
+                      This donor was registered with an <strong>open consent</strong> status.<br/>This status allows consortium users to access all of the data associated with this donor.  
+                    </label>
+                  </div>
+                </div>
+              )}
+              {this.props.readOnly && (
+                <div className='col-sm-9 col-form-label'>
+                  <p>{this.state.open_consent}</p>
+                </div>
+              )}
+			</div>
+			)}
               {(!this.props.readOnly ||
                 this.state.description !== undefined) && (
                 <div className="form-group row">

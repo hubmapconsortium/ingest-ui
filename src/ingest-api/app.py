@@ -5,19 +5,15 @@ Created on Apr 23, 2019
 '''
 import sys
 import os
-import json
-import base64
 import requests
 import argparse
-from flask import Flask, jsonify, abort, request, make_response, url_for, session, redirect, json, Response
+from flask import Flask, jsonify, abort, request, session, redirect, json, Response
 from flask_cors import CORS
-import globus_sdk
-from globus_sdk import AccessTokenAuthorizer, TransferClient, AuthClient, ConfidentialAppAuthClient, RefreshTokenAuthorizer
-from globus_sdk.exc import TransferAPIError
+from globus_sdk import AccessTokenAuthorizer, AuthClient, ConfidentialAppAuthClient
 
 from dataset import Dataset
 from collection import Collection
-from specimen import Specimen, AuthError
+from specimen import Specimen
 
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
@@ -25,11 +21,14 @@ from hubmap_commons.hm_auth import AuthHelper, secured
 from hubmap_commons.entity import Entity
 from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
-from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_error import HubmapError
+from hubmap_commons.exceptions import HTTPException
 
-from pprint import pprint
+import time
+import logging
 
+LOG_FILE_NAME = "../log/ingest-api-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".log" 
+logger = None
 
 # Specify the absolute path of the instance folder and use the config file relative to the instance path
 app = Flask(__name__, instance_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance'), instance_relative_config=True)
@@ -48,6 +47,19 @@ if AuthHelper.isInitialized() == False:
         app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'])
 else:
     authcache = AuthHelper.instance()
+
+@app.before_first_request
+def init():
+    global logger
+    try:
+        logger = logging.getLogger('ingest.service')
+        logger.setLevel(logging.INFO)
+        logFH = logging.FileHandler(LOG_FILE_NAME)
+        logger.addHandler(logFH)
+        logger.info("started")
+    except Exception as e:
+        print("Error opening log file during startup")
+        print(str(e))
 
 
 ####################################################################################################
@@ -908,8 +920,28 @@ def create_collection_json():
                 
 @app.route('/collections/<uuid>', methods = ['PUT'])
 @secured(groups="HuBMAP-read")
-def update_collection():
-    return Response('PUT method not implemented is invalid', 400)
+def update_collection(uuid):
+    global logger
+    conn = None
+    try:
+        if not request.is_json:
+            return Response("json payload required", 400)
+        
+        record = request.get_json()
+        coll = Collection(app.config)
+        coll.update_collection(uuid, record)
+        return Response("OK", 200)
+    except HTTPException as he:
+        logger.error(he, exc_info=True)
+        return(Response(he.get_description(), he.get_status_code()))
+    except Exception as e:
+        eMsg = str(e)
+        logger.error(e, exc_info=True)
+        return(Response("Unexpected error: " + eMsg, 500))
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()   
 
 
 @app.route('/collections/<identifier>', methods = ['GET'])
@@ -1343,12 +1375,13 @@ def update_specimen_lab_ids():
         result = specimen.batch_update_specimen_lab_ids(
             driver, request.json, token)
         conn.close()
-        for uuid, lab_id in request.json.items():
+        for item in request.json:
+            uuid = item['uuid']
             try:
                 #reindex this node in elasticsearch
                 rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + uuid, headers={'Authorization': request.headers["AUTHORIZATION"]})
             except:
-                print("Error happend when calling reindex web service")
+                print("Error happened when calling reindex web service")
         if result:
             return jsonify({'success':True}), 200
         else:
