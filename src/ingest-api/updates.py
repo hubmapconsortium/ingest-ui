@@ -86,13 +86,13 @@ def initialize_all_dataset_access_levels(confdata, nexus_token):
 
     
 if __name__ == "__main__":
-    NEO4J_SERVER = 'bolt://18.205.215.12:7687'
-    NEO4J_USERNAME = 'neo4j'
-    NEO4J_PASSWORD = 's4S^Y@pQ&_cc*HE@'
-    APP_CLIENT_ID = '21f293b0-5fa5-4ee1-9e0e-3cf88bd70114'
-    APP_CLIENT_SECRET = 'gimzYEgm/jMtPmNJ0qoV11gdicAK8dgu+yigj2m3MTE='
-    UUID_WEBSERVICE_URL = 'https://uuid-api.dev.hubmapconsortium.org/hmuuid'
-    HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
+    NEO4J_SERVER = ''
+    NEO4J_USERNAME = ''
+    NEO4J_PASSWORD = ''
+    APP_CLIENT_ID = ''
+    APP_CLIENT_SECRET = ''
+    UUID_WEBSERVICE_URL = ''
+    HUBMAP_WEBSERVICE_FILEPATH = ''
 
     if AuthHelper.isInitialized() == False:
         authcache = AuthHelper.create(
@@ -108,7 +108,7 @@ if __name__ == "__main__":
                  'UUID_WEBSERVICE_URL': UUID_WEBSERVICE_URL,
                  'HUBMAP_WEBSERVICE_FILEPATH': HUBMAP_WEBSERVICE_FILEPATH}
     
-    nexus_token = 'AgYXKDY1aEGEVaN34X929eXp6wGqdxp9jYgP3E1EKkPX3bdPMbHWCM33D2lYzPm811OnxOo251QDm4TVo0Gr0UEqol'
+    nexus_token = ''
     initialize_all_entity_access_levels(conf_data)
     initialize_all_dataset_access_levels(conf_data, nexus_token)
     
