@@ -407,7 +407,7 @@ export default class Collection extends Component {
                                  <a
                                     className='btn btn-link'
                                     target='_blank'
-                                    href= {this.state.portal + dataset.properties.uuid}
+                                    href= {this.state.portal + dataset.uuid}
                                     rel="noopener noreferrer"
                                     >
                                     {dataset.properties.name}
