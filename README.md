@@ -35,6 +35,12 @@ cd docker
 ./ingest-api-docker.sh dev check
 ````
 
+We can also validate and view the details of corresponding compose file:
+
+````
+./ingest-api-docker.sh dev config
+````
+
 Building the docker images and starting/stopping the contianers require to use docker daemon, you'll probably need to use `sudo` in the following steps. 
 
 To build the docker image of ingest-api:
