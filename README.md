@@ -22,6 +22,12 @@ This option allows you to setup all the pieces in a containerized environment wi
 
 In localhost mode, all the docker containers are running on the same host machine. However, the ingest-api will be deployed on a separare host machine for dev, test, and prod mode due to different deployment requirements. 
 
+There are a few configurable environment variables to keep in mind:
+
+- `COMMONS_BRANCH`: build argument only to be used during image creation. We can specify which [commons](https://github.com/hubmapconsortium/commons) branch to use during the image creation. Default to master branch if not set or null.
+- `HOST_UID`: the user id on the host machine to be mapped to the container. Default to 1000 if not set or null.
+- `HOST_GID`: the user's group id on the host machine to be mapped to the container. Default to 1000 if not set or null.
+
 Before we go ahead to start building the docker image, we can do a check to see if the required configuration file is in place:
 
 ````

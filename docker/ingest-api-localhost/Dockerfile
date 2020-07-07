@@ -3,6 +3,10 @@ FROM hubmap/api-base-image:latest
 
 LABEL description="HuBMAP Ingest API Service"
 
+# The commons branch to be used in requirements.txt during image build
+# Default is master branch specified in docker-compose.yml if not set before the build
+ARG COMMONS_BRANCH
+
 # Change to directory that contains the Dockerfile
 WORKDIR /usr/src/app
 
