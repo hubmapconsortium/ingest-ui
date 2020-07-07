@@ -9,4 +9,6 @@ neo4j==1.7.2
 jsonschema==3.2.0
 jsonref==0.1
 py2neo==4.3.0
-git+git://github.com/hubmapconsortium/commons.git@master#egg=hubmap-commons
+# The branch name of commons to be used during image build
+# Default is master branch specified in docker-compose.yml if not set
+git+git://github.com/hubmapconsortium/commons.git@${COMMONS_BRANCH}#egg=hubmap-commons
