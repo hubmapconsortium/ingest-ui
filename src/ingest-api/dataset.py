@@ -888,6 +888,7 @@ class Dataset(object):
                 # step 1: update the directories based on publish flag
                 if publish_state == HubmapConst.DATASET_STATUS_PUBLISHED:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
+                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = HubmapConst.ACCESS_LEVEL_PUBLIC
                     print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
                     values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
                         access_level=HubmapConst.ACCESS_LEVEL_PUBLIC, uuid=uuid, group_display_name=group_info['displayname']))
@@ -895,6 +896,7 @@ class Dataset(object):
                 else:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = publish_state
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
+                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
                     print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
                     values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
                         access_level=access_level, uuid=uuid, group_display_name=group_info['displayname']))
