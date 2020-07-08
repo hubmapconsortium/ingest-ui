@@ -566,7 +566,9 @@ class Dataset(object):
                 webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
                 if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                     webservice_file_path = None
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                # We need to change this to use the PROTECTED ENDPOINT
+                #new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
@@ -801,7 +803,9 @@ class Dataset(object):
                 webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
                 if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                     webservice_file_path = None
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                # We need to change this to use the PROTECTED ENDPOINT
+                #new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
@@ -851,7 +855,7 @@ class Dataset(object):
 
 
     @classmethod
-    def publishing_process(self, driver, headers, uuid, group_uuid, publish=True):
+    def publishing_process(self, driver, headers, uuid, group_uuid, status_flag):
         group_info = None
         metadata_node = None
         metadata = None
@@ -881,17 +885,23 @@ class Dataset(object):
             tx = None
             try:
                 tx = session.begin_transaction()
-                #step 1: move the files to the publish directory
-                new_publish_path = self.get_publish_path(group_info['displayname'], uuid)
-                current_staging_path = self.get_globus_file_path(group_info['displayname'], uuid)
-                if publish == True:
-                    #publish
+                # step 1: update the directories based on publish flag
+                if publish_state == HubmapConst.DATASET_STATUS_PUBLISHED:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
+                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = HubmapConst.ACCESS_LEVEL_PUBLIC
+                    print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
+                    values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
+                        access_level=HubmapConst.ACCESS_LEVEL_PUBLIC, uuid=uuid, group_display_name=group_info['displayname']))
+                    #self.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname'])
                 else:
-                    #unpublish
-                    move_directory(new_publish_path, current_staging_path)
-                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_FILEPATH'],current_staging_path)
-                    metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_UNPUBLISHED
+                    metadata_node[HubmapConst.STATUS_ATTRIBUTE] = publish_state
+                    access_level = self.get_access_level(nexus_token, driver, metadata_node)
+                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+                    print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
+                    values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
+                        access_level=access_level, uuid=uuid, group_display_name=group_info['displayname']))
+                    #self.set_dir_permissions(access_level, uuid, group_info['displayname'])
+                    
                 #step 2: update the metadata node
                 authcache = None
                 if AuthHelper.isInitialized() == False:
@@ -975,9 +985,9 @@ class Dataset(object):
         if str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_REOPENED).upper():
             self.reopen_dataset(driver, headers, uuid, formdata, group_uuid)
         elif str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_QA).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper():
-            self.publishing_process(driver, headers, uuid, group_uuid, True)
+            self.publishing_process(driver, headers, uuid, group_uuid, HubmapConst.DATASET_STATUS_PUBLISHED)
         elif str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_UNPUBLISHED).upper():
-            self.publishing_process(driver, headers, uuid, group_uuid, False)
+            self.publishing_process(driver, headers, uuid, group_uuid, HubmapConst.DATASET_STATUS_UNPUBLISHED)
         else:
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
      
@@ -1208,7 +1218,7 @@ class Dataset(object):
                 stmt = """MATCH (e:Entity {{  {entitytype_attr}: 'Dataset'}})<-[activity_relations:{activity_output_rel}]-(dataset_create_activity:Activity)<-[:{activity_input_rel}]-(source_uuid_list)
                  WHERE e.{uuid_attr} = '{uuid}' 
                  RETURN dataset_create_activity.{uuid_attr} AS dataset_create_activity_uuid,
-                 COALESCE(source_uuid_list.{source_id_attr},source_uuid_list.{display_doi_attr}) AS source_ids""".format(entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
+                 COALESCE(source_uuid_list.{source_id_attr}, source_uuid_list.{display_doi_attr}) AS source_ids""".format(entitytype_attr=HubmapConst.ENTITY_TYPE_ATTRIBUTE, 
                                                                                         activity_output_rel=HubmapConst.ACTIVITY_OUTPUT_REL,
                                                                                         activity_input_rel=HubmapConst.ACTIVITY_INPUT_REL,
                                                                                         uuid_attr=HubmapConst.UUID_ATTRIBUTE,

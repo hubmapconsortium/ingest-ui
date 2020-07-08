@@ -19,7 +19,6 @@ services:
       - "443:4430"
       # ingest-pipeline
       - "5555:5555"
-      - "5556:5556"
       # ingest-api on http 7777 to be used by airflow
       - "7777:7777"
     environment:
@@ -39,8 +38,10 @@ services:
       - "./ingest-api-stage/nginx/html:/usr/share/nginx/html"
       # Workflow scrath directory
       - "/hive/hubmap-stage/scratch:/hubmap-scratch"
+      # Airflow static files
+      - "/hive/users/hive/hubmap/hivevm195-stage/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
       # Mount Globus data
-      - "/hive/hubmap-stage/protected:/hive/hubmap/protected"
+      - "/hive/hubmap-stage/protected:/hive/hubmap-stage/protected"
       # assets
       - "/hive/hubmap-stage/assets:/usr/src/assets"
     networks:

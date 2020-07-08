@@ -1,15 +1,17 @@
 import React, { Component } from "react";
+import { Button } from 'react-bootstrap';
+import history from './../history';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
-//import ViewCollectionModal from "./viewCollectionModal";
+//import ViewCollectionModal from "../components/ingest/viewCollectionModal";
 import axios from "axios";
 import ReactTooltip from "react-tooltip";
-import { truncateString } from "../../utils/string_helper";
-import Modal from "../uuid/modal";
+import { truncateString } from "../utils/string_helper";
+import Modal from "../components/uuid/modal";
 
 
 
-class DataList extends Component {
+class Datasets extends Component {
   state = {
     group: "",
     keywords: "",
@@ -40,6 +42,24 @@ class DataList extends Component {
       },
       params: params
     };
+
+    // axios
+    //   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
+    //   .then(res => {
+    //     if (res.data) {
+    //       this.setState({
+    //         loading: false,
+    //         datasets: res.data.datasets
+    //       });
+    //     }
+    //   })
+    //   .catch(err => {
+    //     if (err.response === undefined) {
+    //     } else if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
 
     axios
       .get(
@@ -75,7 +95,7 @@ class DataList extends Component {
           });
         this.setState(
           {
-            group: this.state.group || display_names[0]
+            group: display_names[0]
           },
           () => {
             this.handleFilterClick();
@@ -203,7 +223,29 @@ class DataList extends Component {
       ViewCollectionShow: true,
       collection:collection
     });
- 
+    {/*const config = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        MAuthorization: "MBearer " + localStorage.getItem("info"),
+        "Content-Type": "application/json"
+      }
+    };
+
+    axios
+      .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${collection}`, config)
+      .then(res => {
+        this.setState({
+          collection: res.data
+        });
+      })
+      .catch(err => {
+        if (err.response === undefined) {
+        } else if (err.response.status === 401) {
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload();
+        }
+      });*/}    
   };
 
   hideViewCollectionModal = () => {
@@ -213,6 +255,7 @@ class DataList extends Component {
   };
 
   handleActionClick = e => {
+    
     this.props.viewEdit(e);
   };
 
@@ -359,6 +402,9 @@ class DataList extends Component {
                           break;
                         case "PROCESSING":
                           badge_class = "badge-secondary";
+                          break;
+                        case "PROCESSING":
+                          badge_class = "badge-secondary";
                           btn_text = "View";
                           break;
                         case "PUBLISHED":
@@ -369,10 +415,13 @@ class DataList extends Component {
                           break;
                         case "DEPRECATED":
                           break;
+                        case "PROCESSING":
+                          badge_class = "badge-secondary";
+                          btn_text = "View";
+                          break;
                         case "ERROR":
                           badge_class = "badge-danger";
                           btn_text = "View";
- 						  break;
                         case "HOLD":
                           badge_class = "badge-dark";
                           btn_text = this.state.is_curator ? "View" : "View";
@@ -388,7 +437,7 @@ class DataList extends Component {
                           <td>{dataset.entity_display_doi}</td>
                           <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.properties.name}</div></td>
                           <td>{dataset.properties.provenance_group_name}</td>
-                          {/** <td>
+                          <td>
                             <button
                               className='btn btn-link'
                               type='button'
@@ -396,16 +445,13 @@ class DataList extends Component {
                             >
                             {dataset.properties.collection ? dataset.properties.collection.label: ""}
                             </button>
-                            <ViewCollectionModal
-                              show={this.state.ViewCollectionShow}
-                              hide={this.hideViewCollectionModal}
-                              collection={this.state.collection}
-                            />
-                          </td>*/}
-			  <td>
-                            {dataset.properties.collection
-                              ? dataset.properties.collection.label
-                              : ""}
+                          {/**  {this.state.ViewCollectionShow & (
+                              <ViewCollectionModal
+                                show={this.state.ViewCollectionShow}
+                                hide={this.hideViewCollectionModal}
+                                collection={this.state.collection}
+                              />
+                            )} */} 
                           </td>
                           <td>{dataset.created_by}</td>
                           <td>
@@ -417,7 +463,7 @@ class DataList extends Component {
                               className={"badge " + badge_class}
                               data-tip
                               data-for={"status_tooltip_" + dataset.uuid}
-                              onClick={status === 'ERROR' ? () =>
+                              onClick={status == 'ERROR' ? () =>
                                 this.showErrorMsgModal(
                                   dataset.properties.message
                                 ) : null
@@ -431,12 +477,12 @@ class DataList extends Component {
                                   type="error"
                                   effect="solid"
                                 >
-                                  <div style={{width: "50em", whiteSpace: "initial" }}>
-                                  {truncateString(
-                                    dataset.properties.message,
-                                    350
-                                  ) || "Error"}
-                                  </div>
+                                  <p>
+                                    {truncateString(
+                                      dataset.properties.message,
+                                      250
+                                    ) || "Error"}
+                                  </p>
                                 </ReactTooltip>
                               )}
                             </span>
@@ -488,4 +534,4 @@ class DataList extends Component {
   }
 }
 
-export default DataList;
+export default Datasets;

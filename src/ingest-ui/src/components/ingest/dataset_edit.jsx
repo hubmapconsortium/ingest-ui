@@ -745,7 +745,7 @@ class DatasetEdit extends Component {
 	      );
 	    //finally, compare the digits.  If any consecutive digits are more than
 	    //one number apart, then these values represent a subset
-	    if(next_lab_id_subset - first_lab_id_subset != 1) {
+	    if(next_lab_id_subset - first_lab_id_subset !== 1) {
 			is_subset = "subset";
 			break;
 	    }

@@ -1,11 +1,13 @@
-import React, { Component } from "react";
-import "./App.css";
-// Always start component names with a capital letter
-import Login from "./components/uuid/login";
-import UUIDEntrance from "./components/uuid/uuid_entrance";
-import IngestEntrance from "./components/ingest/ingest_entrance";
-import axios from "axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { Component }from 'react';
+import './App.css';
+import Navigation from './components/Navbar.js';
+import Routes from './Routes';
+import Login from './components/uuid/login';
+import UUIDEntrance from './components/uuid/uuid_entrance';
+import IngestEntrance from './components/ingest/ingest_entrance';
+import CollectionsEntrance from './Collections/collections_entrance';
+import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faExclamationTriangle,
   faAddressCard,
@@ -28,9 +30,18 @@ class App extends Component {
       localStorage.setItem("isAuthenticated", false);
     }
 
+    //set the system state if the URL includes 'collections'
+      if (window.location.href.includes("/collections/")){
+		this.setState({
+      		system: "collection"
+    	});
+      }
+
+
     // IE doesn't support the URL api
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
+
 
     if (info !== null) {
       localStorage.setItem("info", info);
@@ -59,12 +70,15 @@ class App extends Component {
     };
 
     // Binding event handler methods to an instance
-    this.handleLougot = this.handleLogout.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
 
   componentDidMount() {
     if (localStorage.getItem("info") !== null) {
-      const config = {
+      
+	  
+
+	  const config = {
         headers: {
           Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
@@ -106,26 +120,6 @@ class App extends Component {
             }); 
           }
         });
-
-      // axios
-      //   .get(
-      //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/usercanedit/type`,
-      //     config
-      //   )
-      //   .then(res => {
-      //     this.setState({ allowed: true });
-      //   })
-      //   .catch(err => {
-      //     if (err.response === undefined) {
-      //       this.setState({
-      //         web_services_error: true
-      //       });
-      //     } else if (err.response.status === 401) {
-      //       localStorage.setItem("isAuthenticated", false);
-      //     } else if (err.response.status === 403) {
-      //       this.setState({ allowed: false });
-      //     }
-      //   });
     }
   }
 
@@ -190,6 +184,12 @@ class App extends Component {
     });
   };
 
+  handleEnterCollection = () => {
+    this.setState({
+      system: "collection"
+    });
+  };
+
   renderContent() {
     let html = <Login />;
 
@@ -199,10 +199,11 @@ class App extends Component {
     if (this.state.isAuthenticated) {
       // Must wrap the two componments in an enclosing tag
       html = (
-        <div>
+        <div className="dataopts">
           {this.state.registered === true &&
             this.state.allowed === true &&
-            this.state.system === "" && (
+            this.state.system === "" 
+              && (
               <div className="row">
                 <div className="col-sm-6">
                   <div className="card">
@@ -235,9 +236,13 @@ class App extends Component {
                   </div>
                 </div>
               </div>
-            )}
-          {this.state.system === "uuid" && <UUIDEntrance />}
-          {this.state.system === "ingest" && <IngestEntrance />}
+            )} 
+          {this.state.system === "uuid" && 
+              <UUIDEntrance  />}
+          {this.state.system === "ingest" && 
+              <IngestEntrance  />}
+          {/**  {this.state.system === "collection" && 
+              <CollectionsEntrance  />} */}
           {this.state.web_services_error && (
             <div className="row">
               <div className="alert alert-warning col-sm-12 text-center">
@@ -322,9 +327,18 @@ class App extends Component {
     clearTimeout(this.state.timer);
     this.setState({ show: false });
   };
+  getSystem = (system) => {
+   // This is the system data from Navigation
+   this.setState(
+   {
+      system: system
+   })
+}
 
   // Display the final output
   render() {
+	const collections =   window.location.href.includes("/collections")?true:false;
+    //const system = this.state.system;
     return (
       <div>
         <IdleTimer
@@ -352,8 +366,16 @@ class App extends Component {
         </Modal>
         {this.renderHeader()}
         <div id="content" className="container">
-          {this.renderContent()}
-        </div>
+			{!collections && (
+              this.renderContent()
+			)}
+           <div className="App">
+             {/**  <Navigation /> */}
+	          <Routes />
+	       </div>
+		  
+		</div>
+	   
       </div>
     );
   }
