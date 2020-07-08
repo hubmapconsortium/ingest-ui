@@ -505,6 +505,7 @@ class TissueForm extends Component {
             organ_other: "",
             formErrors: { ...prevState.formErrors, organ: "" }
           }));
+
         }
         break;
       case "organ_other":
