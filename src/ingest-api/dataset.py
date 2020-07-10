@@ -855,7 +855,8 @@ class Dataset(object):
 
 
     @classmethod
-    def publishing_process(self, driver, headers, uuid, group_uuid, publish=True):
+    def publishing_process(self, driver, headers, uuid, group_uuid, status_flag):
+        from specimen import Specimen
         group_info = None
         metadata_node = None
         metadata = None
@@ -885,17 +886,23 @@ class Dataset(object):
             tx = None
             try:
                 tx = session.begin_transaction()
-                #step 1: move the files to the publish directory
-                new_publish_path = self.get_publish_path(group_info['displayname'], uuid)
-                current_staging_path = self.get_globus_file_path(group_info['displayname'], uuid)
-                if publish == True:
-                    #publish
+                # step 1: update the directories based on publish flag
+                if publish_state == HubmapConst.DATASET_STATUS_PUBLISHED:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
+                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = HubmapConst.ACCESS_LEVEL_PUBLIC
+                    print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
+                    values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
+                        access_level=HubmapConst.ACCESS_LEVEL_PUBLIC, uuid=uuid, group_display_name=group_info['displayname']))
+                    #self.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname'])
                 else:
-                    #unpublish
-                    move_directory(new_publish_path, current_staging_path)
-                    metadata_node[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_FILEPATH'],current_staging_path)
-                    metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_UNPUBLISHED
+                    metadata_node[HubmapConst.STATUS_ATTRIBUTE] = publish_state
+                    access_level = self.get_access_level(nexus_token, driver, metadata_node)
+                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+                    print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
+                    values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
+                        access_level=access_level, uuid=uuid, group_display_name=group_info['displayname']))
+                    #self.set_dir_permissions(access_level, uuid, group_info['displayname'])
+                    
                 #step 2: update the metadata node
                 authcache = None
                 if AuthHelper.isInitialized() == False:
@@ -924,6 +931,8 @@ class Dataset(object):
                 print ("EXECUTING DATASET PUBLISH UPDATE: " + stmt)
                 tx.run(stmt)
                 tx.commit()
+
+                Specimen.update_metadata_access_levels(driver, [uuid])
                 return uuid
             except TypeError as te:
                 print ("Type Error: ", te.msg)
@@ -979,9 +988,9 @@ class Dataset(object):
         if str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_REOPENED).upper():
             self.reopen_dataset(driver, headers, uuid, formdata, group_uuid)
         elif str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_QA).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper():
-            self.publishing_process(driver, headers, uuid, group_uuid, True)
+            self.publishing_process(driver, headers, uuid, group_uuid, HubmapConst.DATASET_STATUS_PUBLISHED)
         elif str(oldstatus).upper() == str(HubmapConst.DATASET_STATUS_PUBLISHED).upper() and str(newstatus).upper() == str(HubmapConst.DATASET_STATUS_UNPUBLISHED).upper():
-            self.publishing_process(driver, headers, uuid, group_uuid, False)
+            self.publishing_process(driver, headers, uuid, group_uuid, HubmapConst.DATASET_STATUS_UNPUBLISHED)
         else:
             self.modify_dataset(driver, headers, uuid, formdata, group_uuid)
      
