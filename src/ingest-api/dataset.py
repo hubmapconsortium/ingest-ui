@@ -362,6 +362,7 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data['derived_dataset_types'])
                 metadata_record[HubmapConst.SOURCE_UUID_ATTRIBUTE] = source_UUID_Data[0][0]['doiSuffix']
 
+
                 
                 # Set the 'phi' attribute with default value as "no"
                 metadata_record[HubmapConst.HAS_PHI_ATTRIBUTE] = "no"
@@ -386,8 +387,14 @@ class Dataset(object):
                 webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
                 if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                     webservice_file_path = None
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
-                new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_ENDPOINT_UUID'], new_path)
+                    
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
+                new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], new_path)
+
+                # move the files if the access level changes
+                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+
+
 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
@@ -563,19 +570,14 @@ class Dataset(object):
                 access_level = self.get_access_level(nexus_token, driver, metadata_record)
                 metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
 
-                webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
-                if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
-                    webservice_file_path = None
-                # We need to change this to use the PROTECTED ENDPOINT
-                #new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), None, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # move the files if the access level changes
-                #self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
 
                 
                 # set the right collection uuid field
@@ -800,19 +802,15 @@ class Dataset(object):
                 access_level = self.get_access_level(nexus_token, driver, metadata_record)
                 metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
 
-                webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
-                if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
-                    webservice_file_path = None
-                # We need to change this to use the PROTECTED ENDPOINT
-                #new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+
+                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), None, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 # move the files if the access level changes
-                #self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
 
 
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
@@ -889,18 +887,12 @@ class Dataset(object):
                 if publish_state == HubmapConst.DATASET_STATUS_PUBLISHED:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = HubmapConst.ACCESS_LEVEL_PUBLIC
-                    print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
-                    values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
-                        access_level=HubmapConst.ACCESS_LEVEL_PUBLIC, uuid=uuid, group_display_name=group_info['displayname']))
-                    #self.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname'])
+                    self.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname'])
                 else:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = publish_state
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
-                    print("""The set_dir_permissions is currently disabled.  If it were enabled, the following
-                    values would be used: self.set_dir_permissions({access_level}, {uuid}, {group_display_name})""".format(
-                        access_level=access_level, uuid=uuid, group_display_name=group_info['displayname']))
-                    #self.set_dir_permissions(access_level, uuid, group_info['displayname'])
+                    self.set_dir_permissions(access_level, uuid, group_info['displayname'])
                     
                 #step 2: update the metadata node
                 authcache = None
@@ -1319,15 +1311,31 @@ class Dataset(object):
                 update_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
                 Specimen.update_metadata_access_levels(driver, [uuid])
                 
-                # remove a symlink if the access level is protected
-                if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
-                    sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
-                    if os.path.exists(sym_link_path):
-                        unlinkDir(sym_link_path)
-                    
-
+                #need to check if the dataset is derived from another dataset
+                #we assume that a dataset can only be directly derived from one dataset, so
+                #check the length of the source_uuid list first
+                if len(form_source_uuid_list) == 1:
+                    uuid_list = Entity.get_uuid_list(self.confdata['UUID_WEBSERVICE_URL'], nexus_token, form_source_uuid_list)
+                    source_entity = Entity.get_entity_metadata(driver, uuid_list[0])
+                    if source_entity['entitytype'] == 'Dataset':
+                        # remove a symlink if the access level is protected
+                        if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
+                            sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
+                            if os.path.exists(sym_link_path):
+                                unlinkDir(sym_link_path)
+                        else:
+                            sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
+                            if os.path.exists(sym_link_path) == False:
+                                # the  os.path.join code will ignore part of the filepath if a later part starts with a /
+                                # so remove the leading slash from the local_directory_url_path before joining it
+                                rel_path = source_entity['local_directory_url_path']
+                                if str(rel_path).startswith('/'):
+                                    rel_path = rel_path[1:]
+                                source_dir = os.path.join(str(self.confdata['GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH']), rel_path)
+                                linkDir(source_dir, sym_link_path)
+                            
                 # move the files if the access level changes
-                #self.set_dir_permissions(access_level, uuid, group_info['displayname'])
+                self.set_dir_permissions(access_level, uuid, group_info['displayname'])
 
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
@@ -1667,6 +1675,7 @@ class Dataset(object):
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'])
                 subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
             if access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
+                #mkDir(consortium_path)
                 linkDir(protected_path, consortium_path)
                 acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
@@ -1674,6 +1683,7 @@ class Dataset(object):
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
                 subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
             if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
+                #mkDir(public_path)
                 linkDir(protected_path, public_path)
                 acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
