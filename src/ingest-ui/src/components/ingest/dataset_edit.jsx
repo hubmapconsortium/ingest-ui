@@ -173,6 +173,10 @@ class DatasetEdit extends Component {
           other_datatype: other_dt !== undefined,
           other_dt: other_dt,
           description: this.props.editingDataset.properties.description,
+          assay_metadata_status: this.props.editingDataset.properties.assay_metadata_status,
+          data_metric_availability: this.props.editingDataset.properties.data_metric_availability,
+          data_processing_level: this.props.editingDataset.properties.data_processing_level,
+          dataset_sign_off_status: this.props.editingDataset.properties.dataset_sign_off_status,
           errorMsgShow: this.props.editingDataset.properties.status.toLowerCase() === "error" && this.props.editingDataset.properties.message ? true : false,
           statusErrorMsg: this.props.editingDataset.properties.message
         },
@@ -2003,6 +2007,92 @@ class DatasetEdit extends Component {
               </span>
             </div>
           </div>
+          {
+            this.state.assay_metadata_status !== undefined && (
+              <div className="form-group row">
+                <label
+                    htmlFor="assay_metadata_status"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Assay Metadata Status
+                  </label>
+                  <div className="col-sm-9 my-auto">
+                    {this.state.assay_metadata_status === 0 && (
+                      <span className="badge badge-secondary">No metadata</span>
+                    )}
+                    {this.state.assay_metadata_status === 1 && (
+                      <span className="badge badge-primary">Metadata provided</span>
+                    )}
+                    {this.state.assay_metadata_status === 2 && (
+                      <span className="badge badge-primary">Metadata curated</span>
+                    )}
+                  </div>
+              </div>
+            )
+          }
+          {
+            this.state.data_metric_availability !== undefined && (
+              <div className="form-group row">
+                <label
+                    htmlFor="data_metric_availability"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Data Metric Availability
+                  </label>
+                  <div className="col-sm-9 my-auto">
+                    {this.state.data_metric_availability === 0 && (
+                      <span className="badge badge-secondary">No quality metrics are available</span>
+                    )}
+                    {this.state.data_metric_availability === 1 && (
+                      <span className="badge badge-primary">Quality metrics are available</span>
+                    )}
+                  </div>
+              </div>
+            )
+          }
+          {
+            this.state.data_processing_level !== undefined && (
+              <div className="form-group row">
+                <label
+                    htmlFor="data_processing_level"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Data Proccessing Level
+                  </label>
+                  <div className="col-sm-9 my-auto">
+                    {this.state.data_processing_level === 0 && (
+                      <span className="badge badge-secondary">Uploaded data. No standardized processing has been performed by the HIVE.</span>
+                    )}
+                    {this.state.data_processing_level === 1 && (
+                      <span className="badge badge-primary">Processing has been performed with a standard HIVE pipeline.</span>
+                    )}
+                    {this.state.data_processing_level === 2 && (
+                      <span className="badge badge-primary">Additional processing has been performed.</span>
+                    )}
+                  </div>
+              </div>
+            )
+          }
+          {
+            this.state.dataset_sign_off_status !== undefined && (
+              <div className="form-group row">
+                <label
+                    htmlFor="dataset_sign_off_status"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Dataset Sign Off Status
+                  </label>
+                  <div className="col-sm-9 my-auto">
+                    {this.state.dataset_sign_off_status === 0 && (
+                      <span className="badge badge-secondary">Expert has not signed off on the data</span>
+                    )}
+                    {this.state.dataset_sign_off_status === 1 && (
+                      <span className="badge badge-primary">Expert has signed off on the data</span>
+                    )}
+                  </div>
+              </div>
+            )
+          }
           {this.state.submit_error && (
             <div className='alert alert-danger col-sm-12' role='alert'>
               Oops! Something went wrong. Please contact administrator for help.

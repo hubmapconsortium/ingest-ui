@@ -2020,6 +2020,28 @@ class TissueForm extends Component {
 	                </div>
 	              </div>
 	            )}
+              <div className="form-group row">
+                <label
+                    htmlFor="sample_metadata_status"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Sample Metadata Status
+                  </label>
+                  <div className="col-sm-9 my-auto">
+                    {this.state.sample_metadata_status || (
+                      <span className="badge badge-secondary">No value set</span>
+                    )}
+                    {this.state.sample_metadata_status === 0 && (
+                      <span className="badge badge-secondary">No metadata</span>
+                    )}
+                    {this.state.sample_metadata_status === 1 && (
+                      <span className="badge badge-primary">Metadata provided</span>
+                    )}
+                    {this.state.sample_metadata_status === 2 && (
+                      <span className="badge badge-primary">Metadata curated</span>
+                    )}
+                  </div>
+              </div>
 	            <div className="form-group row d-none">
 	              <label
 	                htmlFor="metadata"
