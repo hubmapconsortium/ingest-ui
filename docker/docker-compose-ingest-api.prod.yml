@@ -26,9 +26,18 @@ services:
       # ingest-api on http 7777 to be used by airflow
       - "7777:7777"
     environment:
+      # Both UID and GID of user `hive` being used by the container
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
-      - HOST_GID=${HOST_GID:-23629}
-      - HOST_UID=${HOST_UID:-68728}
+      - USER_HIVE_UID=${HOST_UID:-68728}
+      - USER_HIVE_GID=${HOST_GID:-23629}
+      # Only UID of user `shirey` being used by the container
+      # uid=50069(shirey) gid=23653(pitthive) groups=992(docker),23653(pitthive),23684(hivetest)
+      - USER_SHIREY_UID=${HOST_UID:-50069}
+      # GID of group `hubmap` and GID of group `hubseq` being used by the container
+      # hubmap:*:24357:blood
+      # hubseq:*:24358:blood
+      - GROUP_HUBMAP_GID=${GROUP_HUBMAP_GID:-24357}
+      - GROUP_HUBSEQ_GID=${GROUP_HUBSEQ_GID:-24358}
     volumes:
       # Mount the app config to container in order to keep it outside of the image
       - "../src/ingest-api/instance:/usr/src/app/src/instance"
