@@ -19,6 +19,9 @@ import shutil
 import json
 import traceback
 import subprocess
+import logging
+import threading
+
 
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_const import HubmapConst 
@@ -30,6 +33,7 @@ from hubmap_commons.metadata import Metadata
 from hubmap_commons.activity import Activity
 from hubmap_commons.provenance import Provenance
 from hubmap_commons.file_helper import linkDir, unlinkDir, mkDir
+from builtins import staticmethod
 
 class Dataset(object):
     '''
@@ -259,6 +263,7 @@ class Dataset(object):
     # Create derived dataset
     @classmethod
     def create_derived_datastage(self, driver, nexus_token, json_data):
+        global logger
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         
@@ -391,10 +396,12 @@ class Dataset(object):
                 new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
                 new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], new_path)
 
-                # move the files if the access level changes
-                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
-
-
+                try:
+                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name))
+                    x.start()
+                except Exception as e:
+                    logger = logging.getLogger('ingest.service')
+                    logger.error(e, exc_info=True)
 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
@@ -479,6 +486,7 @@ class Dataset(object):
 
     @classmethod
     def ingest_datastage(self, driver, headers, incoming_record, nexus_token):
+        global logger
         collection_uuid = None
         conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
         driver = conn.get_driver()
@@ -576,8 +584,12 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
-                # move the files if the access level changes
-                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+                try:
+                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name))
+                    x.start()
+                except Exception as e:
+                    logger = logging.getLogger('ingest.service')
+                    logger.error(e, exc_info=True)
 
                 
                 # set the right collection uuid field
@@ -676,6 +688,7 @@ class Dataset(object):
     
     @classmethod
     def create_datastage(self, driver, headers, incoming_record, groupUUID):
+        global logger
         current_token = None
         collection_uuid = None
         try:
@@ -809,8 +822,14 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
-                # move the files if the access level changes
-                self.set_dir_permissions(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name)
+                try:
+                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name),group=None)
+                    #x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name))
+                    x.start()
+                except Exception as e:
+                    logger = logging.getLogger('ingest.service')
+                    logger.error(e, exc_info=True)
+
 
 
                 stmt = Dataset.get_create_metadata_statement(metadata_record, nexus_token, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
@@ -854,6 +873,7 @@ class Dataset(object):
 
     @classmethod
     def publishing_process(self, driver, headers, uuid, group_uuid, status_flag):
+        global logger
         group_info = None
         metadata_node = None
         metadata = None
@@ -887,12 +907,23 @@ class Dataset(object):
                 if publish_state == HubmapConst.DATASET_STATUS_PUBLISHED:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = HubmapConst.ACCESS_LEVEL_PUBLIC
-                    self.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname'])
+                    try:
+                        x = threading.Thread(target=self.set_dir_permissions, args=(HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname']))
+                        x.start()
+                    except Exception as e:
+                        logger = logging.getLogger('ingest.service')
+                        logger.error(e, exc_info=True)
+
                 else:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = publish_state
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
-                    self.set_dir_permissions(access_level, uuid, group_info['displayname'])
+                    try:
+                        x = threading.Thread(target=self.set_dir_permissions, args=(access_level, uuid, group_info['displayname']))
+                        x.start()
+                    except Exception as e:
+                        logger = logging.getLogger('ingest.service')
+                        logger.error(e, exc_info=True)
                     
                 #step 2: update the metadata node
                 authcache = None
@@ -1152,6 +1183,7 @@ class Dataset(object):
     def modify_dataset(self, driver, headers, uuid, formdata, group_uuid):
         # added this import statement to avoid a circular reference in import statements
         from specimen import Specimen
+        global logger
         group_info = None
         with driver.session() as session:
             tx = None
@@ -1314,28 +1346,31 @@ class Dataset(object):
                 #need to check if the dataset is derived from another dataset
                 #we assume that a dataset can only be directly derived from one dataset, so
                 #check the length of the source_uuid list first
-                if len(form_source_uuid_list) == 1:
-                    uuid_list = Entity.get_uuid_list(self.confdata['UUID_WEBSERVICE_URL'], nexus_token, form_source_uuid_list)
-                    source_entity = Entity.get_entity_metadata(driver, uuid_list[0])
-                    if source_entity['entitytype'] == 'Dataset':
-                        # remove a symlink if the access level is protected
-                        if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
-                            sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
-                            if os.path.exists(sym_link_path):
-                                unlinkDir(sym_link_path)
-                        else:
-                            sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
-                            if os.path.exists(sym_link_path) == False:
-                                # the  os.path.join code will ignore part of the filepath if a later part starts with a /
-                                # so remove the leading slash from the local_directory_url_path before joining it
-                                rel_path = source_entity['local_directory_url_path']
-                                if str(rel_path).startswith('/'):
-                                    rel_path = rel_path[1:]
-                                source_dir = os.path.join(str(self.confdata['GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH']), rel_path)
-                                linkDir(source_dir, sym_link_path)
+                is_derived = self.is_derived_dataset(driver, nexus_token, form_source_uuid_list)
+
+                if is_derived:
+                    # remove a symlink if the access level is protected
+                    if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
+                        sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
+                        if os.path.exists(sym_link_path):
+                            unlinkDir(sym_link_path)
+                    else:
+                        sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
+                        if os.path.exists(sym_link_path) == False:
+                            # the  os.path.join code will ignore part of the filepath if a later part starts with a /
+                            # so remove the leading slash from the local_directory_url_path before joining it
+                            rel_path = source_entity['local_directory_url_path']
+                            if str(rel_path).startswith('/'):
+                                rel_path = rel_path[1:]
+                            source_dir = os.path.join(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), rel_path)
+                            linkDir(source_dir, sym_link_path)
                             
-                # move the files if the access level changes
-                self.set_dir_permissions(access_level, uuid, group_info['displayname'])
+                try:
+                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, uuid, group_info['displayname']))
+                    x.start()
+                except Exception as e:
+                    logger = logging.getLogger('ingest.service')
+                    logger.error(e, exc_info=True)
 
                 
                 stmt = Neo4jConnection.get_update_statement(update_record, True)
@@ -1669,27 +1704,25 @@ class Dataset(object):
             if os.path.exists(consortium_path):
                 unlinkDir(consortium_path)
             protected_path = os.path.join(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], group_display_name, dataset_uuid)
+            acl_text = None
             if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
-                acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x'.format(
+                acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,d:user::rwx,d:group::r-x,d:mask::rwx,d:other:---'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'])
-                subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
             if access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
-                #mkDir(consortium_path)
                 linkDir(protected_path, consortium_path)
-                acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
+                acl_text = 'u::rwx,g::r-x,o::-,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x,d:user::rwx,d:group::r-x,d:mask::rwx,d:other:---'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
-                subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
             if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
-                #mkDir(public_path)
                 linkDir(protected_path, public_path)
-                acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x'.format(
+                acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,g:{consortium_group}:r-x,d:user::rwx,d:group::r-x,d:mask::rwx,d:other:---'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
-                subprocess.Popen(['setfacl','--set=' + acl_text,protected_path])
+            # apply the permissions
+            subprocess.Popen(['setfacl','-R', '--set=' + acl_text,protected_path])
         except ValueError as ve:
             raise ve
         except OSError as oserr:
@@ -1777,6 +1810,16 @@ class Dataset(object):
         except:
             print('A general error occurred: ')
             traceback.print_exc()
+
+    @classmethod
+    def is_derived_dataset(self, driver, nexus_token, source_uuid_list):
+        ret_value = True
+        uuid_list = Entity.get_uuid_list(self.confdata['UUID_WEBSERVICE_URL'], nexus_token, source_uuid_list)
+        for uuid in uuid_list:
+            source_entity = Entity.get_entity_metadata(driver, uuid)
+            if source_entity['entitytype'] != 'Dataset':
+                return False
+        return ret_value
     
     @staticmethod
     def get_datasets_by_type(driver, type_string, identifier_uuid_list):
