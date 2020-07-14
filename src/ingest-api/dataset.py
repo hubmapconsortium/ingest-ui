@@ -873,6 +873,7 @@ class Dataset(object):
     @classmethod
     def publishing_process(self, driver, headers, uuid, group_uuid, status_flag):
         global logger
+        from specimen import Specimen
         group_info = None
         metadata_node = None
         metadata = None
@@ -952,6 +953,8 @@ class Dataset(object):
                 print ("EXECUTING DATASET PUBLISH UPDATE: " + stmt)
                 tx.run(stmt)
                 tx.commit()
+
+                Specimen.update_metadata_access_levels(driver, [uuid])
                 return uuid
             except TypeError as te:
                 print ("Type Error: ", te.msg)
