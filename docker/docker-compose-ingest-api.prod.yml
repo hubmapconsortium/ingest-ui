@@ -62,6 +62,8 @@ services:
       - "/hive/users/hive/hubmap/hivevm193-prod/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
       # Mount Globus data
       - "/hive/hubmap/lz:/hive/hubmap/lz"
+      - "/hive/hubmap/public:/hive/hubmap/public"
+      - "/hive/hubmap/consortium:/hive/hubmap/consortium"
       # assets
       - "/hive/hubmap/assets:/usr/src/assets"
     networks:

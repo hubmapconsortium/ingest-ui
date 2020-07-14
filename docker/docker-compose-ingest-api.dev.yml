@@ -58,6 +58,8 @@ services:
       - "/hive/hubmap-dev/scratch:/hubmap-scratch"
       # Mount Globus data
       - "/hive/hubmap-dev/lz:/hive/hubmap-dev/lz"
+      - "/hive/hubmap-dev/public:/hive/hubmap-dev/public"
+      - "/hive/hubmap-dev/consortium:/hive/hubmap-dev/consortium"
       # assets
       - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:
