@@ -141,6 +141,9 @@ class DatasetEdit extends Component {
         const data_type_options = new Set(DATA_TYPES);
         other_dt = data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = data_types.filter((dt) => data_type_options.has(dt));
+        if (other_dt){
+          data_types.push(other_dt);
+        }
       }
       this.setState({
         is_protected: false,
@@ -341,14 +344,13 @@ class DatasetEdit extends Component {
     if (id.startsWith("dt")) {
       if (id === "dt_other") {
         const data_types = this.state.data_types;
-        data_types.add('other');
         this.setState({
           data_types: data_types,
           other_datatype: e.target.checked,
         });
         if (!e.target.checked) {
           const data_types = this.state.data_types;
-          data_types.delete('other');
+          data_types.delete(this.state.other_dt);
           this.setState({
             data_types: data_types,
             other_dt: "",
