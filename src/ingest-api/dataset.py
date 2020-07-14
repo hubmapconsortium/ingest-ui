@@ -397,7 +397,7 @@ class Dataset(object):
                 new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], new_path)
 
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name))
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
@@ -585,7 +585,7 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name))
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
@@ -823,8 +823,7 @@ class Dataset(object):
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name),group=None)
-                    #x = threading.Thread(target=self.set_dir_permissions, args=(access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name))
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
@@ -908,7 +907,7 @@ class Dataset(object):
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = HubmapConst.ACCESS_LEVEL_PUBLIC
                     try:
-                        x = threading.Thread(target=self.set_dir_permissions, args=(HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname']))
+                        x = threading.Thread(target=self.set_dir_permissions, args=[HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname']])
                         x.start()
                     except Exception as e:
                         logger = logging.getLogger('ingest.service')
@@ -919,7 +918,7 @@ class Dataset(object):
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
                     try:
-                        x = threading.Thread(target=self.set_dir_permissions, args=(access_level, uuid, group_info['displayname']))
+                        x = threading.Thread(target=self.set_dir_permissions, args=[access_level, uuid, group_info['displayname']])
                         x.start()
                     except Exception as e:
                         logger = logging.getLogger('ingest.service')
@@ -1366,7 +1365,7 @@ class Dataset(object):
                             linkDir(source_dir, sym_link_path)
                             
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=(access_level, uuid, group_info['displayname']))
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, uuid, group_info['displayname']])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
