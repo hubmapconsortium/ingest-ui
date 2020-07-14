@@ -19,33 +19,34 @@ GLOBUS_ENDPOINT_UUID = ''
 HUBMAP_DATA_ADMIN_GROUP_UUID = ''
 
 # File system settings
-# No need to modify here if deployed with docker
+# No need to modify here if deployed with docker regardless of DEV/TEST/STAGE/PROD
 # Just make sure the volume mounts in docker compose yaml mapped correctly
 LOCAL_STORAGE_DIRECTORY = '/hubmap-tmp'
 GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
 HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
 WORKFLOW_SCRATCH = '/hubmap-scratch'
 
-#UUIDs of the Globus endpoints (shown are for DEV)
+# UUIDs of the Globus endpoints (shown are for DEV)
 GLOBUS_PUBLIC_ENDPOINT_UUID = 'a00a00b8-d1d1-4ab9-b915-0bada54c27a3'
 GLOBUS_CONSORTIUM_ENDPOINT_UUID = '3cb7d673-a3db-40e9-8376-f2ead6cb5a45'
 GLOBUS_PROTECTED_ENDPOINT_UUID = 'bdaf8547-aab3-4142-97bd-0a16d5cd9f58'
 
-#File paths of the Globus endpoints (shown are for DEV)
+# File paths of the Globus endpoints (shown are for DEV, change for TEST/STAGE/PROD deployment)
 GLOBUS_PUBLIC_ENDPOINT_FILEPATH = '/hive/hubmap-dev/public'
 GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH = '/hive/hubmap-dev/consortium'
 GLOBUS_PROTECTED_ENDPOINT_FILEPATH = '/hive/hubmap-dev/lz'
 
-#File Access Control List Settings
+# File Access Control List Settings to be used by `setfacl` command
+# Set value to `hubmap` for all the following users and groups on localhost docker mode
 GLOBUS_BASE_FILE_USER_NAME = 'hive'
 GLOBUS_ADMIN_FILE_USER_NAME = 'shirey'
 GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME = 'hubseq'
 GLOBUS_CONSORTIUM_FILE_GROUP_NAME = 'hubmap'
 
 
-# URL for talking to UUID API (default value used for docker dev environment)
-# Don't use localhost since uuid-api running on a different container
-# Point to remote URL for testing and production deployment
+# URL for talking to UUID API (default value used for localhost docker environment)
+# Don't use http://localhost since uuid-api running on a different container
+# Point to remote https URL for DEV/TEST/STAGE/PROD deployment
 UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 
 # Must no trailing slash /
