@@ -336,7 +336,6 @@ class DatasetEdit extends Component {
         break;
       case "other_dt":
         this.setState({ other_dt: value });
-
         break;
       default:
         break;
@@ -581,6 +580,12 @@ class DatasetEdit extends Component {
   };
 
   handleSubmit = (i) => {
+    if (this.state.other_dt){
+      const data_types = this.state.data_types;
+      data_types.add(this.state.other_dt)
+      this.setState({ data_types: data_types})
+    }
+
     this.validateForm().then((isValid) => {
       if (isValid) {
         this.setState({ submitting: true });
