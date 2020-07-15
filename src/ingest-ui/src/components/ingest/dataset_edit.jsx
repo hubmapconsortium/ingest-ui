@@ -348,8 +348,10 @@ class DatasetEdit extends Component {
           other_datatype: e.target.checked,
         });
         if (!e.target.checked) {
+          const data_type_options = new Set(DATA_TYPES);
           const data_types = this.state.data_types;
-          data_types.delete(this.state.other_dt);
+          const other_dt = Array.from(data_types).filter((dt) => !data_type_options.has(dt))[0];
+          data_types.delete(other_dt)
           this.setState({
             data_types: data_types,
             other_dt: "",
@@ -580,6 +582,11 @@ class DatasetEdit extends Component {
   };
 
   handleSubmit = (i) => {
+    const data_type_options = new Set(DATA_TYPES);
+    const data_types = this.state.data_types;
+    const other_dt = Array.from(data_types).filter((dt) => !data_type_options.has(dt))[0];
+    data_types.delete(other_dt)
+
     if (this.state.other_dt){
       const data_types = this.state.data_types;
       data_types.add(this.state.other_dt)
