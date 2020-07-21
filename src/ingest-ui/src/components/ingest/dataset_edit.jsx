@@ -1201,7 +1201,7 @@ class DatasetEdit extends Component {
                             data repository{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
                           </a>)}
-                          {this.state.globus_path || (
+                          {!this.state.globus_path && (
                           <span data-tip
                             data-for='globus_url_tooltip'>data repository{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} /></span>)}
