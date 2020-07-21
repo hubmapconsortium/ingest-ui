@@ -242,6 +242,27 @@ class DatasetEdit extends Component {
             default:
               break;
           }
+
+          axios
+            .get(
+              `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingDataset.uuid}`,
+              config
+            )
+            .then((res) => {
+              this.setState({
+                globus_path: res.data
+              });
+            })
+            .catch((err) => {
+              this.setState({
+                globus_path: "",
+                globus_path_tips: "Globus URL Unavailable"
+              })
+              if (err.response && err.response.status === 401) {
+                localStorage.setItem("isAuthenticated", false);
+                window.location.reload();
+              }
+            });
         }
       );
     }
@@ -1197,20 +1218,31 @@ class DatasetEdit extends Component {
                       "DOI: " +
                       this.state.doi}
                 </p>
-                {this.state.globus_path && (
-                  <div>
+                <div>
                     <p>
                       <strong>
                         <big>
                           To add or modify data files go to the{" "}
-                          <a
+                          {this.state.globus_path && (<a
                             href={this.state.globus_path}
                             target='_blank'
                             rel='noopener noreferrer'
                           >
                             data repository{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </a>
+                          </a>)}
+                          {this.state.globus_path || (
+                          <span data-tip
+                            data-for='globus_url_tooltip'>data repository{" "}
+                            <FontAwesomeIcon icon={faExternalLinkAlt} /></span>)}
+                          {this.state.globus_path_tips && (<ReactTooltip
+                            id='globus_url_tooltip'
+                            place='top'
+                            type='error'
+                            effect='solid'
+                          >
+                            <h4>{this.state.globus_path_tips}</h4>
+                          </ReactTooltip>)}
                           .
                         </big>
                       </strong>
@@ -1229,7 +1261,6 @@ class DatasetEdit extends Component {
                       .
                     </div>
                   </div>
-                )}
               </div>
             </div>
             <div className='form-group row'>
