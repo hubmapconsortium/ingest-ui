@@ -12,7 +12,7 @@ import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
   faUserShield,
-  faExternalLinkAlt
+  faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 
@@ -25,7 +25,7 @@ class DatasetEdit extends Component {
     collection: {
       uuid: "",
       label: "",
-      description: ""
+      description: "",
     },
     source_uuid: "",
     phi: "no",
@@ -38,15 +38,15 @@ class DatasetEdit extends Component {
     data_types: new Set(),
     other_datatype: false,
     other_dt: "",
-	is_protected: false,
+    is_protected: false,
 
     formErrors: {
       name: "",
       collection: "",
       source_uuid: "",
       data_types: "",
-      other_dt: ""
-    }
+      other_dt: "",
+    },
   };
 
   componentDidMount() {
@@ -55,18 +55,18 @@ class DatasetEdit extends Component {
       headers: {
         Authorization:
           "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     };
 
     axios
       .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
-      .then(res => {
+      .then((res) => {
         this.setState({
-          collections: res.data.collections
+          collections: res.data.collections,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.response === undefined) {
         } else if (err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -79,8 +79,8 @@ class DatasetEdit extends Component {
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/userroles`,
         config
       )
-      .then(res => {
-        res.data.roles.map(r => {
+      .then((res) => {
+        res.data.roles.map((r) => {
           if (r.name === "hubmap-data-curator") {
             this.setState({ is_curator: true });
           }
@@ -91,7 +91,7 @@ class DatasetEdit extends Component {
           this.setState({ is_curator: false });
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.response === undefined) {
         } else if (err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -104,17 +104,17 @@ class DatasetEdit extends Component {
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
         config
       )
-      .then(res => {
+      .then((res) => {
         const display_names = res.data.groups
-          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-          .map(g => {
+          .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+          .map((g) => {
             return g.displayname;
           });
         this.setState({
-          groups: display_names
+          groups: display_names,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
@@ -139,17 +139,22 @@ class DatasetEdit extends Component {
             .replace(/\\"/g, "'")
         );
         const data_type_options = new Set(DATA_TYPES);
-        other_dt = data_types.filter(dt => !data_type_options.has(dt))[0];
-        data_types = data_types.filter(dt => data_type_options.has(dt));
+        other_dt = data_types.filter((dt) => !data_type_options.has(dt))[0];
+        data_types = data_types.filter((dt) => data_type_options.has(dt));
       }
-	  this.setState({
-		is_protected: false
+
+      this.setState({
+        is_protected: false,
       });
-	  if (this.props.editingDataset.properties.is_protected) {
-		  this.setState({
-		  	is_protected: this.props.editingDataset.properties.is_protected.toLowerCase() === "true" ? true: false
-		  });
-	  }
+      if (this.props.editingDataset.properties.is_protected) {
+        this.setState({
+          is_protected:
+            this.props.editingDataset.properties.is_protected.toLowerCase() ===
+            "true"
+              ? true
+              : false,
+        });
+      }
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -163,7 +168,7 @@ class DatasetEdit extends Component {
             : {
                 uuid: "",
                 label: "",
-                description: ""
+                description: "",
               },
           source_uuid: this.generateDisplaySourceId(source_uuids),
           source_uuid_list: source_uuids,
@@ -173,49 +178,53 @@ class DatasetEdit extends Component {
           other_datatype: other_dt !== undefined,
           other_dt: other_dt,
           description: this.props.editingDataset.properties.description,
-          errorMsgShow: this.props.editingDataset.properties.status.toLowerCase() === "error" && this.props.editingDataset.properties.message ? true : false,
-          statusErrorMsg: this.props.editingDataset.properties.message
+          errorMsgShow:
+            this.props.editingDataset.properties.status.toLowerCase() ===
+              "error" && this.props.editingDataset.properties.message
+              ? true
+              : false,
+          statusErrorMsg: this.props.editingDataset.properties.message,
         },
         () => {
           switch (this.state.status.toUpperCase()) {
             case "NEW":
               this.setState({
-                badge_class: "badge-purple"
+                badge_class: "badge-purple",
               });
               break;
             case "REOPENED":
               this.setState({
-                badge_class: "badge-purple"
+                badge_class: "badge-purple",
               });
               break;
             case "INVALID":
               this.setState({
-                badge_class: "badge-warning"
+                badge_class: "badge-warning",
               });
               break;
             case "QA":
               this.setState({
-                badge_class: "badge-info"
+                badge_class: "badge-info",
               });
               break;
             case "LOCKED":
               this.setState({
-                badge_class: "badge-secondary"
+                badge_class: "badge-secondary",
               });
               break;
             case "ERROR":
               this.setState({
-                badge_class: "badge-danger"
+                badge_class: "badge-danger",
               });
               break;
             case "PUBLISHED":
               this.setState({
-                badge_class: "badge-success"
+                badge_class: "badge-success",
               });
               break;
             case "UNPUBLISHED":
               this.setState({
-                badge_class: "badge-light"
+                badge_class: "badge-light",
               });
               break;
             case "DEPRECATED":
@@ -223,6 +232,27 @@ class DatasetEdit extends Component {
             default:
               break;
           }
+
+          axios
+            .get(
+              `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingDataset.uuid}`,
+              config
+            )
+            .then((res) => {
+              this.setState({
+                globus_path: res.data
+              });
+            })
+            .catch((err) => {
+              this.setState({
+                globus_path: "",
+                globus_path_tips: "Globus URL Unavailable"
+              })
+              if (err.response && err.response.status === 401) {
+                localStorage.setItem("isAuthenticated", false);
+                window.location.reload();
+              }
+            });
         }
       );
     }
@@ -240,7 +270,7 @@ class DatasetEdit extends Component {
     this.setState({ show: false });
   };
 
-  showErrorMsgModal = msg => {
+  showErrorMsgModal = (msg) => {
     this.setState({ errorMsgShow: true, statusErrorMsg: msg });
   };
 
@@ -250,71 +280,71 @@ class DatasetEdit extends Component {
 
   handleLookUpClick = () => {
     this.setState({
-      LookUpShow: true
+      LookUpShow: true,
     });
   };
 
   hideLookUpModal = () => {
     this.setState({
-      LookUpShow: false
+      LookUpShow: false,
     });
   };
 
-  handler = e => {
-    if(e.key === 'Tab'){
+  handler = (e) => {
+    if (e.key === "Tab") {
       e.preventDefault();
-      if(this.state.collection_candidates.length > 0){
+      if (this.state.collection_candidates.length > 0) {
         this.setState({
           collection: this.state.collection_candidates[0],
-          showCollectionsDropDown: false
+          showCollectionsDropDown: false,
         });
       }
     }
-  }
+  };
 
-  handleInputChange = e => {
+  handleInputChange = (e) => {
     const { id, name, value } = e.target;
     switch (name) {
       case "name":
         this.setState({
-          name: value
+          name: value,
         });
         break;
       case "collection":
-        let ret = this.state.collections.filter(c => {
+        let ret = this.state.collections.filter((c) => {
           return c.label.toLowerCase().includes(value.toLowerCase());
         });
         this.setState({
           collection: value,
           showCollectionsDropDown: value !== "",
-          collection_candidates: ret
+          collection_candidates: ret,
         });
         break;
       case "source_uuid":
         this.setState({
-          source_uuid: value
+          source_uuid: value,
         });
         break;
       case "phi":
         this.setState({
-          phi: value
+          phi: value,
         });
         break;
       case "description":
         this.setState({
-          description: value
+          description: value,
         });
         break;
       case "status":
         this.setState({
-          new_status: value
+          new_status: value,
         });
         break;
-	  case "is_protected":
-		this.setState({
-		  is_protected: e.target.checked
-		});
-		break;
+      case "is_protected":
+        this.setState({
+          is_protected: e.target.checked,
+        });
+        break;
       case "other_dt":
         this.setState({ other_dt: value });
         break;
@@ -324,43 +354,42 @@ class DatasetEdit extends Component {
     if (id.startsWith("dt")) {
       if (id === "dt_other") {
         this.setState({
-          other_datatype: e.target.checked
+          other_datatype: e.target.checked,
         });
         if (!e.target.checked) {
           this.setState({
-            other_dt: ''
+            other_dt: "",
           });
         }
-      }
-      else {
+      } else {
         if (e.target.checked) {
           const data_types = this.state.data_types;
           data_types.add(name);
           this.setState({
-            data_types: data_types
+            data_types: data_types,
           });
         } else {
           const data_types = this.state.data_types;
           data_types.delete(name);
           this.setState({
-            data_types: data_types
+            data_types: data_types,
           });
         }
       }
     }
   };
 
-  handleInputFocus = e => {
+  handleInputFocus = (e) => {
     const { name, value } = e.target;
     switch (name) {
       case "collection":
-        let ret = this.state.collections.filter(c => {
+        let ret = this.state.collections.filter((c) => {
           return c.name.toLowerCase().includes(value.toLowerCase());
         });
         this.setState({
           collection: value,
           showCollectionsDropDown: true,
-          collection_candidates: ret
+          collection_candidates: ret,
         });
         break;
       default:
@@ -368,12 +397,12 @@ class DatasetEdit extends Component {
     }
   };
 
-  handleInputBlur = e => {
+  handleInputBlur = (e) => {
     const { name } = e.target;
     switch (name) {
       case "collection":
         this.setState({
-          showCollectionsDropDown: false
+          showCollectionsDropDown: false,
         });
         break;
       default:
@@ -381,20 +410,20 @@ class DatasetEdit extends Component {
     }
   };
 
-  handleCollectionClick = collection => {
+  handleCollectionClick = (collection) => {
     this.setState({
       collection: collection,
-      showCollectionsDropDown: false
+      showCollectionsDropDown: false,
     });
   };
 
-  handleSelectClick = ids => {
+  handleSelectClick = (ids) => {
     this.setState(
       {
         source_uuid: this.generateDisplaySourceId(ids),
         source_uuid_list: ids,
 
-        LookUpShow: false
+        LookUpShow: false,
       },
       () => {
         this.validateUUID();
@@ -403,13 +432,13 @@ class DatasetEdit extends Component {
   };
 
   getUuidList = (new_uuid_list) => {
-    //this.setState({uuid_list: new_uuid_list}); 
+    //this.setState({uuid_list: new_uuid_list});
     this.setState(
       {
         source_uuid: this.generateDisplaySourceId(new_uuid_list),
         source_uuid_list: new_uuid_list,
 
-        LookUpShow: false
+        LookUpShow: false,
       },
       () => {
         this.validateUUID();
@@ -419,13 +448,13 @@ class DatasetEdit extends Component {
 
   handleAddNewCollection = () => {
     this.setState({
-      AddCollectionShow: true
+      AddCollectionShow: true,
     });
   };
 
-  hideAddCollectionModal = collection => {
+  hideAddCollectionModal = (collection) => {
     this.setState({
-      AddCollectionShow: false
+      AddCollectionShow: false,
     });
 
     if (collection.label) {
@@ -433,19 +462,19 @@ class DatasetEdit extends Component {
         headers: {
           Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       };
 
       axios
         .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
-        .then(res => {
+        .then((res) => {
           this.setState(
             {
-              collections: res.data.collections
+              collections: res.data.collections,
             },
             () => {
-              const ret = this.state.collections.filter(c => {
+              const ret = this.state.collections.filter((c) => {
                 return c.label
                   .toLowerCase()
                   .includes(collection.label.toLowerCase());
@@ -454,7 +483,7 @@ class DatasetEdit extends Component {
             }
           );
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.response === undefined) {
           } else if (err.response.status === 401) {
             localStorage.setItem("isAuthenticated", false);
@@ -464,9 +493,9 @@ class DatasetEdit extends Component {
     }
   };
 
-  handleClickOutside = e => {
+  handleClickOutside = (e) => {
     this.setState({
-      showCollectionsDropDown: false
+      showCollectionsDropDown: false,
     });
   };
 
@@ -488,20 +517,20 @@ class DatasetEdit extends Component {
     // const patt = new RegExp("^.{3}-.{4}-.{3}$");
     // if (patt.test(uuid)) {
     this.setState({
-      validatingUUID: true
+      validatingUUID: true,
     });
     if (true) {
       const config = {
         headers: {
           Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-          "Content-Type": "multipart/form-data"
-        }
+          "Content-Type": "multipart/form-data",
+        },
       };
 
       return axios
         .get(`${url_server}/${url_path}/${uuid}`, config)
-        .then(res => {
+        .then((res) => {
           if (res.data) {
             if (
               res.data.specimen &&
@@ -510,25 +539,25 @@ class DatasetEdit extends Component {
               res.data.dataset = res.data.specimen;
               res.data.specimen = null;
             }
-            this.setState(prevState => ({
+            this.setState((prevState) => ({
               source_entity: res.data,
-              formErrors: { ...prevState.formErrors, source_uuid: "valid" }
+              formErrors: { ...prevState.formErrors, source_uuid: "valid" },
             }));
             return isValid;
           } else {
-            this.setState(prevState => ({
+            this.setState((prevState) => ({
               source_entity: null,
-              formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
+              formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
             }));
             isValid = false;
             alert("The Source UUID does not exist.");
             return isValid;
           }
         })
-        .catch(err => {
-          this.setState(prevState => ({
+        .catch((err) => {
+          this.setState((prevState) => ({
             source_entity: null,
-            formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
+            formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
           }));
           isValid = false;
           alert("The Source UUID does not exist.");
@@ -536,13 +565,13 @@ class DatasetEdit extends Component {
         })
         .then(() => {
           this.setState({
-            validatingUUID: false
+            validatingUUID: false,
           });
           return isValid;
         });
     } else {
-      this.setState(prevState => ({
-        formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
+      this.setState((prevState) => ({
+        formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
       }));
       isValid = false;
       alert("The Source UUID is invalid.");
@@ -552,38 +581,37 @@ class DatasetEdit extends Component {
     }
   };
 
-  handleButtonClick = i => {
+  handleButtonClick = (i) => {
     this.handleSubmit(i);
   };
 
-  handleSubmit = i => {
-    this.validateForm().then(isValid => {
+  handleSubmit = (i) => {
+    this.validateForm().then((isValid) => {
       if (isValid) {
         this.setState({ submitting: true });
         let data_types = [...this.state.data_types];
         if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
           data_types = [
             ...data_types,
-            this.state.other_dt.replace(/'/g, "\\'")
+            this.state.other_dt.replace(/'/g, "\\'"),
           ];
         }
 
         let data = {
           name: this.state.name,
           collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid_list.map(su => {
-              if(typeof su ==='string' || su instanceof String){
-                return su
-              } else {
-                return su.hubmap_identifier
-              }
+          source_uuid: this.state.source_uuid_list.map((su) => {
+            if (typeof su === "string" || su instanceof String) {
+              return su;
+            } else {
+              return su.hubmap_identifier;
             }
-          ),
+          }),
           phi: this.state.phi,
           data_types: data_types,
           description: this.state.description,
           status: i,
-		  is_protected: this.state.is_protected
+          is_protected: this.state.is_protected,
         };
 
         var formData = new FormData();
@@ -593,8 +621,8 @@ class DatasetEdit extends Component {
             Authorization:
               "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
             MAuthorization: "MBearer " + localStorage.getItem("info"),
-            "Content-Type": "multipart/form-data"
-          }
+            "Content-Type": "multipart/form-data",
+          },
         };
 
         if (this.props.editingDataset) {
@@ -608,10 +636,10 @@ class DatasetEdit extends Component {
           }
           axios
             .put(uri, formData, config)
-            .then(res => {
+            .then((res) => {
               this.props.onUpdated(res.data);
             })
-            .catch(error => {
+            .catch((error) => {
               this.setState({ submit_error: true, submitting: false });
             });
         } else {
@@ -621,16 +649,16 @@ class DatasetEdit extends Component {
               formData,
               config
             )
-            .then(res => {
+            .then((res) => {
               this.setState({
                 globus_path: res.data.globus_directory_url_path,
                 display_doi: res.data.display_doi,
-                doi: res.data.doi
+                doi: res.data.doi,
               });
               this.props.onCreated();
               this.onChangeGlobusURL();
             })
-            .catch(error => {
+            .catch((error) => {
               this.setState({ submit_error: true, submitting: false });
             });
         }
@@ -643,67 +671,67 @@ class DatasetEdit extends Component {
       let isValid = true;
 
       if (!validateRequired(this.state.name)) {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, name: "required" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, name: "required" },
         }));
         isValid = false;
       } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, name: "" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, name: "" },
         }));
       }
 
-      if (this.state.collection !== "" && this.state.collection.label === undefined) {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, collection: "required" }
+      if (
+        this.state.collection !== "" &&
+        this.state.collection.label === undefined
+      ) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, collection: "required" },
         }));
         isValid = false;
         resolve(isValid);
       } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, collection: "" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, collection: "" },
         }));
       }
 
       if (!validateRequired(this.state.source_uuid)) {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "required" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, source_uuid: "required" },
         }));
         isValid = false;
         resolve(isValid);
       } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, source_uuid: "" },
         }));
-        this.validateUUID().then(res => {
+        this.validateUUID().then((res) => {
           resolve(isValid && res);
         });
       }
 
       if (this.state.data_types.size === 0) {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, data_types: "required" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
         isValid = false;
         resolve(isValid);
       } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, data_types: "" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, data_types: "" },
         }));
       }
 
-      if (
-        this.state.other_datatype &&
-        !validateRequired(this.state.other_dt)
-      ) {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, other_dt: "required" }
+      if (this.state.other_datatype && !validateRequired(this.state.other_dt)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, other_dt: "required" },
         }));
         isValid = false;
         resolve(isValid);
       } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, other_dt: "" }
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, other_dt: "" },
         }));
       }
     });
@@ -718,39 +746,39 @@ class DatasetEdit extends Component {
       var is_subset = "";
       //first, determine if the numbers are a complete sequence or a subset
       //loop through all the values and extract the last number from the label (ex: TEST0001-RK-3)
-	  for (var i = 1; i < source_uuids.length; i++) {
-	      //assume the label is just a string
-	      var first_lab_id_subset_string = source_uuids[i-1];
-	      //in some instances, the label is not a string but an object
-	      //in this case, use the hubmap_identifier as the string
-	      if (typeof source_uuids[i-1] != "string") {
-	      	first_lab_id_subset_string = source_uuids[i-1].hubmap_identifier
-	      }
-	      //extract the last digit from the string
-	      var first_lab_id_subset = first_lab_id_subset_string.substring(
-	        first_lab_id_subset_string.lastIndexOf("-") + 1,
-	        first_lab_id_subset_string.length
-	      );
-	
-	      //in some instances, the label is not a string but an object
-	      //in this case, use the hubmap_identifier as the string
-	      var next_lab_id_subset_string = source_uuids[i];
-	      if (typeof source_uuids[i] != "string") {
-	      	next_lab_id_subset_string = source_uuids[i].hubmap_identifier
-	      }
-	      //extract the last digit from the string
-	      var next_lab_id_subset = next_lab_id_subset_string.substring(
-	        next_lab_id_subset_string.lastIndexOf("-") + 1,
-	        next_lab_id_subset_string.length
-	      );
-	    //finally, compare the digits.  If any consecutive digits are more than
-	    //one number apart, then these values represent a subset
-	    if(next_lab_id_subset - first_lab_id_subset !== 1) {
-			is_subset = "subset";
-			break;
-	    }
-	  }
-	  //extract the first and last values
+      for (var i = 1; i < source_uuids.length; i++) {
+        //assume the label is just a string
+        var first_lab_id_subset_string = source_uuids[i - 1];
+        //in some instances, the label is not a string but an object
+        //in this case, use the hubmap_identifier as the string
+        if (typeof source_uuids[i - 1] != "string") {
+          first_lab_id_subset_string = source_uuids[i - 1].hubmap_identifier;
+        }
+        //extract the last digit from the string
+        var first_lab_id_subset = first_lab_id_subset_string.substring(
+          first_lab_id_subset_string.lastIndexOf("-") + 1,
+          first_lab_id_subset_string.length
+        );
+
+        //in some instances, the label is not a string but an object
+        //in this case, use the hubmap_identifier as the string
+        var next_lab_id_subset_string = source_uuids[i];
+        if (typeof source_uuids[i] != "string") {
+          next_lab_id_subset_string = source_uuids[i].hubmap_identifier;
+        }
+        //extract the last digit from the string
+        var next_lab_id_subset = next_lab_id_subset_string.substring(
+          next_lab_id_subset_string.lastIndexOf("-") + 1,
+          next_lab_id_subset_string.length
+        );
+        //finally, compare the digits.  If any consecutive digits are more than
+        //one number apart, then these values represent a subset
+        if (next_lab_id_subset - first_lab_id_subset !== 1) {
+          is_subset = "subset";
+          break;
+        }
+      }
+      //extract the first and last values
       let first_lab_id = source_uuids[0].hubmap_identifier
         ? source_uuids[0].hubmap_identifier
         : source_uuids[0];
@@ -782,9 +810,13 @@ class DatasetEdit extends Component {
         display_source_id = `a subset of ${id_common_part}[ between ${first_lab_id_num} and ${last_lab_id_num}]`;
       }
       return display_source_id;
-    //in this case there is only one value
+      //in this case there is only one value
     } else {
-      if (source_uuids && source_uuids[0] && source_uuids[0].hubmap_identifier) {
+      if (
+        source_uuids &&
+        source_uuids[0] &&
+        source_uuids[0].hubmap_identifier
+      ) {
         return source_uuids[0].hubmap_identifier;
       } else {
         return source_uuids[0];
@@ -1025,22 +1057,26 @@ class DatasetEdit extends Component {
                   </button>
                 </div>
                 <div className='col-sm-4 text-center'>
-                  {this.state.groups.includes(process.env.REACT_APP_HUBMAP_DATA_ADMIN_GROUP) && (<button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("processing")}
-                    data-status={this.state.status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Submit"}
-                  </button>)}
+                  {this.state.groups.includes(
+                    process.env.REACT_APP_HUBMAP_DATA_ADMIN_GROUP
+                  ) && (
+                    <button
+                      type='button'
+                      className='btn btn-primary btn-block'
+                      disabled={this.state.submitting}
+                      onClick={() => this.handleButtonClick("processing")}
+                      data-status={this.state.status.toLowerCase()}
+                    >
+                      {this.state.submitting && (
+                        <FontAwesomeIcon
+                          className='inline-icon'
+                          icon={faSpinner}
+                          spin
+                        />
+                      )}
+                      {!this.state.submitting && "Submit"}
+                    </button>
+                  )}
                 </div>
                 <div className='col-sm-2 text-right'>
                   <button
@@ -1111,7 +1147,11 @@ class DatasetEdit extends Component {
   }
 
   onChangeGlobusURL() {
-    this.props.changeLink(this.state.globus_path, {name: this.state.name, display_doi: this.state.display_doi, doi: this.state.doi});
+    this.props.changeLink(this.state.globus_path, {
+      name: this.state.name,
+      display_doi: this.state.display_doi,
+      doi: this.state.doi,
+    });
   }
 
   // renderCollection() {
@@ -1126,29 +1166,53 @@ class DatasetEdit extends Component {
             <div className='row mt-3 mb-3'>
               <div className='col-sm-2'>
                 <h3 className='float-right'>
-                  <span className={"badge " + this.state.badge_class} style={{ cursor: "pointer" }} onClick={() => this.showErrorMsgModal(this.props.editingDataset.properties.message)}>
+                  <span
+                    className={"badge " + this.state.badge_class}
+                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      this.showErrorMsgModal(
+                        this.props.editingDataset.properties.message
+                      )
+                    }
+                  >
                     {this.state.status}
                   </span>
                 </h3>
               </div>
               <div className='col-sm-10'>
                 <p>
-                  {this.props.editingDataset && "Dataset Display id: " + this.state.display_doi + " | " + "DOI: " + this.state.doi} 
+                  {this.props.editingDataset &&
+                    "Dataset Display id: " +
+                      this.state.display_doi +
+                      " | " +
+                      "DOI: " +
+                      this.state.doi}
                 </p>
-                {this.state.globus_path && (
-                  <div>
+                <div>
                     <p>
                       <strong>
                         <big>
                           To add or modify data files go to the{" "}
-                          <a
+                          {this.state.globus_path && (<a
                             href={this.state.globus_path}
                             target='_blank'
                             rel='noopener noreferrer'
                           >
                             data repository{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </a>
+                          </a>)}
+                          {this.state.globus_path || (
+                          <span data-tip
+                            data-for='globus_url_tooltip'>data repository{" "}
+                            <FontAwesomeIcon icon={faExternalLinkAlt} /></span>)}
+                          {this.state.globus_path_tips && (<ReactTooltip
+                            id='globus_url_tooltip'
+                            place='top'
+                            type='error'
+                            effect='solid'
+                          >
+                            <h4>{this.state.globus_path_tips}</h4>
+                          </ReactTooltip>)}
                           .
                         </big>
                       </strong>
@@ -1167,7 +1231,6 @@ class DatasetEdit extends Component {
                       .
                     </div>
                   </div>
-                )}
               </div>
             </div>
             <div className='form-group row'>
@@ -1245,7 +1308,7 @@ class DatasetEdit extends Component {
                         className='dropdown-menu display-block ml-2'
                         aria-labelledby='dropdownMenuButton'
                       >
-                        {this.state.collection_candidates.map(collection => {
+                        {this.state.collection_candidates.map((collection) => {
                           return (
                             <div
                               key={collection.uuid}
@@ -1352,8 +1415,8 @@ class DatasetEdit extends Component {
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                     parent='dataset'
-                    parentCallback = {this.getUuidList}
-                    currentSourceIds = {this.state.source_uuid_list}
+                    parentCallback={this.getUuidList}
+                    currentSourceIds={this.state.source_uuid_list}
                   />
                 </React.Fragment>
               )}
@@ -1556,7 +1619,13 @@ class DatasetEdit extends Component {
                       onChange={this.handleInputChange}
                     />
                     <label className='form-check-label' htmlFor='is_protected'>
-                      This dataset is currently granted <strong>protected</strong> status.  <br/>In order to access the data in this dataset you must contact: <a href='mailto:[placeholder]@hubmapconsortium.org'>[placeholder]@hubmapconsortium.org</a>  
+                      This dataset is currently granted{" "}
+                      <strong>protected</strong> status. <br />
+                      In order to access the data in this dataset you must
+                      contact:{" "}
+                      <a href='mailto:[placeholder]@hubmapconsortium.org'>
+                        [placeholder]@hubmapconsortium.org
+                      </a>
                     </label>
                   </div>
                 </div>
@@ -1566,8 +1635,7 @@ class DatasetEdit extends Component {
                   <p>{this.state.is_protected}</p>
                 </div>
               )}
-			</div>
-
+            </div>
           </div>
           <div className='form-group row'>
             <label
@@ -1617,14 +1685,9 @@ class DatasetEdit extends Component {
                           name='MxIF'
                           id='dt_mxif'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has(
-                            "MxIF"
-                          )}
+                          checked={this.state.data_types.has("MxIF")}
                         />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_mxif'
-                        >
+                        <label className='form-check-label' htmlFor='dt_mxif'>
                           Multiplexex Immunofluorescence Microscopy
                         </label>
                       </div>
@@ -1637,10 +1700,7 @@ class DatasetEdit extends Component {
                           onClick={this.handleInputChange}
                           checked={this.state.data_types.has("CODEX")}
                         />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_codex'
-                        >
+                        <label className='form-check-label' htmlFor='dt_codex'>
                           CODEX
                         </label>
                       </div>
@@ -1654,7 +1714,7 @@ class DatasetEdit extends Component {
                           checked={this.state.data_types.has("IMC")}
                         />
                         <label className='form-check-label' htmlFor='dt_imc'>
-                            Imaging Mass Cytomtry
+                          Imaging Mass Cytomtry
                         </label>
                       </div>
                       <div className='form-group form-check'>
@@ -1682,7 +1742,10 @@ class DatasetEdit extends Component {
                           onClick={this.handleInputChange}
                           checked={this.state.data_types.has("MALDI-IMS-pos")}
                         />
-                        <label className='form-check-label' htmlFor='dt_maldiimspos'>
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_maldiimspos'
+                        >
                           MALDI IMS pos
                         </label>
                       </div>
@@ -1745,7 +1808,10 @@ class DatasetEdit extends Component {
                           onClick={this.handleInputChange}
                           checked={this.state.data_types.has("TMT-LC-MS")}
                         />
-                        <label className='form-check-label' htmlFor='dt_tmtlcms'>
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_tmtlcms'
+                        >
                           TMT LC-MS
                         </label>
                       </div>
@@ -1756,7 +1822,9 @@ class DatasetEdit extends Component {
                           name='Targeted-Shotgun-LC-MS'
                           id='dt_targetedshotgunlcms'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("Targeted-Shotgun-LC-MS")}
+                          checked={this.state.data_types.has(
+                            "Targeted-Shotgun-LC-MS"
+                          )}
                         />
                         <label
                           className='form-check-label'
@@ -1772,9 +1840,14 @@ class DatasetEdit extends Component {
                           name='LC-MS-untargeted'
                           id='dt_lcmsuntargeted'
                           onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("LC-MS-untargeted")}
+                          checked={this.state.data_types.has(
+                            "LC-MS-untargeted"
+                          )}
                         />
-                        <label className='form-check-label' htmlFor='dt_lcmsuntargeted'>
+                        <label
+                          className='form-check-label'
+                          htmlFor='dt_lcmsuntargeted'
+                        >
                           Untargeted LC-MS
                         </label>
                       </div>
@@ -1787,10 +1860,7 @@ class DatasetEdit extends Component {
                           onClick={this.handleInputChange}
                           checked={this.state.data_types.has("WGS")}
                         />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_wgs'
-                        >
+                        <label className='form-check-label' htmlFor='dt_wgs'>
                           Whole Genome Sequencing
                         </label>
                       </div>
@@ -2015,10 +2085,16 @@ class DatasetEdit extends Component {
           show={this.state.errorMsgShow}
           handleClose={this.hideErrorMsgModal}
         >
-          <div className="row">
-            <div className="col-sm-12 text-center alert">
-              <h4>{(this.props.editingDataset && this.props.editingDataset.properties.status.toUpperCase()) || "STATUS"}</h4>
-              <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
+          <div className='row'>
+            <div className='col-sm-12 text-center alert'>
+              <h4>
+                {(this.props.editingDataset &&
+                  this.props.editingDataset.properties.status.toUpperCase()) ||
+                  "STATUS"}
+              </h4>
+              <div
+                dangerouslySetInnerHTML={{ __html: this.state.statusErrorMsg }}
+              ></div>
             </div>
           </div>
         </Modal>
