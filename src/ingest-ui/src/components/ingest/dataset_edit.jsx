@@ -1537,7 +1537,7 @@ class DatasetEdit extends Component {
               </div>
             </div>
 
-            <div className='form-group row'>
+            {/* <div className='form-group row'>
               <label
                 htmlFor='is_protected'
                 className='col-sm-2 col-form-label text-right'
@@ -1566,7 +1566,7 @@ class DatasetEdit extends Component {
                   <p>{this.state.is_protected}</p>
                 </div>
               )}
-			</div>
+			</div> */}
 
           </div>
           <div className='form-group row'>
