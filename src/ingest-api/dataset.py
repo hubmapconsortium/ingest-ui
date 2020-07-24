@@ -1361,7 +1361,7 @@ class Dataset(object):
                         if os.path.exists(sym_link_path) == False:
                             # the  os.path.join code will ignore part of the filepath if a later part starts with a /
                             # so remove the leading slash from the local_directory_url_path before joining it
-                            rel_path = source_entity['local_directory_url_path']
+                            rel_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
                             if str(rel_path).startswith('/'):
                                 rel_path = rel_path[1:]
                             source_dir = os.path.join(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), rel_path)
