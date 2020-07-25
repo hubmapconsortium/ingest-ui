@@ -1719,6 +1719,7 @@ class Dataset(object):
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
             if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
                 linkDir(protected_path, public_path)
+                linkDir(protected_path, consortium_path)
                 acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,d:user::rwx,d:user:{hive_user}:rwx,d:user:{admin_user}:rwx,d:group::r-x,d:mask::rwx,d:other:r-x'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
