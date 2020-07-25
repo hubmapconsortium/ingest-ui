@@ -33,7 +33,6 @@ from hubmap_commons.metadata import Metadata
 from hubmap_commons.activity import Activity
 from hubmap_commons.provenance import Provenance
 from hubmap_commons.file_helper import linkDir, unlinkDir, mkDir
-from builtins import staticmethod
 
 class Dataset(object):
     '''
@@ -906,7 +905,8 @@ class Dataset(object):
                 # step 1: update the directories based on publish flag
                 if publish_state == HubmapConst.DATASET_STATUS_PUBLISHED:
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
-                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = HubmapConst.ACCESS_LEVEL_PUBLIC
+                    access_level = self.get_access_level(nexus_token, driver, metadata_node)
+                    metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
                     try:
                         x = threading.Thread(target=self.set_dir_permissions, args=[HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname']])
                         x.start()
@@ -1689,7 +1689,7 @@ class Dataset(object):
         if is_dataset_protected_data == False and is_dataset_published == False:
             return HubmapConst.ACCESS_LEVEL_CONSORTIUM
         
-        if is_dataset_protected_data == False and is_dataset_published == True:
+        if is_dataset_protected_data == False and is_dataset_published == True and is_dataset_genomic_sequence == False:
             return HubmapConst.ACCESS_LEVEL_PUBLIC
         
         # this is the default access level
