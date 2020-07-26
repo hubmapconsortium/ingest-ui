@@ -7,15 +7,13 @@ import ReactTooltip from "react-tooltip";
 import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
 
-
-
 class DataList extends Component {
   state = {
     group: "",
     keywords: "",
 
     is_curator: false,
-    datasets: []
+    datasets: [],
   };
 
   componentDidMount() {
@@ -29,16 +27,16 @@ class DataList extends Component {
 
     this.setState({
       group: this.props.filterGroup ? this.props.filterGroup : "",
-      keywords: this.props.filterKeywords ? this.props.filterKeywords : ""
+      keywords: this.props.filterKeywords ? this.props.filterKeywords : "",
     });
 
     const config = {
       headers: {
         Authorization:
           "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
+        "Content-Type": "multipart/form-data",
       },
-      params: params
+      params: params,
     };
 
     axios
@@ -46,15 +44,15 @@ class DataList extends Component {
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/userroles`,
         config
       )
-      .then(res => {
-        res.data.roles.map(r => {
+      .then((res) => {
+        res.data.roles.map((r) => {
           if (r.name === "hubmap-data-curator") {
             this.setState({ is_curator: true });
           }
           return r;
         });
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.response === undefined) {
         } else if (err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -67,22 +65,22 @@ class DataList extends Component {
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
         config
       )
-      .then(res => {
+      .then((res) => {
         const display_names = res.data.groups
-          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-          .map(g => {
+          .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+          .map((g) => {
             return g.displayname;
           });
         this.setState(
           {
-            group: this.state.group || display_names[0]
+            group: this.state.group || display_names[0],
           },
           () => {
             this.handleFilterClick();
           }
         );
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
@@ -90,17 +88,17 @@ class DataList extends Component {
       });
   }
 
-  handleInputChange = e => {
+  handleInputChange = (e) => {
     const { name, value } = e.target;
     switch (name) {
       case "group":
         this.setState({
-          group: value
+          group: value,
         });
         break;
       case "keywords":
         this.setState({
-          keywords: value
+          keywords: value,
         });
         break;
       default:
@@ -126,24 +124,24 @@ class DataList extends Component {
       headers: {
         Authorization:
           "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
+        "Content-Type": "multipart/form-data",
       },
-      params: params
+      params: params,
     };
 
     this.setState({ loading: true });
 
     axios
       .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
-      .then(res => {
+      .then((res) => {
         if (res.data) {
           this.setState({
             loading: false,
-            datasets: res.data.datasets
+            datasets: res.data.datasets,
           });
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.response === undefined) {
         } else if (err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -156,28 +154,28 @@ class DataList extends Component {
     this.setState(
       {
         group: "",
-        keywords: ""
+        keywords: "",
       },
       () => {
         const config = {
           headers: {
             Authorization:
               "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-            "Content-Type": "multipart/form-data"
-          }
+            "Content-Type": "multipart/form-data",
+          },
         };
 
         axios
           .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
-          .then(res => {
+          .then((res) => {
             if (res.data) {
               this.setState({
                 loading: false,
-                datasets: res.data.datasets
+                datasets: res.data.datasets,
               });
             }
           })
-          .catch(err => {
+          .catch((err) => {
             if (err.response === undefined) {
             } else if (err.response.status === 401) {
               localStorage.setItem("isAuthenticated", false);
@@ -198,30 +196,69 @@ class DataList extends Component {
     }
   }
 
-  handleViewCollectionModal = collection => e => {
+  handleViewCollectionModal = (collection) => (e) => {
     this.setState({
       ViewCollectionShow: true,
-      collection:collection
+      collection: collection,
     });
- 
   };
 
   hideViewCollectionModal = () => {
     this.setState({
-      ViewCollectionShow: false
+      ViewCollectionShow: false,
     });
   };
 
-  handleActionClick = e => {
+  handleActionClick = (e) => {
     this.props.viewEdit(e);
   };
 
-  showErrorMsgModal = msg => {
+  showErrorMsgModal = (msg) => {
     this.setState({ errorMsgShow: true, statusErrorMsg: msg });
   };
 
   hideErrorMsgModal = () => {
     this.setState({ errorMsgShow: false });
+  };
+
+  handleDataClick = (dataset_uuid) => {
+    const config = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    axios
+      .get(
+        `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${dataset_uuid}`,
+        config
+      )
+      .then((res) => {
+        this.setState({
+          globusURLShow: true,
+          dataset_url_text: "Go to Globus Data Repository",
+          dataset_url: res.data,
+        });
+      })
+      .catch((err) => {
+        this.setState({
+          globusURLShow: true,
+          dataset_url_text: "Globus URL Unavailable",
+          dataset_url: "",
+        });
+        if (err.response && err.response.status === 401) {
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload();
+        }
+      });
+  };
+
+  hideGlobusURLModal = () => {
+    this.setState({
+      globusURLShow: false,
+    });
   };
 
   render() {
@@ -241,49 +278,43 @@ class DataList extends Component {
                   value={this.state.group}
                   onChange={this.handleInputChange}
                 >
-                  <option value="All Groups">All Components</option>
-                  <option value="Broad Institute RTI">
+                  <option value='All Groups'>All Components</option>
+                  <option value='Broad Institute RTI'>
                     &nbsp;&nbsp;RTI - Broad
                   </option>
-                  <option value="General Electric RTI">
+                  <option value='General Electric RTI'>
                     &nbsp;&nbsp;RTI - GE
                   </option>
-                  <option value="Northwestern RTI">
+                  <option value='Northwestern RTI'>
                     &nbsp;&nbsp;RTI - Northwestern
                   </option>
-                  <option value="Stanford RTI">
+                  <option value='Stanford RTI'>
                     &nbsp;&nbsp;RTI - Stanford
                   </option>
-                  <option value="California Institute of Technology TMC">
+                  <option value='California Institute of Technology TMC'>
                     &nbsp;&nbsp;TMC - Cal Tech
                   </option>
-                  <option value="Stanford TMC">
+                  <option value='Stanford TMC'>
                     &nbsp;&nbsp;TMC - Stanford
                   </option>
-                  <option value="University of California San Diego TMC">
+                  <option value='University of California San Diego TMC'>
                     &nbsp;&nbsp;TMC - UCSD
                   </option>
-                  <option value="University of Florida TMC">
+                  <option value='University of Florida TMC'>
                     &nbsp;&nbsp;TMC - UFlorida
                   </option>
-                  <option value="Vanderbilt TMC">
+                  <option value='Vanderbilt TMC'>
                     &nbsp;&nbsp;TMC - Vanderbilt
                   </option>
-                  <option value="Cal Tech TTD">
+                  <option value='Cal Tech TTD'>
                     &nbsp;&nbsp;TTD - Cal Tech
                   </option>
-                  <option value="Harvard TTD">
-                    &nbsp;&nbsp;TTD - Harvard
-                  </option>
-                  <option value="Purdue TTD">
-                    &nbsp;&nbsp;TTD - Purdue
-                  </option>
-                  <option value="Stanford TTD">
+                  <option value='Harvard TTD'>&nbsp;&nbsp;TTD - Harvard</option>
+                  <option value='Purdue TTD'>&nbsp;&nbsp;TTD - Purdue</option>
+                  <option value='Stanford TTD'>
                     &nbsp;&nbsp;TTD - Stanford
                   </option>
-                  <option value="IEC Testing Group">
-                    IEC Testing Group
-                  </option>
+                  <option value='IEC Testing Group'>IEC Testing Group</option>
                 </select>
               </div>
             </div>
@@ -335,7 +366,7 @@ class DataList extends Component {
                     </tr>
                   </thead>
                   <tbody>
-                    {this.state.datasets.map(dataset => {
+                    {this.state.datasets.map((dataset) => {
                       const status = dataset.properties.status
                         ? dataset.properties.status.toUpperCase()
                         : "";
@@ -372,7 +403,7 @@ class DataList extends Component {
                         case "ERROR":
                           badge_class = "badge-danger";
                           btn_text = "View";
- 						  break;
+                          break;
                         case "HOLD":
                           badge_class = "badge-dark";
                           btn_text = this.state.is_curator ? "View" : "View";
@@ -386,7 +417,13 @@ class DataList extends Component {
                       return (
                         <tr key={dataset.uuid}>
                           <td>{dataset.entity_display_doi}</td>
-                          <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.properties.name}</div></td>
+                          <td>
+                            <div
+                              style={{ wordBreak: "break-all", width: "20em" }}
+                            >
+                              {dataset.properties.name}
+                            </div>
+                          </td>
                           <td>{dataset.properties.provenance_group_name}</td>
                           {/** <td>
                             <button
@@ -402,7 +439,7 @@ class DataList extends Component {
                               collection={this.state.collection}
                             />
                           </td>*/}
-			  <td>
+                          <td>
                             {dataset.properties.collection
                               ? dataset.properties.collection.label
                               : ""}
@@ -412,30 +449,38 @@ class DataList extends Component {
                             <span
                               style={{
                                 width: "100px",
-                                cursor: status === "ERROR" && "pointer"
+                                cursor: status === "ERROR" && "pointer",
                               }}
                               className={"badge " + badge_class}
                               data-tip
                               data-for={"status_tooltip_" + dataset.uuid}
-                              onClick={status === 'ERROR' ? () =>
-                                this.showErrorMsgModal(
-                                  dataset.properties.message
-                                ) : null
+                              onClick={
+                                status === "ERROR"
+                                  ? () =>
+                                      this.showErrorMsgModal(
+                                        dataset.properties.message
+                                      )
+                                  : null
                               }
                             >
                               {status}
                               {status === "ERROR" && (
                                 <ReactTooltip
                                   id={"status_tooltip_" + dataset.uuid}
-                                  place="top"
-                                  type="error"
-                                  effect="solid"
+                                  place='top'
+                                  type='error'
+                                  effect='solid'
                                 >
-                                  <div style={{width: "50em", whiteSpace: "initial" }}>
-                                  {truncateString(
-                                    dataset.properties.message,
-                                    350
-                                  ) || "Error"}
+                                  <div
+                                    style={{
+                                      width: "50em",
+                                      whiteSpace: "initial",
+                                    }}
+                                  >
+                                    {truncateString(
+                                      dataset.properties.message,
+                                      350
+                                    ) || "Error"}
                                   </div>
                                 </ReactTooltip>
                               )}
@@ -444,23 +489,19 @@ class DataList extends Component {
                           <td>
                             <button
                               className='btn btn-primary btn-sm btn-block'
-                              onClick={() => this.handleActionClick(dataset)}  
+                              onClick={() => this.handleActionClick(dataset)}
                               data-uuid={dataset.uuid}
                             >
                               {btn_text}
                             </button>
                           </td>
                           <td>
-                            <a
+                            <button
                               className='btn btn-link'
-                              target='_blank'
-                              href={
-                                dataset.properties.globus_directory_url_path
-                              }
-                              rel="noopener noreferrer"
+                              onClick={() => this.handleDataClick(dataset.uuid)}
                             >
                               Data
-                            </a>
+                            </button>
                           </td>
                         </tr>
                       );
@@ -473,13 +514,41 @@ class DataList extends Component {
           </div>
         )}
         <Modal
+          show={this.state.globusURLShow}
+          handleClose={this.hideGlobusURLModal}
+        >
+          <div className='row'>
+            <div
+              className={`col-sm-12 text-center alert ${
+                this.state.dataset_url === "" ? "alert-danger" : "alert-primary"
+              }`}
+              S
+            >
+              {this.state.dataset_url === "" ? (
+                <span>{this.state.dataset_url_text}</span>
+              ) : (
+                <a
+                  className='btn btn-link'
+                  target='_blank'
+                  href={this.state.dataset_url}
+                  rel='noopener noreferrer'
+                >
+                  {this.state.dataset_url_text}
+                </a>
+              )}
+            </div>
+          </div>
+        </Modal>
+        <Modal
           show={this.state.errorMsgShow}
           handleClose={this.hideErrorMsgModal}
         >
-          <div className="row">
-            <div className="col-sm-12 text-center alert alert-danger">
+          <div className='row'>
+            <div className='col-sm-12 text-center alert alert-danger'>
               <h4>ERROR</h4>
-              <div dangerouslySetInnerHTML={{__html: this.state.statusErrorMsg}}></div>
+              <div
+                dangerouslySetInnerHTML={{ __html: this.state.statusErrorMsg }}
+              ></div>
             </div>
           </div>
         </Modal>

@@ -1133,6 +1133,28 @@ class DonorForm extends Component {
                   </div>
                 </div>
               )}
+              <div className="form-group row">
+                <label
+                    htmlFor="donor_metadata_status"
+                    className="col-sm-3 col-form-label text-right"
+                  >
+                    Donor Metadata Status
+                  </label>
+                  <div className="col-sm-8 my-auto">
+                    {this.state.donor_metadata_status || (
+                      <span className="badge badge-secondary">No value set</span>
+                    )}
+                    {this.state.donor_metadata_status === 0 && (
+                      <span className="badge badge-secondary">No metadata</span>
+                    )}
+                    {this.state.donor_metadata_status === 1 && (
+                      <span className="badge badge-primary">Metadata provided</span>
+                    )}
+                    {this.state.donor_metadata_status === 2 && (
+                      <span className="badge badge-primary">Metadata curated</span>
+                    )}
+                  </div>
+              </div>
               {(!this.props.readOnly || this.state.metadatas.length > 0) && (
                 <div className="form-group row">
                   <label

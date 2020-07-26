@@ -4,9 +4,13 @@ version: "3.7"
 services:
   
   ingest-api:
-    build: ./ingest-api-dev
+    build: 
+      context: ./ingest-api-dev
+      args:
+        # The commons github branch to be used during image build (default to master if not set or null)
+        - COMMONS_BRANCH=${COMMONS_BRANCH:-master}
     # Build the image with name and tag
-    image: ingest-api:1.11
+    image: ingest-api:1.12
     hostname: ingest-api
     container_name: ingest-api
     init: true
@@ -20,9 +24,25 @@ services:
       # ingest-api on http 7777 to be used by airflow
       - "7777:7777"
     environment:
+      # This base user `hive` is used to run the application process within the container
+      # It's also used for ACL settings of ingest-api app.cfg
+      # Both UID and GID of user `hive` being used by the container
       # uid=68728(hive) gid=23629(hive) groups=23629(hive),1011(docker)
-      - HOST_GID=${HOST_GID:-23629}
-      - HOST_UID=${HOST_UID:-68728}
+      - BASE_USER_NAME=${BASE_USER_NAME:-hive}
+      - BASE_USER_UID=${BASE_USER_UID:-68728}
+      - BASE_USER_GID=${BASE_USER_GID:-23629}
+      # User `shirey`, group `hubmap`, and group `hubseq` are used for ACL settings of ingest-api app.cfg
+      # Only UID of user `shirey` being used by the container
+      # uid=50069(shirey) gid=23653(pitthive) groups=992(docker),23653(pitthive),23684(hivetest)
+      - ADMIN_FILE_USER_NAME=${ADMIN_FILE_USER_NAME:-shirey}
+      - ADMIN_FILE_USER_UID=${ADMIN_FILE_USER_UID:-50069}
+      # GID of group `hubmap` and GID of group `hubseq` being used by the container
+      # hubmap:*:24357:blood
+      - CONSORTIUM_FILE_GROUP_NAME=${CONSORTIUM_FILE_GROUP_NAME:-hubmap}
+      - CONSORTIUM_FILE_GROUP_GID=${CONSORTIUM_FILE_GROUP_GID:-24357}
+      # hubseq:*:24358:blood
+      - GENOMIC_DATA_FILE_GROUP_NAME=${GENOMIC_DATA_FILE_GROUP_NAME:-hubseq}
+      - GENOMIC_DATA_FILE_GROUP_GID=${GENOMIC_DATA_FILE_GROUP_GID:-24358}
     volumes:
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
@@ -38,6 +58,8 @@ services:
       - "/hive/hubmap-dev/scratch:/hubmap-scratch"
       # Mount Globus data
       - "/hive/hubmap-dev/lz:/hive/hubmap-dev/lz"
+      - "/hive/hubmap-dev/public:/hive/hubmap-dev/public"
+      - "/hive/hubmap-dev/consortium:/hive/hubmap-dev/consortium"
       # assets
       - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:
