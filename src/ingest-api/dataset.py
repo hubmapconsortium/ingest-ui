@@ -908,7 +908,7 @@ class Dataset(object):
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
                     try:
-                        x = threading.Thread(target=self.set_dir_permissions, args=[HubmapConst.ACCESS_LEVEL_PUBLIC, uuid, group_info['displayname']])
+                        x = threading.Thread(target=self.set_dir_permissions, args=[access_level, uuid, group_info['displayname']])
                         x.start()
                     except Exception as e:
                         logger = logging.getLogger('ingest.service')
