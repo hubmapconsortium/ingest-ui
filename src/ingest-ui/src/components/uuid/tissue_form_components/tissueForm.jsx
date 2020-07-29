@@ -1482,7 +1482,7 @@ class TissueForm extends Component {
                   id="specimen_type_tooltip"
                   place="top"
                   type="info"
-                  effect="shttps://dx.doi.org/10.17504/protocols.io.p9kdr4wolid"
+                  effect="solid"
                 >
                   <h4>The type of specimen.</h4>
                 </ReactTooltip>
