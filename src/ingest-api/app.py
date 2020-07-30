@@ -1074,7 +1074,7 @@ def can_user_edit_entity(entityuuid):
 def get_group_by_identifier(identifier):
     if len(identifier) == 0:
         abort(400, jsonify( { 'error': 'identifier parameter is required' } ))
-    metadata = Metadata(confdata['APP_CLIENT_ID'], confdata['APP_CLIENT_SECRET'], confdata['UUID_WEBSERVICE_URL'])
+    metadata = Metadata(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
     try:
         group = metadata.get_group_by_identifier(identifier)
         return jsonify( { 'group': group } ), 200
@@ -1093,7 +1093,7 @@ def get_metadata_by_source_type(type_code):
     try:
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        metadata = Metadata(confdata['APP_CLIENT_ID'], confdata['APP_CLIENT_SECRET'], confdata['UUID_WEBSERVICE_URL'])
+        metadata = Metadata(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
         general_type_attr = HubmapConst.get_general_node_type_attribute(type_code)
         if len(general_type_attr) == 0:
             abort(400, 'Unable to find type data for type: ' + type_code)
@@ -1120,7 +1120,7 @@ def get_metadata_by_source(uuid):
     try:
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        metadata = Metadata(confdata['APP_CLIENT_ID'], confdata['APP_CLIENT_SECRET'], confdata['UUID_WEBSERVICE_URL'])
+        metadata = Metadata(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
         metadata_record = metadata.get_metadata_by_source(driver, uuid)
         conn.close()
         #TODO: figure out how to jsonify an array
@@ -1144,7 +1144,7 @@ def get_metadata(uuid):
     try:
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        metadata = Metadata(confdata['APP_CLIENT_ID'], confdata['APP_CLIENT_SECRET'], confdata['UUID_WEBSERVICE_URL'])
+        metadata = Metadata(app.config['APP_CLIENT_ID'], app.config['APP_CLIENT_SECRET'], app.config['UUID_WEBSERVICE_URL'])
         metadata_record = metadata.get_metadata(driver, uuid)
         conn.close()
         return jsonify( { 'metadata': metadata_record } ), 200
