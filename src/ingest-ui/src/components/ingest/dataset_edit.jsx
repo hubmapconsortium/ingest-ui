@@ -1582,6 +1582,7 @@ class DatasetEdit extends Component {
                       defaultChecked={true}
                       checked={this.state.phi === "no"}
                       onChange={this.handleInputChange}
+                      disabled={this.props.editingDataset}
                     />
                     <label className='form-check-label' htmlFor='phi_no'>
                       No
@@ -1596,6 +1597,7 @@ class DatasetEdit extends Component {
                       value='yes'
                       checked={this.state.phi === "yes"}
                       onChange={this.handleInputChange}
+                      disabled={this.props.editingDataset}
                     />
                     <label className='form-check-label' htmlFor='phi_yes'>
                       Yes
