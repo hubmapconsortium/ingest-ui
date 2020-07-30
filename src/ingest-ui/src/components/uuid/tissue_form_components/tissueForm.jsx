@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faPlus
+  faPlus,
+  faUserShield
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
@@ -30,12 +31,12 @@ class TissueForm extends Component {
   state = {
     lab: "",
     lab_tissue_id: "",
-    protocols: [
-      {
-        id: 1,
-        ref: React.createRef()
-      }
-    ],
+    // protocols: [
+    //   {
+    //     id: 1,
+    //     ref: React.createRef()
+    //   }
+    // ],
 	
     protocol: "",
     protocol_file: "",
@@ -68,7 +69,7 @@ class TissueForm extends Component {
     formErrors: {
       lab: "",
       // lab_tissue_id: "",
-      protocols: "",
+      // protocols: "",
       protocol: "",
       protocol_file: "",
       specimen_type: "",
@@ -211,17 +212,17 @@ class TissueForm extends Component {
           }
         });
 
-      let protocols_json = JSON.parse(
-        this.props.editingEntity.properties.protocols
-          .replace(/\\/g, "\\\\")
-          .replace(/'/g, '"')
-      );
+      // let protocols_json = JSON.parse(
+      //   this.props.editingEntity.properties.protocols
+      //     .replace(/\\/g, "\\\\")
+      //     .replace(/'/g, '"')
+      // );
 
-      protocols_json.map((p, i) => {
-        p["id"] = i + 1;
-        p["ref"] = React.createRef();
-        return p;
-      });
+      // protocols_json.map((p, i) => {
+      //   p["id"] = i + 1;
+      //   p["ref"] = React.createRef();
+      //   return p;
+      // });
 	  
       let images = [];
       let metadatas = [];
@@ -262,7 +263,7 @@ class TissueForm extends Component {
           author: this.props.editingEntity.properties.provenance_user_email,
           lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
           rui_location: this.props.editingEntity.properties.rui_location || "",
-		  protocols: protocols_json,
+		      // protocols: protocols_json,
           protocol: this.props.editingEntity.properties.protocol,
           protocol_file_name: getFileNameOnPath(
             this.props.editingEntity.properties.protocol_file
@@ -705,7 +706,7 @@ class TissueForm extends Component {
               this.state.metadata_file_name === "Choose a file"
                 ? ""
                 : this.state.metadata_file_name,
-            protocols: [],
+            // protocols: [],
             images: [],
             metadatas: []
           };
@@ -716,30 +717,30 @@ class TissueForm extends Component {
           var formData = new FormData();
           formData.append("protocol_file", this.state.protocol_file);
           formData.append("metadata_file", this.state.metadata_file);
-		  this.state.protocols.forEach(i => {
-            if (
-              i.ref.current.protocol_doi.current.value ||
-              i.ref.current.protocol_file.current.files[0]
-            ) {
-              data.protocols.push({
-                id: "protocol_" + i.id,
-                protocol_doi: i.ref.current.protocol_doi.current.value,
-                protocol_file: i.ref.current.protocol_file.current.files[0]
-                  ? i.ref.current.protocol_file.current.files[0].name
-                  : ""
-              });
-              formData.append(
-                "protocol_" + i.id,
-                i.ref.current.protocol_file.current.files[0]
-              );
-            } else {
-              data.protocols.push({
-                id: "protocol_" + i.id,
-                protocol_doi: i.protocol_doi,
-                protocol_file: i.protocol_file
-              });
-            }
-          });
+		      // this.state.protocols.forEach(i => {
+          //   if (
+          //     i.ref.current.protocol_doi.current.value ||
+          //     i.ref.current.protocol_file.current.files[0]
+          //   ) {
+          //     data.protocols.push({
+          //       id: "protocol_" + i.id,
+          //       protocol_doi: i.ref.current.protocol_doi.current.value,
+          //       protocol_file: i.ref.current.protocol_file.current.files[0]
+          //         ? i.ref.current.protocol_file.current.files[0].name
+          //         : ""
+          //     });
+          //     formData.append(
+          //       "protocol_" + i.id,
+          //       i.ref.current.protocol_file.current.files[0]
+          //     );
+          //   } else {
+          //     data.protocols.push({
+          //       id: "protocol_" + i.id,
+          //       protocol_doi: i.protocol_doi,
+          //       protocol_file: i.protocol_file
+          //     });
+          //   }
+          // });
           this.state.metadatas.forEach(i => {
             if (i.ref.current.metadata_file.current.files[0]) {
               data.metadatas.push({
@@ -984,25 +985,25 @@ class TissueForm extends Component {
       let isValid = true;
 
       const usedFileName = new Set();
-      this.state.protocols.forEach((protocol, index) => {
-        if (protocol.protocol_file !== "") {
-          usedFileName.add(getFileNameOnPath(protocol.protocol_file));
-        }
-        if (!protocol.ref.current.validate()) {
-          isValid = false;
-        }
+      // this.state.protocols.forEach((protocol, index) => {
+      //   if (protocol.protocol_file !== "") {
+      //     usedFileName.add(getFileNameOnPath(protocol.protocol_file));
+      //   }
+      //   if (!protocol.ref.current.validate()) {
+      //     isValid = false;
+      //   }
 
-        if (protocol.ref.current.protocol_file.current.files[0]) {
-          if (
-            usedFileName.has(
-              protocol.ref.current.protocol_file.current.files[0].name
-            )
-          ) {
-            protocol["error"] = "Duplicated file name is not allowed.";
-            isValid = false;
-          }
-        }
-      });
+      //   if (protocol.ref.current.protocol_file.current.files[0]) {
+      //     if (
+      //       usedFileName.has(
+      //         protocol.ref.current.protocol_file.current.files[0].name
+      //       )
+      //     ) {
+      //       protocol["error"] = "Duplicated file name is not allowed.";
+      //       isValid = false;
+      //     }
+      //   }
+      // });
 
       if (!validateRequired(this.state.specimen_type)) {
         this.setState(prevState => ({
@@ -1141,25 +1142,25 @@ class TissueForm extends Component {
     });
   }
 
-  handleAddProtocol = () => {
-    let newId = 1;
-    if (this.state.protocols.length > 0) {
-      newId = this.state.protocols[this.state.protocols.length - 1].id + 1;
-    }
-    this.setState({
-      protocols: [
-        ...this.state.protocols,
-        { id: newId, ref: React.createRef() }
-      ]
-    });
-  };
+  // handleAddProtocol = () => {
+  //   let newId = 1;
+  //   if (this.state.protocols.length > 0) {
+  //     newId = this.state.protocols[this.state.protocols.length - 1].id + 1;
+  //   }
+  //   this.setState({
+  //     protocols: [
+  //       ...this.state.protocols,
+  //       { id: newId, ref: React.createRef() }
+  //     ]
+  //   });
+  // };
 
-  handleRemoveProtocol = id => {
-    const protocols = this.state.protocols.filter(i => i.id !== id);
-    this.setState({
-      protocols
-    });
-  };
+  // handleRemoveProtocol = id => {
+  //   const protocols = this.state.protocols.filter(i => i.id !== id);
+  //   this.setState({
+  //     protocols
+  //   });
+  // };
 
   handleLookUpClick = () => {
     this.setState({
@@ -1241,6 +1242,20 @@ class TissueForm extends Component {
           </div>
         )}
         <div className="col-sm-12">
+          <div
+              className="alert alert-danger col-sm-9 offset-sm-2"
+              role="alert"
+            >
+              <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
+              Protected Health Information. This includes the{" "}
+              <span
+                style={{ cursor: "pointer" }}
+                className="text-primary"
+                onClick={this.showModal}
+              >
+                18 identifiers specified by HIPAA
+              </span>
+            </div>
           <form onSubmit={this.handleSubmit}>
             <div className="form-group row">
               <label
@@ -1580,8 +1595,66 @@ class TissueForm extends Component {
                   )}
                 </div>
               )}
-            
-			{this.state.protocols.map((protocol, index) => {
+            <div className="form-group row">
+                <label
+                  htmlFor="protocol"
+                  className="col-sm-2 col-form-label text-right"
+                >
+                  Case Selection Protocol <span className="text-danger">*</span>
+                </label>
+                {!this.props.readOnly && (
+                  <div className="col-sm-9">
+                    <input
+                      ref={this.protocol}
+                      type="text"
+                      name="protocol"
+                      id="protocol"
+                      className={
+                        "form-control " +
+                        this.errorClass(this.state.formErrors.protocol)
+                      }
+                      onChange={this.handleInputChange}
+                      value={this.state.protocol}
+                      placeholder="protocols.io DOI"
+                    />
+                    {this.state.formErrors.protocol &&
+                      this.state.formErrors.protocol !== "required" && (
+                        <div className="invalid-feedback">
+                          {this.state.formErrors.protocol}
+                        </div>
+                      )}
+                  </div>
+                )}
+                {this.props.readOnly && (
+                  <div className="col-sm-9 col-form-label">
+                    <p>{this.state.protocol}</p>
+                  </div>
+                )}
+                <div className="col-sm-1 my-auto text-center">
+                  <span className="text-danger inline-icon">
+                    <FontAwesomeIcon icon={faUserShield} />
+                  </span>
+                  <span>
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for="protocol_tooltip"
+                    />
+                    <ReactTooltip
+                      id="protocol_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <h4>
+                        The protocol used when procuring or preparing the tissue. 
+                        This must be provided as a protocols.io DOI URL
+                      </h4>
+                    </ReactTooltip>
+                  </span>
+                </div>
+              </div>
+			{/* {this.state.protocols.map((protocol, index) => {
               return (
                 <Protocol
                   key={protocol.id}
@@ -1594,7 +1667,7 @@ class TissueForm extends Component {
                 />
               );
             })}
-            {!this.props.readOnly && (
+          {!this.props.readOnly && (
               <div className="form-group row">
                 <div className="col-sm-8 offset-sm-2">
                   <button
@@ -1606,7 +1679,7 @@ class TissueForm extends Component {
                   </button>
                 </div>
               </div>
-            )}
+            )} */}
             {!this.props.readOnly &&
               this.state.specimen_type !== "organ" &&
               !this.props.editingEntity && (
