@@ -13,7 +13,7 @@ import {
   validateFileType
 } from "../../../utils/validators";
 import check from './check25.jpg';
-import { getFileNameOnPath } from "../../../utils/file_helper";
+import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
 import { truncateString } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
@@ -1065,7 +1065,93 @@ class TissueForm extends Component {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, organ_other: "" }
         }));
-      } 
+      }
+
+      if (
+        !(
+          (validateRequired(this.state.protocol) ||
+            validateRequired(this.state.protocol_file) ||
+            validateRequired(
+              this.state.protocol_file_name === "Choose a file"
+                ? ""
+                : this.state.protocol_file_name
+            )) &&
+          validateProtocolIODOI(this.state.protocol) &&
+          validateFileType(this.state.protocol_file.type, [
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/pdf"
+          ]) &&
+          validateFileType(getFileMIMEType(this.state.protocol_file_name), [
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/pdf"
+          ])
+        )
+      ) {
+        if (
+          !validateRequired(this.state.protocol_file) &&
+          !validateRequired(this.state.protocol) &&
+          !validateRequired(
+            this.state.protocol_file_name === "Choose a file"
+              ? ""
+              : this.state.protocol_file_name
+          )
+        ) {
+          this.setState(prevState => ({
+            formErrors: { ...prevState.formErrors, protocol: "required" }
+          }));
+          isValid = false;
+        } else {
+          if (!validateProtocolIODOI(this.state.protocol)) {
+            this.setState(prevState => ({
+              formErrors: {
+                ...prevState.formErrors,
+                protocol: "Please enter a valid protocols.io DOI"
+              }
+            }));
+            isValid = false;
+          }
+          if (
+            !validateFileType(this.state.protocol_file.type, [
+              "application/msword",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "application/pdf"
+            ])
+          ) {
+            this.setState(prevState => ({
+              formErrors: {
+                ...prevState.formErrors,
+                protocol_file: "Allowed file types: .doc, .docx, or .pdf"
+              }
+            }));
+            isValid = false;
+          } else {
+            this.setState(prevState => ({
+              formErrors: { ...prevState.formErrors, protocol_file: "" }
+            }));
+          }
+          if (
+            !validateFileType(getFileMIMEType(this.state.protocol_file_name), [
+              "application/msword",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "application/pdf"
+            ])
+          ) {
+            this.setState(prevState => ({
+              formErrors: {
+                ...prevState.formErrors,
+                protocol_file: "Allowed file types: .doc, .docx, or .pdf"
+              }
+            }));
+            isValid = false;
+          } else {
+            this.setState(prevState => ({
+              formErrors: { ...prevState.formErrors, protocol_file: "" }
+            }));
+          }
+        }
+      }
 
       this.state.images.forEach((image, index) => {
         if (
