@@ -1727,7 +1727,7 @@ class Dataset(object):
             # apply the permissions
             # put quotes around the path since it often contains spaces
             print("Executing command:" + 'setfacl' + ' -R' +  ' --set=' + acl_text + " '" + protected_path + "'")
-            subprocess.Popen(['setfacl','-R', '--set=' + acl_text, protected_path ])
+            subprocess.Popen(['setfacl', '-R', '-b' ,'--set=' + acl_text, protected_path ])
         except ValueError as ve:
             raise ve
         except OSError as oserr:
