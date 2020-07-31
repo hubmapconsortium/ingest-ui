@@ -367,6 +367,11 @@ class DatasetEdit extends Component {
       case "other_dt":
         this.setState({ other_dt: value });
         break;
+      case "groups":
+        this.setState({
+          selected_group: value
+        });
+        break;
       default:
         break;
     }
@@ -667,6 +672,9 @@ class DatasetEdit extends Component {
             status: i,
             is_protected: this.state.is_protected,
           };
+          if (this.state.selected_group) {
+            data["user_group_uuid"] = this.state.selected_group;
+          }
 
           var formData = new FormData();
           formData.append("data", JSON.stringify(data));
