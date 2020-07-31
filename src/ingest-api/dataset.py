@@ -1750,8 +1750,8 @@ class Dataset(object):
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
             # apply the permissions
             # put quotes around the path since it often contains spaces
-            print("Executing command:" + 'setfacl' + ' -R' +  ' --set=' + acl_text + " '" + file_path + "'")
-            subprocess.Popen(['setfacl','-R', '--set=' + acl_text, file_path ])
+            print("Executing command:" + 'setfacl' + ' -R -b' +  ' --set=' + acl_text + " '" + file_path + "'")
+            subprocess.Popen(['setfacl','-R', '-b', '--set=' + acl_text, file_path ])
         except ValueError as ve:
             raise ve
         except OSError as oserr:
