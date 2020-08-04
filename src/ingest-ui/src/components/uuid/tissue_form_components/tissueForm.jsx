@@ -20,7 +20,7 @@ import ReactTooltip from "react-tooltip";
 import Protocol from "./protocol";
 import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
-import { SAMPLE_TYPES, ORGAN_TYPES } from "../../../constants";
+import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
 import LabIDsModal from "../labIdsModal";
@@ -1503,7 +1503,7 @@ class TissueForm extends Component {
                       value={this.state.specimen_type}
                     >
                       <option value="">----</option>
-                      {SAMPLE_TYPES.map((optgs, index) => {
+                      {TISSUE_TYPES.map((optgs, index) => {
                         return (
                           <optgroup
                             key={index}
