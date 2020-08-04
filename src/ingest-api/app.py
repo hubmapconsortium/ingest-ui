@@ -79,8 +79,8 @@ def hello():
 
 
 # Show status of neo4j connection
-@app.route('/neo4j_connection_status', methods = ['GET'])
-def neo4j_connection_status():
+@app.route('/status', methods = ['GET'])
+def status():
     response_data = {
         'neo4j_connection': False
     }
