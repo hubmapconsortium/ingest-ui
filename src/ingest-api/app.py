@@ -78,6 +78,22 @@ def hello():
     return jsonify({'uuid': 'hello'}), 200
 
 
+# Show status of neo4j connection
+@app.route('/neo4j_connection_status', methods = ['GET'])
+def neo4j_connection_status():
+    response_data = {
+        'neo4j_connection': False
+    }
+
+    conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+    driver = conn.get_driver()
+    is_connected = conn.check_connection(driver)
+    
+    if is_connected:
+        response_data['neo4j_connection'] = True
+
+    return jsonify(response_data)
+    
 ####################################################################################################
 ## Endpoints for UI Login and Logout
 ####################################################################################################
