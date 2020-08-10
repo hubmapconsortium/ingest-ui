@@ -391,12 +391,14 @@ class Dataset(object):
                 webservice_file_path = str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH'])
                 if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                     webservice_file_path = None
-                    
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), webservice_file_path, group_display_name, dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
+                 
+                sym_path = str(os.path.join(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), dataset_entity_record[HubmapConst.UUID_ATTRIBUTE]))
+                new_directory_path = self.get_dataset_directory(dataset_entity_record[HubmapConst.UUID_ATTRIBUTE], group_display_name, access_level)   
+                new_path = make_new_dataset_directory(new_directory_path, sym_path)
                 new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], new_path)
 
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name])
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, new_path])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
@@ -577,14 +579,15 @@ class Dataset(object):
                 access_level = self.get_access_level(nexus_token, driver, metadata_record)
                 metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
 
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), None, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_directory_path = self.get_dataset_directory(datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name, access_level)   
+                new_path = make_new_dataset_directory(new_directory_path, None)
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name])
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, new_path])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
@@ -814,15 +817,16 @@ class Dataset(object):
                 access_level = self.get_access_level(nexus_token, driver, metadata_record)
                 metadata_record[HubmapConst.DATA_ACCESS_LEVEL] = access_level
 
-
-                new_path = make_new_dataset_directory(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), None, group_display_name, datastage_uuid[HubmapConst.UUID_ATTRIBUTE])
+                new_directory_path = self.get_dataset_directory(datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name, access_level)   
+                new_path = make_new_dataset_directory(new_directory_path, None)
                 new_globus_path = build_globus_url_for_directory(transfer_endpoint, new_path)
+
                 
                 metadata_record[HubmapConst.DATASET_GLOBUS_DIRECTORY_PATH_ATTRIBUTE] = new_globus_path
                 metadata_record[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE] = new_path
                 
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], group_display_name])
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, new_path])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
@@ -907,9 +911,24 @@ class Dataset(object):
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = HubmapConst.DATASET_STATUS_PUBLISHED
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+                    
+                    # make the public directory
+                    new_directory_path = self.get_dataset_directory(uuid, group_info['displayname'], access_level)
+                    if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:   
+                        new_path = make_new_dataset_directory(new_directory_path, None)
+
                     try:
-                        x = threading.Thread(target=self.set_dir_permissions, args=[access_level, uuid, group_info['displayname']])
+                        x = threading.Thread(target=self.set_dir_permissions, args=[access_level, new_path])
                         x.start()
+                        
+                        # determine the "old" path
+                        # if the current access_level is PROTECTED, then do NOT move the data
+                        # only move if it was PUBLIC
+                        old_path = None
+                        if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
+                            old_path = self.get_dataset_directory(uuid, group_info['displayname'], HubmapConst.ACCESS_LEVEL_CONSORTIUM)
+                            
+                        x= threading.Thread(target=self.move_directory, args=[old_path, new_path])
                     except Exception as e:
                         logger = logging.getLogger('ingest.service')
                         logger.error(e, exc_info=True)
@@ -919,8 +938,24 @@ class Dataset(object):
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
                     try:
+
                         x = threading.Thread(target=self.set_dir_permissions, args=[access_level, uuid, group_info['displayname']])
                         x.start()
+                    
+                        if publish_state == HubmapConst.DATASET_STATUS_UNPUBLISHED:
+                            # determine the "old" path
+                            # if the current access_level is PROTECTED, then the old access_level was PROTECTED
+                            # otherwise, it was CONSORTIUM
+                            old_path = self.get_dataset_directory(uuid, group_info['displayname'], access_level)
+                            new_path = None
+                            if access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
+                                new_path = self.get_dataset_directory(uuid, group_info['displayname'], HubmapConst.ACCESS_LEVEL_CONSORTIUM)
+                                
+                            make_new_dataset_directory(new_path, None)
+                                
+                            x= threading.Thread(target=self.move_directory, args=[old_path, new_path])
+    
+                    
                     except Exception as e:
                         logger = logging.getLogger('ingest.service')
                         logger.error(e, exc_info=True)
@@ -1696,38 +1731,27 @@ class Dataset(object):
         return HubmapConst.ACCESS_LEVEL_PROTECTED
 
     @classmethod
-    def set_dir_permissions(self, access_level, dataset_uuid, group_display_name):
+    def set_dir_permissions(self, access_level, file_path):
         try:
-            #first, remove any existing links
-            public_path = os.path.join(self.confdata['GLOBUS_PUBLIC_ENDPOINT_FILEPATH'], dataset_uuid)
-            if os.path.exists(public_path):
-                unlinkDir(public_path)
-            consortium_path = os.path.join(self.confdata['GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH'], dataset_uuid)
-            if os.path.exists(consortium_path):
-                unlinkDir(consortium_path)
-            protected_path = os.path.join(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], group_display_name, dataset_uuid)
             acl_text = None
             if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                 acl_text = 'u::rwx,g::r-x,o::---,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{seq_group}:r-x,d:user::rwx,d:user:{hive_user}:rwx,d:user:{admin_user}:rwx,d:group:{seq_group}:r-x,d:group::r-x,d:mask::rwx,d:other:---'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'])
             if access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
-                linkDir(protected_path, consortium_path)
                 acl_text = 'u::rwx,g::r-x,o::---,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,g:{consortium_group}:r-x,d:user::rwx,d:user:{hive_user}:rwx,d:user:{admin_user}:rwx,d:group:{consortium_group}:r-x,d:group::r-x,d:mask::rwx,d:other:---'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
             if access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
-                linkDir(protected_path, public_path)
-                linkDir(protected_path, consortium_path)
                 acl_text = 'u::rwx,g::r-x,o::r-x,m::rwx,u:{hive_user}:rwx,u:{admin_user}:rwx,d:user::rwx,d:user:{hive_user}:rwx,d:user:{admin_user}:rwx,d:group::r-x,d:mask::rwx,d:other:r-x'.format(
                     hive_user=self.confdata['GLOBUS_BASE_FILE_USER_NAME'],admin_user=self.confdata['GLOBUS_ADMIN_FILE_USER_NAME'],
                     seq_group=self.confdata['GLOBUS_GENOMIC_DATA_FILE_GROUP_NAME'],
                     consortium_group=self.confdata['GLOBUS_CONSORTIUM_FILE_GROUP_NAME'])
             # apply the permissions
             # put quotes around the path since it often contains spaces
-            print("Executing command:" + 'setfacl' + ' -R' +  ' --set=' + acl_text + " '" + protected_path + "'")
-            subprocess.Popen(['setfacl','-R', '--set=' + acl_text, protected_path ])
+            print("Executing command:" + 'setfacl' + ' -R -b' +  ' --set=' + acl_text + " '" + file_path + "'")
+            subprocess.Popen(['setfacl','-R', '-b', '--set=' + acl_text, file_path ])
         except ValueError as ve:
             raise ve
         except OSError as oserr:
@@ -1825,6 +1849,47 @@ class Dataset(object):
             if source_entity['entitytype'] != 'Dataset':
                 return False
         return ret_value
+
+    @classmethod
+    def get_dataset_directory(self, dataset_uuid, group_display_name = None, data_access_level = None):
+        conn = None
+        driver = None
+        try:
+            if group_display_name == None and data_access_level == None:
+                conn = Neo4jConnection(self.confdata['NEO4J_SERVER'], self.confdata['NEO4J_USERNAME'], self.confdata['NEO4J_PASSWORD'])
+                driver = conn.get_driver()
+                dataset = Dataset.get_dataset(driver, dataset_uuid)
+                data_access_level = dataset[HubmapConst.DATA_ACCESS_LEVEL]
+                group_display_name = dataset[HubmapConst.PROVENANCE_GROUP_NAME_ATTRIBUTE]
+
+            file_path_root_dir = self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']
+            if data_access_level == HubmapConst.ACCESS_LEVEL_CONSORTIUM:
+                file_path_root_dir = self.confdata['GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH']
+            # the public path removes the group directory:
+            elif data_access_level == HubmapConst.ACCESS_LEVEL_PUBLIC:
+                file_path_root_dir = self.confdata['GLOBUS_PUBLIC_ENDPOINT_FILEPATH']
+                new_path = str(os.path.join(file_path_root_dir, dataset_uuid))
+                return new_path            
+            new_path = str(os.path.join(file_path_root_dir, group_display_name, dataset_uuid))
+            return new_path
+        except ConnectionError as ce:
+            print('A connection error occurred: ', str(ce.args[0]))
+            raise ce
+        except ValueError as ve:
+            print('A value error occurred: ', ve.value)
+            raise ve
+        except CypherError as cse:
+            print('A Cypher error was encountered: ', cse.message)
+            raise cse
+        except:
+            print('A general error occurred: ')
+            traceback.print_exc()
+        finally:
+            if conn != None:
+                conn.close()
+            if driver != None:
+                if driver.closed() == False:
+                    driver.close()
     
     @staticmethod
     def get_datasets_by_type(driver, type_string, identifier_uuid_list):
@@ -1857,21 +1922,29 @@ class Dataset(object):
             except:
                 print('A general error occurred: ')
                 traceback.print_exc()
+                
+    @classmethod
+    def move_directory(self, oldpath, newpath):
+        """it may seem like overkill to use a define a method just to move files, but we might need to move these
+        files across globus endpoints in the future"""
+        try:
+            #os.makedirs(newpath)
+            ret_path = shutil.move(oldpath, newpath)
+        except: 
+            raise 
+        return ret_path
+
         
 #NOTE: the file_path_symbolic_dir needs to be optional.  If it is None, do not add the symbolic link
 # somewhere else in the code, check the access level.  If the level is protected there is no symbolic link
-def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, groupDisplayname, newDirUUID):
-    if newDirUUID == None or len(str(newDirUUID)) == 0:
-        raise ValueError('The dataset UUID must have a value')
+#def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, groupDisplayname, newDirUUID):
+def make_new_dataset_directory(new_file_path, symbolic_file_path=None):
     try:
-        new_path = str(os.path.join(file_path_root_dir, groupDisplayname, newDirUUID))
-        os.makedirs(new_path)
+        os.makedirs(new_file_path)
         # make a sym link too
-        if file_path_symbolic_dir != None:
-            sym_path = str(os.path.join(file_path_symbolic_dir, newDirUUID))
-            os.symlink(new_path, sym_path, True)
-        relative_path = str(os.path.join('/', groupDisplayname, newDirUUID))
-        return relative_path
+        if symbolic_file_path != None:
+            os.symlink(new_file_path, symbolic_file_path, True)
+        return new_file_path
     except globus_sdk.TransferAPIError as e:
         if e.code == "ExternalError.MkdirFailed.Exists":
             pass
@@ -1880,20 +1953,12 @@ def make_new_dataset_directory(file_path_root_dir, file_path_symbolic_dir, group
     except:
         raise
 
+
 def build_globus_url_for_directory(transfer_endpoint_uuid,new_directory):
     encoded_path = urllib.parse.quote(str(new_directory))
     ret_string = 'https://app.globus.org/file-manager?origin_id={endpoint_uuid}&origin_path={new_path}'.format(endpoint_uuid=transfer_endpoint_uuid, new_path=encoded_path)
     return ret_string
 
-def move_directory(oldpath, newpath):
-    """it may seem like overkill to use a define a method just to move files, but we might need to move these
-    files across globus endpoints in the future"""
-    try:
-        #os.makedirs(newpath)
-        ret_path = shutil.move(oldpath, newpath)
-    except: 
-        raise 
-    return ret_path
 
 def copy_directory(oldpath, newpath):
     try:
@@ -1959,11 +2024,23 @@ if __name__ == "__main__":
     consort_dataset_uuid = '909e2600643f8a6f5b60be9d7a7755ac_consort'
     protected_dataset_uuid = '48fb4423ea9c2b8aaf3c4f0be5ac1c98_protected'
     public_dataset_uuid = 'a9175b3b41ef3cb88afa0cb1fff0f4e7_public'
+    dataset_uuid = 'b17694503bcbdd2458d3e96373ce9fbc'
     
-    
-    dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_CONSORTIUM, consort_dataset_uuid, group_display_name)
-    dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PROTECTED, protected_dataset_uuid, group_display_name)
-    dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, public_dataset_uuid, group_display_name)
+    file_path_test = dataset.get_dataset_directory(dataset_uuid)
+    print("File path no params: " +  file_path_test)
+
+    file_path_test = dataset.get_dataset_directory(dataset_uuid, 'Bla Bla', HubmapConst.ACCESS_LEVEL_PROTECTED)
+    print("File path protected: " +  file_path_test)
+
+    file_path_test = dataset.get_dataset_directory(dataset_uuid, 'Bla Bla', HubmapConst.ACCESS_LEVEL_CONSORTIUM)
+    print("File path consortium: " +  file_path_test)
+
+    file_path_test = dataset.get_dataset_directory(dataset_uuid, 'Bla Bla', HubmapConst.ACCESS_LEVEL_PUBLIC)
+    print("File path public: " +  file_path_test)
+   
+    #dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_CONSORTIUM, consort_dataset_uuid, group_display_name)
+    #dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PROTECTED, protected_dataset_uuid, group_display_name)
+    #dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_PUBLIC, public_dataset_uuid, group_display_name)
 
     #dataset.set_dir_permissions(HubmapConst.ACCESS_LEVEL_CONSORTIUM, public_dataset_uuid, group_display_name)
 
