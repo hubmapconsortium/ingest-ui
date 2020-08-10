@@ -57,9 +57,9 @@ services:
       # Workflow scrath directory
       - "/hive/hubmap-dev/scratch:/hubmap-scratch"
       # Mount Globus data
-      - "/hive/hubmap-dev/lz:/hive/hubmap-dev/lz"
-      - "/hive/hubmap-dev/public:/hive/hubmap-dev/public"
-      - "/hive/hubmap-dev/consortium:/hive/hubmap-dev/consortium"
+      - "/hive/hubmap-dev/data/protected:/hive/hubmap-dev/data/protected"
+      - "/hive/hubmap-dev/data/public:/hive/hubmap-dev/data/public"
+      - "/hive/hubmap-dev/data/consortium:/hive/hubmap-dev/data/consortium"
       # assets
       - "/hive/hubmap-dev/assets:/usr/src/assets"
     networks:

@@ -430,7 +430,8 @@ class Dataset(object):
                 response_data = {
                     'derived_dataset_uuid': datastage_uuid['uuid'],
                     'group_uuid': source_dataset_provenance_group_uuid,
-                    'group_display_name': group_display_name
+                    'group_display_name': group_display_name,
+                    'full_path': new_path
                 }
 
                 return response_data
@@ -1332,9 +1333,11 @@ class Dataset(object):
                     try:
                         # take the incoming uuid_type and uppercase it
                         url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
+                        full_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
                         print('sending request_ingest to: ' + url)
                         r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid),
                                                      "process" : self.confdata['INGEST_PIPELINE_DEFAULT_PROCESS'],
+                                                     "full_path": full_path,
                                                      "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           #headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
                                           headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=AuthHelper.instance().getProcessSecret() )})
