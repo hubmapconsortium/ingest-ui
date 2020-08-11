@@ -23,43 +23,62 @@ export default class Collections extends Component {
     collections: []
   };
 
-  
-  componentDidMount() {
+  componentDidMount() {	
+	const group = this.state.group;
+    const keywords = this.state.keywords;
+
     let params = {};
-    if (this.props.filterGroup) {
-      params["group"] = this.props.filterGroup;
+    if (group) {
+      params["group"] = group;
     }
-    if (this.props.filterKeywords) {
-      params["keywords"] = this.props.filterKeywords;
+    if (keywords) {
+      params["keywords"] = keywords;
     }
-
-    this.setState({
-      group: this.props.filterGroup ? this.props.filterGroup : "",
-      keywords: this.props.filterKeywords ? this.props.filterKeywords : ""
-    });
-
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      },
-      params: params
-    };
 
     
+    let config = {};
+	
+	if (this.state.system ==="Collections"){
+		
+	   console.log("This call is to the handleFilterClick()  Collections method.");
+	
+	      config = {
+	      headers: {
+	        "Content-Type": "multipart/form-data"
+	      },
+	      params: params
+	    };
+
+	}
+	else {
+		
+	   console.log("This call is NOT to the handleFilterClick()  collections method.");
+		
+	      config = {
+	      headers: {
+	        Authorization:
+	          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+	        "Content-Type": "multipart/form-data"
+	      },
+	      params: params
+	    };
+
+	}
+
+
+    this.setState({ loading: true });
+
     axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/userroles`,
-        config
-      )
+      .get(`${process.env.REACT_APP_ENTITY_API_URL}/collections`, config)
       .then(res => {
-        res.data.roles.map(r => {
-          if (r.name === "hubmap-data-curator") {
-            this.setState({ is_curator: true });
-          }
-          return r;
-        });
+        if (res.data) {
+          this.setState({
+            loading: false,
+            collections: res.data,
+            viewCollection:false,
+            viewCollections:true
+          });
+        }
       })
       .catch(err => {
         if (err.response === undefined) {
@@ -68,35 +87,9 @@ export default class Collections extends Component {
           window.location.reload();
         }
       });
-
-    axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-        config
-      )
-      .then(res => {
-        const display_names = res.data.groups
-          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-          .map(g => {
-            return g.displayname;
-          });
-        this.setState(
-          {
-            group: display_names[0]
-          },
-          () => {
-            this.handleFilterClick();
-          }
-        );
-      })
-      .catch(err => {
-        if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
+	
   }
-
+  
   handleInputChange = e => {
     const { name, value } = e.target;
     switch (name) {
@@ -119,8 +112,6 @@ export default class Collections extends Component {
     const group = this.state.group;
     const keywords = this.state.keywords;
 
-    //this.props.setFilter(group, keywords);
-
     let params = {};
     if (group) {
       params["group"] = group;
@@ -129,14 +120,36 @@ export default class Collections extends Component {
       params["keywords"] = keywords;
     }
 
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      },
-      params: params
-    };
+    
+    let config = {};
+	
+	if (this.state.system ==="Collections"){
+		
+	   console.log("This call is to the handleFilterClick()  Collections method.");
+	
+	      config = {
+	      headers: {
+	        "Content-Type": "multipart/form-data"
+	      },
+	      params: params
+	    };
+
+	}
+	else {
+		
+	   console.log("This call is NOT to the handleFilterClick()  collections method.");
+		
+	      config = {
+	      headers: {
+	        Authorization:
+	          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+	        "Content-Type": "multipart/form-data"
+	      },
+	      params: params
+	    };
+
+	}
+
 
     this.setState({ loading: true });
 
@@ -198,6 +211,7 @@ export default class Collections extends Component {
       }
     );
   };
+
 
   renderLoadingSpinner() {
     if (this.state.loading) {

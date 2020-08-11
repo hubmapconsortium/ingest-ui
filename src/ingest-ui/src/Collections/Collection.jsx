@@ -42,8 +42,7 @@ export default class Collection extends Component {
     
     const config = {
       headers: {
-          Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        
               "Content-Type": "application/json"
       }
     };
