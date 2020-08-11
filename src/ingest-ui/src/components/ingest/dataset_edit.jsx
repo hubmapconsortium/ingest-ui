@@ -615,7 +615,11 @@ class DatasetEdit extends Component {
   };
 
   handleButtonClick = (i) => {
-    this.handleSubmit(i);
+    this.setState({
+      new_status: i
+    }, () => {
+      this.handleSubmit(i);
+    })
   };
 
   handleSubmit = (i) => {
@@ -669,7 +673,7 @@ class DatasetEdit extends Component {
             phi: this.state.phi,
             data_types: data_types,
             description: this.state.description,
-            status: i,
+            status: this.state.new_status,
             is_protected: this.state.is_protected,
           };
           if (this.state.selected_group) {
