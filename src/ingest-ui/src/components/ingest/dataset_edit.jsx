@@ -1121,7 +1121,7 @@ class DatasetEdit extends Component {
                   </button>
                 </div>
                 <div className='col-sm-4 text-center'>
-                  {this.state.groups.map(g => g.display_name).includes(
+                  {this.state.groups.map(g => g.displayname).includes(
                     process.env.REACT_APP_HUBMAP_DATA_ADMIN_GROUP
                   ) && (
                     <button
