@@ -975,7 +975,7 @@ class DonorForm extends Component {
                   </span>
                 </div>
               </div>
-              {(!this.props.readOnly ||
+              {/* {(!this.props.readOnly ||
                 this.state.protocol_file_name !== undefined) && (
                 <div className="form-group row">
                   <label
@@ -1082,7 +1082,7 @@ class DonorForm extends Component {
                 </div>
               )}
 			</div>
-			)}
+			)} */}
               {(!this.props.readOnly ||
                 this.state.description !== undefined) && (
                 <div className="form-group row">
