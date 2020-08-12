@@ -938,9 +938,10 @@ class Dataset(object):
                     metadata_node[HubmapConst.STATUS_ATTRIBUTE] = publish_state
                     access_level = self.get_access_level(nexus_token, driver, metadata_node)
                     metadata_node[HubmapConst.DATA_ACCESS_LEVEL] = access_level
+                    directory_path = self.get_dataset_directory(uuid, group_info['displayname'], access_level)
                     try:
 
-                        x = threading.Thread(target=self.set_dir_permissions, args=[access_level, uuid, group_info['displayname']])
+                        x = threading.Thread(target=self.set_dir_permissions, args=[access_level, directory_path])
                         x.start()
                     
                         if publish_state == HubmapConst.DATASET_STATUS_UNPUBLISHED:
@@ -1289,6 +1290,8 @@ class Dataset(object):
                                                                                         uuid=uuid) 
                 
                 #print("stmt: " + stmt)
+
+                full_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
                 
                 for record in session.run(stmt):
                     dataset_create_activity_uuid = record['dataset_create_activity_uuid']
@@ -1406,7 +1409,7 @@ class Dataset(object):
                             linkDir(source_dir, sym_link_path)
                             
                 try:
-                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, uuid, group_info['displayname']])
+                    x = threading.Thread(target=self.set_dir_permissions, args=[access_level, full_path])
                     x.start()
                 except Exception as e:
                     logger = logging.getLogger('ingest.service')
