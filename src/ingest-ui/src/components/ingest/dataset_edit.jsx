@@ -15,6 +15,7 @@ import {
   faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
+import GroupModal from "../uuid/groupModal";
 
 class DatasetEdit extends Component {
   state = {
@@ -39,6 +40,8 @@ class DatasetEdit extends Component {
     other_datatype: false,
     other_dt: "",
     is_protected: false,
+
+    groups: [],
 
     formErrors: {
       name: "",
@@ -105,13 +108,19 @@ class DatasetEdit extends Component {
         config
       )
       .then((res) => {
-        const display_names = res.data.groups
-          .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-          .map((g) => {
-            return g.displayname;
-          });
+        // const display_names = res.data.groups
+        //   .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+        //   .map((g) => {
+        //     return g.displayname;
+        //   });
+        // this.setState({
+        //   groups: display_names,
+        // });
+        const groups = res.data.groups.filter(
+          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+        );
         this.setState({
-          groups: display_names,
+          groups: groups
         });
       })
       .catch((err) => {
@@ -141,7 +150,7 @@ class DatasetEdit extends Component {
         const data_type_options = new Set(DATA_TYPES);
         other_dt = data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = data_types.filter((dt) => data_type_options.has(dt));
-        if (other_dt){
+        if (other_dt) {
           data_types.push(other_dt);
         }
       }
@@ -250,14 +259,14 @@ class DatasetEdit extends Component {
             )
             .then((res) => {
               this.setState({
-                globus_path: res.data
+                globus_path: res.data,
               });
             })
             .catch((err) => {
               this.setState({
                 globus_path: "",
-                globus_path_tips: "Globus URL Unavailable"
-              })
+                globus_path_tips: "Globus URL Unavailable",
+              });
               if (err.response && err.response.status === 401) {
                 localStorage.setItem("isAuthenticated", false);
                 window.location.reload();
@@ -358,6 +367,11 @@ class DatasetEdit extends Component {
       case "other_dt":
         this.setState({ other_dt: value });
         break;
+      case "groups":
+        this.setState({
+          selected_group: value
+        });
+        break;
       default:
         break;
     }
@@ -371,8 +385,10 @@ class DatasetEdit extends Component {
         if (!e.target.checked) {
           const data_type_options = new Set(DATA_TYPES);
           const data_types = this.state.data_types;
-          const other_dt = Array.from(data_types).filter((dt) => !data_type_options.has(dt))[0];
-          data_types.delete(other_dt)
+          const other_dt = Array.from(data_types).filter(
+            (dt) => !data_type_options.has(dt)
+          )[0];
+          data_types.delete(other_dt);
           this.setState({
             data_types: data_types,
             other_dt: "",
@@ -599,98 +615,120 @@ class DatasetEdit extends Component {
   };
 
   handleButtonClick = (i) => {
-    this.handleSubmit(i);
+    this.setState({
+      new_status: i
+    }, () => {
+      this.handleSubmit(i);
+    })
   };
 
   handleSubmit = (i) => {
     const data_type_options = new Set(DATA_TYPES);
     const data_types = this.state.data_types;
-    const other_dt = Array.from(data_types).filter((dt) => !data_type_options.has(dt))[0];
-    data_types.delete(other_dt)
+    const other_dt = Array.from(data_types).filter(
+      (dt) => !data_type_options.has(dt)
+    )[0];
+    data_types.delete(other_dt);
 
-    if (this.state.other_dt){
+    if (this.state.other_dt) {
       const data_types = this.state.data_types;
-      data_types.add(this.state.other_dt)
-      this.setState({ data_types: data_types})
+      data_types.add(this.state.other_dt);
+      this.setState({ data_types: data_types });
     }
 
     this.validateForm().then((isValid) => {
       if (isValid) {
-        this.setState({ submitting: true });
-        const state_data_types = this.state.data_types;
-        state_data_types.delete('other');
-        let data_types = [...state_data_types];
-        if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
-          data_types = [
-            ...data_types,
-            this.state.other_dt.replace(/'/g, "\\'"),
-          ];
-        }
-
-        let data = {
-          name: this.state.name,
-          collection_uuid: this.state.collection.uuid,
-          source_uuid: this.state.source_uuid_list.map((su) => {
-            if (typeof su === "string" || su instanceof String) {
-              return su;
-            } else {
-              return su.hubmap_identifier;
-            }
-          }),
-          phi: this.state.phi,
-          data_types: data_types,
-          description: this.state.description,
-          status: i,
-          is_protected: this.state.is_protected,
-        };
-
-        var formData = new FormData();
-        formData.append("data", JSON.stringify(data));
-        const config = {
-          headers: {
-            Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-            MAuthorization: "MBearer " + localStorage.getItem("info"),
-            "Content-Type": "multipart/form-data",
-          },
-        };
-
-        if (this.props.editingDataset) {
-          let uri = "";
-          if (i === "published") {
-            uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
-          } else if (i === "unpublished") {
-            uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/unpublish`;
-          } else {
-            uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}`;
-          }
-          axios
-            .put(uri, formData, config)
-            .then((res) => {
-              this.props.onUpdated(res.data);
-            })
-            .catch((error) => {
-              this.setState({ submit_error: true, submitting: false });
-            });
+        if (
+          !this.props.editingEntity &&
+          this.state.groups.length > 1 &&
+          !this.state.GroupSelectShow
+        ) {
+          this.setState({ GroupSelectShow: true });
         } else {
-          axios
-            .post(
-              `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`,
-              formData,
-              config
-            )
-            .then((res) => {
-              this.setState({
-                globus_path: res.data.globus_directory_url_path,
-                display_doi: res.data.display_doi,
-                doi: res.data.doi,
+          this.setState({
+            GroupSelectShow: false,
+            submitting: true,
+          });
+          this.setState({ submitting: true });
+          const state_data_types = this.state.data_types;
+          state_data_types.delete("other");
+          let data_types = [...state_data_types];
+          if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
+            data_types = [
+              ...data_types,
+              this.state.other_dt.replace(/'/g, "\\'"),
+            ];
+          }
+
+          let data = {
+            name: this.state.name,
+            collection_uuid: this.state.collection.uuid,
+            source_uuid: this.state.source_uuid_list.map((su) => {
+              if (typeof su === "string" || su instanceof String) {
+                return su;
+              } else {
+                return su.hubmap_identifier;
+              }
+            }),
+            phi: this.state.phi,
+            data_types: data_types,
+            description: this.state.description,
+            status: this.state.new_status,
+            is_protected: this.state.is_protected,
+          };
+          if (this.state.selected_group) {
+            data["user_group_uuid"] = this.state.selected_group;
+          }
+
+          var formData = new FormData();
+          formData.append("data", JSON.stringify(data));
+          const config = {
+            headers: {
+              Authorization:
+                "Bearer " +
+                JSON.parse(localStorage.getItem("info")).nexus_token,
+              MAuthorization: "MBearer " + localStorage.getItem("info"),
+              "Content-Type": "multipart/form-data",
+            },
+          };
+
+          if (this.props.editingDataset) {
+            let uri = "";
+            if (i === "published") {
+              uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
+            } else if (i === "unpublished") {
+              uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/unpublish`;
+            } else {
+              uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}`;
+            }
+            axios
+              .put(uri, formData, config)
+              .then((res) => {
+                this.props.onUpdated(res.data);
+              })
+              .catch((error) => {
+                this.setState({ submit_error: true, submitting: false });
               });
-              this.props.onCreated();
-              this.onChangeGlobusURL();
-            })
-            .catch((error) => {
-              this.setState({ submit_error: true, submitting: false });
-            });
+          } else {
+            axios
+              .post(
+                `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`,
+                formData,
+                config
+              )
+              .then((res) => {
+                this.setState({
+                  globus_path: res.data.globus_directory_url_path,
+                  display_doi: res.data.display_doi,
+                  doi: res.data.doi,
+                });
+                this.props.onCreated();
+                this.onChangeGlobusURL();
+              })
+              .catch((error) => {
+                this.setState({ submit_error: true, submitting: false });
+              });
+          }
         }
       }
     });
@@ -1087,7 +1125,7 @@ class DatasetEdit extends Component {
                   </button>
                 </div>
                 <div className='col-sm-4 text-center'>
-                  {this.state.groups.includes(
+                  {this.state.groups.map(g => g.displayname).includes(
                     process.env.REACT_APP_HUBMAP_DATA_ADMIN_GROUP
                   ) && (
                     <button
@@ -1219,48 +1257,54 @@ class DatasetEdit extends Component {
                       this.state.doi}
                 </p>
                 <div>
-                    <p>
-                      <strong>
-                        <big>
-                          To add or modify data files go to the{" "}
-                          {this.state.globus_path && (<a
+                  <p>
+                    <strong>
+                      <big>
+                        To add or modify data files go to the{" "}
+                        {this.state.globus_path && (
+                          <a
                             href={this.state.globus_path}
                             target='_blank'
                             rel='noopener noreferrer'
                           >
                             data repository{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </a>)}
-                          {!this.state.globus_path && (
-                          <span data-tip
-                            data-for='globus_url_tooltip'>data repository{" "}
-                            <FontAwesomeIcon icon={faExternalLinkAlt} /></span>)}
-                          {this.state.globus_path_tips && (<ReactTooltip
+                          </a>
+                        )}
+                        {!this.state.globus_path && (
+                          <span data-tip data-for='globus_url_tooltip'>
+                            data repository{" "}
+                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+                          </span>
+                        )}
+                        {this.state.globus_path_tips && (
+                          <ReactTooltip
                             id='globus_url_tooltip'
                             place='top'
                             type='error'
                             effect='solid'
                           >
                             <h4>{this.state.globus_path_tips}</h4>
-                          </ReactTooltip>)}
-                          .
-                        </big>
-                      </strong>
-                    </p>
+                          </ReactTooltip>
+                        )}
+                        .
+                      </big>
+                    </strong>
+                  </p>
 
-                    <div className='alert alert-danger' role='alert'>
-                      <FontAwesomeIcon icon={faUserShield} /> - Do not upload
-                      any data containing any of the{" "}
-                      <span
-                        style={{ cursor: "pointer" }}
-                        className='text-primary'
-                        onClick={this.showModal}
-                      >
-                        18 identifiers specified by HIPAA
-                      </span>
-                      .
-                    </div>
+                  <div className='alert alert-danger' role='alert'>
+                    <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
+                    data containing any of the{" "}
+                    <span
+                      style={{ cursor: "pointer" }}
+                      className='text-primary'
+                      onClick={this.showModal}
+                    >
+                      18 identifiers specified by HIPAA
+                    </span>
+                    .
                   </div>
+                </div>
               </div>
             </div>
             <div className='form-group row'>
@@ -1666,7 +1710,6 @@ class DatasetEdit extends Component {
                 </div>
               )}
 			</div> */}
-
           </div>
           <div className='form-group row'>
             <label
@@ -2204,6 +2247,13 @@ class DatasetEdit extends Component {
           )}
           {this.state.is_curator !== null && this.renderButtons()}
         </form>
+        <GroupModal
+          show={this.state.GroupSelectShow}
+          hide={this.hideGroupSelectModal}
+          groups={this.state.groups}
+          submit={this.handleSubmit}
+          handleInputChange={this.handleInputChange}
+        />
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
         <Modal
           show={this.state.errorMsgShow}
