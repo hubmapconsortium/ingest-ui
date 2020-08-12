@@ -1291,7 +1291,9 @@ class Dataset(object):
                 
                 #print("stmt: " + stmt)
 
-                full_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
+                full_path = self.get_dataset_directory(uuid, group_info['displayname'], metadata_node[HubmapConst.DATA_ACCESS_LEVEL])   
+
+                #full_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
                 
                 for record in session.run(stmt):
                     dataset_create_activity_uuid = record['dataset_create_activity_uuid']
@@ -1336,7 +1338,7 @@ class Dataset(object):
                     try:
                         # take the incoming uuid_type and uppercase it
                         url = self.confdata['INGEST_PIPELINE_URL'] + '/request_ingest'
-                        full_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
+                        #full_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
                         print('sending request_ingest to: ' + url)
                         r = requests.post(url, json={"submission_id" : "{uuid}".format(uuid=uuid),
                                                      "process" : self.confdata['INGEST_PIPELINE_DEFAULT_PROCESS'],
