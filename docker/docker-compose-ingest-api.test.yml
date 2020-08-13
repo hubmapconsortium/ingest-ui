@@ -57,8 +57,6 @@ services:
       - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
-      # Workflow scrath directory
-      - "/hive/hubmap-test/scratch:/hubmap-scratch"
       # Airflow static files
       - "/hive/users/hive/hubmap/hivevm192-test/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
       # Flower static files
