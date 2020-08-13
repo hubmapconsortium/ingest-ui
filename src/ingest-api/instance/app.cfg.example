@@ -18,13 +18,11 @@ GLOBUS_ENDPOINT_UUID = ''
 # Admin group UUID
 HUBMAP_DATA_ADMIN_GROUP_UUID = ''
 
-# File system settings
-# No need to modify here if deployed with docker regardless of DEV/TEST/STAGE/PROD
-# Just make sure the volume mounts in docker compose yaml mapped correctly
-LOCAL_STORAGE_DIRECTORY = '/hubmap-tmp'
-GLOBUS_ENDPOINT_FILEPATH = '/hubmap-data'
-HUBMAP_WEBSERVICE_FILEPATH = '/usr/src/assets'
-WORKFLOW_SCRATCH = '/hubmap-scratch'
+# File system settings (shown are for DEV)
+LOCAL_STORAGE_DIRECTORY = '/hive/hubmap-dev/uploads'
+GLOBUS_ENDPOINT_FILEPATH = '/hive/hubmap-dev/protected'
+HUBMAP_WEBSERVICE_FILEPATH = '/hive/hubmap-dev/assets'
+WORKFLOW_SCRATCH = '/hive/hubmap-dev/scratch'
 
 # UUIDs of the Globus endpoints (shown are for DEV)
 GLOBUS_PUBLIC_ENDPOINT_UUID = 'a00a00b8-d1d1-4ab9-b915-0bada54c27a3'
@@ -34,7 +32,7 @@ GLOBUS_PROTECTED_ENDPOINT_UUID = 'bdaf8547-aab3-4142-97bd-0a16d5cd9f58'
 # File paths of the Globus endpoints (shown are for DEV, change for TEST/STAGE/PROD deployment)
 GLOBUS_PUBLIC_ENDPOINT_FILEPATH = '/hive/hubmap-dev/public'
 GLOBUS_CONSORTIUM_ENDPOINT_FILEPATH = '/hive/hubmap-dev/consortium'
-GLOBUS_PROTECTED_ENDPOINT_FILEPATH = '/hive/hubmap-dev/lz'
+GLOBUS_PROTECTED_ENDPOINT_FILEPATH = '/hive/hubmap-dev/protected'
 
 # File Access Control List Settings to be used by `setfacl` command
 # Set value to `hubmap` for all the following users and groups on localhost docker mode
