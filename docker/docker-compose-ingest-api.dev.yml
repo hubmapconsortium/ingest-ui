@@ -54,14 +54,8 @@ services:
       - "./ingest-api-dev/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-dev/nginx/html:/usr/share/nginx/html"
-      # Workflow scrath directory
-      - "/hive/hubmap-dev/scratch:/hubmap-scratch"
       # Mount Globus data
-      - "/hive/hubmap-dev/data/protected:/hive/hubmap-dev/data/protected"
-      - "/hive/hubmap-dev/data/public:/hive/hubmap-dev/data/public"
-      - "/hive/hubmap-dev/data/consortium:/hive/hubmap-dev/data/consortium"
-      # assets
-      - "/hive/hubmap-dev/assets:/usr/src/assets"
+      - "/hive/hubmap-dev:/hive/hubmap-dev"
     networks:
       - hubmap
 

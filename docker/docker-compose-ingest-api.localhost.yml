@@ -24,10 +24,6 @@ services:
       - "../log:/usr/src/app/log"
       # Mount Globus data
       - "/hubmap-data:/hubmap-data"
-      # assets
-      - "/hubmap-data/assets:/usr/src/assets"
-      # Workflow scratch
-      - "/hubmap-scratch:/hubmap-scratch"
     networks:
       - gateway_hubmap
 
