@@ -717,13 +717,34 @@ class DatasetEdit extends Component {
                 config
               )
               .then((res) => {
-                this.setState({
-                  globus_path: res.data.globus_directory_url_path,
-                  display_doi: res.data.display_doi,
-                  doi: res.data.doi,
-                });
-                this.props.onCreated();
-                this.onChangeGlobusURL();
+                axios
+                  .get(
+                    `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${res.data.uuid}`,
+                    config
+                  )
+                  .then((res) => {
+                    this.setState({
+                      globus_path: res.data,
+                    }, () => {
+                      this.setState({
+                        globus_path: res.data.globus_directory_url_path,
+                        display_doi: res.data.display_doi,
+                        doi: res.data.doi,
+                      });
+                      this.props.onCreated();
+                      this.onChangeGlobusURL();
+                    });
+                  })
+                  .catch((err) => {
+                    this.setState({
+                      globus_path: "",
+                      globus_path_tips: "Globus URL Unavailable",
+                    });
+                    if (err.response && err.response.status === 401) {
+                      localStorage.setItem("isAuthenticated", false);
+                      window.location.reload();
+                    }
+                  });
               })
               .catch((error) => {
                 this.setState({ submit_error: true, submitting: false });
