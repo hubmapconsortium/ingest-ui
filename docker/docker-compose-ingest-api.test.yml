@@ -65,8 +65,6 @@ services:
       - "/hive/users/hive/hubmap/hivevm192-test/venv/lib/python3.6/site-packages/flower:/flower-static"
       # Mount Globus data
       - "/hive/hubmap-test:/hive/hubmap-test"
-      # assets
-      - "/hive/hubmap-test/assets:/usr/src/assets"
     networks:
       - hubmap
 
