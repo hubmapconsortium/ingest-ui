@@ -61,11 +61,7 @@ services:
       # Airflow static files
       - "/hive/users/hive/hubmap/hivevm195-stage/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
       # Mount Globus data
-      - "/hive/hubmap-stage/private:/hive/hubmap-stage/private"
-      - "/hive/hubmap-stage/public:/hive/hubmap-stage/public"
-      - "/hive/hubmap-stage/consortium:/hive/hubmap-stage/consortium"
-      # assets
-      - "/hive/hubmap-stage/assets:/usr/src/assets"
+      - "/hive/hubmap-stage:/hive/hubmap-stage"
     networks:
       - hubmap
 
