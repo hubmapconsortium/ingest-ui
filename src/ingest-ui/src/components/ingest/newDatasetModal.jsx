@@ -66,7 +66,7 @@ class NewDatasetModal extends Component {
                         htmlFor="dataset_display_id"
                         className="col-sm-4 col-form-label text-right"
                       >
-                        Dataset Display DOI
+                        HuBMAP Dataset DOI
                       </label>
                       <div className="col-sm-8 col-form-label">
                         <label name="dataset_display_id">{this.props.display_doi}</label>
@@ -74,7 +74,7 @@ class NewDatasetModal extends Component {
                     </div>
                   </div>
                 </div>
-                <div className="row">
+                {/* <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group row">
                       <label
@@ -88,7 +88,7 @@ class NewDatasetModal extends Component {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group row">

@@ -717,6 +717,11 @@ class DatasetEdit extends Component {
                 config
               )
               .then((res) => {
+                this.setState({
+                  globus_path: res.data.globus_directory_url_path,
+                  display_doi: res.data.display_doi,
+                  doi: res.data.doi,
+                });
                 axios
                   .get(
                     `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${res.data.uuid}`,
@@ -726,11 +731,6 @@ class DatasetEdit extends Component {
                     this.setState({
                       globus_path: res.data,
                     }, () => {
-                      this.setState({
-                        globus_path: res.data.globus_directory_url_path,
-                        display_doi: res.data.display_doi,
-                        doi: res.data.doi,
-                      });
                       this.props.onCreated();
                       this.onChangeGlobusURL();
                     });
@@ -1271,11 +1271,8 @@ class DatasetEdit extends Component {
               <div className='col-sm-10'>
                 <p>
                   {this.props.editingDataset &&
-                    "Dataset Display id: " +
-                      this.state.display_doi +
-                      " | " +
-                      "DOI: " +
-                      this.state.doi}
+                    "HuBMAP Dataset id: " +
+                      this.state.display_doi}
                 </p>
                 <div>
                   <p>
