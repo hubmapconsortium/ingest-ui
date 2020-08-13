@@ -64,6 +64,8 @@ services:
       - "/hive/hubmap-stage/data/protected:/hive/hubmap-stage/data/protected"
       - "/hive/hubmap-stage/data/public:/hive/hubmap-stage/data/public"
       - "/hive/hubmap-stage/data/consortium:/hive/hubmap-stage/data/consortium"
+      # UI file uploads
+      - "/hive/hubmap-stage/data/uploads:/hive/hubmap-stage/data/uploads"
       # assets
       - "/hive/hubmap-stage/assets:/usr/src/assets"
     networks:
