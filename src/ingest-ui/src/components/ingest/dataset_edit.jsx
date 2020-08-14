@@ -630,16 +630,16 @@ class DatasetEdit extends Component {
     )[0];
     data_types.delete(other_dt);
 
-    if (this.state.other_dt) {
-      const data_types = this.state.data_types;
-      data_types.add(this.state.other_dt);
-      this.setState({ data_types: data_types });
-    }
+    // if (this.state.other_dt) {
+    //   const data_types = this.state.data_types;
+    //   data_types.add(this.state.other_dt);
+    //   this.setState({ data_types: data_types });
+    // }
 
     this.validateForm().then((isValid) => {
       if (isValid) {
         if (
-          !this.props.editingEntity &&
+          !this.props.editingDataset &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
@@ -800,7 +800,7 @@ class DatasetEdit extends Component {
         });
       }
 
-      if (this.state.data_types.size === 0) {
+      if (this.state.data_types.size === 0 && this.state.other_dt === "") {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
