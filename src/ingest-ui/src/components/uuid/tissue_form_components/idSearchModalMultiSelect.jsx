@@ -1,4 +1,4 @@
-import React, { Component} from "react";
+import React, { Component } from "react";
 import Modal from "../modal";
 //import axios from "axios";
 
@@ -60,7 +60,7 @@ class Row extends React.Component {
 class IDSearchModalMultiSelect extends Component {
   state = {};
 
-   constructor(props) {
+  constructor(props) {
     super(props);
     isCtrlKeyPressed = false;
     isShiftKeyPressed = false;
@@ -73,39 +73,41 @@ class IDSearchModalMultiSelect extends Component {
     //change.  This causes the grid to be redrawn to ensure it is showing the proper data.
     this.childKey = 0;
     this.state = {
-    	columns : [{name: 'hubmap_identifier', title: 'Sample Identifier'}],
-    	rows: [],
-    	isInitialized : 'false'};
-    	
-	 this.changeSelection = selection => {
-	 
-	     this.setState({ selectedRows: []});
-	     var newRows = []
-	     if (this.state.rows === undefined) {
-	       this.setState({ rows: []});
-	     }
-	     for (var i=0;i < selection.length; i++) {
-	       newRows.push(this.state.rows[selection[i]]);
-	     }
-	    
-	     this.setState({ selectedRows: newRows});
-	     this.setState({ selection: selection });
-	     //selection.stopPropagation();   
-	};
+      columns: [{ name: 'hubmap_identifier', title: 'Sample Identifier' }],
+      rows: [],
+      isInitialized: 'false'
+    };
+
+    this.changeSelection = selection => {
+
+      this.setState({ selectedRows: [] });
+      var newRows = []
+      if (this.state.rows === undefined) {
+        this.setState({ rows: [] });
+      }
+      for (var i = 0; i < selection.length; i++) {
+        newRows.push(this.state.rows[selection[i]]);
+      }
+
+      this.setState({ selectedRows: newRows });
+      this.setState({ selection: selection });
+      //selection.stopPropagation();   
+    };
 
   };
-  
+
   tableHeaderComponent = (props: any) => (<TableHeaderRow.Content
-				{...props}
-				align='center'
-				/>)
-				
+    {...props}
+    align='center'
+  />)
+
   componentDidMount() {
     this.setState({
-      LookUpShow: false
+      LookUpShow: false,
+      rows: this.props.uuid_list
     });
   };
-  
+
   /*
   UNSAFE_componentWillReceiveProps(nextProps) {
 	  //let {rows, columns} = this.state;
@@ -152,64 +154,62 @@ class IDSearchModalMultiSelect extends Component {
 
   handleDoneClick = () => {
 
-	  //sort the results before returning them
-	  var sortedResults = this.state.selectedRows;
-	  sortedResults.sort((a, b) => {
-	    if (
-	      parseInt(
-	        a.hubmap_identifier.substring(
-	          a.hubmap_identifier.lastIndexOf("-") + 1
-	        )
-	      ) >
-	      parseInt(
-	        b.hubmap_identifier.substring(
-	          a.hubmap_identifier.lastIndexOf("-") + 1
-	        )
-	      )
-	    ) {
-	      return 1;
-	    }
-	    if (
-	      parseInt(
-	        b.hubmap_identifier.substring(
-	          a.hubmap_identifier.lastIndexOf("-") + 1
-	        )
-	      ) >
-	      parseInt(
-	        a.hubmap_identifier.substring(
-	          a.hubmap_identifier.lastIndexOf("-") + 1
-	        )
-	      )
-	    ) {
-	      return -1;
-	    }
-	    return 0;
-	  });
-      //this.state.selectedRows = sortedResults;
-	  this.props.parentCallback(this.state.selectedRows);
-      this.setState({
+    //sort the results before returning them
+    var sortedResults = this.state.selectedRows;
+    sortedResults.sort((a, b) => {
+      if (
+        parseInt(
+          a.hubmap_identifier.substring(
+            a.hubmap_identifier.lastIndexOf("-") + 1
+          )
+        ) >
+        parseInt(
+          b.hubmap_identifier.substring(
+            a.hubmap_identifier.lastIndexOf("-") + 1
+          )
+        )
+      ) {
+        return 1;
+      }
+      if (
+        parseInt(
+          b.hubmap_identifier.substring(
+            a.hubmap_identifier.lastIndexOf("-") + 1
+          )
+        ) >
+        parseInt(
+          a.hubmap_identifier.substring(
+            a.hubmap_identifier.lastIndexOf("-") + 1
+          )
+        )
+      ) {
+        return -1;
+      }
+      return 0;
+    });
+    //this.state.selectedRows = sortedResults;
+    this.props.parentCallback(this.state.selectedRows);
+    this.setState({
       //HuBMAPIDResults: Object.values(this.state.selection),
-      	LookUpShow: false,
-      	selectedRows:sortedResults
+      LookUpShow: false,
+      selectedRows: sortedResults
     });
   };
-  
+
 
 
   render() {
-	   let {rows, columns} = this.state;
-	   let  {selection, setSelection} = [];
-        if (this.props.uuid_list === undefined) {
-          return(<div></div>);
-        } else {
-          rows = this.props.uuid_list;
-          this.setState({
-         	rows: rows
-          });
-	       
-        }
+    let { rows, columns } = this.state;
+    let { selection, setSelection } = [];
+    if (this.props.uuid_list === undefined) {
+      return (<div></div>);
+    } else {
+      rows = this.props.uuid_list;
+      // this.setState({
+      //   rows: rows
+      // });
+    }
     return (
-  
       <Modal show={this.props.show} handleClose={this.props.hide}>
         <div className="row">
           <div className="col-sm-12">
@@ -221,23 +221,23 @@ class IDSearchModalMultiSelect extends Component {
                   <div className="col-sm-6">
                     <div className="form-group row">
 
-					{rows && (
-					      <div className="scrollbar-div col-sm-12">
-					      <Grid key={this.childKey}
-					        rows={rows}
-					        columns={columns}
-					      >
-					        <SelectionState
-					          selection={selection}
-					          onSelectionChange={this.changeSelection}
-					        />
-					        <Table
-					          rowComponent={Row}
-					        />
-					        <TableHeaderRow contentComponent={this.tableHeaderComponent} />
-					      </Grid>
-					      </div>
-					    )}
+                      {rows && (
+                        <div className="scrollbar-div col-sm-12">
+                          <Grid key={this.childKey}
+                            rows={rows}
+                            columns={columns}
+                          >
+                            <SelectionState
+                              selection={selection}
+                              onSelectionChange={this.changeSelection}
+                            />
+                            <Table
+                              rowComponent={Row}
+                            />
+                            <TableHeaderRow contentComponent={this.tableHeaderComponent} />
+                          </Grid>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
