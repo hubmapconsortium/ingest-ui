@@ -392,7 +392,7 @@ class Dataset(object):
                 if access_level == HubmapConst.ACCESS_LEVEL_PROTECTED:
                     webservice_file_path = None
                  
-                sym_path = str(os.path.join(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), dataset_entity_record[HubmapConst.UUID_ATTRIBUTE]))
+                sym_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),dataset_entity_record[HubmapConst.UUID_ATTRIBUTE])
                 new_directory_path = self.get_dataset_directory(dataset_entity_record[HubmapConst.UUID_ATTRIBUTE], group_display_name, access_level)   
                 new_path = make_new_dataset_directory(new_directory_path, sym_path)
                 new_globus_path = build_globus_url_for_directory(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH'], new_path)
