@@ -1401,14 +1401,9 @@ class Dataset(object):
                             unlinkDir(sym_link_path)
                     else:
                         sym_link_path = os.path.join(str(self.confdata['HUBMAP_WEBSERVICE_FILEPATH']),uuid)
+                        full_path = self.get_dataset_directory(uuid, group_info['displayname'], access_level)   
                         if os.path.exists(sym_link_path) == False:
-                            # the  os.path.join code will ignore part of the filepath if a later part starts with a /
-                            # so remove the leading slash from the local_directory_url_path before joining it
-                            rel_path = metadata_node[HubmapConst.DATASET_LOCAL_DIRECTORY_PATH_ATTRIBUTE]
-                            if str(rel_path).startswith('/'):
-                                rel_path = rel_path[1:]
-                            source_dir = os.path.join(str(self.confdata['GLOBUS_PROTECTED_ENDPOINT_FILEPATH']), rel_path)
-                            linkDir(source_dir, sym_link_path)
+                            linkDir(full_path, sym_link_path)
                             
                 try:
                     x = threading.Thread(target=self.set_dir_permissions, args=[access_level, full_path])
