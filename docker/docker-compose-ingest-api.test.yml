@@ -10,7 +10,7 @@ services:
         # The commons github branch to be used during image build (default to master if not set or null)
         - COMMONS_BRANCH=${COMMONS_BRANCH:-master}
     # Build the image with name and tag
-    image: ingest-api:1.13
+    image: ingest-api:1.14
     hostname: ingest-api
     container_name: ingest-api
     init: true

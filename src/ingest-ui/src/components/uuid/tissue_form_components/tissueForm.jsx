@@ -65,7 +65,8 @@ class TissueForm extends Component {
 
     groups: [],
     selected_group: "",
-
+    
+    error_message: "Oops! Something went wrong. Please contact administrator for help.",
     formErrors: {
       lab: "",
       // lab_tissue_id: "",
@@ -817,7 +818,8 @@ class TissueForm extends Component {
                 this.props.onCreated(res.data);
               })
               .catch(error => {
-                this.setState({ submit_error: true });
+                this.setState({ submit_error: true,
+                error_message: error && error.asdf && error.response && error.response.data && error.response.data.displayMessage || this.state.error_message });
               });
           }
         }
@@ -2374,8 +2376,7 @@ class TissueForm extends Component {
 	            )}
 	            {this.state.submit_error && (
 	              <div className="alert alert-danger col-sm-12" role="alert">
-	                Oops! Something went wrong. Please contact administrator for
-	                help.
+	                {this.state.error_message}
 	              </div>
 	            )}
 	            {this.renderButtons()}

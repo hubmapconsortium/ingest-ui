@@ -630,16 +630,16 @@ class DatasetEdit extends Component {
     )[0];
     data_types.delete(other_dt);
 
-    if (this.state.other_dt) {
-      const data_types = this.state.data_types;
-      data_types.add(this.state.other_dt);
-      this.setState({ data_types: data_types });
-    }
+    // if (this.state.other_dt) {
+    //   const data_types = this.state.data_types;
+    //   data_types.add(this.state.other_dt);
+    //   this.setState({ data_types: data_types });
+    // }
 
     this.validateForm().then((isValid) => {
       if (isValid) {
         if (
-          !this.props.editingEntity &&
+          !this.props.editingDataset &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
@@ -722,8 +722,29 @@ class DatasetEdit extends Component {
                   display_doi: res.data.display_doi,
                   doi: res.data.doi,
                 });
-                this.props.onCreated();
-                this.onChangeGlobusURL();
+                axios
+                  .get(
+                    `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${res.data.uuid}`,
+                    config
+                  )
+                  .then((res) => {
+                    this.setState({
+                      globus_path: res.data,
+                    }, () => {
+                      this.props.onCreated();
+                      this.onChangeGlobusURL();
+                    });
+                  })
+                  .catch((err) => {
+                    this.setState({
+                      globus_path: "",
+                      globus_path_tips: "Globus URL Unavailable",
+                    });
+                    if (err.response && err.response.status === 401) {
+                      localStorage.setItem("isAuthenticated", false);
+                      window.location.reload();
+                    }
+                  });
               })
               .catch((error) => {
                 this.setState({ submit_error: true, submitting: false });
@@ -779,7 +800,7 @@ class DatasetEdit extends Component {
         });
       }
 
-      if (this.state.data_types.size === 0) {
+      if (this.state.data_types.size === 0 && this.state.other_dt === "") {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
@@ -1250,11 +1271,8 @@ class DatasetEdit extends Component {
               <div className='col-sm-10'>
                 <p>
                   {this.props.editingDataset &&
-                    "Dataset Display id: " +
-                      this.state.display_doi +
-                      " | " +
-                      "DOI: " +
-                      this.state.doi}
+                    "HuBMAP Dataset id: " +
+                      this.state.display_doi}
                 </p>
                 <div>
                   <p>
@@ -1626,6 +1644,7 @@ class DatasetEdit extends Component {
                       defaultChecked={true}
                       checked={this.state.phi === "no"}
                       onChange={this.handleInputChange}
+                      disabled={this.props.editingDataset}
                     />
                     <label className='form-check-label' htmlFor='phi_no'>
                       No
@@ -1640,6 +1659,7 @@ class DatasetEdit extends Component {
                       value='yes'
                       checked={this.state.phi === "yes"}
                       onChange={this.handleInputChange}
+                      disabled={this.props.editingDataset}
                     />
                     <label className='form-check-label' htmlFor='phi_yes'>
                       Yes
