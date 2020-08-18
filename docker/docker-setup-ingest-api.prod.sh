@@ -2,7 +2,8 @@
 
 # Set the version environment variable for the docker build
 # Version number is from the VERSION file
-export INGEST_API_VERSION=$(tr -d "\n\r" < VERSION | xargs)
+# Also remove newlines and leading/trailing slashes if present in that VERSION file
+export INGEST_API_VERSION=$(tr -d "\n\r" < ../VERSION | xargs)
 
 echo "INGEST_API_VERSION: $INGEST_API_VERSION"
 
