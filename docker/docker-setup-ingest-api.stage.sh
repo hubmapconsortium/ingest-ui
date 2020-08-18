@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Set the version environment variable for the docker build
+# Version number is from the VERSION file
+export INGEST_API_VERSION=`cat VERSION`
+
+echo "INGEST_API_VERSION: $INGEST_API_VERSION"
+
 mkdir ingest-api-stage/src
 
 # Copy over the src folder

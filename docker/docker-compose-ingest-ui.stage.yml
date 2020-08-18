@@ -6,7 +6,7 @@ services:
   ingest-ui:
     build: ./ingest-ui
     # Build the image with name and tag
-    image: ingest-ui:1.14
+    image: ingest-ui:${INGEST_UI_VERSION:-latest}
     hostname: ingest-ui
     container_name: ingest-ui
     environment:
