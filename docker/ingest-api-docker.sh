@@ -15,7 +15,9 @@ else
         echo "Unknown command '$2', specify 'build' or 'start' or 'stop' or 'check' or 'config' as the second argument"
     else
         if [ "$2" = "build" ]; then
-            ./docker-setup-ingest-api.$1.sh
+            # Use the `source` command to execute ./docker-setup.sh in the current process 
+            # since that script contains export environment variable
+            source ./docker-setup-ingest-api.$1.sh
             docker-compose -f docker-compose-ingest-api.$1.yml build
         elif [ "$2" = "start" ]; then
             docker-compose -p ingest-api -f docker-compose-ingest-api.$1.yml up -d
@@ -42,7 +44,10 @@ else
 
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
-            echo '###### INGEST-API ########'
+            # Export the VERSION as environment variable
+            # Without using `source` command, this export is only for display purpose with config
+            export INGEST_API_VERSION=$(tr -d "\n\r" < ../VERSION | xargs)
+            echo "###### INGEST-API $INGEST_API_VERSION ########"
             docker-compose -p ingest-api -f docker-compose-ingest-api.$1.yml config
         fi
     fi

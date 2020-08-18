@@ -50,24 +50,30 @@ We can also validate and view the details of corresponding compose file:
 ./ingest-api-docker.sh dev config
 ````
 
-Building the docker images and starting/stopping the contianers require to use docker daemon, you'll probably need to use `sudo` in the following steps. 
+Building the docker images and starting/stopping the contianers require to use docker daemon, you'll probably need to use `sudo` in the following steps. If you don’t want to preface the docker command with sudo, add users to the docker group:
+
+````
+sudo usermod -aG docker $USER
+````
+
+Then log out and log back in so that your group membership is re-evaluated. If testing on a virtual machine, it may be necessary to restart the virtual machine for changes to take effect.
 
 To build the docker image of ingest-api:
 
 ````
-sudo ./ingest-api-docker.sh dev build
+./ingest-api-docker.sh dev build
 ````
 
 To start up the ingest-api container (including nginx on the same container):
 
 ````
-sudo ./ingest-api-docker.sh dev start
+./ingest-api-docker.sh dev start
 ````
 
 And stop the running container by:
 
 ````
-sudo ./ingest-api-docker.sh dev stop
+./ingest-api-docker.sh dev stop
 ````
 ### Updating API Documentation
 
