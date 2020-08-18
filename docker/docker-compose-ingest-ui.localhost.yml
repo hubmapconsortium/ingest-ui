@@ -6,7 +6,8 @@ services:
   ingest-ui:
     build: ./ingest-ui
     # Build the image with name and tag
-    image: ingest-ui:${INGEST_UI_VERSION:-latest}
+    # Exit with an error message containing err if unset or empty in the environment
+    image: ingest-ui:${INGEST_UI_VERSION:?err}
     hostname: ingest-ui
     container_name: ingest-ui
     environment:
