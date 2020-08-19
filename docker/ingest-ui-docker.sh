@@ -7,23 +7,26 @@ function absent_or_newer () {
     fi
 }
 
+# Set the version environment variable for the docker build
+# Version number is from the VERSION file
+# Also remove newlines and leading/trailing slashes if present in that VERSION file
+function export_version() {
+    export INGEST_UI_VERSION=$(tr -d "\n\r" < ../VERSION | xargs)
+    echo "INGEST_UI_VERSION: $INGEST_UI_VERSION"
+}
+
 if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" ]]; then
-    echo "Unknown build environment '$1', specify one of the following: 'localhost', 'dev', 'test', 'stage', or 'prod'"
+    echo "Unknown build environment '$1', specify one of the following: localhost|dev|test|stage|prod"
 else
-    if [[ "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" && "$2" != "check" && "$2" != "config" ]]; then
-        echo "Unknown command '$2', specify 'build' or 'start' or 'stop' or 'down' or 'check' or 'config' as the second argument"
+    if [[ "$2" != "setup" && "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
+        echo "Unknown command '$2', specify one of the following: setup|check|config|build|start|stop|down"
     else
-        if [ "$2" = "build" ]; then
-            # Use the `source` command to execute ./docker-setup.sh in the current process 
-            # since that script contains export environment variable
-            source ./docker-setup-ingest-ui.sh
-            docker-compose -f docker-compose-ingest-ui.$1.yml build
-        elif [ "$2" = "start" ]; then
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml up -d
-        elif [ "$2" = "stop" ]; then
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml stop
-        elif [ "$2" = "down" ]; then
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml down
+        if [ "$2" = "setup" ]; then
+            # Copy over the source code
+            mkdir ingest-ui/src
+            cp -r ../src/ingest-ui/* ingest-ui/src
+            # Also explicitly copy the .env file
+            cp ../src/ingest-ui/.env ingest-ui/src
         elif [ "$2" = "check" ]; then
             # Bash array
             config_paths=(
@@ -45,11 +48,20 @@ else
 
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
-            # Export the VERSION as environment variable
-            # Without using `source` command, this export is only for display purpose with config
-            export INGEST_UI_VERSION=$(tr -d "\n\r" < ../VERSION | xargs)
-            echo "###### INGEST-UI $INGEST_UI_VERSION ########"
+            export_version
             docker-compose -p ingest-ui -f docker-compose-ingest-ui.yml config
+        if [ "$2" = "build" ]; then
+            export_version
+            docker-compose -f docker-compose-ingest-ui.$1.yml build
+        elif [ "$2" = "start" ]; then
+            export_version
+            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml up -d
+        elif [ "$2" = "stop" ]; then
+            export_version
+            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml stop
+        elif [ "$2" = "down" ]; then
+            export_version
+            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml down
         fi
     fi
 fi

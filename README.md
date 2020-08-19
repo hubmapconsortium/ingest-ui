@@ -37,6 +37,10 @@ echo $COMMONS_BRANCH
 
 Note: Environment variables set like this are only stored temporally. When you exit the running instance of bash by exiting the terminal, they get discarded. So for rebuilding the docker image, we'll need to make sure to set the environment variables again if necessary.
 
+````
+Usage: ./ingest-api-docker.sh [localhost|dev|test|stage|prod] [setup|check|config|build|start|stop|down]
+````
+
 Before we go ahead to start building the docker image, we can do a check to see if the required configuration file is in place:
 
 ````
@@ -61,25 +65,25 @@ Then log out and log back in so that your group membership is re-evaluated. If t
 To build the docker image of ingest-api:
 
 ````
-source ./ingest-api-docker.sh dev build
+./ingest-api-docker.sh dev build
 ````
 
 To start up the ingest-api container (including nginx on the same container):
 
 ````
-source ./ingest-api-docker.sh dev start
+./ingest-api-docker.sh dev start
 ````
 
 And stop the running container by:
 
 ````
-source ./ingest-api-docker.sh dev stop
+./ingest-api-docker.sh dev stop
 ````
 
 You can also stop the running container and remove it by:
 
 ````
-source ./ingest-api-docker.sh dev down
+./ingest-api-docker.sh dev down
 ````
 
 ### Updating API Documentation
@@ -89,3 +93,7 @@ The documentation for the API calls is hosted on SmartAPI.  Modifying the `inges
 ### Remote deployment of ingest UI individually
 
 Similar to the ingest-api, just use the `ingest-ui-docker.sh`
+
+````
+Usage: ./ingest-ui-docker.sh [localhost|dev|test|stage|prod] [setup|check|config|build|start|stop|down]
+````
