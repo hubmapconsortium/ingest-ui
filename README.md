@@ -18,7 +18,7 @@ We have the following 5 development and deployment environments:
 
 This option allows you to setup all the pieces in a containerized environment with docker and docker-compose. This requires to have the [HuBMAP Gateway](https://github.com/hubmapconsortium/gateway) running locally before starting building this docker compose project. Please follow the [instructions](https://github.com/hubmapconsortium/gateway#workflow-of-setting-up-multiple-hubmap-docker-compose-projects). It also requires the Gateway project to be configured accordingly.
 
-### Remote deployment
+### Remote deployment of ingest API individually
 
 In localhost mode, all the docker containers are running on the same host machine. However, the ingest-api will be deployed on a separare host machine for dev, test, stage, and prod mode due to different deployment requirements. 
 
@@ -76,6 +76,16 @@ And stop the running container by:
 source ./ingest-api-docker.sh dev stop
 ````
 
+You can also stop the running container and remove it by:
+
+````
+source ./ingest-api-docker.sh dev down
+````
+
 ### Updating API Documentation
 
 The documentation for the API calls is hosted on SmartAPI.  Modifying the `ingest-api-spec.yaml` file and commititng the changes to github should update the API shown on SmartAPI.  SmartAPI allows users to register API documents.  The documentation is associated with this github account: api-developers@hubmapconsortium.org. Please contact Chuck Borromeo (chb69@pitt.edu) if you want to register a new API on SmartAPI.
+
+### Remote deployment of ingest UI individually
+
+Similar to the ingest-api, just use the `ingest-ui-docker.sh`
