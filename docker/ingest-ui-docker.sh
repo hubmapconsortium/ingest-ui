@@ -7,9 +7,8 @@ function absent_or_newer () {
     fi
 }
 
-# This script only handles the build/start/stop of ingest-api on dev, test, and prod
-if [[ "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" ]]; then
-    echo "Unknown build environment '$1', specify one of the following: 'dev', 'test', 'stage', or 'prod'"
+if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" ]]; then
+    echo "Unknown build environment '$1', specify one of the following: 'localhost', 'dev', 'test', 'stage', or 'prod'"
 else
     if [[ "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "check" && "$2" != "config" ]]; then
         echo "Unknown command '$2', specify 'build' or 'start' or 'stop' or 'check' or 'config' as the second argument"

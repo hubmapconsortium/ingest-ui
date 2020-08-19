@@ -4,9 +4,9 @@ The HuBMAP Data Ingest Portal UI is a web application built with [React](https:/
 
 And the backend ingest API is located in this repository at `src/ingest-api`, this is a restful web service exposing calls needed for the ingest UI React application.  The API is documented [here](https://smart-api.info/registry?q=5a6bea1158d2652743c7a201fdb1c44d).
 
-## Localhost development and remote deployment environments
+## Development and deployment environments
 
-We have the following 4 development and deployment environments:
+We have the following 5 development and deployment environments:
 
 * localhost - all the services will be deployed with docker containers including sample Neo4j and sample MySQL are running on the same localhost listing on different ports, without globus data
 * dev - all services except ingest-api will be running on AWS EC2 with SSL certificates, Neo4j and MySQL are dev versions on AWS, and ingest-api(and another nginx) will be running on PSC with domain and globus data
@@ -61,19 +61,19 @@ Then log out and log back in so that your group membership is re-evaluated. If t
 To build the docker image of ingest-api:
 
 ````
-./ingest-api-docker.sh dev build
+source ./ingest-api-docker.sh dev build
 ````
 
 To start up the ingest-api container (including nginx on the same container):
 
 ````
-./ingest-api-docker.sh dev start
+source ./ingest-api-docker.sh dev start
 ````
 
 And stop the running container by:
 
 ````
-./ingest-api-docker.sh dev stop
+source ./ingest-api-docker.sh dev stop
 ````
 ### Updating API Documentation
 
