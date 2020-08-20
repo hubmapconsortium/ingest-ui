@@ -43,7 +43,7 @@ else
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
             export_version
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.yml config
+            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml config
         elif [ "$2" = "build" ]; then
             # Copy over the source code
             mkdir ingest-ui/src
