@@ -58,7 +58,7 @@ else
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
             export_version
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml config
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose config
         elif [ "$2" = "build" ]; then
             # Copy over the source code
             mkdir ingest-ui/src
@@ -67,16 +67,16 @@ else
             cp ../src/ingest-ui/.env ingest-ui/src
 
             export_version
-            docker-compose -f docker-compose-ingest-ui.$1.yml build
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose build
         elif [ "$2" = "start" ]; then
             export_version
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml up -d
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose up -d
         elif [ "$2" = "stop" ]; then
             export_version
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml stop
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose stop
         elif [ "$2" = "down" ]; then
             export_version
-            docker-compose -p ingest-ui -f docker-compose-ingest-ui.$1.yml down
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose down
         fi
     fi
 fi
