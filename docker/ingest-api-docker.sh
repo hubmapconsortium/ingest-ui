@@ -21,11 +21,7 @@ else
     if [[ "$2" != "setup" && "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
         echo "Unknown command '$2', specify one of the following: setup|check|config|build|start|stop|down"
     else
-        if [ "$2" = "setup" ]; then
-            # Create docker copy of the source code
-            mkdir ingest-api-$1/src
-            cp -r ../src/ingest-api/* ingest-api-$1/src
-        elif [ "$2" = "check" ]; then
+        if [ "$2" = "check" ]; then
             # Bash array
             config_paths=(
                 '../src/ingest-api/instance/app.cfg'
@@ -49,6 +45,10 @@ else
             export_version
             docker-compose -p ingest-api -f docker-compose-ingest-api.$1.yml config
         elif [ "$2" = "build" ]; then
+            # Create docker copy of the source code
+            mkdir ingest-api-$1/src
+            cp -r ../src/ingest-api/* ingest-api-$1/src
+            
             export_version
             docker-compose -f docker-compose-ingest-api.$1.yml build
         elif [ "$2" = "start" ]; then
