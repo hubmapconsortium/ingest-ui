@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Print a new line and the banner
+echo
+echo "==================== INGEST-UI ===================="
+
+# The `absent_or_newer` checks if the copied src at docker/some-api/src directory exists 
+# and if the source src directory is newer. 
+# If both conditions are true `absent_or_newer` writes an error message 
+# and causes script to exit with an error code.
 function absent_or_newer () {
     if  [ \( -e $1 \) -a \( $2 -nt $1 \) ]; then
         echo "$1 is out of date"
@@ -7,9 +15,9 @@ function absent_or_newer () {
     fi
 }
 
+# This function sets DIR to the directory in which this script itself is found.
+# Thank you https://stackoverflow.com/questions/59895/how-to-get-the-source-directory-of-a-bash-script-from-within-the-script-itself                                                                      
 function get_dir_of_this_script () {
-    # This function sets DIR to the directory in which this script itself is found.
-    # Thank you https://stackoverflow.com/questions/59895/how-to-get-the-source-directory-of-a-bash-script-from-within-the-script-itself
     SCRIPT_SOURCE="${BASH_SOURCE[0]}"
     while [ -h "$SCRIPT_SOURCE" ]; do # resolve $SCRIPT_SOURCE until the file is no longer a symlink
         DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" >/dev/null 2>&1 && pwd )"
@@ -49,17 +57,18 @@ else
                 fi
             done
 
-            # The `absent_or_newer` checks if the copied src at docker/some-api/src directory exists 
-            # and if the source src directory is newer. 
-            # If both conditions are true `absent_or_newer` writes an error message 
-            # and causes hubmap-docker.sh to exit with an error code.
             absent_or_newer ingest-ui/src ../src/ingest-ui
 
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
             export_version
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose config
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui config
         elif [ "$2" = "build" ]; then
+            # Delete the copied source code dir if exists
+            if [ -d "ingest-ui/src" ]; then
+                rm -rf ingest-ui/src
+            fi
+
             # Copy over the source code
             mkdir ingest-ui/src
             cp -r ../src/ingest-ui/* ingest-ui/src
@@ -67,16 +76,16 @@ else
             cp ../src/ingest-ui/.env ingest-ui/src
 
             export_version
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose build
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui build
         elif [ "$2" = "start" ]; then
             export_version
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose up -d
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui up -d
         elif [ "$2" = "stop" ]; then
             export_version
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose stop
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui stop
         elif [ "$2" = "down" ]; then
             export_version
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui --verbose down
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui down
         fi
     fi
 fi
