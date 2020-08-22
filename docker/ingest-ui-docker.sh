@@ -25,6 +25,15 @@ function get_dir_of_this_script () {
         [[ $SCRIPT_SOURCE != /* ]] && SCRIPT_SOURCE="$DIR/$SCRIPT_SOURCE" # if $SCRIPT_SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
     done
     DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" >/dev/null 2>&1 && pwd )"
+    echo 'DIR of script:' $DIR
+}
+
+# Generate the build version based on git branch name and short commit hash
+# Here just pince ingest-api actually writes the the BUILD file
+function generate_build_version() {
+    GIT_BRANCH_NAME=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+    GIT_SHORT_COMMIT_HASH=$(git rev-parse --short HEAD)
+    echo "BUILD(git branch name:short commit hash): $GIT_BRANCH_NAME:$GIT_SHORT_COMMIT_HASH"
 }
 
 # Set the version environment variable for the docker build
@@ -41,8 +50,17 @@ else
     if [[ "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
         echo "Unknown command '$2', specify one of the following: check|config|build|start|stop|down"
     else
+        # Always show the script dir
         get_dir_of_this_script
-        echo 'DIR of script:' $DIR
+
+        # Always export and show the version
+        export_version
+        
+        # Always show the build in case branch changed or new commits
+        generate_build_version
+
+        # Print empty line
+        echo
 
         if [ "$2" = "check" ]; then
             # Bash array
@@ -61,7 +79,6 @@ else
 
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui config
         elif [ "$2" = "build" ]; then
             # Delete the copied source code dir if exists
@@ -75,16 +92,12 @@ else
             # Also explicitly copy the .env file
             cp ../src/ingest-ui/.env ingest-ui/src
 
-            export_version
             docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui build
         elif [ "$2" = "start" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui up -d
         elif [ "$2" = "stop" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui stop
         elif [ "$2" = "down" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui down
         fi
     fi

@@ -25,6 +25,17 @@ function get_dir_of_this_script () {
         [[ $SCRIPT_SOURCE != /* ]] && SCRIPT_SOURCE="$DIR/$SCRIPT_SOURCE" # if $SCRIPT_SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
     done
     DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" >/dev/null 2>&1 && pwd )"
+    echo 'DIR of script:' $DIR
+}
+
+# Generate the build version based on git branch name and short commit hash and write into BUILD file
+function generate_build_version() {
+    GIT_BRANCH_NAME=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+    GIT_SHORT_COMMIT_HASH=$(git rev-parse --short HEAD)
+    # Clear the old BUILD version and write the new one
+    truncate -s 0 ../BUILD
+    echo $GIT_BRANCH_NAME:$GIT_SHORT_COMMIT_HASH >> ../BUILD
+    echo "BUILD(git branch name:short commit hash): $GIT_BRANCH_NAME:$GIT_SHORT_COMMIT_HASH"
 }
 
 # Set the version environment variable for the docker build
@@ -41,8 +52,17 @@ else
     if [[ "$2" != "setup" && "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
         echo "Unknown command '$2', specify one of the following: setup|check|config|build|start|stop|down"
     else
+        # Always show the script dir
         get_dir_of_this_script
-        echo 'DIR of script:' $DIR
+
+        # Always export and show the version
+        export_version
+        
+        # Always show the build in case branch changed or new commits
+        generate_build_version
+
+        # Print empty line
+        echo
 
         if [ "$2" = "check" ]; then
             # Bash array
@@ -61,7 +81,6 @@ else
 
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api config
         elif [ "$2" = "build" ]; then
             # Delete the copied source code dir if exists
@@ -72,17 +91,20 @@ else
             # Create docker copy of the source code
             mkdir ingest-api-$1/src
             cp -r ../src/ingest-api/* ingest-api-$1/src
-            
-            export_version
+
+            # Only mount the VERSION file and BUILD file for localhost and dev
+            # On test/stage/prod, copy the VERSION file and BUILD file to image
+            if [[ "$1" != "localhost" && "$1" != "dev" ]]; then
+                cp VERSION ingest-api-$1/src
+                cp BUILD ingest-api-$1/src
+            fi
+
             docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api build
         elif [ "$2" = "start" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api up -d
         elif [ "$2" = "stop" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api stop
         elif [ "$2" = "down" ]; then
-            export_version
             docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api down
         fi
     fi
