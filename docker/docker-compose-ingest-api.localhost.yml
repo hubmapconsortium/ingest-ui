@@ -14,6 +14,12 @@ services:
     image: ingest-api:${INGEST_API_VERSION:?err}
     hostname: ingest-api
     container_name: ingest-api
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - HOST_GID=${HOST_GID:-1000}
       - HOST_UID=${HOST_UID:-1000}

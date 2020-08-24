@@ -14,6 +14,12 @@ services:
     image: ingest-api:${INGEST_API_VERSION:?err}
     hostname: ingest-api
     container_name: ingest-api
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     init: true
     restart: always
     # Map host machine port 80, 443 to container ports 8080 and 4430

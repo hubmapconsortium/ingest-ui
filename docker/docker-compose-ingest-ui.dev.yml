@@ -10,6 +10,13 @@ services:
     image: ingest-ui:${INGEST_UI_VERSION:?err}
     hostname: ingest-ui
     container_name: ingest-ui
+    # Health check against local nginx
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - HOST_GID=${HOST_GID:-1000}
       - HOST_UID=${HOST_UID:-1000}
