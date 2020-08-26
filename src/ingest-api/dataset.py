@@ -267,28 +267,34 @@ class Dataset(object):
         driver = conn.get_driver()
         
         # check the incoming UUID to make sure they exist
-        source_dataset_uuid = str(json_data['source_dataset_uuid']).strip()
+        incoming_sourceUUID_string = str(json_data['source_dataset_uuid']).strip()
 
-        if source_dataset_uuid == None or len(source_dataset_uuid) == 0:
+        if incoming_sourceUUID_string == None or len(incoming_sourceUUID_string) == 0:
             raise ValueError('Error: sourceUUID must be set to create a derived dataset')
         
         # In this derived dataset case, only one source uuid in the list
         source_UUID_Data = []
         ug = UUID_Generator(self.confdata['UUID_WEBSERVICE_URL'])
         try:
-            hmuuid_data = ug.getUUID(nexus_token, source_dataset_uuid)
-            if len(hmuuid_data) != 1:
-                raise ValueError("Could not find information for identifier" + source_dataset_uuid)
-            source_UUID_Data.append(hmuuid_data)
+            incoming_sourceUUID_list = []
+            if str(incoming_sourceUUID_string).startswith('['):
+                incoming_sourceUUID_list = eval(incoming_sourceUUID_string)
+            else:
+                incoming_sourceUUID_list.append(incoming_sourceUUID_string)
+            for sourceID in incoming_sourceUUID_list:
+                hmuuid_data = ug.getUUID(nexus_token, sourceID)
+                if len(hmuuid_data) != 1:
+                    raise ValueError("Could not find information for identifier" + sourceID)
+                source_UUID_Data.append(hmuuid_data)
         except:
-            raise ValueError('Unable to resolve UUID for: ' + source_dataset_uuid)
-
-        # Get information of the source dataset
-        dataset = Dataset(self.confdata) 
-        dataset_record = dataset.get_dataset(driver, source_dataset_uuid)
-
+            raise ValueError('Unable to resolve UUID for: ' + incoming_sourceUUID_string)
+        
+        # Get information of the source dataset from the first item in the list
         # See if provenance_group_uuid of the source dataset exists in the list of group uuids from the user info.
         # If so, use the provenance_group_uuid for the derived dataset. If not, throw an error.
+        dataset = Dataset(self.confdata) 
+        dataset_record = dataset.get_dataset(driver, source_UUID_Data[0][0]['hmuuid'])
+
         source_dataset_provenance_group_uuid = None
         if 'provenance_group_uuid' in dataset_record:
             source_dataset_provenance_group_uuid = dataset_record['provenance_group_uuid']
@@ -364,7 +370,10 @@ class Dataset(object):
                 metadata_record['name'] = json_data['derived_dataset_name']
                 # Also use the dataset data types array from input json and store as string in metadata attribute
                 metadata_record[HubmapConst.DATA_TYPES_ATTRIBUTE] = json.dumps(json_data['derived_dataset_types'])
-                metadata_record[HubmapConst.SOURCE_UUID_ATTRIBUTE] = source_UUID_Data[0][0]['doiSuffix']
+                source_uuid_list_string = []
+                for identifier in source_UUID_Data:
+                    source_uuid_list_string.append(identifier[0]['doiSuffix'])
+                metadata_record[HubmapConst.SOURCE_UUID_ATTRIBUTE] = str(source_uuid_list_string)
 
 
                 
