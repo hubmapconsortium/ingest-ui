@@ -666,23 +666,22 @@ class DonorForm extends Component {
       }
     }
 
-    if (!this.props.editingEntity) {
-      // Creating Donor
-      this.state.images.forEach((image, index) => {
-        if (!validateRequired(image.ref.current.image_file.current.value)) {
-          isValid = false;
-          image.ref.current.validate();
-        }
-        if (
-          !validateRequired(
-            image.ref.current.image_file_description.current.value
-          )
-        ) {
-          isValid = false;
-          image.ref.current.validate();
-        }
-      });
-    }
+    // if (!this.props.editingEntity) {
+    this.state.images.forEach((image, index) => {
+      if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
+        isValid = false;
+        image.ref.current.validate();
+      }
+      if (
+        !validateRequired(
+          image.ref.current.image_file_description.current.value
+        )
+      ) {
+        isValid = false;
+        image.ref.current.validate();
+      }
+    });
+    // }
 
     const usedFileName = new Set();
     this.state.images.forEach((image, index) => {
