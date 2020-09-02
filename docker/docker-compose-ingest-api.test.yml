@@ -10,7 +10,7 @@ services:
         # The commons github branch to be used during image build (default to master if not set or null)
         - COMMONS_BRANCH=${COMMONS_BRANCH:-master}
     # Build the image with name and tag
-    image: ingest-api:1.12.1
+    image: ingest-api:1.14
     hostname: ingest-api
     container_name: ingest-api
     init: true
@@ -57,18 +57,12 @@ services:
       - "./ingest-api-test/nginx/conf.d:/etc/nginx/conf.d"
       # favicon.ico
       - "./ingest-api-test/nginx/html:/usr/share/nginx/html"
-      # Workflow scrath directory
-      - "/hive/hubmap-test/scratch:/hubmap-scratch"
       # Airflow static files
       - "/hive/users/hive/hubmap/hivevm192-test/venv/lib/python3.6/site-packages/airflow/www:/airflow-static"
       # Flower static files
       - "/hive/users/hive/hubmap/hivevm192-test/venv/lib/python3.6/site-packages/flower:/flower-static"
       # Mount Globus data
-      - "/hive/hubmap-test/lz:/hive/hubmap-test/lz"
-      - "/hive/hubmap-test/public:/hive/hubmap-test/public"
-      - "/hive/hubmap-test/consortium:/hive/hubmap-test/consortium"
-      # assets
-      - "/hive/hubmap-test/assets:/usr/src/assets"
+      - "/hive/hubmap-test:/hive/hubmap-test"
     networks:
       - hubmap
 
