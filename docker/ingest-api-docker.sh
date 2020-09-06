@@ -34,7 +34,11 @@ function generate_build_version() {
     GIT_SHORT_COMMIT_HASH=$(git rev-parse --short HEAD)
     # Clear the old BUILD version and write the new one
     truncate -s 0 ../BUILD
+    # Note: echo to file appends newline
     echo $GIT_BRANCH_NAME:$GIT_SHORT_COMMIT_HASH >> ../BUILD
+    # Remmove the trailing newline character
+    truncate -s -1 ../BUILD
+    
     echo "BUILD(git branch name:short commit hash): $GIT_BRANCH_NAME:$GIT_SHORT_COMMIT_HASH"
 }
 
