@@ -39,13 +39,32 @@ export default class Collection extends Component {
      uuid = this.props.match.params.uuid;
      console.log("Params:", uuid);
     }
+    let config = {};
+    let token = "";
+    let auth =  localStorage.length;
+    if (auth > 1)
+    {
+	   token = JSON.parse(localStorage.getItem("info")).nexus_token;
+
     
-    const config = {
-      headers: {
-        
-              "Content-Type": "application/json"
-      }
-    };
+       console.log("Inside Collection:componentDidMount(): with token");
+	   config = {
+	      headers: {
+	        Authorization:
+	          "Bearer " + token,
+	          "Content-Type": "multipart/form-data"
+	      }
+	    };
+    }
+	else 
+	{
+		console.log("Inside Collection.componentDidMount(): with no token");
+		config = {
+	      headers: {
+	        "Content-Type": "multipart/form-data"
+	      }
+	    };
+	}
     
     let uri = "";   
     uri = `${process.env.REACT_APP_ENTITY_API_URL}/collections/${uuid}`;
@@ -96,7 +115,7 @@ export default class Collection extends Component {
     const keywords = this.state.keywords;
 
     //this.props.setFilter(group, keywords);
-
+    let config = {};
     let params = {};
     if (group) {
       params["group"] = group;
@@ -105,14 +124,29 @@ export default class Collection extends Component {
       params["keywords"] = keywords;
     }
 
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      },
-      params: params
-    };
+    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+    if ((token)|| token !== "")
+    {
+	   console.log("Inside Collection:handleFilterClick(): with token");
+	   config = {
+	      headers: {
+	        Authorization:
+	          "Bearer " + token,
+	          "Content-Type": "multipart/form-data"
+	      },
+          params: params
+	    };
+    }
+	else 
+	{
+		console.log("Inside Collection.handleFilterClick(): with no token");
+		config = {
+	      headers: {
+	        "Content-Type": "multipart/form-data"
+	      },
+          params: params
+	    };
+	}
 
     this.setState({ loading: true });
 
@@ -139,7 +173,7 @@ export default class Collection extends Component {
       });
   };
 
-  handleClearClick = () => {
+ /** handleClearClick = () => {
     this.setState(
       {
         group: "",
@@ -150,7 +184,7 @@ export default class Collection extends Component {
           headers: {
             Authorization:
               "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-            "Content-Type": "multipart/form-data"
+              "Content-Type": "multipart/form-data"
           }
         };
 
@@ -178,22 +212,38 @@ export default class Collection extends Component {
       }
     );
   };
-
+*/
 
   handleClearClick = () => {
-    this.setState(
+      let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+      let config = {};
+      this.setState(
       {
         group: "",
         keywords: ""
       },
       () => {
-        const config = {
-          headers: {
-            Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-            "Content-Type": "multipart/form-data"
-          }
-        };
+        
+         if ((token)|| token !== "")
+	    {
+		   console.log("Inside Collections:handleClearClick(): with token");
+		   config = {
+		      headers: {
+		        Authorization:
+		          "Bearer " + token,
+		          "Content-Type": "multipart/form-data"
+		      }
+		    };
+	    }
+		else 
+		{
+			console.log("Inside Collections.handleClearClick(): with no token");
+			config = {
+		      headers: {
+		        "Content-Type": "multipart/form-data"
+		      }
+		    };
+		}
 
         axios
           .get(`https://portal.hubmapcortiom.org/browse/dataset/${this.state.uuid}`, config)
@@ -236,19 +286,34 @@ export default class Collection extends Component {
   handleViewDataset = e => {
     //this.props.viewCollection(e);
     let uuid = e.uuid;
+    let config = {};
+    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
     this.setState(
       {
         group: "",
         keywords: ""
       },
-      () => {
-        const config = {
-          headers: {
-            Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-            "Content-Type": "multipart/form-data"
-          }
-        };
+      () => {      
+        if ((token)|| token !== "")
+	    {
+		   console.log("Inside Collections:handleViewDataset(): with token");
+		   config = {
+		      headers: {
+		        Authorization:
+		          "Bearer " + token,
+		          "Content-Type": "multipart/form-data"
+		      }
+		    };
+	    }
+		else 
+		{
+			console.log("Inside Collections.handleViewDataset(): with no token");
+		    config = {
+		      headers: {
+		        "Content-Type": "multipart/form-data"
+		      }
+		    };
+		}
 
         axios
           .get(`${process.env.REACT_APP_ENTITY_API_URL}/datasets/${uuid}`, config)
@@ -402,7 +467,7 @@ export default class Collection extends Component {
                           return (
                              <React.Fragment>
 								<div key={dataset.uuid} >
-                                {this.state.uuid === dataset.properties.collection_uuid && (
+                               {/**}  {this.state.uuid === dataset.properties.collection_uuid && (*/}
                                  <a
                                     className='btn btn-link'
                                     target='_blank'
@@ -411,7 +476,7 @@ export default class Collection extends Component {
                                     >
                                     {dataset.properties.name}
                                  </a>
-                                )}
+                              {/**}   )}*/}
 								</div> 
 						    </React.Fragment>
                           

@@ -37,34 +37,32 @@ export default class Collections extends Component {
 
     
     let config = {};
-	
-	if (this.state.system ==="Collections"){
-		
-	   console.log("This call is to the handleFilterClick()  Collections method.");
-	
-	      config = {
-	      headers: {
-	        "Content-Type": "multipart/form-data"
-	      },
-	      params: params
-	    };
-
-	}
-	else {
-		
-	   console.log("This call is NOT to the handleFilterClick()  collections method.");
-		
-	      config = {
+    let token = "";
+    let auth =  localStorage.length;
+    if (auth > 1)
+    {
+	   token = JSON.parse(localStorage.getItem("info")).nexus_token;
+       console.log("Inside Collections:componentDidMount(): with token");
+	   config = {
 	      headers: {
 	        Authorization:
-	          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+	          "Bearer " + token,
+	          "Content-Type": "multipart/form-data"
+	      },
+	      params: params
+	    };
+    }
+	else 
+	{
+		console.log("Inside Collections.componentDidMount(): with no token");
+		config = {
+	      headers: {
 	        "Content-Type": "multipart/form-data"
 	      },
 	      params: params
 	    };
-
 	}
-
+	//if (this.state.system ==="collections"){
 
     this.setState({ loading: true });
 
@@ -122,34 +120,32 @@ export default class Collections extends Component {
 
     
     let config = {};
-	
-	if (this.state.system ==="Collections"){
-		
-	   console.log("This call is to the handleFilterClick()  Collections method.");
-	
-	      config = {
-	      headers: {
-	        "Content-Type": "multipart/form-data"
-	      },
-	      params: params
-	    };
+    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
 
-	}
-	else {
-		
-	   console.log("This call is NOT to the handleFilterClick()  collections method.");
-		
-	      config = {
+    if ((token)|| token !== "")
+    {
+	   console.log("Inside Collections:handleFilterClick(): with token");
+	   config = {
 	      headers: {
 	        Authorization:
-	          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+	          "Bearer " + token,
+	          "Content-Type": "multipart/form-data"
+	      },
+	      params: params
+	    };
+    }
+	else 
+	{
+		console.log("Inside Collections.handleFilterClick(): with no token");
+		config = {
+	      headers: {
 	        "Content-Type": "multipart/form-data"
 	      },
 	      params: params
 	    };
-
 	}
-
+	
+	//if (this.state.system ==="Collections"){
 
     this.setState({ loading: true });
 
@@ -175,20 +171,36 @@ export default class Collections extends Component {
   };
 
   handleClearClick = () => {
+         
+    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+    let config = {};
     this.setState(
       {
         group: "",
         keywords: ""
       },
-      () => {
-        const config = {
-          headers: {
-            Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-            "Content-Type": "multipart/form-data"
-          }
-        };
+      () => {     
 
+	    if ((token) || token !== "")
+	    {
+		   console.log("Inside Collections:handleClearClick(): with token");
+		    config = {
+		      headers: {
+		        Authorization:
+		          "Bearer " + token,
+		          "Content-Type": "multipart/form-data"
+		      }
+		    };
+	    }
+		else 
+		{
+			console.log("Inside Collections.handleClearClick(): with no token");
+			config = {
+		      headers: {
+		        "Content-Type": "multipart/form-data"
+		      }
+		    };
+		}
         axios
           .get(`${process.env.REACT_APP_ENTITY_API_URL}/collections`, config)
           .then(res => {
