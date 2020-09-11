@@ -2,7 +2,7 @@
 
 # Print a new line and the banner
 echo
-echo "==================== INGEST-API ===================="
+echo "==================== INGEST-UI ===================="
 
 # The `absent_or_newer` checks if the copied src at docker/some-api/src directory exists 
 # and if the source src directory is newer. 
@@ -28,17 +28,11 @@ function get_dir_of_this_script () {
     echo 'DIR of script:' $DIR
 }
 
-# Generate the build version based on git branch name and short commit hash and write into BUILD file
+# Generate the build version based on git branch name and short commit hash
+# Here just pince ingest-api actually writes the the BUILD file
 function generate_build_version() {
     GIT_BRANCH_NAME=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
     GIT_SHORT_COMMIT_HASH=$(git rev-parse --short HEAD)
-    # Clear the old BUILD version and write the new one
-    truncate -s 0 ../BUILD
-    # Note: echo to file appends newline
-    echo $GIT_BRANCH_NAME:$GIT_SHORT_COMMIT_HASH >> ../BUILD
-    # Remmove the trailing newline character
-    truncate -s -1 ../BUILD
-    
     echo "BUILD(git branch name:short commit hash): $GIT_BRANCH_NAME:$GIT_SHORT_COMMIT_HASH"
 }
 
@@ -46,15 +40,15 @@ function generate_build_version() {
 # Version number is from the VERSION file
 # Also remove newlines and leading/trailing slashes if present in that VERSION file
 function export_version() {
-    export INGEST_API_VERSION=$(tr -d "\n\r" < ../VERSION | xargs)
-    echo "INGEST_API_VERSION: $INGEST_API_VERSION"
+    export INGEST_UI_VERSION=$(tr -d "\n\r" < ../VERSION | xargs)
+    echo "INGEST_UI_VERSION: $INGEST_UI_VERSION"
 }
 
 if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" ]]; then
     echo "Unknown build environment '$1', specify one of the following: localhost|dev|test|stage|prod"
 else
-    if [[ "$2" != "setup" && "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
-        echo "Unknown command '$2', specify one of the following: setup|check|config|build|start|stop|down"
+    if [[ "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
+        echo "Unknown command '$2', specify one of the following: check|config|build|start|stop|down"
     else
         # Always show the script dir
         get_dir_of_this_script
@@ -71,7 +65,7 @@ else
         if [ "$2" = "check" ]; then
             # Bash array
             config_paths=(
-                '../src/ingest-api/instance/app.cfg'
+                '../src/ingest-ui/.env'
             )
 
             for pth in "${config_paths[@]}"; do
@@ -81,35 +75,30 @@ else
                 fi
             done
 
-            absent_or_newer ingest-api-$1/src ../src/ingest-api
+            absent_or_newer ingest-ui/src ../src/ingest-ui
 
             echo 'Checks complete, all good :)'
         elif [ "$2" = "config" ]; then
-            docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api config
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui config
         elif [ "$2" = "build" ]; then
             # Delete the copied source code dir if exists
-            if [ -d "ingest-api-$1/src" ]; then
-                rm -rf ingest-api-$1/src
+            if [ -d "ingest-ui/src" ]; then
+                rm -rf ingest-ui/src
             fi
 
-            # Create docker copy of the source code
-            mkdir ingest-api-$1/src
-            cp -r ../src/ingest-api/* ingest-api-$1/src
+            # Copy over the source code
+            mkdir ingest-ui/src
+            cp -r ../src/ingest-ui/* ingest-ui/src
+            # Also explicitly copy the .env file
+            cp ../src/ingest-ui/.env ingest-ui/src
 
-            # Only mount the VERSION file and BUILD file for localhost and dev
-            # On test/stage/prod, copy the VERSION file and BUILD file to image
-            if [[ "$1" != "localhost" && "$1" != "dev" ]]; then
-                cp VERSION ingest-api-$1/src
-                cp BUILD ingest-api-$1/src
-            fi
-
-            docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api build
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui build
         elif [ "$2" = "start" ]; then
-            docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api up -d
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui up -d
         elif [ "$2" = "stop" ]; then
-            docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api stop
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui stop
         elif [ "$2" = "down" ]; then
-            docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api down
+            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui down
         fi
     fi
 fi

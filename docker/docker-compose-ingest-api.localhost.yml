@@ -10,14 +10,24 @@ services:
         # The commons github branch to be used during image build (default to master if not set or null)
         - COMMONS_BRANCH=${COMMONS_BRANCH:-master}
     # Build the image with name and tag
-    image: ingest-api:1.14.1
+    # Exit with an error message containing err if unset or empty in the environment
+    image: ingest-api:${INGEST_API_VERSION:?err}
     hostname: ingest-api
     container_name: ingest-api
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       - HOST_GID=${HOST_GID:-1000}
       - HOST_UID=${HOST_UID:-1000}
       - HOST_GLOBUS_MOUNT_DIR=/hubmap-data
     volumes:
+      # Mount the VERSION file and BUILD file
+      - "../VERSION:/usr/src/app/src/VERSION"
+      - "../BUILD:/usr/src/app/src/BUILD"
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
       # Mount the logging to container
