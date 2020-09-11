@@ -1,6 +1,6 @@
 {
   "name": "ingest-ui",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -22,7 +22,7 @@
     "react-tooltip": "^3.11.1"
   },
   "devDependencies": {
-    "react-scripts": "^3.3.1"
+    "react-scripts": "^3.4.3"
   },
   "scripts": {
     "start": "react-scripts start",

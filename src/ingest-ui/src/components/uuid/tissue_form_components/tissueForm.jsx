@@ -351,9 +351,7 @@ class TissueForm extends Component {
       case "protocol":
         this.setState({ protocol: value });
         if (
-          !validateRequired(value) &&
-          !validateRequired(this.protocolFile.current.value) &&
-          !validateRequired(this.state.protocol_file_name)
+          !validateRequired(value)
         ) {
           this.setState(prevState => ({
             formErrors: {
