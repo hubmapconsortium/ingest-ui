@@ -242,8 +242,8 @@ class App extends Component {
           <Router>
             <Switch>
               <Route path="/" exact component={Main} />
-              <Route path="/ids" exact component={UUIDEntrance} />
-              <Route path="/ingest" exact component={IngestEntrance} />
+              <Route path="/donors-samples" exact component={UUIDEntrance} />
+              <Route path="/datasets" exact component={IngestEntrance} />
             </Switch>
           </Router>
 
