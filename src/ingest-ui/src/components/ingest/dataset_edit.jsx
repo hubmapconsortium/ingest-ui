@@ -331,7 +331,9 @@ class DatasetEdit extends Component {
         break;
       case "collection":
         let ret = this.state.collections.filter((c) => {
-          return c.label.toLowerCase().includes(value.toLowerCase());
+          if(c.label){
+            return c.label.toLowerCase().includes(value.toLowerCase());
+          }
         });
         this.setState({
           collection: value,
