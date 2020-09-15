@@ -15,7 +15,7 @@ class Main extends Component {
                 Register donors, organs and tissue
                       </p>
               <Link className="btn btn-primary"
-                to="/ids" onClick={this.handleEnterIngest}
+                to="/donors-samples" onClick={this.handleEnterIngest}
               >Enter</Link>
             </div>
           </div>
@@ -25,7 +25,7 @@ class Main extends Component {
             <div className="card-body">
               <h5 className="card-title">HuBMAP Data Ingest</h5>
               <p className="card-text">Enter and manage HuBMAP data</p>
-              <Link className="btn btn-primary" to="/ingest" onClick={this.handleEnterIngest}>Enter</Link>
+              <Link className="btn btn-primary" to="/datasets" onClick={this.handleEnterIngest}>Enter</Link>
             </div>
           </div>
         </div>
