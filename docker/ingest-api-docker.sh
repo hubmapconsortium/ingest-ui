@@ -109,8 +109,8 @@ else
                 fi
                 
                 # Copy over the one files
-                cp VERSION ingest-api-$1/src
-                cp BUILD ingest-api-$1/src
+                cp ../VERSION ingest-api-$1/src
+                cp ../BUILD ingest-api-$1/src
             fi
 
             docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api build
