@@ -99,6 +99,16 @@ else
             # Only mount the VERSION file and BUILD file for localhost and dev
             # On test/stage/prod, copy the VERSION file and BUILD file to image
             if [[ "$1" != "localhost" && "$1" != "dev" ]]; then
+                # Delete old VERSION and BUILD files if found
+                if [ -f "ingest-api-$1/src/VERSION" ]; then
+                    rm -rf ingest-api-$1/src/VERSION
+                fi
+                
+                if [ -f "ingest-api-$1/src/BUILD" ]; then
+                    rm -rf ingest-api-$1/src/BUILD
+                fi
+                
+                # Copy over the one files
                 cp VERSION ingest-api-$1/src
                 cp BUILD ingest-api-$1/src
             fi
