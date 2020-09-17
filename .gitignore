@@ -1,6 +1,12 @@
 #ignore emacs backup files
 *~
 
+BUILD
+
+# mounted VERSION and BUILD file
+src/ingest-api/BUILD
+src/ingest-api/VERSION
+
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
 

@@ -5,6 +5,7 @@ Created on Apr 23, 2019
 '''
 import sys
 import os
+from pathlib import Path
 import requests
 import argparse
 from flask import Flask, jsonify, abort, request, session, redirect, json, Response
@@ -82,6 +83,9 @@ def hello():
 @app.route('/status', methods = ['GET'])
 def status():
     response_data = {
+        # Use strip() to remove leading and trailing spaces, newlines, and tabs
+        'version': (Path(__file__).parent / 'VERSION').read_text().strip(),
+        'build': (Path(__file__).parent / 'BUILD').read_text().strip(),
         'neo4j_connection': False
     }
 

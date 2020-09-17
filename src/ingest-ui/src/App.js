@@ -1,8 +1,9 @@
-import React, { Component }from 'react';
+import React, { Component } from 'react';
 import './App.css';
 import Navigation from './components/Navbar.js';
 import Routes from './Routes';
 import Login from './components/uuid/login';
+import Main from './components/Main';
 import UUIDEntrance from './components/uuid/uuid_entrance';
 import IngestEntrance from './components/ingest/ingest_entrance';
 import CollectionsEntrance from './Collections/collections_entrance';
@@ -16,6 +17,7 @@ import {
 import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
+import { Route, BrowserRouter as Router, Switch, Link } from 'react-router-dom';
 
 class App extends Component {
   // The constructor is primarily used in React to set initial state or to bind methods
@@ -31,11 +33,11 @@ class App extends Component {
     }
 
     //set the system state if the URL includes 'collections'
-      if (window.location.href.includes("/collections/")){
-		this.setState({
-      		system: "collection"
-    	});
-      }
+    if (window.location.href.includes("/collections/")) {
+      this.setState({
+        system: "collection"
+      });
+    }
 
 
     // IE doesn't support the URL api
@@ -54,10 +56,10 @@ class App extends Component {
     const app_info = localStorage.getItem("info")
       ? JSON.parse(localStorage.getItem("info"))
       : {
-          name: "",
-          email: "",
-          globus_id: ""
-        };
+        name: "",
+        email: "",
+        globus_id: ""
+      };
     this.state = {
       // Using JSON.parse() to get the boolean value
       isAuthenticated: JSON.parse(localStorage.getItem("isAuthenticated")),
@@ -75,10 +77,10 @@ class App extends Component {
 
   componentDidMount() {
     if (localStorage.getItem("info") !== null) {
-      
-	  
 
-	  const config = {
+
+
+      const config = {
         headers: {
           Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
@@ -110,14 +112,14 @@ class App extends Component {
           if (err.response === undefined) {
             this.setState({
               web_services_error: true
-            }); 
+            });
           } else if (err.response.status === 401) {
             localStorage.setItem("isAuthenticated", false);
             // window.location.reload();
           } else if (err.response.status === 403) {
             this.setState({
               allowed: false
-            }); 
+            });
           }
         });
     }
@@ -140,8 +142,8 @@ class App extends Component {
         Logout
       </a>
     ) : (
-      ""
-    );
+        ""
+      );
 
     // Must wrap the componments in an enclosing tag
     return (
@@ -200,49 +202,6 @@ class App extends Component {
       // Must wrap the two componments in an enclosing tag
       html = (
         <div className="dataopts">
-          {this.state.registered === true &&
-            this.state.allowed === true &&
-            this.state.system === "" 
-              && (
-              <div className="row">
-                <div className="col-sm-6">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">HuBMAP ID System</h5>
-                      <p className="card-text">
-                        Register donors, organs and tissue
-                      </p>
-                      <button
-                        className="btn btn-primary"
-                        onClick={this.handleEnterUUID}
-                      >
-                        Enter
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-sm-6">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">HuBMAP Data Ingest</h5>
-                      <p className="card-text">Enter and manage HuBMAP data</p>
-                      <button
-                        className="btn btn-primary"
-                        onClick={this.handleEnterIngest}
-                      >
-                        Enter
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )} 
-          {this.state.system === "uuid" && 
-              <UUIDEntrance  />}
-          {this.state.system === "ingest" && 
-              <IngestEntrance  />}
-          {/**  {this.state.system === "collection" && 
-              <CollectionsEntrance  />} */}
           {this.state.web_services_error && (
             <div className="row">
               <div className="alert alert-warning col-sm-12 text-center">
@@ -280,6 +239,20 @@ class App extends Component {
               </div>
             </div>
           )}
+          <Router>
+            <Switch>
+              <Route path="/" exact component={Main} />
+              <Route path="/donors-samples" exact component={UUIDEntrance} />
+              <Route path="/datasets" exact component={IngestEntrance} />
+            </Switch>
+          </Router>
+
+          {/* {this.state.system === "uuid" && 
+              <UUIDEntrance  />}
+          {this.state.system === "ingest" && 
+              <IngestEntrance  />} */}
+          {/**  {this.state.system === "collection" && 
+              <CollectionsEntrance  />} */}
         </div>
       );
     }
@@ -287,7 +260,7 @@ class App extends Component {
     return html;
   }
 
-  onAction = e => {};
+  onAction = e => { };
 
   onIdle = e => {
     if (localStorage.getItem("isAuthenticated") === "true") {
@@ -321,23 +294,23 @@ class App extends Component {
     }
   };
 
-  onActive = e => {};
+  onActive = e => { };
 
   hideModal = () => {
     clearTimeout(this.state.timer);
     this.setState({ show: false });
   };
   getSystem = (system) => {
-   // This is the system data from Navigation
-   this.setState(
-   {
-      system: system
-   })
-}
+    // This is the system data from Navigation
+    this.setState(
+      {
+        system: system
+      })
+  }
 
   // Display the final output
   render() {
-	const collections =   window.location.href.includes("/collections")?true:false;
+    const collections = window.location.href.includes("/collections") ? true : false;
     //const system = this.state.system;
     return (
       <div>
@@ -366,16 +339,16 @@ class App extends Component {
         </Modal>
         {this.renderHeader()}
         <div id="content" className="container">
-			{!collections && (
-              this.renderContent()
-			)}
-           <div className="App">
-             {/**  <Navigation /> */}
-	          <Routes />
-	       </div>
-		  
-		</div>
-	   
+          {!collections && (
+            this.renderContent()
+          )}
+          <div className="App">
+            {/**  <Navigation /> */}
+            <Routes />
+          </div>
+
+        </div>
+
       </div>
     );
   }
