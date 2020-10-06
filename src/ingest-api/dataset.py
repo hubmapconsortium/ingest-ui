@@ -172,13 +172,30 @@ class Dataset(object):
         return return_list                    
 
     @staticmethod
-    def get_dataset(driver, identifier):
+    def get_dataset(driver, identifier, conf_data=None):
         try:
-            dataset_record = Entity.get_entity_metadata(driver, identifier)
-            if 'collection_uuid' in dataset_record and (len(str(dataset_record['collection_uuid'])) > 0):
-                dataset_collection = Entity.get_entity(driver, dataset_record['collection_uuid'])
-                dataset_record['collection'] = dataset_collection
-            return dataset_record
+            # temporary fix.  The metadata nodes will be redone in the future.
+            # for now, retrieve the dataset_record and update the uuid returned by the Entity.get_entity_metadata method
+            dataset_record = Entity.get_entity(driver, identifier)
+            dataset_metadata_record = Entity.get_entity_metadata(driver, identifier)
+            dataset_metadata_record[HubmapConst.UUID_ATTRIBUTE] = dataset_record[HubmapConst.UUID_ATTRIBUTE]
+            
+            if 'collection_uuid' in dataset_metadata_record and (len(str(dataset_metadata_record['collection_uuid'])) > 0):
+                dataset_collection = Entity.get_entity(driver, dataset_metadata_record['collection_uuid'])
+                dataset_metadata_record['collection'] = dataset_collection
+            
+            # also add a new attribute called local_directory_full_path
+            # this will contain a full path calculated from the dataset's data access level
+            if conf_data != None:
+                ds = Dataset(conf_data)
+                access_level = dataset_metadata_record[HubmapConst.DATA_ACCESS_LEVEL]
+                group_uuid = dataset_metadata_record[HubmapConst.PROVENANCE_GROUP_UUID_ATTRIBUTE]
+                metadata = Metadata(conf_data['APP_CLIENT_ID'], conf_data['APP_CLIENT_SECRET'], conf_data['UUID_WEBSERVICE_URL'])
+                provenance_group = metadata.get_group_by_identifier(group_uuid)
+                full_path = ds.get_dataset_directory(dataset_record[HubmapConst.UUID_ATTRIBUTE], provenance_group['displayname'], access_level)
+                dataset_metadata_record['local_directory_full_path'] = full_path
+
+            return dataset_metadata_record
         except BaseException as be:
             pprint(be)
             raise be
