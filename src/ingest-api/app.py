@@ -274,7 +274,7 @@ def get_dataset(identifier):
         uuid = json.loads(r.text)[0]['hmuuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        dataset_record = Dataset.get_dataset(driver, uuid)
+        dataset_record = Dataset.get_dataset(driver, uuid, app.config)
         conn.close()
         return jsonify( { 'dataset': dataset_record } ), 200
     
