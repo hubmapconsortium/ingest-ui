@@ -1,12 +1,15 @@
 import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import axios from 'axios';
 
 class MetadataUpload extends Component {
   state = {
     metadata_file: "",
     metadata_file_name: "Choose a file",
-    metadataFileValid: true
+    metaddata_file_uuid: "",
+    metadataFileValid: true,
+    uploadPercentage: 0,
   };
 
   constructor(props) {
@@ -21,42 +24,67 @@ class MetadataUpload extends Component {
     });
   }
 
-  handleMetadataFileChange = e => {
-    let arr = e.target.value.split("\\");
-    let file_name = arr[arr.length - 1];
-    if (file_name !== "") {
-      this.setState({
-        metadata_file: e.target.value,
-        metadata_file_name: file_name,
-        metadataFileValid: true
-      });
-    } else {
-      this.setState({
-        metadata_file: e.target.value,
-        metadata_file_name: file_name,
-        metadataFileValid: false
-      });
-    }
-  };
+  handleMetadataFileChange = ({ target: { files } }) => {
+    if (files[0]) {
+      const file_name = files[0].name;
+      this.props.onFileChange('metadata', this.props.id)
+        .then(() => {
+          if (file_name !== "") {
+            this.setState({
+              metadata_file: files[0],
+              metadata_file_name: file_name,
+              metadataFileValid: true
+            }, () => {
+              let data = new FormData();
+              data.append('file', files[0]);
+              data.append('form_id', this.props.formId);
+              data.append('file_type', 'metadata');
 
-  validate = () => {
-    if (this.state.metadata_file === "") {
-      this.setState({
-        metadataFileValid: false
-      });
+              const options = {
+                headers: {
+                  Authorization:
+                    "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+                  MAuthorization: "MBearer " + localStorage.getItem("info"),
+                  "Content-Type": "multipart/form-data"
+                },
+                onUploadProgress: (progressEvent) => {
+                  const { loaded, total } = progressEvent;
+                  let percent = Math.floor((loaded * 100) / total);
+                  if (percent < 100) {
+                    this.setState({ uploadPercentage: percent })
+                  }
+                }
+              };
+
+              axios.post(`${process.env.REACT_APP_SPECIMEN_API_URL}/files`, data, options)
+                .then(res => {
+                  this.setState({ uploadPercentage: 100 }, () => {
+                    setTimeout(() => {
+                      this.setState({ uploadPercentage: 0 })
+                    }, 1000);
+                  })
+                })
+            });
+          }
+        })
+        .catch(() => {
+          this.setState({
+            metadata_file: null,
+            metadata_file_name: "",
+            metadataFileValid: false
+          });
+        })
     }
-  };
+  }
 
   render() {
+    const { uploadPercentage } = this.state;
     return (
       <div className="card mt-3 mb-3">
         <div className="card-body">
           <div className="row">
-            <div className="col-sm-3">
-              <h4>Metadata {this.props.id}</h4>
-            </div>
             {!this.props.readOnly && (
-              <div className="col-sm-2 offset-sm-7 text-right">
+              <div className="col-sm-2 offset-sm-10 text-right">
                 <button
                   type="button"
                   className="btn btn-danger btn-sm"
@@ -67,7 +95,7 @@ class MetadataUpload extends Component {
               </div>
             )}
           </div>
-          <div className="form-group row">
+          <div className="row">
             {!this.props.readOnly && (
               <div className="col-sm-9">
                 <div className="input-group mb-3">
@@ -82,6 +110,8 @@ class MetadataUpload extends Component {
                       id={"metadata_file_" + +this.props.id}
                       onChange={this.handleMetadataFileChange}
                       ref={this.metadata_file}
+                      disabled={this.state.metadata_file_name != "" &&
+                                this.state.metadata_file_name != "Choose a file"}
                     />
                     <label className="custom-file-label" htmlFor="metadata">
                       {this.state.metadata_file_name}
@@ -96,9 +126,25 @@ class MetadataUpload extends Component {
               </div>
             )}
           </div>
+          {uploadPercentage > 0 &&
+            (<div className="row">
+              <div className="col-sm-12">
+                <div className="progress w-100">
+                  <div
+                    className={`progress-bar progress-bar-striped progress-bar-animated`}
+                    role="progressbar"
+                    aria-valuenow={uploadPercentage}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    style={{ width: `${uploadPercentage}%` }}>
+                    {uploadPercentage}%
+                  </div>
+                </div>
+              </div>
+            </div>)}
           <div className="row">
             <div className="col-sm-6 offset-sm-3">
-              <span className="text-danger">{this.props.error}</span>
+              <span className="text-danger">{this.props.error || this.state.error}</span>
             </div>
           </div>
         </div>

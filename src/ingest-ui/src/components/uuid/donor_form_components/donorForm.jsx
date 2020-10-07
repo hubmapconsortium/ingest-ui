@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
-import ImageUpload from "./imageUpload";
+import ImageUpload from "../imageUpload";
 import MetadataUpload from "../metadataUpload";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -23,6 +23,7 @@ import GroupModal from "../groupModal";
 
 class DonorForm extends Component {
   state = {
+    form_id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
     visit: "",
     lab: "",
     lab_donor_id: "",
@@ -34,6 +35,10 @@ class DonorForm extends Component {
 
     images: [],
     metadatas: [],
+    new_metadatas: [],
+    deleted_metadatas: [],
+    new_images: [],
+    deleted_images: [],
     protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
 
@@ -49,7 +54,9 @@ class DonorForm extends Component {
       protocol_file: "",
       description: "",
       metadata_file: "",
-	  open_consent: false,
+      open_consent: false,
+      metadatas: "",
+      images: "",
     },
 
     show: false
@@ -108,16 +115,16 @@ class DonorForm extends Component {
             .replace(/\\/g, "\\\\")
             .replace(/'/g, '"')
         );
-      } catch (e) {}
+      } catch (e) { }
 
-	  this.setState({
-		open_consent: false
+      this.setState({
+        open_consent: false
       });
-	  if (this.props.editingEntity.properties.open_consent) {
-		  this.setState({
-		  	open_consent: this.props.editingEntity.properties.open_consent.toLowerCase() === "true" ? true: false
-		  });
-	  }
+      if (this.props.editingEntity.properties.open_consent) {
+        this.setState({
+          open_consent: this.props.editingEntity.properties.open_consent.toLowerCase() === "true" ? true : false
+        });
+      }
 
       this.setState({
         author: this.props.editingEntity.properties.provenance_user_email,
@@ -295,11 +302,11 @@ class DonorForm extends Component {
           selected_group: value
         });
         break;
-	  case "open_consent":
-		this.setState({
-		  open_consent: e.target.checked
-		});
-		break;
+      case "open_consent":
+        this.setState({
+          open_consent: e.target.checked
+        });
+        break;
       default:
         break;
     }
@@ -344,19 +351,133 @@ class DonorForm extends Component {
     });
   };
 
-  handleDeleteImage = imageId => {
-    const images = this.state.images.filter(i => i.id !== imageId);
+  handleDeleteImage = id => {
+    const deleted_image = this.state.images.find(i => i.id === id);
+    const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
+    let deleted_images = [...this.state.deleted_images];
+    if (new_images.length === this.state.new_images.length){
+      deleted_images.push(deleted_image.file_name);
+    }
+    const images = this.state.images.filter(i => i.id !== id);
     this.setState({
-      images
+      images,
+      new_images,
+      deleted_images
     });
   };
 
-  handleDeleteMetadata = metadataId => {
-    const metadatas = this.state.metadatas.filter(i => i.id !== metadataId);
+  handleDeleteMetadata = id => {
+    const deleted_metadata = this.state.metadatas.find(i => i.id === id);
+    const new_metadatas = this.state.new_metadatas.filter(dm => dm !== deleted_metadata.file_name);
+    let deleted_metadatas = [...this.state.deleted_metadatas];
+    if (new_metadatas.length === this.state.new_metadatas.length){
+      deleted_metadatas.push(deleted_metadata.file_name);
+    }
+    const metadatas = this.state.metadatas.filter(i => i.id !== id);
     this.setState({
-      metadatas
+      metadatas,
+      new_metadatas,
+      deleted_metadatas
     });
   };
+
+  onFileChange = (type, id) => {
+    switch (type) {
+      case "metadata": {
+        const i = this.state.metadatas.findIndex(i => i.id === id);
+        let metadatas = [...this.state.metadatas];
+        metadatas[i].file_name = metadatas[i].ref.current.metadata_file.current.files[0].name;
+        let new_metadatas = [...this.state.new_metadatas];
+        new_metadatas.push(metadatas[i].file_name);
+        return new Promise((resolve, reject) => {
+          this.setState({
+            metadatas
+          }, () => {
+            if (!this.validateMetadataFiles(id)) {
+              metadatas[i].file_name = "";
+              this.setState({
+                metadatas
+              })
+              reject();
+            } else {
+              this.setState({
+                new_metadatas
+              })
+              resolve();
+            }
+          });
+        });
+        break;
+      }
+      case "image": {
+        const i = this.state.images.findIndex(i => i.id === id);
+        let images = [...this.state.images];
+        images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
+        let new_images = [...this.state.new_images];
+        new_images.push(images[i].file_name);
+        return new Promise((resolve, reject) => {
+          this.setState({
+            images,
+            new_images
+          }, () => {
+            if (!this.validateImagesFiles(id)) {
+              images[i].file_name = "";
+              this.setState({
+                images
+              })
+              reject();
+            } else {
+              this.setState({
+                new_images
+              })
+              resolve();
+            }
+          });
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  validateMetadataFiles = id => {
+    const file_names = this.state.metadatas.map(m => {
+      return m.file_name;
+    })
+
+    // Check if duplicated file name
+    if (file_names.length > new Set(file_names).size) {
+      const i = this.state.metadatas.findIndex(i => i.id === id);
+      let metadatas = [...this.state.metadatas];
+      metadatas[i].error = "Duplicate file name is not allowed."
+      this.setState({ metadatas })
+      return false;
+    }
+    const i = this.state.metadatas.findIndex(i => i.id === id);
+    let metadatas = [...this.state.metadatas];
+    metadatas[i].error = ""
+    this.setState({ metadatas })
+
+    return true;
+  }
+
+  validateImagesFiles = id => {
+    const file_names = this.state.images.map(i => {
+      return i.file_name;
+    })
+
+    // Check if duplicated file name
+    if (file_names.length > new Set(file_names).size) {
+      const i = this.state.images.findIndex(i => i.id === id);
+      let images = [...this.state.images];
+      images[i].error = "Duplicate file name is not allowed."
+      this.setState({ images })
+      return false;
+    }
+
+    return true;
+  }
 
   handleSubmit = e => {
     e.preventDefault();
@@ -378,84 +499,51 @@ class DonorForm extends Component {
           label: this.state.identifying_name,
           protocol: this.state.protocol,
           visit: this.state.visit,
-          protocol_file:
-            this.state.protocol_file_name === "Choose a file"
-              ? ""
-              : this.state.protocol_file_name,
           description: this.state.description,
-          metadata_file:
-            this.state.metadata_file_name === "Choose a file"
-              ? ""
-              : this.state.metadata_file_name,
-          images: [],
           metadatas: [],
-		  open_consent: this.state.open_consent
+          new_metadatas: this.state.new_metadatas,
+          deleted_metadatas: this.state.deleted_metadatas,
+          images: [],
+          new_images: this.state.new_images,
+          deleted_images: this.state.deleted_images,
+          open_consent: this.state.open_consent,
+          form_id: this.state.form_id
         };
         if (this.state.selected_group) {
           data["user_group_uuid"] = this.state.selected_group;
         }
 
-        var formData = new FormData();
-        formData.append("protocol_file", this.state.protocol_file);
-        formData.append("metadata_file", this.state.metadata_file);
         this.state.metadatas.forEach(i => {
-          if (i.ref.current.metadata_file.current.files[0]) {
-            data.metadatas.push({
-              id: "metadata_" + i.id,
-              file_name: i.ref.current.metadata_file.current.files[0].name
-            });
-            formData.append(
-              "metadata_" + i.id,
-              i.ref.current.metadata_file.current.files[0]
-            );
-          } else {
-            data.metadatas.push({
-              id: "metadata_" + i.id,
-              file_name: i.file_name
-            });
-          }
+          data.metadatas.push({
+            id: "metadata_" + i.id,
+            file_name: i.file_name
+          });
         });
         this.state.images.forEach(i => {
-          if (i.ref.current.image_file.current.files[0]) {
-            data.images.push({
-              id: "image_" + i.id,
-              file_name: i.ref.current.image_file.current.files[0].name,
-              description: i.ref.current.image_file_description.current.value.replace(
-                /"/g,
-                '\\"'
-              )
-            });
-            formData.append(
-              "image_" + i.id,
-              i.ref.current.image_file.current.files[0]
-            );
-          } else {
-            data.images.push({
-              id: "image_" + i.id,
-              file_name: i.file_name,
-              description: i.ref.current.image_file_description.current.value.replace(
-                /"/g,
-                '\\"'
-              )
-            });
-          }
+          data.images.push({
+            id: "image_" + i.id,
+            file_name: i.file_name,
+            description: i.ref.current.image_file_description.current.value.replace(
+              /"/g,
+              '\\"'
+            )
+          });
         });
-        formData.append("data", JSON.stringify(data));
 
         const config = {
           headers: {
             Authorization:
               "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
             MAuthorization: "MBearer " + localStorage.getItem("info"),
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "application/json"
           }
         };
 
         if (this.props.editingEntity) {
           axios
             .put(
-              `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}`,
-              formData,
+              `${process.env.REACT_APP_SPECIMEN_API_URL}/donor/${this.props.editingEntity.uuid}`,
+              data,
               config
             )
             .then(res => {
@@ -467,8 +555,8 @@ class DonorForm extends Component {
         } else {
           axios
             .post(
-              `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens`,
-              formData,
+              `${process.env.REACT_APP_SPECIMEN_API_URL}/donor`,
+              data,
               config
             )
             .then(res => {
@@ -664,64 +752,6 @@ class DonorForm extends Component {
       }
     }
 
-    // if (!this.props.editingEntity) {
-    this.state.images.forEach((image, index) => {
-      if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-        isValid = false;
-        image.ref.current.validate();
-      }
-      if (
-        !validateRequired(
-          image.ref.current.image_file_description.current.value
-        )
-      ) {
-        isValid = false;
-        image.ref.current.validate();
-      }
-    });
-    // }
-
-    const usedFileName = new Set();
-    this.state.images.forEach((image, index) => {
-      usedFileName.add(image.file_name);
-
-      if (image.ref.current.image_file.current.files[0]) {
-        if (
-          usedFileName.has(image.ref.current.image_file.current.files[0].name)
-        ) {
-          image["error"] = "Duplicated file name is not allowed.";
-          isValid = false;
-        }
-      }
-    });
-
-    if (!this.props.editingEntity) {
-      // Creating Donor
-      this.state.metadatas.forEach((metadata, index) => {
-        if (
-          !validateRequired(metadata.ref.current.metadata_file.current.value)
-        ) {
-          isValid = false;
-          metadata.ref.current.validate();
-        }
-      });
-    }
-
-    this.state.metadatas.forEach((metadata, index) => {
-      usedFileName.add(metadata.file_name);
-
-      if (metadata.ref.current.metadata_file.current.files[0]) {
-        if (
-          usedFileName.has(
-            metadata.ref.current.metadata_file.current.files[0].name
-          )
-        ) {
-          metadata["error"] = "Duplicated file name is not allowed.";
-          isValid = false;
-        }
-      }
-    });
-
     return isValid;
   }
 
@@ -778,7 +808,7 @@ class DonorForm extends Component {
               </span>
             </div>
             <form onSubmit={this.handleSubmit}>
-              <div className="form-group row d-none">
+              <div className="form-groupd row d-none">
                 <label
                   htmlFor="visit"
                   className="col-sm-3 col-form-label text-right"
@@ -1009,7 +1039,11 @@ class DonorForm extends Component {
                           </label>
                           {this.state.formErrors.protocol_file &&
                             this.state.formErrors.protocol_file !==
-                              "required" && (
+                            <div className="row">
+            <div className="progress">
+              <div className="progress-bar" role="progressbar" style={{ width: '25%' }} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>  "required" && (
                               <div className="invalid-feedback">
                                 {this.state.formErrors.protocol_file}
                               </div>
@@ -1082,75 +1116,75 @@ class DonorForm extends Component {
 			)} */}
               {(!this.props.readOnly ||
                 this.state.description !== undefined) && (
-                <div className="form-group row">
-                  <label
-                    htmlFor="description"
-                    className="col-sm-3 col-form-label text-right"
-                  >
-                    Description
+                  <div className="form-group row">
+                    <label
+                      htmlFor="description"
+                      className="col-sm-3 col-form-label text-right"
+                    >
+                      Description
                   </label>
-                  {!this.props.readOnly && (
-                    <div className="col-sm-8">
-                      <textarea
-                        type="text"
-                        name="description"
-                        id="description"
-                        className="form-control"
-                        onChange={this.handleInputChange}
-                        value={this.state.description}
-                      />
-                    </div>
-                  )}
-                  {this.props.readOnly && (
-                    <div className="col-sm-8 col-form-label">
-                      <p>{truncateString(this.state.description, 400)}</p>
-                    </div>
-                  )}
-                  <div className="col-sm-1 my-auto text-center">
-                    <span className="invisible text-danger inline-icon">
-                      <FontAwesomeIcon icon={faQuestionCircle} />
-                    </span>
-                    <span>
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="description_tooltip"
-                      />
-                      <ReactTooltip
-                        id="description_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <h4>
-                          Free text field to enter a description of the donor
+                    {!this.props.readOnly && (
+                      <div className="col-sm-8">
+                        <textarea
+                          type="text"
+                          name="description"
+                          id="description"
+                          className="form-control"
+                          onChange={this.handleInputChange}
+                          value={this.state.description}
+                        />
+                      </div>
+                    )}
+                    {this.props.readOnly && (
+                      <div className="col-sm-8 col-form-label">
+                        <p>{truncateString(this.state.description, 400)}</p>
+                      </div>
+                    )}
+                    <div className="col-sm-1 my-auto text-center">
+                      <span className="invisible text-danger inline-icon">
+                        <FontAwesomeIcon icon={faQuestionCircle} />
+                      </span>
+                      <span>
+                        <FontAwesomeIcon
+                          icon={faQuestionCircle}
+                          data-tip
+                          data-for="description_tooltip"
+                        />
+                        <ReactTooltip
+                          id="description_tooltip"
+                          place="top"
+                          type="info"
+                          effect="solid"
+                        >
+                          <h4>
+                            Free text field to enter a description of the donor
                         </h4>
-                      </ReactTooltip>
-                    </span>
+                        </ReactTooltip>
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               <div className="form-group row">
                 <label
-                    htmlFor="donor_metadata_status"
-                    className="col-sm-3 col-form-label text-right"
-                  >
-                    Donor Metadata Status
+                  htmlFor="donor_metadata_status"
+                  className="col-sm-3 col-form-label text-right"
+                >
+                  Donor Metadata Status
                   </label>
-                  <div className="col-sm-8 my-auto">
-                    {this.state.donor_metadata_status || (
-                      <span className="badge badge-secondary">No value set</span>
-                    )}
-                    {this.state.donor_metadata_status === 0 && (
-                      <span className="badge badge-secondary">No metadata</span>
-                    )}
-                    {this.state.donor_metadata_status === 1 && (
-                      <span className="badge badge-primary">Metadata provided</span>
-                    )}
-                    {this.state.donor_metadata_status === 2 && (
-                      <span className="badge badge-primary">Metadata curated</span>
-                    )}
-                  </div>
+                <div className="col-sm-8 my-auto">
+                  {this.state.donor_metadata_status || (
+                    <span className="badge badge-secondary">No value set</span>
+                  )}
+                  {this.state.donor_metadata_status === 0 && (
+                    <span className="badge badge-secondary">No metadata</span>
+                  )}
+                  {this.state.donor_metadata_status === 1 && (
+                    <span className="badge badge-primary">Metadata provided</span>
+                  )}
+                  {this.state.donor_metadata_status === 2 && (
+                    <span className="badge badge-primary">Metadata curated</span>
+                  )}
+                </div>
               </div>
               {(!this.props.readOnly || this.state.metadatas.length > 0) && (
                 <div className="form-group row">
@@ -1187,6 +1221,9 @@ class DonorForm extends Component {
                         ref={metadata.ref}
                         error={metadata.error}
                         readOnly={this.props.readOnly}
+                        formId={this.state.form_id}
+                        onFileChange={this.onFileChange}
+                        validate={this.validateMetadataFiles}
                         onDelete={this.handleDeleteMetadata}
                       />
                     ))}
@@ -1258,6 +1295,9 @@ class DonorForm extends Component {
                         ref={image.ref}
                         error={image.error}
                         readOnly={this.props.readOnly}
+                        formId={this.state.form_id}
+                        onFileChange={this.onFileChange}
+                        validate={this.validateMetadataFiles}
                         onDelete={this.handleDeleteImage}
                       />
                     ))}

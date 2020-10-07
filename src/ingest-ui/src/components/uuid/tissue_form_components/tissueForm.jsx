@@ -21,7 +21,7 @@ import Protocol from "./protocol";
 import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES } from "../../../constants";
-import ImageUpload from "../donor_form_components/imageUpload";
+import ImageUpload from "../imageUpload";
 import MetadataUpload from "../metadataUpload";
 import LabIDsModal from "../labIdsModal";
 import RUIModal from "./ruiModal";
@@ -630,6 +630,104 @@ class TissueForm extends Component {
       metadata_file: ""
     });
   };
+
+  onFileChange = (type, id) => {
+    switch (type) {
+      case "metadata": {
+        const i = this.state.metadatas.findIndex(i => i.id === id);
+        let metadatas = [...this.state.metadatas];
+        metadatas[i].file_name = metadatas[i].ref.current.metadata_file.current.files[0].name;
+        let new_metadatas = [...this.state.new_metadatas];
+        new_metadatas.push(metadatas[i].file_name);
+        return new Promise((resolve, reject) => {
+          this.setState({
+            metadatas
+          }, () => {
+            if (!this.validateMetadataFiles(id)) {
+              metadatas[i].file_name = "";
+              this.setState({
+                metadatas
+              })
+              reject();
+            } else {
+              this.setState({
+                new_metadatas
+              })
+              resolve();
+            }
+          });
+        });
+        break;
+      }
+      case "image": {
+        const i = this.state.images.findIndex(i => i.id === id);
+        let images = [...this.state.images];
+        images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
+        let new_images = [...this.state.new_images];
+        new_images.push(images[i].file_name);
+        return new Promise((resolve, reject) => {
+          this.setState({
+            images,
+            new_images
+          }, () => {
+            if (!this.validateImagesFiles(id)) {
+              images[i].file_name = "";
+              this.setState({
+                images
+              })
+              reject();
+            } else {
+              this.setState({
+                new_images
+              })
+              resolve();
+            }
+          });
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  validateMetadataFiles = id => {
+    const file_names = this.state.metadatas.map(m => {
+      return m.file_name;
+    })
+
+    // Check if duplicated file name
+    if (file_names.length > new Set(file_names).size) {
+      const i = this.state.metadatas.findIndex(i => i.id === id);
+      let metadatas = [...this.state.metadatas];
+      metadatas[i].error = "Duplicate file name is not allowed."
+      this.setState({ metadatas })
+      return false;
+    }
+    const i = this.state.metadatas.findIndex(i => i.id === id);
+    let metadatas = [...this.state.metadatas];
+    metadatas[i].error = ""
+    this.setState({ metadatas })
+
+    return true;
+  }
+
+  validateImagesFiles = id => {
+    const file_names = this.state.images.map(i => {
+      return i.file_name;
+    })
+
+    // Check if duplicated file name
+    if (file_names.length > new Set(file_names).size) {
+      const i = this.state.images.findIndex(i => i.id === id);
+      let images = [...this.state.images];
+      images[i].error = "Duplicate file name is not allowed."
+      this.setState({ images })
+      return false;
+    }
+
+    return true;
+  }
 
   handleAddImage = () => {
     let newId = 1;
@@ -2280,7 +2378,10 @@ class TissueForm extends Component {
 	                      file_name={metadata.file_name}
 	                      ref={metadata.ref}
 	                      error={metadata.error}
-	                      readOnly={this.props.readOnly}
+                        readOnly={this.props.readOnly}
+                        formId={this.state.form_id}
+                        onFileChange={this.onFileChange}
+                        validate={this.validateMetadataFiles}
 	                      onDelete={this.handleDeleteMetadata}
 	                    />
 	                  ))}
@@ -2348,7 +2449,10 @@ class TissueForm extends Component {
 	                      description={image.description}
 	                      ref={image.ref}
 	                      error={image.error}
-	                      readOnly={this.props.readOnly}
+                        readOnly={this.props.readOnly}
+                        formId={this.state.form_id}
+                        onFileChange={this.onFileChange}
+                        validate={this.validateMetadataFiles}
 	                      onDelete={this.handleDeleteImage}
 	                    />
 	                  ))}
