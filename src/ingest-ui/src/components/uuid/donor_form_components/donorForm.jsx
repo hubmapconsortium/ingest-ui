@@ -752,6 +752,64 @@ class DonorForm extends Component {
       }
     }
 
+    // if (!this.props.editingEntity) {
+    this.state.images.forEach((image, index) => {
+      if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
+        isValid = false;
+        image.ref.current.validate();
+      }
+      if (
+        !validateRequired(
+          image.ref.current.image_file_description.current.value
+        )
+      ) {
+        isValid = false;
+        image.ref.current.validate();
+      }
+    });
+    // }
+
+    const usedFileName = new Set();
+    this.state.images.forEach((image, index) => {
+      usedFileName.add(image.file_name);
+
+      if (image.ref.current.image_file.current.files[0]) {
+        if (
+          usedFileName.has(image.ref.current.image_file.current.files[0].name)
+        ) {
+          image["error"] = "Duplicated file name is not allowed.";
+          isValid = false;
+        }
+      }
+    });
+
+    if (!this.props.editingEntity) {
+      // Creating Donor
+      this.state.metadatas.forEach((metadata, index) => {
+        if (
+          !validateRequired(metadata.ref.current.metadata_file.current.value)
+        ) {
+          isValid = false;
+          metadata.ref.current.validate();
+        }
+      });
+    }
+
+    this.state.metadatas.forEach((metadata, index) => {
+      usedFileName.add(metadata.file_name);
+
+      if (metadata.ref.current.metadata_file.current.files[0]) {
+        if (
+          usedFileName.has(
+            metadata.ref.current.metadata_file.current.files[0].name
+          )
+        ) {
+          metadata["error"] = "Duplicated file name is not allowed.";
+          isValid = false;
+        }
+      }
+    });
+
     return isValid;
   }
 
