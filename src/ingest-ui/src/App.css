@@ -343,4 +343,9 @@ caption {
 	font-weight:bold;
 }
 
+/* override bootstrap */
+.carousel-item {
+  margin-right: 0;
+}
+
 
