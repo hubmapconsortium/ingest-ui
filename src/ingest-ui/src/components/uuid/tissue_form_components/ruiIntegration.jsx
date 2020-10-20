@@ -63,10 +63,10 @@ class RUIIntegration extends Component {
       embedded: true,
       tutorialMode: false,
       homeUrl: '/donors-samples',
-      user: {
-        firstName: 'John',
-        lastName: 'Smith',
-        organ: 'Heart'
+      organ: {
+        name: 'kidney',
+        sex: 'female',
+        side: 'left'
       },
       register: function (str) {
         console.log(str);
