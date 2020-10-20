@@ -36,32 +36,6 @@ class RUIIntegration extends Component {
    */
 
   componentDidMount() {
-
-    // window.hideSignupScreen = true;
-    // const unityInstance = window.UnityLoader.instantiate(
-    //   "unityContainer",
-    //   "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-3d-registration@staging/Build/output.json",
-    //   { onProgress: window.UnityProgress }
-    // );
-    // this.setState({
-    //   unityInstance: unityInstance,
-    // });
-
-    // // Callback when a user submits their RUI data;
-    // // str is a JSON-encoded string.
-    // var self = this;
-    // window.ruiRegistrationCallback = function (str) {
-    //   self.setState({ jsonRUI: str });
-    //   self.props.handleJsonRUI(str);
-    //   self.handleCloseScreenClick();
-    //   //self.setState({close_rui:false});
-    // };
-    // var css_file = document.createElement("link");
-    // css_file.ref = "stylesheet";
-    // css_file.type = "text/css";
-    // css_file.href = "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-ui@staging/rui/styles.css";
-    // document.head.appendChild(css_file);
-
     const runtime_script = document.createElement("script");
     runtime_script.src = "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-ui@staging/rui/runtime.js";
     runtime_script.async = true;
