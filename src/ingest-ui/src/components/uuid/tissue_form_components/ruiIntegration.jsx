@@ -61,6 +61,7 @@ class RUIIntegration extends Component {
     // css_file.type = "text/css";
     // css_file.href = "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-ui@staging/rui/styles.css";
     // document.head.appendChild(css_file);
+
     const runtime_script = document.createElement("script");
     runtime_script.src = "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-ui@staging/rui/runtime.js";
     runtime_script.async = true;
@@ -85,12 +86,13 @@ class RUIIntegration extends Component {
     var self = this;
     window.ruiConfig = {
       // Custom configuration
-      embedded: false,
+      embedded: true,
       tutorialMode: false,
       homeUrl: '/donors-samples',
       user: {
-        firstName: "Desheng",
-        lastName: "Li"
+        firstName: 'John',
+        lastName: 'Smith',
+        organ: 'Heart'
       },
       register: function (str) {
         console.log(str);
@@ -98,7 +100,7 @@ class RUIIntegration extends Component {
         self.props.handleJsonRUI(str);
         self.handleCloseScreenClick();
       },
-      useDownload: false
+      useDownload: false,
     };
 
     this.updateDimensions();
