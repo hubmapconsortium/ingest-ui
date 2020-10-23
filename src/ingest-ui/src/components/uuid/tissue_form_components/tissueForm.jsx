@@ -37,7 +37,7 @@ class TissueForm extends Component {
     //     ref: React.createRef()
     //   }
     // ],
-	
+
     protocol: "",
     protocol_file: "",
     specimen_type: "",
@@ -50,12 +50,12 @@ class TissueForm extends Component {
     metadata: "",
     metadata_file: "",
     multiple_id: false,
-	rui_check: false,
-	rui_view: false,
-	rui_hide: true,
-	rui_click: false,
-	rui_show:false,
-	rui_location: "",
+    rui_check: false,
+    rui_view: false,
+    rui_hide: true,
+    rui_click: false,
+    rui_show: false,
+    rui_location: "",
     sample_count: "",
     protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
@@ -65,7 +65,7 @@ class TissueForm extends Component {
 
     groups: [],
     selected_group: "",
-    
+
     error_message: "Oops! Something went wrong. Please contact administrator for help.",
     formErrors: {
       lab: "",
@@ -83,8 +83,8 @@ class TissueForm extends Component {
       metadata: "",
       metadata_file: "",
       multiple_id: "",
-	  rui_check: "",
-	  rui_view: "",
+      rui_check: "",
+      rui_view: "",
       sample_count: ""
     }
   };
@@ -92,18 +92,18 @@ class TissueForm extends Component {
   constructor(props) {
     super(props);
     // create a ref to store the file Input DOM element   
-	  this.protocolFile = React.createRef();
+    this.protocolFile = React.createRef();
     this.protocol = React.createRef();
-   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
+    // this.handleSavedLocations = this.handleSavedLocations.bind(this);
   }
 
   handleRUIJson = (dataFromChild) => {
-        this.setState({ 
-			rui_location: dataFromChild,
-			rui_check: true,
-			rui_view: true,
-			rui_click:false
-		});
+    this.setState({
+      rui_location: dataFromChild,
+      rui_check: true,
+      rui_view: true,
+      rui_click: false
+    });
   };
 
   componentDidMount() {
@@ -185,7 +185,7 @@ class TissueForm extends Component {
             this.setState({
               entities: this.props.editingEntities,
               ids: res.data.siblingid_list,
-			  multiple_id: this.props.editingEntities.length > 1 ? true: false
+              multiple_id: this.props.editingEntities.length > 1 ? true : false
             });
             const first_lab_id = this.props.editingEntities[0].hubmap_identifier;
             const last_lab_id =
@@ -194,13 +194,11 @@ class TissueForm extends Component {
 
             if (this.props.editingEntities.length > 1) {
               this.setState({
-                editingMultiWarning: `Editing affects the ${
-                  this.props.editingEntities.length
-                } ${
-                  flattenSampleType(SAMPLE_TYPES)[
-                    this.props.editingEntity.properties.specimen_type
+                editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
+                  } ${flattenSampleType(SAMPLE_TYPES)[
+                  this.props.editingEntity.properties.specimen_type
                   ]
-                } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
+                  } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
               });
             }
           }
@@ -224,7 +222,7 @@ class TissueForm extends Component {
       //   p["ref"] = React.createRef();
       //   return p;
       // });
-	  
+
       let images = [];
       let metadatas = [];
       try {
@@ -238,7 +236,7 @@ class TissueForm extends Component {
             .replace(/\\/g, "\\\\")
             .replace(/'/g, '"')
         );
-      } catch (e) {}
+      } catch (e) { }
       const image_list = [];
       const metadata_list = [];
       images.forEach((image, index) => {
@@ -264,7 +262,7 @@ class TissueForm extends Component {
           author: this.props.editingEntity.properties.provenance_user_email,
           lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
           rui_location: this.props.editingEntity.properties.rui_location || "",
-		      // protocols: protocols_json,
+          // protocols: protocols_json,
           protocol: this.props.editingEntity.properties.protocol,
           protocol_file_name: getFileNameOnPath(
             this.props.editingEntity.properties.protocol_file
@@ -328,7 +326,7 @@ class TissueForm extends Component {
           }));
         }
         break;
-	  case "rui":
+      case "rui":
         this.setState({ rui: value });
         if (
           !validateRequired(value)
@@ -469,7 +467,7 @@ class TissueForm extends Component {
         }
         break;
       case "source_uuid":
-          this.setState({ source_uuid: value });
+        this.setState({ source_uuid: value });
         // // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
         // // if (patt.test(value)) {
         // //   this.setState({ source_uuid: value + "-" });
@@ -547,7 +545,7 @@ class TissueForm extends Component {
         this.setState({
           multiple_id: e.target.checked
         });
-        if(!e.target.checked){
+        if (!e.target.checked) {
           this.setState({
             sample_count: ""
           })
@@ -562,49 +560,49 @@ class TissueForm extends Component {
         break;
     }
   };
-  
-  
+
+
   trigerAddViewState = () => {
     this.setState({
-       ...this.State,
-       rui_check: true,
-       rui_view:true
+      ...this.State,
+      rui_check: true,
+      rui_view: true
     })
   }
 
   openRUIModalHandler = () => {
-        this.setState({
-            rui_show: true
-        });
+    this.setState({
+      rui_show: true
+    });
   }
 
   closeRUIModalHandler = () => {
-        this.setState({
-            rui_show: false
-        });
+    this.setState({
+      rui_show: false
+    });
   }
 
   handleAddRUILocation = e => {
     this.setState({
-		rui_click:true,
-	});
+      rui_click: !this.state.rui_click,
+    });
   };
-  
+
   handleViewRUIClick = e => {
-	  this.setState({
-        rui_view: true,
- 		rui_show: true,
-		rui_hide: false	
-      });
+    this.setState({
+      rui_view: true,
+      rui_show: true,
+      rui_hide: false
+    });
   };
-	  
+
   handleClose = e => {
-	this.setState({
- 		rui_show: false,
-		rui_hide: true
-      });
+    this.setState({
+      rui_show: false,
+      rui_hide: true
+    });
   };
-    
+
   handleSourceUUIDKeyDown = e => {
     const value = e.target.value;
     if (e.key === "Backspace") {
@@ -691,12 +689,12 @@ class TissueForm extends Component {
               this.state.protocol_file_name === "Choose a file"
                 ? ""
                 : this.state.protocol_file_name,
-			rui_location: this.state.rui_location,
+            rui_location: this.state.rui_location,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
             source_uuid: this.state.source_uuid,
             organ: this.state.source_entity.specimen.organ || this.state.organ || "",
-			organ_other: this.state.organ_other,
+            organ_other: this.state.organ_other,
             visit: this.state.visit,
             sample_count: this.state.sample_count,
             description: this.state.description,
@@ -716,7 +714,7 @@ class TissueForm extends Component {
           var formData = new FormData();
           formData.append("protocol_file", this.state.protocol_file);
           formData.append("metadata_file", this.state.metadata_file);
-		      // this.state.protocols.forEach(i => {
+          // this.state.protocols.forEach(i => {
           //   if (
           //     i.ref.current.protocol_doi.current.value ||
           //     i.ref.current.protocol_file.current.files[0]
@@ -792,7 +790,7 @@ class TissueForm extends Component {
             }
           };
 
-          if (this.props.editingEntity && !this.state.LocationSaved ){
+          if (this.props.editingEntity && !this.state.LocationSaved) {
             axios
               .put(
                 `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}`,
@@ -816,8 +814,10 @@ class TissueForm extends Component {
                 this.props.onCreated(res.data);
               })
               .catch(error => {
-                this.setState({ submit_error: true,
-                error_message: error && error.asdf && error.response && error.response.data && error.response.data.displayMessage || this.state.error_message });
+                this.setState({
+                  submit_error: true,
+                  error_message: error && error.asdf && error.response && error.response.data && error.response.data.displayMessage || this.state.error_message
+                });
               });
           }
         }
@@ -851,12 +851,49 @@ class TissueForm extends Component {
           if (res.data) {
             this.setState(prevState => ({
               source_entity: res.data,
-         // organ:res.data.specimen.organ,
-         //organ:res.data.specimen.organ,
               formErrors: { ...prevState.formErrors, source_uuid: "valid" }
-            }));
-            // this.setState({organ:res.data.specimen.organ})
-            //this.setState({organ:res.data.specimen.organ})
+            }), () => {
+              // Get sex info
+              axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.state.source_entity.specimen.source_uuid}`,
+                config
+              ).then(res => {
+                const metadata_str = res.data.entity_node?.metadata;
+                if (metadata_str == undefined) {
+                  this.setState({
+                    source_entity: {
+                      specimen: {
+                        ...this.state.source_entity.specimen,
+                        sex: ""
+                      }
+                    }
+                  });
+                } else {
+                  const metadata = JSON.parse(metadata_str);
+                  try {
+                    const sex = metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
+                    this.setState({
+                      source_entity: {
+                        specimen: {
+                          ...this.state.source_entity.specimen,
+                          sex: sex
+                        }
+                      }
+                    });
+                  } catch {
+                    this.setState({
+                      source_entity: {
+                        specimen: {
+                          ...this.state.source_entity.specimen,
+                          sex: ""
+                        }
+                      }
+                    });
+                  }
+                }
+              }).catch(err => {
+                console.log(err);
+              })
+            });
             return isValid;
           } else {
             this.setState(prevState => ({
@@ -1193,7 +1230,7 @@ class TissueForm extends Component {
             isValid = false;
             metadata.ref.current.validate();
           }
-        }); 
+        });
       }
 
       this.state.metadatas.forEach((metadata, index) => {
@@ -1278,9 +1315,8 @@ class TissueForm extends Component {
     );
   };
 
-
-  handleSavedLocations = (e) =>{
-    this.setState({LocationSaved: true });
+  handleSavedLocations = (e) => {
+    this.setState({ LocationSaved: true });
   };
 
   handleEditLabIDs = () => {
@@ -1299,12 +1335,12 @@ class TissueForm extends Component {
         uuid: id.uuid,
         lab_tissue_id: id.properties.lab_tissue_id,
         rui_location: id.properties.rui_location,
-		update: (id.properties.rui_location === undefined || id.properties.rui_location === "") ? false : true,
-		organ: this.state.source_entity.specimen.organ || ""
+        update: (id.properties.rui_location === undefined || id.properties.rui_location === "") ? false : true,
+        organ: this.state.source_entity.specimen.organ || ""
       });
     });
     this.setState({
-      ids:new_ids,
+      ids: new_ids,
       LabIDsModalShow: true
     });
   };
@@ -1329,19 +1365,19 @@ class TissueForm extends Component {
         )}
         <div className="col-sm-12">
           <div
-              className="alert alert-danger col-sm-9 offset-sm-2"
-              role="alert"
-            >
-              <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
+            className="alert alert-danger col-sm-9 offset-sm-2"
+            role="alert"
+          >
+            <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
               Protected Health Information. This includes the{" "}
-              <span
-                style={{ cursor: "pointer" }}
-                className="text-primary"
-                onClick={this.showModal}
-              >
-                18 identifiers specified by HIPAA
+            <span
+              style={{ cursor: "pointer" }}
+              className="text-primary"
+              onClick={this.showModal}
+            >
+              18 identifiers specified by HIPAA
               </span>
-            </div>
+          </div>
           <form onSubmit={this.handleSubmit}>
             <div className="form-group row">
               <label
@@ -1445,8 +1481,8 @@ class TissueForm extends Component {
                           <b>type:</b>{" "}
                           {this.state.source_entity.specimen.specimen_type
                             ? flattenSampleType(SAMPLE_TYPES)[
-                                this.state.source_entity.specimen.specimen_type
-                              ]
+                            this.state.source_entity.specimen.specimen_type
+                            ]
                             : this.state.source_entity.specimen.entitytype}
                         </div>
                         <div className="col-sm-6">
@@ -1454,15 +1490,15 @@ class TissueForm extends Component {
                         </div>
                         {this.state.source_entity.specimen.specimen_type ===
                           "organ" && (
-                          <div className="col-sm-12">
-                            <b>Organ Type:</b>{" "}
-                            {
-								ORGAN_TYPES[
+                            <div className="col-sm-12">
+                              <b>Organ Type:</b>{" "}
+                              {
+                                ORGAN_TYPES[
                                 this.state.source_entity.specimen.organ
-                                ]     
-                            }
-                          </div>
-                        )}
+                                ]
+                              }
+                            </div>
+                          )}
                         <div className="col-sm-6">
                           <b>HuBMAP ID:</b>{" "}
                           {this.state.source_entity.specimen.display_doi}
@@ -1537,9 +1573,9 @@ class TissueForm extends Component {
                       })}
                     </select>
                   </div>
-                  
+
                   <div className="col-sm-3">
-				    {this.state.specimen_type === "other" && (
+                    {this.state.specimen_type === "other" && (
                       <input
                         type="text"
                         name="specimen_type_other"
@@ -1554,8 +1590,8 @@ class TissueForm extends Component {
                         onChange={this.handleInputChange}
                         value={this.state.specimen_type_other}
                       />
-                    )}  
-				  </div> 
+                    )}
+                  </div>
                 </React.Fragment>
               )}
               {this.props.readOnly && (
@@ -1564,7 +1600,7 @@ class TissueForm extends Component {
                     <p>
                       {
                         flattenSampleType(SAMPLE_TYPES)[
-                          this.state.specimen_type
+                        this.state.specimen_type
                         ]
                       }{" "}
                       {this.state.specimen_type_other &&
@@ -1682,65 +1718,65 @@ class TissueForm extends Component {
                 </div>
               )}
             <div className="form-group row">
-                <label
-                  htmlFor="protocol"
-                  className="col-sm-2 col-form-label text-right"
-                >
-                  Case Selection Protocol <span className="text-danger">*</span>
-                </label>
-                {!this.props.readOnly && (
-                  <div className="col-sm-9">
-                    <input
-                      ref={this.protocol}
-                      type="text"
-                      name="protocol"
-                      id="protocol"
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.protocol)
-                      }
-                      onChange={this.handleInputChange}
-                      value={this.state.protocol}
-                      placeholder="protocols.io DOI"
-                    />
-                    {this.state.formErrors.protocol &&
-                      this.state.formErrors.protocol !== "required" && (
-                        <div className="invalid-feedback">
-                          {this.state.formErrors.protocol}
-                        </div>
-                      )}
-                  </div>
-                )}
-                {this.props.readOnly && (
-                  <div className="col-sm-9 col-form-label">
-                    <p>{this.state.protocol}</p>
-                  </div>
-                )}
-                <div className="col-sm-1 my-auto text-center">
-                  <span className="text-danger inline-icon">
-                    <FontAwesomeIcon icon={faUserShield} />
-                  </span>
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="protocol_tooltip"
-                    />
-                    <ReactTooltip
-                      id="protocol_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>
-                        The protocol used when procuring or preparing the tissue. 
-                        This must be provided as a protocols.io DOI URL
-                      </h4>
-                    </ReactTooltip>
-                  </span>
+              <label
+                htmlFor="protocol"
+                className="col-sm-2 col-form-label text-right"
+              >
+                Case Selection Protocol <span className="text-danger">*</span>
+              </label>
+              {!this.props.readOnly && (
+                <div className="col-sm-9">
+                  <input
+                    ref={this.protocol}
+                    type="text"
+                    name="protocol"
+                    id="protocol"
+                    className={
+                      "form-control " +
+                      this.errorClass(this.state.formErrors.protocol)
+                    }
+                    onChange={this.handleInputChange}
+                    value={this.state.protocol}
+                    placeholder="protocols.io DOI"
+                  />
+                  {this.state.formErrors.protocol &&
+                    this.state.formErrors.protocol !== "required" && (
+                      <div className="invalid-feedback">
+                        {this.state.formErrors.protocol}
+                      </div>
+                    )}
                 </div>
+              )}
+              {this.props.readOnly && (
+                <div className="col-sm-9 col-form-label">
+                  <p>{this.state.protocol}</p>
+                </div>
+              )}
+              <div className="col-sm-1 my-auto text-center">
+                <span className="text-danger inline-icon">
+                  <FontAwesomeIcon icon={faUserShield} />
+                </span>
+                <span>
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="protocol_tooltip"
+                  />
+                  <ReactTooltip
+                    id="protocol_tooltip"
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <h4>
+                      The protocol used when procuring or preparing the tissue.
+                      This must be provided as a protocols.io DOI URL
+                      </h4>
+                  </ReactTooltip>
+                </span>
               </div>
-			{/* {this.state.protocols.map((protocol, index) => {
+            </div>
+            {/* {this.state.protocols.map((protocol, index) => {
               return (
                 <Protocol
                   key={protocol.id}
@@ -1783,7 +1819,7 @@ class TissueForm extends Component {
                         Generate IDs for multiple{" "}
                         {this.state.specimen_type_other ||
                           flattenSampleType(SAMPLE_TYPES)[
-                            this.state.specimen_type
+                          this.state.specimen_type
                           ]}{" "}
                         samples
                       </label>
@@ -1805,36 +1841,36 @@ class TissueForm extends Component {
                           onChange={this.handleInputChange}
                         />
                       </div>
-                      { this.state.source_entity && 
-			            (this.state.source_entity.specimen.organ === "LK" ||
-                        this.state.source_entity.specimen.organ === "RK") && (
-	                      <div className="col-sm-4">
-	                        <small>
-	                          Lab IDs and Sample Locations can be assigned on the next screen after
-	                          generating the HuBMAP IDs
+                      { this.state.source_entity &&
+                        (this.state.source_entity.specimen.organ === "LK" ||
+                          this.state.source_entity.specimen.organ === "RK") && (
+                          <div className="col-sm-4">
+                            <small>
+                              Lab IDs and Sample Locations can be assigned on the next screen after
+                              generating the HuBMAP IDs
 	                        </small>
-	                      </div>
-	                  )}
-	                  { this.state.source_entity && 
-			            (this.state.source_entity.specimen.organ !== "LK" &&
-                         this.state.source_entity.specimen.organ !== "RK") && (
-	                      <div className="col-sm-4">
-	                        <small>
-	                          Lab IDs can be assigned on the next screen after
-	                          generating the HuBMAP IDs
+                          </div>
+                        )}
+                      { this.state.source_entity &&
+                        (this.state.source_entity.specimen.organ !== "LK" &&
+                          this.state.source_entity.specimen.organ !== "RK") && (
+                          <div className="col-sm-4">
+                            <small>
+                              Lab IDs can be assigned on the next screen after
+                              generating the HuBMAP IDs
 	                        </small>
-	                      </div>
-	                  )}
+                          </div>
+                        )}
                     </React.Fragment>
                   )}
                 </div>
-             )}
-            { !this.state.multiple_id &&
+              )}
+            {!this.state.multiple_id &&
               !this.state.editingMultiWarning &&
               (!this.props.readOnly ||
                 this.state.lab_tissue_id !== undefined) && (
-                
-				<div className="form-group row">
+
+                <div className="form-group row">
                   <label
                     htmlFor="lab_tissue_id"
                     className="col-sm-2 col-form-label text-right"
@@ -1879,517 +1915,520 @@ class TissueForm extends Component {
                       </h4>
                     </ReactTooltip>
                   </div>
-                </div> 
-                )        
+                </div>
+              )
             }
-          
-            { this.state.ids && 
-	          (this.props.editingEntity && this.props.editingEntities.length > 1 && 
-               (this.state.organ !== "RK" && this.state.organ !== "LK") )&& (
-              <React.Fragment>
+
+            {this.state.ids &&
+              (this.props.editingEntity && this.props.editingEntities.length > 1 &&
+                (this.state.organ !== "RK" && this.state.organ !== "LK")) && (
+                <React.Fragment>
+                  <div className="form-group row">
+                    <label
+                      htmlFor="lab_tissue_id"
+                      className="col-sm-2 col-form-label text-right"
+                    >3
+                      Lab Sample Id
+                  </label>
+                    <div className="col-sm-9">
+                      <button
+                        type="button"
+                        className="btn btn-link"
+                        onClick={this.handleEditLabIDs}
+                        disabled={this.props.readOnly}
+                      >
+                        Edit Lab IDs
+                    </button>
+                    </div>
+                  </div>
+                  <LabIDsModal
+                    show={this.state.LabIDsModalShow}
+                    hide={this.hideLabIDsModal}
+                    ids={this.state.ids}
+                    update={this.handleLabIdsUpdate}
+                    organ={this.props.editingEntity.properties.organ}
+                    onSaveLocation={this.handleSavedLocations}
+                  />
+                </React.Fragment>
+              )}
+            {this.props.editingEntity &&
+              this.state.multiple_id &&
+              this.state.source_entity !== undefined &&
+              (this.state.source_entity.specimen.organ === "LK" ||
+                this.state.source_entity.specimen.organ === "RK") && (
+                <React.Fragment>
+                  <div className="form-group row">
+                    <label
+                      htmlFor="lab_tissue_id"
+                      className="col-sm-2 col-form-label text-right"
+                    >
+                      Lab Sample Id
+                  </label>
+                    <div className="col-sm-9">
+                      <button
+                        type="button"
+                        className="btn btn-link"
+                        onClick={this.handleLabIdsUpdate}
+                        disabled={this.props.readOnly}
+                      >
+                        Edit Sample IDs and Locations
+                    </button>
+                    </div>
+                  </div>
+                  <LabIDsModal
+                    show={this.state.LabIDsModalShow}
+                    hide={this.hideLabIDsModal}
+                    ids={this.state.ids}
+                    update={this.handleLabIdsUpdate}
+                    organ={this.props.editingEntity.properties.organ}
+                    onSaveLocation={this.handleSavedLocations}
+                  />
+                </React.Fragment>
+              )}
+            {!this.props.editingEntity &&
+              !this.state.multiple_id &&
+              this.state.source_entity !== undefined &&
+              ["LK", "RK", "HT", "SP"].includes(this.state.source_entity.specimen.organ) &&
+              (
                 <div className="form-group row">
                   <label
-                    htmlFor="lab_tissue_id"
+                    htmlFor="location"
                     className="col-sm-2 col-form-label text-right"
                   >
-                    Lab Sample Id
-                  </label>
-                  <div className="col-sm-9">
-                    <button
-                      type="button"
-                      className="btn btn-link"
-                      onClick={this.handleEditLabIDs}
-                      disabled={this.props.readOnly}
-                    >
-                      Edit Lab IDs
-                    </button>
-                  </div>
-                </div>
-                <LabIDsModal
-                  show={this.state.LabIDsModalShow}
-                  hide={this.hideLabIDsModal}
-                  ids={this.state.ids}
-                  update={this.handleLabIdsUpdate}
-                  organ={this.props.editingEntity.properties.organ}
-                  onSaveLocation={this.handleSavedLocations}
-                />
-              </React.Fragment>
-            )}
-            { this.props.editingEntity &&
-				     this.state.multiple_id &&
-             this.state.source_entity !== undefined &&
-            (this.state.source_entity.specimen.organ === "LK" ||
-              this.state.source_entity.specimen.organ === "RK") && (
-              <React.Fragment>
-                <div className="form-group row">
-                  <label
-                    htmlFor="lab_tissue_id"
-                    className="col-sm-2 col-form-label text-right"
-                  >
-                    Lab Sample Id
-                  </label>
-                  <div className="col-sm-9">
-                    <button
-                      type="button"
-                      className="btn btn-link"
-                      onClick={this.handleLabIdsUpdate}
-                      disabled={this.props.readOnly}
-                    >
-                      Edit Sample IDs and Locations
-                    </button>
-                  </div>
-                </div>
-                <LabIDsModal
-                  show={this.state.LabIDsModalShow}
-                  hide={this.hideLabIDsModal}
-                  ids={this.state.ids}
-                  update={this.handleLabIdsUpdate}
-                  organ={this.props.editingEntity.properties.organ}
-                  onSaveLocation={this.handleSavedLocations}
-                />
-              </React.Fragment>
-            )}
-			{ !this.props.editingEntity &&
-        !this.state.multiple_id &&
-        //!this.state.specimen_type === "organ" &&
-       // ((this.state.organ === "LK" || this.state.organ === "RK") ||
-         this.state.source_entity !== undefined &&
-         (this.state.source_entity.specimen.organ === "LK" ||
-          this.state.source_entity.specimen.organ === "RK") && 
-          (
-			  <div className="form-group row">    
-				<label                                                                                                   
-				  htmlFor="location"
-				  className="col-sm-2 col-form-label text-right"
-				>
-				  Sample Location
+                    Sample Location
 				</label>
-				<div className="col-sm-4 text-center">
-				  <button
-					type="button"
-					onClick={this.handleAddRUILocation}
-					className="btn btn-primary btn-block"
-				  >
-					Register Location
+                  <div className="col-sm-4 text-center">
+                    <button
+                      type="button"
+                      onClick={this.handleAddRUILocation}
+                      className="btn btn-primary btn-block"
+                    >
+                      Register Location
 				  </button>
-				</div>
-				{ this.state.rui_click && (
-				  <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
-				)}
-				
-				{ this.state.rui_check && (
-				  <React.Fragment>
-					<div className="col-sm-1 checkb">
-					  <img src={check}
-						   alt="check"
-						   className="check"/>
-					</div>
-					<div className="col-sm-2">
-					   <button
-							 className="btn btn-link"
-							 type="button"
-							 onClick={this.openRUIModalHandler}
-						   >
-						   View Location
+                  </div>
+                  { this.state.rui_click && (
+                    <RUIIntegration handleJsonRUI={this.handleRUIJson}
+                      organ={this.state.source_entity.specimen.organ}
+                      sex={this.state.source_entity.specimen.sex}
+                      user={this.state.source_entity.specimen.provenance_user_displayname} />
+                  )}
+
+                  { this.state.rui_check && (
+                    <React.Fragment>
+                      <div className="col-sm-1 checkb">
+                        <img src={check}
+                          alt="check"
+                          className="check" />
+                      </div>
+                      <div className="col-sm-2">
+                        <button
+                          className="btn btn-link"
+                          type="button"
+                          onClick={this.openRUIModalHandler}
+                        >
+                          View Location
 						   </button>
-					</div>
-					<RUIModal
-                      className="Modal"
-                      show={this.state.rui_show}
-                      handleClose={this.closeRUIModalHandler}> 
-                       {this.state.rui_location}  
-                    </RUIModal>
-					<div className="col-sm-2">
-					</div>
-				  </React.Fragment>
-				)}
-				{ !this.state.rui_check && (
-				  <div className="col-sm-5">
-				  </div>
-				)} 
-				<div className="col-sm-1 my-auto text-center">
-				  <span>
-					<FontAwesomeIcon
-						icon={faQuestionCircle}
-						data-tip
-						data-for="rui_tooltip"
-					/>
-					<ReactTooltip
-						id="rui_tooltip"
-						place="top"
-						type="info"
-						effect="solid"
-					>
-					<h4>
-						Provide formatted location data from <br />
+                      </div>
+                      <RUIModal
+                        className="Modal"
+                        show={this.state.rui_show}
+                        handleClose={this.closeRUIModalHandler}>
+                        {this.state.rui_location}
+                      </RUIModal>
+                      <div className="col-sm-2">
+                      </div>
+                    </React.Fragment>
+                  )}
+                  { !this.state.rui_check && (
+                    <div className="col-sm-5">
+                    </div>
+                  )}
+                  <div className="col-sm-1 my-auto text-center">
+                    <span>
+                      <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="rui_tooltip"
+                      />
+                      <ReactTooltip
+                        id="rui_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
+                      >
+                        <h4>
+                          Provide formatted location data from <br />
 						CCF Location Registration Tool for <br />
-						this sample. 
+						this sample.
 					</h4>
-					</ReactTooltip>
-				  </span>
-			    </div>
-			  </div>	
-			)}
-			{  this.props.editingEntity &&
-				!this.state.multiple_id &&
-			//	 ((this.state.organ === "LK" ||
-      //   this.state.organ === "RK" ) ||
-         this.state.source_entity !== undefined &&
-         (this.state.source_entity.specimen.organ === "LK" ||
-          this.state.source_entity.specimen.organ === "RK") && 
-			  (
-			  <div className="form-group row">    
-				<label                                                                                                   
-				  htmlFor="location"
-				  className="col-sm-2 col-form-label text-right"
-				>
-				  Sample Location
+                      </ReactTooltip>
+                    </span>
+                  </div>
+                </div>
+              )}
+            {this.props.editingEntity &&
+              !this.state.multiple_id &&
+              this.state.source_entity !== undefined &&
+              ["LK", "RK", "HT", "SP"].includes(this.state.source_entity.specimen.organ) &&
+              (
+                <div className="form-group row">
+                  <label
+                    htmlFor="location"
+                    className="col-sm-2 col-form-label text-right"
+                  >
+                    Sample Location
 				</label>
-				  <React.Fragment>
-					<div className="col-sm-3">
-					   <button
-							 className="btn btn-link"
-							 type="button"
-							 onClick={this.openRUIModalHandler}
-						   >
-						   View Location
+                  <React.Fragment>
+                    <div className="col-sm-3">
+                      <button
+                        className="btn btn-link"
+                        type="button"
+                        onClick={this.openRUIModalHandler}
+                      >
+                        View Location
 						   </button>
-					</div>
-					<RUIModal
+                    </div>
+                    <RUIModal
                       className="Modal"
                       show={this.state.rui_show}
-                      handleClose={this.closeRUIModalHandler}> 
-                       { this.state.rui_location}
+                      handleClose={this.closeRUIModalHandler}>
+                      {this.state.rui_location}
                     </RUIModal>
-					<div className="col-sm-2">
-					</div>
-				  </React.Fragment>
-		          
-				  { !this.props.readOnly && 
-					this.state.rui_check && (
-					<React.Fragment>
-					  <div className="col-sm-1 checkb">
-					    <img src={check}
-						     alt="check"
-						     className="check"/>
-					  </div>
-					  <div className="col-sm-3 text-center">
-				        <button
-					      type="button"
-					      onClick={this.handleAddRUILocation}
-					      className="btn btn-primary btn-block"
-				         >
-					     Modify Location Information
+                    <div className="col-sm-2">
+                    </div>
+                  </React.Fragment>
+
+                  { !this.props.readOnly &&
+                    this.state.rui_check && (
+                      <React.Fragment>
+                        <div className="col-sm-1 checkb">
+                          <img src={check}
+                            alt="check"
+                            className="check" />
+                        </div>
+                        <div className="col-sm-3 text-center">
+                          <button
+                            type="button"
+                            onClick={this.handleAddRUILocation}
+                            className="btn btn-primary btn-block"
+                          >
+                            Modify Location Information
 				         </button>
-				       </div>
-               { this.state.rui_click && (
-				          <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
-				        )} 
-					 </React.Fragment>
-		          )}
-		
-				  { !this.props.readOnly && 
-					!this.state.rui_check && (
-				    <React.Fragment>
-				      <div className="col-sm-4 text-center">
-				        <button
-					      type="button"
-					      onClick={this.handleAddRUILocation}
-					      className="btn btn-primary btn-block"
-				         >
-					     Modify Location Information
+                        </div>
+                        { this.state.rui_click && (
+                          <RUIIntegration handleJsonRUI={this.handleRUIJson}
+                            organ={this.state.source_entity.specimen.organ}
+                            sex={this.state.source_entity.specimen.sex}
+                            user={this.state.source_entity.specimen.provenance_user_displayname} />
+                        )}
+                      </React.Fragment>
+                    )}
+
+                  { !this.props.readOnly &&
+                    !this.state.rui_check && (
+                      <React.Fragment>
+                        <div className="col-sm-4 text-center">
+                          <button
+                            type="button"
+                            onClick={this.handleAddRUILocation}
+                            className="btn btn-primary btn-block"
+                          >
+                            Modify Location Information
 				         </button>
-				       </div>
-               { this.state.rui_click && (
-				          <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
-				        )}
-					 </React.Fragment>
-                   )}
-				  {/**  {  !this.props.readOnly && 
+                        </div>
+                        { this.state.rui_click && (
+                          <RUIIntegration handleJsonRUI={this.handleRUIJson}
+                            organ={this.state.source_entity.specimen.organ}
+                            sex={this.state.source_entity.specimen.sex}
+                            user={this.state.source_entity.specimen.provenance_user_displayname} />
+                        )}
+                      </React.Fragment>
+                    )}
+                  {/**  {  !this.props.readOnly && 
 					  this.state.rui_click && (
 				        <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
                    )} **/}
-				   { this.props.readOnly && (
-					  <div className="col-sm-4">
-					  </div>
-				   )}
-				   <div className="col-sm-1 my-auto text-center">
-				     <span>
-					   <FontAwesomeIcon
-						 icon={faQuestionCircle}
-						 data-tip
-						 data-for="rui_tooltip"
-					   />
-					   <ReactTooltip
-						 id="rui_tooltip"
-						 place="top"
-						 type="info"
-						 effect="solid"
-					   >
-					   <h4>
-						 Provide formatted location data from <br />
+                  { this.props.readOnly && (
+                    <div className="col-sm-4">
+                    </div>
+                  )}
+                  <div className="col-sm-1 my-auto text-center">
+                    <span>
+                      <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="rui_tooltip"
+                      />
+                      <ReactTooltip
+                        id="rui_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
+                      >
+                        <h4>
+                          Provide formatted location data from <br />
 						 CCF Location Registration Tool for <br />
-						 this sample. 
+						 this sample.
 					   </h4>
-					   </ReactTooltip>
-				     </span>
-			       </div>
-			     </div>	
-				)}
-	            {(!this.props.readOnly || this.state.description !== undefined) && (
-	              <div className="form-group row">
-	                <label
-	                  htmlFor="description"
-	                  className="col-sm-2 col-form-label text-right"
-	                >
-	                  Description
-	                </label>
-	                {!this.props.readOnly && (
-	                  <div className="col-sm-9">
-	                    <textarea
-	                      name="description"
-	                      id="description"
-	                      cols="30"
-	                      rows="5"
-	                      className="form-control"
-	                      value={this.state.description}
-	                      onChange={this.handleInputChange}
-	                    />
-	                  </div>
-	                )}
-	                {this.props.readOnly && (
-	                  <div className="col-sm-9 col-form-label">
-	                    <p>{truncateString(this.state.description, 250)}</p>
-	                  </div>
-	                )}
-	                <div className="col-sm-1 my-auto text-center">
-	                  <FontAwesomeIcon
-	                    icon={faQuestionCircle}
-	                    data-tip
-	                    data-for="description_tooltip"
-	                  />
-	                  <ReactTooltip
-	                    id="description_tooltip"
-	                    place="top"
-	                    type="info"
-	                    effect="solid"
-	                  >
-	                    <h4>A free text description of the specimen.</h4>
-	                  </ReactTooltip>
-	                </div>
-	              </div>
-	            )}
+                      </ReactTooltip>
+                    </span>
+                  </div>
+                </div>
+              )}
+            {(!this.props.readOnly || this.state.description !== undefined) && (
               <div className="form-group row">
                 <label
-                    htmlFor="sample_metadata_status"
-                    className="col-sm-2 col-form-label text-right"
-                  >
-                    Sample Metadata Status
-                  </label>
-                  <div className="col-sm-9 my-auto">
-                    {this.state.sample_metadata_status || (
-                      <span className="badge badge-secondary">No value set</span>
-                    )}
-                    {this.state.sample_metadata_status === 0 && (
-                      <span className="badge badge-secondary">No metadata</span>
-                    )}
-                    {this.state.sample_metadata_status === 1 && (
-                      <span className="badge badge-primary">Metadata provided</span>
-                    )}
-                    {this.state.sample_metadata_status === 2 && (
-                      <span className="badge badge-primary">Metadata curated</span>
-                    )}
+                  htmlFor="description"
+                  className="col-sm-2 col-form-label text-right"
+                >
+                  Description
+	                </label>
+                {!this.props.readOnly && (
+                  <div className="col-sm-9">
+                    <textarea
+                      name="description"
+                      id="description"
+                      cols="30"
+                      rows="5"
+                      className="form-control"
+                      value={this.state.description}
+                      onChange={this.handleInputChange}
+                    />
                   </div>
+                )}
+                {this.props.readOnly && (
+                  <div className="col-sm-9 col-form-label">
+                    <p>{truncateString(this.state.description, 250)}</p>
+                  </div>
+                )}
+                <div className="col-sm-1 my-auto text-center">
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="description_tooltip"
+                  />
+                  <ReactTooltip
+                    id="description_tooltip"
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <h4>A free text description of the specimen.</h4>
+                  </ReactTooltip>
+                </div>
               </div>
-	            <div className="form-group row d-none">
-	              <label
-	                htmlFor="metadata"
-	                className="col-sm-2 col-form-label text-right"
-	              >
-	                Metadata
+            )}
+            <div className="form-group row">
+              <label
+                htmlFor="sample_metadata_status"
+                className="col-sm-2 col-form-label text-right"
+              >
+                Sample Metadata Status
+                  </label>
+              <div className="col-sm-9 my-auto">
+                {this.state.sample_metadata_status || (
+                  <span className="badge badge-secondary">No value set</span>
+                )}
+                {this.state.sample_metadata_status === 0 && (
+                  <span className="badge badge-secondary">No metadata</span>
+                )}
+                {this.state.sample_metadata_status === 1 && (
+                  <span className="badge badge-primary">Metadata provided</span>
+                )}
+                {this.state.sample_metadata_status === 2 && (
+                  <span className="badge badge-primary">Metadata curated</span>
+                )}
+              </div>
+            </div>
+            <div className="form-group row d-none">
+              <label
+                htmlFor="metadata"
+                className="col-sm-2 col-form-label text-right"
+              >
+                Metadata
 	              </label>
-	              {!this.props.readOnly && (
-	                <div className="col-sm-9">
-	                  <textarea
-	                    name="metadata"
-	                    id="metadata"
-	                    cols="30"
-	                    rows="5"
-	                    className="form-control"
-	                    value={this.state.metadata}
-	                    onChange={this.handleInputChange}
-	                  />
-	                </div>
-	              )}
-	              {this.props.readOnly && (
-	                <div className="col-sm-9 col-form-label">
-	                  <p>{this.state.metadata}</p>
-	                </div>
-	              )}
-	              <div className="col-sm-1 my-auto text-center">
-	                <FontAwesomeIcon
-	                  icon={faQuestionCircle}
-	                  data-tip
-	                  data-for="metadata_tooltip"
-	                />
-	                <ReactTooltip
-	                  id="metadata_tooltip"
-	                  place="top"
-	                  type="info"
-	                  effect="solid"
-	                >
-	                  <h4>
-	                    Metadata describing the specimen. <br />
+              {!this.props.readOnly && (
+                <div className="col-sm-9">
+                  <textarea
+                    name="metadata"
+                    id="metadata"
+                    cols="30"
+                    rows="5"
+                    className="form-control"
+                    value={this.state.metadata}
+                    onChange={this.handleInputChange}
+                  />
+                </div>
+              )}
+              {this.props.readOnly && (
+                <div className="col-sm-9 col-form-label">
+                  <p>{this.state.metadata}</p>
+                </div>
+              )}
+              <div className="col-sm-1 my-auto text-center">
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="metadata_tooltip"
+                />
+                <ReactTooltip
+                  id="metadata_tooltip"
+                  place="top"
+                  type="info"
+                  effect="solid"
+                >
+                  <h4>
+                    Metadata describing the specimen. <br />
 	                    This could be typed in (or copy/pasted) or an uploaded file
 	                    such as a spreadsheet.
 	                  </h4>
-	                </ReactTooltip>
-	              </div>
-	            </div>
-	            {(!this.props.readOnly || this.state.metadatas.length > 0) && (
-	              <div className="form-group row">
-	                <label
-	                  htmlFor="metadata"
-	                  className="col-sm-2 col-form-label text-right"
-	                >
-	                  Metadata
+                </ReactTooltip>
+              </div>
+            </div>
+            {(!this.props.readOnly || this.state.metadatas.length > 0) && (
+              <div className="form-group row">
+                <label
+                  htmlFor="metadata"
+                  className="col-sm-2 col-form-label text-right"
+                >
+                  Metadata
 	                </label>
-	                <div className="col-sm-9">
-	                  {!this.props.readOnly && (
-	                    <div className="row">
-	                      <div className="col-sm-4">
-	                        <button
-	                          type="button"
-	                          onClick={this.handleAddMetadata}
-	                          className="btn btn-primary"
-	                        >
-	                          <FontAwesomeIcon
-	                            className="inline-icon"
-	                            icon={faPlus}
-	                            title="Uploaded images (multiple allowed)."
-	                          />
+                <div className="col-sm-9">
+                  {!this.props.readOnly && (
+                    <div className="row">
+                      <div className="col-sm-4">
+                        <button
+                          type="button"
+                          onClick={this.handleAddMetadata}
+                          className="btn btn-primary"
+                        >
+                          <FontAwesomeIcon
+                            className="inline-icon"
+                            icon={faPlus}
+                            title="Uploaded images (multiple allowed)."
+                          />
 	                          Add Metadata
 	                        </button>
-	                      </div>
-	                    </div>
-	                  )}
-	                  {this.state.metadatas.map(metadata => (
-	                    <MetadataUpload
-	                      key={metadata.id}
-	                      id={metadata.id}
-	                      file_name={metadata.file_name}
-	                      ref={metadata.ref}
-	                      error={metadata.error}
-	                      readOnly={this.props.readOnly}
-	                      onDelete={this.handleDeleteMetadata}
-	                    />
-	                  ))}
-	                </div>
-	                <div className="col-sm-1 my-auto text-center">
-	                  <span>
-	                    <FontAwesomeIcon
-	                      icon={faQuestionCircle}
-	                      data-tip
-	                      data-for="metadata_tooltip"
-	                    />
-	                    <ReactTooltip
-	                      id="metadata_tooltip"
-	                      place="top"
-	                      type="info"
-	                      effect="solid"
-	                    >
-	                      <h4>
-	                        Metadata describing the specimen. <br /> This could be
+                      </div>
+                    </div>
+                  )}
+                  {this.state.metadatas.map(metadata => (
+                    <MetadataUpload
+                      key={metadata.id}
+                      id={metadata.id}
+                      file_name={metadata.file_name}
+                      ref={metadata.ref}
+                      error={metadata.error}
+                      readOnly={this.props.readOnly}
+                      onDelete={this.handleDeleteMetadata}
+                    />
+                  ))}
+                </div>
+                <div className="col-sm-1 my-auto text-center">
+                  <span>
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for="metadata_tooltip"
+                    />
+                    <ReactTooltip
+                      id="metadata_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <h4>
+                        Metadata describing the specimen. <br /> This could be
 	                        typed in (or copy/pasted) or <br /> an uploaded file
 	                        such as a spreadsheet.
 	                      </h4>
-	                    </ReactTooltip>
-	                  </span>
-	                </div>
-	              </div>
-	            )}
-	            {(!this.props.readOnly || this.state.images.length > 0) && (
-	              <div className="form-group row">
-	                <label
-	                  htmlFor="image"
-	                  className="col-sm-2 col-form-label text-right"
-	                >
-	                  Image
+                    </ReactTooltip>
+                  </span>
+                </div>
+              </div>
+            )}
+            {(!this.props.readOnly || this.state.images.length > 0) && (
+              <div className="form-group row">
+                <label
+                  htmlFor="image"
+                  className="col-sm-2 col-form-label text-right"
+                >
+                  Image
 	                </label>
-	                <div className="col-sm-9">
-	                  {!this.props.readOnly && (
-	                    <div className="row">
-	                      <div className="col-sm-4">
-	                        <button
-	                          type="button"
-	                          onClick={this.handleAddImage}
-	                          className="btn btn-primary"
-	                        >
-	                          <FontAwesomeIcon
-	                            className="inline-icon"
-	                            icon={faPlus}
-	                            title="Uploaded images (multiple allowed)."
-	                          />
+                <div className="col-sm-9">
+                  {!this.props.readOnly && (
+                    <div className="row">
+                      <div className="col-sm-4">
+                        <button
+                          type="button"
+                          onClick={this.handleAddImage}
+                          className="btn btn-primary"
+                        >
+                          <FontAwesomeIcon
+                            className="inline-icon"
+                            icon={faPlus}
+                            title="Uploaded images (multiple allowed)."
+                          />
 	                          Add Image
 	                        </button>
-	                      </div>
-	                      <div className="col-sm-8">
-	                        <div className="alert alert-danger">
-	                          Make sure any uploaded images are de-identified
+                      </div>
+                      <div className="col-sm-8">
+                        <div className="alert alert-danger">
+                          Make sure any uploaded images are de-identified
 	                        </div>
-	                      </div>
-	                    </div>
-	                  )}
-	                  {this.state.images.map(image => (
-	                    <ImageUpload
-	                      key={image.id}
-	                      id={image.id}
-	                      file_name={image.file_name}
-	                      description={image.description}
-	                      ref={image.ref}
-	                      error={image.error}
-	                      readOnly={this.props.readOnly}
-	                      onDelete={this.handleDeleteImage}
-	                    />
-	                  ))}
-	                </div>
-	                <div className="col-sm-1 my-auto text-center">
-	                  <span>
-	                    <FontAwesomeIcon
-	                      icon={faQuestionCircle}
-	                      data-tip
-	                      data-for="image_tooltip"
-	                    />
-	                    <ReactTooltip
-	                      id="image_tooltip"
-	                      place="top"
-	                      type="info"
-	                      effect="solid"
-	                    >
-	                      <h4>Uploaded images (multiple allowed)</h4>
-	                    </ReactTooltip>
-	                  </span>
-	                </div>
-	              </div>
-	            )}
-	            {this.state.submit_error && (
-	              <div className="alert alert-danger col-sm-12" role="alert">
-	                {this.state.error_message}
-	              </div>
-	            )}
-	            {this.renderButtons()}
-	          </form>
-	        </div>
-	        <GroupModal
-	          show={this.state.GroupSelectShow}
-	          hide={this.hideGroupSelectModal}
-	          groups={this.state.groups}
-	          submit={this.handleSubmit}
-	          handleInputChange={this.handleInputChange}
-	        />
-      	</div>
-      );
-   }
+                      </div>
+                    </div>
+                  )}
+                  {this.state.images.map(image => (
+                    <ImageUpload
+                      key={image.id}
+                      id={image.id}
+                      file_name={image.file_name}
+                      description={image.description}
+                      ref={image.ref}
+                      error={image.error}
+                      readOnly={this.props.readOnly}
+                      onDelete={this.handleDeleteImage}
+                    />
+                  ))}
+                </div>
+                <div className="col-sm-1 my-auto text-center">
+                  <span>
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for="image_tooltip"
+                    />
+                    <ReactTooltip
+                      id="image_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <h4>Uploaded images (multiple allowed)</h4>
+                    </ReactTooltip>
+                  </span>
+                </div>
+              </div>
+            )}
+            {this.state.submit_error && (
+              <div className="alert alert-danger col-sm-12" role="alert">
+                {this.state.error_message}
+              </div>
+            )}
+            {this.renderButtons()}
+          </form>
+        </div>
+        <GroupModal
+          show={this.state.GroupSelectShow}
+          hide={this.hideGroupSelectModal}
+          groups={this.state.groups}
+          submit={this.handleSubmit}
+          handleInputChange={this.handleInputChange}
+        />
+      </div>
+    );
+  }
 }
 
 export default TissueForm;

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { ORGAN_TYPES } from "../../../constants.jsx";
 import "../../../App.css";
 
 
@@ -37,15 +38,15 @@ class RUIIntegration extends Component {
 
   componentDidMount() {
     const runtime_script = document.createElement("script");
-    runtime_script.src = "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-ui@staging/rui/runtime.js";
+    runtime_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/runtime.js`;
     runtime_script.async = true;
     document.body.appendChild(runtime_script);
     const polyfills_script = document.createElement("script");
-    polyfills_script.src = "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-ui@staging/rui/polyfills.js";
+    polyfills_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/polyfills.js`;
     polyfills_script.async = true;
     document.body.appendChild(polyfills_script);
     const main_script = document.createElement("script");
-    main_script.src = "https://cdn.jsdelivr.net/gh/hubmapconsortium/ccf-ui@staging/rui/main.js";
+    main_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/main.js`;
     main_script.async = true;
     document.body.appendChild(main_script);
 
@@ -57,22 +58,35 @@ class RUIIntegration extends Component {
     gtag('js', new Date());
     gtag('config', 'UA-136932895-2');
 
+    const organ_info = ORGAN_TYPES[this.props.organ].split(" ");
+    const organ_name = organ_info[0].toLowerCase();
+    const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
+    const sex = this.props.sex;
+    const user_name = this.props.user;
     var self = this;
     window.ruiConfig = {
       // Custom configuration
-      embedded: true,
+      // baseHref: process.env.REACT_APP_RUI_BASE_URL,
+      embedded: (sex !== "" && sex !== undefined),
       tutorialMode: false,
       homeUrl: '/donors-samples',
+      user: {
+        firstName: user_name.split(" ")[0],
+        lastName: user_name.split(" ")[1]
+      },
       organ: {
-        name: 'kidney',
-        sex: 'female',
-        side: 'left'
+        name: organ_name,
+        sex: sex,
+        side: organ_side
       },
       register: function (str) {
         console.log(str);
         self.setState({ jsonRUI: str });
         self.props.handleJsonRUI(str);
         self.handleCloseScreenClick();
+      },
+      fetchPreviousRegistrations: function (rui_locations) {
+        console.log(rui_locations);
       },
       useDownload: false,
     };
