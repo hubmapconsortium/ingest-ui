@@ -1017,7 +1017,7 @@ class Specimen:
     @staticmethod
     def upload_file_data(request, file_key, directory_path):
         try:
-            #TODO: handle case where fiosle already exists.  Append a _x to filename where
+            #TODO: handle case where file already exists.  Append a _x to filename where
             # x is an integer
             file = request.files[file_key]
             filename = os.path.basename(file.filename)
