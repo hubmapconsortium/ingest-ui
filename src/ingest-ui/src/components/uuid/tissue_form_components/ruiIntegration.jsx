@@ -63,6 +63,7 @@ class RUIIntegration extends Component {
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
     const sex = this.props.sex;
     const user_name = this.props.user;
+    const location = this.props.location === "" ? null : JSON.parse(this.props.location)
     var self = this;
     window.ruiConfig = {
       // Custom configuration
@@ -76,7 +77,7 @@ class RUIIntegration extends Component {
       },
       organ: {
         name: organ_name,
-        sex: sex,
+        sex: sex || "female",
         side: organ_side
       },
       register: function (str) {
@@ -85,9 +86,10 @@ class RUIIntegration extends Component {
         self.props.handleJsonRUI(str);
         self.handleCloseScreenClick();
       },
-      fetchPreviousRegistrations: function (rui_locations) {
-        console.log(rui_locations);
+      fetchPreviousRegistrations: function () {
+
       },
+      editRegistration: location,
       useDownload: false,
     };
 

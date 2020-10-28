@@ -2010,7 +2010,8 @@ class TissueForm extends Component {
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organ={this.state.source_entity.specimen.organ}
                       sex={this.state.source_entity.specimen.sex}
-                      user={this.state.source_entity.specimen.provenance_user_displayname} />
+                      user={this.state.source_entity.specimen.provenance_user_displayname}
+                      location={this.state.rui_location} />
                   )}
 
                   { this.state.rui_check && (
@@ -2119,7 +2120,8 @@ class TissueForm extends Component {
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organ={this.state.source_entity.specimen.organ}
                             sex={this.state.source_entity.specimen.sex}
-                            user={this.state.source_entity.specimen.provenance_user_displayname} />
+                            user={this.state.source_entity.specimen.provenance_user_displayname}
+                            location={this.state.rui_location} />
                         )}
                       </React.Fragment>
                     )}
@@ -2140,7 +2142,8 @@ class TissueForm extends Component {
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organ={this.state.source_entity.specimen.organ}
                             sex={this.state.source_entity.specimen.sex}
-                            user={this.state.source_entity.specimen.provenance_user_displayname} />
+                            user={this.state.source_entity.specimen.provenance_user_displayname}
+                            location={this.state.rui_location} />
                         )}
                       </React.Fragment>
                     )}
