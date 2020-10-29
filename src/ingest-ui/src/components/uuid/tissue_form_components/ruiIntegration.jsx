@@ -28,7 +28,7 @@ class RUIIntegration extends Component {
     } else {
       const update_width = Math.min(window.innerWidth, 2000);
       const update_height = Math.round(update_width / 1.8);
-      const update_margin_left = this._reactInternalFiber._debugOwner.type.name === 'TissueForm' ? -((window.innerWidth - 1200) / 4) : 0;
+      const update_margin_left = this.props.parent === 'TissueForm' ? -((window.innerWidth - 1200) / 4) : 0;
       this.setState({ width: update_width, height: update_height, margin_left: update_margin_left });
     }
   }

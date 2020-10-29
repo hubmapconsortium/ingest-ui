@@ -2010,7 +2010,8 @@ class TissueForm extends Component {
                       organ={this.state.source_entity.specimen.organ}
                       sex={this.state.source_entity.specimen.sex}
                       user={this.state.source_entity.specimen.provenance_user_displayname}
-                      location={this.state.rui_location} />
+                      location={this.state.rui_location}
+                      parent="TissueForm" />
                   )}
 
                   { this.state.rui_check && (
@@ -2120,7 +2121,8 @@ class TissueForm extends Component {
                             organ={this.state.source_entity.specimen.organ}
                             sex={this.state.source_entity.specimen.sex}
                             user={this.state.source_entity.specimen.provenance_user_displayname}
-                            location={this.state.rui_location} />
+                            location={this.state.rui_location}
+                            parent="TissueForm" />
                         )}
                       </React.Fragment>
                     )}
@@ -2142,7 +2144,8 @@ class TissueForm extends Component {
                             organ={this.state.source_entity.specimen.organ}
                             sex={this.state.source_entity.specimen.sex}
                             user={this.state.source_entity.specimen.provenance_user_displayname}
-                            location={this.state.rui_location} />
+                            location={this.state.rui_location}
+                            parent="TissueForm" />
                         )}
                       </React.Fragment>
                     )}
