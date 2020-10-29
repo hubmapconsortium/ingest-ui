@@ -23,10 +23,10 @@ class RUIIntegration extends Component {
    * Calculate & Update state of new dimensions
    */
   updateDimensions() {
-    if (window.innerWidth < 500) {
+    if (window.innerWidth < 1100) {
       this.setState({ width: 1100, height: 647 });
     } else {
-      let update_width = window.innerWidth - 100;
+      let update_width = Math.min(window.innerWidth, 2000);
       let update_height = Math.round(update_width / 1.8);
       this.setState({ width: update_width, height: update_height });
     }

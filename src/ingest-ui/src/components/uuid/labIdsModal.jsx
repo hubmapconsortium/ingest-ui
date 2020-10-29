@@ -95,7 +95,7 @@ class LabIDsModal extends Component {
   handleAddRUILocation = name => {
     const { rui_click } = { ...this.state };
     const currentState = rui_click;
-    currentState[name] = !currentState[name];
+    currentState[name] = true;
     this.setState({ rui_click: currentState });
 
     const { rui_checks } = { ...this.state };

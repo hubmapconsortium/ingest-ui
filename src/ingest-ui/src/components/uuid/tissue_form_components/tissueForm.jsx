@@ -584,7 +584,7 @@ class TissueForm extends Component {
 
   handleAddRUILocation = e => {
     this.setState({
-      rui_click: !this.state.rui_click,
+      rui_click: true,
     });
   };
 
