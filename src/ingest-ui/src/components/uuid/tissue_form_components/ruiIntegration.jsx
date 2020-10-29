@@ -26,9 +26,10 @@ class RUIIntegration extends Component {
     if (window.innerWidth < 1100) {
       this.setState({ width: 1100, height: 647 });
     } else {
-      let update_width = Math.min(window.innerWidth, 2000);
-      let update_height = Math.round(update_width / 1.8);
-      this.setState({ width: update_width, height: update_height });
+      const update_width = Math.min(window.innerWidth, 2000);
+      const update_height = Math.round(update_width / 1.8);
+      const update_margin_left = this._reactInternalFiber._debugOwner.type.name === 'TissueForm' ? -((window.innerWidth - 1200) / 4) : 0;
+      this.setState({ width: update_width, height: update_height, margin_left: update_margin_left });
     }
   }
 
@@ -125,7 +126,7 @@ class RUIIntegration extends Component {
               <React.Fragment>
                 <div
                   id='unityContainer'
-                  style={{ width: this.state.width, height: this.state.height }}
+                  style={{ width: this.state.width, height: this.state.height, marginLeft: this.state.margin_left}}
 
                 >
                   <ccf-root></ccf-root>
