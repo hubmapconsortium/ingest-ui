@@ -26,7 +26,7 @@ class RUIIntegration extends Component {
     if (window.innerWidth < 1100) {
       this.setState({ width: 1100, height: 647 });
     } else {
-      const update_width = Math.min(window.innerWidth, 2000);
+      const update_width = Math.min(window.innerWidth * 0.8, 2000);
       const update_height = Math.round(update_width / 1.8);
       const update_margin_left = this.props.parent === 'TissueForm' ? -((window.innerWidth - 1200) / 4) : 0;
       this.setState({ width: update_width, height: update_height, margin_left: update_margin_left });
