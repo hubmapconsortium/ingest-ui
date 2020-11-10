@@ -50,8 +50,8 @@ function export_version() {
     echo "INGEST_API_VERSION: $INGEST_API_VERSION"
 }
 
-if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" ]]; then
-    echo "Unknown build environment '$1', specify one of the following: localhost|dev|test|stage|prod"
+if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" && "$1" != "refactor" ]]; then
+    echo "Unknown build environment '$1', specify one of the following: localhost|dev|test|stage|prod|refactor"
 else
     if [[ "$2" != "setup" && "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
         echo "Unknown command '$2', specify one of the following: setup|check|config|build|start|stop|down"
@@ -98,7 +98,7 @@ else
 
             # Only mount the VERSION file and BUILD file for localhost and dev
             # On test/stage/prod, copy the VERSION file and BUILD file to image
-            if [[ "$1" != "localhost" && "$1" != "dev" ]]; then
+            if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "refactor" ]]; then
                 # Delete old VERSION and BUILD files if found
                 if [ -f "ingest-api-$1/src/VERSION" ]; then
                     rm -rf ingest-api-$1/src/VERSION

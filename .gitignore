@@ -12,6 +12,7 @@ src/ingest-api/VERSION
 
 # Docker copied stuff
 docker/ingest-api-localhost/src
+docker/ingest-api-refactor/src
 docker/ingest-api-dev/src
 docker/ingest-api-test/src
 docker/ingest-api-stage/src
