@@ -135,7 +135,7 @@ class App extends Component {
     let logout = this.state.isAuthenticated ? (
       <a
         href={logout_url}
-        className="btn btn btn-outline-danger"
+        className="btn btn-light"
         onClick={this.handleLogout}
         ref={a => (this.logoutButton = a)}
       >
@@ -147,13 +147,14 @@ class App extends Component {
 
     // Must wrap the componments in an enclosing tag
     return (
-      <header id="header" className="navbar navbar-light bg-light">
+      <header id="header" className="navbar navbar-light">
         <nav className="container">
           <a className="navbar-brand" href="/">
             <img
-              src="https://hubmapconsortium.org/wp-content/uploads/2019/01/HuBMAP-Retina-Logo-Color-300x110.png"
-              width="300"
-              height="110"
+              //src="https://hubmapconsortium.org/wp-content/uploads/2019/01/HuBMAP-Retina-Logo-Color-300x110.png"
+              src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
+              //width="300"
+              height="40"
               className="d-inline-block align-top"
               alt="HuBMAP logo"
             />

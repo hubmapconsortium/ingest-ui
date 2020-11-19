@@ -5,9 +5,9 @@ const Login = () => {
   return (
     <div>
       <div className="alert alert-info" role="alert">
-        <h1>HuBMAP Login</h1>
+        <h1>HuBMAP Data Ingest</h1>
         <p>
-          User authentication is required to generate HuBMAP IDs, please click
+          User authentication is required to register donors, samples, tissues and datasets.  Please click
           the button below and you will be redirected to a login page. There you
           can login with your institutional credentials. Thank you!
         </p>

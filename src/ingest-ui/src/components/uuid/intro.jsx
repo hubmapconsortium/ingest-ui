@@ -1,11 +1,12 @@
 import React from "react";
+import '../../App.css';
 
 const Intro = () => (
   <div className="row">
     <div className="col-sm">
-      <h1>HuBMAP Display ID Generator</h1>
+      <h1 className="portal-jss114">Registration for donors, organs and tissue</h1>
 
-      <p className="lead text-muted">
+      <p className="lead text-muted portal-jss116">
         Generate unique identifiers which will be used consortium wide to track
         sample and associate data with samples.
       </p>

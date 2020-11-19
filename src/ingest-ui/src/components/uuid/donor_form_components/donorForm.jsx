@@ -7,8 +7,8 @@ import {
   faQuestionCircle,
   faPlus,
   faUserShield,
-  faSpinner,
-  faTimes
+  faSpinner
+  // faTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { truncateString } from "../../../utils/string_helper";
 import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";

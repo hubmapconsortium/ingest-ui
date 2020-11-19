@@ -105,7 +105,7 @@ class UUIDEntrance extends Component {
                     aria-expanded="false"
                     onClick={this.showDropDwon}
                   >
-                    Create New Entity
+                    New Registration
                   </button>
                   {this.state.showDropDown && (
                     <div

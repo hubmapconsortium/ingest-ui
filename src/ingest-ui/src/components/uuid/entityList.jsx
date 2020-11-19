@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import '../../App.css';
+
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
@@ -7,6 +9,18 @@ import TissueForm from "./tissue_form_components/tissueForm";
 import { naturalLanguageJoin } from "../../utils/string_helper";
 import { flattenSampleType } from "../../utils/constants_helper";
 import { SAMPLE_TYPES } from "../../constants";
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TablePagination from '@material-ui/core/TablePagination';
+import Paper from '@material-ui/core/Paper';
+
+import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
+import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
+
 
 class EntityList extends Component {
   state = {
@@ -17,7 +31,13 @@ class EntityList extends Component {
     group_name: "IEC Testing Group",
     filter_group: "All Groups",
     filter_sample_type: "",
-    filter_keywords: ""
+    filter_keywords: "",
+    filtered_totals: 0,
+    pages: [10, 25, 50],
+    page: 0,
+    setPage: 0,
+    rowsPerPage: 10,
+    setRowsPerPage: 10
   };
 
   constructor(props) {
@@ -58,55 +78,34 @@ class EntityList extends Component {
           window.location.reload();
         }
       });
-
-    // axios
-    //   .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-    //   .then(res => {
-    //     let entities = {};
-    //     res.data.specimens.forEach(s => {
-    //       if (entities[s.properties.uuid]) {
-    //         entities[s.properties.uuid].push(s);
-    //       } else {
-    //         entities[s.properties.uuid] = [s];
-    //       }
-    //     });
-    //     this.setState({
-    //       loading: false,
-    //       entities: entities
-    //     });
-    //   })
-    //   .catch(err => {
-    //     if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
   }
 
-  refreshList() {
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "application/json"
-      }
-    };
+  // refreshList() {
+  //   const config = {
+  //     headers: {
+  //       Authorization:
+  //         "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+  //       "Content-Type": "application/json"
+  //     }
+  //   };
 
-    axios
-      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-      .then(res => {
-        this.setState({
-          loading: false,
-          entities: res.data.specimens
-        });
-      })
-      .catch(err => {
-        if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
-  }
+  //   axios
+  //     .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
+  //     .then(res => {
+  //       this.setState({
+  //         loading: false,
+  //         entities: res.data.specimens,
+  //         filtered_totals: Object.keys(entities).length
+  //       });
+  //       //console.log(this.state.entities.length)
+  //     })
+  //     .catch(err => {
+  //       if (err.response.status === 401) {
+  //         localStorage.setItem("isAuthenticated", false);
+  //         window.location.reload();
+  //       }
+  //     });
+  // }
 
   renderLoadingSpinner() {
     if (this.state.loading) {
@@ -117,6 +116,18 @@ class EntityList extends Component {
       );
     }
   }
+ handleChangePage = (event, newPage) => {
+    this.setState({
+        page: newPage
+    });
+  };
+
+  handleChangeRowsPerPage = (event) => {
+    this.setState({
+        rowsPerPage: parseInt(event.target.value, 10),
+        page: 0
+    });
+  };
 
   selectClassforDataType(dataType) {
     dataType = dataType.toLowerCase();
@@ -127,6 +138,16 @@ class EntityList extends Component {
     } else {
       return "table-secondary";
     }
+  }
+
+  whatDataType(dataType) {
+     dataType = dataType.toLowerCase();
+    if (dataType === "donor") {
+      return DONOR_IMAGE
+    } else if (dataType === "sample") {
+      return SAMPLE_IMAGE 
+    } 
+    return ""
   }
 
   editForm = (entity, display_id, es) => {
@@ -228,7 +249,8 @@ class EntityList extends Component {
         });
         this.setState({
           loading: false,
-          entities: entities
+          entities: entities,
+          filtered_totals: Object.keys(entities).length
         });
       })
       .catch(err => {
@@ -247,36 +269,42 @@ class EntityList extends Component {
     this.setState({
       filter_group: "All Groups",
       filter_sample_type: "",
-      filter_keywords: ""
+      filter_keywords: "",
+      loading: true
     });
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      }
-    };
+    this.renderLoadingSpinner();
+    this.filterEntity();
+    // const config = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //     "Content-Type": "multipart/form-data"
+    //   }
+    // };
 
-    axios
-      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-      .then(res => {
-        this.setState({
-          loading: false,
-          entities: res.data.specimens
-        });
-      })
-      .catch(err => {
-        if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
-    this.setState({
-      filtered: false
-    });
+    // axios
+    //   .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
+    //   .then(res => {
+    //     this.setState({
+    //       loading: false,
+    //       entities: res.data.specimens
+    //     });
+    //   })
+    //   .catch(err => {
+    //     if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
+    // this.setState({
+    //   filtered: false
+    // });
   };
 
-  renderTable() {
+
+  renderFilterControls() {
+
+    //const classes = useStyles();
     if (!this.state.loading && !this.state.editingEntity) {
       return (
         <div>
@@ -287,8 +315,7 @@ class EntityList extends Component {
                   <div className="form-group row">
                     <label
                       htmlFor="group"
-                      className="col-sm-3 col-form-label text-right"
-                    >
+                      className="col-sm-3 portal-jss116 text-right">
                       Group
                     </label>
                     <div className="col-sm-9">
@@ -350,8 +377,7 @@ class EntityList extends Component {
                   <div className="form-group row">
                     <label
                       htmlFor="sample_type"
-                      className="col-sm-4 col-form-label text-right"
-                    >
+                      className="col-sm-4 portal-jss116 text-right">
                       Sample Type
                     </label>
                     <div className="col-sm-8">
@@ -414,28 +440,36 @@ class EntityList extends Component {
                     </button>
                   )}
                 </div>
-              </div>
+              </div> 
             </div>
           </div>
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th scope="col" width="200">
-                  ID
-                </th>
-                <th scope="col">Lab Group</th>
-                <th scope="col" width="200">
-                  Type
-                </th>
-                <th scope="col">Lab's Non-PHI Name/id</th>
-                <th scope="col" width="200">
-                  Entered By
-                </th>
-                <th scope="col" />
-              </tr>
-            </thead>
-            <tbody>
-              {Object.values(this.state.entities).map(es => {
+          </div>
+      );
+    }
+  }
+
+renderTable() {
+  if (!this.state.loading && !this.state.editingEntity) {
+      return (
+        <div>
+            <TableContainer component={Paper}>
+      <Table className="table-fmt" size="small" aria-label="Result table">
+        <TableHead>
+          <TableRow>
+       
+             <TableCell align="center">HuBMAP DOI</TableCell>
+             <TableCell align="center">HubMAP Internal ID</TableCell>
+            <TableCell align="center">Type</TableCell>    
+            <TableCell align="center">Lab Group</TableCell>
+            <TableCell align="center">Lab's Non-PHI Name/ID</TableCell>
+            <TableCell align="center">Entered By</TableCell>
+        
+          </TableRow>
+        </TableHead>
+        <TableBody>      
+              {Object.values(this.state.entities)
+                .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
+                .map(es => {
                 const entity = es[0];
                 let first_lab_id = entity.hubmap_identifier;
                 let last_lab_id = "";
@@ -496,68 +530,96 @@ class EntityList extends Component {
                 }
                 return (
                   <React.Fragment key={display_id}>
-                    <tr
-                      className={es.length > 1 ? "font-weight-bold" : ""}
-                      key={entity.hubmap_identifier}
-                    >
-                      <td className="nowrap">
-                        {es.length > 1 && (
+                     <TableRow className={es.length > 1 ? "font-weight-bold" : "portal-jss300"} key={entity.hubmap_identifier}>
+                      
+                    
+                      <TableCell align="left" className="nowrap">
+                          {entity.writeable && (
+                          <button
+                            className="btn btn-link portal-jss145"
+                            onClick={() =>
+                              this.editForm(entity, display_id, es)
+                            }
+                          >
+                            {entity.entity_display_doi}
+                          </button>
+                          )}
+                      </TableCell>
+                      <TableCell align="left" className="nowrap">
+                      {es.length > 1 && (
                           <React.Fragment>
                             {id_common_part} [{first_lab_id_num}{" "}
                             <small>through</small> {last_lab_id_num}]
                           </React.Fragment>
                         )}
                         {es.length === 1 && first_lab_id}
-                      </td>
-                      <td>{entity.properties.provenance_group_name}</td>
-                      <td
-                        className={this.selectClassforDataType(entity.datatype)}
-                      >
+                        </TableCell>
+    
+                      <TableCell align="left">
+                      {entity.datatype === "Sample" ? <SAMPLE_IMAGE />
+                          : <DONOR_IMAGE />
+                          } 
                         {entity.datatype === "Sample"
                           ? flattenSampleType(SAMPLE_TYPES)[
                               entity.properties.specimen_type
                             ]
                           : entity.datatype}
-                      </td>
-                      <td>
+                      </TableCell>
+                       <TableCell align="left" className="nowrap">{entity.properties.provenance_group_name}</TableCell>
+                      <TableCell align="left">
                         {entity.properties.label ||
                           entity.properties.lab_tissue_id}
-                      </td>
-                      <td>{entity.properties.provenance_user_email}</td>
-                      <td className="nowrap">
-                        {entity.writeable && (
-                          <button
-                            className="btn btn-primary btn-sm mr-1"
-                            onClick={() =>
-                              this.editForm(entity, display_id, es)
-                            }
-                          >
-                            Edit
-                          </button>
-                        )}
+                      </TableCell>
+                      <TableCell align="left">{entity.properties.provenance_user_email}</TableCell>
+                      <TableCell align="left" className="nowrap"> 
                         <button
                           className="btn btn-secondary btn-sm"
                           onClick={() => this.viewForm(entity, display_id, es)}
                         >
                           View
                         </button>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow> 
                   </React.Fragment>
                 );
               })}
-            </tbody>
+            </TableBody>
             <tfoot>
-              {this.state.entities.length === 0 && (
-                <tr>
-                  <td colSpan="5">No record found</td>
-                </tr>
+              {this.state.filtered_totals === 0 && (
+                <TableRow>
+                  <TableCell align="left" colSpan="5">No records found</TableCell>
+                </TableRow>
               )}
             </tfoot>
-          </table>
+         </Table>
+    </TableContainer>
+    <TablePagination
+          rowsPerPageOptions={this.state.pages}
+          component="div"
+          count={this.state.filtered_totals}
+          rowsPerPage={this.state.rowsPerPage}
+          page={this.state.page}
+          onChangePage={this.handleChangePage}
+          onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          />
         </div>
-      );
+        );
     }
+}
+
+  donorImage() {
+    //return <svg className='portal-jss64 sc-fzqNJr cPhlSY portal-jss65' width='36px' height='36px' focusable='false' viewBox='0 0 24 24' aria-hidden='true' role='presentation' style='font-size: 36px;'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-1c0-2.66-5.33-4-8-4z'></path></svg>
+    return DONOR_IMAGE;
+      }
+  sampleImage() {
+    //return <svg className="portal-jss64 sc-fzoyAV lgNqAS portal-jss65" width="36px" height="36px" focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="presentation"><circle cx="7.2" cy="14.4" r="3.2"></circle><circle cx="14.8" cy="18" r="2"></circle><circle cx="15.2" cy="8.8" r="4.8"></circle></svg>                      
+    return SAMPLE_IMAGE;
+  }
+
+  renderKey() {
+    return (<div>
+      </div>
+      );
   }
 
   renderEditForm() {
@@ -600,6 +662,8 @@ class EntityList extends Component {
         {this.state.updateSuccess === false && (
           <div className="alert alert-danger">Update failed!</div>
         )}
+        {this.renderFilterControls()}
+       {/* {this.renderKey()}*/}
         {this.renderTable()}
         {this.renderEditForm()}
         {/* <Modal
