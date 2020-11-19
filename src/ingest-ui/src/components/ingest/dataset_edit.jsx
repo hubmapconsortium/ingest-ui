@@ -6,7 +6,7 @@ import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 import { truncateString } from "../../utils/string_helper";
-import { SAMPLE_TYPES, ORGAN_TYPES, DATA_TYPES } from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES, DATA_TYPES, get_data_type_dicts} from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
@@ -42,6 +42,7 @@ class DatasetEdit extends Component {
     is_protected: false,
 
     groups: [],
+    data_type_dicts: [],
 
     formErrors: {
       name: "",
@@ -52,6 +53,31 @@ class DatasetEdit extends Component {
     },
   };
 
+  updateStateDataTypeInfo() {
+    let data_types = null;
+    let other_dt = undefined;
+    if (this.props.hasOwnProperty('editingDataset')
+	&& this.props.editingDataset.properties.data_types) {
+      data_types = JSON.parse(
+        this.props.editingDataset.properties.data_types
+          .replace(/'/g, '"')
+          .replace(/\\"/g, "'")
+      );
+      const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
+      console.log('data_tpe_options: ', data_type_options);
+      other_dt = data_types.filter((dt) => !data_type_options.has(dt))[0];
+      data_types = data_types.filter((dt) => data_type_options.has(dt));
+      if (other_dt) {
+        data_types.push(other_dt);
+      }
+    }
+    this.setState({
+      data_types: new Set(data_types),
+      other_datatype: other_dt !== undefined,
+      other_dt: other_dt,
+    });
+  }
+  
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside);
     const config = {
@@ -61,6 +87,12 @@ class DatasetEdit extends Component {
         "Content-Type": "application/json",
       },
     };
+
+    get_data_type_dicts({"primary": "true"})
+      .then(data => {this.setState({data_type_dicts: data.result.map((value, index) => { return value })});
+		     console.log('State update happened!');
+		     this.updateStateDataTypeInfo();
+		    });
 
     axios
       .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
@@ -131,6 +163,7 @@ class DatasetEdit extends Component {
       });
 
     if (this.props.editingDataset) {
+	  
       let source_uuids;
       try {
         source_uuids = JSON.parse(
@@ -138,21 +171,6 @@ class DatasetEdit extends Component {
         );
       } catch {
         source_uuids = [this.props.editingDataset.properties.source_uuid];
-      }
-      let data_types = null;
-      let other_dt = undefined;
-      if (this.props.editingDataset.properties.data_types) {
-        data_types = JSON.parse(
-          this.props.editingDataset.properties.data_types
-            .replace(/'/g, '"')
-            .replace(/\\"/g, "'")
-        );
-        const data_type_options = new Set(DATA_TYPES);
-        other_dt = data_types.filter((dt) => !data_type_options.has(dt))[0];
-        data_types = data_types.filter((dt) => data_type_options.has(dt));
-        if (other_dt) {
-          data_types.push(other_dt);
-        }
       }
       this.setState({
         is_protected: false,
@@ -166,6 +184,7 @@ class DatasetEdit extends Component {
               : false,
         });
       }
+      this.updateStateDataTypeInfo();
       this.setState(
         {
           status: this.props.editingDataset.properties.status.toUpperCase(),
@@ -185,9 +204,6 @@ class DatasetEdit extends Component {
           source_uuid_list: source_uuids,
           source_uuid_type: this.props.editingDataset.properties.specimen_type,
           phi: this.props.editingDataset.properties.phi,
-          data_types: new Set(data_types),
-          other_datatype: other_dt !== undefined,
-          other_dt: other_dt,
           description: this.props.editingDataset.properties.description,
           assay_metadata_status: this.props.editingDataset.properties
             .assay_metadata_status,
@@ -378,6 +394,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
+      console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -625,6 +642,7 @@ class DatasetEdit extends Component {
   };
 
   handleSubmit = (i) => {
+    console.log('SUBMIT!!');
     const data_type_options = new Set(DATA_TYPES);
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
@@ -639,6 +657,8 @@ class DatasetEdit extends Component {
     // }
 
     this.validateForm().then((isValid) => {
+      console.log('isValid: ', isValid);
+      console.log('state: ', this.state);
       if (isValid) {
         if (
           !this.props.editingDataset &&
@@ -1245,11 +1265,61 @@ class DatasetEdit extends Component {
     });
   }
 
+
+    renderOneAssay(val, idx) {
+	var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+	return (<div className='form-group form-check'>
+		<input type='checkbox' className='form-check-input' name={val.name} id={idstr}
+		onClick={this.handleInputChange} checked={this.state.data_types.has(val.name)}
+		/>
+		<label className='form-check-label' htmlFor={idstr}>{val.description}</label>
+		</div>
+	       )
+    }
+
+    renderAssayColumn(min, max) {
+	return (<>
+		{this.state.data_type_dicts.slice(min, max).map((val, idx) =>
+								{return this.renderOneAssay(val, idx)})}
+		</>
+	       )
+    }
+    
+    renderAssayArray() {
+	if (this.state.data_type_dicts.length) {
+	    var len = this.state.data_type_dicts.length;
+	    var entries_per_col = Math.ceil(len / 3);
+	    var num_cols = Math.ceil(len / entries_per_col);
+	    return (<>
+		    <div className='col-sm-4'> {this.renderAssayColumn(0, entries_per_col)} </div>
+		    <div className='col-sm-4'> {this.renderAssayColumn(entries_per_col, 2*entries_per_col)} </div>
+		    <div className='col-sm-4'> {this.renderAssayColumn(2*entries_per_col, len+1)}
+		    {this.state.other_datatype && (
+                    <div className='form-group'>
+                    <input type='text' name='other_dt' id='other_dt'
+			className={"form-control " +
+				   this.errorClass(this.state.formErrors.other_dt)
+				  }
+			placeholder='Other Data Type'
+			value={this.state.other_dt}
+			onChange={this.handleInputChange}
+	            />
+                    </div>
+		    )}
+		    </div>
+		    </>
+		   )
+	}
+	else {
+	    return <h3>Loading assay types...</h3>;
+	}
+    }    
+    
   // renderCollection() {
   //   if(this.state.collection)
   // }
 
-  render() {
+    render() {
     return (
       <React.Fragment>
         <form>
@@ -1740,364 +1810,26 @@ class DatasetEdit extends Component {
             >
               Data Type <span className='text-danger'>*</span>
             </label>
-            {!this.props.readOnly && (
-              <React.Fragment>
+        {!this.props.readOnly && (
+		<React.Fragment>
+
                 <div className='col-sm-9'>
-                  <div className='row'>
-                    <div className='col-sm-4'>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='AF'
-                          id='dt_af'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("AF")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_af'>
-                          Autofluorescence Microscopy
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='ATACseq-bulk'
-                          id='dt_atacseqbulk'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("ATACseq-bulk")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_atacseqbulk'
-                        >
-                          ATACseq(Bulk)
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='MxIF'
-                          id='dt_mxif'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("MxIF")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_mxif'>
-                          Multiplexex Immunofluorescence Microscopy
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='CODEX'
-                          id='dt_codex'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("CODEX")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_codex'>
-                          CODEX
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='IMC'
-                          id='dt_imc'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("IMC")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_imc'>
-                          Imaging Mass Cytomtry
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='MALDI-IMS-neg'
-                          id='dt_maldiimsneg'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("MALDI-IMS-neg")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_maldiimsneg'
-                        >
-                          MALDI IMS neg
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='MALDI-IMS-pos'
-                          id='dt_maldiimspos'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("MALDI-IMS-pos")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_maldiimspos'
-                        >
-                          MALDI IMS pos
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='PAS'
-                          id='dt_pas'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("PAS")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_nanopots'
-                        >
-                          PAS Stained Microscopy
-                        </label>
-                      </div>
-                    </div>
-                    <div className='col-sm-4'>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='bulk-RNA'
-                          id='dt_bulkrna'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("bulk-RNA")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_bulkrna'
-                        >
-                          bulk-RNA
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='SNAREseq'
-                          id='dt_snareseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("SNAREseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_snareseq'
-                        >
-                          SNAREseq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='TMT-LC-MS'
-                          id='dt_tmtlcms'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("TMT-LC-MS")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_tmtlcms'
-                        >
-                          TMT LC-MS
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='Targeted-Shotgun-LC-MS'
-                          id='dt_targetedshotgunlcms'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has(
-                            "Targeted-Shotgun-LC-MS"
-                          )}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_targetedshotgunlcms'
-                        >
-                          Targeted Shotgun / Flow-injection LC-MS
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='LC-MS-untargeted'
-                          id='dt_lcmsuntargeted'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has(
-                            "LC-MS-untargeted"
-                          )}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_lcmsuntargeted'
-                        >
-                          Untargeted LC-MS
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='WGS'
-                          id='dt_wgs'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("WGS")}
-                        />
-                        <label className='form-check-label' htmlFor='dt_wgs'>
-                          Whole Genome Sequencing
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='scRNA-Seq-10x'
-                          id='dt_scrnaseq10x'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("scRNA-Seq-10x")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_scrnaseq10x'
-                        >
-                          scRNA-Seq(10xGenomics)
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='sciATACseq'
-                          id='dt_sciatacseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("sciATACseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_sciatacseq'
-                        >
-                          sciATAseq
-                        </label>
-                      </div>
-                    </div>
-                    <div className='col-sm-4'>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='sciRNAseq'
-                          id='dt_scirnaseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("sciRNAseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_scirnaseq'
-                        >
-                          sciRNAseq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='seqFish'
-                          id='dt_seqfish'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("seqFish")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_seqfish'
-                        >
-                          seqFish
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='snATACseq'
-                          id='dt_snatacseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("snATACseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_snatacseq'
-                        >
-                          snATACseq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='snRNAseq'
-                          id='dt_snranseq'
-                          onClick={this.handleInputChange}
-                          checked={this.state.data_types.has("snRNAseq")}
-                        />
-                        <label
-                          className='form-check-label'
-                          htmlFor='dt_snrnaseq'
-                        >
-                          snRNAseq
-                        </label>
-                      </div>
-                      <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_other'
-                          id='dt_other'
-                          onClick={this.handleInputChange}
-                          checked={this.state.other_datatype}
-                        />
-                        <label className='form-check-label' htmlFor='dt_other'>
-                          Other
-                        </label>
-                      </div>
-                      {this.state.other_datatype && (
-                        <div className='form-group'>
-                          <input
-                            type='text'
-                            name='other_dt'
-                            id='other_dt'
-                            className={
-                              "form-control " +
-                              this.errorClass(this.state.formErrors.other_dt)
-                            }
-                            placeholder='Other Data Type'
-                            value={this.state.other_dt}
-                            onChange={this.handleInputChange}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className='col-sm-12'>
-                    {this.state.formErrors.data_types && (
-                      <p className='text-danger'>
-                        At least select one data type
-                      </p>
-                    )}
-                  </div>
+                <div className='row'>
+		{true && this.renderAssayArray()}
                 </div>
-              </React.Fragment>
+                </div>
+		
+                <div className='col-sm-12'>
+                {this.state.formErrors.data_types && (
+			<p className='text-danger'>
+                        At least select one data type
+                        </p>
+                )}
+                </div>
+
+
+
+	    </React.Fragment>
             )}
             {this.props.readOnly && (
               <div className='col-sm-9 col-form-label'>

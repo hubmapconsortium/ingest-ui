@@ -1,3 +1,4 @@
+import axios from "axios";
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SAMPLE_TYPES = [
   { donor: "Donor" },
@@ -153,6 +154,27 @@ export const ORGAN_TYPES = {
   UR: "Ureter",
   OT: "Other"
 };
+
+export function get_data_type_dicts(params) {
+    const req = axios.get(
+    `${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,
+    {
+	headers: {
+	    "Content-Type": "application/json"
+	},
+	// params: {
+	//     "primary": "true"
+	// }
+	params: params
+    }).then(response => {
+	return response.data;
+    }).catch(error => {
+	console.log(error);
+	return Promise.reject(error);
+    });
+
+    return req;
+}
 
 export const DATA_TYPES = ['AF', 'ATACseq-bulk', 'MxIF', 'CODEX', 'IMC', 'MALDI-IMS-neg',
 'MALDI-IMS-pos', 'PAS', 'bulk-RNA', 'SNAREseq', 'TMT-LC-MS', 'Targeted-Shotgun-LC-MS',
