@@ -6,7 +6,7 @@ import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 import { truncateString } from "../../utils/string_helper";
-import { SAMPLE_TYPES, ORGAN_TYPES, DATA_TYPES, get_data_type_dicts} from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES, get_data_type_dicts} from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
@@ -57,6 +57,9 @@ class DatasetEdit extends Component {
     let data_types = null;
     let other_dt = undefined;
     if (this.props.hasOwnProperty('editingDataset')
+	&& this.props.editingDataset
+	&& this.props.editingDataset.hasOwnProperty('properties')
+	&& this.props.editingDataset.properties
 	&& this.props.editingDataset.properties.data_types) {
       data_types = JSON.parse(
         this.props.editingDataset.properties.data_types
@@ -402,7 +405,7 @@ class DatasetEdit extends Component {
           other_datatype: e.target.checked,
         });
         if (!e.target.checked) {
-          const data_type_options = new Set(DATA_TYPES);
+	  const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
           const data_types = this.state.data_types;
           const other_dt = Array.from(data_types).filter(
             (dt) => !data_type_options.has(dt)
@@ -643,7 +646,7 @@ class DatasetEdit extends Component {
 
   handleSubmit = (i) => {
     console.log('SUBMIT!!');
-    const data_type_options = new Set(DATA_TYPES);
+    const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
       (dt) => !data_type_options.has(dt)
@@ -1294,6 +1297,19 @@ class DatasetEdit extends Component {
 		    <div className='col-sm-4'> {this.renderAssayColumn(0, entries_per_col)} </div>
 		    <div className='col-sm-4'> {this.renderAssayColumn(entries_per_col, 2*entries_per_col)} </div>
 		    <div className='col-sm-4'> {this.renderAssayColumn(2*entries_per_col, len+1)}
+		    <div className='form-group form-check'>
+                        <input
+                          type='checkbox'
+                          className='form-check-input'
+                          name='dt_other'
+                          id='dt_other'
+                          onClick={this.handleInputChange}
+                          checked={this.state.other_datatype}
+                        />
+                        <label className='form-check-label' htmlFor='dt_other'>
+                          Other
+                        </label>
+                      </div>
 		    {this.state.other_datatype && (
                     <div className='form-group'>
                     <input type='text' name='other_dt' id='other_dt'
