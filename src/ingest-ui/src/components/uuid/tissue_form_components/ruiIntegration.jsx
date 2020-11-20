@@ -28,7 +28,7 @@ class RUIIntegration extends Component {
     } else {
       const update_width = Math.min(window.innerWidth - 40, 2000);
       const update_height = Math.round(window.innerHeight - 40, 2000);
-      this.setState({ width: update_width, height: update_height, margin_left: 20 });
+      this.setState({ width: update_width, height: update_height, margin_left: -100 });
     }
   }
 
