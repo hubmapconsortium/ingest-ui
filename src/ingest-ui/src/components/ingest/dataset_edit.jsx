@@ -6,7 +6,7 @@ import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 import { truncateString } from "../../utils/string_helper";
-import { SAMPLE_TYPES, ORGAN_TYPES, get_data_type_dicts} from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES} from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
@@ -91,11 +91,19 @@ class DatasetEdit extends Component {
       },
     };
 
-    get_data_type_dicts({"primary": "true"})
-      .then(data => {this.setState({data_type_dicts: data.result.map((value, index) => { return value })});
-		     console.log('State update happened!');
-		     this.updateStateDataTypeInfo();
-		    });
+    axios
+      .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,
+	   {headers: {"Content-Type": "application/json"},
+	    params: {"primary": "true"}})
+      .then((response) => {
+	let data = response.data;
+	this.setState({data_type_dicts: data.result.map((value, index) => { return value })});
+	this.updateStateDataTypeInfo();
+      })
+      .catch(error => {
+	console.log(error);
+	return Promise.reject(error);
+      });
 
     axios
       .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)

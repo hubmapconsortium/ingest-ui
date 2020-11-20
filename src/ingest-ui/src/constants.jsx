@@ -1,4 +1,3 @@
-import axios from "axios";
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SAMPLE_TYPES = [
   { donor: "Donor" },
@@ -42,18 +41,6 @@ export const SAMPLE_TYPES = [
     protein: "Protein",
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched"
-  },
-  {
-    atacseq: "ATACseq",
-    codex: "CODEX",
-    rnaseq: "RNAseq",
-    scatacseq: "scATACseq",
-    scrnaseq: "scRNAseq",
-    seqfish: "seqFISH",
-    snatacseq: "snATACseq",
-    snrnaseq: "snRNAseq",
-    wes: "WES",
-    wgs: "WGS"
   },
   { other: "Other" }
 ];
@@ -100,18 +87,6 @@ export const TISSUE_TYPES = [
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched"
   },
-  {
-    atacseq: "ATACseq",
-    codex: "CODEX",
-    rnaseq: "RNAseq",
-    scatacseq: "scATACseq",
-    scrnaseq: "scRNAseq",
-    seqfish: "seqFISH",
-    snatacseq: "snATACseq",
-    snrnaseq: "snRNAseq",
-    wes: "WES",
-    wgs: "WGS"
-  },
   { other: "Other" }
 ];
 
@@ -155,28 +130,3 @@ export const ORGAN_TYPES = {
   OT: "Other"
 };
 
-export function get_data_type_dicts(params) {
-    const req = axios.get(
-    `${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,
-    {
-	headers: {
-	    "Content-Type": "application/json"
-	},
-	// params: {
-	//     "primary": "true"
-	// }
-	params: params
-    }).then(response => {
-	return response.data;
-    }).catch(error => {
-	console.log(error);
-	return Promise.reject(error);
-    });
-
-    return req;
-}
-
-export const DATA_TYPES = ['AF', 'ATACseq-bulk', 'MxIF', 'CODEX', 'IMC', 'MALDI-IMS-neg',
-'MALDI-IMS-pos', 'PAS', 'bulk-RNA', 'SNAREseq', 'TMT-LC-MS', 'Targeted-Shotgun-LC-MS',
-'LC-MS-untargeted', 'WGS', 'scRNA-Seq-10x', 'sciATACseq', 'sciRNAseq', 'seqFish',
-'snATACseq', 'snRNAseq']
