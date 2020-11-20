@@ -68,7 +68,7 @@ class RUIIntegration extends Component {
     var self = this;
     window.ruiConfig = {
       // Custom configuration
-      // baseHref: process.env.REACT_APP_RUI_BASE_URL,
+      baseHref: `${process.env.REACT_APP_RUI_BASE_URL}/`,
       embedded: (sex !== "" && sex !== undefined),
       tutorialMode: false,
       homeUrl: '/donors-samples',
