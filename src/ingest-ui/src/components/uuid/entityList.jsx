@@ -3,7 +3,7 @@ import '../../App.css';
 
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faFilter, faBan, faEdit } from "@fortawesome/free-solid-svg-icons";
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import { naturalLanguageJoin } from "../../utils/string_helper";
@@ -219,7 +219,10 @@ class EntityList extends Component {
     const keywords = this.state.filter_keywords;
 
     let params = {};
-    params["group"] = group;
+
+    if (group !== "All Groups") {
+      params["group"] = group;
+    }
     if (sample_type) {
       params["specimen_type"] = sample_type;
     }
@@ -236,6 +239,8 @@ class EntityList extends Component {
       params: params
     };
 
+    console.log(params);
+    
     axios
       .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
       .then(res => {
@@ -266,14 +271,19 @@ class EntityList extends Component {
   };
 
   clearFilterEntity = () => {
-    this.setState({
-      filter_group: "All Groups",
-      filter_sample_type: "",
-      filter_keywords: "",
-      loading: true
-    });
-    this.renderLoadingSpinner();
-    this.filterEntity();
+
+    this.setState(
+      {
+        filter_group: "All Groups",
+        filter_sample_type: "",
+        filter_keywords: "",
+        loading: true
+      },
+      () => {
+        this.renderLoadingSpinner();
+        this.filterEntity();
+      }
+    );
     // const config = {
     //   headers: {
     //     Authorization:
@@ -417,14 +427,14 @@ class EntityList extends Component {
                     className="form-control"
                     name="keywords"
                     id="keywords"
-                    placeholder="Search HuBMAP ID by Keywords"
+                    placeholder="Search by HuBMAP ID"
                     value={this.state.filter_keywords}
                     onChange={this.handleFilterInputChange}
                   />
                 </div>
                 <div className="col-sm-3">
                   <button
-                    className="btn btn-primary mr-2"
+                    className="btn btn-dark mr-2"
                     type="button"
                     onClick={this.filterEntity}
                   >
@@ -432,7 +442,7 @@ class EntityList extends Component {
                   </button>
                   {this.state.filtered && (
                     <button
-                      className="btn btn-danger"
+                      className="btn btn-secondary"
                       type="button"
                       onClick={this.clearFilterEntity}
                     >
@@ -455,11 +465,11 @@ renderTable() {
             <TableContainer component={Paper}>
       <Table className="table-fmt" size="small" aria-label="Result table">
         <TableHead>
-          <TableRow>
+          <TableRow className="portal-jss120">
        
-             <TableCell align="center">HuBMAP DOI</TableCell>
-             <TableCell align="center">HubMAP Internal ID</TableCell>
-            <TableCell align="center">Type</TableCell>    
+             <TableCell align="center">HuBMAP ID</TableCell>
+             <TableCell align="center">Submission ID</TableCell>
+            <TableCell align="center">Submission Type</TableCell>    
             <TableCell align="center">Lab Group</TableCell>
             <TableCell align="center">Lab's Non-PHI Name/ID</TableCell>
             <TableCell align="center">Entered By</TableCell>
@@ -530,15 +540,15 @@ renderTable() {
                 }
                 return (
                   <React.Fragment key={display_id}>
-                     <TableRow className={es.length > 1 ? "font-weight-bold" : "portal-jss300"} key={entity.hubmap_identifier}>
+                     <TableRow className="portal-jss300 portal-jss298" key={entity.hubmap_identifier}>
                       
                     
                       <TableCell align="left" className="nowrap">
                           {entity.writeable && (
                           <button
-                            className="btn btn-link portal-jss145"
+                            className="btn btn-link portal-links portal-jss298"
                             onClick={() =>
-                              this.editForm(entity, display_id, es)
+                              this.viewForm(entity, display_id, es)
                             }
                           >
                             {entity.entity_display_doi}
@@ -573,10 +583,10 @@ renderTable() {
                       <TableCell align="left">{entity.properties.provenance_user_email}</TableCell>
                       <TableCell align="left" className="nowrap"> 
                         <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => this.viewForm(entity, display_id, es)}
+                          className="btn btn-light btn-sm"
+                          onClick={() =>  this.editForm(entity, display_id, es)}
                         >
-                          View
+                          <FontAwesomeIcon icon={faEdit} />
                         </button>
                       </TableCell>
                     </TableRow> 

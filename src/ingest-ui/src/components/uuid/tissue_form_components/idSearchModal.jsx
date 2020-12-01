@@ -102,7 +102,7 @@ class IDSearchModal extends Component {
         <div className="row">
           {this.state.LookUpShow && <IDSearchModalMultiSelect
             show={this.state.LookUpShow}
-            hide={this.hideLookUpModal}
+            //hide={this.hideLookUpModal}
             select={this.handleSelectClick}
             uuid_list={this.state.uuid_list}
             parentCallback = {this.getUuidList}

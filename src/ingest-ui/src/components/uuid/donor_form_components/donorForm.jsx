@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+import Paper from '@material-ui/core/Paper';
+import Divider from '@material-ui/core/Divider';
+import '../../../App.css';
 import axios from "axios";
 import ImageUpload from "./imageUpload";
 import MetadataUpload from "../metadataUpload";
@@ -7,7 +10,9 @@ import {
   faQuestionCircle,
   faPlus,
   faUserShield,
-  faSpinner
+  faSpinner,
+  faPaperclip,
+  faLink
   // faTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { truncateString } from "../../../utils/string_helper";
@@ -491,13 +496,14 @@ class DonorForm extends Component {
       if (this.props.readOnly) {
         return (
           <div className="row">
-            <div className="col-sm-4 offset-sm-4">
+            <Divider />
+            <div className="col-sm-6 offset-sm-4 pads">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary btn-block"
                 onClick={() => this.props.handleCancel()}
               >
-                Back
+                Back to Search
               </button>
             </div>
           </div>
@@ -505,10 +511,13 @@ class DonorForm extends Component {
       } else {
         return (
           <div className="row">
-            <div className="col-sm-4 offset-sm-3 text-center">
+          <div className="col-sm-12">
+          <Divider />
+          </div>
+            <div className="col-sm-4 offset-sm-4 btn-group btn-group-lg mr-1 pads">
               <button
                 type="submit"
-                className="btn btn-primary btn-block"
+                className="btn btn-primary"
                 disabled={this.state.submitting}
               >
                 {this.state.submitting && (
@@ -520,8 +529,6 @@ class DonorForm extends Component {
                 )}
                 {!this.state.submitting && "Update"}
               </button>
-            </div>
-            <div className="col-sm-4">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -529,7 +536,7 @@ class DonorForm extends Component {
               >
                 Cancel
               </button>
-            </div>
+          </div>
           </div>
         );
       }
@@ -742,6 +749,7 @@ class DonorForm extends Component {
   render() {
     return (
       <React.Fragment>
+      <Paper className="paper-container">
         {!this.props.editingEntity && (
           <div className="row">
             <div className="col-sm-12 text-center">
@@ -749,22 +757,10 @@ class DonorForm extends Component {
             </div>
           </div>
         )}
+        
         <div className="row">
-          {this.props.editingEntity && (
-            <React.Fragment>
-              <div className="col-sm-5 offset-sm-3">
-                <h4 className="display-5">
-                  {this.props.editingEntity.hubmap_identifier}
-                </h4>
-              </div>
-              <div className="col-sm-4 text-right">
-                Created by: {this.state.author}
-              </div>
-            </React.Fragment>
-          )}
-          <div className="col-sm-12">
-            <div
-              className="alert alert-danger col-sm-9 offset-sm-3"
+         <div
+              className="alert alert-danger col-sm-9 offset-sm-2"
               role="alert"
             >
               <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
@@ -777,6 +773,23 @@ class DonorForm extends Component {
                 18 identifiers specified by HIPAA
               </span>
             </div>
+            
+          {this.props.editingEntity && (
+            <React.Fragment>
+              <div className="col-sm-4 offset-sm-2 portal-label">
+                  HuBMAP ID: {this.props.editingEntity.entity_display_doi}
+              </div>
+              <div className="col-sm-4 text-right portal-label">
+              Submission ID: {this.props.editingEntity.hubmap_identifier}
+              </div>
+                <div className="col-sm-5 offset-sm-2">
+                  Entered by: {this.state.author}
+              </div>
+            </React.Fragment>
+          )}
+         
+          <div className="col-sm-12 form-border">
+         
             <form onSubmit={this.handleSubmit}>
               <div className="form-group row d-none">
                 <label
@@ -812,7 +825,7 @@ class DonorForm extends Component {
                   htmlFor="lab_donor_id"
                   className="col-sm-3 col-form-label text-right"
                 >
-                  Lab's Donor Non-PHI ID
+                  Lab's Donor Non-PHI ID      
                 </label>
                 {!this.props.readOnly && (
                   <div className="col-sm-8">
@@ -851,10 +864,10 @@ class DonorForm extends Component {
                       type="info"
                       effect="solid"
                     >
-                      <h4>
+                      <p>
                         An identifier used by the lab to identify the donor.{" "}
                         <br /> This field will be entered by the user.
-                      </h4>
+                      </p>
                     </ReactTooltip>
                   </span>
                 </div>
@@ -903,10 +916,10 @@ class DonorForm extends Component {
                       type="info"
                       effect="solid"
                     >
-                      <h4>
+                      <p>
                         A name used by the lab to identify the donor (e.g.
                         HuBMAP donor 1).
-                      </h4>
+                      </p>
                     </ReactTooltip>
                   </span>
                 </div>
@@ -962,12 +975,12 @@ class DonorForm extends Component {
                       type="info"
                       effect="solid"
                     >
-                      <h4>
+                      <p>
                         The protocol used when choosing and acquiring the donor.
                         <br />
                         This can be supplied as either a protocols.io DOI or{" "}
                         <br /> an uploaded document
-                      </h4>
+                      </p>
                     </ReactTooltip>
                   </span>
                 </div>
@@ -1122,9 +1135,9 @@ class DonorForm extends Component {
                         type="info"
                         effect="solid"
                       >
-                        <h4>
+                        <p>
                           Free text field to enter a description of the donor
-                        </h4>
+                        </p>
                       </ReactTooltip>
                     </span>
                   </div>
@@ -1163,11 +1176,11 @@ class DonorForm extends Component {
                   <div className="col-sm-8">
                     {!this.props.readOnly && (
                       <div className="row">
-                        <div className="col-sm-4">
+                        <div className="col-sm-5">
                           <button
                             type="button"
                             onClick={this.handleAddMetadata}
-                            className="btn btn-primary"
+                            className="btn btn-secondary btn-block"
                           >
                             <FontAwesomeIcon
                               className="inline-icon"
@@ -1207,11 +1220,11 @@ class DonorForm extends Component {
                         type="info"
                         effect="solid"
                       >
-                        <h4>
-                          Metadata describing the specimen. <br /> This could be
-                          typed in (or copy/pasted) or <br /> an uploaded file
-                          such as a spreadsheet.
-                        </h4>
+                        <p>
+                          Metadata describing the specimen. <br /> 
+                          Select a file to uploaded file
+                          such as a spreadsheet, csv file, etc.
+                        </p>
                       </ReactTooltip>
                     </span>
                   </div>
@@ -1228,11 +1241,11 @@ class DonorForm extends Component {
                   <div className="col-sm-8">
                     {!this.props.readOnly && (
                       <div className="row">
-                        <div className="col-sm-4">
+                        <div className="col-sm-5">
                           <button
                             type="button"
                             onClick={this.handleAddImage}
-                            className="btn btn-primary"
+                            className="btn btn-secondary btn-block"
                           >
                             <FontAwesomeIcon
                               className="inline-icon"
@@ -1241,12 +1254,11 @@ class DonorForm extends Component {
                             />
                             Add Image
                           </button>
+                          <p className="portal-alert-text">
+                          <FontAwesomeIcon icon={faUserShield} /> De-identified images only
+                          </p>
                         </div>
-                        <div className="col-sm-8">
-                          <div className="alert alert-danger">
-                            Make sure any uploaded images are de-identified
-                          </div>
-                        </div>
+                      
                       </div>
                     )}
                     {this.state.images.map(image => (
@@ -1278,7 +1290,7 @@ class DonorForm extends Component {
                         type="info"
                         effect="solid"
                       >
-                        <h4>Uploaded images (multiple allowed)</h4>
+                        <p>Uploaded images (multiple allowed)</p>
                       </ReactTooltip>
                     </span>
                   </div>
@@ -1302,6 +1314,7 @@ class DonorForm extends Component {
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}
         />
+        </Paper>
       </React.Fragment>
     );
   }
