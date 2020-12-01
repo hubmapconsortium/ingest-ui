@@ -123,7 +123,7 @@ caption {
 }
 
 .scrollbar-div {
-  height: 300px;
+  height: 900px;
   overflow: auto;
 }
 
@@ -358,6 +358,11 @@ caption {
 
 .Collection h4{
 	font-weight:bold;
+}
+
+/* override bootstrap */
+.carousel-item {
+  margin-right: 0;
 }
 
 
