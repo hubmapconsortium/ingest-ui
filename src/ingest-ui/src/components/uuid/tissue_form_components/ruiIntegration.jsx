@@ -23,12 +23,12 @@ class RUIIntegration extends Component {
    * Calculate & Update state of new dimensions
    */
   updateDimensions() {
-    if (window.innerWidth < 500) {
+    if (window.innerWidth < 1100) {
       this.setState({ width: 1100, height: 647 });
     } else {
-      let update_width = window.innerWidth - 100;
-      let update_height = Math.round(update_width / 1.8);
-      this.setState({ width: update_width, height: update_height });
+      const update_width = Math.min(window.innerWidth - 40, 2000);
+      const update_height = Math.round(window.innerHeight - 40, 2000);
+      this.setState({ width: update_width, height: update_height, margin_left: 20 });
     }
   }
 
@@ -67,7 +67,7 @@ class RUIIntegration extends Component {
     var self = this;
     window.ruiConfig = {
       // Custom configuration
-      // baseHref: process.env.REACT_APP_RUI_BASE_URL,
+      baseHref: `${process.env.REACT_APP_RUI_BASE_URL}/`,
       embedded: (sex !== "" && sex !== undefined),
       tutorialMode: false,
       homeUrl: '/donors-samples',
@@ -125,7 +125,7 @@ class RUIIntegration extends Component {
               <React.Fragment>
                 <div
                   id='unityContainer'
-                  style={{ width: this.state.width, height: this.state.height }}
+                  style={{ width: this.state.width, height: this.state.height, marginLeft: this.state.margin_left}}
 
                 >
                   <ccf-root></ccf-root>
