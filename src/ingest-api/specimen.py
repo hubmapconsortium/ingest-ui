@@ -190,7 +190,7 @@ class Specimen:
                 if not updated_entity_location is None:
                     entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = updated_entity_location
                 if not updated_entity_lab_id is None:
-                    entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = updated_entity_lab_id
+                    entity_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = updated_entity_lab_id
 
                 existing_open_consent = False
                 if HubmapConst.DONOR_OPEN_CONSENT in metadata_obj:
