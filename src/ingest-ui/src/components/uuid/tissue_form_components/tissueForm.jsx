@@ -584,7 +584,7 @@ class TissueForm extends Component {
 
   handleAddRUILocation = e => {
     this.setState({
-      rui_click: !this.state.rui_click,
+      rui_click: true,
     });
   };
 
@@ -1927,7 +1927,7 @@ class TissueForm extends Component {
 
             {this.state.ids &&
               (this.props.editingEntity && this.props.editingEntities.length > 1 &&
-                (this.state.organ !== "RK" && this.state.organ !== "LK" && this.state.organ !== "HT" && this.state.organ !== "SP" && this.state.organ !== "LI")) && (
+               (!["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ))) && (
                 <React.Fragment>
                   <div className="form-group row">
                     <label
@@ -1952,7 +1952,7 @@ class TissueForm extends Component {
                     hide={this.hideLabIDsModal}
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
-                    organ={this.props.editingEntity.properties.organ}
+                    metadata={this.props.editingEntity.properties}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
@@ -1960,11 +1960,7 @@ class TissueForm extends Component {
             {this.props.editingEntity &&
               this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             (this.state.source_entity.specimen.organ === "LK" ||
-	      this.state.source_entity.specimen.organ === "HT" ||
-	      this.state.source_entity.specimen.organ === "SP" ||
-	      this.state.source_entity.specimen.organ === "LI" ||
-                this.state.source_entity.specimen.organ === "RK") && (
+             (["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.specimen.organ)) && (
                 <React.Fragment>
                   <div className="form-group row">
                     <label
@@ -1989,7 +1985,7 @@ class TissueForm extends Component {
                     hide={this.hideLabIDsModal}
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
-                    organ={this.props.editingEntity.properties.organ}
+                    metadata={this.props.editingEntity.properties}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
@@ -2020,7 +2016,8 @@ class TissueForm extends Component {
                       organ={this.state.source_entity.specimen.organ}
                       sex={this.state.source_entity.specimen.sex}
                       user={this.state.source_entity.specimen.provenance_user_displayname}
-                      location={this.state.rui_location} />
+                      location={this.state.rui_location}
+                      parent="TissueForm" />
                   )}
 
                   { this.state.rui_check && (
@@ -2130,7 +2127,8 @@ class TissueForm extends Component {
                             organ={this.state.source_entity.specimen.organ}
                             sex={this.state.source_entity.specimen.sex}
                             user={this.state.source_entity.specimen.provenance_user_displayname}
-                            location={this.state.rui_location} />
+                            location={this.state.rui_location}
+                            parent="TissueForm" />
                         )}
                       </React.Fragment>
                     )}
@@ -2152,7 +2150,8 @@ class TissueForm extends Component {
                             organ={this.state.source_entity.specimen.organ}
                             sex={this.state.source_entity.specimen.sex}
                             user={this.state.source_entity.specimen.provenance_user_displayname}
-                            location={this.state.rui_location} />
+                            location={this.state.rui_location}
+                            parent="TissueForm" />
                         )}
                       </React.Fragment>
                     )}
