@@ -130,6 +130,9 @@ class Result extends Component {
                 <div className="col-sm-4 offset-sm-4 lab-id-modal">
                   {this.props.result["new_samples"].length > 1 && 
                    (this.props.result.sample_metadata.organ  === "RK" ||
+		    this.props.result.sample_metadata.organ  === "HT" ||
+		    this.props.result.sample_metadata.organ  === "SP" ||
+		    this.props.result.sample_metadata.organ  === "LI" ||
                     this.props.result.sample_metadata.organ  === "LK") && (
                     <React.Fragment>
 						<button
@@ -150,6 +153,9 @@ class Result extends Component {
                   )}
                   {this.props.result["new_samples"].length > 1 && 
                    (this.props.result.sample_metadata.organ  !== "RK" &&
+		    this.props.result.sample_metadata.organ  !== "HT" &&
+		    this.props.result.sample_metadata.organ  !== "SP" &&
+		    this.props.result.sample_metadata.organ  !== "LI" &&
                     this.props.result.sample_metadata.organ  !== "LK") && (
                     <React.Fragment>
 						<button
