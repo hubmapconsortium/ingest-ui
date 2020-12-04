@@ -129,7 +129,7 @@ class Result extends Component {
               <div className="row mb-2">
                 <div className="col-sm-4 offset-sm-4 lab-id-modal">
                   {this.props.result["new_samples"].length > 1 &&
-                    (["LK", "RK", "HT", "SP"].includes(this.props.result.sample_metadata.organ)) && (
+                   (["LK", "RK", "HT", "SP", "LI"].includes(this.props.result.sample_metadata.organ)) && (
                       <React.Fragment>
                         <button
                           className="btn btn-primary  btn-block"
@@ -149,7 +149,7 @@ class Result extends Component {
                     )
                   }
                   {this.props.result["new_samples"].length > 1 &&
-                    (!["LK", "RK", "HT", "SP"].includes(this.props.result.sample_metadata.organ)) && (
+                   (!["LK", "RK", "HT", "SP", "LI"].includes(this.props.result.sample_metadata.organ)) && (
                       <React.Fragment>
                         <button
                           className="btn btn-primary  btn-block"
