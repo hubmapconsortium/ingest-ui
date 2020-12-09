@@ -1,11 +1,14 @@
 import React, { Component } from "react";
+import Divider from '@material-ui/core/Divider';
+import Paper from '@material-ui/core/Paper';
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
   faPlus,
-  faUserShield
+  faUserShield,
+  faSearch
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
@@ -858,7 +861,7 @@ class TissueForm extends Component {
                 config
               ).then(res => {
                 const metadata_str = res.data.entity_node?.metadata;
-                if (metadata_str == undefined) {
+                if (metadata_str === undefined) {
                   this.setState({
                     source_entity: {
                       specimen: {
@@ -981,8 +984,11 @@ class TissueForm extends Component {
       }
     } else {
       return (
-        <div className="row">
-          <div className="col-sm-4 offset-sm-2 text-center">
+
+        <div className="row"> 
+          <div className="col-sm-12 pads"><Divider /></div>
+  
+            <div className="col-sm-4 offset-sm-3 text-center">
             <button
               type="submit"
               className="btn btn-primary btn-block"
@@ -997,8 +1003,8 @@ class TissueForm extends Component {
               )}
               {!this.state.submitting && "Generate ID"}
             </button>
-          </div>
-          <div className="col-sm-4">
+            </div>
+            <div className="col-sm-4">
             <button
               type="button"
               className="btn btn-secondary"
@@ -1006,7 +1012,7 @@ class TissueForm extends Component {
             >
               Cancel
             </button>
-          </div>
+            </div>
         </div>
       );
     }
@@ -1348,22 +1354,14 @@ class TissueForm extends Component {
   render() {
     return (
       <div className="row">
-        {this.props.editingEntity && (
-          <React.Fragment>
-            <div className="col-sm-6 offset-sm-2">
-              <h4 className="display-5">{this.props.displayId}</h4>
-            </div>
-            <div className="col-sm-4 text-right">
-              Created by: {this.state.author}
-            </div>
-          </React.Fragment>
-        )}
+        
         {this.state.editingMultiWarning && !this.props.readOnly && (
           <div className="alert alert-danger col-sm-12" role="alert">
             {this.state.editingMultiWarning}
           </div>
         )}
-        <div className="col-sm-12">
+        <div className="col-sm-12 pads">
+          <div className="col-sm-12 text-center"><h4>Sample Information</h4></div>
           <div
             className="alert alert-danger col-sm-9 offset-sm-2"
             role="alert"
@@ -1378,17 +1376,33 @@ class TissueForm extends Component {
               18 identifiers specified by HIPAA
               </span>
           </div>
+         
+          <Paper className="paper-container">
           <form onSubmit={this.handleSubmit}>
-            <div className="form-group row">
-              <label
-                htmlFor="source_uuid"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Source HuBMAP ID <span className="text-danger">*</span>
+            <div className="form-group">
+              <label htmlFor="source_uuid">
+                Source HuBMAP ID <span className="text-danger">*</span>  <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="source_uuid_tooltip"
+                />
+                <ReactTooltip
+                  id="source_uuid_tooltip"
+                  place="top"
+                  type="info"
+                  effect="solid"
+                >
+                  <p>
+                    The HuBMAP Unique identifier of the direct origin entity,
+                    <br />
+                    other sample or doner, where this sample came from.
+                  </p>
+                </ReactTooltip>
               </label>
+            
               {!this.props.readOnly && (
                 <React.Fragment>
-                  <div className="col-sm-5">
+                  <div className="input-group">
                     <input
                       type="text"
                       name="source_uuid"
@@ -1402,16 +1416,31 @@ class TissueForm extends Component {
                       onFocus={this.handleLookUpClick}
                       autoComplete='off'
                     />
-                  </div>
-                  <div className="col-sm-4">
-                    <button
-                      className="btn btn-link"
+                     <button
+                      className="btn btn-secondary"
                       type="button"
                       onClick={this.handleLookUpClick}
                     >
-                      Look up
+                      <FontAwesomeIcon
+                          icon={faSearch}
+                          data-tip
+                          data-for="source_uuid_tooltip"
+                      />
                     </button>
                   </div>
+                  {/*<div className="col-sm-1">
+                    <button
+                      className="btn btn-light"
+                      type="button"
+                      onClick={this.handleLookUpClick}
+                    >
+                      <FontAwesomeIcon
+                          icon={faSearch}
+                          data-tip
+                          data-for="source_uuid_tooltip"
+                      />
+                    </button>
+                  </div> */}
                   {/* <div className="col-sm-2">
                     <button
                       className="btn btn-primary"
@@ -1436,25 +1465,7 @@ class TissueForm extends Component {
                   </div>{" "}
                 </React.Fragment>
               )}
-              <div className="col-sm-1 my-auto text-center">
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="source_uuid_tooltip"
-                />
-                <ReactTooltip
-                  id="source_uuid_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
-                >
-                  <h4>
-                    The HuBMAP Unique identifier of the direct origin entity,
-                    <br />
-                    other sample or doner, where this sample came from.
-                  </h4>
-                </ReactTooltip>
-              </div>
+            
             </div>
             {this.state.source_entity && (
               <div className="form-group row">
@@ -1463,8 +1474,8 @@ class TissueForm extends Component {
                     <div className="card-body">
                       <div className="row">
                         <div className="col-sm-12">
-                          <h4 className="card-title">
-                            HuBMAP display id:{" "}
+                          <h3 className="card-title">
+                            HuBMAP Submission ID:{" "}
                             <b>
                               <span>
                                 {
@@ -1473,12 +1484,12 @@ class TissueForm extends Component {
                                 }
                               </span>
                             </b>
-                          </h4>
+                          </h3>
                         </div>
                       </div>
                       <div className="row">
                         <div className="col-sm-6">
-                          <b>type:</b>{" "}
+                          <b>Type:</b>{" "}
                           {this.state.source_entity.specimen.specimen_type
                             ? flattenSampleType(SAMPLE_TYPES)[
                             this.state.source_entity.specimen.specimen_type
@@ -1486,7 +1497,8 @@ class TissueForm extends Component {
                             : this.state.source_entity.specimen.entitytype}
                         </div>
                         <div className="col-sm-6">
-                          <b>name:</b> {this.state.source_entity.specimen.label}
+                          <b>
+                          Name:</b> {this.state.source_entity.specimen.label}
                         </div>
                         {this.state.source_entity.specimen.specimen_type ===
                           "organ" && (
@@ -1518,16 +1530,26 @@ class TissueForm extends Component {
                 </div>
               </div>
             )}
-            <div className="form-group row">
+            <div className="form-group">
               <label
-                htmlFor="specimen_type"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Tissue Sample Type <span className="text-danger">*</span>
+                htmlFor="specimen_type">
+                Tissue Sample Type <span className="text-danger">*</span>  <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="specimen_type_tooltip"
+                />
+                <ReactTooltip
+                  id="specimen_type_tooltip"
+                  place="top"
+                  type="info"
+                  effect="solid"
+                >
+                  <p>The type of specimen.</p>
+                </ReactTooltip>
               </label>
               {!this.props.readOnly && (
                 <React.Fragment>
-                  <div className="col-sm-6">
+                  <div>
                     <select
                       name="specimen_type"
                       id="specimen_type"
@@ -1609,21 +1631,7 @@ class TissueForm extends Component {
                   </div>
                 </React.Fragment>
               )}
-              <div className="col-sm-1 my-auto text-center">
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="specimen_type_tooltip"
-                />
-                <ReactTooltip
-                  id="specimen_type_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
-                >
-                  <h4>The type of specimen.</h4>
-                </ReactTooltip>
-              </div>
+            
             </div>
             {this.state.specimen_type === "organ" && (
               <div className="form-group row">
@@ -1675,12 +1683,15 @@ class TissueForm extends Component {
                   </React.Fragment>
                 )}
                 {this.props.readOnly && (
-                  <div className="col-sm-9 col-form-label">
-                    <p>
+                  <div>
+                   <input type="text" readonly class="form-control" id="static_description" value={this.state.organ === "OT" ? this.state.organ_other : ORGAN_TYPES[this.state.organ]}></input>
+
+                    {/*<p>
                       {this.state.organ === "OT"
                         ? this.state.organ_other
                         : ORGAN_TYPES[this.state.organ]}
                     </p>
+                  */}
                   </div>
                 )}
               </div>
@@ -1711,21 +1722,39 @@ class TissueForm extends Component {
                     </div>
                   )}
                   {this.props.readOnly && (
-                    <div className="col-sm-9 col-form-label">
-                      <p>{this.state.visit}</p>
+                    <div>
+                    <input type="text" readonly class="form-control" id="static_visit" value={this.state.visit}></input>
                     </div>
                   )}
                 </div>
               )}
-            <div className="form-group row">
+            <div className="form-group">
               <label
-                htmlFor="protocol"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Case Selection Protocol <span className="text-danger">*</span>
+                htmlFor="protocol">
+                Case Selection Protocol <span className="text-danger">*</span> <span className="text-danger inline-icon">
+                  <FontAwesomeIcon icon={faUserShield} />
+                </span>
+                <span>
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="protocol_tooltip"
+                  />
+                  <ReactTooltip
+                    id="protocol_tooltip"
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>
+                      The protocol used when procuring or preparing the tissue.
+                      This must be provided as a protocols.io DOI URL
+                      </p>
+                  </ReactTooltip>
+                </span>
               </label>
               {!this.props.readOnly && (
-                <div className="col-sm-9">
+                <div>
                   <input
                     ref={this.protocol}
                     type="text"
@@ -1752,29 +1781,7 @@ class TissueForm extends Component {
                   <p>{this.state.protocol}</p>
                 </div>
               )}
-              <div className="col-sm-1 my-auto text-center">
-                <span className="text-danger inline-icon">
-                  <FontAwesomeIcon icon={faUserShield} />
-                </span>
-                <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for="protocol_tooltip"
-                  />
-                  <ReactTooltip
-                    id="protocol_tooltip"
-                    place="top"
-                    type="info"
-                    effect="solid"
-                  >
-                    <h4>
-                      The protocol used when procuring or preparing the tissue.
-                      This must be provided as a protocols.io DOI URL
-                      </h4>
-                  </ReactTooltip>
-                </span>
-              </div>
+            
             </div>
             {/* {this.state.protocols.map((protocol, index) => {
               return (
@@ -1870,15 +1877,30 @@ class TissueForm extends Component {
               (!this.props.readOnly ||
                 this.state.lab_tissue_id !== undefined) && (
 
-                <div className="form-group row">
+                <div className="form-group">
                   <label
-                    htmlFor="lab_tissue_id"
-                    className="col-sm-2 col-form-label text-right"
-                  >
-                    Lab Sample Id
+                    htmlFor="lab_tissue_id">
+                    Lab Sample Id  <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for="lab_tissue_id_tooltip"
+                    />
+                    <ReactTooltip
+                      id="lab_tissue_id_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <p>
+                        An identifier used by the lab to identify the specimen,
+                        this can be an identifier from the system <br />
+                        used to track the specimen in the lab. This field will
+                        be entered by the user.
+                      </p>
+                    </ReactTooltip>
                   </label>
                   {!this.props.readOnly && (
-                    <div className="col-sm-9">
+                    <div>
                       <input
                         type="text"
                         name="lab_tissue_id"
@@ -1895,26 +1917,7 @@ class TissueForm extends Component {
                       <p>{this.state.lab_tissue_id}</p>
                     </div>
                   )}
-                  <div className="col-sm-1 my-auto text-center">
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="lab_tissue_id_tooltip"
-                    />
-                    <ReactTooltip
-                      id="lab_tissue_id_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>
-                        An identifier used by the lab to identify the specimen,
-                        this can be an identifier from the system <br />
-                        used to track the specimen in the lab. This field will
-                        be entered by the user.
-                      </h4>
-                    </ReactTooltip>
-                  </div>
+                
                 </div>
               )
             }
@@ -1923,11 +1926,9 @@ class TissueForm extends Component {
               (this.props.editingEntity && this.props.editingEntities.length > 1 &&
                 (!["LK", "RK", "HT", "SP"].includes(this.state.organ))) && (
                 <React.Fragment>
-                  <div className="form-group row">
+                  <div className="form-group">
                     <label
-                      htmlFor="lab_tissue_id"
-                      className="col-sm-2 col-form-label text-right"
-                    >3
+                      htmlFor="lab_tissue_id">
                       Lab Sample Id
                   </label>
                     <div className="col-sm-9">
@@ -1956,14 +1957,12 @@ class TissueForm extends Component {
               this.state.source_entity !== undefined &&
               (["LK", "RK", "HT", "SP"].includes(this.state.source_entity.specimen.organ)) && (
                 <React.Fragment>
-                  <div className="form-group row">
+                  <div className="form-group">
                     <label
-                      htmlFor="lab_tissue_id"
-                      className="col-sm-2 col-form-label text-right"
-                    >
+                      htmlFor="lab_tissue_id">
                       Lab Sample Id
                   </label>
-                    <div className="col-sm-9">
+                    <div>
                       <button
                         type="button"
                         className="btn btn-link"
@@ -1989,13 +1988,29 @@ class TissueForm extends Component {
               this.state.source_entity !== undefined &&
               ["LK", "RK", "HT", "SP"].includes(this.state.source_entity.specimen.organ) &&
               (
-                <div className="form-group row">
+                <div className="form-group">
                   <label
-                    htmlFor="location"
-                    className="col-sm-2 col-form-label text-right"
-                  >
-                    Sample Location
-				</label>
+                    htmlFor="location">
+                    Sample Location <span>
+                      <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="rui_tooltip"
+                      />
+                      <ReactTooltip
+                        id="rui_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
+                      >
+                        <p>
+                          Provide formatted location data from <br />
+            CCF Location Registration Tool for <br />
+            this sample.
+          </p>
+                      </ReactTooltip>
+                    </span>
+				        </label>
                   <div className="col-sm-4 text-center">
                     <button
                       type="button"
@@ -2044,27 +2059,7 @@ class TissueForm extends Component {
                     <div className="col-sm-5">
                     </div>
                   )}
-                  <div className="col-sm-1 my-auto text-center">
-                    <span>
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="rui_tooltip"
-                      />
-                      <ReactTooltip
-                        id="rui_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <h4>
-                          Provide formatted location data from <br />
-						CCF Location Registration Tool for <br />
-						this sample.
-					</h4>
-                      </ReactTooltip>
-                    </span>
-                  </div>
+                 
                 </div>
               )}
             {this.props.editingEntity &&
@@ -2170,26 +2165,36 @@ class TissueForm extends Component {
                         type="info"
                         effect="solid"
                       >
-                        <h4>
+                        <p>
                           Provide formatted location data from <br />
 						 CCF Location Registration Tool for <br />
 						 this sample.
-					   </h4>
+					   </p>
                       </ReactTooltip>
                     </span>
                   </div>
                 </div>
               )}
             {(!this.props.readOnly || this.state.description !== undefined) && (
-              <div className="form-group row">
+              <div className="form-group">
                 <label
-                  htmlFor="description"
-                  className="col-sm-2 col-form-label text-right"
-                >
-                  Description
+                  htmlFor="description">
+                  Description  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="description_tooltip"
+                  />
+                  <ReactTooltip
+                    id="description_tooltip"
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>A free text description of the specimen.</p>
+                  </ReactTooltip>
 	                </label>
                 {!this.props.readOnly && (
-                  <div className="col-sm-9">
+                  <div>
                     <textarea
                       name="description"
                       id="description"
@@ -2206,28 +2211,12 @@ class TissueForm extends Component {
                     <p>{truncateString(this.state.description, 250)}</p>
                   </div>
                 )}
-                <div className="col-sm-1 my-auto text-center">
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for="description_tooltip"
-                  />
-                  <ReactTooltip
-                    id="description_tooltip"
-                    place="top"
-                    type="info"
-                    effect="solid"
-                  >
-                    <h4>A free text description of the specimen.</h4>
-                  </ReactTooltip>
-                </div>
+                
               </div>
             )}
-            <div className="form-group row">
+            <div className="form-group">
               <label
-                htmlFor="sample_metadata_status"
-                className="col-sm-2 col-form-label text-right"
-              >
+                htmlFor="sample_metadata_status">
                 Sample Metadata Status
                   </label>
               <div className="col-sm-9 my-auto">
@@ -2245,15 +2234,30 @@ class TissueForm extends Component {
                 )}
               </div>
             </div>
-            <div className="form-group row d-none">
+            {/*}
+            <div className="form-group">
               <label
-                htmlFor="metadata"
-                className="col-sm-2 col-form-label text-right"
-              >
-                Metadata
+                htmlFor="metadata">
+                Metadata <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="metadata_tooltip"
+                />
+                <ReactTooltip
+                  id="metadata_tooltip"
+                  place="top"
+                  type="info"
+                  effect="solid"
+                >
+                  <p>
+                    Metadata describing the specimen. <br />
+                      This could be typed in (or copy/pasted) or an uploaded file
+                      such as a spreadsheet.
+                    </p>
+                </ReactTooltip>
 	              </label>
               {!this.props.readOnly && (
-                <div className="col-sm-9">
+                <div>
                   <textarea
                     name="metadata"
                     id="metadata"
@@ -2270,49 +2274,26 @@ class TissueForm extends Component {
                   <p>{this.state.metadata}</p>
                 </div>
               )}
-              <div className="col-sm-1 my-auto text-center">
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="metadata_tooltip"
-                />
-                <ReactTooltip
-                  id="metadata_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
-                >
-                  <h4>
-                    Metadata describing the specimen. <br />
-	                    This could be typed in (or copy/pasted) or an uploaded file
-	                    such as a spreadsheet.
-	                  </h4>
-                </ReactTooltip>
-              </div>
             </div>
+          */}
             {(!this.props.readOnly || this.state.metadatas.length > 0) && (
-              <div className="form-group row">
-                <label
-                  htmlFor="metadata"
-                  className="col-sm-2 col-form-label text-right"
-                >
-                  Metadata
-	                </label>
-                <div className="col-sm-9">
+              <div className="form-group">
+                
+                <div>
                   {!this.props.readOnly && (
-                    <div className="row">
-                      <div className="col-sm-4">
+                    <div>
+                      <div>
                         <button
                           type="button"
                           onClick={this.handleAddMetadata}
-                          className="btn btn-primary"
+                          className="btn btn-secondary"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
                             icon={faPlus}
-                            title="Uploaded images (multiple allowed)."
+                            title="Uploaded meta data"
                           />
-	                          Add Metadata
+	                          Attach Metadata
 	                        </button>
                       </div>
                     </div>
@@ -2329,59 +2310,33 @@ class TissueForm extends Component {
                     />
                   ))}
                 </div>
-                <div className="col-sm-1 my-auto text-center">
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="metadata_tooltip"
-                    />
-                    <ReactTooltip
-                      id="metadata_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>
-                        Metadata describing the specimen. <br /> This could be
-	                        typed in (or copy/pasted) or <br /> an uploaded file
-	                        such as a spreadsheet.
-	                      </h4>
-                    </ReactTooltip>
-                  </span>
-                </div>
+                
               </div>
             )}
             {(!this.props.readOnly || this.state.images.length > 0) && (
-              <div className="form-group row">
-                <label
-                  htmlFor="image"
-                  className="col-sm-2 col-form-label text-right"
-                >
-                  Image
-	                </label>
-                <div className="col-sm-9">
+              <div className="form-group">
+               
+                <div>
                   {!this.props.readOnly && (
-                    <div className="row">
-                      <div className="col-sm-4">
+                    <div>
+                      <div>
                         <button
                           type="button"
                           onClick={this.handleAddImage}
-                          className="btn btn-primary"
+                          className="btn btn-secondary"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
                             icon={faPlus}
                             title="Uploaded images (multiple allowed)."
                           />
-	                          Add Image
-	                        </button>
+	                          Attach Image(s)
+	                        </button> <span className="text-danger inline-icon">
+                            <FontAwesomeIcon icon={faUserShield} />
+                          </span>
+                
                       </div>
-                      <div className="col-sm-8">
-                        <div className="alert alert-danger">
-                          Make sure any uploaded images are de-identified
-	                        </div>
-                      </div>
+                      
                     </div>
                   )}
                   {this.state.images.map(image => (
@@ -2397,23 +2352,7 @@ class TissueForm extends Component {
                     />
                   ))}
                 </div>
-                <div className="col-sm-1 my-auto text-center">
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for="image_tooltip"
-                    />
-                    <ReactTooltip
-                      id="image_tooltip"
-                      place="top"
-                      type="info"
-                      effect="solid"
-                    >
-                      <h4>Uploaded images (multiple allowed)</h4>
-                    </ReactTooltip>
-                  </span>
-                </div>
+              
               </div>
             )}
             {this.state.submit_error && (
@@ -2423,6 +2362,7 @@ class TissueForm extends Component {
             )}
             {this.renderButtons()}
           </form>
+          </Paper>
         </div>
         <GroupModal
           show={this.state.GroupSelectShow}

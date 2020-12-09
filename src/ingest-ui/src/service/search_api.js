@@ -1,22 +1,31 @@
 import React from "react";
-import useAxios from "axios-hooks";
+import axios from "axios";
 
-function SearchService() {
-
- const [{ data: getData, loading: getLoading, error: getError }] = useAxios(
-    "https://api.myjson.com/bins/820fc"
-  );
-
-  const [
-    { data: putData, loading: putLoading, error: putError },
-    executePut
-  ] = useAxios(
-    {
-      url: "https://api.myjson.com/bins/820fc",
-      method: "PUT"
-    },
-    { manual: true }
-  );
+  // const apiConfig = {
+  //   headers: {
+  //     Authorization:
+  //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+  //     "Content-Type": "application/json"
+  //   }
+  // };
 
 
+export default function apiGetUserGroups(apiConfig) {
+ axios
+ .get(
+   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+   apiConfig
+ )
+ .then(res => {
+  const display_names = res.data.groups
+          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+          .map(g => {
+            return g.displayname;
+          });
+ })
+ .catch(err => {
+     return err.response.status;
+ });
 }
+
+//export {apiGetUserGroups, apiConfig}

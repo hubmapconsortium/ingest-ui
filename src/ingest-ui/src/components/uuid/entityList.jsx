@@ -17,6 +17,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
+import apiGetUserGroups from '../../service/search_api';
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
 import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
@@ -51,6 +52,23 @@ class EntityList extends Component {
       }
     };
 
+
+  //   const display_names = getGroups => {
+  //     let d = apiGetUserGroups(config);
+  //     console.log('Groups...');
+  //     console.log(d);
+  //     this.setState(
+  //       {
+  //         group_name: naturalLanguageJoin(display_names),
+  //         filter_group: display_names[0]
+  //       },
+  //       () => {
+  //         this.filterEntity();
+  //       }
+  //     );
+  //   };
+  // }
+    
     axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
@@ -427,7 +445,7 @@ class EntityList extends Component {
                     className="form-control"
                     name="keywords"
                     id="keywords"
-                    placeholder="Search by HuBMAP ID"
+                    placeholder="Search by keywords or HuBMAP ID"
                     value={this.state.filter_keywords}
                     onChange={this.handleFilterInputChange}
                   />

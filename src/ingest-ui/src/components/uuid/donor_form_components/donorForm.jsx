@@ -514,7 +514,7 @@ class DonorForm extends Component {
           <div className="col-sm-12">
           <Divider />
           </div>
-            <div className="col-sm-4 offset-sm-4 btn-group btn-group-lg mr-1 pads">
+            <div className="col-sm-6 text-center pads">
               <button
                 type="submit"
                 className="btn btn-primary"
@@ -529,6 +529,8 @@ class DonorForm extends Component {
                 )}
                 {!this.state.submitting && "Update"}
               </button>
+              </div>
+              <div className="col-sm-4 text-center pads">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -749,11 +751,18 @@ class DonorForm extends Component {
   render() {
     return (
       <React.Fragment>
-      <Paper className="paper-container">
+      
         {!this.props.editingEntity && (
           <div className="row">
             <div className="col-sm-12 text-center">
-              <h4>Registering a HuBMAP Donor</h4>
+              <h4>Registering a Donor</h4>
+            </div>
+          </div>
+        )}
+        {this.props.editingEntity && (
+          <div className="row">
+            <div className="col-sm-12 text-center">
+              <h4>Donor Information</h4>
             </div>
           </div>
         )}
@@ -789,13 +798,11 @@ class DonorForm extends Component {
           )}
          
           <div className="col-sm-12 form-border">
-         
+         <Paper className="paper-container">
             <form onSubmit={this.handleSubmit}>
               <div className="form-group row d-none">
                 <label
-                  htmlFor="visit"
-                  className="col-sm-3 col-form-label text-right"
-                >
+                  htmlFor="visit">
                   Visit
                 </label>
                 {!this.props.readOnly && (
@@ -820,36 +827,11 @@ class DonorForm extends Component {
                   </div>
                 )}
               </div>
-              <div className="form-group row">
+              <div className="form-group">
                 <label
-                  htmlFor="lab_donor_id"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Lab's Donor Non-PHI ID      
-                </label>
-                {!this.props.readOnly && (
-                  <div className="col-sm-8">
-                    <input
-                      type="text"
-                      name="lab_donor_id"
-                      id="lab_donor_id"
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.lab_donor_id)
-                      }
-                      onChange={this.handleInputChange}
-                      value={this.state.lab_donor_id}
-                      placeholder="An non-PHI id used by the lab when referring to the donor."
-                    />
-                  </div>
-                )}
-                {this.props.readOnly && (
-                  <div className="col-sm-8 col-form-label">
-                    <p>{this.state.lab_donor_id}</p>
-                  </div>
-                )}
-                <div className="col-sm-1 my-auto text-center">
-                  <span className="text-danger inline-icon">
+                  htmlFor="lab_donor_id">
+                  Lab's Donor Non-PHI ID 
+                   <span className="text-danger inline-icon">
                     <FontAwesomeIcon icon={faUserShield} />
                   </span>
                   <span>
@@ -869,39 +851,37 @@ class DonorForm extends Component {
                         <br /> This field will be entered by the user.
                       </p>
                     </ReactTooltip>
-                  </span>
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  htmlFor="identifying_name"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Deidentified Name <span className="text-danger">*</span>
+                  </span>     
                 </label>
                 {!this.props.readOnly && (
-                  <div className="col-sm-8">
+                  <div>
                     <input
                       type="text"
-                      name="identifying_name"
-                      id="identifying_name"
+                      name="lab_donor_id"
+                      id="lab_donor_id"
                       className={
                         "form-control " +
-                        this.errorClass(this.state.formErrors.identifying_name)
+                        this.errorClass(this.state.formErrors.lab_donor_id)
                       }
                       onChange={this.handleInputChange}
-                      value={this.state.identifying_name}
-                      placeholder="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
+                      value={this.state.lab_donor_id}
+                      placeholder="An non-PHI id used by the lab when referring to the donor."
                     />
                   </div>
                 )}
                 {this.props.readOnly && (
-                  <div className="col-sm-8 col-form-label">
-                    <p>{this.state.identifying_name}</p>
+                  <div>
+                   <input type="text" readonly class="form-control" id="static_lab_donor_id" value={this.state.lab_donor_id}></input>
+                   
                   </div>
                 )}
-                <div className="col-sm-1 my-auto text-center">
-                  <span className="text-danger inline-icon">
+               
+              </div>
+              <div className="form-group">
+                <label
+                  htmlFor="identifying_name">
+                  Deidentified Name <span className="text-danger">*</span>
+                   <span className="text-danger inline-icon">
                     <FontAwesomeIcon icon={faUserShield} />
                   </span>
                   <span>
@@ -922,44 +902,34 @@ class DonorForm extends Component {
                       </p>
                     </ReactTooltip>
                   </span>
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  htmlFor="protocol"
-                  className="col-sm-3 col-form-label text-right"
-                >
-                  Case Selection Protocol <span className="text-danger">*</span>
                 </label>
                 {!this.props.readOnly && (
-                  <div className="col-sm-8">
+                  <div>
                     <input
-                      ref={this.protocol}
                       type="text"
-                      name="protocol"
-                      id="protocol"
+                      name="identifying_name"
+                      id="identifying_name"
                       className={
                         "form-control " +
-                        this.errorClass(this.state.formErrors.protocol)
+                        this.errorClass(this.state.formErrors.identifying_name)
                       }
                       onChange={this.handleInputChange}
-                      value={this.state.protocol}
-                      placeholder="protocols.io DOI"
+                      value={this.state.identifying_name}
+                      placeholder="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
                     />
-                    {this.state.formErrors.protocol &&
-                      this.state.formErrors.protocol !== "required" && (
-                        <div className="invalid-feedback">
-                          {this.state.formErrors.protocol}
-                        </div>
-                      )}
                   </div>
                 )}
                 {this.props.readOnly && (
-                  <div className="col-sm-8 col-form-label">
-                    <p>{this.state.protocol}</p>
+                  <div>
+                    <input type="text" readonly class="form-control" id="static_identifying_name" value={this.state.identifying_name}></input>
                   </div>
                 )}
-                <div className="col-sm-1 my-auto text-center">
+               
+              </div>
+              <div className="form-group">
+                <label
+                  htmlFor="protocol">
+                  Case Selection Protocol <span className="text-danger">*</span>
                   <span className="text-danger inline-icon">
                     <FontAwesomeIcon icon={faUserShield} />
                   </span>
@@ -983,143 +953,44 @@ class DonorForm extends Component {
                       </p>
                     </ReactTooltip>
                   </span>
-                </div>
-              </div>
-              {/* {(!this.props.readOnly ||
-                this.state.protocol_file_name !== undefined) && (
-                <div className="form-group row">
-                  <label
-                    htmlFor="protocol"
-                    className="col-sm-3 col-form-label text-right"
-                  >
-                    Protocol document <span className="text-danger">*</span>
-                  </label>
-                  {!this.props.readOnly && (
-                    <React.Fragment>
-                      <div className="col-sm-6">
-                        <div className="custom-file">
-                          <input
-                            ref={this.protocolFile}
-                            type="file"
-                            name="protocol_file"
-                            key={this.protocolFileKey}
-                            className={
-                              "custom-file-input " +
-                              this.errorClass(
-                                this.state.formErrors.protocol_file
-                              )
-                            }
-                            id="protocol_file"
-                            onChange={this.handleInputChange}
-                            placeholder="A brief description of the donor"
-                            accept=".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"
-                          />
-                          <label
-                            className="custom-file-label"
-                            htmlFor="protocol_file"
-                          >
-                            {this.state.protocol_file_name}
-                          </label>
-                          {this.state.formErrors.protocol_file &&
-                            this.state.formErrors.protocol_file !==
-                              "required" && (
-                              <div className="invalid-feedback">
-                                {this.state.formErrors.protocol_file}
-                              </div>
-                            )}
-                        </div>
-                        <small
-                          id="protocol_file_help"
-                          className="form-text text-muted"
-                        >
-                          doc, docx and pdf files only
-                        </small>
-                      </div>
-                      <div className="col-sm-2">
-                        {this.state.protocol_file_name &&
-                          this.state.protocol_file_name !== "Choose a file" && (
-                            <button
-                              type="button"
-                              className="btn btn-danger"
-                              onClick={this.handleDeleteProtocolFile}
-                            >
-                              <FontAwesomeIcon
-                                className="inline-icon"
-                                icon={faTimes}
-                              />
-                              Delete
-                            </button>
-                          )}
-                      </div>
-                    </React.Fragment>
-                  )}
-                  {this.props.readOnly && (
-                    <div className="col-sm-9 col-form-label">
-                      <p>{this.state.protocol_file_name}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-          {(!this.props.readOnly ||
-            this.state.open_consent !== undefined) && (
-            <div className='form-group row'>
-              <label
-                htmlFor='protected_access_level'
-                className='col-sm-3 col-form-label text-right'
-              >
-                Open Consent
-              </label>
-              {!this.props.readOnly && (
-                <div className='col-sm-9'>
-                  <div className='form-check form-check-inline'>
+                </label>
+                {!this.props.readOnly && (
+                  <div>
                     <input
-                      className='form-check-input'
-                      type='checkbox'
-                      name='open_consent'
-                      id='open_consent'
-                      checked={this.state.open_consent}
+                      ref={this.protocol}
+                      type="text"
+                      name="protocol"
+                      id="protocol"
+                      className={
+                        "form-control " +
+                        this.errorClass(this.state.formErrors.protocol)
+                      }
                       onChange={this.handleInputChange}
+                      value={this.state.protocol}
+                      placeholder="protocols.io DOI"
                     />
-                    <label className='form-check-label' htmlFor='open_consent'>
-                      This donor was registered with an <strong>open consent</strong> status.<br/>This status allows consortium users to access all of the data associated with this donor.  
-                    </label>
+                    {this.state.formErrors.protocol &&
+                      this.state.formErrors.protocol !== "required" && (
+                        <div className="invalid-feedback">
+                          {this.state.formErrors.protocol}
+                        </div>
+                      )}
                   </div>
-                </div>
-              )}
-              {this.props.readOnly && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.open_consent}</p>
-                </div>
-              )}
-			</div>
-			)} */}
+                )}
+                {this.props.readOnly && (
+                  <div>
+                    <input type="text" readonly class="form-control" id="static_protocol" value={this.state.protocol}></input>
+
+                  </div>
+                )}
+               
+              </div>
               {(!this.props.readOnly ||
                 this.state.description !== undefined) && (
-                <div className="form-group row">
+                <div className="form-group">
                   <label
-                    htmlFor="description"
-                    className="col-sm-3 col-form-label text-right"
-                  >
+                    htmlFor="description">
                     Description
-                  </label>
-                  {!this.props.readOnly && (
-                    <div className="col-sm-8">
-                      <textarea
-                        type="text"
-                        name="description"
-                        id="description"
-                        className="form-control"
-                        onChange={this.handleInputChange}
-                        value={this.state.description}
-                      />
-                    </div>
-                  )}
-                  {this.props.readOnly && (
-                    <div className="col-sm-8 col-form-label">
-                      <p>{truncateString(this.state.description, 400)}</p>
-                    </div>
-                  )}
-                  <div className="col-sm-1 my-auto text-center">
                     <span className="invisible text-danger inline-icon">
                       <FontAwesomeIcon icon={faQuestionCircle} />
                     </span>
@@ -1140,7 +1011,27 @@ class DonorForm extends Component {
                         </p>
                       </ReactTooltip>
                     </span>
-                  </div>
+                  </label>
+                  {!this.props.readOnly && (
+                    <div>
+                      <textarea
+                        type="text"
+                        name="description"
+                        id="description"
+                        className="form-control"
+                        onChange={this.handleInputChange}
+                        value={this.state.description}
+                      />
+                    </div>
+                  )}
+                  {this.props.readOnly && (
+                    <div>
+                      {/*<p>{truncateString(this.state.description, 400)}</p>*/}
+                       <input type="text" readonly class="form-control" id="static_description" value={this.state.description}></input>
+
+                    </div>
+                  )}
+                 
                 </div>
               )}
               <div className="form-group row">
@@ -1304,6 +1195,7 @@ class DonorForm extends Component {
               )}
               {this.renderButtons()}
             </form>
+            </Paper>
           </div>
         </div>
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
@@ -1314,7 +1206,7 @@ class DonorForm extends Component {
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}
         />
-        </Paper>
+        
       </React.Fragment>
     );
   }
