@@ -115,6 +115,7 @@ export const TISSUE_TYPES = [
 ];
 
 export const ORGAN_TYPES = {
+  AO: "Aorta",
   BL: "Bladder",
   BR: "Brain",
   LB: "Bronchus (Left)",
@@ -146,11 +147,15 @@ export const ORGAN_TYPES = {
   LY18: "Lymph Node 18",
   LY19: "Lymph Node 19",
   LY20: "Lymph Node 20",
+  PA: "Pancreas",
+  PL: "Placenta",
   SI: "Small Intestine",
+  SK: "Skin",
   SP: "Spleen",
   TH: "Thymus",
   TR: "Trachea",
   UR: "Ureter",
+  UT: "Uterus",
   OT: "Other"
 };
 
