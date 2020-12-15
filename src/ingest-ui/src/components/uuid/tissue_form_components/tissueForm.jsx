@@ -1857,7 +1857,10 @@ class TissueForm extends Component {
                         />
                       </div>
                       { this.state.source_entity &&
-                        (this.state.source_entity.specimen.organ === "LK" ||
+                          (this.state.source_entity.specimen.organ === "LK" ||
+			   this.state.source_entity.specimen.organ === "HT" ||
+			   this.state.source_entity.specimen.organ === "SP" ||
+   			   this.state.source_entity.specimen.organ === "LI" ||
                           this.state.source_entity.specimen.organ === "RK") && (
                           <div className="col-sm-4">
                             <small>
@@ -1868,6 +1871,9 @@ class TissueForm extends Component {
                         )}
                       { this.state.source_entity &&
                         (this.state.source_entity.specimen.organ !== "LK" &&
+			 this.state.source_entity.specimen.organ !== "HT" &&
+			 this.state.source_entity.specimen.organ !== "SP" &&
+			 this.state.source_entity.specimen.organ !== "LI" &&
                           this.state.source_entity.specimen.organ !== "RK") && (
                           <div className="col-sm-4">
                             <small>
@@ -1933,7 +1939,7 @@ class TissueForm extends Component {
 
             {this.state.ids &&
               (this.props.editingEntity && this.props.editingEntities.length > 1 &&
-                (!["LK", "RK", "HT", "SP"].includes(this.state.organ))) && (
+               (!["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ))) && (
                 <React.Fragment>
                   <div className="form-group">
                     <label
@@ -1964,7 +1970,7 @@ class TissueForm extends Component {
             {this.props.editingEntity &&
               this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              (["LK", "RK", "HT", "SP"].includes(this.state.source_entity.specimen.organ)) && (
+             (["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.specimen.organ)) && (
                 <React.Fragment>
                   <div className="form-group">
                     <label
@@ -1995,7 +2001,7 @@ class TissueForm extends Component {
             {!this.props.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              ["LK", "RK", "HT", "SP"].includes(this.state.source_entity.specimen.organ) &&
+             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.specimen.organ) &&
               (
                 <div className="form-group">
                   <label
@@ -2074,7 +2080,7 @@ class TissueForm extends Component {
             {this.props.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              ["LK", "RK", "HT", "SP"].includes(this.state.source_entity.specimen.organ) &&
+             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.specimen.organ) &&
               (
                 <div className="form-group row">
                   <label

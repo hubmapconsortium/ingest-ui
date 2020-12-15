@@ -58,8 +58,8 @@ class RUIIntegration extends Component {
     gtag('js', new Date());
     gtag('config', 'UA-136932895-2');
 
-    const organ_info = ORGAN_TYPES[this.props.organ].split(" ");
-    const organ_name = organ_info[0].toLowerCase();
+    const organ_info = ORGAN_TYPES[this.props.organ].split("(");
+    const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
     const sex = this.props.sex;
     const user_name = this.props.user;
