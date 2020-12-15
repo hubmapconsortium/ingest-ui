@@ -939,14 +939,16 @@ class TissueForm extends Component {
     if (this.props.editingEntity) {
       if (this.props.readOnly) {
         return (
-          <div className="row">
-            <div className="col-sm-4 offset-sm-4">
+          <div className="row"><div className="col-sm-12">
+          <Divider />
+          </div>
+            <div className="col-sm-12 text-right pads">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-primary"
                 onClick={() => this.props.handleCancel()}
               >
-                Back
+                Back to Search
               </button>
             </div>
           </div>
@@ -954,10 +956,13 @@ class TissueForm extends Component {
       } else {
         return (
           <div className="row">
-            <div className="col-sm-4 offset-sm-2 text-center">
+          <div className="col-sm-12">
+            <Divider />
+          </div>
+            <div className="col-sm-12 text-right pads">
               <button
                 type="submit"
-                className="btn btn-primary btn-block"
+                className="btn btn-primary"
                 disabled={this.state.submitting}
               >
                 {this.state.submitting && (
@@ -969,14 +974,12 @@ class TissueForm extends Component {
                 )}
                 {!this.state.submitting && "Update"}
               </button>
-            </div>
-            <div className="col-sm-4">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-link"
                 onClick={() => this.props.handleCancel()}
               >
-                Cancel
+                Back to Search
               </button>
             </div>
           </div>
@@ -986,12 +989,13 @@ class TissueForm extends Component {
       return (
 
         <div className="row"> 
-          <div className="col-sm-12 pads"><Divider /></div>
-  
-            <div className="col-sm-4 offset-sm-3 text-center">
+          <div className="col-sm-12">
+              <Divider />
+            </div>
+            <div className="col-md-12 text-right pads">
             <button
               type="submit"
-              className="btn btn-primary btn-block"
+              className="btn btn-primary"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (
@@ -1003,14 +1007,12 @@ class TissueForm extends Component {
               )}
               {!this.state.submitting && "Generate ID"}
             </button>
-            </div>
-            <div className="col-sm-4">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-link"
               onClick={() => this.props.handleCancel()}
             >
-              Cancel
+              Back to Search
             </button>
             </div>
         </div>
@@ -1417,7 +1419,7 @@ class TissueForm extends Component {
                       autoComplete='off'
                     />
                      <button
-                      className="btn btn-secondary"
+                      className="btn btn-outline-secondary"
                       type="button"
                       onClick={this.handleLookUpClick}
                     >
@@ -1460,9 +1462,13 @@ class TissueForm extends Component {
               )}
               {this.props.readOnly && (
                 <React.Fragment>
-                  <div className="col-sm-9 col-form-label">
+                 <div>
+                    <input type="text" readOnly className="form-control" id="static_source_uuid" value={this.state.source_uuid}></input>
+                  </div>
+                  {/*<div className="col-sm-9 col-form-label">
                     <p>{this.state.source_uuid}</p>
                   </div>{" "}
+                */}
                 </React.Fragment>
               )}
             
@@ -1618,6 +1624,7 @@ class TissueForm extends Component {
               )}
               {this.props.readOnly && (
                 <React.Fragment>
+            
                   <div className="col-sm-9 col-form-label">
                     <p>
                       {
@@ -1628,7 +1635,8 @@ class TissueForm extends Component {
                       {this.state.specimen_type_other &&
                         " - " + this.state.specimen_type_other}
                     </p>
-                  </div>
+                    </div>
+                  
                 </React.Fragment>
               )}
             
@@ -1684,7 +1692,7 @@ class TissueForm extends Component {
                 )}
                 {this.props.readOnly && (
                   <div>
-                   <input type="text" readonly class="form-control" id="static_description" value={this.state.organ === "OT" ? this.state.organ_other : ORGAN_TYPES[this.state.organ]}></input>
+                   <input type="text" readOnly className="form-control" id="static_organ" value={this.state.organ === "OT" ? this.state.organ_other : ORGAN_TYPES[this.state.organ]}></input>
 
                     {/*<p>
                       {this.state.organ === "OT"
@@ -1723,7 +1731,7 @@ class TissueForm extends Component {
                   )}
                   {this.props.readOnly && (
                     <div>
-                    <input type="text" readonly class="form-control" id="static_visit" value={this.state.visit}></input>
+                    <input type="text" readOnly className="form-control" id="static_visit" value={this.state.visit}></input>
                     </div>
                   )}
                 </div>
@@ -1777,8 +1785,8 @@ class TissueForm extends Component {
                 </div>
               )}
               {this.props.readOnly && (
-                <div className="col-sm-9 col-form-label">
-                  <p>{this.state.protocol}</p>
+                <div>
+                    <input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol}></input>
                 </div>
               )}
             
@@ -1913,9 +1921,10 @@ class TissueForm extends Component {
                     </div>
                   )}
                   {this.props.readOnly && (
-                    <div className="col-sm-9 col-form-label">
-                      <p>{this.state.lab_tissue_id}</p>
-                    </div>
+                      <div>
+                    <input type="text" readOnly className="form-control" id="static_lab_tissue_id" value={this.state.lab_tissue_id}></input>
+                </div>
+                   
                   )}
                 
                 </div>
@@ -2207,9 +2216,10 @@ class TissueForm extends Component {
                   </div>
                 )}
                 {this.props.readOnly && (
-                  <div className="col-sm-9 col-form-label">
-                    <p>{truncateString(this.state.description, 250)}</p>
-                  </div>
+                    <div>
+                      {/*<p>{truncateString(this.state.description, 400)}</p>*/}
+                       <input type="text" readOnly className="form-control" id="static_description" value={this.state.description}></input>
+                    </div>
                 )}
                 
               </div>

@@ -4,11 +4,10 @@ import '../../App.css';
 const Intro = () => (
   <div className="row">
     <div className="col-sm">
-      <h1 className="portal-jss114">Registration for donors, organs and tissue</h1>
+      <h2 className="portal-jss114">Data Ingest Portal</h2>
 
       <p className="lead text-muted portal-jss116">
-        Generate unique identifiers which will be used consortium wide to track
-        sample and associate data with samples.
+        Register and generate unique identifiers for donors and samples
       </p>
     </div>
   </div>

@@ -12,7 +12,8 @@ import {
   faUserShield,
   faSpinner,
   faPaperclip,
-  faLink
+  faLink,
+  faImages
   // faTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { truncateString } from "../../../utils/string_helper";
@@ -496,11 +497,14 @@ class DonorForm extends Component {
       if (this.props.readOnly) {
         return (
           <div className="row">
-            <Divider />
-            <div className="col-sm-6 offset-sm-4 pads">
+           <div className="col-sm-12">
+          <Divider />
+          </div>
+      
+            <div className="col-sm-12 text-right pads">
               <button
                 type="button"
-                className="btn btn-secondary btn-block"
+                className="btn btn-primary"
                 onClick={() => this.props.handleCancel()}
               >
                 Back to Search
@@ -514,7 +518,7 @@ class DonorForm extends Component {
           <div className="col-sm-12">
           <Divider />
           </div>
-            <div className="col-sm-6 text-center pads">
+            <div className="col-md-12 text-right pads">
               <button
                 type="submit"
                 className="btn btn-primary"
@@ -529,14 +533,13 @@ class DonorForm extends Component {
                 )}
                 {!this.state.submitting && "Update"}
               </button>
-              </div>
-              <div className="col-sm-4 text-center pads">
+            
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-link"
                 onClick={() => this.props.handleCancel()}
               >
-                Cancel
+                 Back to Search
               </button>
           </div>
           </div>
@@ -545,10 +548,13 @@ class DonorForm extends Component {
     } else {
       return (
         <div className="row">
-          <div className="col-sm-4 offset-sm-3 text-center">
+        <div className="col-sm-12">
+          <Divider />
+        </div>
+            <div className="col-md-12 text-right pads">
             <button
               type="submit"
-              className="btn btn-primary btn-block"
+              className="btn btn-primary"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (
@@ -560,14 +566,13 @@ class DonorForm extends Component {
               )}
               {!this.state.submitting && "Generate ID"}
             </button>
-          </div>
-          <div className="col-sm-4">
+         
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-link"
               onClick={() => this.props.handleCancel()}
             >
-              Cancel
+              Back to Search
             </button>
           </div>
         </div>
@@ -827,12 +832,18 @@ class DonorForm extends Component {
                   </div>
                 )}
               </div>
+              <div className="text-danger">
+                <p>
+                * required
+                </p>
+              </div>
               <div className="form-group">
                 <label
                   htmlFor="lab_donor_id">
                   Lab's Donor Non-PHI ID 
-                   <span className="text-danger inline-icon">
-                    <FontAwesomeIcon icon={faUserShield} />
+                </label>
+                 <span className="px-2">
+                    <FontAwesomeIcon className="text-danger" icon={faUserShield} />
                   </span>
                   <span>
                     <FontAwesomeIcon
@@ -852,7 +863,6 @@ class DonorForm extends Component {
                       </p>
                     </ReactTooltip>
                   </span>     
-                </label>
                 {!this.props.readOnly && (
                   <div>
                     <input
@@ -881,7 +891,9 @@ class DonorForm extends Component {
                 <label
                   htmlFor="identifying_name">
                   Deidentified Name <span className="text-danger">*</span>
-                   <span className="text-danger inline-icon">
+                </label>
+  
+                   <span className="text-danger px-2">
                     <FontAwesomeIcon icon={faUserShield} />
                   </span>
                   <span>
@@ -902,7 +914,7 @@ class DonorForm extends Component {
                       </p>
                     </ReactTooltip>
                   </span>
-                </label>
+               
                 {!this.props.readOnly && (
                   <div>
                     <input
@@ -930,7 +942,8 @@ class DonorForm extends Component {
                 <label
                   htmlFor="protocol">
                   Case Selection Protocol <span className="text-danger">*</span>
-                  <span className="text-danger inline-icon">
+                  </label>
+                  <span className="text-danger px-2">
                     <FontAwesomeIcon icon={faUserShield} />
                   </span>
                   <span>
@@ -953,7 +966,7 @@ class DonorForm extends Component {
                       </p>
                     </ReactTooltip>
                   </span>
-                </label>
+                
                 {!this.props.readOnly && (
                   <div>
                     <input
@@ -1034,10 +1047,10 @@ class DonorForm extends Component {
                  
                 </div>
               )}
-              <div className="form-group row">
+              <div className="form-group">
                 <label
                     htmlFor="donor_metadata_status"
-                    className="col-sm-3 col-form-label text-right"
+                    className="col-form-label text-right"
                   >
                     Donor Metadata Status
                   </label>
@@ -1056,7 +1069,7 @@ class DonorForm extends Component {
                     )}
                   </div>
               </div>
-              {(!this.props.readOnly || this.state.metadatas.length > 0) && (
+              {/*(!this.props.readOnly || this.state.metadatas.length > 0) && (
                 <div className="form-group row">
                   <label
                     htmlFor="metadata"
@@ -1120,19 +1133,18 @@ class DonorForm extends Component {
                     </span>
                   </div>
                 </div>
-              )}
+              )*/}
               {(!this.props.readOnly || this.state.images.length > 0) && (
-                <div className="form-group row">
-                  <label
-                    htmlFor="image"
-                    className="col-sm-3 col-form-label text-right"
-                  >
+                <div className="form-group">
+                  {/*<label
+                    htmlFor="image">
                     Image
                   </label>
-                  <div className="col-sm-8">
+                */}
+                  <div>
                     {!this.props.readOnly && (
-                      <div className="row">
-                        <div className="col-sm-5">
+                      <div>
+                       
                           <button
                             type="button"
                             onClick={this.handleAddImage}
@@ -1140,18 +1152,21 @@ class DonorForm extends Component {
                           >
                             <FontAwesomeIcon
                               className="inline-icon"
-                              icon={faPlus}
+                              icon={faPaperclip}
                               title="Uploaded images (multiple allowed)."
                             />
-                            Add Image
+                            Attach an Image(s)
                           </button>
-                          <p className="portal-alert-text">
-                          <FontAwesomeIcon icon={faUserShield} /> De-identified images only
-                          </p>
-                        </div>
-                      
+                           <span className="text-danger inline-icon">
+                            <FontAwesomeIcon icon={faUserShield} /> De-identified images only
+                          </span>
                       </div>
                     )}
+                     {(this.state.images.length > 0) && (
+                      <div>
+                        <FontAwesomeIcon icon={faImages} /> Attached Image(s)
+                        </div>
+                      )}
                     {this.state.images.map(image => (
                       <ImageUpload
                         key={image.id}
@@ -1165,27 +1180,9 @@ class DonorForm extends Component {
                       />
                     ))}
                   </div>
-                  <div className="col-sm-1 my-auto text-center">
-                    <span className="invisible text-danger inline-icon">
-                      <FontAwesomeIcon icon={faQuestionCircle} />
-                    </span>
-                    <span>
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="image_tooltip"
-                      />
-                      <ReactTooltip
-                        id="image_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <p>Uploaded images (multiple allowed)</p>
-                      </ReactTooltip>
-                    </span>
-                  </div>
+                 
                 </div>
+              
               )}
               {this.state.submit_error && (
                 <div className="alert alert-danger col-sm-12" role="alert">

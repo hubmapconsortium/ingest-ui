@@ -491,6 +491,7 @@ renderTable() {
             <TableCell align="center">Lab Group</TableCell>
             <TableCell align="center">Lab's Non-PHI Name/ID</TableCell>
             <TableCell align="center">Entered By</TableCell>
+            <TableCell align="center">Actions</TableCell>
         
           </TableRow>
         </TableHead>

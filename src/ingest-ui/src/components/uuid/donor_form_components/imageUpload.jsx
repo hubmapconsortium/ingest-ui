@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faImage } from "@fortawesome/free-solid-svg-icons";
 
 class ImageUpload extends Component {
   state = {
@@ -74,12 +74,14 @@ class ImageUpload extends Component {
 
   render() {
     return (
-      <div className="card mt-3 mb-3">
+      <div className="card">
         <div className="card-body">
           <div className="row">
+           {!this.props.readOnly && (
             <div className="col-sm-3">
-              <h4>Image {this.props.id}</h4>
+              <h5><FontAwesomeIcon icon={faImage} /> Image {this.props.id}</h5>
             </div>
+            )}
             {!this.props.readOnly && (
               <div className="col-sm-2 offset-sm-7 text-right">
                 <button
@@ -115,11 +117,11 @@ class ImageUpload extends Component {
                 </div>
               </div>
             )}
-            {this.props.readOnly && (
+            {/*this.props.readOnly && (
               <div className="col-sm-9 col-form-label">
                 <p>{this.state.image_file_name}</p>
               </div>
-            )}
+            )*/}
             {!this.props.readOnly && (
               <div className="col-sm-12">
                 <textarea
@@ -139,9 +141,11 @@ class ImageUpload extends Component {
                 />
               </div>
             )}
+        
             {this.props.readOnly && (
               <div className="col-sm-9 col-form-label">
-                <p>{this.state.image_file_description}</p>
+                <FontAwesomeIcon icon={faImage} size="2x" /> {this.state.image_file_name}
+                <p><small>{this.state.image_file_description}</small></p>
               </div>
             )}
           </div>

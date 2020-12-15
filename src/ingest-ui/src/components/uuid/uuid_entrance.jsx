@@ -3,6 +3,9 @@ import axios from "axios";
 import Intro from "./intro";
 import EntityList from "./entityList";
 import Forms from "./forms";
+import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
+import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
+
 class UUIDEntrance extends Component {
   state = {};
 
@@ -116,7 +119,7 @@ class UUIDEntrance extends Component {
                         className="dropdown-item"
                         onClick={() => this.handleCreateNewEntityClick("donor")}
                       >
-                        Donor
+                        <DONOR_IMAGE /> Donor
                       </button>
                       <button
                         className="dropdown-item"
@@ -124,7 +127,7 @@ class UUIDEntrance extends Component {
                           this.handleCreateNewEntityClick("sample");
                         }}
                       >
-                        Sample
+                        <SAMPLE_IMAGE /> Sample
                       </button>
                     </div>
                   )}
