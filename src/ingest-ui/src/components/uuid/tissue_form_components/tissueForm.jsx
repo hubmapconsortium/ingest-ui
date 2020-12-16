@@ -8,7 +8,7 @@ import {
   faSpinner,
   faPlus,
   faUserShield,
-  faSearch
+  faSearch, faPaperclip
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
@@ -2302,11 +2302,11 @@ class TissueForm extends Component {
                         <button
                           type="button"
                           onClick={this.handleAddMetadata}
-                          className="btn btn-secondary"
+                          className="btn btn-secondary btn-block"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
-                            icon={faPlus}
+                            icon={faPaperclip}
                             title="Uploaded meta data"
                           />
 	                          Attach Metadata
@@ -2339,18 +2339,19 @@ class TissueForm extends Component {
                         <button
                           type="button"
                           onClick={this.handleAddImage}
-                          className="btn btn-secondary"
+                          className="btn btn-secondary btn-block"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
-                            icon={faPlus}
+                            icon={faPaperclip}
                             title="Uploaded images (multiple allowed)."
                           />
 	                          Attach Image(s)
-	                        </button> <span className="text-danger inline-icon">
+	                        </button> 
+                          <small id="emailHelp" class="form-text text-muted"> 
+                          <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />
-                          </span>
-                
+                          </span> Upload de-identified images only</small>
                       </div>
                       
                     </div>

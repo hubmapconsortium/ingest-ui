@@ -17,7 +17,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
-import apiGetUserGroups from '../../service/search_api';
+import { api_users_groups, api_search, api_es_query_builder } from '../../service/search_api';
+
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
 import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
@@ -38,11 +39,12 @@ class EntityList extends Component {
     page: 0,
     setPage: 0,
     rowsPerPage: 10,
-    setRowsPerPage: 10
+    setRowsPerPage: 10,
   };
 
   constructor(props) {
     super(props);
+
 
     const config = {
       headers: {
@@ -52,50 +54,49 @@ class EntityList extends Component {
       }
     };
 
-
-  //   const display_names = getGroups => {
-  //     let d = apiGetUserGroups(config);
-  //     console.log('Groups...');
-  //     console.log(d);
-  //     this.setState(
-  //       {
-  //         group_name: naturalLanguageJoin(display_names),
-  //         filter_group: display_names[0]
-  //       },
-  //       () => {
-  //         this.filterEntity();
-  //       }
-  //     );
-  //   };
-  // }
-    
-    axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-        config
-      )
-      .then(res => {
-        const display_names = res.data.groups
-          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-          .map(g => {
-            return g.displayname;
-          });
-        this.setState(
+    api_users_groups(config).then((groups) => {
+      console.log('Groups...');
+      console.log(naturalLanguageJoin(groups));
+      this.setState(
           {
-            group_name: naturalLanguageJoin(display_names),
-            filter_group: display_names[0]
+            group_name: naturalLanguageJoin(groups),
+            filter_group: groups[0]
           },
           () => {
             this.filterEntity();
           }
         );
-      })
-      .catch(err => {
-        if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
+      
+    });
+
+    
+    // axios
+    //   .get(
+    //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+    //     config
+    //   )
+    //   .then(res => {
+    //     const display_names = res.data.groups
+    //       .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+    //       .map(g => {
+    //         return g.displayname;
+    //       });
+    //     this.setState(
+    //       {
+    //         group_name: naturalLanguageJoin(display_names),
+    //         filter_group: display_names[0]
+    //       },
+    //       () => {
+    //         this.filterEntity();
+    //       }
+    //     );
+    //   })
+    //   .catch(err => {
+    //     if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
   }
 
   // refreshList() {
@@ -239,7 +240,7 @@ class EntityList extends Component {
     let params = {};
 
     if (group !== "All Groups") {
-      params["group"] = group;
+      params["group_name"] = "Vanderbilt TMC"; //group;
     }
     if (sample_type) {
       params["specimen_type"] = sample_type;
@@ -248,44 +249,60 @@ class EntityList extends Component {
       params["search_term"] = keywords;
     }
 
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      },
-      params: params
-    };
+    let query = api_es_query_builder(params);
 
-    console.log(params);
-    
-    axios
-      .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-      .then(res => {
-        let entities = {};
-        res.data.specimens.forEach(s => {
-          if (entities[s.properties.uuid]) {
-            entities[s.properties.uuid].push(s);
-          } else {
-            entities[s.properties.uuid] = [s];
-          }
-        });
-        this.setState({
+    // const options = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //     "Content-Type": "application/json"
+    //   }
+    // };
+
+    api_search(query)
+    .then((entities) => {
+      console.log('Search results...');
+      console.log(entities);
+      this.setState(
+          {
           loading: false,
           entities: entities,
-          filtered_totals: Object.keys(entities).length
-        });
-      })
-      .catch(err => {
-        if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
-
-    this.setState({
-      filtered: true
+          filtered_totals: Object.keys(entities).length,
+          filtered: true
+          }
+        );
     });
+
+
+    //console.log(getUserGroups(config));
+
+    // axios
+    //   .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
+    //   .then(res => {
+    //     let entities = {};
+    //     res.data.specimens.forEach(s => {
+    //       if (entities[s.properties.uuid]) {
+    //         entities[s.properties.uuid].push(s);
+    //       } else {
+    //         entities[s.properties.uuid] = [s];
+    //       }
+    //     });
+    //     this.setState({
+    //       loading: false,
+    //       entities: entities,
+    //       filtered_totals: Object.keys(entities).length
+    //     });
+    //   })
+    //   .catch(err => {
+    //     if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
+
+    // this.setState({
+    //   filtered: true
+    // });
   };
 
   clearFilterEntity = () => {
@@ -500,7 +517,7 @@ renderTable() {
                 .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
                 .map(es => {
                 const entity = es[0];
-                let first_lab_id = entity.hubmap_identifier;
+                let first_lab_id = entity.hubmap_display_id;
                 let last_lab_id = "";
                 let id_common_part = first_lab_id.substring(
                   0,
@@ -508,19 +525,19 @@ renderTable() {
                 );
                 let first_lab_id_num = "";
                 let last_lab_id_num = "";
-                let display_id = entity.hubmap_identifier;
+                let display_id = entity.hubmap_display_id;
 
                 if (es.length > 1) {
                   es.sort((a, b) => {
                     if (
                       parseInt(
-                        a.hubmap_identifier.substring(
-                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        a.hubmap_display_id.substring(
+                          a.hubmap_display_id.lastIndexOf("-") + 1
                         )
                       ) >
                       parseInt(
-                        b.hubmap_identifier.substring(
-                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        b.hubmap_display_id.substring(
+                          a.hubmap_display_id.lastIndexOf("-") + 1
                         )
                       )
                     ) {
@@ -528,13 +545,13 @@ renderTable() {
                     }
                     if (
                       parseInt(
-                        b.hubmap_identifier.substring(
-                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        b.hubmap_display_id.substring(
+                          a.hubmap_display_id.lastIndexOf("-") + 1
                         )
                       ) >
                       parseInt(
-                        a.hubmap_identifier.substring(
-                          a.hubmap_identifier.lastIndexOf("-") + 1
+                        a.hubmap_display_id.substring(
+                          a.hubmap_display_id.lastIndexOf("-") + 1
                         )
                       )
                     ) {
@@ -542,8 +559,8 @@ renderTable() {
                     }
                     return 0;
                   });
-                  first_lab_id = es[0].hubmap_identifier;
-                  last_lab_id = es[es.length - 1].hubmap_identifier;
+                  first_lab_id = es[0].hubmap_display_id;
+                  last_lab_id = es[es.length - 1].hubmap_display_id;
 
                   first_lab_id_num = first_lab_id.substring(
                     first_lab_id.lastIndexOf("-") + 1,
@@ -559,7 +576,7 @@ renderTable() {
                 }
                 return (
                   <React.Fragment key={display_id}>
-                     <TableRow className="portal-jss300 portal-jss298" key={entity.hubmap_identifier}>
+                     <TableRow className="portal-jss300 portal-jss298" key={entity.hubmap_display_id}>
                       
                     
                       <TableCell align="left" className="nowrap">
@@ -594,12 +611,12 @@ renderTable() {
                             ]
                           : entity.datatype}
                       </TableCell>
-                       <TableCell align="left" className="nowrap">{entity.properties.provenance_group_name}</TableCell>
+                       <TableCell align="left" className="nowrap">{entity.group_name}</TableCell>
                       <TableCell align="left">
                         {entity.properties.label ||
                           entity.properties.lab_tissue_id}
                       </TableCell>
-                      <TableCell align="left">{entity.properties.provenance_user_email}</TableCell>
+                      <TableCell align="left">{entity.created_by_user_email}</TableCell>
                       <TableCell align="left" className="nowrap"> 
                         <button
                           className="btn btn-light btn-sm"

@@ -17,6 +17,7 @@
     "axios": "^0.19.2",
     "axios-hooks": "^2.2.0",
     "bootstrap": "^4.3.1",
+    "elastic-builder": "^2.9.0",
     "react": "^16.11.0",
     "react-bootstrap": "^1.0.1",
     "react-dom": "^16.11.0",

@@ -4,19 +4,19 @@ import Divider from '@material-ui/core/Divider';
 import '../../../App.css';
 import axios from "axios";
 import ImageUpload from "./imageUpload";
-import MetadataUpload from "../metadataUpload";
+//import MetadataUpload from "../metadataUpload";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
-  faPlus,
+ // faPlus,
   faUserShield,
   faSpinner,
   faPaperclip,
-  faLink,
+  //faLink,
   faImages
   // faTimes
 } from "@fortawesome/free-solid-svg-icons";
-import { truncateString } from "../../../utils/string_helper";
+//import { truncateString } from "../../../utils/string_helper";
 import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import {
   validateRequired,
@@ -1157,9 +1157,10 @@ class DonorForm extends Component {
                             />
                             Attach an Image(s)
                           </button>
-                           <span className="text-danger inline-icon">
-                            <FontAwesomeIcon icon={faUserShield} /> De-identified images only
-                          </span>
+                         <small id="emailHelp" class="form-text text-muted"> 
+                          <span className="text-danger inline-icon">
+                            <FontAwesomeIcon icon={faUserShield} />
+                          </span> Upload de-identified images only</small>
                       </div>
                     )}
                      {(this.state.images.length > 0) && (
