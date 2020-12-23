@@ -42,18 +42,6 @@ export const SAMPLE_TYPES = [
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched"
   },
-  {
-    atacseq: "ATACseq",
-    codex: "CODEX",
-    rnaseq: "RNAseq",
-    scatacseq: "scATACseq",
-    scrnaseq: "scRNAseq",
-    seqfish: "seqFISH",
-    snatacseq: "snATACseq",
-    snrnaseq: "snRNAseq",
-    wes: "WES",
-    wgs: "WGS"
-  },
   { other: "Other" }
 ];
 
@@ -98,18 +86,6 @@ export const TISSUE_TYPES = [
     protein: "Protein",
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched"
-  },
-  {
-    atacseq: "ATACseq",
-    codex: "CODEX",
-    rnaseq: "RNAseq",
-    scatacseq: "scATACseq",
-    scrnaseq: "scRNAseq",
-    seqfish: "seqFISH",
-    snatacseq: "snATACseq",
-    snrnaseq: "snRNAseq",
-    wes: "WES",
-    wgs: "WGS"
   },
   { other: "Other" }
 ];
@@ -165,7 +141,3 @@ export const ORGAN_TYPES = {
   OT: "Other"
 };
 
-export const DATA_TYPES = ['AF', 'ATACseq-bulk', 'MxIF', 'CODEX', 'IMC', 'MALDI-IMS-neg',
-'MALDI-IMS-pos', 'PAS', 'bulk-RNA', 'SNAREseq', 'TMT-LC-MS', 'Targeted-Shotgun-LC-MS',
-'LC-MS-untargeted', 'WGS', 'scRNA-Seq-10x', 'sciATACseq', 'sciRNAseq', 'seqFish',
-'snATACseq', 'snRNAseq']
