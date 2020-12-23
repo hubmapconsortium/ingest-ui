@@ -45,6 +45,7 @@ src/ingest-ui/.env.*
 
 # misc
 .DS_Store
+src/ingest-ui/.DS_Store
 src/ingest-ui/npm-debug.log*
 src/ingest-ui/yarn-debug.log*
 src/ingest-ui/yarn-error.log*
