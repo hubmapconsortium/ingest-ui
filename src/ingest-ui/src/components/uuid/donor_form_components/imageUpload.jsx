@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faImage } from "@fortawesome/free-solid-svg-icons";
+import axios from 'axios';
 
 class ImageUpload extends Component {
   state = {
@@ -8,7 +9,8 @@ class ImageUpload extends Component {
     image_file_description: "",
     image_file_name: "Choose a file",
     imageFileValid: true,
-    imageFileDescriptionValid: true
+    imageFileDescriptionValid: true,
+    uploadPercentage: 0,
   };
 
   constructor(props) {
@@ -26,21 +28,55 @@ class ImageUpload extends Component {
     });
   }
 
-  handleImageFileChange = e => {
-    let arr = e.target.value.split("\\");
-    let file_name = arr[arr.length - 1];
-    if (file_name !== "") {
-      this.setState({
-        image_file: e.target.value,
-        image_file_name: file_name,
-        imageFileValid: true
-      });
-    } else {
-      this.setState({
-        image_file: e.target.value,
-        image_file_name: file_name,
-        imageFileValid: false
-      });
+  handleImageFileChange = ({ target: { files } }) => {
+    if (files[0]) {
+      let file_name = files[0].name;
+      this.props.onFileChange('image', this.props.id)
+        .then(() => {
+          if (file_name !== "") {
+            this.setState({
+              image_file: files[0],
+              image_file_name: file_name,
+              imageFileValid: true
+            }, () => {
+              let data = new FormData();
+              data.append('file', files[0]);
+              data.append('form_id', this.props.formId);
+              data.append('file_type', 'image');
+
+              const options = {
+                headers: {
+                  Authorization:
+                    "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+                  MAuthorization: "MBearer " + localStorage.getItem("info"),
+                  "Content-Type": "multipart/form-data"
+                },
+                onUploadProgress: (progressEvent) => {
+                  const { loaded, total } = progressEvent;
+                  let percent = Math.floor((loaded * 100) / total);
+                  if (percent < 100) {
+                    this.setState({ uploadPercentage: percent })
+                  }
+                }
+              };
+
+              axios.post(`${process.env.REACT_APP_SPECIMEN_API_URL}/files`, data, options)
+                .then(res => {
+                  this.setState({ uploadPercentage: 100 }, () => {
+                    setTimeout(() => {
+                      this.setState({ uploadPercentage: 0 })
+                    }, 1000);
+                  })
+                })
+            });
+          }
+        }).catch(() => {
+          this.setState({
+            image_file: files[0],
+            image_file_name: file_name,
+            imageFileValid: false
+          });
+        });
     }
   };
 
@@ -73,6 +109,7 @@ class ImageUpload extends Component {
   };
 
   render() {
+    const { uploadPercentage } = this.state;
     return (
       <div className="card">
         <div className="card-body">
@@ -109,6 +146,8 @@ class ImageUpload extends Component {
                       id={"image_file_" + +this.props.id}
                       onChange={this.handleImageFileChange}
                       ref={this.image_file}
+                      disabled={this.state.image_file_name != "" &&
+                                this.state.image_file_name != "Choose a file"}
                     />
                     <label className="custom-file-label" htmlFor="metadata">
                       {this.state.image_file_name}
@@ -117,11 +156,29 @@ class ImageUpload extends Component {
                 </div>
               </div>
             )}
-            {/*this.props.readOnly && (
+            {this.props.readOnly && (
               <div className="col-sm-9 col-form-label">
                 <p>{this.state.image_file_name}</p>
               </div>
-            )*/}
+            )}
+            </div>
+            {uploadPercentage > 0 &&
+              (<div className="row">
+                <div className="col-sm-12 pb-5">
+                  <div className="progress w-100">
+                    <div
+                      className={`progress-bar progress-bar-striped progress-bar-animated`}
+                      role="progressbar"
+                      aria-valuenow={uploadPercentage}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      style={{ width: `${uploadPercentage}%` }}>
+                      {uploadPercentage}%
+                  </div>
+                  </div>
+                </div>
+              </div>)}
+            <div className="row">
             {!this.props.readOnly && (
               <div className="col-sm-12">
                 <textarea

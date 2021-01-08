@@ -29,6 +29,7 @@ import GroupModal from "../groupModal";
 
 class DonorForm extends Component {
   state = {
+    form_id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
     visit: "",
     lab: "",
     lab_donor_id: "",
@@ -40,6 +41,10 @@ class DonorForm extends Component {
 
     images: [],
     metadatas: [],
+    new_metadatas: [],
+    deleted_metadatas: [],
+    new_images: [],
+    deleted_images: [],
     protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
 
@@ -55,7 +60,9 @@ class DonorForm extends Component {
       protocol_file: "",
       description: "",
       metadata_file: "",
-	  open_consent: false,
+      open_consent: false,
+      metadatas: "",
+      images: "",
     },
 
     show: false
@@ -350,19 +357,133 @@ class DonorForm extends Component {
     });
   };
 
-  handleDeleteImage = imageId => {
-    const images = this.state.images.filter(i => i.id !== imageId);
+  handleDeleteImage = id => {
+    const deleted_image = this.state.images.find(i => i.id === id);
+    const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
+    let deleted_images = [...this.state.deleted_images];
+    if (new_images.length === this.state.new_images.length){
+      deleted_images.push(deleted_image.file_name);
+    }
+    const images = this.state.images.filter(i => i.id !== id);
     this.setState({
-      images
+      images,
+      new_images,
+      deleted_images
     });
   };
 
-  handleDeleteMetadata = metadataId => {
-    const metadatas = this.state.metadatas.filter(i => i.id !== metadataId);
+  handleDeleteMetadata = id => {
+    const deleted_metadata = this.state.metadatas.find(i => i.id === id);
+    const new_metadatas = this.state.new_metadatas.filter(dm => dm !== deleted_metadata.file_name);
+    let deleted_metadatas = [...this.state.deleted_metadatas];
+    if (new_metadatas.length === this.state.new_metadatas.length){
+      deleted_metadatas.push(deleted_metadata.file_name);
+    }
+    const metadatas = this.state.metadatas.filter(i => i.id !== id);
     this.setState({
-      metadatas
+      metadatas,
+      new_metadatas,
+      deleted_metadatas
     });
   };
+
+  onFileChange = (type, id) => {
+    switch (type) {
+      case "metadata": {
+        const i = this.state.metadatas.findIndex(i => i.id === id);
+        let metadatas = [...this.state.metadatas];
+        metadatas[i].file_name = metadatas[i].ref.current.metadata_file.current.files[0].name;
+        let new_metadatas = [...this.state.new_metadatas];
+        new_metadatas.push(metadatas[i].file_name);
+        return new Promise((resolve, reject) => {
+          this.setState({
+            metadatas
+          }, () => {
+            if (!this.validateMetadataFiles(id)) {
+              metadatas[i].file_name = "";
+              this.setState({
+                metadatas
+              })
+              reject();
+            } else {
+              this.setState({
+                new_metadatas
+              })
+              resolve();
+            }
+          });
+        });
+        break;
+      }
+      case "image": {
+        const i = this.state.images.findIndex(i => i.id === id);
+        let images = [...this.state.images];
+        images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
+        let new_images = [...this.state.new_images];
+        new_images.push(images[i].file_name);
+        return new Promise((resolve, reject) => {
+          this.setState({
+            images,
+            new_images
+          }, () => {
+            if (!this.validateImagesFiles(id)) {
+              images[i].file_name = "";
+              this.setState({
+                images
+              })
+              reject();
+            } else {
+              this.setState({
+                new_images
+              })
+              resolve();
+            }
+          });
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  validateMetadataFiles = id => {
+    const file_names = this.state.metadatas.map(m => {
+      return m.file_name;
+    })
+
+    // Check if duplicated file name
+    if (file_names.length > new Set(file_names).size) {
+      const i = this.state.metadatas.findIndex(i => i.id === id);
+      let metadatas = [...this.state.metadatas];
+      metadatas[i].error = "Duplicate file name is not allowed."
+      this.setState({ metadatas })
+      return false;
+    }
+    const i = this.state.metadatas.findIndex(i => i.id === id);
+    let metadatas = [...this.state.metadatas];
+    metadatas[i].error = ""
+    this.setState({ metadatas })
+
+    return true;
+  }
+
+  validateImagesFiles = id => {
+    const file_names = this.state.images.map(i => {
+      return i.file_name;
+    })
+
+    // Check if duplicated file name
+    if (file_names.length > new Set(file_names).size) {
+      const i = this.state.images.findIndex(i => i.id === id);
+      let images = [...this.state.images];
+      images[i].error = "Duplicate file name is not allowed."
+      this.setState({ images })
+      return false;
+    }
+
+    return true;
+  }
 
   handleSubmit = e => {
     e.preventDefault();
@@ -389,13 +510,14 @@ class DonorForm extends Component {
               ? ""
               : this.state.protocol_file_name,
           description: this.state.description,
-          metadata_file:
-            this.state.metadata_file_name === "Choose a file"
-              ? ""
-              : this.state.metadata_file_name,
-          images: [],
           metadatas: [],
-		  open_consent: this.state.open_consent
+          new_metadatas: this.state.new_metadatas,
+          deleted_metadatas: this.state.deleted_metadatas,
+          images: [],
+          new_images: this.state.new_images,
+          deleted_images: this.state.deleted_images,
+          open_consent: this.state.open_consent,
+          form_id: this.state.form_id
         };
         if (this.state.selected_group) {
           data["user_group_uuid"] = this.state.selected_group;
@@ -405,46 +527,20 @@ class DonorForm extends Component {
         formData.append("protocol_file", this.state.protocol_file);
         formData.append("metadata_file", this.state.metadata_file);
         this.state.metadatas.forEach(i => {
-          if (i.ref.current.metadata_file.current.files[0]) {
-            data.metadatas.push({
-              id: "metadata_" + i.id,
-              file_name: i.ref.current.metadata_file.current.files[0].name
-            });
-            formData.append(
-              "metadata_" + i.id,
-              i.ref.current.metadata_file.current.files[0]
-            );
-          } else {
-            data.metadatas.push({
-              id: "metadata_" + i.id,
-              file_name: i.file_name
-            });
-          }
+          data.metadatas.push({
+            id: "metadata_" + i.id,
+            file_name: i.file_name
+          });
         });
         this.state.images.forEach(i => {
-          if (i.ref.current.image_file.current.files[0]) {
-            data.images.push({
-              id: "image_" + i.id,
-              file_name: i.ref.current.image_file.current.files[0].name,
-              description: i.ref.current.image_file_description.current.value.replace(
-                /"/g,
-                '\\"'
-              )
-            });
-            formData.append(
-              "image_" + i.id,
-              i.ref.current.image_file.current.files[0]
-            );
-          } else {
-            data.images.push({
-              id: "image_" + i.id,
-              file_name: i.file_name,
-              description: i.ref.current.image_file_description.current.value.replace(
-                /"/g,
-                '\\"'
-              )
-            });
-          }
+          data.images.push({
+            id: "image_" + i.id,
+            file_name: i.file_name,
+            description: i.ref.current.image_file_description.current.value.replace(
+              /"/g,
+              '\\"'
+            )
+          });
         });
         formData.append("data", JSON.stringify(data));
 
@@ -453,15 +549,15 @@ class DonorForm extends Component {
             Authorization:
               "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
             MAuthorization: "MBearer " + localStorage.getItem("info"),
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "application/json"
           }
         };
 
         if (this.props.editingEntity) {
           axios
             .put(
-              `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}`,
-              formData,
+              `${process.env.REACT_APP_SPECIMEN_API_URL}/donor/${this.props.editingEntity.uuid}`,
+              data,
               config
             )
             .then(res => {
@@ -473,8 +569,8 @@ class DonorForm extends Component {
         } else {
           axios
             .post(
-              `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens`,
-              formData,
+              `${process.env.REACT_APP_SPECIMEN_API_URL}/donor`,
+              data,
               config
             )
             .then(res => {
@@ -1104,6 +1200,9 @@ class DonorForm extends Component {
                         ref={metadata.ref}
                         error={metadata.error}
                         readOnly={this.props.readOnly}
+                        formId={this.state.form_id}
+                        onFileChange={this.onFileChange}
+                        validate={this.validateMetadataFiles}
                         onDelete={this.handleDeleteMetadata}
                       />
                     ))}
@@ -1177,6 +1276,9 @@ class DonorForm extends Component {
                         ref={image.ref}
                         error={image.error}
                         readOnly={this.props.readOnly}
+                        formId={this.state.form_id}
+                        onFileChange={this.onFileChange}
+                        validate={this.validateMetadataFiles}
                         onDelete={this.handleDeleteImage}
                       />
                     ))}

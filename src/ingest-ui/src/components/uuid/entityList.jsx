@@ -18,7 +18,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
 import { api_users_groups, api_search, api_es_query_builder } from '../../service/search_api';
-
+import { api_get_entity } from '../../service/entity_api';
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
 import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
@@ -28,18 +28,20 @@ class EntityList extends Component {
   state = {
     editingEntity: null,
     viewingEntity: null,
-    loading: true,
+    loading: false,
     entities: [],
     group_name: "IEC Testing Group",
     filter_group: "All Groups",
     filter_sample_type: "",
     filter_keywords: "",
     filtered_totals: 0,
+    filtered: false,
     pages: [10, 25, 50],
     page: 0,
     setPage: 0,
     rowsPerPage: 10,
     setRowsPerPage: 10,
+    authToken: JSON.parse(localStorage.getItem("info")).nexus_token
   };
 
   constructor(props) {
@@ -60,71 +62,16 @@ class EntityList extends Component {
       this.setState(
           {
             group_name: naturalLanguageJoin(groups),
-            filter_group: groups[0]
+            filter_group: groups[0],
           },
-          () => {
-            this.filterEntity();
-          }
+          // () => {
+          //   this.filterEntity();
+          // }
         );
       
     });
-
-    
-    // axios
-    //   .get(
-    //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-    //     config
-    //   )
-    //   .then(res => {
-    //     const display_names = res.data.groups
-    //       .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-    //       .map(g => {
-    //         return g.displayname;
-    //       });
-    //     this.setState(
-    //       {
-    //         group_name: naturalLanguageJoin(display_names),
-    //         filter_group: display_names[0]
-    //       },
-    //       () => {
-    //         this.filterEntity();
-    //       }
-    //     );
-    //   })
-    //   .catch(err => {
-    //     if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
   }
 
-  // refreshList() {
-  //   const config = {
-  //     headers: {
-  //       Authorization:
-  //         "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-  //       "Content-Type": "application/json"
-  //     }
-  //   };
-
-  //   axios
-  //     .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-  //     .then(res => {
-  //       this.setState({
-  //         loading: false,
-  //         entities: res.data.specimens,
-  //         filtered_totals: Object.keys(entities).length
-  //       });
-  //       //console.log(this.state.entities.length)
-  //     })
-  //     .catch(err => {
-  //       if (err.response.status === 401) {
-  //         localStorage.setItem("isAuthenticated", false);
-  //         window.location.reload();
-  //       }
-  //     });
-  // }
 
   renderLoadingSpinner() {
     if (this.state.loading) {
@@ -148,28 +95,43 @@ class EntityList extends Component {
     });
   };
 
-  selectClassforDataType(dataType) {
-    dataType = dataType.toLowerCase();
-    if (dataType === "donor") {
-      return "table-primary";
-    } else if (dataType === "sample") {
-      return "table-success";
-    } else {
-      return "table-secondary";
-    }
-  }
+  // selectClassforDataType(dataType) {
+  //   dataType = dataType.toLowerCase();
+  //   if (dataType === "donor") {
+  //     return "table-primary";
+  //   } else if (dataType === "sample") {
+  //     return "table-success";
+  //   } else {
+  //     return "table-secondary";
+  //   }
+  // }
 
-  whatDataType(dataType) {
-     dataType = dataType.toLowerCase();
-    if (dataType === "donor") {
-      return DONOR_IMAGE
-    } else if (dataType === "sample") {
-      return SAMPLE_IMAGE 
-    } 
-    return ""
+  // whatDataType(dataType) {
+  //    dataType = dataType.toLowerCase();
+  //   if (dataType === "donor") {
+  //     return DONOR_IMAGE
+  //   } else if (dataType === "sample") {
+  //     return SAMPLE_IMAGE 
+  //   } 
+  //   return ""
+  // }
+  getEntityData = (uuid) => {
+
+    console.log(uuid);
+    api_get_entity(uuid, this.state.authToken)
+    .then((response) => {
+      if (response.status == 200) {
+      console.log('Entity results...');
+      console.log(response.results);
+      }
+      console.log(response.status);
+    });
   }
 
   editForm = (entity, display_id, es) => {
+    console.log('in the editForm')
+    this.getEntityData(entity.uuid);
+
     this.setState({
       updateSuccess: null,
       editingEntity: entity,
@@ -236,11 +198,16 @@ class EntityList extends Component {
     const group = this.state.filter_group;
     const sample_type = this.state.filter_sample_type;
     const keywords = this.state.filter_keywords;
-
+//     let requestBody = esb.requestBodySearch().query(
+//       esb.boolQuery()
+//           .must(esb.matchQuery('group_name', group))
+//           .filter(esb.matchQuery('entity_type', 'sample_type'))
+// );
+//     requestBody.query(esb.matchQuery('group_name', fields[f]));
     let params = {};
 
-    if (group !== "All Groups") {
-      params["group_name"] = "Vanderbilt TMC"; //group;
+    if (group && group !== 'All Groups') {
+        params["group_name"] = group;
     }
     if (sample_type) {
       params["specimen_type"] = sample_type;
@@ -248,61 +215,27 @@ class EntityList extends Component {
     if (keywords) {
       params["search_term"] = keywords;
     }
+    console.log(' filterEntity....')
+    console.log(params);
 
-    let query = api_es_query_builder(params);
+    // let query = api_es_query_builder(params);
 
-    // const options = {
-    //   headers: {
-    //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-    //     "Content-Type": "application/json"
-    //   }
-    // };
+    api_search(params, this.state.authToken)
+    .then((response) => {
 
-    api_search(query)
-    .then((entities) => {
-      console.log('Search results...');
-      console.log(entities);
+      if (response.status == 200) {
+      //console.log('Search results...');
+      //console.log(entities);
       this.setState(
           {
           loading: false,
-          entities: entities,
-          filtered_totals: Object.keys(entities).length,
+          entities: response.results,
+          filtered_totals: Object.keys(response.results).length,
           filtered: true
           }
         );
+      }
     });
-
-
-    //console.log(getUserGroups(config));
-
-    // axios
-    //   .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-    //   .then(res => {
-    //     let entities = {};
-    //     res.data.specimens.forEach(s => {
-    //       if (entities[s.properties.uuid]) {
-    //         entities[s.properties.uuid].push(s);
-    //       } else {
-    //         entities[s.properties.uuid] = [s];
-    //       }
-    //     });
-    //     this.setState({
-    //       loading: false,
-    //       entities: entities,
-    //       filtered_totals: Object.keys(entities).length
-    //     });
-    //   })
-    //   .catch(err => {
-    //     if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
-
-    // this.setState({
-    //   filtered: true
-    // });
   };
 
   clearFilterEntity = () => {
@@ -312,12 +245,15 @@ class EntityList extends Component {
         filter_group: "All Groups",
         filter_sample_type: "",
         filter_keywords: "",
-        loading: true
-      },
-      () => {
-        this.renderLoadingSpinner();
-        this.filterEntity();
+        filtered: false,
+        entities: [],
+        loading: false,
+        filtered_totals: 0
       }
+      // () => {
+      //   this.renderLoadingSpinner();
+      //   //this.filterEntity();
+      // }
     );
     // const config = {
     //   headers: {
@@ -423,7 +359,7 @@ class EntityList extends Component {
                     <label
                       htmlFor="sample_type"
                       className="col-sm-4 portal-jss116 text-right">
-                      Sample Type
+                      Type
                     </label>
                     <div className="col-sm-8">
                       <select
@@ -517,7 +453,9 @@ renderTable() {
                 .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
                 .map(es => {
                 const entity = es[0];
+                console.log(entity)
                 let first_lab_id = entity.hubmap_display_id;
+                console.log(entity.hubmap_display_id);
                 let last_lab_id = "";
                 let id_common_part = first_lab_id.substring(
                   0,
@@ -585,10 +523,14 @@ renderTable() {
                             className="btn btn-link portal-links portal-jss298"
                             onClick={() =>
                               this.viewForm(entity, display_id, es)
-                            }
-                          >
-                            {entity.entity_display_doi}
+                            }>
+                            {entity.display_doi}
                           </button>
+                          )}
+                          {!entity.writeable && (
+                             <React.Fragment>
+                            {entity.display_doi}
+                            </React.Fragment>
                           )}
                       </TableCell>
                       <TableCell align="left" className="nowrap">
@@ -602,19 +544,19 @@ renderTable() {
                         </TableCell>
     
                       <TableCell align="left">
-                      {entity.datatype === "Sample" ? <SAMPLE_IMAGE />
+                      {entity.entity_type === "Sample" ? <SAMPLE_IMAGE />
                           : <DONOR_IMAGE />
                           } 
-                        {entity.datatype === "Sample"
+                        {entity.entity_type === "Sample"
                           ? flattenSampleType(SAMPLE_TYPES)[
-                              entity.properties.specimen_type
+                              entity.specimen_type
                             ]
-                          : entity.datatype}
+                          : entity.entity_type}
                       </TableCell>
                        <TableCell align="left" className="nowrap">{entity.group_name}</TableCell>
                       <TableCell align="left">
-                        {entity.properties.label ||
-                          entity.properties.lab_tissue_id}
+                        {entity.label_donor_id ||
+                          entity.lab_tissue_sample_id}
                       </TableCell>
                       <TableCell align="left">{entity.created_by_user_email}</TableCell>
                       <TableCell align="left" className="nowrap"> 
@@ -631,11 +573,13 @@ renderTable() {
               })}
             </TableBody>
             <tfoot>
-              {this.state.filtered_totals === 0 && (
+              {(this.state.filtered_totals === 0 && this.state.filtered) && (
                 <TableRow>
                   <TableCell align="left" colSpan="5">No records found</TableCell>
                 </TableRow>
+               
               )}
+            
             </tfoot>
          </Table>
     </TableContainer>
@@ -670,7 +614,7 @@ renderTable() {
 
   renderEditForm() {
     if (this.state.editingEntity) {
-      const dataType = this.state.editingEntity.datatype.toLowerCase();
+      const dataType = this.state.editingEntity.entity_type.toLowerCase();
       if (dataType === "donor") {
         return (
           <DonorForm
