@@ -100,17 +100,17 @@ else
             # On test/stage/prod, copy the VERSION file and BUILD file to image
             if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "refactor" ]]; then
                 # Delete old VERSION and BUILD files if found
-                if [ -f "ingest-api-$1/src/VERSION" ]; then
-                    rm -rf ingest-api-$1/src/VERSION
+                if [ -f "ingest-api-$1/VERSION" ]; then
+                    rm -rf ingest-api-$1/VERSION
                 fi
                 
-                if [ -f "ingest-api-$1/src/BUILD" ]; then
-                    rm -rf ingest-api-$1/src/BUILD
+                if [ -f "ingest-api-$1/BUILD" ]; then
+                    rm -rf ingest-api-$1/BUILD
                 fi
                 
-                # Copy over the one files
-                cp ../VERSION ingest-api-$1/src
-                cp ../BUILD ingest-api-$1/src
+                # Copy over the VERSION and BUILD files
+                cp ../VERSION ingest-api-$1
+                cp ../BUILD ingest-api-$1
             fi
 
             docker-compose -f docker-compose-ingest-api.$1.yml -p ingest-api build

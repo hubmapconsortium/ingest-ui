@@ -28,8 +28,8 @@ services:
     restart: always
     volumes:
       # Mount the VERSION file and BUILD file
-      - "../VERSION:/usr/src/app/src/VERSION"
-      - "../BUILD:/usr/src/app/src/BUILD"
+      - "../VERSION:/usr/src/app/VERSION"
+      - "../BUILD:/usr/src/app/BUILD"
       # Mount the source code to container
       - "../src/ingest-api:/usr/src/app/src"
       # Mount the logging to container
