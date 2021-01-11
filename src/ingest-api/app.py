@@ -271,7 +271,7 @@ def get_dataset(identifier):
         r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
         if r.ok == False:
             raise ValueError("Cannot find specimen with identifier: " + identifier)
-        uuid = json.loads(r.text)[0]['hmuuid']
+        uuid = json.loads(r.text)[0]['hm_uuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         dataset_record = Dataset.get_dataset(driver, uuid, app.config)
@@ -1253,7 +1253,7 @@ def create_specimen():
             r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + sourceuuid, headers={'Authorization': 'Bearer ' + token })
             if r.ok == False:
                 raise ValueError("Cannot find specimen with identifier: " + sourceuuid)
-            sourceuuid = json.loads(r.text)[0]['hmuuid']
+            sourceuuid = json.loads(r.text)[0]['hm_uuid']
             
             if 'sample_count' in form_data:
                 if len(str(form_data['sample_count'])) > 0:
@@ -1334,7 +1334,7 @@ def update_specimen(identifier):
         r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
         if r.ok == False:
             raise ValueError("Cannot find specimen with identifier: " + identifier)
-        uuid = json.loads(r.text)[0]['hmuuid']
+        uuid = json.loads(r.text)[0]['hm_uuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         specimen = Specimen(app.config)
@@ -1457,7 +1457,7 @@ def get_specimen_siblings(identifier):
         r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
         if r.ok == False:
             raise ValueError("Cannot find specimen with identifier: " + identifier)
-        uuid = json.loads(r.text)[0]['hmuuid']
+        uuid = json.loads(r.text)[0]['hm_uuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         siblingid_list = Specimen.get_siblingid_list(driver, uuid)
@@ -1490,7 +1490,7 @@ def get_specimen(identifier):
         r = requests.get(app.config['UUID_WEBSERVICE_URL'] + "/" + identifier, headers={'Authorization': 'Bearer ' + token })
         if r.ok == False:
             raise ValueError("Cannot find specimen with identifier: " + identifier)
-        uuid = json.loads(r.text)[0]['hmuuid']
+        uuid = json.loads(r.text)[0]['hm_uuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
         specimen = Entity.get_entity_metadata(driver, uuid)
