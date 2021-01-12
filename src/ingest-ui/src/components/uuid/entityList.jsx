@@ -48,28 +48,31 @@ class EntityList extends Component {
     super(props);
 
 
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "application/json"
-      }
-    };
+    // const config = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //     "Content-Type": "application/json"
+    //   }
+    // };
 
-    api_users_groups(config).then((groups) => {
-      console.log('Groups...');
-      console.log(naturalLanguageJoin(groups));
-      this.setState(
-          {
-            group_name: naturalLanguageJoin(groups),
-            filter_group: groups[0],
-          },
-          // () => {
-          //   this.filterEntity();
-          // }
-        );
-      
-    });
+    // api_users_groups(this.state.authToken).then((results) => {
+
+    //   if (results.status == 200) { 
+    //   this.setState(
+    //       {
+    //         group_name: naturalLanguageJoin(results.results),
+    //         //filter_group: groups[0],
+    //       },
+    //       // () => {
+    //       //   this.filterEntity();
+    //       // }
+    //     );
+    //   } else if (results.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    // });
   }
 
 
@@ -123,14 +126,36 @@ class EntityList extends Component {
       if (response.status == 200) {
       console.log('Entity results...');
       console.log(response.results);
+      return response.results;
       }
       console.log(response.status);
     });
   }
 
-  editForm = (entity, display_id, es) => {
+ editForm = (entity, display_id, es) => {
     console.log('in the editForm')
-    this.getEntityData(entity.uuid);
+    
+    api_get_entity(entity.uuid, this.state.authToken)
+    .then((response) => {
+      if (response.status == 200) {
+        console.log('Entity results...');
+        console.log(response.results);
+        this.setState({
+          updateSuccess: null,
+          editingEntity: response.results,
+          editingDisplayId: display_id,
+          editingEntities: es,
+          readOnly: false
+        });
+        this.props.onEdit();
+      }
+    });
+  };
+
+/*  editForm = (entity, display_id, es) => {
+    console.log('in the editForm')
+    let et = this.getEntityData(entity.uuid);
+    console.log(et)
 
     this.setState({
       updateSuccess: null,
@@ -141,7 +166,7 @@ class EntityList extends Component {
     });
     this.props.onEdit();
   };
-
+*/
   viewForm = (entity, display_id, es) => {
     this.setState({
       updateSuccess: null,

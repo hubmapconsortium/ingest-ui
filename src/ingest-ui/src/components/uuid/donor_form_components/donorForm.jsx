@@ -26,11 +26,12 @@ import {
 import ReactTooltip from "react-tooltip";
 import HIPPA from "../HIPPA";
 import GroupModal from "../groupModal";
+import { api_users_groups } from '../../../service/search_api';
 
 class DonorForm extends Component {
   state = {
     form_id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-    visit: "",
+   // visit: "",
     lab: "",
     lab_donor_id: "",
     identifying_name: "",
@@ -41,18 +42,19 @@ class DonorForm extends Component {
 
     images: [],
     metadatas: [],
+
     new_metadatas: [],
     deleted_metadatas: [],
     new_images: [],
     deleted_images: [],
-    protocol_file_name: "Choose a file",
+ //   protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
 
     groups: [],
     selected_group: null,
 
     formErrors: {
-      visit: "",
+   //   visit: "",
       lab: "",
       lab_donor_id: "",
       identifying_name: "",
@@ -76,70 +78,88 @@ class DonorForm extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "application/json"
-      }
-    };
 
-    axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-        config
-      )
-      .then(res => {
-        const groups = res.data.groups.filter(
+   api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+
+      if (results.status == 200) { 
+      const groups = results.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
         this.setState({
           groups: groups
         });
-      })
-      .catch(err => {
-        if (err.response === undefined) {
-        } else if (err.response.status === 401) {
+      } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
         }
-      });
+    });
+
+    // const config = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //     "Content-Type": "application/json"
+    //   }
+    // };
+
+    // axios
+    //   .get(
+    //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+    //     config
+    //   )
+    //   .then(res => {
+    //     const groups = res.data.groups.filter(
+    //       g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+    //     );
+    //     this.setState({
+    //       groups: groups
+    //     });
+    //   })
+    //   .catch(err => {
+    //     if (err.response === undefined) {
+    //     } else if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
+
+
 
     if (this.props.editingEntity) {
-      const pf = this.props.editingEntity.properties.protocol_file;
-      const mf = this.props.editingEntity.properties.metadata_file;
+      //const pf = this.props.editingEntity.protocol_file;
+      const mf = this.props.editingEntity.portal_metadata_upload_files;
       let images = [];
       let metadatas = [];
       try {
         images = JSON.parse(
-          this.props.editingEntity.properties.image_file_metadata
+          this.props.editingEntity.image_file_metadata
             .replace(/\\/g, "\\\\")
             .replace(/'/g, '"')
         );
         metadatas = JSON.parse(
-          this.props.editingEntity.properties.metadatas
+          this.props.editingEntity.portal_metadata_upload_files
             .replace(/\\/g, "\\\\")
             .replace(/'/g, '"')
         );
       } catch (e) {}
 
-	  this.setState({
-		open_consent: false
-      });
-	  if (this.props.editingEntity.properties.open_consent) {
-		  this.setState({
-		  	open_consent: this.props.editingEntity.properties.open_consent.toLowerCase() === "true" ? true: false
-		  });
-	  }
+	 //  this.setState({
+		// open_consent: false
+  //     });
+	 //  if (this.props.editingEntity.properties.open_consent) {
+		//   this.setState({
+		//   	open_consent: this.props.editingEntity.properties.open_consent.toLowerCase() === "true" ? true: false
+		//   });
+	 //  }
 
       this.setState({
-        author: this.props.editingEntity.properties.provenance_user_email,
-        visit: this.props.editingEntity.properties.visit,
-        lab_donor_id: this.props.editingEntity.properties.lab_donor_id,
-        identifying_name: this.props.editingEntity.properties.label,
-        protocol: this.props.editingEntity.properties.protocol,
-        protocol_file_name: pf && getFileNameOnPath(pf),
-        description: this.props.editingEntity.properties.description,
+        author: this.props.editingEntity.created_by_user_email,
+        //visit: this.props.editingEntity.properties.visit,
+        lab_donor_id: this.props.editingEntity.lab_donor_id,
+        identifying_name: this.props.editingEntity.label,
+        protocol: this.props.editingEntity.protocol_url,
+      //  protocol_file_name: pf && getFileNameOnPath(pf),
+        description: this.props.editingEntity.description,
         metadata_file_name: mf && getFileNameOnPath(mf)
       });
 
@@ -165,13 +185,13 @@ class DonorForm extends Component {
     }
   }
 
-  handleProtocolFileChange = e => {
-    let arr = e.target.value.split("\\");
-    let file_name = arr[arr.length - 1];
-    this.setState({
-      protocol_file_name: file_name
-    });
-  };
+  // handleProtocolFileChange = e => {
+  //   let arr = e.target.value.split("\\");
+  //   let file_name = arr[arr.length - 1];
+  //   this.setState({
+  //     protocol_file_name: file_name
+  //   });
+  // };
 
   handleMetadataFileChange = e => {
     let arr = e.target.value.split("\\");
@@ -241,56 +261,56 @@ class DonorForm extends Component {
           }));
         }
         break;
-      case "protocol_file":
-        this.setState({ protocol_file: e.target.files[0] });
-        this.setState({
-          protocol_file_name: e.target.files[0] && e.target.files[0].name
-        });
-        if (
-          !validateRequired(value) &&
-          !validateRequired(this.protocol.current.value)
-        ) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_file: "required",
-              protocol: "required"
-            }
-          }));
-        } else if (e.target.files[0]) {
-          if (
-            !validateFileType(e.target.files[0].type, [
-              "application/msword",
-              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              "application/pdf"
-            ])
-          ) {
-            this.setState(prevState => ({
-              formErrors: {
-                ...prevState.formErrors,
-                protocol_file: "Allowed file types: .doc, .docx, or .pdf",
-                protocol: ""
-              }
-            }));
-          } else {
-            this.setState(prevState => ({
-              formErrors: {
-                ...prevState.formErrors,
-                protocol_file: "",
-                protocol: ""
-              }
-            }));
-          }
-        } else {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_file: "",
-              protocol: ""
-            }
-          }));
-        }
-        break;
+      // case "protocol_file":
+      //   this.setState({ protocol_file: e.target.files[0] });
+      //   this.setState({
+      //     protocol_file_name: e.target.files[0] && e.target.files[0].name
+      //   });
+      //   if (
+      //     !validateRequired(value) &&
+      //     !validateRequired(this.protocol.current.value)
+      //   ) {
+      //     this.setState(prevState => ({
+      //       formErrors: {
+      //         ...prevState.formErrors,
+      //         protocol_file: "required",
+      //         protocol: "required"
+      //       }
+      //     }));
+      //   } else if (e.target.files[0]) {
+      //     if (
+      //       !validateFileType(e.target.files[0].type, [
+      //         "application/msword",
+      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      //         "application/pdf"
+      //       ])
+      //     ) {
+      //       this.setState(prevState => ({
+      //         formErrors: {
+      //           ...prevState.formErrors,
+      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf",
+      //           protocol: ""
+      //         }
+      //       }));
+      //     } else {
+      //       this.setState(prevState => ({
+      //         formErrors: {
+      //           ...prevState.formErrors,
+      //           protocol_file: "",
+      //           protocol: ""
+      //         }
+      //       }));
+      //     }
+      //   } else {
+      //     this.setState(prevState => ({
+      //       formErrors: {
+      //         ...prevState.formErrors,
+      //         protocol_file: "",
+      //         protocol: ""
+      //       }
+      //     }));
+      //   }
+      //   break;
       case "description":
         this.setState({ description: value });
         break;
@@ -300,31 +320,31 @@ class DonorForm extends Component {
           metadata_file_name: e.target.files[0] && e.target.files[0].name
         });
         break;
-      case "visit":
-        this.setState({ visit: value });
-        break;
+      // case "visit":
+      //   this.setState({ visit: value });
+      //   break;
       case "groups":
         this.setState({
           selected_group: value
         });
         break;
-	  case "open_consent":
-		this.setState({
-		  open_consent: e.target.checked
-		});
-		break;
+	 //  case "open_consent":
+		// this.setState({
+		//   open_consent: e.target.checked
+		// });
+		// break;
       default:
         break;
     }
   };
 
-  handleDeleteProtocolFile = () => {
-    this.setState({
-      protocol_file_name: "Choose a file",
-      protocolFileKey: Date.now(),
-      protocol_file: ""
-    });
-  };
+  // handleDeleteProtocolFile = () => {
+  //   this.setState({
+  //     protocol_file_name: "Choose a file",
+  //     protocolFileKey: Date.now(),
+  //     protocol_file: ""
+  //   });
+  // };
 
   handleDeleteMetadataFile = () => {
     this.setState({
@@ -504,11 +524,11 @@ class DonorForm extends Component {
           lab_donor_id: this.state.lab_donor_id,
           label: this.state.identifying_name,
           protocol: this.state.protocol,
-          visit: this.state.visit,
-          protocol_file:
-            this.state.protocol_file_name === "Choose a file"
-              ? ""
-              : this.state.protocol_file_name,
+          // visit: this.state.visit,
+          // protocol_file:
+          //   this.state.protocol_file_name === "Choose a file"
+          //     ? ""
+          //     : this.state.protocol_file_name,
           description: this.state.description,
           metadatas: [],
           new_metadatas: this.state.new_metadatas,
@@ -524,7 +544,7 @@ class DonorForm extends Component {
         }
 
         var formData = new FormData();
-        formData.append("protocol_file", this.state.protocol_file);
+        // formData.append("protocol_file", this.state.protocol_file);
         formData.append("metadata_file", this.state.metadata_file);
         this.state.metadatas.forEach(i => {
           data.metadatas.push({
@@ -688,43 +708,7 @@ class DonorForm extends Component {
         formErrors: { ...prevState.formErrors, identifying_name: "" }
       }));
     }
-    if (
-      !(
-        (validateRequired(this.state.protocol) ||
-          validateRequired(this.state.protocol_file) ||
-          validateRequired(
-            this.state.protocol_file_name === "Choose a file"
-              ? ""
-              : this.state.protocol_file_name
-          )) &&
-        validateProtocolIODOI(this.state.protocol) &&
-        validateFileType(this.state.protocol_file.type, [
-          "application/msword",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "application/pdf"
-        ]) &&
-        validateFileType(getFileMIMEType(this.state.protocol_file_name), [
-          "application/msword",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "application/pdf"
-        ])
-      )
-    ) {
-      if (
-        !validateRequired(this.state.protocol_file) &&
-        !validateRequired(this.state.protocol) &&
-        !validateRequired(
-          this.state.protocol_file_name === "Choose a file"
-            ? ""
-            : this.state.protocol_file_name
-        )
-      ) {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, protocol: "required" }
-        }));
-        isValid = false;
-      } else {
-        if (!validateProtocolIODOI(this.state.protocol)) {
+    if (!validateProtocolIODOI(this.state.protocol)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -732,47 +716,34 @@ class DonorForm extends Component {
             }
           }));
           isValid = false;
-        }
-        if (
-          !validateFileType(this.state.protocol_file.type, [
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/pdf"
-          ])
-        ) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_file: "Allowed file types: .doc, .docx, or .pdf"
-            }
-          }));
-          isValid = false;
-        } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, protocol_file: "" }
-          }));
-        }
-        if (
-          !validateFileType(getFileMIMEType(this.state.protocol_file_name), [
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/pdf"
-          ])
-        ) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_file: "Allowed file types: .doc, .docx, or .pdf"
-            }
-          }));
-          isValid = false;
-        } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, protocol_file: "" }
-          }));
-        }
-      }
     }
+
+    // {
+    //   if (
+    //     !validateRequired(this.state.protocol_file) &&
+    //     !validateRequired(this.state.protocol) &&
+    //     !validateRequired(
+    //       this.state.protocol_file_name === "Choose a file"
+    //         ? ""
+    //         : this.state.protocol_file_name
+    //     )
+    //   ) {
+    //     this.setState(prevState => ({
+    //       formErrors: { ...prevState.formErrors, protocol: "required" }
+    //     }));
+    //     isValid = false;
+    //   } else {
+    //     if (!validateProtocolIODOI(this.state.protocol)) {
+    //       this.setState(prevState => ({
+    //         formErrors: {
+    //           ...prevState.formErrors,
+    //           protocol: "Please enter a valid protocols.io DOI"
+    //         }
+    //       }));
+    //       isValid = false;
+    //     }
+    //   }
+    // }
 
     // if (!this.props.editingEntity) {
     this.state.images.forEach((image, index) => {
@@ -887,10 +858,10 @@ class DonorForm extends Component {
           {this.props.editingEntity && (
             <React.Fragment>
               <div className="col-sm-4 offset-sm-2 portal-label">
-                  HuBMAP ID: {this.props.editingEntity.entity_display_doi}
+                  HuBMAP ID: {this.props.editingEntity.hubmap_id}
               </div>
               <div className="col-sm-4 text-right portal-label">
-              Submission ID: {this.props.editingEntity.hubmap_identifier}
+              Submission ID: {this.props.editingEntity.submission_id}
               </div>
                 <div className="col-sm-5 offset-sm-2">
                   Entered by: {this.state.author}
@@ -901,33 +872,7 @@ class DonorForm extends Component {
           <div className="col-sm-12 form-border">
          <Paper className="paper-container">
             <form onSubmit={this.handleSubmit}>
-              <div className="form-group row d-none">
-                <label
-                  htmlFor="visit">
-                  Visit
-                </label>
-                {!this.props.readOnly && (
-                  <div className="col-sm-8">
-                    <input
-                      type="text"
-                      name="visit"
-                      id="visit"
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.visit)
-                      }
-                      placeholder="Visit"
-                      onChange={this.handleInputChange}
-                      value={this.state.visit}
-                    />
-                  </div>
-                )}
-                {this.props.readOnly && (
-                  <div className="col-sm-9 col-form-label">
-                    <p>{this.state.visit}</p>
-                  </div>
-                )}
-              </div>
+             
               <div className="text-danger">
                 <p>
                 * required
@@ -1256,7 +1201,7 @@ class DonorForm extends Component {
                             />
                             Attach an Image(s)
                           </button>
-                         <small id="emailHelp" class="form-text text-muted"> 
+                         <small id="emailHelp" className="form-text text-muted"> 
                           <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />
                           </span> Upload de-identified images only</small>

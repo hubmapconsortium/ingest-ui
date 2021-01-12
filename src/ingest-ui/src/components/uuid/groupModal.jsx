@@ -28,7 +28,7 @@ class GroupModal extends Component {
                     >
                       {this.state.groups.map(g => {
                         return (
-                          <option value={g.uuid} key={g.name}>
+                          <option id={g.uuid} value={g.uuid} key={g.name}>
                             {g.displayname}
                           </option>
                         );
