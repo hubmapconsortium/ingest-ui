@@ -42,18 +42,6 @@ export const SAMPLE_TYPES = [
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched"
   },
-  {
-    atacseq: "ATACseq",
-    codex: "CODEX",
-    rnaseq: "RNAseq",
-    scatacseq: "scATACseq",
-    scrnaseq: "scRNAseq",
-    seqfish: "seqFISH",
-    snatacseq: "snATACseq",
-    snrnaseq: "snRNAseq",
-    wes: "WES",
-    wgs: "WGS"
-  },
   { other: "Other" }
 ];
 
@@ -99,26 +87,19 @@ export const TISSUE_TYPES = [
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched"
   },
-  {
-    atacseq: "ATACseq",
-    codex: "CODEX",
-    rnaseq: "RNAseq",
-    scatacseq: "scATACseq",
-    scrnaseq: "scRNAseq",
-    seqfish: "seqFISH",
-    snatacseq: "snATACseq",
-    snrnaseq: "snRNAseq",
-    wes: "WES",
-    wgs: "WGS"
-  },
   { other: "Other" }
 ];
 
 export const ORGAN_TYPES = {
+  AO: "Aorta",
   BL: "Bladder",
   BR: "Brain",
   LB: "Bronchus (Left)",
   RB: "Bronchus (Right)",
+  LE: "Eye (Left)",
+  RE: "Eye (Right)",
+  LF: "Fallopian Tube (Left)",
+  RF: "Fallopian Tube (Right)",
   HT: "Heart",
   LK: "Kidney (Left)",
   RK: "Kidney (Right)",
@@ -146,15 +127,17 @@ export const ORGAN_TYPES = {
   LY18: "Lymph Node 18",
   LY19: "Lymph Node 19",
   LY20: "Lymph Node 20",
+  LO: "Ovary (Left)",
+  RO: "Ovary (Right)",
+  PA: "Pancreas",
+  PL: "Placenta",
   SI: "Small Intestine",
+  SK: "Skin",
   SP: "Spleen",
   TH: "Thymus",
   TR: "Trachea",
   UR: "Ureter",
+  UT: "Uterus",
   OT: "Other"
 };
 
-export const DATA_TYPES = ['AF', 'ATACseq-bulk', 'MxIF', 'CODEX', 'IMC', 'MALDI-IMS-neg',
-'MALDI-IMS-pos', 'PAS', 'bulk-RNA', 'SNAREseq', 'TMT-LC-MS', 'Targeted-Shotgun-LC-MS',
-'LC-MS-untargeted', 'WGS', 'scRNA-Seq-10x', 'sciATACseq', 'sciRNAseq', 'seqFish',
-'snATACseq', 'snRNAseq']

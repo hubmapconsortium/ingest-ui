@@ -20,8 +20,13 @@ docker/ingest-api-prod/src
 docker/ingest-ui/src
 
 # Ignore log files created by docker
-log/*.log
-src/log/*.log
+src/log
+
+# log files in any path
+**/*.log
+
+# Rotated log files
+**/*.log*
 
 # ingest-api
 src/ingest-api/instance/app.cfg
@@ -40,6 +45,7 @@ src/ingest-ui/.env.*
 !src/ingest-ui/.env.production.local.example
 
 # misc
+.DS_Store
 src/ingest-ui/.DS_Store
 src/ingest-ui/npm-debug.log*
 src/ingest-ui/yarn-debug.log*

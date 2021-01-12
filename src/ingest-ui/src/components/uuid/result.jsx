@@ -64,7 +64,7 @@ class Result extends Component {
                 <b>
                   {
                     this.props.result["new_samples"][
-                      this.props.result["new_samples"].length - 1
+                    this.props.result["new_samples"].length - 1
                     ]["hubmap_identifier"]
                   }
                 </b>
@@ -90,24 +90,24 @@ class Result extends Component {
                           ? this.props.result.sample_metadata.specimen_type ===
                             "other"
                             ? this.props.result.sample_metadata
-                                .specimen_type_other
+                              .specimen_type_other
                             : flattenSampleType(SAMPLE_TYPES)[
-                                this.props.result.sample_metadata.specimen_type
-                              ]
+                            this.props.result.sample_metadata.specimen_type
+                            ]
                           : "Donor"}
                       </p>
                     </div>
                     {this.props.result.sample_metadata.specimen_type ===
                       "organ" && (
-                      <div className="col-sm-12">
-                        <b>Organ Type:</b>{" "}
-                        {this.props.result.sample_metadata.organ === "OT"
-                          ? this.props.result.sample_metadata.organ_other
-                          : ORGAN_TYPES[
-                              this.props.result.sample_metadata.organ
+                        <div className="col-sm-12">
+                          <b>Organ Type:</b>{" "}
+                          {this.props.result.sample_metadata.organ === "OT"
+                            ? this.props.result.sample_metadata.organ_other
+                            : ORGAN_TYPES[
+                            this.props.result.sample_metadata.organ
                             ]}
-                      </div>
-                    )}
+                        </div>
+                      )}
                     {this.props.result.sample_metadata.label && (
                       <div className="col-sm-12">
                         <p>
@@ -128,47 +128,46 @@ class Result extends Component {
               </div>
               <div className="row mb-2">
                 <div className="col-sm-4 offset-sm-4 lab-id-modal">
-                  {this.props.result["new_samples"].length > 1 && 
-                   (this.props.result.sample_metadata.organ  === "RK" ||
-                    this.props.result.sample_metadata.organ  === "LK") && (
-                    <React.Fragment>
-						<button
-                        className="btn btn-primary  btn-block"
-                        onClick={this.enterLabIDs}
+                  {this.props.result["new_samples"].length > 1 &&
+                   (["LK", "RK", "HT", "SP", "LI"].includes(this.props.result.sample_metadata.organ)) && (
+                      <React.Fragment>
+                        <button
+                          className="btn btn-primary  btn-block"
+                          onClick={this.enterLabIDs}
                         >
-					        Assign Lab IDs and Sample Locations
+                          Assign Lab IDs and Sample Locations
 
                       </button>
-                      <LabIDsModal
-                        show={this.state.LabIDsModalShow}
-                        hide={this.hideLabIDsModal}
-                        ids={this.props.result["new_samples"]}
-                        submit={this.handleSubmit}
-                        organ={this.props.result.sample_metadata.organ}
-                      />
-                    </React.Fragment>
-                  )}
-                  {this.props.result["new_samples"].length > 1 && 
-                   (this.props.result.sample_metadata.organ  !== "RK" &&
-                    this.props.result.sample_metadata.organ  !== "LK") && (
-                    <React.Fragment>
-						<button
-                        className="btn btn-primary  btn-block"
-                        onClick={this.enterLabIDs}
+                        <LabIDsModal
+                          show={this.state.LabIDsModalShow}
+                          hide={this.hideLabIDsModal}
+                          ids={this.props.result["new_samples"]}
+                          submit={this.handleSubmit}
+                          metadata={this.props.result.sample_metadata}
+                        />
+                      </React.Fragment>
+                    )
+                  }
+                  {this.props.result["new_samples"].length > 1 &&
+                   (!["LK", "RK", "HT", "SP", "LI"].includes(this.props.result.sample_metadata.organ)) && (
+                      <React.Fragment>
+                        <button
+                          className="btn btn-primary  btn-block"
+                          onClick={this.enterLabIDs}
                         >
-					        Assign Lab IDs
+                          Assign Lab IDs
 
                       </button>
-                  
-                      <LabIDsModal
-                        show={this.state.LabIDsModalShow}
-                        hide={this.hideLabIDsModal}
-                        ids={this.props.result["new_samples"]}
-                        submit={this.handleSubmit}
-                        organ={this.props.result.sample_metadata.organ}
-                      />
-                    </React.Fragment>
-                  )}
+
+                        <LabIDsModal
+                          show={this.state.LabIDsModalShow}
+                          hide={this.hideLabIDsModal}
+                          ids={this.props.result["new_samples"]}
+                          submit={this.handleSubmit}
+                          metadata={this.props.result.sample_metadata}
+                        />
+                      </React.Fragment>
+                    )}
                   {!this.props.result.sample_metadata.specimen_type && (
                     <button
                       className="btn btn-success btn-block"
@@ -184,18 +183,18 @@ class Result extends Component {
                   )}
                   {this.props.result.sample_metadata.specimen_type ===
                     "organ" && (
-                    <button
-                      className="btn btn-success btn-block"
-                      type="button"
-                      onClick={() =>
-                        this.props.onCreateNext(
-                          this.props.result["new_samples"][0]
-                        )
-                      }
-                    >
-                      Register tissue samples from this organ
-                    </button>
-                  )}
+                      <button
+                        className="btn btn-success btn-block"
+                        type="button"
+                        onClick={() =>
+                          this.props.onCreateNext(
+                            this.props.result["new_samples"][0]
+                          )
+                        }
+                      >
+                        Register tissue samples from this organ
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
@@ -203,7 +202,7 @@ class Result extends Component {
               <div className="col-sm-4 offset-sm-4">
                 <button
                   className="btn btn-link  btn-block"
-				  type="button"
+                  type="button"
                   onClick={this.handleReturnClick}
                 >
                   Return to Search

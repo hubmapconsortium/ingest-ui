@@ -154,15 +154,19 @@ class Specimen:
                         current_protocol_file_metadata = metadata_obj['protocols']
                     protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, incoming_record['protocols'], file_list, data_directory, current_protocol_file_metadata)
                     incoming_record[HubmapConst.PROTOCOL_FILE_METADATA_ATTRIBUTE] = protocol_file_data_list
-                
+
+                updated_entity_location = None
+                updated_entity_lab_id = None
+                entity_record = Entity.get_entity(driver, uuid)
                 if 'rui_location' in incoming_record or 'lab_tissue_id' in incoming_record:
-                    entity_record = {}
                     entity_record[HubmapConst.UUID_ATTRIBUTE] = uuid
                     if 'rui_location' in incoming_record:
-                        entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = incoming_record['rui_location']
+                        #entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = incoming_record['rui_location']
+                        updated_entity_location = incoming_record['rui_location']
                         incoming_record.pop('rui_location')
                     if 'lab_tissue_id' in incoming_record:
-                        entity_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = incoming_record['lab_tissue_id']
+                        #update_entity_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = incoming_record['lab_tissue_id']
+                        updated_entity_lab_id = incoming_record['lab_tissue_id']
                         incoming_record.pop('lab_tissue_id')
                 metadata_record = incoming_record
                 # don't change the type of this node
@@ -182,7 +186,10 @@ class Specimen:
                 # if a donor, check if the open_consent flag is changing
                 # if the open_consent flag changes, you need to check the access level on any
                 # child datasets
-                entity_record = Entity.get_entity(driver, uuid)
+                if not updated_entity_location is None:
+                    entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = updated_entity_location
+                if not updated_entity_lab_id is None:
+                    entity_record[HubmapConst.LAB_SAMPLE_ID_ATTRIBUTE] = updated_entity_lab_id
                 existing_open_consent = False
                 if HubmapConst.DONOR_OPEN_CONSENT in metadata_obj:
                     existing_open_consent = metadata_obj[HubmapConst.DONOR_OPEN_CONSENT]
@@ -437,6 +444,8 @@ class Specimen:
                     if entity_type == HubmapConst.SAMPLE_TYPE_CODE:
                         required_list = HubmapConst.SAMPLE_REQUIRED_ATTRIBUTE_LIST
                     required_list = [o['attribute_name'] for o in required_list]
+                    if 'rui_location' in incoming_record:
+                        required_list.append('rui_location')
                     for attrib in required_list:
                         specimen_data[attrib] = incoming_record[attrib]
                     stmt = Neo4jConnection.get_create_statement(
