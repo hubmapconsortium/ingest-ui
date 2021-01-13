@@ -310,7 +310,7 @@ class Dataset(object):
         # See if provenance_group_uuid of the source dataset exists in the list of group uuids from the user info.
         # If so, use the provenance_group_uuid for the derived dataset. If not, throw an error.
         dataset = Dataset(self.confdata) 
-        dataset_record = dataset.get_dataset(driver, source_UUID_Data[0][0]['hmuuid'])
+        dataset_record = dataset.get_dataset(driver, source_UUID_Data[0][0]['hm_uuid'])
 
         source_dataset_provenance_group_uuid = None
         if 'provenance_group_uuid' in dataset_record:
@@ -440,7 +440,7 @@ class Dataset(object):
                 activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
                 sourceUUID_list = []
                 for source_uuid in source_UUID_Data:
-                    sourceUUID_list.append(source_uuid[0]['hmuuid'])
+                    sourceUUID_list.append(source_uuid[0]['hm_uuid'])
                 
                 activity_object = activity.get_create_activity_statements(nexus_token, activity_type, sourceUUID_list, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
@@ -685,7 +685,7 @@ class Dataset(object):
                 activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
                 sourceUUID_list = []
                 for source_uuid in source_UUID_Data:
-                    sourceUUID_list.append(source_uuid[0]['hmuuid'])
+                    sourceUUID_list.append(source_uuid[0]['hm_uuid'])
                 activity_object = activity.get_create_activity_statements(nexus_token, activity_type, sourceUUID_list, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
@@ -867,7 +867,7 @@ class Dataset(object):
                 activity = Activity(self.confdata['UUID_WEBSERVICE_URL'])
                 sourceUUID_list = []
                 for source_uuid in source_UUID_Data:
-                    sourceUUID_list.append(source_uuid[0]['hmuuid'])
+                    sourceUUID_list.append(source_uuid[0]['hm_uuid'])
                 activity_object = activity.get_create_activity_statements(nexus_token, activity_type, sourceUUID_list, datastage_uuid[HubmapConst.UUID_ATTRIBUTE], metadata_userinfo, provenance_group)
                 activity_uuid = activity_object['activity_uuid']
                 for stmt in activity_object['statements']: 
@@ -1716,7 +1716,7 @@ class Dataset(object):
                 if len(hmuuid_data) != 1:
                     raise ValueError("Could not find information for identifier" + sourceID)
                 source_UUID_Data.append(hmuuid_data)
-                uuid_list.append(hmuuid_data[0]['hmuuid'])
+                uuid_list.append(hmuuid_data[0]['hm_uuid'])
             donor_list = Dataset.get_donor_by_specimen_list(driver, uuid_list)
         except:
             raise ValueError('Unable to resolve UUID for: ' + incoming_sourceUUID_string)
