@@ -469,8 +469,6 @@ renderTable() {
             <TableCell align="center">Lab Group</TableCell>
             <TableCell align="center">Lab's Non-PHI Name/ID</TableCell>
             <TableCell align="center">Entered By</TableCell>
-            <TableCell align="center">Actions</TableCell>
-        
           </TableRow>
         </TableHead>
         <TableBody>      
@@ -543,20 +541,15 @@ renderTable() {
                       
                     
                       <TableCell align="left" className="nowrap">
-                          {entity.writeable && (
+                        
                           <button
                             className="btn btn-link portal-links portal-jss298"
                             onClick={() =>
-                              this.viewForm(entity, display_id, es)
+                              this.editForm(entity, display_id, es)
                             }>
                             {entity.display_doi}
                           </button>
-                          )}
-                          {!entity.writeable && (
-                             <React.Fragment>
-                            {entity.display_doi}
-                            </React.Fragment>
-                          )}
+                      
                       </TableCell>
                       <TableCell align="left" className="nowrap">
                       {es.length > 1 && (
@@ -580,18 +573,10 @@ renderTable() {
                       </TableCell>
                        <TableCell align="left" className="nowrap">{entity.group_name}</TableCell>
                       <TableCell align="left">
-                        {entity.label_donor_id ||
+                        {entity.lab_donor_id ||
                           entity.lab_tissue_sample_id}
                       </TableCell>
                       <TableCell align="left">{entity.created_by_user_email}</TableCell>
-                      <TableCell align="left" className="nowrap"> 
-                        <button
-                          className="btn btn-light btn-sm"
-                          onClick={() =>  this.editForm(entity, display_id, es)}
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </button>
-                      </TableCell>
                     </TableRow> 
                   </React.Fragment>
                 );

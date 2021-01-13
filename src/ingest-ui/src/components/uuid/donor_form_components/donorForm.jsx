@@ -27,6 +27,7 @@ import ReactTooltip from "react-tooltip";
 import HIPPA from "../HIPPA";
 import GroupModal from "../groupModal";
 import { api_users_groups } from '../../../service/search_api';
+import { api_update_entity } from '../../../service/entity_api';
 
 class DonorForm extends Component {
   state = {
@@ -562,7 +563,7 @@ class DonorForm extends Component {
             )
           });
         });
-        formData.append("data", JSON.stringify(data));
+        //formData.append("data", JSON.stringify(data));
 
         const config = {
           headers: {
@@ -574,18 +575,30 @@ class DonorForm extends Component {
         };
 
         if (this.props.editingEntity) {
-          axios
-            .put(
-              `${process.env.REACT_APP_SPECIMEN_API_URL}/donor/${this.props.editingEntity.uuid}`,
-              data,
-              config
-            )
-            .then(res => {
-              this.props.onUpdated(res.data);
-            })
-            .catch(error => {
-              this.setState({ submit_error: true, submitting: false });
-            });
+          // axios
+          //   .put(
+          //     `${process.env.REACT_APP_SPECIMEN_API_URL}/donor/${this.props.editingEntity.uuid}`,
+          //     data,
+          //     config
+          //   )
+          //   .then(res => {
+          //     this.props.onUpdated(res.data);
+          //   })
+          //   .catch(error => {
+          //     this.setState({ submit_error: true, submitting: false });
+          //   });
+
+          api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), this.state.authToken)
+                .then((response) => {
+                  if (response.status == 200) {
+                    console.log('Update Entity...');
+                    console.log(response.results);
+                    this.props.onUpdated(response.results);
+                  } else {
+                    this.setState({ submit_error: true, submitting: false });
+                  }
+      
+              });
         } else {
           axios
             .post(

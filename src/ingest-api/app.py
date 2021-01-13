@@ -5,16 +5,19 @@ Created on Apr 23, 2019
 '''
 import sys
 import os
-from pathlib import Path
+import pathlib
 import requests
 import argparse
+import shutil
 from flask import Flask, jsonify, abort, request, session, redirect, json, Response
 from flask_cors import CORS
 from globus_sdk import AccessTokenAuthorizer, AuthClient, ConfidentialAppAuthClient
+import uuid
 
 from dataset import Dataset
 from collection import Collection
 from specimen import Specimen
+from file_helper import FileHelper
 
 from hubmap_commons.hubmap_const import HubmapConst 
 from hubmap_commons.neo4j_connection import Neo4jConnection
@@ -274,7 +277,7 @@ def get_dataset(identifier):
         uuid = json.loads(r.text)[0]['hmuuid']
         conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
         driver = conn.get_driver()
-        dataset_record = Dataset.get_dataset(driver, uuid, app.config)
+        dataset_record = Dataset.get_dataset(driver, uuid)
         conn.close()
         return jsonify( { 'dataset': dataset_record } ), 200
     
@@ -1599,6 +1602,296 @@ def search_specimen():
                 conn.close()
 
 
+@app.route('/files', methods=['POST'])
+@secured(groups="HuBMAP-read")
+def create_file():
+    try:
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        userinfo = authcache.getUserInfo(token, True)
+
+        globus_id = userinfo.get('sub')
+        form_id = request.form.get('form_id')
+        if form_id is None:
+            abort(400, "form_id is missing.")
+        
+        directory_path = f'{globus_id}/{form_id}'
+        # save file
+        FileHelper.save_file(request.files['file'],
+                           directory_path, 
+                           create_folder=True)
+
+        return "file uploaded.", 201 
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+
+@app.route('/donor', methods=['POST'])
+@secured(groups="HuBMAP-read")
+def create_donor():
+    data = request.get_json()
+    token = str(request.headers["AUTHORIZATION"])[7:]
+    userinfo = authcache.getUserInfo(token, True)
+    globus_id = userinfo.get('sub')
+    form_id = data.get('form_id')
+
+    specimen = Specimen(app.config)
+    entity = Entity(app.config['APP_CLIENT_ID'],
+                    app.config['APP_CLIENT_SECRET'],
+                    app.config['UUID_WEBSERVICE_URL'])
+    # 1. get the group uuid
+    group_uuid = data.get('user_group_uuid')
+    if  group_uuid is not None:
+        if is_user_in_group(token, group_uuid):
+            try:
+                grp_info = entity.get_group_by_identifier(group_uuid)
+            except ValueError as ve:
+                return Response('''Unauthorized: Cannot find information on 
+                                group: ''' + str(group_uuid), 401)
+            if grp_info['generateuuid'] == False:
+                return Response(f'''Unauthorized: This group {grp_info} is not
+                                 a group with write privileges.''', 401)
+        else:
+            return Response('''Unauthorized: Current user is not a member of 
+                            group: ''' + str(group_uuid), 401)
+    group_uuid = (next(g for g in entity.get_user_groups(token) 
+                      if g['generateuuid']) 
+                 if group_uuid is None 
+                 else group_uuid)
+    if group_uuid is None:
+        return Response('''Unauthorized: Current user is not a member of a 
+                        group allowed to create new specimens''', 401)
+    data['group_uuid'] = group_uuid
+    # 3. create donor
+    file_list = []
+    try:
+        directory = f'{globus_id}/{form_id}'
+        for filename in os.listdir(pathlib.Path(directory)):
+            file_list.append(os.path.join(directory, filename))
+    except FileNotFoundError:
+        pass
+    conn = Neo4jConnection(app.config['NEO4J_SERVER'],
+                            app.config['NEO4J_USERNAME'],
+                            app.config['NEO4J_PASSWORD'])
+    driver = conn.get_driver()
+    record = specimen.create_specimen(driver, request,
+                            data, file_list, token, 
+                            data.get('group_uuid'), None, 1)
+
+    conn.close()
+    # 4. delete temporary files
+    if os.path.exists(globus_id):
+        shutil.rmtree(globus_id)
+    uuid = record.get('new_samples')[0].get('uuid')
+    # 5. reindex is done on entity-api
+    try:
+        #reindex this node in elasticsearch
+        rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] +
+                            "/reindex/" +
+                            uuid,
+                            headers={'Authorization': 'Bearer '+token})
+    except Exception:
+        print("Error happened when calling reindex web service")
+    # 6. reurn 201
+    return jsonify(record), 201
+
+@app.route('/donor/<uuid>', methods=['PUT'])
+@secured(groups="HuBMAP-read")
+def update_donor(uuid):
+    data = request.get_json()
+    token = str(request.headers["AUTHORIZATION"])[7:]
+    userinfo = authcache.getUserInfo(token, True)
+    globus_id = userinfo.get('sub')    
+
+    form_id = data.get('form_id')
+    new_metadatas = data.get('new_metadatas')
+    deleted_metadatas = data.get('deleted_metadatas')
+    new_images = data.get('new_images')
+    deleted_images = data.get('deleted_images')
+
+    specimen = Specimen(app.config)
+    entity = Entity(app.config['APP_CLIENT_ID'],
+                    app.config['APP_CLIENT_SECRET'],
+                    app.config['UUID_WEBSERVICE_URL'])
+    # 1. get the group uuid
+    group_uuid = None
+    if 'user_group_uuid' in data:
+        if is_user_in_group(token, data['user_group_uuid']):
+            group_uuid = data['user_group_uuid']
+        else:
+            return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
+    data['group_uuid'] = group_uuid
+    try:
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'],
+                            app.config['NEO4J_USERNAME'],
+                            app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        file_list = []
+        try:
+            directory = f'{globus_id}/{form_id}'
+            for filename in os.listdir(pathlib.Path(directory)):
+                file_list.append(os.path.join(directory, filename))
+        except FileNotFoundError:
+            pass
+        new_uuid_record = specimen.update_specimen(
+                driver, uuid, request, data, file_list, token, group_uuid)
+        conn.close()
+
+        if os.path.exists(globus_id):
+            shutil.rmtree(globus_id)
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record, headers={'Authorization': request.headers["AUTHORIZATION"]})
+        except:
+            print("Error happend when calling reindex web service")
+        return jsonify({'uuid': uuid}), 200 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
+@app.route('/sample', methods=['POST'])
+@secured(groups="HuBMAP-read")
+def create_sample():
+    data = request.get_json()
+    token = str(request.headers["AUTHORIZATION"])[7:]
+    userinfo = authcache.getUserInfo(token, True)
+    globus_id = userinfo.get('sub')
+    form_id = data.get('form_id')
+
+    specimen = Specimen(app.config)
+    entity = Entity(app.config['APP_CLIENT_ID'],
+                    app.config['APP_CLIENT_SECRET'],
+                    app.config['UUID_WEBSERVICE_URL'])
+    # 1. get the group uuid
+    group_uuid = data.get('user_group_uuid')
+    if  group_uuid is not None:
+        if is_user_in_group(token, group_uuid):
+            try:
+                grp_info = entity.get_group_by_identifier(group_uuid)
+            except ValueError as ve:
+                return Response('''Unauthorized: Cannot find information on 
+                                group: ''' + str(group_uuid), 401)
+            if grp_info['generateuuid'] == False:
+                return Response(f'''Unauthorized: This group {grp_info} is not
+                                 a group with write privileges.''', 401)
+        else:
+            return Response('''Unauthorized: Current user is not a member of 
+                            group: ''' + str(group_uuid), 401)
+    group_uuid = (next(g for g in entity.get_user_groups(token) 
+                      if g['generateuuid']) 
+                 if group_uuid is None 
+                 else group_uuid)
+    if group_uuid is None:
+        return Response('''Unauthorized: Current user is not a member of a 
+                        group allowed to create new specimens''', 401)
+    data['group_uuid'] = group_uuid
+    # 3. create sample
+    file_list = []
+    try:
+        directory = f'{globus_id}/{form_id}'
+        for filename in os.listdir(pathlib.Path(directory)):
+            file_list.append(os.path.join(directory, filename))
+    except FileNotFoundError:
+        pass
+    conn = Neo4jConnection(app.config['NEO4J_SERVER'],
+                            app.config['NEO4J_USERNAME'],
+                            app.config['NEO4J_PASSWORD'])
+    driver = conn.get_driver()
+    record = specimen.create_specimen(driver, request,
+                            data, file_list, token, 
+                            data.get('group_uuid'), None, 1)
+
+    conn.close()
+    # 4. delete temporary files
+    if os.path.exists(globus_id):
+        shutil.rmtree(globus_id)
+    uuid = record.get('new_samples')[0].get('uuid')
+    # 5. reindex is done on entity-api
+    try:
+        #reindex this node in elasticsearch
+        rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] +
+                            "/reindex/" +
+                            uuid,
+                            headers={'Authorization': 'Bearer '+token})
+    except Exception:
+        print("Error happened when calling reindex web service")
+    # 6. reurn 201
+    return jsonify(record), 201
+
+@app.route('/sample/<uuid>', methods=['PUT'])
+@secured(groups="HuBMAP-read")
+def update_sample(uuid):
+    data = request.get_json()
+    token = str(request.headers["AUTHORIZATION"])[7:]
+    userinfo = authcache.getUserInfo(token, True)
+    globus_id = userinfo.get('sub')    
+
+    form_id = data.get('form_id')
+    new_metadatas = data.get('new_metadatas')
+    deleted_metadatas = data.get('deleted_metadatas')
+    new_images = data.get('new_images')
+    deleted_images = data.get('deleted_images')
+
+    specimen = Specimen(app.config)
+    entity = Entity(app.config['APP_CLIENT_ID'],
+                    app.config['APP_CLIENT_SECRET'],
+                    app.config['UUID_WEBSERVICE_URL'])
+    # 1. get the group uuid
+    group_uuid = None
+    if 'user_group_uuid' in data:
+        if is_user_in_group(token, data['user_group_uuid']):
+            group_uuid = data['user_group_uuid']
+        else:
+            return Response('Unauthorized: Current user is not a member of group: ' + str(group_uuid), 401) 
+    data['group_uuid'] = group_uuid
+    try:
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'],
+                            app.config['NEO4J_USERNAME'],
+                            app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        file_list = []
+        try:
+            directory = f'{globus_id}/{form_id}'
+            for filename in os.listdir(pathlib.Path(directory)):
+                file_list.append(os.path.join(directory, filename))
+        except FileNotFoundError:
+            pass
+        new_uuid_record = specimen.update_specimen(
+                driver, uuid, request, data, file_list, token, group_uuid)
+        conn.close()
+
+        if os.path.exists(globus_id):
+            shutil.rmtree(globus_id)
+        try:
+            #reindex this node in elasticsearch
+            rspn = requests.put(app.config['SEARCH_WEBSERVICE_URL'] + "/reindex/" + new_uuid_record, headers={'Authorization': request.headers["AUTHORIZATION"]})
+        except:
+            print("Error happend when calling reindex web service")
+        return jsonify({'uuid': uuid}), 200 
+
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
 
 # This is for development only
 if __name__ == '__main__':

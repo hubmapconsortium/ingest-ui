@@ -1,5 +1,5 @@
 export function getFileNameOnPath(file_path) {
-  if (file_path)
+  if (file_path && file_path.length > 0)
     return file_path.substring(
       file_path.lastIndexOf("/") + 1,
       file_path.length

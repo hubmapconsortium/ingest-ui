@@ -15,7 +15,10 @@ from flask import json
 import traceback
 from flask import Response
 from typing import List
-from hubmap_commons.hubmap_const import HubmapConst 
+import pathlib
+import shutil
+from hubmap_commons.hubmap_const import HubmapConst
+from hubmap_commons.hubmap_const import HubmapConst as HC
 from hubmap_commons.neo4j_connection import Neo4jConnection
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hm_auth import AuthHelper, AuthCache
@@ -125,7 +128,7 @@ class Specimen:
                 if 'images' in incoming_record:
                     current_imagefiles = incoming_record['images']
                 all_files = Specimen.build_complete_file_list(current_metadatafiles, current_protocolfile, current_imagefiles)
-                Specimen.cleanup_files(data_directory, all_files)
+                # Specimen.cleanup_files(data_directory, all_files)
                 # append the current UUID to the data_directory to avoid filename collisions.
                 if 'metadata_file' in file_list:
                     metadata_file_path = Specimen.upload_file_data(request, 'metadata_file', data_directory)
@@ -134,7 +137,8 @@ class Specimen:
                     current_metadata_file_list = None
                     if 'metadata_file' in metadata_obj:
                         current_metadata_file_list = metadata_obj['metadatas']
-                    metadata_file_path = Specimen.upload_multiple_file_data(request, incoming_record['metadatas'], file_list, data_directory, current_metadata_file_list)
+                    metadata_file_path = Specimen.move_multiple_files(incoming_record['metadatas'], file_list, data_directory, current_metadata_file_list)
+                    Specimen.delete_files(incoming_record['deleted_metadatas'], data_directory)
                     incoming_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
                     incoming_record[HubmapConst.METADATAS_ATTRIBUTE] = metadata_file_path
                 if 'protocol_file' in file_list:
@@ -145,7 +149,8 @@ class Specimen:
                     current_image_file_metadata = None
                     if 'image_file_metadata' in metadata_obj:
                         current_image_file_metadata = metadata_obj['image_file_metadata']
-                    image_file_data_list = Specimen.upload_multiple_file_data(request, incoming_record['images'], file_list, data_directory, current_image_file_metadata)
+                    image_file_data_list = Specimen.move_multiple_files(incoming_record['images'], file_list, data_directory, current_image_file_metadata)
+                    Specimen.delete_files(incoming_record['deleted_images'], data_directory)
                     incoming_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
                 if 'protocols' in incoming_record:
                     # handle the case where the current record has no images
@@ -157,6 +162,7 @@ class Specimen:
                 
                 entity_record = Entity.get_entity(driver, uuid)
                 if 'rui_location' in incoming_record or 'lab_tissue_id' in incoming_record:
+                    entity_record = {}
                     entity_record[HubmapConst.UUID_ATTRIBUTE] = uuid
                     if 'rui_location' in incoming_record:
                         entity_record[HubmapConst.RUI_LOCATION_ATTRIBUTE] = incoming_record['rui_location']
@@ -182,6 +188,7 @@ class Specimen:
                 # if a donor, check if the open_consent flag is changing
                 # if the open_consent flag changes, you need to check the access level on any
                 # child datasets
+                entity_record = Entity.get_entity(driver, uuid)
                 existing_open_consent = False
                 if HubmapConst.DONOR_OPEN_CONSENT in metadata_obj:
                     existing_open_consent = metadata_obj[HubmapConst.DONOR_OPEN_CONSENT]
@@ -716,11 +723,11 @@ class Specimen:
                 protocol_file_path = Specimen.upload_file_data(request, 'protocol_file', data_directory)
                 metadata_record[HubmapConst.PROTOCOL_FILE_ATTRIBUTE] = protocol_file_path
             if 'metadatas' in metadata_record:
-                metadata_file_path = Specimen.upload_multiple_file_data(request, metadata_record['metadatas'], file_list, data_directory)
+                metadata_file_path = Specimen.move_multiple_files(metadata_record['metadatas'], file_list, data_directory)
                 metadata_record[HubmapConst.METADATA_FILE_ATTRIBUTE] = metadata_file_path
                 metadata_record[HubmapConst.METADATAS_ATTRIBUTE] = metadata_file_path
             if 'images' in metadata_record:
-                image_file_data_list = Specimen.upload_multiple_file_data(request, metadata_record['images'], file_list, data_directory)
+                image_file_data_list = Specimen.move_multiple_files(metadata_record['images'], file_list, data_directory)
                 metadata_record[HubmapConst.IMAGE_FILE_METADATA_ATTRIBUTE] = image_file_data_list
             if 'protocols' in metadata_record:
                 protocol_file_data_list = Specimen.upload_multiple_protocol_file_data(request, metadata_record['protocols'], file_list, data_directory)
@@ -823,6 +830,50 @@ class Specimen:
                     
             except:
                 raise
+        # dump the data as JSON
+        return_string = json.dumps(return_list)
+        # replace any of the single quotes with double quotes so it can be stored by Neo4j statements
+        return_string = str(return_string).replace('\'', '"')
+        return return_string
+
+    @staticmethod
+    def move_multiple_files(annotated_file_list, files_list, directory, existing_file_data=None):
+        return_list = []
+
+        file_dict = {}
+        for f in files_list:
+            fname = os.path.basename(f)
+            file_dict[fname] = f
+
+        exist_files_dict = {}
+        if existing_file_data != None:
+            existing_file_data_json = json.loads(existing_file_data)
+            for data_entry in existing_file_data_json:
+                exist_files_dict[
+                    (os.path.basename(data_entry['filepath']))] = data_entry
+        for file_data in annotated_file_list:
+            # upload the file if it represents a new file.  
+            # New files are found in the file_name_dict
+            if type(file_data) == dict:
+                fname = file_data['file_name']
+            elif type(file_data) == str:
+                fname = file_data
+
+            if fname in file_dict:
+                new_filepath = Specimen.move_file(file_dict.get(fname),
+                                                  directory)
+                desc = ''
+                if 'description' in file_data:
+                    desc = file_data['description']
+                file_obj = {'filepath': new_filepath, 'description': desc}
+                return_list.append(file_obj)
+            else:
+                # in this case, simply copy an existing file's data into the retrun_list
+                existing_file = exist_files_dict[str(os.path.basename(fname))]
+                if 'description' in file_data:
+                    existing_file['description'] = file_data['description']
+                return_list.append(existing_file)
+
         # dump the data as JSON
         return_string = json.dumps(return_list)
         # replace any of the single quotes with double quotes so it can be stored by Neo4j statements
@@ -975,6 +1026,25 @@ class Specimen:
             filename = os.path.basename(file.filename)
             file.save(os.path.join(directory_path, filename))
             return str(os.path.join(directory_path, filename))
+        except:
+            raise
+    
+    @staticmethod
+    def move_file(source, destination):
+        try:
+            filename = os.path.basename(source)
+            destination = f"{destination}/{filename}"
+            shutil.move(os.path.join(os.getcwd(), source), destination)
+            return destination
+        except:
+            raise
+    
+    @staticmethod
+    def delete_files(deleted_files, directory):
+        try:
+            for d_file in deleted_files:
+                file_path = f"{directory}/{d_file}"
+                os.remove(file_path)
         except:
             raise
 
