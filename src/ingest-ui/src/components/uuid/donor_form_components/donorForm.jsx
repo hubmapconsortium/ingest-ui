@@ -36,7 +36,7 @@ class DonorForm extends Component {
     lab: "",
     lab_donor_id: "",
     identifying_name: "",
-    protocol: "",
+    protocol_url: "",
     protocol_file: "",
     description: "",
     metadata_file: "",
@@ -59,7 +59,7 @@ class DonorForm extends Component {
       lab: "",
       lab_donor_id: "",
       identifying_name: "",
-      protocol: "",
+      protocol_url: "",
       protocol_file: "",
       description: "",
       metadata_file: "",
@@ -75,7 +75,7 @@ class DonorForm extends Component {
     super(props);
     // create a ref to store the file Input DOM element
     this.protocolFile = React.createRef();
-    this.protocol = React.createRef();
+    this.protocol_url = React.createRef();
   }
 
   UNSAFE_componentWillMount() {
@@ -158,14 +158,14 @@ class DonorForm extends Component {
         //visit: this.props.editingEntity.properties.visit,
         lab_donor_id: this.props.editingEntity.lab_donor_id,
         identifying_name: this.props.editingEntity.label,
-        protocol: this.props.editingEntity.protocol_url,
+        protocol_url: this.props.editingEntity.protocol_url,
       //  protocol_file_name: pf && getFileNameOnPath(pf),
         description: this.props.editingEntity.description,
-        metadata_file_name: mf && getFileNameOnPath(mf)
+       // metadata_file_name: mf && getFileNameOnPath(mf)
       });
 
       const image_list = [];
-      const metadata_list = [];
+      //const metadata_list = [];
       images.forEach((image, index) => {
         image_list.push({
           id: index + 1,
@@ -174,15 +174,15 @@ class DonorForm extends Component {
           description: image.description
         });
       });
-      metadatas.forEach((metadata, index) => {
-        metadata_list.push({
-          id: index + 1,
-          ref: React.createRef(),
-          file_name: getFileNameOnPath(metadata.filepath)
-        });
-      });
-
-      this.setState({ images: image_list, metadatas: metadata_list });
+      // metadatas.forEach((metadata, index) => {
+      //   metadata_list.push({
+      //     id: index + 1,
+      //     ref: React.createRef(),
+      //     file_name: getFileNameOnPath(metadata.filepath)
+      //   });
+      // });
+      // this.setState({ images: image_list, metadatas: metadata_list });
+      this.setState({ images: image_list});
     }
   }
 
@@ -235,92 +235,33 @@ class DonorForm extends Component {
           }));
         }
         break;
-      case "protocol":
-        this.setState({ protocol: value });
-        if (
-          !validateRequired(value)
-        ) {
+      case "protocol_url":
+        this.setState({ protocol_url: value });
+        if (!validateProtocolIODOI(value)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: "required"
-            }
-          }));
-        } else if (!validateProtocolIODOI(value)) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol: "Please enter a valid protocols.io DOI"
+              protocol_url: "Please enter a valid protocols.io DOI"
             }
           }));
         } else {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: ""
+              protocol_url: ""
             }
           }));
         }
         break;
-      // case "protocol_file":
-      //   this.setState({ protocol_file: e.target.files[0] });
-      //   this.setState({
-      //     protocol_file_name: e.target.files[0] && e.target.files[0].name
-      //   });
-      //   if (
-      //     !validateRequired(value) &&
-      //     !validateRequired(this.protocol.current.value)
-      //   ) {
-      //     this.setState(prevState => ({
-      //       formErrors: {
-      //         ...prevState.formErrors,
-      //         protocol_file: "required",
-      //         protocol: "required"
-      //       }
-      //     }));
-      //   } else if (e.target.files[0]) {
-      //     if (
-      //       !validateFileType(e.target.files[0].type, [
-      //         "application/msword",
-      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      //         "application/pdf"
-      //       ])
-      //     ) {
-      //       this.setState(prevState => ({
-      //         formErrors: {
-      //           ...prevState.formErrors,
-      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf",
-      //           protocol: ""
-      //         }
-      //       }));
-      //     } else {
-      //       this.setState(prevState => ({
-      //         formErrors: {
-      //           ...prevState.formErrors,
-      //           protocol_file: "",
-      //           protocol: ""
-      //         }
-      //       }));
-      //     }
-      //   } else {
-      //     this.setState(prevState => ({
-      //       formErrors: {
-      //         ...prevState.formErrors,
-      //         protocol_file: "",
-      //         protocol: ""
-      //       }
-      //     }));
-      //   }
-      //   break;
       case "description":
         this.setState({ description: value });
         break;
-      case "metadata_file":
-        this.setState({ metadata_file: e.target.files[0] });
-        this.setState({
-          metadata_file_name: e.target.files[0] && e.target.files[0].name
-        });
-        break;
+      // case "metadata_file":
+      //   this.setState({ metadata_file: e.target.files[0] });
+      //   this.setState({
+      //     metadata_file_name: e.target.files[0] && e.target.files[0].name
+      //   });
+      //   break;
       // case "visit":
       //   this.setState({ visit: value });
       //   break;
@@ -365,18 +306,18 @@ class DonorForm extends Component {
     });
   };
 
-  handleAddMetadata = () => {
-    let newId = 1;
-    if (this.state.metadatas.length > 0) {
-      newId = this.state.metadatas[this.state.metadatas.length - 1].id + 1;
-    }
-    this.setState({
-      metadatas: [
-        ...this.state.metadatas,
-        { id: newId, ref: React.createRef() }
-      ]
-    });
-  };
+  // handleAddMetadata = () => {
+  //   let newId = 1;
+  //   if (this.state.metadatas.length > 0) {
+  //     newId = this.state.metadatas[this.state.metadatas.length - 1].id + 1;
+  //   }
+  //   this.setState({
+  //     metadatas: [
+  //       ...this.state.metadatas,
+  //       { id: newId, ref: React.createRef() }
+  //     ]
+  //   });
+  // };
 
   handleDeleteImage = id => {
     const deleted_image = this.state.images.find(i => i.id === id);
@@ -393,20 +334,20 @@ class DonorForm extends Component {
     });
   };
 
-  handleDeleteMetadata = id => {
-    const deleted_metadata = this.state.metadatas.find(i => i.id === id);
-    const new_metadatas = this.state.new_metadatas.filter(dm => dm !== deleted_metadata.file_name);
-    let deleted_metadatas = [...this.state.deleted_metadatas];
-    if (new_metadatas.length === this.state.new_metadatas.length){
-      deleted_metadatas.push(deleted_metadata.file_name);
-    }
-    const metadatas = this.state.metadatas.filter(i => i.id !== id);
-    this.setState({
-      metadatas,
-      new_metadatas,
-      deleted_metadatas
-    });
-  };
+  // handleDeleteMetadata = id => {
+  //   const deleted_metadata = this.state.metadatas.find(i => i.id === id);
+  //   const new_metadatas = this.state.new_metadatas.filter(dm => dm !== deleted_metadata.file_name);
+  //   let deleted_metadatas = [...this.state.deleted_metadatas];
+  //   if (new_metadatas.length === this.state.new_metadatas.length){
+  //     deleted_metadatas.push(deleted_metadata.file_name);
+  //   }
+  //   const metadatas = this.state.metadatas.filter(i => i.id !== id);
+  //   this.setState({
+  //     metadatas,
+  //     new_metadatas,
+  //     deleted_metadatas
+  //   });
+  // };
 
   onFileChange = (type, id) => {
     switch (type) {
@@ -521,40 +462,40 @@ class DonorForm extends Component {
           submitting: true
         });
         let data = {
-          entitytype: "Donor",
+    
           lab_donor_id: this.state.lab_donor_id,
           label: this.state.identifying_name,
-          protocol: this.state.protocol,
+          protocol_url: this.state.protocol_url,
           // visit: this.state.visit,
           // protocol_file:
           //   this.state.protocol_file_name === "Choose a file"
           //     ? ""
           //     : this.state.protocol_file_name,
           description: this.state.description,
-          metadatas: [],
-          new_metadatas: this.state.new_metadatas,
-          deleted_metadatas: this.state.deleted_metadatas,
-          images: [],
-          new_images: this.state.new_images,
-          deleted_images: this.state.deleted_images,
-          open_consent: this.state.open_consent,
-          form_id: this.state.form_id
+          // metadatas: [],
+          // new_metadatas: this.state.new_metadatas,
+          // deleted_metadatas: this.state.deleted_metadatas,
+          //image_file_metadata: [],
+          // new_images: this.state.new_images,
+          // deleted_images: this.state.deleted_images,
+          // open_consent: this.state.open_consent,
+          // form_id: this.state.form_id
         };
-        if (this.state.selected_group) {
-          data["user_group_uuid"] = this.state.selected_group;
-        }
+        // if (this.state.selected_group) {
+        //   data["user_group_uuid"] = this.state.selected_group;
+        // }
 
-        var formData = new FormData();
+        //var formData = new FormData();
         // formData.append("protocol_file", this.state.protocol_file);
-        formData.append("metadata_file", this.state.metadata_file);
-        this.state.metadatas.forEach(i => {
-          data.metadatas.push({
-            id: "metadata_" + i.id,
-            file_name: i.file_name
-          });
-        });
+        // formData.append("metadata_file", this.state.metadata_file);
+        // this.state.metadatas.forEach(i => {
+        //   data.metadatas.push({
+        //     id: "metadata_" + i.id,
+        //     file_name: i.file_name
+        //   });
+        // });
         this.state.images.forEach(i => {
-          data.images.push({
+          data.image_file_metadata.push({
             id: "image_" + i.id,
             file_name: i.file_name,
             description: i.ref.current.image_file_description.current.value.replace(
@@ -565,6 +506,8 @@ class DonorForm extends Component {
         });
         //formData.append("data", JSON.stringify(data));
 
+        console.log("the data")
+        console.log(data)
         const config = {
           headers: {
             Authorization:
@@ -588,7 +531,7 @@ class DonorForm extends Component {
           //     this.setState({ submit_error: true, submitting: false });
           //   });
 
-          api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), this.state.authToken)
+          api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
                     console.log('Update Entity...');
@@ -721,42 +664,15 @@ class DonorForm extends Component {
         formErrors: { ...prevState.formErrors, identifying_name: "" }
       }));
     }
-    if (!validateProtocolIODOI(this.state.protocol)) {
+    if (!validateProtocolIODOI(this.state.protocol_url)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: "Please enter a valid protocols.io DOI"
+              protocol_url: "Please enter a valid protocols.io DOI"
             }
           }));
           isValid = false;
     }
-
-    // {
-    //   if (
-    //     !validateRequired(this.state.protocol_file) &&
-    //     !validateRequired(this.state.protocol) &&
-    //     !validateRequired(
-    //       this.state.protocol_file_name === "Choose a file"
-    //         ? ""
-    //         : this.state.protocol_file_name
-    //     )
-    //   ) {
-    //     this.setState(prevState => ({
-    //       formErrors: { ...prevState.formErrors, protocol: "required" }
-    //     }));
-    //     isValid = false;
-    //   } else {
-    //     if (!validateProtocolIODOI(this.state.protocol)) {
-    //       this.setState(prevState => ({
-    //         formErrors: {
-    //           ...prevState.formErrors,
-    //           protocol: "Please enter a valid protocols.io DOI"
-    //         }
-    //       }));
-    //       isValid = false;
-    //     }
-    //   }
-    // }
 
     // if (!this.props.editingEntity) {
     this.state.images.forEach((image, index) => {
@@ -994,7 +910,7 @@ class DonorForm extends Component {
               </div>
               <div className="form-group">
                 <label
-                  htmlFor="protocol">
+                  htmlFor="protocol_url">
                   Case Selection Protocol <span className="text-danger">*</span>
                   </label>
                   <span className="text-danger px-2">
@@ -1015,8 +931,7 @@ class DonorForm extends Component {
                       <p>
                         The protocol used when choosing and acquiring the donor.
                         <br />
-                        This can be supplied as either a protocols.io DOI or{" "}
-                        <br /> an uploaded document
+                        This can be supplied a DOI from http://protocols.io
                       </p>
                     </ReactTooltip>
                   </span>
@@ -1024,29 +939,29 @@ class DonorForm extends Component {
                 {!this.props.readOnly && (
                   <div>
                     <input
-                      ref={this.protocol}
+                      ref={this.protocol_url}
                       type="text"
-                      name="protocol"
-                      id="protocol"
+                      name="protocol_url"
+                      id="protocol_url"
                       className={
                         "form-control " +
-                        this.errorClass(this.state.formErrors.protocol)
+                        this.errorClass(this.state.formErrors.protocol_url)
                       }
                       onChange={this.handleInputChange}
-                      value={this.state.protocol}
+                      value={this.state.protocol_url}
                       placeholder="protocols.io DOI"
                     />
-                    {this.state.formErrors.protocol &&
-                      this.state.formErrors.protocol !== "required" && (
+                    {this.state.formErrors.protocol_url &&
+                      this.state.formErrors.protocol_url !== "required" && (
                         <div className="invalid-feedback">
-                          {this.state.formErrors.protocol}
+                          {this.state.formErrors.protocol_url}
                         </div>
                       )}
                   </div>
                 )}
                 {this.props.readOnly && (
                   <div>
-                    <input type="text" readonly class="form-control" id="static_protocol" value={this.state.protocol}></input>
+                    <input type="text" readonly class="form-control" id="static_protocol" value={this.state.protocol_url}></input>
 
                   </div>
                 )}
