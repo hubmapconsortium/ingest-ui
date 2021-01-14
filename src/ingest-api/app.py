@@ -1893,6 +1893,67 @@ def update_sample(uuid):
             if conn.get_driver().closed() == False:
                 conn.close()
 
+#given a hubmap uuid and a valid Globus token returns, as json the attribute has_write with
+#value true if the user has write access to the entity
+# returns
+#      200 json with attribute has_write with true value if user has write access to the entity
+#      200 json with attribute has_write with false value if user does not have write access to the entity
+#      400 if invalid hubmap uuid provided or no group_uuid found for the entity
+#      401 if user does not have hubmap read access or the token is invalid
+#      404 if the uuid is not found
+#
+# Example json response: 
+#                  {
+#                      "has_write": true
+#                  }
+
+@app.route('/has-write/<hmuuid>', methods = ['GET'])
+@secured(groups="HuBMAP-read")
+def has_write(hmuuid):
+    #if no uuid provided send back a 400
+    if hmuuid == None or len(hmuuid) == 0:
+        abort(400, jsonify( { 'error': 'hmuuid (HuBMAP UUID) parameter is required.' } ))
+
+    try:
+        #the Globus nexus auth token will be in the AUTHORIZATION section of the header
+        token = str(request.headers["AUTHORIZATION"])[7:]
+        #get a connection to Neo4j db
+        conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+        driver = conn.get_driver()
+        with driver.session() as session:
+            #query Neo4j db to find the entity
+            stmt = "match (e:Entity {uuid:'" + hmuuid.strip() + "'}) return e.group_uuid"
+            recds = session.run(stmt)
+            #this assumes there is only one result returned, but we use the for loop
+            #here because standard list (len, [idx]) operators don't work with
+            #the neo4j record list object
+            for record in recds:
+                if record.get('e.group_uuid', None) != None:
+                    #compare the group_uuid in the entity to the users list of groups
+                    #if in the users list of groups return true otherwise false
+                    if record['e.group_uuid'] in authcache.getUserInfo(token, True)['hmgroupids']:
+                        return Response('{"has_write":true}', 200, mimetype='application/json')
+                    else:
+                        return Response('{"has_write":false}', 200)
+                #the entity didn't have a group_uuid for some reason
+                else:
+                    return Response("Entity group uuid not found", 400)
+            #if we fall through to here the entity was not found
+            return Response("Entity not found", 404)
+    except AuthError as e:
+        print(e)
+        return Response('token is invalid', 401)
+    except:
+        msg = 'An error occurred: '
+        for x in sys.exc_info():
+            msg += str(x)
+        abort(400, msg)
+    finally:
+        if conn != None:
+            if conn.get_driver().closed() == False:
+                conn.close()
+
+
 # This is for development only
 if __name__ == '__main__':
     try:
