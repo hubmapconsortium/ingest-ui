@@ -1929,9 +1929,16 @@ def has_write(hmuuid):
             #the neo4j record list object
             for record in recds:
                 if record.get('e.group_uuid', None) != None:
+                    #get user info, make sure it has group information associated
+                    user_info = authcache.getUserInfo(token, True)
+                    if user_info is None:
+                        return Response("Unable to obtain user information for auth token", 401)
+                    if not 'hmgroupids' in user_info:
+                        return Response('{"has_write":false}', 200)
+                    
                     #compare the group_uuid in the entity to the users list of groups
                     #if in the users list of groups return true otherwise false
-                    if record['e.group_uuid'] in authcache.getUserInfo(token, True)['hmgroupids']:
+                    if record['e.group_uuid'] in user_info['hmgroupids']:
                         return Response('{"has_write":true}', 200, mimetype='application/json')
                     else:
                         return Response('{"has_write":false}', 200)
