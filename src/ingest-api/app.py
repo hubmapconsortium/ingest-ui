@@ -27,9 +27,12 @@ from hubmap_commons.autherror import AuthError
 from hubmap_commons.metadata import Metadata
 from hubmap_commons.hubmap_error import HubmapError
 from hubmap_commons.exceptions import HTTPException
+from hubmap_commons import string_helper
+from hubmap_commons import net_helper
 
 import time
 import logging
+from pathlib import Path
 
 LOG_FILE_NAME = "../log/ingest-api-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".log" 
 logger = None
@@ -82,24 +85,75 @@ def hello():
     return jsonify({'uuid': 'hello'}), 200
 
 
-# Show status of neo4j connection
+# Show status of neo4j connection and optionally of the dependent web services
+# to show the status of the other hubmap services that ingest-api is dependent on
+# use the url parameter "?check-ws-dependencies=true
+# returns a json body with the status of the neo4j service and optionally the
+# status/time that it took for the dependent web services to respond
+# e.g.:
+#     {
+#        "build": "adfadsfasf",
+#        "entity_ws": 130,
+#        "neo4j_connection": true,
+#        "search_ws_check": 127,
+#        "uuid_ws": 105,
+#        "version": "1.15.4"
+#     }
 @app.route('/status', methods = ['GET'])
 def status():
+    response_code = 200
     response_data = {
         # Use strip() to remove leading and trailing spaces, newlines, and tabs
         'version': (Path(__file__).absolute().parent.parent.parent / 'VERSION').read_text().strip(),
         'build': (Path(__file__).absolute().parent.parent.parent / 'BUILD').read_text().strip(),
-        'neo4j_connection': False
     }
-
-    conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
-    driver = conn.get_driver()
-    is_connected = conn.check_connection(driver)
     
-    if is_connected:
-        response_data['neo4j_connection'] = True
-
-    return jsonify(response_data)
+    try:
+        #if ?check-ws-dependencies=true is present in the url request params
+        #set a flag to check these other web services
+        check_ws_calls = string_helper.isYes(request.args.get('check-ws-dependencies'))
+        
+        #check the neo4j connection
+        try:
+            conn = Neo4jConnection(app.config['NEO4J_SERVER'], app.config['NEO4J_USERNAME'], app.config['NEO4J_PASSWORD'])
+            driver = conn.get_driver()
+            is_connected = conn.check_connection(driver)
+        #the neo4j connection will often fail via exception so
+        #catch it here, flag as failure and track the returned error message
+        except Exception as e:
+            response_code = 500
+            response_data['neo4j_error'] = str(e)
+            is_connected = False
+            
+        if is_connected:
+            response_data['neo4j_connection'] = True
+        else:
+            response_code = 500
+            response_data['neo4j_connection'] = False
+        
+        #if the flag was set to check ws dependencies do it now
+        #for each dependency try to connect via helper which calls the
+        #service's /status method
+        #The helper method will return False if the connection fails or
+        #an integer with the number of milliseconds that it took to get
+        #the services status
+        if check_ws_calls:
+            uuid_ws_url = app.config['UUID_WEBSERVICE_URL'].strip()
+            if uuid_ws_url.endswith('hmuuid'): uuid_ws_url = uuid_ws_url[:len(uuid_ws_url) - 6]
+            uuid_ws_check = net_helper.check_hm_ws(uuid_ws_url)
+            entity_ws_check = net_helper.check_hm_ws(app.config['ENTITY_WEBSERVICE_URL'])
+            search_ws_check = net_helper.check_hm_ws(app.config['SEARCH_WEBSERVICE_URL'])
+            if not uuid_ws_check or not entity_ws_check or not search_ws_check: response_code = 500
+            response_data['uuid_ws'] = uuid_ws_check
+            response_data['entity_ws'] = entity_ws_check
+            response_data['search_ws_check'] = search_ws_check
+    
+    #catch any unhandled exceptions
+    except Exception as e:
+        response_code = 500
+        response_data['exception_message'] = str(e)
+    finally:
+        return Response(json.dumps(response_data), response_code, mimetype='application/json')
     
 ####################################################################################################
 ## Endpoints for UI Login and Logout
@@ -684,7 +738,7 @@ def temp_request_ingest_call():
         return jsonify( { "submission" : return_obj } ), 200
     
     except ValueError:
-        abort(404, jsonify( { 'error': 'ingest_id {ingest_id} not found'.format(ingest_id=ingest_id) } ))
+        abort(404, jsonify( { 'error': 'ingest_id not found'} ))
         
     except:
         msg = 'An error occurred: '

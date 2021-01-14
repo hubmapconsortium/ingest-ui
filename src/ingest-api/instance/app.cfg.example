@@ -51,6 +51,9 @@ UUID_WEBSERVICE_URL = 'http://hubmap-auth:9999/hmuuid'
 # Default works with only localhost deployment
 SEARCH_WEBSERVICE_URL = 'http://hubmap-auth:6666'
 
+#URL to the entity-api web service
+ENTITY_WEBSERVICE_URL = 'http://hubmap-auth:????'
+
 # For UI login/logout
 # Flask app session key
 SECRET_KEY = 'a%@3k9Hdlkfjakjajf99adsf909oel'
