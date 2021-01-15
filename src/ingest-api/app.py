@@ -1907,7 +1907,7 @@ def update_sample(uuid):
 #                      "has_write": true
 #                  }
 
-@app.route('/entities/<hmuuid>/has-write/', methods = ['GET'])
+@app.route('/entities/<hmuuid>/has-write', methods = ['GET'])
 @secured(groups="HuBMAP-read")
 def has_write(hmuuid):
     #if no uuid provided send back a 400
