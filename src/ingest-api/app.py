@@ -1934,14 +1934,14 @@ def has_write(hmuuid):
                     if user_info is None:
                         return Response("Unable to obtain user information for auth token", 401)
                     if not 'hmgroupids' in user_info:
-                        return Response('{"has_write":false}', 200)
+                        return Response('{"has_write":false}', 200, mimetype='application/json')
                     
                     #compare the group_uuid in the entity to the users list of groups
                     #if in the users list of groups return true otherwise false
                     if record['e.group_uuid'] in user_info['hmgroupids']:
                         return Response('{"has_write":true}', 200, mimetype='application/json')
                     else:
-                        return Response('{"has_write":false}', 200)
+                        return Response('{"has_write":false}', 200, mimetype='application/json')
                 #the entity didn't have a group_uuid for some reason
                 else:
                     return Response("Entity group uuid not found", 400)

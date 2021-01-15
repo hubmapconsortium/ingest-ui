@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import '../../App.css';
 
-import axios from "axios";
+//import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faFilter, faBan, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
-import { naturalLanguageJoin } from "../../utils/string_helper";
+//import { naturalLanguageJoin } from "../../utils/string_helper";
 import { flattenSampleType } from "../../utils/constants_helper";
 import { SAMPLE_TYPES } from "../../constants";
 import Table from '@material-ui/core/Table';
@@ -17,8 +17,9 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
-import { api_users_groups, api_search, api_es_query_builder } from '../../service/search_api';
+import { api_search } from '../../service/search_api';
 import { api_get_entity } from '../../service/entity_api';
+import { api_has_write } from '../../service/ingest_api';
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
 import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
@@ -30,7 +31,7 @@ class EntityList extends Component {
     viewingEntity: null,
     loading: false,
     entities: [],
-    group_name: "IEC Testing Group",
+    // group_name: "IEC Testing Group",
     filter_group: "All Groups",
     filter_sample_type: "",
     filter_keywords: "",
@@ -47,34 +48,7 @@ class EntityList extends Component {
   constructor(props) {
     super(props);
 
-
-    // const config = {
-    //   headers: {
-    //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-    //     "Content-Type": "application/json"
-    //   }
-    // };
-
-    // api_users_groups(this.state.authToken).then((results) => {
-
-    //   if (results.status == 200) { 
-    //   this.setState(
-    //       {
-    //         group_name: naturalLanguageJoin(results.results),
-    //         //filter_group: groups[0],
-    //       },
-    //       // () => {
-    //       //   this.filterEntity();
-    //       // }
-    //     );
-    //   } else if (results.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    // });
   }
-
 
   renderLoadingSpinner() {
     if (this.state.loading) {
@@ -123,7 +97,7 @@ class EntityList extends Component {
     console.log(uuid);
     api_get_entity(uuid, this.state.authToken)
     .then((response) => {
-      if (response.status == 200) {
+      if (response.status === 200) {
       console.log('Entity results...');
       console.log(response.results);
       return response.results;
@@ -137,19 +111,31 @@ class EntityList extends Component {
     
     api_get_entity(entity.uuid, this.state.authToken)
     .then((response) => {
-      if (response.status == 200) {
-        console.log('Entity results...');
-        console.log(response.results);
-        this.setState({
-          updateSuccess: null,
-          editingEntity: response.results,
-          editingDisplayId: display_id,
-          editingEntities: es,
-          readOnly: false
-        });
+      if (response.status === 200) {
+        let entity_data = response.results;
+
+        // check to see if user can edit
+        api_has_write(entity.uuid, this.state.authToken)
+          .then((resp) => {
+          if (resp.status === 200) {
+            console.log('has write...');
+            console.log(resp.results);
+            let read_only_state = !resp.results;  //toggle this value sense results are actually opposite for UI
+            this.setState({
+              updateSuccess: null,
+              editingEntity: entity_data,
+              editingDisplayId: display_id,
+              editingEntities: es,
+              readOnly: read_only_state   // used for hidding UI components
+              });
         this.props.onEdit();
+
+          }
+        });
       }
     });
+
+
   };
 
 /*  editForm = (entity, display_id, es) => {

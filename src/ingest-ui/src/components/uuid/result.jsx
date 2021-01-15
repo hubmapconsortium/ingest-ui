@@ -49,9 +49,10 @@ class Result extends Component {
   };
 
   render() {
+
     return (
       <React.Fragment>
-        {this.props.result && (
+        {this.props.result["new_samples"] && (
           <React.Fragment>
             {this.props.result["new_samples"].length > 1 && (
               <div className="alert alert-success" role="alert">
@@ -70,65 +71,19 @@ class Result extends Component {
                 </b>
               </div>
             )}
-            {this.props.result["new_samples"].length === 1 && (
+            {this.props.result && (
               <div className="alert alert-success" role="alert">
-                Sample id{" "}
-                <b>
-                  {this.props.result["new_samples"][0]["hubmap_identifier"]}
-                </b>{" "}
-                was generated
+                Save Successful.  Here are your new IDs for reference: <br/><br/>
+                <b>HubMAP ID:</b>{" "}{this.props.result.entity.hubmap_id}
+                {" "}<b>Submission ID:</b>{" "}{this.props.result.entity.submission_id}
+               
               </div>
             )}
             <div>
-              <div className="card mb-5">
-                <div className="card-body">
-                  <div className="row">
-                    <div className="col-sm-12">
-                      <p>
-                        <b>Type:</b>{" "}
-                        {this.props.result.sample_metadata.specimen_type
-                          ? this.props.result.sample_metadata.specimen_type ===
-                            "other"
-                            ? this.props.result.sample_metadata
-                              .specimen_type_other
-                            : flattenSampleType(SAMPLE_TYPES)[
-                            this.props.result.sample_metadata.specimen_type
-                            ]
-                          : "Donor"}
-                      </p>
-                    </div>
-                    {this.props.result.sample_metadata.specimen_type ===
-                      "organ" && (
-                        <div className="col-sm-12">
-                          <b>Organ Type:</b>{" "}
-                          {this.props.result.sample_metadata.organ === "OT"
-                            ? this.props.result.sample_metadata.organ_other
-                            : ORGAN_TYPES[
-                            this.props.result.sample_metadata.organ
-                            ]}
-                        </div>
-                      )}
-                    {this.props.result.sample_metadata.label && (
-                      <div className="col-sm-12">
-                        <p>
-                          <b>name:</b> {this.props.result.sample_metadata.label}
-                        </p>
-                      </div>
-                    )}
-                    {this.props.result.sample_metadata.description && (
-                      <div className="col-sm-12">
-                        <p>
-                          <b>Description: </b>{" "}
-                          {this.props.result.sample_metadata.description}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+            
               <div className="row mb-2">
                 <div className="col-sm-4 offset-sm-4 lab-id-modal">
-                  {this.props.result["new_samples"].length > 1 &&
+                  {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
                    (["LK", "RK", "HT", "SP", "LI"].includes(this.props.result.sample_metadata.organ)) && (
                       <React.Fragment>
                         <button
@@ -148,7 +103,7 @@ class Result extends Component {
                       </React.Fragment>
                     )
                   }
-                  {this.props.result["new_samples"].length > 1 &&
+                  {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
                    (!["LK", "RK", "HT", "SP", "LI"].includes(this.props.result.sample_metadata.organ)) && (
                       <React.Fragment>
                         <button
@@ -168,7 +123,7 @@ class Result extends Component {
                         />
                       </React.Fragment>
                     )}
-                  {!this.props.result.sample_metadata.specimen_type && (
+                  {this.props.result.entity.entity_type == "Donor" && (
                     <button
                       className="btn btn-success btn-block"
                       type="button"
@@ -181,8 +136,8 @@ class Result extends Component {
                       Register an organ from this donor
                     </button>
                   )}
-                  {this.props.result.sample_metadata.specimen_type ===
-                    "organ" && (
+                  {this.props.result.entity.entity_type ===
+                    "Organ" && (
                       <button
                         className="btn btn-success btn-block"
                         type="button"

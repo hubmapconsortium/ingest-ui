@@ -1,37 +1,8 @@
+// Search APIs
 
 import axios from "axios";
 export const esb = require('elastic-builder');
 
-/*
- * User Group API
- *
- */
-export function api_users_groups(auth) { 
-   const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
-
-  return axios 
- .get(
-   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
- .then(res => {
-  const display_names = res.data.groups
-          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-          .map(g => {
-            return g.displayname;
-          });
-    //return display_names;
-    return {status: res.status, results: display_names}
- })
- .catch(err => {
-    return {status: err.response.status, results: err.response}
-     //return err.response.status;
- });
-}
 
 /*
  * Search API method
@@ -132,7 +103,7 @@ export function api_filter_es_query_builder(fields) {
     }
   
   }
-  requestBody.query(boolQuery);
+  requestBody.query(boolQuery).size(100);
 
   console.log(requestBody.toJSON());
   return requestBody.toJSON();
