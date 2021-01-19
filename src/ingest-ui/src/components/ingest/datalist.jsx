@@ -6,6 +6,7 @@ import axios from "axios";
 import ReactTooltip from "react-tooltip";
 import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
+import { api_search } from '../../service/search_api';
 
 class DataList extends Component {
   state = {
@@ -113,41 +114,61 @@ class DataList extends Component {
     this.props.setFilter(group, keywords);
 
     let params = {};
-    if (group) {
-      params["group"] = group;
+    // if (group) {
+    //   params["group"] = group;
+    // }
+    if (group && group !== 'All Groups') {
+        params["group_name"] = group;
     }
     if (keywords) {
-      params["keywords"] = keywords;
+      params["search_term"] = keywords;
     }
 
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data",
-      },
-      params: params,
-    };
+    params["entity_type"] = "Dataset";
+
+    // const config = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //     "Content-Type": "multipart/form-data",
+    //   },
+    //   params: params,
+    // };
 
     this.setState({ loading: true });
 
-    axios
-      .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
-      .then((res) => {
-        if (res.data) {
-          this.setState({
-            loading: false,
-            datasets: res.data.datasets,
-          });
-        }
-      })
-      .catch((err) => {
-        if (err.response === undefined) {
-        } else if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
+    // axios
+    //   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, config)
+    //   .then((res) => {
+    //     if (res.data) {
+    //       this.setState({
+    //         loading: false,
+    //         datasets: res.data.datasets,
+    //       });
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     if (err.response === undefined) {
+    //     } else if (err.response.status === 401) {
+    //       localStorage.setItem("isAuthenticated", false);
+    //       window.location.reload();
+    //     }
+    //   });
+
+    api_search(params, JSON.parse(localStorage.getItem("info")).nexus_token)
+    .then((response) => {
+
+      if (response.status == 200) {
+      console.log('Dataset Search results...');
+      console.log(response.results);
+      this.setState(
+          {
+          loading: false,
+          datasets: Object.values(response.results)
+          }
+        );
+      }
+    });
   };
 
   handleClearClick = () => {
@@ -334,13 +355,13 @@ class DataList extends Component {
           </div>
           <div className='col-sm-2 text-right'>
             <button
-              className='btn btn-primary btn-sm mr-2'
+              className='btn btn-dark btn-sm mr-2'
               onClick={this.handleFilterClick}
             >
               <FontAwesomeIcon icon={faFilter} /> Filter
             </button>
             <button
-              className='btn btn-danger btn-sm'
+              className='btn btn-secondary btn-sm'
               onClick={this.handleClearClick}
             >
               <FontAwesomeIcon icon={faBan} /> Clear
@@ -358,7 +379,7 @@ class DataList extends Component {
                       <th scope='col'>ID</th>
                       <th scope='col'>Name</th>
                       <th scope='col'>Lab</th>
-                      <th scope='col'>Collection</th>
+                      <th scope='col'>Data Access Level</th>
                       <th scope='col'>Created By</th>
                       <th scope='col'>Status</th>
                       <th scope='col'>Action</th>
@@ -366,9 +387,12 @@ class DataList extends Component {
                     </tr>
                   </thead>
                   <tbody>
-                    {this.state.datasets.map((dataset) => {
-                      const status = dataset.properties.status
-                        ? dataset.properties.status.toUpperCase()
+                    {//Object.values(this.state.datasets)
+                      this.state.datasets.map((ds) => {
+                        const dataset = ds[0];
+                        console.log(dataset);
+                      const status = dataset.status
+                        ? dataset.status.toUpperCase()
                         : "";
                       let badge_class = "";
                       let btn_text = dataset.writeable ? "Edit" : "View";
@@ -416,35 +440,19 @@ class DataList extends Component {
                       }
                       return (
                         <tr key={dataset.uuid}>
-                          <td>{dataset.entity_display_doi}</td>
+                          <td>{dataset.display_doi}</td>
                           <td>
                             <div
                               style={{ wordBreak: "break-all", width: "20em" }}
                             >
-                              {dataset.properties.name}
+                              {dataset.description}
                             </div>
                           </td>
-                          <td>{dataset.properties.provenance_group_name}</td>
-                          {/** <td>
-                            <button
-                              className='btn btn-link'
-                              type='button'
-                              onClick={this.handleViewCollectionModal(dataset.properties.collection)}
-                            >
-                            {dataset.properties.collection ? dataset.properties.collection.label: ""}
-                            </button>
-                            <ViewCollectionModal
-                              show={this.state.ViewCollectionShow}
-                              hide={this.hideViewCollectionModal}
-                              collection={this.state.collection}
-                            />
-                          </td>*/}
+                          <td>{dataset.group_name}</td>
                           <td>
-                            {dataset.properties.collection
-                              ? dataset.properties.collection.label
-                              : ""}
+                            {dataset.data_access_level}
                           </td>
-                          <td>{dataset.created_by}</td>
+                          <td>{dataset.created_by_user_email}</td>
                           <td>
                             <span
                               style={{
@@ -522,7 +530,7 @@ class DataList extends Component {
               className={`col-sm-12 text-center alert ${
                 this.state.dataset_url === "" ? "alert-danger" : "alert-primary"
               }`}
-              S
+              
             >
               {this.state.dataset_url === "" ? (
                 <span>{this.state.dataset_url_text}</span>

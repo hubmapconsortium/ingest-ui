@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+import Paper from '@material-ui/core/Paper';
+import Divider from '@material-ui/core/Divider';
+import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
@@ -13,6 +16,7 @@ import { validateRequired } from "../../utils/validators";
 import {
   faUserShield,
   faExternalLinkAlt,
+  faSearch
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
@@ -60,9 +64,9 @@ class DatasetEdit extends Component {
 	&& this.props.editingDataset
 	&& this.props.editingDataset.hasOwnProperty('properties')
 	&& this.props.editingDataset.properties
-	&& this.props.editingDataset.properties.data_types) {
+	&& this.props.editingDataset.data_types) {
       data_types = JSON.parse(
-        this.props.editingDataset.properties.data_types
+        this.props.editingDataset.data_types
           .replace(/'/g, '"')
           .replace(/\\"/g, "'")
       );
@@ -92,13 +96,13 @@ class DatasetEdit extends Component {
     };
 
     axios
-      .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,
+      .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`, 
 	   {headers: {"Content-Type": "application/json"},
 	    params: {"primary": "true"}})
       .then((response) => {
-	let data = response.data;
-	this.setState({data_type_dicts: data.result.map((value, index) => { return value })});
-	this.updateStateDataTypeInfo();
+	         let data = response.data;
+	         this.setState({data_type_dicts: data.result.map((value, index) => { return value })});
+	         this.updateStateDataTypeInfo();
       })
       .catch(error => {
 	console.log(error);
@@ -198,19 +202,19 @@ class DatasetEdit extends Component {
       this.updateStateDataTypeInfo();
       this.setState(
         {
-          status: this.props.editingDataset.properties.status.toUpperCase(),
-          display_doi: this.props.editingDataset.entity_display_doi,
+          status: this.props.editingDataset.status.toUpperCase(),
+          display_doi: this.props.editingDataset.display_doi,
           doi: this.props.editingDataset.entity_doi,
           name: this.props.editingDataset.properties.name,
           globus_path: this.props.editingDataset.properties
             .globus_directory_url_path,
-          collection: this.props.editingDataset.properties.collection
-            ? this.props.editingDataset.properties.collection
-            : {
-                uuid: "",
-                label: "",
-                description: "",
-              },
+          // collection: this.props.editingDataset.properties.collection
+          //   ? this.props.editingDataset.properties.collection
+          //   : {
+          //       uuid: "",
+          //       label: "",
+          //       description: "",
+          //     },
           source_uuid: this.generateDisplaySourceId(source_uuids),
           source_uuid_list: source_uuids,
           source_uuid_type: this.props.editingDataset.properties.specimen_type,
@@ -1230,8 +1234,13 @@ class DatasetEdit extends Component {
       }
     } else {
       return (
+
         <div className='row'>
-          <div className='col-sm-3 offset-sm-2 text-center'>
+          <div className="col-sm-12">
+          <Divider />
+          </div>
+          <div className='col-sm-3 offset-sm-2 text-center pads'>
+            <Divider />
             <button
               type='button'
               className='btn btn-info btn-block'
@@ -1249,13 +1258,13 @@ class DatasetEdit extends Component {
               {!this.state.submitting && "Create"}
             </button>
           </div>
-          <div className='col-sm-4 text-center'>
+          <div className='col-sm-4 text-right pads'>
             <button
               type='button'
               className='btn btn-secondary btn-block'
               onClick={() => this.props.handleCancel()}
             >
-              Close
+              Back To Search
             </button>
           </div>
         </div>
@@ -1346,6 +1355,7 @@ class DatasetEdit extends Component {
     render() {
     return (
       <React.Fragment>
+        <Paper className="paper-container">
         <form>
           <div>
             <div className='row mt-3 mb-3'>
@@ -1398,7 +1408,7 @@ class DatasetEdit extends Component {
                             type='error'
                             effect='solid'
                           >
-                            <h4>{this.state.globus_path_tips}</h4>
+                            <p>{this.state.globus_path_tips}</p>
                           </ReactTooltip>
                         )}
                         .
@@ -1421,35 +1431,11 @@ class DatasetEdit extends Component {
                 </div>
               </div>
             </div>
-            <div className='form-group row'>
-              <label
-                htmlFor='name'
-                className='col-sm-2 col-form-label text-right'
-              >
+            <div className='form-group'>
+              <label htmlFor='name'>
                 Dataset Name <span className='text-danger'>*</span>
               </label>
-              {!this.props.readOnly && (
-                <div className='col-sm-9'>
-                  <input
-                    type='text'
-                    name='name'
-                    id='name'
-                    className={
-                      "form-control " +
-                      this.errorClass(this.state.formErrors.name)
-                    }
-                    placeholder='Dataset name'
-                    onChange={this.handleInputChange}
-                    value={this.state.name}
-                  />
-                </div>
-              )}
-              {this.props.readOnly && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.name}</p>
-                </div>
-              )}
-              <div className='col-sm-1 my-auto text-center'>
+           
                 <span>
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
@@ -1462,12 +1448,36 @@ class DatasetEdit extends Component {
                     type='info'
                     effect='solid'
                   >
-                    <h4>Dataset Name Tips</h4>
+                    <p>Dataset Name Tips</p>
                   </ReactTooltip>
-                </span>
-              </div>
+                  </span>
+               
+
+              {!this.props.readOnly && (
+               
+                  <input
+                    type='text'
+                    name='name'
+                    id='name'
+                    className={
+                      "form-control " +
+                      this.errorClass(this.state.formErrors.name)
+                    }
+                    placeholder='Dataset name'
+                    onChange={this.handleInputChange}
+                    value={this.state.name}
+                  />
+                
+              )}
+              {this.props.readOnly && (
+                <div className='col-sm-9 col-form-label'>
+                  <p>{this.state.name}</p>
+                </div>
+              )}
+              
             </div>
-            <div className='form-group row'>
+
+           {/*} <div className='form-group row'>
               <label
                 htmlFor='name'
                 className='col-sm-2 col-form-label text-right'
@@ -1550,21 +1560,36 @@ class DatasetEdit extends Component {
                     type='info'
                     effect='solid'
                   >
-                    <h4>Collection Tips</h4>
+                    <p>Collection Tips</p>
                   </ReactTooltip>
                 </span>
               </div>
-            </div>
-            <div className='form-group row'>
+            </div> */}
+            <div className='form-group'>
               <label
-                htmlFor='source_uuid'
-                className='col-sm-2 col-form-label text-right'
-              >
+                htmlFor='source_uuid'>
                 Source ID <span className='text-danger'>*</span>
               </label>
+               <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='source_uuid_tooltip'
+                />
+                <ReactTooltip
+                  id='source_uuid_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>
+                    The HuBMAP Unique identifier of the direct origin entity,
+                    <br />
+                    other sample or doner, where this sample came from.
+                  </p>
+                </ReactTooltip>
               {!this.props.readOnly && (
                 <React.Fragment>
-                  <div className='col-sm-5'>
+                   <div className="input-group">
                     <input
                       type='text'
                       name='source_uuid'
@@ -1577,27 +1602,19 @@ class DatasetEdit extends Component {
                       onChange={this.handleInputChange}
                       onFocus={this.handleLookUpClick}
                       autoComplete='off'
-                    />
-                  </div>
-                  <div className='col-sm-4'>
+                    />      
                     <button
-                      className='btn btn-link'
+                      className='btn btn-outline-secondary'
                       type='button'
                       onClick={this.handleLookUpClick}
                     >
-                      Look up
+                       <FontAwesomeIcon
+                          icon={faSearch}
+                          data-tip
+                          data-for="source_uuid_tooltip"
+                      />
                     </button>
                   </div>
-                  {/* <div className="col-sm-2 text-right">
-                    <button
-                      className="btn btn-primary"
-                      type="button"
-                      onClick={this.validateUUID}
-                      disabled={this.state.validatingUUID}
-                    >
-                      {this.state.validatingUUID ? "..." : "Validate"}
-                    </button>
-                  </div> */}
                   <IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
@@ -1615,25 +1632,7 @@ class DatasetEdit extends Component {
                   </div>{" "}
                 </React.Fragment>
               )}
-              <div className='col-sm-1 my-auto text-center'>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='source_uuid_tooltip'
-                />
-                <ReactTooltip
-                  id='source_uuid_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <h4>
-                    The HuBMAP Unique identifier of the direct origin entity,
-                    <br />
-                    other sample or doner, where this sample came from.
-                  </h4>
-                </ReactTooltip>
-              </div>
+             
             </div>
             {this.state.source_entity && (
               <div className='form-group row'>
@@ -1721,13 +1720,71 @@ class DatasetEdit extends Component {
                 </div>
               </div>
             )}
+            <div className='form-group'>
+            <label
+              htmlFor='description'
+             
+            >
+              Description 
+            </label>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='description_tooltip'
+                />
+                <ReactTooltip
+                  id='description_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Description Tips</p>
+                </ReactTooltip>
+              
+            {!this.props.readOnly && (
+              <React.Fragment>
+                <div>
+                  <textarea
+                    type='text'
+                    name='description'
+                    id='description'
+                    cols='30'
+                    rows='5'
+                    className='form-control'
+                    placeholder='Description'
+                    onChange={this.handleInputChange}
+                    value={this.state.description}
+                  />
+                </div>
+              </React.Fragment>
+            )}
+            {this.props.readOnly && (
+              <div className='col-sm-9 col-form-label'>
+                <p>{this.state.description}</p>
+              </div>
+            )}
+           
+          </div>
             <div className='form-group row'>
               <label
                 htmlFor='phi'
                 className='col-sm-2 col-form-label text-right'
               >
-                Gene Sequences <span className='text-danger'>*</span>
+                Gene Sequences <span className='text-danger'> * </span>
               </label>
+               <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for='phi_tooltip'
+                  />
+                  <ReactTooltip
+                    id='phi_tooltip'
+                    place='top'
+                    type='info'
+                    effect='solid'
+                  >
+                    <p>Gene Sequences Tips</p>
+                  </ReactTooltip>
               {!this.props.readOnly && (
                 <div className='col-sm-9'>
                   <div className='form-check form-check-inline'>
@@ -1771,23 +1828,7 @@ class DatasetEdit extends Component {
                   <p>{this.state.phi}</p>
                 </div>
               )}
-              <div className='col-sm-1 my-auto text-center'>
-                <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for='phi_tooltip'
-                  />
-                  <ReactTooltip
-                    id='phi_tooltip'
-                    place='top'
-                    type='info'
-                    effect='solid'
-                  >
-                    <h4>Gene Sequences Tips</h4>
-                  </ReactTooltip>
-                </span>
-              </div>
+            
             </div>
 
             {/* <div className='form-group row'>
@@ -1834,6 +1875,21 @@ class DatasetEdit extends Component {
             >
               Data Type <span className='text-danger'>*</span>
             </label>
+             <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='datatype_tooltip'
+                />
+                <ReactTooltip
+                  id='datatype_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Data Type Tips</p>
+                </ReactTooltip>
+              </span>
         {!this.props.readOnly && (
 		<React.Fragment>
 
@@ -1860,25 +1916,9 @@ class DatasetEdit extends Component {
                 <p>Readonly</p>
               </div>
             )}
-            <div className='col-sm-1 my-auto text-center'>
-              <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='datatype_tooltip'
-                />
-                <ReactTooltip
-                  id='datatype_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <h4>Data Type Tips</h4>
-                </ReactTooltip>
-              </span>
-            </div>
+            
           </div>
-          <div className='form-group row'>
+          {/*<div className='form-group row'>
             <label
               htmlFor='description'
               className='col-sm-2 col-form-label text-right'
@@ -1920,11 +1960,11 @@ class DatasetEdit extends Component {
                   type='info'
                   effect='solid'
                 >
-                  <h4>Description Tips</h4>
+                  <p>Description Tips</p>
                 </ReactTooltip>
               </span>
             </div>
-          </div>
+          </div> */}
           {this.state.assay_metadata_status !== undefined && (
             <div className='form-group row'>
               <label
@@ -2041,7 +2081,7 @@ class DatasetEdit extends Component {
             <div className='col-sm-12 text-center alert'>
               <h4>
                 {(this.props.editingDataset &&
-                  this.props.editingDataset.properties.status.toUpperCase()) ||
+                  this.props.editingDataset.status.toUpperCase()) ||
                   "STATUS"}
               </h4>
               <div
@@ -2050,6 +2090,7 @@ class DatasetEdit extends Component {
             </div>
           </div>
         </Modal>
+        </Paper>
       </React.Fragment>
     );
   }

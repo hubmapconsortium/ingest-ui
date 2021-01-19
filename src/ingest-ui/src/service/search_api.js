@@ -93,6 +93,10 @@ export function api_filter_es_query_builder(fields) {
         boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
       }
     } 
+
+    if (fields["entity_type"]) {
+       boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));
+    }
     // else {
     //   boolQuery.filter(esb.matchQuery("entity_type", "Donor"));
     //   boolQuery.filter(esb.matchQuery("entity_type", "Sample"));

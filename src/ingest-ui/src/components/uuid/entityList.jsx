@@ -462,7 +462,7 @@ renderTable() {
                 .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
                 .map(es => {
                 const entity = es[0];
-                console.log(entity)
+                //console.log(entity)
                 let first_lab_id = entity.hubmap_display_id;
                 console.log(entity.hubmap_display_id);
                 let last_lab_id = "";
