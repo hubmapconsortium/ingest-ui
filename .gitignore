@@ -29,6 +29,11 @@ src/log
 
 # ingest-api
 src/ingest-api/instance/app.cfg
+app.cfg.test
+app.cfg.dev
+app.cfg.refactor
+app.cfg.prot
+app.cfg.stage
 
 # UI react-app
 src/ingest-ui/node_modules
