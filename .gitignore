@@ -34,6 +34,8 @@ src/ingest-api/instance/app.cfg.test
 src/ingest-api/instance/app.cfg.refactor
 src/ingest-api/instance/app.cfg.debug
 src/ingest-api/instance/app.cfg.stage
+src/ingest-api/instance/app.cfg.prod
+src/ingest-api/instance/app.cfg.dev
 
 # UI react-app
 src/ingest-ui/node_modules
