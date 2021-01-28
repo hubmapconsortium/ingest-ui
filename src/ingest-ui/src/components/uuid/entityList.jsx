@@ -222,6 +222,8 @@ class EntityList extends Component {
     }
     if (sample_type) {
       params["specimen_type"] = sample_type;
+    } else {
+      params["entity_type"] = "Donor";
     }
     if (keywords) {
       params["search_term"] = keywords;
@@ -441,7 +443,9 @@ class EntityList extends Component {
   }
 
 renderTable() {
+  this.renderLoadingSpinner()
   if (!this.state.loading && !this.state.editingEntity) {
+
       return (
         <div>
             <TableContainer component={Paper}>
@@ -462,7 +466,7 @@ renderTable() {
                 .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
                 .map(es => {
                 const entity = es[0];
-                //console.log(entity)
+                console.log(entity)
                 let first_lab_id = entity.hubmap_display_id;
                 console.log(entity.hubmap_display_id);
                 let last_lab_id = "";
@@ -641,7 +645,7 @@ renderTable() {
   render() {
     return (
       <div>
-        {this.renderLoadingSpinner()}
+ 
         {this.state.updateSuccess === true && (
           <div className="alert alert-success">Updated!</div>
         )}

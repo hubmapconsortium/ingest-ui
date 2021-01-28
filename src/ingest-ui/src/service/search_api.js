@@ -86,13 +86,17 @@ export function api_filter_es_query_builder(fields) {
       boolQuery.must(esb.matchQuery("group_name", fields["group_name"]));
     } 
 
+    // if (fields["specimen_type"]) {
+    //   if (fields["specimen_type"] !== 'donor') {
+    //     boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
+    //   } else {
+    //     boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
+    //   }
+    // } 
     if (fields["specimen_type"]) {
-      if (fields["specimen_type"] !== 'donor') {
-        boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
-      } else {
-        boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
-      }
+      boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
     } 
+
 
     if (fields["entity_type"]) {
        boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));

@@ -1,12 +1,21 @@
 import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faFilter, faBan, faFolder } from "@fortawesome/free-solid-svg-icons";
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TablePagination from '@material-ui/core/TablePagination';
+import Paper from '@material-ui/core/Paper';
 //import ViewCollectionModal from "./viewCollectionModal";
 import axios from "axios";
 import ReactTooltip from "react-tooltip";
 import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
 import { api_search } from '../../service/search_api';
+import { api_get_entity } from '../../service/entity_api';
 
 class DataList extends Component {
   state = {
@@ -15,6 +24,12 @@ class DataList extends Component {
 
     is_curator: false,
     datasets: [],
+    filtered_totals: 0,
+    pages: [10, 25, 50],
+    page: 0,
+    setPage: 0,
+    rowsPerPage: 10,
+    setRowsPerPage: 10,
   };
 
   componentDidMount() {
@@ -88,6 +103,19 @@ class DataList extends Component {
         }
       });
   }
+
+handleChangePage = (event, newPage) => {
+    this.setState({
+        page: newPage
+    });
+  };
+
+  handleChangeRowsPerPage = (event) => {
+    this.setState({
+        rowsPerPage: parseInt(event.target.value, 10),
+        page: 0
+    });
+  };
 
   handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -164,7 +192,8 @@ class DataList extends Component {
       this.setState(
           {
           loading: false,
-          datasets: Object.values(response.results)
+          datasets: response.results,
+          filtered_totals: Object.keys(response.results).length,
           }
         );
       }
@@ -231,7 +260,15 @@ class DataList extends Component {
   };
 
   handleActionClick = (e) => {
-    this.props.viewEdit(e);
+
+    api_get_entity(e.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    .then((response) => {
+      if (response.status === 200) {
+        let entity_data = response.results;
+        console.log('editing',entity_data)
+        this.props.viewEdit(entity_data);
+      }
+    });
   };
 
   showErrorMsgModal = (msg) => {
@@ -269,10 +306,10 @@ class DataList extends Component {
           dataset_url_text: "Globus URL Unavailable",
           dataset_url: "",
         });
-        if (err.response && err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
+        // if (err.response && err.response.status === 401) {
+        //   localStorage.setItem("isAuthenticated", false);
+        //   window.location.reload();
+        // }
       });
   };
 
@@ -370,25 +407,25 @@ class DataList extends Component {
         </div>
         {this.renderLoadingSpinner()}
         {this.state.loading === false && (
-          <div className='row'>
-            <div className='col-sm-12 text-center'>
-              {this.state.datasets.length > 0 && (
-                <table className='table table-bordered'>
-                  <thead>
-                    <tr>
-                      <th scope='col'>ID</th>
-                      <th scope='col'>Name</th>
-                      <th scope='col'>Lab</th>
-                      <th scope='col'>Data Access Level</th>
-                      <th scope='col'>Created By</th>
-                      <th scope='col'>Status</th>
-                      <th scope='col'>Action</th>
-                      <th scope='col'>Data</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {//Object.values(this.state.datasets)
-                      this.state.datasets.map((ds) => {
+          <div>
+              {Object.values(this.state.datasets).length > 0 && (
+              <TableContainer component={Paper}>
+                <Table className="table-fmt" size="small" aria-label="Result table">
+                  <TableHead>
+                    <TableRow className="portal-jss120">
+                      <TableCell align="center">HuBMAP ID</TableCell>
+                      <TableCell align="center">Description</TableCell>
+                      <TableCell align="center">Lab Group</TableCell>
+                      <TableCell align="center">Data Access Level</TableCell>
+                      <TableCell align="center">Entered By</TableCell>
+                      <TableCell align="center">Submission Status</TableCell>
+                      <TableCell align="center">Data</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>      
+                    { Object.values(this.state.datasets)
+                      .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
+                      .map((ds) => {
                         const dataset = ds[0];
                         console.log(dataset);
                       const status = dataset.status
@@ -439,21 +476,24 @@ class DataList extends Component {
                         btn_text = "View";
                       }
                       return (
-                        <tr key={dataset.uuid}>
-                          <td>{dataset.display_doi}</td>
-                          <td>
-                            <div
-                              style={{ wordBreak: "break-all", width: "20em" }}
+                      
+                        <TableRow className="portal-jss300 portal-jss298" key={dataset.uuid}>
+                           <TableCell align="left" className="nowrap">
+                             <button
+                              className='btn btn-link portal-links portal-jss298'
+                              onClick={() => this.handleActionClick(dataset)}
+                              data-uuid={dataset.uuid}
                             >
-                              {dataset.description}
-                            </div>
-                          </td>
-                          <td>{dataset.group_name}</td>
-                          <td>
+                              {dataset.display_doi}
+                            </button>
+                           </TableCell>
+                          <TableCell align="left">{dataset.description}</TableCell>
+                          <TableCell align="left">{dataset.group_name}</TableCell>
+                          <TableCell align="left">
                             {dataset.data_access_level}
-                          </td>
-                          <td>{dataset.created_by_user_email}</td>
-                          <td>
+                          </TableCell>
+                          <TableCell align="left">{dataset.created_by_user_email}</TableCell>
+                          <TableCell align="left" className="nowrap">
                             <span
                               style={{
                                 width: "100px",
@@ -466,7 +506,7 @@ class DataList extends Component {
                                 status === "ERROR"
                                   ? () =>
                                       this.showErrorMsgModal(
-                                        dataset.properties.message
+                                        dataset.pipeline_message
                                       )
                                   : null
                               }
@@ -486,39 +526,56 @@ class DataList extends Component {
                                     }}
                                   >
                                     {truncateString(
-                                      dataset.properties.message,
+                                      dataset.pipeline_message,
                                       350
                                     ) || "Error"}
                                   </div>
                                 </ReactTooltip>
                               )}
                             </span>
-                          </td>
-                          <td>
-                            <button
-                              className='btn btn-primary btn-sm btn-block'
-                              onClick={() => this.handleActionClick(dataset)}
-                              data-uuid={dataset.uuid}
-                            >
-                              {btn_text}
-                            </button>
-                          </td>
-                          <td>
+                          </TableCell>
+                          
+                          <TableCell align="left" className="nowrap">
                             <button
                               className='btn btn-link'
                               onClick={() => this.handleDataClick(dataset.uuid)}
                             >
-                              Data
-                            </button>
-                          </td>
-                        </tr>
+                            <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+
+                            </button>                         
+                              <ReactTooltip
+                                  id='folder_tooltip'
+                                  place='top'
+                                  type='info'
+                                  effect='solid'
+                              >
+                                <p>Click here to direct you to the data repository storage location</p>
+                              </ReactTooltip>
+                          </TableCell>
+                        </TableRow> 
                       );
                     })}
-                  </tbody>
-                </table>
-              )}
-              {this.state.datasets.length === 0 && <p>Records not found</p>}
-            </div>
+                 </TableBody>
+                  <tfoot>
+                    {(Object.values(this.state.datasets).length  === 0 ) && (
+                      <TableRow>
+                        <TableCell align="left" colSpan="5">No records found</TableCell>
+                      </TableRow>
+                      )}
+                  </tfoot>
+                </Table>
+            </TableContainer>
+
+            )}
+          <TablePagination
+          rowsPerPageOptions={this.state.pages}
+          component="div"
+          count={Object.values(this.state.datasets).length}
+          rowsPerPage={this.state.rowsPerPage}
+          page={this.state.page}
+          onChangePage={this.handleChangePage}
+          onChangeRowsPerPage={this.handleChangeRowsPerPage}
+          />
           </div>
         )}
         <Modal

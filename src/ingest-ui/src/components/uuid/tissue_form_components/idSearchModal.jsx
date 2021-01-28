@@ -6,6 +6,7 @@ import { flattenSampleType } from "../../../utils/constants_helper";
 import IDSearchModalMultiSelect from "./idSearchModalMultiSelect";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import { api_search } from '../../../service/search_api';
 
 class IDSearchModal extends Component {
   state = {};
@@ -38,53 +39,72 @@ class IDSearchModal extends Component {
     const sample_type = this.sampleType.current.value;
     const keywords = this.keywords.current.value;
     let params = {};
-    params["group"] = group;
+    params["group_name"] = group;
     if (sample_type) {
       params["specimen_type"] = sample_type;
+    }  else {
+      params["entity_type"] = sample_type;
     }
     if (keywords) {
       params["search_term"] = keywords;
     }
 
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      },
-      params: params
-    };
 
-    var specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`;
-    if (this.props.parent === "dataset") {
-      specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search?include_datasets=true`;
-    }
+    api_search(params, JSON.parse(localStorage.getItem("info")).nexus_token)
+    .then((response) => {
 
-    axios
-      .get(`${specimen_url}`, config)
-      .then(res => {
-        let entities = {};
-        if (this.props.parent === "dataset") {
-          res.data.specimens.forEach(s => {
-            if (entities[s.properties.uuid]) {
-              entities[s.properties.uuid].push(s);
-            } else {
-              entities[s.properties.uuid] = [s];
-            }
-          });
-        } else {
-          entities = res.data.specimens;
-        }
-        this.setState({
-          HuBMAPIDResults: Object.values(entities)
-        });
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      if (response.status == 200) {
+      console.log('Model Search results...');
+      console.log(response.results);
+      this.setState(
+          {
+          HuBMAPIDResults: Object.values(response.results)
+          }
+        );
+      }
+    });
+
+
+    // const config = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //     "Content-Type": "multipart/form-data"
+    //   },
+    //   params: params
+    // };
+
+    // var specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`;
+    // if (this.props.parent === "dataset") {
+    //   specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search?include_datasets=true`;
+    // }
+
+    // axios
+    //   .get(`${specimen_url}`, config)
+    //   .then(res => {
+    //     let entities = {};
+    //     if (this.props.parent === "dataset") {
+    //       res.data.specimens.forEach(s => {
+    //         if (entities[s.properties.uuid]) {
+    //           entities[s.properties.uuid].push(s);
+    //         } else {
+    //           entities[s.properties.uuid] = [s];
+    //         }
+    //       });
+    //     } else {
+    //       entities = res.data.specimens;
+    //     }
+    //     this.setState({
+    //       HuBMAPIDResults: Object.values(entities)
+    //     });
+    //   })
+    //   .catch(error => {
+    //     console.log(error);
+    //   });
   };
 
   getUuidList = (new_uuid_list) => {
+    console.log('deep inidSearchModel', new_uuid_list)
     this.setState({uuid_list: new_uuid_list}); 
 	this.props.parentCallback(new_uuid_list);
   };
@@ -244,7 +264,7 @@ class IDSearchModal extends Component {
                       Search
                     </button>
                   </div>
-                  <div className="col-sm-2 text-left">
+                  <div className="col-sm-4">
                     <button
                       className="btn btn-outline-secondary btn-block"
                       type="button"
@@ -264,7 +284,7 @@ class IDSearchModal extends Component {
                       <table className="table table-hover">
                         <thead>
                           <tr>
-                            <th>HuBMAP Display ID</th>
+                            <th>HuBMAP ID</th>
                             <th>Type</th>
                             <th>Name</th>
                             <th>Entered By</th>
@@ -276,19 +296,19 @@ class IDSearchModal extends Component {
                               es = [es];
                             }
                             const result = es[0];
-                            let first_lab_id = result.hubmap_identifier;
+                            let first_lab_id = result.display_doi;
                             let last_lab_id = "";
                             if (es.length > 1) {
                               es.sort((a, b) => {
                                 if (
                                   parseInt(
-                                    a.hubmap_identifier.substring(
-                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    a.display_doi.substring(
+                                      a.display_doi.lastIndexOf("-") + 1
                                     )
                                   ) >
                                   parseInt(
-                                    b.hubmap_identifier.substring(
-                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    b.display_doi.substring(
+                                      a.display_doi.lastIndexOf("-") + 1
                                     )
                                   )
                                 ) {
@@ -296,13 +316,13 @@ class IDSearchModal extends Component {
                                 }
                                 if (
                                   parseInt(
-                                    b.hubmap_identifier.substring(
-                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    b.display_doi.substring(
+                                      a.display_doi.lastIndexOf("-") + 1
                                     )
                                   ) >
                                   parseInt(
-                                    a.hubmap_identifier.substring(
-                                      a.hubmap_identifier.lastIndexOf("-") + 1
+                                    a.display_doi.substring(
+                                      a.display_doi.lastIndexOf("-") + 1
                                     )
                                   )
                                 ) {
@@ -310,26 +330,25 @@ class IDSearchModal extends Component {
                                 }
                                 return 0;
                               });
-                              first_lab_id = es[0].hubmap_identifier;
-                              last_lab_id = es[es.length - 1].hubmap_identifier;
+                              first_lab_id = es[0].display_doi;
+                              last_lab_id = es[es.length - 1].display_doi;
                             }
                             return (
-                              <React.Fragment key={result.hubmap_identifier}>
+                              <React.Fragment key={result.display_doi}>
                                 <tr
-                                  key={result.hubmap_identifier}
+                                  key={result.display_doi}
                                   onClick={e =>
                                     this.props.select(
                                       es.map(e => {
                                         return {
-                                          hubmap_identifier:
-                                            e.hubmap_identifier,
+                                          display_doi:
+                                            e.display_doi,
                                           datatype:
-                                            result.datatype === "Sample"
+                                            result.entity_type === "Sample"
                                               ? flattenSampleType(SAMPLE_TYPES)[
-                                                  result.properties
-                                                    .specimen_type
+                                                  result.specimen_type
                                                 ]
-                                              : result.datatype
+                                              : result.entity_type
                                         };
                                       })
                                     )
@@ -337,15 +356,15 @@ class IDSearchModal extends Component {
                                 >
                                   <td>
                                     {es.length > 1 && (
-                                      <React.Fragment key={result.hubmap_identifier}>
+                                      <React.Fragment key={result.display_doi}>
                                         <div className="row">
                                           <div
                                             className="col-sm-6"
                                           >
-		                                       <FontAwesomeIcon icon={faCopy} key={result.hubmap_identifier}
+		                                       <FontAwesomeIcon icon={faCopy} key={result.display_doi}
 				                                  onClick={e => {e.stopPropagation(); let temp_arr = es.map(e => {
 				                                  
-				                                     return { hubmap_identifier: e.hubmap_identifier };
+				                                     return { display_doi: e.display_doi };
 				                                  });
 				                                     this.setState({uuid_list: temp_arr, LookUpShow: true});
 				                                     
@@ -376,18 +395,18 @@ class IDSearchModal extends Component {
                                     )}
                                   </td>
                                   <td>
-                                    {result.datatype === "Sample"
+                                    {result.entity_type === "Sample"
                                       ? flattenSampleType(SAMPLE_TYPES)[
-                                          result.properties.specimen_type
+                                          result.specimen_type
                                         ]
-                                      : result.datatype}
+                                      : result.entity_type}
                                   </td>
                                   <td>
-                                    {result.properties.label ||
-                                      result.properties.lab_tissue_id}
+                                    {result.lab_donor_id ||
+                                        result.lab_tissue_sample_id}
                                   </td>
                                   <td>
-                                    {result.properties.provenance_user_email}
+                                    {result.create_by_user_email}
                                   </td>
                                 </tr>
                                 {this.state.showSibling && es.length > 1 && (
@@ -395,7 +414,7 @@ class IDSearchModal extends Component {
                                     {es.map(result => {
                                       return (
                                         <tr
-                                          key={result.hubmap_identifier}
+                                          key={result.display_doi}
                                           className="table-dark"
                                         >
                                           <td>
@@ -403,27 +422,25 @@ class IDSearchModal extends Component {
                                               <div className="row">
                                                 <div className="col-sm-6"></div>
                                                 <div className="col-sm-6">
-                                                  {result.hubmap_identifier}
+                                                  {result.display_doi}
                                                 </div>
                                               </div>
                                             </React.Fragment>
                                           </td>
                                           <td>
-                                            {result.datatype === "Sample"
+                                            {result.entity_type === "Sample"
                                               ? flattenSampleType(SAMPLE_TYPES)[
-                                                  result.properties
-                                                    .specimen_type
+                                                  result.specimen_type
                                                 ]
-                                              : result.datatype}
+                                              : result.entity_type}
                                           </td>
                                           <td>
-                                            {result.properties.label ||
-                                              result.properties.lab_tissue_id}
+                                            {result.lab_donor_id ||
+                                                result.lab_tissue_sample_id}
                                           </td>
                                           <td>
                                             {
-                                              result.properties
-                                                .provenance_user_email
+                                              result.create_by_user_email
                                             }
                                           </td>
                                         </tr>
