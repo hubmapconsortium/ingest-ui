@@ -22,6 +22,7 @@ import {
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import { api_has_write } from '../../service/ingest_api';
+import { api_create_entity } from '../../service/entity_api';
 
 class DatasetEdit extends Component {
   state = {
@@ -63,17 +64,17 @@ class DatasetEdit extends Component {
     let data_types = null;
     let other_dt = undefined;
     if (this.props.hasOwnProperty('editingDataset')
-	&& this.props.editingDataset
-	&& this.props.editingDataset.data_types) {
-      console.log('editingDataset.data_types', this.props.editingDataset.data_types)
+	       && this.props.editingDataset
+	       && this.props.editingDataset.data_types) {
+      //console.log('editingDataset.data_types', this.props.editingDataset.data_types)
       // data_types = JSON.parse(
       //   this.props.editingDataset.data_types
       //     .replace(/'/g, '"')
       //     .replace(/\\"/g, "'")
       // );
-      console.log('this.state.data_type_dicts', this.state.data_type_dicts)
+      //console.log('this.state.data_type_dicts', this.state.data_type_dicts)
       const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
-      console.log('data_type_options: ', data_type_options);
+      //console.log('data_type_options: ', data_type_options);
       other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
       data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
       if (other_dt) {
@@ -85,8 +86,6 @@ class DatasetEdit extends Component {
       has_other_datatype: other_dt !== undefined,
       other_dt: other_dt,
     });
-    console.log("DATATYPES")
-    console.log(data_types)
   }
   
   componentDidMount() {
@@ -383,18 +382,18 @@ class DatasetEdit extends Component {
           name: value,
         });
         break;
-      case "collection":
-        let ret = this.state.collections.filter((c) => {
-          if(c.label){
-            return c.label.toLowerCase().includes(value.toLowerCase());
-          }
-        });
-        this.setState({
-          collection: value,
-          showCollectionsDropDown: value !== "",
-          collection_candidates: ret,
-        });
-        break;
+      // case "collection":
+      //   let ret = this.state.collections.filter((c) => {
+      //     if(c.label){
+      //       return c.label.toLowerCase().includes(value.toLowerCase());
+      //     }
+      //   });
+      //   this.setState({
+      //     collection: value,
+      //     showCollectionsDropDown: value !== "",
+      //     collection_candidates: ret,
+      //   });
+      //   break;
       case "source_uuid":
         this.setState({
           source_uuid: value,
@@ -440,18 +439,19 @@ class DatasetEdit extends Component {
           has_other_datatype: e.target.checked,
         });
         if (!e.target.checked) {
-	  const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
-          const data_types = this.state.data_types;
-          // const other_dt = Array.from(data_types).filter(
-          //   (dt) => !data_type_options.has(dt)
-          // )[0];
-         // data_types.delete(other_dt);
-          this.setState({
-            data_types: data_types,
-            other_dt: "",
-          });
+	         const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
+            const data_types = this.state.data_types;
+            const other_dt = Array.from(data_types).filter(
+              (dt) => !data_type_options.has(dt)
+              )[0];
+            data_types.delete(other_dt);
+            this.setState({
+              data_types: data_types,
+              other_dt: "",
+            });
         }
       } else {
+        console.log(id, e.target.checked)
         if (e.target.checked) {
           const data_types = this.state.data_types;
           data_types.add(name);
@@ -465,7 +465,9 @@ class DatasetEdit extends Component {
             data_types: data_types,
           });
         }
+      
       }
+        console.log('data_types', this.state.data_types)
     }
   };
 
@@ -507,7 +509,7 @@ class DatasetEdit extends Component {
     });
   };
 
-  // this is used to handle the row selection from the SOURCE ID search
+  // this is used to handle the row selection from the SOURCE ID search (idSearchModel)
   handleSelectClick = (ids) => {
      console.log('handleSelectClick', ids)
     let id = this.getSourceAncestor(ids);
@@ -696,12 +698,14 @@ class DatasetEdit extends Component {
     )[0];
     data_types.delete(other_dt);
 
+    console.log('submit: data_types',data_types)
     if (this.state.other_dt) {
       const data_types = this.state.data_types;
       data_types.add(this.state.other_dt);
       this.setState({ data_types: data_types });
     }
 
+    console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
       console.log('isValid: ', isValid);
       console.log('state: ', this.state);
@@ -728,14 +732,16 @@ class DatasetEdit extends Component {
             ];
           }
 
+      console.log('LIST OF UUIDS', this.state.source_uuid_list)
+          // package the data up
           let data = {
-            name: this.state.name,
+            title: this.state.name,
             //collection_uuid: this.state.collection.uuid,
-            source_uuid: this.state.source_uuid_list.map((su) => {
+            direct_ancestors: this.state.source_uuid_list.map((su) => {
               if (typeof su === "string" || su instanceof String) {
                 return su;
               } else {
-                return su.hubmap_identifier;
+                return su.display_doi;
               }
             }),
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
@@ -778,21 +784,20 @@ class DatasetEdit extends Component {
                 this.setState({ submit_error: true, submitting: false });
               });
           } else {
-            axios
-              .post(
-                `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`,
-                formData,
-                config
-              )
-              .then((res) => {
-                this.setState({
-                  globus_path: res.data.globus_directory_url_path,
-                  display_doi: res.data.display_doi,
-                  //doi: res.data.doi,
-                });
-                axios
+
+              console.log('DATASET TO SAVE', JSON.stringify(data))
+               api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                .then((response) => {
+                  if (response.status == 200) {
+                    console.log('create Dataset...', response.results);
+                     this.setState({
+                        //globus_path: res.data.globus_directory_url_path,
+                        display_doi: response.results.display_doi,
+                        //doi: res.data.doi,
+                      });
+                     axios
                   .get(
-                    `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${res.data.uuid}`,
+                    `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${response.results.uuid}`,
                     config
                   )
                   .then((res) => {
@@ -813,11 +818,53 @@ class DatasetEdit extends Component {
                       window.location.reload();
                     }
                   });
-              })
-              .catch((error) => {
-                this.setState({ submit_error: true, submitting: false });
+                  } else {
+                    this.setState({ submit_error: true, submitting: false });
+                  }
               });
-          }
+
+
+
+            // axios
+            //   .post(
+            //     `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`,
+            //     formData,
+            //     config
+            //   )
+            //   .then((res) => {
+            //     this.setState({
+            //       globus_path: res.data.globus_directory_url_path,
+            //       display_doi: res.data.display_doi,
+            //       //doi: res.data.doi,
+            //     });
+            //     axios
+            //       .get(
+            //         `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${res.data.uuid}`,
+            //         config
+            //       )
+            //       .then((res) => {
+            //         this.setState({
+            //           globus_path: res.data,
+            //         }, () => {
+            //           this.props.onCreated();
+            //           this.onChangeGlobusURL();
+            //         });
+            //       })
+            //       .catch((err) => {
+            //         this.setState({
+            //           globus_path: "",
+            //           globus_path_tips: "Globus URL Unavailable",
+            //         });
+            //         if (err.response && err.response.status === 401) {
+            //           localStorage.setItem("isAuthenticated", false);
+            //           window.location.reload();
+            //         }
+            //       });
+            //   })
+            //   .catch((error) => {
+            //     this.setState({ submit_error: true, submitting: false });
+            //   });
+          }  //else
         }
       }
     });
@@ -826,6 +873,7 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
+
 
       if (!validateRequired(this.state.name)) {
         this.setState((prevState) => ({
@@ -837,21 +885,21 @@ class DatasetEdit extends Component {
           formErrors: { ...prevState.formErrors, name: "" },
         }));
       }
-
-      if (
-        this.state.collection !== "" &&
-        this.state.collection.label === undefined
-      ) {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, collection: "required" },
-        }));
-        isValid = false;
-        resolve(isValid);
-      } else {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, collection: "" },
-        }));
-      }
+console.log('validators 1', isValid)
+      // if (
+      //   this.state.collection !== "" &&
+      //   this.state.collection.label === undefined
+      // ) {
+      //   this.setState((prevState) => ({
+      //     formErrors: { ...prevState.formErrors, collection: "required" },
+      //   }));
+      //   isValid = false;
+      //   resolve(isValid);
+      // } else {
+      //   this.setState((prevState) => ({
+      //     formErrors: { ...prevState.formErrors, collection: "" },
+      //   }));
+      // }
 
       if (!validateRequired(this.state.source_uuid)) {
         this.setState((prevState) => ({
@@ -859,15 +907,18 @@ class DatasetEdit extends Component {
         }));
         isValid = false;
         resolve(isValid);
-      } else {
+      } 
+      else {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, source_uuid: "" },
         }));
-        this.validateUUID().then((res) => {
-          resolve(isValid && res);
-        });
+        // this.validateUUID().then((res) => {
+        //   resolve(isValid && res);
+        // });
       }
+console.log('validators 2', isValid)
 
+  console.log('datatypes', this.state.data_types)
       if (this.state.data_types.size === 0 && this.state.other_dt === "") {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
@@ -879,7 +930,7 @@ class DatasetEdit extends Component {
           formErrors: { ...prevState.formErrors, data_types: "" },
         }));
       }
-
+console.log('validators 3', isValid)
       if (this.state.has_other_datatype && !validateRequired(this.state.other_dt)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, other_dt: "required" },
@@ -891,6 +942,9 @@ class DatasetEdit extends Component {
           formErrors: { ...prevState.formErrors, other_dt: "" },
         }));
       }
+
+      console.log('validators 4', isValid)
+      resolve(isValid);
     });
   }
 
@@ -1339,13 +1393,13 @@ class DatasetEdit extends Component {
 	       )
     }
   isAssayCheckSet(assay) {
+    //console.log('isAssayCheckSet')
     try {    
       if (this.props.editingDataset.data_types) {
         return this.props.editingDataset.data_types.includes(assay);
       } 
-    } catch {}
-    return false;
-  }
+    } catch { }
+   }
 
   renderAssayColumn(min, max) {
 	 return (<>
