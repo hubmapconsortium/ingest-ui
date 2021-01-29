@@ -341,8 +341,8 @@ class IDSearchModal extends Component {
                                     this.props.select(
                                       es.map(e => {
                                         return {
-                                          display_doi:
-                                            e.display_doi,
+                                          display_doi: e.display_doi,
+                                          source_uuid: e.uuid,
                                           datatype:
                                             result.entity_type === "Sample"
                                               ? flattenSampleType(SAMPLE_TYPES)[
