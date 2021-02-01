@@ -43,7 +43,7 @@ class NewDatasetModal extends Component {
           <div className="col-sm-12">
             <div className="card text-center">
               <div className="card-body">
-                <h5 className="card-title">New Dataset Created</h5>
+                <h5 className="card-title">New Dataset Information has been created</h5>
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group row">
@@ -69,7 +69,7 @@ class NewDatasetModal extends Component {
                         HuBMAP Dataset DOI
                       </label>
                       <div className="col-sm-8 col-form-label">
-                        <label name="dataset_display_id">{this.props.display_doi}</label>
+                        <label name="dataset_display_id">{this.props.hubmap_id}</label>
                       </div>
                     </div>
                   </div>
@@ -92,18 +92,18 @@ class NewDatasetModal extends Component {
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group row">
-                      <label
+                     {/* <label
                         htmlFor="globus_directory_url_path"
                         className="col-sm-4 col-form-label text-right"
                       >
-                        Dataset Globus URL
-                      </label>
+                        Dataset files:
+                      </label>*/}
                       <div className="col-sm-8 col-form-label">
                         <a
                           name="globus_directory_url_path"
                           href={this.props.globus_directory_url_path}
                         >
-                          Click to Upload Dataset Files
+                          <h4>Click to Upload Dataset Files</h4>
                         </a>
                       </div>
                     </div>

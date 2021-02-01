@@ -163,9 +163,9 @@ class IngestEntrance extends Component {
             //select={this.handleSelectClick}
             parent="dataset"
             globus_directory_url_path={this.state.globus_url}
-            name={this.state.name}
+            name={this.state.title}
             display_doi={this.state.display_doi}
-            doi={this.state.doi}
+            //doi={this.state.doi}
             onDismiss={() => this.setState({ NewDatasetShow: false })}
          />
         

@@ -222,9 +222,10 @@ class EntityList extends Component {
     }
     if (sample_type) {
       params["specimen_type"] = sample_type;
-    } else {
-      params["entity_type"] = "Donor";
-    }
+    } 
+    // else {
+    //   params["entity_type"] = "Donor";
+    // }
     if (keywords) {
       params["search_term"] = keywords;
     }

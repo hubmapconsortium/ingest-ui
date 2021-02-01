@@ -188,8 +188,10 @@ class DatasetEdit extends Component {
       let source_uuids;
       try {
         // use only the first direct ancestor
-        source_uuids = this.props.editingDataset.direct_ancestors;
-
+         this.setState({
+          source_uuids: this.props.editingDataset.direct_ancestors
+        });
+        
         //JSON.parse(
         //  this.props.editingDataset.properties.source_uuid.replace(/'/g, '"')
         //);
@@ -226,7 +228,7 @@ class DatasetEdit extends Component {
         this.setState(
         {
           status: this.props.editingDataset.status.toUpperCase(),
-          display_doi: this.props.editingDataset.display_doi,
+          display_doi: this.props.editingDataset.hubmap_id,
           //doi: this.props.editingDataset.entity_doi,
           name: this.props.editingDataset.title,
           globus_path: "", //this.props.editingDataset.properties.globus_directory_url_path,
@@ -237,8 +239,9 @@ class DatasetEdit extends Component {
           //       label: "",
           //       description: "",
           //     },
-          source_uuid: this.getSourceAncestor(source_uuids),
-          source_uuid_list: source_uuids,
+          source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
+          source_uuid_list: this.props.editingDataset.direct_ancestors,
+          source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           // source_uuid_type: this.props.editingDataset.properties.specimen_type,
           contains_human_genetic_sequences: this.props.editingDataset.contains_human_genetic_sequences,
           description: this.props.editingDataset.description,
@@ -509,7 +512,7 @@ class DatasetEdit extends Component {
     });
   };
 
-  // this is used to handle the row selection from the SOURCE ID search (idSearchModel)
+  // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (ids) => {
      console.log('handleSelectClick', ids)
     let id = this.getSourceAncestor(ids);
@@ -518,7 +521,7 @@ class DatasetEdit extends Component {
       {
         source_uuid: id, 
         source_uuid_list: ids,
-
+        source_entity: ids[0].entity,  // save the entire entity to use for information
         LookUpShow: false,
       }
       // old code here: not sure why it needs to be revalidated esp user has selected from a valid list
@@ -952,12 +955,22 @@ console.log('validators 3', isValid)
   getSourceAncestor(source_uuids){
     let id = ""; 
     try {
-      return source_uuids[0].display_doi;  // just get the first one
+      return source_uuids[0].hubmap_id;  // just get the first one
     } catch {
     }
     return ""
-
   }
+
+    // only handles one selection at this time
+  getSourceAncestorEntity(source_uuids){
+    let id = ""; 
+    try {
+      return source_uuids[0];  // just get the first one
+    } catch {
+    }
+    return ""
+  }
+
   //note: this code assumes that source_uuids is a sorted list or a single value
   generateDisplaySourceId(source_uuids) {
     //check if the source_uuids represents a list or a single value
@@ -1491,11 +1504,11 @@ console.log('validators 3', isValid)
                     .
                   </div>
               <div className='col-sm-10'>
-                <p>
+                <h3>
                   {this.props.editingDataset &&
-                    "HuBMAP Dataset id: " +
+                    "HuBMAP Dataset ID " +
                       this.state.display_doi}
-                </p>
+                </h3>
                 <div>
                   <p>
                     <strong>
@@ -1724,51 +1737,18 @@ console.log('validators 3', isValid)
               )}
              
             </div>
-            {this.state.source_entity && (
+            {this.state.source_entity && (   // this is the description box for source info
               <div className='form-group row'>
                 <div className='col-sm-7 offset-sm-2'>
                   <div className='card'>
                     <div className='card-body'>
-                      <div className='row'>
-                        <div className='col-sm-12'>
-                          <h4 className='card-title'>
-                            HuBMAP display id:{" "}
-                            <b>
-                              <span>
-                                {this.state.source_entity.specimen
-                                  ? this.state.source_entity.specimen
-                                      .hubmap_identifier
-                                  : this.state.source_entity.dataset
-                                  ? this.state.source_entity.dataset.display_doi
-                                  : ""}
-                              </span>
-                            </b>
-                          </h4>
-                        </div>
-                      </div>
+                      
                       <div className='row'>
                         <div className='col-sm-6'>
-                          <b>type:</b>{" "}
-                          {this.state.source_entity.specimen
-                            ? this.state.source_entity.specimen.specimen_type
-                              ? flattenSampleType(SAMPLE_TYPES)[
-                                  this.state.source_entity.specimen
-                                    .specimen_type
-                                ]
-                              : this.state.source_entity.specimen.entitytype
-                            : this.state.source_entity.dataset
-                            ? this.state.source_entity.dataset.entitytype
-                            : ""}
+                          <b>Source Type:</b>{" "}
+                          {this.state.source_entity.entity_type}
                         </div>
-                        {/*<div className='col-sm-6'>
-                          <b>name:</b>{" "}
-                          {this.state.source_entity.specimen
-                            ? this.state.source_entity.specimen.label
-                            : this.state.source_entity.dataset
-                            ? this.state.source_entity.dataset.name
-                            : ""}
-                        </div>
-                      */}
+            
                         {this.state.source_entity.specimen &&
                           this.state.source_entity.specimen.specimen_type ===
                             "organ" && (
@@ -1776,33 +1756,25 @@ console.log('validators 3', isValid)
                               <b>Organ Type:</b>{" "}
                               {this.state.source_entity.specimen &&
                                 ORGAN_TYPES[
-                                  this.state.source_entity.specimen.organ
+                                  this.state.source_entity.organ
                                 ]}
                             </div>
                           )}
-                        <div className='col-sm-6'>
-                          <b>HuBMAP ID:</b>{" "}
-                          {this.state.source_entity.specimen
-                            ? this.state.source_entity.specimen
-                                .hubmap_identifier
-                            : this.state.source_entity.dataset
-                            ? this.state.source_entity.dataset.display_doi
-                            : ""}
-                        </div>
+                      
                         <div className='col-sm-12'>
                           <p>
                             <b>Description: </b>{" "}
-                            {this.state.source_entity.specimen
+                            {this.state.source_entity.title
                               ? truncateString(
-                                  this.state.source_entity.specimen.description,
+                                  this.state.source_entity.title,
                                   230
                                 )
-                              : this.state.source_entity.dataset
+                              : this.state.source_entity.lab_tissue_sample_id
                               ? truncateString(
-                                  this.state.source_entity.dataset.description,
+                                  this.state.source_entity.lab_tissue_sample_id,
                                   230
                                 )
-                              : ""}
+                              : "Unavailable"}
                           </p>
                         </div>
                       </div>

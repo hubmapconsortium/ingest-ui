@@ -39,12 +39,22 @@ class IDSearchModal extends Component {
     const sample_type = this.sampleType.current.value;
     const keywords = this.keywords.current.value;
     let params = {};
-    params["group_name"] = group;
-    if (sample_type) {
-      params["specimen_type"] = sample_type;
-    }  else {
-      params["entity_type"] = sample_type;
+
+
+    if (group && group !== 'All Groups') {
+        params["group_name"] = group;
     }
+
+    if (sample_type) {
+      if (sample_type == 'donor') {
+        params["entity_type"] = "Donor";
+      } else if (sample_type == 'dataset') {
+            params["entity_type"] = "Dataset";
+        } else {
+          params["specimen_type"] = sample_type;
+      } 
+    }  
+   
     if (keywords) {
       params["search_term"] = keywords;
     }
@@ -340,8 +350,10 @@ class IDSearchModal extends Component {
                                   onClick={e =>
                                     this.props.select(
                                       es.map(e => {
-                                        return {
-                                          display_doi: e.display_doi,
+                                        return {  // return record when row is selected from table list
+                                          entity: e,
+                                          display_doi: e.display_doi ? e.display_doi : e.hubmap_id,
+                                          hubmap_id: e.display_doi ? e.display_doi : e.hubmap_id,  // pure hack
                                           source_uuid: e.uuid,
                                           datatype:
                                             result.entity_type === "Sample"
@@ -364,7 +376,7 @@ class IDSearchModal extends Component {
 		                                       <FontAwesomeIcon icon={faCopy} key={result.display_doi}
 				                                  onClick={e => {e.stopPropagation(); let temp_arr = es.map(e => {
 				                                  
-				                                     return { display_doi: e.display_doi };
+				                                     return { display_doi: e.display_doi, entity: e };
 				                                  });
 				                                     this.setState({uuid_list: temp_arr, LookUpShow: true});
 				                                     
@@ -406,7 +418,7 @@ class IDSearchModal extends Component {
                                         result.lab_tissue_sample_id}
                                   </td>
                                   <td>
-                                    {result.create_by_user_email}
+                                    {result.created_by_user_email}
                                   </td>
                                 </tr>
                                 {this.state.showSibling && es.length > 1 && (
@@ -440,7 +452,7 @@ class IDSearchModal extends Component {
                                           </td>
                                           <td>
                                             {
-                                              result.create_by_user_email
+                                              result.created_by_user_email
                                             }
                                           </td>
                                         </tr>

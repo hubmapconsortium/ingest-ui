@@ -74,8 +74,12 @@ export function api_filter_es_query_builder(fields) {
 
   if (Object.keys(fields).length === 0 && fields.constructor === Object) {
    // boolQuery.must(esb.matchAllQuery());
-    boolQuery.must(esb.matchQuery("entity_type", "Donor"));
+    //boolQuery.must(esb.matchQuery("entity_type", "Donor"));
     //boolQuery.filter(esb.termQuery("entity_type", "Sample"));
+    boolQuery.should([
+        esb.termQuery('entity_type.keyword', 'Donor'),
+        esb.termQuery('entity_type.keyword', 'Sample')
+    ]);
   } else {
    
 
@@ -102,12 +106,15 @@ export function api_filter_es_query_builder(fields) {
        boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));
     }
     // else {
-    //   boolQuery.filter(esb.matchQuery("entity_type", "Donor"));
-    //   boolQuery.filter(esb.matchQuery("entity_type", "Sample"));
-    // }
+    //     boolQuery.should([
+    //       esb.termQuery('entity_type', 'Donor'),
+    //       esb.termQuery('entity_type', 'Sample')
+    //      ]);
+    //  }
 
     if (fields["search_term"]) {
-         boolQuery.must(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 'lab_donor_id'], fields["search_term"]));
+         boolQuery.must(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 
+          'lab_donor_id', 'hubmap_id', 'created_by_user_displayname', 'title'], fields["search_term"]));
     }
   
   }
