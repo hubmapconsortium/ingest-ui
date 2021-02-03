@@ -128,29 +128,21 @@ class DonorForm extends Component {
     if (this.props.editingEntity) {
       //const pf = this.props.editingEntity.protocol_file;
       const mf = this.props.editingEntity.portal_metadata_upload_files;
-      let images = [];
+      let images = this.props.editingEntity.image_files;
       //let metadatas = [];
-      try {
-        images = JSON.parse(
-          this.props.editingEntity.image_file_metadata
-            .replace(/\\/g, "\\\\")
-            .replace(/'/g, '"')
-        );
-        // metadatas = JSON.parse(
-        //   this.props.editingEntity.portal_metadata_upload_files
-        //     .replace(/\\/g, "\\\\")
-        //     .replace(/'/g, '"')
-        // );
-      } catch (e) {}
+      // try {
+      //   images = JSON.parse(
+      //     this.props.editingEntity.image_files
+      //       .replace(/\\/g, "\\\\")
+      //       .replace(/'/g, '"')
+      //   );
+      //   // metadatas = JSON.parse(
+      //   //   this.props.editingEntity.portal_metadata_upload_files
+      //   //     .replace(/\\/g, "\\\\")
+      //   //     .replace(/'/g, '"')
+      //   // );
+      // } catch (e) {}
 
-	 //  this.setState({
-		// open_consent: false
-  //     });
-	 //  if (this.props.editingEntity.properties.open_consent) {
-		//   this.setState({
-		//   	open_consent: this.props.editingEntity.properties.open_consent.toLowerCase() === "true" ? true: false
-		//   });
-	 //  }
 
       this.setState({
         author: this.props.editingEntity.created_by_user_email,
@@ -161,6 +153,7 @@ class DonorForm extends Component {
       //  protocol_file_name: pf && getFileNameOnPath(pf),
         description: this.props.editingEntity.description,
        // metadata_file_name: mf && getFileNameOnPath(mf)
+
       });
 
       const image_list = [];
@@ -169,7 +162,7 @@ class DonorForm extends Component {
         image_list.push({
           id: index + 1,
           ref: React.createRef(),
-          file_name: getFileNameOnPath(image.filepath),
+          file_name: image.filename,     //getFileNameOnPath(image.filepath),
           description: image.description
         });
       });
@@ -378,8 +371,11 @@ class DonorForm extends Component {
       // }
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
+        console.log('image', id)
         let images = [...this.state.images];
+        console.log('images', images)
         images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
+        console.log('images file data', images[i].ref.current.image_file.current.files)
         let new_images = [...this.state.new_images];
         new_images.push(images[i].file_name);
         return new Promise((resolve, reject) => {
@@ -474,8 +470,8 @@ class DonorForm extends Component {
           // metadatas: [],
           // new_metadatas: this.state.new_metadatas,
           // deleted_metadatas: this.state.deleted_metadatas,
-          //image_file_metadata: [],
-          new_images: this.state.new_images,
+          image_files_to_add: [],
+          //new_images: this.state.new_images,
           // deleted_images: this.state.deleted_images,
           // open_consent: this.state.open_consent,
           // form_id: this.state.form_id
@@ -490,16 +486,18 @@ class DonorForm extends Component {
         //     file_name: i.file_name
         //   });
         // });
+        console.log('submit images', this.state.images)
         this.state.images.forEach(i => {
-          data.image_file_metadata.push({
-            id: "image_" + i.id,
-            file_name: i.file_name,
+          data.image_files_to_add.push({
+            temp_file_id: i.ref.current.state.temp_file_id,
             description: i.ref.current.image_file_description.current.value.replace(
               /"/g,
               '\\"'
             )
           });
         });
+
+        // "image_files_to_add": [{"temp_file_id":"5hcg4ksj6cxkw2cgpmp5", "description":"this is a test file"}]}
         //formData.append("data", JSON.stringify(data));
 
         console.log("the data")
@@ -684,35 +682,39 @@ class DonorForm extends Component {
     }
 
     // if (!this.props.editingEntity) {
+      console.log('valid images')
     this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
+        console.log('image invalid', image.file_name)
         isValid = false;
         image.ref.current.validate();
       }
-      if (
-        !validateRequired(
-          image.ref.current.image_file_description.current.value
-        )
-      ) {
+      if (!validateRequired(image.ref.current.image_file_description.current.value)) {
+         console.log('descr missing')
         isValid = false;
         image.ref.current.validate();
       }
     });
     // }
 
-    const usedFileName = new Set();
-    this.state.images.forEach((image, index) => {
-      usedFileName.add(image.file_name);
+    const hasImageDuplicates = new Set(this.state.images).size !== this.state.images.length
+    if (hasImageDuplicates) {
+       // image["error"] = "Duplicated file name is not allowed.";
+        isValid = false;
+    }
 
-      if (image.ref.current.image_file.current.files[0]) {
-        if (
-          usedFileName.has(image.ref.current.image_file.current.files[0].name)
-        ) {
-          image["error"] = "Duplicated file name is not allowed.";
-          isValid = false;
-        }
-      }
-    });
+
+    // const usedFileName = new Set();
+    // this.state.images.forEach((image, index) => {
+    //   usedFileName.add(image.file_name);
+    //   console.log('image check for dups', image)
+    //   if (image.ref.current.image_file.current.files[0]) {
+    //     if (usedFileName.has(image.ref.current.image_file.current.files[0].name)) {
+    //       image["error"] = "Duplicated file name is not allowed.";
+    //       isValid = false;
+    //     }
+    //   }
+    // });
 
     // if (!this.props.editingEntity) {
     //   // Creating Donor

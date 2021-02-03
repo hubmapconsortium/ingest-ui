@@ -220,9 +220,16 @@ class EntityList extends Component {
     if (group && group !== 'All Groups') {
         params["group_name"] = group;
     }
+  
     if (sample_type) {
-      params["specimen_type"] = sample_type;
-    } 
+      if (sample_type == 'donor') {
+        params["entity_type"] = "Donor";
+      } else if (sample_type == 'dataset') {
+            params["entity_type"] = "Dataset";
+        } else {
+          params["specimen_type"] = sample_type;
+      } 
+    }  
     // else {
     //   params["entity_type"] = "Donor";
     // }
@@ -468,7 +475,7 @@ renderTable() {
                 .map(es => {
                 const entity = es[0];
                 console.log(entity)
-                let first_lab_id = entity.hubmap_display_id;
+                let first_lab_id = entity.hubmap_display_id ? entity.display_doi : "";   // hack because data inconsistencies
                 console.log(entity.hubmap_display_id);
                 let last_lab_id = "";
                 let id_common_part = first_lab_id.substring(

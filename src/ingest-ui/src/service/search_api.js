@@ -42,7 +42,7 @@ export function api_search(params, auth) {
         return {status: res.status, results: entities}
       })
       .catch(err => {
-         return {status: err.response.status, results: err.response}
+         return {status: 500, results: err.response}
       });
 };
 
@@ -113,7 +113,7 @@ export function api_filter_es_query_builder(fields) {
     //  }
 
     if (fields["search_term"]) {
-         boolQuery.must(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 
+         boolQuery.filter(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 
           'lab_donor_id', 'hubmap_id', 'created_by_user_displayname', 'title'], fields["search_term"]));
     }
   

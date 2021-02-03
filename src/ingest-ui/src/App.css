@@ -64,7 +64,7 @@
 
 .modal-main {
 
-  width: 60%;
+  width: 80%;
 
 }
 
@@ -312,7 +312,7 @@ caption {
 
  .container {
     width:100%;
-    padding:20px 0 20px;
+    padding:1px 0 1px;
 }
 
 .paper-container {
@@ -320,7 +320,7 @@ caption {
     padding:20px 20px 20px 20px;
 }
 .pads {
-   padding:20px;
+   padding:1px;
 }
 
  #content {

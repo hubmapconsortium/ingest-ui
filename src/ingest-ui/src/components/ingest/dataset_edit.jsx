@@ -750,7 +750,7 @@ class DatasetEdit extends Component {
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
             data_types: data_types,
             description: this.state.description,
-            status: this.state.new_status,
+            //status: this.state.new_status,
             //is_protected: this.state.is_protected,
           };
           if (this.state.selected_group) {
@@ -763,9 +763,7 @@ class DatasetEdit extends Component {
             headers: {
               Authorization:
                 "Bearer " +
-                JSON.parse(localStorage.getItem("info")).nexus_token,
-              MAuthorization: "MBearer " + localStorage.getItem("info"),
-              "Content-Type": "multipart/form-data",
+                JSON.parse(localStorage.getItem("info")).nexus_token
             },
           };
 
@@ -812,6 +810,7 @@ class DatasetEdit extends Component {
                     });
                   })
                   .catch((err) => {
+                    console.log('ERROR', err)
                     this.setState({
                       globus_path: "",
                       globus_path_tips: "Globus URL Unavailable",
@@ -1539,7 +1538,7 @@ console.log('validators 3', isValid)
                 Dataset Name <span className='text-danger'>*</span>
               </label>
            
-                <span>
+                <span className="px-2">
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
@@ -1671,7 +1670,7 @@ console.log('validators 3', isValid)
             <div className='form-group'>
               <label
                 htmlFor='source_uuid'>
-                Source ID <span className='text-danger'>*</span>
+                Source ID <span className='text-danger px-2'>*</span>
               </label>
                <FontAwesomeIcon
                   icon={faQuestionCircle}
@@ -1785,11 +1784,10 @@ console.log('validators 3', isValid)
             )}
             <div className='form-group'>
             <label
-              htmlFor='description'
-             
-            >
+              htmlFor='description'>
               Description 
             </label>
+            <span className="px-2">
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
@@ -1803,7 +1801,7 @@ console.log('validators 3', isValid)
                 >
                   <p>Description Tips</p>
                 </ReactTooltip>
-              
+              </span>
             {!this.props.readOnly && (
               <React.Fragment>
                 <div>
@@ -1835,6 +1833,7 @@ console.log('validators 3', isValid)
               >
                 Gene Sequences <span className='text-danger'> * </span>
               </label>
+              
                <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
@@ -1846,8 +1845,10 @@ console.log('validators 3', isValid)
                     type='info'
                     effect='solid'
                   >
+
                     <p>Gene Sequences Tips</p>
                   </ReactTooltip>
+
               {!this.props.readOnly && (
                 <div className='col-sm-9'>
                   <div className='form-check form-check-inline'>

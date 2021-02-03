@@ -24,7 +24,8 @@ class ImageUpload extends Component {
     this.setState({
       image_file_name: this.props.file_name || "Choose a file",
       image_file_description: this.props.description || "",
-      image_file: ""
+      image_file: "",
+      temp_file_id: ""
     });
   }
 
@@ -41,14 +42,14 @@ class ImageUpload extends Component {
             }, () => {
               let data = new FormData();
               data.append('file', files[0]);
-              data.append('form_id', this.props.formId);
-              data.append('file_type', 'image');
+              // data.append('form_id', this.props.formId);
+              // data.append('file_type', 'image');
 
               const options = {
                 headers: {
                   Authorization:
                     "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-                  MAuthorization: "MBearer " + localStorage.getItem("info"),
+                  //MAuthorization: "MBearer " + localStorage.getItem("info"),
                   "Content-Type": "multipart/form-data"
                 },
                 onUploadProgress: (progressEvent) => {
@@ -60,12 +61,16 @@ class ImageUpload extends Component {
                 }
               };
 
-              axios.post(`${process.env.REACT_APP_SPECIMEN_API_URL}/files`, data, options)
+              axios.post(`${process.env.REACT_APP_ENTITY_API_URL}/file-upload`, data, options)
                 .then(res => {
+                  console.log('handleImageFileChange', res.data)
                   this.setState({ uploadPercentage: 100 }, () => {
                     setTimeout(() => {
                       this.setState({ uploadPercentage: 0 })
                     }, 1000);
+                  })
+                  this.setState({
+                    temp_file_id: res.data.temp_file_id
                   })
                 })
             });

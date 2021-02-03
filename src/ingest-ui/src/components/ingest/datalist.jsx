@@ -413,7 +413,7 @@ handleChangePage = (event, newPage) => {
                 <Table className="table-fmt" size="small" aria-label="Result table">
                   <TableHead>
                     <TableRow className="portal-jss120">
-                      <TableCell align="center">HuBMAP ID</TableCell>
+                      <TableCell align="center" width="50px">HuBMAP ID</TableCell>
                       <TableCell align="center">Description</TableCell>
                       <TableCell align="center">Lab Group</TableCell>
                       <TableCell align="center">Data Access Level</TableCell>
