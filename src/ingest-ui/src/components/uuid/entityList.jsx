@@ -230,9 +230,9 @@ class EntityList extends Component {
           params["specimen_type"] = sample_type;
       } 
     }  
-    // else {
-    //   params["entity_type"] = "Donor";
-    // }
+     else {
+       params["entity_type"] = "DonorSample";  // for dual search
+    }
     if (keywords) {
       params["search_term"] = keywords;
     }
@@ -252,7 +252,8 @@ class EntityList extends Component {
           loading: false,
           entities: response.results,
           filtered_totals: Object.keys(response.results).length,
-          filtered: true
+          filtered: true,
+          page: 1
           }
         );
       }
@@ -475,7 +476,7 @@ renderTable() {
                 .map(es => {
                 const entity = es[0];
                 console.log(entity)
-                let first_lab_id = entity.hubmap_display_id ? entity.display_doi : "";   // hack because data inconsistencies
+                let first_lab_id = entity.hubmap_display_id ? entity.hubmap_display_id : "Unavailable";   // hack because data inconsistencies
                 console.log(entity.hubmap_display_id);
                 let last_lab_id = "";
                 let id_common_part = first_lab_id.substring(
@@ -483,7 +484,7 @@ renderTable() {
                   first_lab_id.lastIndexOf("-") + 1
                 );
                 let first_lab_id_num = "";
-                let last_lab_id_num = "";
+                let last_lab_id_num = ""; 
                 let display_id = entity.hubmap_display_id;
 
                 if (es.length > 1) {

@@ -90,27 +90,25 @@ export function api_filter_es_query_builder(fields) {
       boolQuery.must(esb.matchQuery("group_name", fields["group_name"]));
     } 
 
-    // if (fields["specimen_type"]) {
-    //   if (fields["specimen_type"] !== 'donor') {
-    //     boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
-    //   } else {
-    //     boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
-    //   }
-    // } 
     if (fields["specimen_type"]) {
-      boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
-    } 
-
-
-    if (fields["entity_type"]) {
+      if (fields["specimen_type"] !== 'donor') {
+        boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
+      } else {
+        boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
+      }
+    } else if (fields["entity_type"] === 'DonorSample') {  // hack to deal with not type selected from the UI, this clues from the donor/sample filer
+       // boolQuery.should([
+       //  esb.termQuery('entity_type.keyword', 'Donor'),
+       //  esb.termQuery('entity_type.keyword', 'Sample')]);
+      boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
+      // boolQuery.filter(esb.matchQuery('entity_type', 'Donor'));
+      //boolQuery.filter(esb.matchQuery('entity_type', 'Sample'));
+    } else {
        boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));
     }
-    // else {
-    //     boolQuery.should([
-    //       esb.termQuery('entity_type', 'Donor'),
-    //       esb.termQuery('entity_type', 'Sample')
-    //      ]);
-    //  }
+    // if (fields["specimen_type"]) {
+    //   boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
+    // } 
 
     if (fields["search_term"]) {
          boolQuery.filter(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 

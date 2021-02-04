@@ -163,7 +163,8 @@ class DonorForm extends Component {
           id: index + 1,
           ref: React.createRef(),
           file_name: image.filename,     //getFileNameOnPath(image.filepath),
-          description: image.description
+          description: image.description,
+          file_uuid: image.file_uuid
         });
       });
       // metadatas.forEach((metadata, index) => {
@@ -177,22 +178,6 @@ class DonorForm extends Component {
       this.setState({ images: image_list});
     }
   }
-
-  // handleProtocolFileChange = e => {
-  //   let arr = e.target.value.split("\\");
-  //   let file_name = arr[arr.length - 1];
-  //   this.setState({
-  //     protocol_file_name: file_name
-  //   });
-  // };
-
-  // handleMetadataFileChange = e => {
-  //   let arr = e.target.value.split("\\");
-  //   let file_name = arr[arr.length - 1];
-  //   this.setState({
-  //     metadata_file_name: file_name
-  //   });
-  // };
 
   handleInputChange = e => {
     const { name, value } = e.target;
@@ -315,8 +300,11 @@ class DonorForm extends Component {
     const deleted_image = this.state.images.find(i => i.id === id);
     const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
     let deleted_images = [...this.state.deleted_images];
+
+    console.log('deleted image', deleted_image)
     if (new_images.length === this.state.new_images.length){
-      deleted_images.push(deleted_image.file_name);
+      //deleted_images.push(deleted_image.file_name);
+      deleted_images.push(deleted_image.file_uuid);
     }
     const images = this.state.images.filter(i => i.id !== id);
     this.setState({
@@ -461,70 +449,59 @@ class DonorForm extends Component {
           lab_donor_id: this.state.lab_donor_id,
           label: this.state.identifying_name,
           protocol_url: this.state.protocol_url,
-          // visit: this.state.visit,
-          // protocol_file:
-          //   this.state.protocol_file_name === "Choose a file"
-          //     ? ""
-          //     : this.state.protocol_file_name,
           description: this.state.description,
-          // metadatas: [],
-          // new_metadatas: this.state.new_metadatas,
-          // deleted_metadatas: this.state.deleted_metadatas,
-          image_files_to_add: [],
-          //new_images: this.state.new_images,
-          // deleted_images: this.state.deleted_images,
-          // open_consent: this.state.open_consent,
-          // form_id: this.state.form_id
         };
     
-        //var formData = new FormData();
-        // formData.append("protocol_file", this.state.protocol_file);
-        // formData.append("metadata_file", this.state.metadata_file);
-        // this.state.metadatas.forEach(i => {
-        //   data.metadatas.push({
-        //     id: "metadata_" + i.id,
-        //     file_name: i.file_name
-        //   });
-        // });
-        console.log('submit images', this.state.images)
+        // the following handles all the image add/remove/updates
+        if (this.state.images.length > 0) {
+          let image_files_to_add = [];
+          let existing_image_files_to_update = [];
+        //console.log('submit images', this.state.images)
         this.state.images.forEach(i => {
-          data.image_files_to_add.push({
-            temp_file_id: i.ref.current.state.temp_file_id,
-            description: i.ref.current.image_file_description.current.value.replace(
-              /"/g,
-              '\\"'
-            )
+
+            // if a file has a non-blank temp_file_id then assume it a new image 
+            if (i.ref.current.state.temp_file_id !== "") {
+              image_files_to_add.push({
+                temp_file_id: i.ref.current.state.temp_file_id,
+                description: i.ref.current.image_file_description.current.value.replace(
+                  /"/g,
+                  '\\"'
+                )
+              });
+            } else {  // this will send image data that may have been updated
+              existing_image_files_to_update.push({
+                 file_uuid: i.file_uuid,
+                 description: i.ref.current.image_file_description.current.value.replace(
+                  /"/g,
+                  '\\"'
+                )
+              })
+
+            }
           });
-        });
+          // check to see if we really did add any new images 
+          if (image_files_to_add.length > 0 ) {
+            data['image_files_to_add'] = image_files_to_add;
+          }
+          // send any updates to the existing descriptions, there is no check for changes
+          if (existing_image_files_to_update.length > 0) {
+            data["image_files"] = existing_image_files_to_update;
+          }
+        }
+        // check for any removed images
+        if (this.state.deleted_images.length > 0) {
+          data['image_files_to_remove'] = this.state.deleted_images
+        }
 
         // "image_files_to_add": [{"temp_file_id":"5hcg4ksj6cxkw2cgpmp5", "description":"this is a test file"}]}
         //formData.append("data", JSON.stringify(data));
 
-        console.log("the data")
+        console.log("SUBMMITED data")
         console.log(data)
-        // const config = {
-        //   headers: {
-        //     Authorization:
-        //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        //     MAuthorization: "MBearer " + localStorage.getItem("info"),
-        //     "Content-Type": "application/json"
-        //   }
-        // };
+      
 
         if (this.props.editingEntity) {
-          // axios
-          //   .put(
-          //     `${process.env.REACT_APP_SPECIMEN_API_URL}/donor/${this.props.editingEntity.uuid}`,
-          //     data,
-          //     config
-          //   )
-          //   .then(res => {
-          //     this.props.onUpdated(res.data);
-          //   })
-          //   .catch(error => {
-          //     this.setState({ submit_error: true, submitting: false });
-          //   });
-
+          console.log("Updating Entity....")
           api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
@@ -537,21 +514,10 @@ class DonorForm extends Component {
       
               });
         } else {
-          // axios
-          //   .post(
-          //     `${process.env.REACT_APP_SPECIMEN_API_URL}/donor`,
-          //     data,
-          //     config
-          //   )
-          //   .then(res => {
-          //     this.props.onCreated(res.data);
-          //   })
-          //   .catch(error => {
-          //     this.setState({ submit_error: true, submitting: false });
-          // });
           if (this.state.selected_group) {
             data["group_uuid"] = this.state.selected_group;
           }
+          console.log("Create a new Entity....")
            api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
