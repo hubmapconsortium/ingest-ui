@@ -22,6 +22,9 @@ import subprocess
 import logging
 import threading
 
+# Suppress InsecureRequestWarning warning when requesting status on https with ssl cert verify disabled
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category = InsecureRequestWarning)
 
 from hubmap_commons.uuid_generator import UUID_Generator
 from hubmap_commons.hubmap_const import HubmapConst 
@@ -1371,7 +1374,8 @@ class Dataset(object):
                                                      "full_path": full_path,
                                                      "provider": "{group_name}".format(group_name=group_info['displayname'])}, 
                                           #headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=current_token )})
-                                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=AuthHelper.instance().getProcessSecret() )})
+                                          headers={'Content-Type':'application/json', 'Authorization': 'Bearer {token}'.format(token=AuthHelper.instance().getProcessSecret() )},
+                                          verify = False)
                         if r.ok == True:
                             """expect data like this:
                             {"ingest_id": "abc123", "run_id": "run_657-xyz", "overall_file_count": "99", "top_folder_contents": "["IMS", "processed_microscopy","raw_microscopy","VAN0001-RK-1-spatial_meta.txt"]"}
