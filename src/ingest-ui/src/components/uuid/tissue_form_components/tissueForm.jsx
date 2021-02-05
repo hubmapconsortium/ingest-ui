@@ -66,6 +66,8 @@ class TissueForm extends Component {
     metadatas: [],
     images: [],
 
+    new_images: [],
+    deleted_images: [],
     groups: [],
     selected_group: "",
 
@@ -148,10 +150,10 @@ class TissueForm extends Component {
         .then(res => {
           if (res.data.siblingid_list.length > 0) {
             res.data.siblingid_list.push({
-              hubmap_identifier: this.props.editingEntity.hubmap_identifier,
+              hubmap_identifier: this.props.editingEntity.hubmap_id,
               uuid: this.props.editingEntity.uuid,
-              lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id || "",
-              rui_location: this.props.editingEntity.properties.rui_location || ""
+              lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id || "",
+              rui_location: this.props.editingEntity.rui_location || ""
             });
             res.data.siblingid_list.sort((a, b) => {
               if (
@@ -190,16 +192,16 @@ class TissueForm extends Component {
               ids: res.data.siblingid_list,
               multiple_id: this.props.editingEntities.length > 1 ? true : false
             });
-            const first_lab_id = this.props.editingEntities[0].hubmap_identifier;
+            const first_lab_id = this.props.editingEntities[0].hubmap_id;
             const last_lab_id =
               this.props.editingEntities[this.props.editingEntities.length - 1]
-                .hubmap_identifier;
+                .hubmap_id;
 
             if (this.props.editingEntities.length > 1) {
               this.setState({
                 editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
                   } ${flattenSampleType(SAMPLE_TYPES)[
-                  this.props.editingEntity.properties.specimen_type
+                  this.props.editingEntity.specimen_type
                   ]
                   } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
               });
@@ -226,60 +228,49 @@ class TissueForm extends Component {
       //   return p;
       // });
 
-      let images = [];
-      let metadatas = [];
-      try {
-        images = JSON.parse(
-          this.props.editingEntity.properties.image_file_metadata
-            .replace(/\\/g, "\\\\")
-            .replace(/'/g, '"')
-        );
-        metadatas = JSON.parse(
-          this.props.editingEntity.properties.metadatas
-            .replace(/\\/g, "\\\\")
-            .replace(/'/g, '"')
-        );
-      } catch (e) { }
+      let images = this.props.editingEntity.image_files;
+ //     let metadatas = this.props.editingEntity.metadata_files;
+  
       const image_list = [];
       const metadata_list = [];
       images.forEach((image, index) => {
         image_list.push({
           id: index + 1,
           ref: React.createRef(),
-          file_name: getFileNameOnPath(image.filepath),
-          description: image.description
-        });
-      });
-      metadatas.forEach((metadata, index) => {
-        metadata_list.push({
-          id: index + 1,
-          ref: React.createRef(),
-          file_name: getFileNameOnPath(metadata.filepath)
+          file_name: image.filename,     
+          description: image.description,
+          file_uuid: image.file_uuid
         });
       });
 
-      this.setState({ images: image_list, metadatas: metadata_list });
-
+      // metadatas.forEach((metadata, index) => {
+      //   metadata_list.push({
+      //     id: index + 1,
+      //     ref: React.createRef(),
+      //     file_name: getFileNameOnPath(metadata.filepath),
+      //     file_uuid: metadata.file_uuid
+      //   });
+      // });
+      // set the state with current data
       this.setState(
         {
-          author: this.props.editingEntity.properties.provenance_user_email,
-          lab_tissue_id: this.props.editingEntity.properties.lab_tissue_id,
-          rui_location: this.props.editingEntity.properties.rui_location || "",
+          author: this.props.editingEntity.created_by_user_email,
+          lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id,
+          rui_location: this.props.editingEntity.rui_location || "",
           // protocols: protocols_json,
-          protocol: this.props.editingEntity.properties.protocol,
-          protocol_file_name: getFileNameOnPath(
-            this.props.editingEntity.properties.protocol_file
-          ),
-          specimen_type: this.props.editingEntity.properties.specimen_type,
-          specimen_type_other: this.props.editingEntity.properties
-            .specimen_type_other,
-          organ: this.props.editingEntity.properties.organ,
-          visit: this.props.editingEntity.properties.visit,
-          source_uuid: this.props.editingEntity.properties.source_uuid,
-          description: this.props.editingEntity.properties.description,
-          metadata_file_name: getFileNameOnPath(
-            this.props.editingEntity.properties.metadata_file
-          )
+          protocol: this.props.editingEntity.protocol_url,
+          // protocol_file_name: getFileNameOnPath(
+          //   this.props.editingEntity.properties.protocol_file
+          // ),
+          specimen_type: this.props.editingEntity.specimen_type,
+          specimen_type_other: this.props.editingEntity.specimen_type_other,
+          organ: this.props.editingEntity.organ,
+          visit: this.props.editingEntity.visit,
+          source_uuid: this.props.editingEntity.source_uuid,
+          description: this.props.editingEntity.description,
+          images: image_list,
+          //metadatas: metadata_list
+          
         },
         () => {
           if (this.state.source_uuid !== undefined) {
@@ -376,56 +367,56 @@ class TissueForm extends Component {
           }));
         }
         break;
-      case "protocol_file":
-        this.setState({ protocol_file: e.target.files[0] });
-        this.setState({
-          protocol_file_name: e.target.files[0] && e.target.files[0].name
-        });
-        if (
-          !validateRequired(value) &&
-          !validateRequired(this.protocol.current.value)
-        ) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_file: "required",
-              protocol: "required"
-            }
-          }));
-        } else if (e.target.files[0]) {
-          if (
-            !validateFileType(e.target.files[0].type, [
-              "application/msword",
-              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              "application/pdf"
-            ])
-          ) {
-            this.setState(prevState => ({
-              formErrors: {
-                ...prevState.formErrors,
-                protocol_file: "Allowed file types: .doc, .docx, or .pdf",
-                protocol: ""
-              }
-            }));
-          } else {
-            this.setState(prevState => ({
-              formErrors: {
-                ...prevState.formErrors,
-                protocol_file: "",
-                protocol: ""
-              }
-            }));
-          }
-        } else {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_file: "",
-              protocol: ""
-            }
-          }));
-        }
-        break;
+      // case "protocol_file":
+      //   this.setState({ protocol_file: e.target.files[0] });
+      //   this.setState({
+      //     protocol_file_name: e.target.files[0] && e.target.files[0].name
+      //   });
+      //   if (
+      //     !validateRequired(value) &&
+      //     !validateRequired(this.protocol.current.value)
+      //   ) {
+      //     this.setState(prevState => ({
+      //       formErrors: {
+      //         ...prevState.formErrors,
+      //         protocol_file: "required",
+      //         protocol: "required"
+      //       }
+      //     }));
+      //   } else if (e.target.files[0]) {
+      //     if (
+      //       !validateFileType(e.target.files[0].type, [
+      //         "application/msword",
+      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      //         "application/pdf"
+      //       ])
+      //     ) {
+      //       this.setState(prevState => ({
+      //         formErrors: {
+      //           ...prevState.formErrors,
+      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf",
+      //           protocol: ""
+      //         }
+      //       }));
+      //     } else {
+      //       this.setState(prevState => ({
+      //         formErrors: {
+      //           ...prevState.formErrors,
+      //           protocol_file: "",
+      //           protocol: ""
+      //         }
+      //       }));
+      //     }
+      //   } else {
+      //     this.setState(prevState => ({
+      //       formErrors: {
+      //         ...prevState.formErrors,
+      //         protocol_file: "",
+      //         protocol: ""
+      //       }
+      //     }));
+      //   }
+      //   break;
       case "specimen_type":
         this.setState({ specimen_type: value });
         if (!validateRequired(value)) {
@@ -530,15 +521,15 @@ class TissueForm extends Component {
       case "description":
         this.setState({ description: value });
         break;
-      case "metadata":
-        this.setState({ metadata: value });
-        break;
-      case "metadata_file":
-        this.setState({
-          metadata_file: e.target.files[0],
-          metadata_file_name: e.target.files[0] && e.target.files[0].name
-        });
-        break;
+      // case "metadata":
+      //   this.setState({ metadata: value });
+      //   break;
+      // case "metadata_file":
+      //   this.setState({
+      //     metadata_file: e.target.files[0],
+      //     metadata_file_name: e.target.files[0] && e.target.files[0].name
+      //   });
+      //   break;
       case "groups":
         this.setState({
           selected_group: value
@@ -632,38 +623,75 @@ class TissueForm extends Component {
     });
   };
 
-  onFileChange = (type, id) => {
+  // onFileChange = (type, id) => {
+  //   switch (type) {
+  //     case "metadata": {
+  //       const i = this.state.metadatas.findIndex(i => i.id === id);
+  //       let metadatas = [...this.state.metadatas];
+  //       metadatas[i].file_name = metadatas[i].ref.current.metadata_file.current.files[0].name;
+  //       let new_metadatas = [...this.state.new_metadatas];
+  //       new_metadatas.push(metadatas[i].file_name);
+  //       return new Promise((resolve, reject) => {
+  //         this.setState({
+  //           metadatas
+  //         }, () => {
+  //           if (!this.validateMetadataFiles(id)) {
+  //             metadatas[i].file_name = "";
+  //             this.setState({
+  //               metadatas
+  //             })
+  //             reject();
+  //           } else {
+  //             this.setState({
+  //               new_metadatas
+  //             })
+  //             resolve();
+  //           }
+  //         });
+  //       });
+  //       break;
+  //     }
+  //     case "image": {
+  //       const i = this.state.images.findIndex(i => i.id === id);
+  //       let images = [...this.state.images];
+  //       images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
+  //       let new_images = [...this.state.new_images];
+  //       new_images.push(images[i].file_name);
+  //       return new Promise((resolve, reject) => {
+  //         this.setState({
+  //           images,
+  //           new_images
+  //         }, () => {
+  //           if (!this.validateImagesFiles(id)) {
+  //             images[i].file_name = "";
+  //             this.setState({
+  //               images
+  //             })
+  //             reject();
+  //           } else {
+  //             this.setState({
+  //               new_images
+  //             })
+  //             resolve();
+  //           }
+  //         });
+  //       });
+  //       break;
+  //     }
+  //     default:
+  //       break;
+  //   }
+  // }
+
+ onFileChange = (type, id) => {
     switch (type) {
-      case "metadata": {
-        const i = this.state.metadatas.findIndex(i => i.id === id);
-        let metadatas = [...this.state.metadatas];
-        metadatas[i].file_name = metadatas[i].ref.current.metadata_file.current.files[0].name;
-        let new_metadatas = [...this.state.new_metadatas];
-        new_metadatas.push(metadatas[i].file_name);
-        return new Promise((resolve, reject) => {
-          this.setState({
-            metadatas
-          }, () => {
-            if (!this.validateMetadataFiles(id)) {
-              metadatas[i].file_name = "";
-              this.setState({
-                metadatas
-              })
-              reject();
-            } else {
-              this.setState({
-                new_metadatas
-              })
-              resolve();
-            }
-          });
-        });
-        break;
-      }
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
+        console.log('image', id)
         let images = [...this.state.images];
+        console.log('images', images)
         images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
+        console.log('images file data', images[i].ref.current.image_file.current.files)
         let new_images = [...this.state.new_images];
         new_images.push(images[i].file_name);
         return new Promise((resolve, reject) => {
@@ -764,6 +792,47 @@ class TissueForm extends Component {
     const metadatas = this.state.metadatas.filter(i => i.id !== metadataId);
     this.setState({
       metadatas
+    });
+  };
+
+handleAddImage = () => {
+    let newId = 1;
+    if (this.state.images.length > 0) {
+      newId = this.state.images[this.state.images.length - 1].id + 1;
+    }
+    this.setState({
+      images: [...this.state.images, { id: newId, ref: React.createRef() }]
+    });
+  };
+
+  // handleAddMetadata = () => {
+  //   let newId = 1;
+  //   if (this.state.metadatas.length > 0) {
+  //     newId = this.state.metadatas[this.state.metadatas.length - 1].id + 1;
+  //   }
+  //   this.setState({
+  //     metadatas: [
+  //       ...this.state.metadatas,
+  //       { id: newId, ref: React.createRef() }
+  //     ]
+  //   });
+  // };
+
+  handleDeleteImage = id => {
+    const deleted_image = this.state.images.find(i => i.id === id);
+    const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
+    let deleted_images = [...this.state.deleted_images];
+
+    console.log('deleted image', deleted_image)
+    if (new_images.length === this.state.new_images.length){
+      //deleted_images.push(deleted_image.file_name);
+      deleted_images.push(deleted_image.file_uuid);
+    }
+    const images = this.state.images.filter(i => i.id !== id);
+    this.setState({
+      images,
+      new_images,
+      deleted_images
     });
   };
 
@@ -1210,149 +1279,181 @@ class TissueForm extends Component {
         }));
       }
 
-      if (
-        !(
-          (validateRequired(this.state.protocol) ||
-            validateRequired(this.state.protocol_file) ||
-            validateRequired(
-              this.state.protocol_file_name === "Choose a file"
-                ? ""
-                : this.state.protocol_file_name
-            )) &&
-          validateProtocolIODOI(this.state.protocol) &&
-          validateFileType(this.state.protocol_file.type, [
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/pdf"
-          ]) &&
-          validateFileType(getFileMIMEType(this.state.protocol_file_name), [
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/pdf"
-          ])
-        )
-      ) {
-        if (
-          !validateRequired(this.state.protocol_file) &&
-          !validateRequired(this.state.protocol) &&
-          !validateRequired(
-            this.state.protocol_file_name === "Choose a file"
-              ? ""
-              : this.state.protocol_file_name
-          )
-        ) {
+      // if (
+      //   !(
+      //     (validateRequired(this.state.protocol) ||
+      //       validateRequired(this.state.protocol_file) ||
+      //       validateRequired(
+      //         this.state.protocol_file_name === "Choose a file"
+      //           ? ""
+      //           : this.state.protocol_file_name
+      //       )) &&
+      //     validateProtocolIODOI(this.state.protocol) &&
+      //     validateFileType(this.state.protocol_file.type, [
+      //       "application/msword",
+      //       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      //       "application/pdf"
+      //     ]) &&
+      //     validateFileType(getFileMIMEType(this.state.protocol_file_name), [
+      //       "application/msword",
+      //       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      //       "application/pdf"
+      //     ])
+      //   )
+      // ) {
+      // //   if (
+      //     !validateRequired(this.state.protocol_file) &&
+      //     !validateRequired(this.state.protocol) &&
+      //     !validateRequired(
+      //       this.state.protocol_file_name === "Choose a file"
+      //         ? ""
+      //         : this.state.protocol_file_name
+      //     )
+      //   ) {
+      //     this.setState(prevState => ({
+      //       formErrors: { ...prevState.formErrors, protocol: "required" }
+      //     }));
+      //     isValid = false;
+      //   } else {
+      //     if (!validateProtocolIODOI(this.state.protocol)) {
+      //       this.setState(prevState => ({
+      //         formErrors: {
+      //           ...prevState.formErrors,
+      //           protocol: "Please enter a valid protocols.io DOI"
+      //         }
+      //       }));
+      //       isValid = false;
+      //     }
+      //     if (
+      //       !validateFileType(this.state.protocol_file.type, [
+      //         "application/msword",
+      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      //         "application/pdf"
+      //       ])
+      //     ) {
+      //       this.setState(prevState => ({
+      //         formErrors: {
+      //           ...prevState.formErrors,
+      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf"
+      //         }
+      //       }));
+      //       isValid = false;
+      //     } else {
+      //       this.setState(prevState => ({
+      //         formErrors: { ...prevState.formErrors, protocol_file: "" }
+      //       }));
+      //     }
+      //     if (
+      //       !validateFileType(getFileMIMEType(this.state.protocol_file_name), [
+      //         "application/msword",
+      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      //         "application/pdf"
+      //       ])
+      //     ) {
+      //       this.setState(prevState => ({
+      //         formErrors: {
+      //           ...prevState.formErrors,
+      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf"
+      //         }
+      //       }));
+      //       isValid = false;
+      //     } else {
+      //       this.setState(prevState => ({
+      //         formErrors: { ...prevState.formErrors, protocol_file: "" }
+      //       }));
+      //     }
+      //   }
+
+      // }
+
+      if (!validateProtocolIODOI(this.state.protocol_url)) {
           this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, protocol: "required" }
+            formErrors: {
+              ...prevState.formErrors,
+              protocol_url: "Please enter a valid protocols.io DOI"
+            }
           }));
           isValid = false;
-        } else {
-          if (!validateProtocolIODOI(this.state.protocol)) {
-            this.setState(prevState => ({
-              formErrors: {
-                ...prevState.formErrors,
-                protocol: "Please enter a valid protocols.io DOI"
-              }
-            }));
-            isValid = false;
-          }
-          if (
-            !validateFileType(this.state.protocol_file.type, [
-              "application/msword",
-              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              "application/pdf"
-            ])
-          ) {
-            this.setState(prevState => ({
-              formErrors: {
-                ...prevState.formErrors,
-                protocol_file: "Allowed file types: .doc, .docx, or .pdf"
-              }
-            }));
-            isValid = false;
-          } else {
-            this.setState(prevState => ({
-              formErrors: { ...prevState.formErrors, protocol_file: "" }
-            }));
-          }
-          if (
-            !validateFileType(getFileMIMEType(this.state.protocol_file_name), [
-              "application/msword",
-              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              "application/pdf"
-            ])
-          ) {
-            this.setState(prevState => ({
-              formErrors: {
-                ...prevState.formErrors,
-                protocol_file: "Allowed file types: .doc, .docx, or .pdf"
-              }
-            }));
-            isValid = false;
-          } else {
-            this.setState(prevState => ({
-              formErrors: { ...prevState.formErrors, protocol_file: "" }
-            }));
-          }
-        }
+
       }
-
+      // validate the images
       this.state.images.forEach((image, index) => {
-        if (
-          !validateRequired(image.file_name) &&
-          !validateRequired(image.ref.current.image_file.current.value)
-        ) {
-          isValid = false;
-          image.ref.current.validate();
-        }
-        if (
-          !validateRequired(
-            image.ref.current.image_file_description.current.value
-          )
-        ) {
-          isValid = false;
-          image.ref.current.validate();
-        }
-      });
-
-      this.state.images.forEach((image, index) => {
-        usedFileName.add(image.file_name);
-
-        if (image.ref.current.image_file.current.files[0]) {
-          if (
-            usedFileName.has(image.ref.current.image_file.current.files[0].name)
-          ) {
-            image["error"] = "Duplicated file name is not allowed.";
-            isValid = false;
-          }
-        }
-      });
-
-      if (!this.props.editingEntity) {
-        // Creating
-        this.state.metadatas.forEach((metadata, index) => {
-          if (
-            !validateRequired(metadata.ref.current.metadata_file.current.value)
-          ) {
-            isValid = false;
-            metadata.ref.current.validate();
-          }
-        });
+      if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
+       // console.log('image invalid', image.file_name)
+        isValid = false;
+        image.ref.current.validate();
       }
+      if (!validateRequired(image.ref.current.image_file_description.current.value)) {
+         //console.log('descr missing')
+        isValid = false;
+        image.ref.current.validate();
+      }
+    });
+    // }
 
-      this.state.metadatas.forEach((metadata, index) => {
-        usedFileName.add(metadata.file_name);
+    const hasImageDuplicates = new Set(this.state.images).size !== this.state.images.length
+    if (hasImageDuplicates) {
+       // image["error"] = "Duplicated file name is not allowed.";
+        isValid = false;
+    }
 
-        if (metadata.ref.current.metadata_file.current.files[0]) {
-          if (
-            usedFileName.has(
-              metadata.ref.current.metadata_file.current.files[0].name
-            )
-          ) {
-            metadata["error"] = "Duplicated file name is not allowed.";
-            isValid = false;
-          }
-        }
-      });
+      // this.state.images.forEach((image, index) => {
+      //   if (
+      //     !validateRequired(image.file_name) &&
+      //     !validateRequired(image.ref.current.image_file.current.value)
+      //   ) {
+      //     isValid = false;
+      //     image.ref.current.validate();
+      //   }
+      //   if (
+      //     !validateRequired(
+      //       image.ref.current.image_file_description.current.value
+      //     )
+      //   ) {
+      //     isValid = false;
+      //     image.ref.current.validate();
+      //   }
+      // });
+
+      // this.state.images.forEach((image, index) => {
+      //   usedFileName.add(image.file_name);
+
+      //   if (image.ref.current.image_file.current.files[0]) {
+      //     if (
+      //       usedFileName.has(image.ref.current.image_file.current.files[0].name)
+      //     ) {
+      //       image["error"] = "Duplicated file name is not allowed.";
+      //       isValid = false;
+      //     }
+      //   }
+      // });
+
+      // if (!this.props.editingEntity) {
+      //   // Creating
+      //   this.state.metadatas.forEach((metadata, index) => {
+      //     if (
+      //       !validateRequired(metadata.ref.current.metadata_file.current.value)
+      //     ) {
+      //       isValid = false;
+      //       metadata.ref.current.validate();
+      //     }
+      //   });
+      // }
+
+      // this.state.metadatas.forEach((metadata, index) => {
+      //   usedFileName.add(metadata.file_name);
+
+      //   if (metadata.ref.current.metadata_file.current.files[0]) {
+      //     if (
+      //       usedFileName.has(
+      //         metadata.ref.current.metadata_file.current.files[0].name
+      //       )
+      //     ) {
+      //       metadata["error"] = "Duplicated file name is not allowed.";
+      //       isValid = false;
+      //     }
+      //   }
+      // });
 
       if (!validateRequired(this.state.source_uuid)) {
         this.setState(prevState => ({
@@ -1412,14 +1513,35 @@ class TissueForm extends Component {
   handleSelectClick = ids => {
     this.setState(
       {
-        source_uuid: ids[0].hubmap_identifier,
+        source_uuid: ids[0].hubmap_id,
         LookUpShow: false
-      },
-      () => {
-        this.validateUUID();
       }
+      // ,
+      // () => {
+      //   this.validateUUID();
+      // }
     );
   };
+
+ // only handles one selection at this time
+  getSourceAncestor(source_uuids){
+    let id = ""; 
+    try {
+      return source_uuids[0].hubmap_id;  // just get the first one
+    } catch {
+    }
+    return ""
+  }
+
+    // only handles one selection at this time
+  getSourceAncestorEntity(source_uuids){
+    let id = ""; 
+    try {
+      return source_uuids[0];  // just get the first one
+    } catch {
+    }
+    return ""
+  }
 
   handleSavedLocations = (e) => {
     this.setState({ LocationSaved: true });
@@ -1439,9 +1561,9 @@ class TissueForm extends Component {
       return new_ids.push({
         hubmap_identifier: id.hubmap_identifier,
         uuid: id.uuid,
-        lab_tissue_id: id.properties.lab_tissue_id,
-        rui_location: id.properties.rui_location,
-        update: (id.properties.rui_location === undefined || id.properties.rui_location === "") ? false : true,
+        lab_tissue_id: id.lab_tissue_id,
+        rui_location: id.rui_location,
+        update: (id.rui_location === undefined || id.rui_location === "") ? false : true,
         organ: this.state.source_entity.specimen.organ || ""
       });
     });
@@ -1481,7 +1603,7 @@ class TissueForm extends Component {
           <form onSubmit={this.handleSubmit}>
             <div className="form-group">
               <label htmlFor="source_uuid">
-                Source HuBMAP ID <span className="text-danger">*</span>  <FontAwesomeIcon
+                Source ID <span className="text-danger">*</span>  <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
                   data-for="source_uuid_tooltip"
@@ -2068,7 +2190,7 @@ class TissueForm extends Component {
             {this.props.editingEntity &&
               this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             (["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.specimen.organ)) && (
+             (["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.organ)) && (
                 <React.Fragment>
                   <div className="form-group">
                     <label
@@ -2091,7 +2213,7 @@ class TissueForm extends Component {
                     hide={this.hideLabIDsModal}
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
-                    metadata={this.props.editingEntity.properties}
+                    metadata={this.props.editingEntity}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
@@ -2099,7 +2221,7 @@ class TissueForm extends Component {
             {!this.props.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.specimen.organ) &&
+             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.organ) &&
               (
                 <div className="form-group">
                   <label
@@ -2401,6 +2523,8 @@ class TissueForm extends Component {
                           type="button"
                           onClick={this.handleAddMetadata}
                           className="btn btn-secondary btn-block"
+                          data-tip
+                          data-for="add_meta_tooltip"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
@@ -2409,6 +2533,16 @@ class TissueForm extends Component {
                           />
 	                          Attach Metadata
 	                        </button>
+                           <ReactTooltip
+                              id="add_meta_tooltip"
+                              place="top"
+                              type="info"
+                              effect="solid"
+                          >
+                            <p>
+                                Click here to attach a single or multiple metadata file(s)
+                            </p>
+                            </ReactTooltip>
                       </div>
                     </div>
                   )}
@@ -2441,6 +2575,8 @@ class TissueForm extends Component {
                           type="button"
                           onClick={this.handleAddImage}
                           className="btn btn-secondary btn-block"
+                          data-tip
+                          data-for="add_image_tooltip"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
@@ -2449,10 +2585,20 @@ class TissueForm extends Component {
                           />
 	                          Attach Image(s)
 	                        </button> 
-                          <small id="emailHelp" class="form-text text-muted"> 
+                          <small id="emailHelp" className="form-text text-muted"> 
                           <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />
                           </span> Upload de-identified images only</small>
+                           <ReactTooltip
+                              id="add_image_tooltip"
+                              place="top"
+                              type="info"
+                              effect="solid"
+                          >
+                            <p>
+                                Click here to attach a single or multiple image(s)
+                            </p>
+                            </ReactTooltip>
                       </div>
                       
                     </div>

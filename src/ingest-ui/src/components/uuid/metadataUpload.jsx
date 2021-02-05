@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactTooltip from "react-tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
@@ -37,14 +38,14 @@ class MetadataUpload extends Component {
             }, () => {
               let data = new FormData();
               data.append('file', files[0]);
-              data.append('form_id', this.props.formId);
-              data.append('file_type', 'metadata');
+              // data.append('form_id', this.props.formId);
+              // data.append('file_type', 'metadata');
 
               const options = {
                 headers: {
                   Authorization:
                     "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-                  MAuthorization: "MBearer " + localStorage.getItem("info"),
+                 // MAuthorization: "MBearer " + localStorage.getItem("info"),
                   "Content-Type": "multipart/form-data"
                 },
                 onUploadProgress: (progressEvent) => {
@@ -55,15 +56,19 @@ class MetadataUpload extends Component {
                   }
                 }
               };
-
-              axios.post(`${process.env.REACT_APP_SPECIMEN_API_URL}/files`, data, options)
+                axios.post(`${process.env.REACT_APP_ENTITY_API_URL}/file-upload`, data, options)
                 .then(res => {
+                  console.log('handleMetadataFileChange', res.data)
                   this.setState({ uploadPercentage: 100 }, () => {
                     setTimeout(() => {
                       this.setState({ uploadPercentage: 0 })
                     }, 1000);
                   })
+                  this.setState({
+                    temp_file_id: res.data.temp_file_id
+                  })
                 })
+
             });
           }
         })
@@ -71,7 +76,8 @@ class MetadataUpload extends Component {
           this.setState({
             metadata_file: null,
             metadata_file_name: "",
-            metadataFileValid: false
+            metadataFileValid: false,
+            temp_file_id: ""
           });
         })
     }
@@ -92,9 +98,21 @@ class MetadataUpload extends Component {
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.props.onDelete(this.props.id)}
+                  data-tip
+                  data-for="remove_file_tooltip"
                 >
                   <FontAwesomeIcon icon={faTimes} size="1x" />
                 </button>
+                 <ReactTooltip
+                      id="remove_file_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <p>
+                        Click here to remove this file
+                      </p>
+                    </ReactTooltip>
               </div>
             )}
           </div>

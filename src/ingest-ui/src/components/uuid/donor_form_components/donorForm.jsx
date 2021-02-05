@@ -94,55 +94,11 @@ class DonorForm extends Component {
         }
     });
 
-    // const config = {
-    //   headers: {
-    //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-    //     "Content-Type": "application/json"
-    //   }
-    // };
-
-    // axios
-    //   .get(
-    //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-    //     config
-    //   )
-    //   .then(res => {
-    //     const groups = res.data.groups.filter(
-    //       g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-    //     );
-    //     this.setState({
-    //       groups: groups
-    //     });
-    //   })
-    //   .catch(err => {
-    //     if (err.response === undefined) {
-    //     } else if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
-
-
 
     if (this.props.editingEntity) {
       //const pf = this.props.editingEntity.protocol_file;
       const mf = this.props.editingEntity.portal_metadata_upload_files;
       let images = this.props.editingEntity.image_files;
-      //let metadatas = [];
-      // try {
-      //   images = JSON.parse(
-      //     this.props.editingEntity.image_files
-      //       .replace(/\\/g, "\\\\")
-      //       .replace(/'/g, '"')
-      //   );
-      //   // metadatas = JSON.parse(
-      //   //   this.props.editingEntity.portal_metadata_upload_files
-      //   //     .replace(/\\/g, "\\\\")
-      //   //     .replace(/'/g, '"')
-      //   // );
-      // } catch (e) {}
-
 
       this.setState({
         author: this.props.editingEntity.created_by_user_email,
@@ -257,21 +213,6 @@ class DonorForm extends Component {
     }
   };
 
-  // handleDeleteProtocolFile = () => {
-  //   this.setState({
-  //     protocol_file_name: "Choose a file",
-  //     protocolFileKey: Date.now(),
-  //     protocol_file: ""
-  //   });
-  // };
-
-  // handleDeleteMetadataFile = () => {
-  //   this.setState({
-  //     metadata_file_name: "Choose a file",
-  //     metadataFileKey: Date.now(),
-  //     metadata_file: ""
-  //   });
-  // };
 
   handleAddImage = () => {
     let newId = 1;
@@ -283,18 +224,7 @@ class DonorForm extends Component {
     });
   };
 
-  // handleAddMetadata = () => {
-  //   let newId = 1;
-  //   if (this.state.metadatas.length > 0) {
-  //     newId = this.state.metadatas[this.state.metadatas.length - 1].id + 1;
-  //   }
-  //   this.setState({
-  //     metadatas: [
-  //       ...this.state.metadatas,
-  //       { id: newId, ref: React.createRef() }
-  //     ]
-  //   });
-  // };
+  
 
   handleDeleteImage = id => {
     const deleted_image = this.state.images.find(i => i.id === id);
@@ -314,49 +244,8 @@ class DonorForm extends Component {
     });
   };
 
-  // handleDeleteMetadata = id => {
-  //   const deleted_metadata = this.state.metadatas.find(i => i.id === id);
-  //   const new_metadatas = this.state.new_metadatas.filter(dm => dm !== deleted_metadata.file_name);
-  //   let deleted_metadatas = [...this.state.deleted_metadatas];
-  //   if (new_metadatas.length === this.state.new_metadatas.length){
-  //     deleted_metadatas.push(deleted_metadata.file_name);
-  //   }
-  //   const metadatas = this.state.metadatas.filter(i => i.id !== id);
-  //   this.setState({
-  //     metadatas,
-  //     new_metadatas,
-  //     deleted_metadatas
-  //   });
-  // };
-
   onFileChange = (type, id) => {
     switch (type) {
-      // case "metadata": {
-      //   const i = this.state.metadatas.findIndex(i => i.id === id);
-      //   let metadatas = [...this.state.metadatas];
-      //   metadatas[i].file_name = metadatas[i].ref.current.metadata_file.current.files[0].name;
-      //   let new_metadatas = [...this.state.new_metadatas];
-      //   new_metadatas.push(metadatas[i].file_name);
-      //   return new Promise((resolve, reject) => {
-      //     this.setState({
-      //       metadatas
-      //     }, () => {
-      //       if (!this.validateMetadataFiles(id)) {
-      //         metadatas[i].file_name = "";
-      //         this.setState({
-      //           metadatas
-      //         })
-      //         reject();
-      //       } else {
-      //         this.setState({
-      //           new_metadatas
-      //         })
-      //         resolve();
-      //       }
-      //     });
-      //   });
-      //   break;
-      // }
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
         console.log('image', id)
@@ -391,27 +280,6 @@ class DonorForm extends Component {
         break;
     }
   }
-
-  // validateMetadataFiles = id => {
-  //   const file_names = this.state.metadatas.map(m => {
-  //     return m.file_name;
-  //   })
-
-  //   // Check if duplicated file name
-  //   if (file_names.length > new Set(file_names).size) {
-  //     const i = this.state.metadatas.findIndex(i => i.id === id);
-  //     let metadatas = [...this.state.metadatas];
-  //     metadatas[i].error = "Duplicate file name is not allowed."
-  //     this.setState({ metadatas })
-  //     return false;
-  //   }
-  //   const i = this.state.metadatas.findIndex(i => i.id === id);
-  //   let metadatas = [...this.state.metadatas];
-  //   metadatas[i].error = ""
-  //   this.setState({ metadatas })
-
-  //   return true;
-  // }
 
   validateImagesFiles = id => {
     const file_names = this.state.images.map(i => {
@@ -1102,6 +970,8 @@ class DonorForm extends Component {
                             type="button"
                             onClick={this.handleAddImage}
                             className="btn btn-secondary btn-block"
+                            data-tip
+                            data-for="add_image_tooltip"
                           >
                             <FontAwesomeIcon
                               className="inline-icon"
@@ -1114,6 +984,16 @@ class DonorForm extends Component {
                           <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />
                           </span> Upload de-identified images only</small>
+                          <ReactTooltip
+                              id="add_image_tooltip"
+                              place="top"
+                              type="info"
+                              effect="solid"
+                          >
+                            <p>
+                                Click here to attach a single or multiple image(s)
+                            </p>
+                            </ReactTooltip>
                       </div>
                     )}
                      {(this.state.images.length > 0) && (

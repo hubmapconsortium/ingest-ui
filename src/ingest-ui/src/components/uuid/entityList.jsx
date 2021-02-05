@@ -253,7 +253,7 @@ class EntityList extends Component {
           entities: response.results,
           filtered_totals: Object.keys(response.results).length,
           filtered: true,
-          page: 1
+          page: 0
           }
         );
       }

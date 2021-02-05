@@ -54,7 +54,7 @@ export function api_has_write(uuid, auth) {
   return axios 
     .get(url,options)
       .then(res => {
-        console.log(res);
+        //console.log(res);
           let results = res.data.has_write;
       
         return {status: res.status, results: results}

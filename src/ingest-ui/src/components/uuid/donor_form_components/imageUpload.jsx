@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactTooltip from "react-tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faImage } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
@@ -79,7 +80,8 @@ class ImageUpload extends Component {
           this.setState({
             image_file: files[0],
             image_file_name: file_name,
-            imageFileValid: false
+            imageFileValid: false,
+            temp_file_id: ""
           });
         });
     }
@@ -130,9 +132,21 @@ class ImageUpload extends Component {
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.props.onDelete(this.props.id)}
+                  data-tip
+                  data-for="remove_image_tooltip"
                 >
                   <FontAwesomeIcon icon={faTimes} size="1x" />
                 </button>
+                 <ReactTooltip
+                      id="remove_image_tooltip"
+                      place="top"
+                      type="info"
+                      effect="solid"
+                    >
+                      <p>
+                        Click here to remove this image
+                      </p>
+                    </ReactTooltip>
               </div>
             )}
           </div>

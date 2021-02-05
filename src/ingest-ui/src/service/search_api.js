@@ -50,19 +50,19 @@ export function api_search(params, auth) {
  * Elasticsearch query builder helper
  *
  */
-export function api_es_query_builder(fields) {
+// export function api_es_query_builder(fields) {
 
-  let requestBody = esb.requestBodySearch();
+//   let requestBody = esb.requestBodySearch();
  
-  console.log(fields)
+//   console.log(fields)
 
-  Object.keys(fields).forEach(f => {
-  //console.log(f + ':' + p[f])
-    requestBody.query(esb.matchQuery(f, fields[f]));
-  })
-  console.log(requestBody.toJSON());
-  return requestBody.toJSON();
-}
+//   Object.keys(fields).forEach(f => {
+//   //console.log(f + ':' + p[f])
+//     requestBody.query(esb.matchQuery(f, fields[f]));
+//   })
+//   console.log(requestBody.toJSON());
+//   return requestBody.toJSON();
+// }
 
 export function api_filter_es_query_builder(fields) {
 
