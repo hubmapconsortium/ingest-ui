@@ -119,6 +119,7 @@ class IngestEntrance extends Component {
   render() {
     return (
       <div>
+      <h3>Dataset Submission</h3>
         <div className="row">
           <div className="col-sm-12">
             {!this.state.creatingNewDataset &&
