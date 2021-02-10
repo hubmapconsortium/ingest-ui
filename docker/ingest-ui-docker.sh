@@ -65,7 +65,7 @@ else
         if [ "$2" = "check" ]; then
             # Bash array
             config_paths=(
-                '../src/ingest-ui/.env'
+                '../src/.env'
             )
 
             for pth in "${config_paths[@]}"; do
@@ -88,9 +88,9 @@ else
 
             # Copy over the source code
             mkdir ingest-ui/src
-            cp -r ../src/ingest-ui/* ingest-ui/src
+            cp -r ../src/* ingest-ui/src
             # Also explicitly copy the .env file
-            cp ../src/ingest-ui/.env ingest-ui/src
+            cp ../src/.env ingest-ui/src
 
             docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui build
         elif [ "$2" = "start" ]; then
