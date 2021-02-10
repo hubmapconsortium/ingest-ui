@@ -11,12 +11,6 @@ src/ingest-api/VERSION
 **/__pycache__/
 
 # Docker copied stuff
-docker/ingest-api-localhost/src
-docker/ingest-api-refactor/src
-docker/ingest-api-dev/src
-docker/ingest-api-test/src
-docker/ingest-api-stage/src
-docker/ingest-api-prod/src
 docker/ingest-ui/src
 
 # Ignore log files created by docker
@@ -28,15 +22,6 @@ src/log
 # Rotated log files
 **/*.log*
 
-# ingest-api
-src/ingest-api/instance/app.cfg
-src/ingest-api/instance/app.cfg.test
-src/ingest-api/instance/app.cfg.refactor
-src/ingest-api/instance/app.cfg.debug
-src/ingest-api/instance/app.cfg.stage
-src/ingest-api/instance/app.cfg.prod
-src/ingest-api/instance/app.cfg.dev
-
 # UI react-app
 src/ingest-ui/node_modules
 src/ingest-ui/.env
@@ -47,22 +32,20 @@ src/ingest-ui/.pnp.js
 src/react-app/coverage
 
 # .env. files (not the .env file)
-src/ingest-ui/.env.*
+src/.env.*
 !src/ingest-ui/.env.production.local.example
 
 # misc
 .DS_Store
-src/ingest-ui/.DS_Store
-src/ingest-ui/npm-debug.log*
-src/ingest-ui/yarn-debug.log*
-src/ingest-ui/yarn-error.log*
+src/.DS_Store
+src/npm-debug.log*
+src/yarn-debug.log*
+src/yarn-error.log*
 
 # editor
 .vscode
 
 #ignore the ui build dir
-src/ingest-ui/build/*
-!src/ingest-ui/build/README.md
+src/build/*
+!src/build/README.md
 
-#script config
-scripts/prod_to_test/config.py
