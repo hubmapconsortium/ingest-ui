@@ -114,15 +114,17 @@ class DonorForm extends Component {
 
       const image_list = [];
       //const metadata_list = [];
-      images.forEach((image, index) => {
-        image_list.push({
-          id: index + 1,
-          ref: React.createRef(),
-          file_name: image.filename,     //getFileNameOnPath(image.filepath),
-          description: image.description,
-          file_uuid: image.file_uuid
+      try {
+        images.forEach((image, index) => {
+          image_list.push({
+            id: index + 1,
+            ref: React.createRef(),
+            file_name: image.filename,     //getFileNameOnPath(image.filepath),
+            description: image.description,
+            file_uuid: image.file_uuid
+          });
         });
-      });
+      } catch {}
       // metadatas.forEach((metadata, index) => {
       //   metadata_list.push({
       //     id: index + 1,

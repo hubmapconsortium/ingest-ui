@@ -93,7 +93,8 @@ class UUIDEntrance extends Component {
   render() {
     return (
       <React.Fragment>
-        <Intro />
+        {/*<Intro />*/}
+        <h3>Donor and Sample Submission</h3>
         <div className="row">
           {!this.state.read_only_member && (
             <div className="col-sm-12">
