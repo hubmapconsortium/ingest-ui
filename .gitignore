@@ -32,8 +32,7 @@ src/ingest-ui/.pnp.js
 src/react-app/coverage
 
 # .env. files (not the .env file)
-src/.env.*
-!src/ingest-ui/.env.production.local.example
+src/.env
 
 # misc
 .DS_Store
