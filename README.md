@@ -4,6 +4,31 @@ The HuBMAP Data Ingest Portal UI is a web application built with [React](https:/
 
 And the backend ingest API is a restful web service exposing calls needed for the ingest UI React application.  The API is documented [here](https://smart-api.info/registry?q=5a6bea1158d2652743c7a201fdb1c44d).
 
+The HuBMAP Data Ingest UI is built using [React.js](https://reactjs.org/), and initialized using [Create React App](https://create-react-app.dev/) tool.
+
+## Build
+
+1. Create `.env` file base on `example.env` file in the same directory.
+2. Fill in the environment variables and make sure only staging or production section is enabled. Comment out the other section.
+3.
+
+```bash
+npm install
+npm run build
+```
+
+## Debug
+
+1. Add .env.development.local file, and fill in the defined environment variables point to your web services run on your local machine or on development server.
+
+
+2.
+
+```bash
+npm start
+```
+
+
 ## Development and deployment environments
 
 We have the following 5 development and deployment environments:
