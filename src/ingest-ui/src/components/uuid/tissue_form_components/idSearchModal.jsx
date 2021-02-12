@@ -53,8 +53,7 @@ class IDSearchModal extends Component {
         } else {
           params["specimen_type"] = sample_type;
       } 
-    }  
-   
+    } 
     if (keywords) {
       params["search_term"] = keywords;
     }

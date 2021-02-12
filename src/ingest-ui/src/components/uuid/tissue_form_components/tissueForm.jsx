@@ -45,9 +45,11 @@ class TissueForm extends Component {
     protocol: "",
     protocol_file: "",
     entity_type: "",
+    source_entity_type: "Donor",
     specimen_type: "",
     specimen_type_other: "",
     source_uuid: "",
+    source_uuid_list: [],
     organ: "",
     organ_other: "",
     visit: "",
@@ -844,6 +846,22 @@ handleAddImage = () => {
         otype !== "RK";
   }
  
+ getGender = (entity) => {
+
+    const metadata = entity?.metadata;
+
+    console.log(metadata)
+    if (metadata === undefined) {
+      return ""
+    } else {
+          //traverse the organ array for a concept that matches
+          try {
+            return metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
+          } catch {
+              return "";
+          }
+    }
+  }
 
   handleSubmit = e => {
     e.preventDefault();
@@ -862,58 +880,35 @@ handleAddImage = () => {
             submitting: true
           });
           let data = {
-            entitytype: "Sample",
-            lab_tissue_id: this.state.lab_tissue_id,
-            protocol: this.state.protocol,
-            rui_location: this.state.rui_location,
+            lab_tissue_sample_id: this.state.lab_tissue_id,
+            protocol_url: this.state.protocol,
+           // rui_location: this.state.rui_location,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
-            source_uuid: this.state.source_uuid,
+            //source_uuid: this.state.source_uuid,
+            direct_ancestor_uuid: this.state.source_uuid_list,
             organ: this.state.source_entity.organ || this.state.organ || "",
             organ_other: this.state.organ_other,
             visit: this.state.visit,
-            sample_count: this.state.sample_count,
+            //sample_count: this.state.sample_count,
             description: this.state.description,
-            metadata: this.state.metadata,
-            metadata_file:
-              this.state.metadata_file_name === "Choose a file"
-                ? ""
-                : this.state.metadata_file_name,
-            // protocols: [],
-            images: [],
-            metadatas: []
+            // metadata: this.state.metadata,
+            // metadata_file:
+            //   this.state.metadata_file_name === "Choose a file"
+            //     ? ""
+            //     : this.state.metadata_file_name,
+            // // protocols: [],
+            //images: [],
+            //metadatas: []
           };
           if (this.state.selected_group) {
-            data["user_group_uuid"] = this.state.selected_group;
+            data["group_uuid"] = this.state.selected_group;
           }
 
-          // var formData = new FormData();
-          // formData.append("protocol_file", this.state.protocol_file);
-          // formData.append("metadata_file", this.state.metadata_file);
-          // this.state.protocols.forEach(i => {
-          //   if (
-          //     i.ref.current.protocol_doi.current.value ||
-          //     i.ref.current.protocol_file.current.files[0]
-          //   ) {
-          //     data.protocols.push({
-          //       id: "protocol_" + i.id,
-          //       protocol_doi: i.ref.current.protocol_doi.current.value,
-          //       protocol_file: i.ref.current.protocol_file.current.files[0]
-          //         ? i.ref.current.protocol_file.current.files[0].name
-          //         : ""
-          //     });
-          //     formData.append(
-          //       "protocol_" + i.id,
-          //       i.ref.current.protocol_file.current.files[0]
-          //     );
-          //   } else {
-          //     data.protocols.push({
-          //       id: "protocol_" + i.id,
-          //       protocol_doi: i.protocol_doi,
-          //       protocol_file: i.protocol_file
-          //     });
-          //   }
-          // });
+          if ( this.state.rui_location && this.state.rui_location.length !== "") {
+            data["rui_location"] = JSON.parse(this.state.rui_location);
+          }
+
           this.state.metadatas.forEach(i => {
             if (i.ref.current.metadata_file.current.files[0]) {
               data.metadatas.push({
@@ -931,28 +926,47 @@ handleAddImage = () => {
               });
             }
           });
-          this.state.images.forEach(i => {
-            if (i.ref.current.image_file.current.files[0]) {
-              data.images.push({
-                id: "image_" + i.id,
-                file_name: i.ref.current.image_file.current.files[0].name,
-                description: i.ref.current.image_file_description.current.value.replace(
-                  /"/g,
-                  '\\"'
-                )
-              });
-              // formData.append(
-              //   "image_" + i.id,
-              //   i.ref.current.image_file.current.files[0]
-              // );
-            } else {
-              data.images.push({
-                id: "image_" + i.id,
-                file_name: i.file_name,
-                description: i.description
-              });
+          if (this.state.images.length > 0) {
+            let image_files_to_add = [];
+            let existing_image_files_to_update = [];
+            console.log('submit images', this.state.images)
+            this.state.images.forEach(i => {
+
+            // if a file has a non-blank temp_file_id then assume it a new image 
+              if (i.ref.current.state.temp_file_id !== "") {
+                image_files_to_add.push({
+                  temp_file_id: i.ref.current.state.temp_file_id,
+                  description: i.ref.current.image_file_description.current.value.replace(
+                    /"/g,
+                    '\\"'
+                  )
+                });
+              } else {  // this will send image data that may have been updated
+                existing_image_files_to_update.push({
+                   file_uuid: i.file_uuid,
+                   description: i.ref.current.image_file_description.current.value.replace(
+                    /"/g,
+                    '\\"'
+                  )
+                })
+
+              }
+            });
+
+            // check to see if we really did add any new images 
+            if (image_files_to_add.length > 0 ) {
+              data['image_files_to_add'] = image_files_to_add;
             }
-          });
+            // send any updates to the existing descriptions, there is no check for changes
+            if (existing_image_files_to_update.length > 0) {
+              data["image_files"] = existing_image_files_to_update;
+            }
+          }
+        
+          // check for any removed images
+          if (this.state.deleted_images.length > 0) {
+            data['image_files_to_remove'] = this.state.deleted_images
+          }
 
            console.log("SUBMMITED data")
         console.log(data)
@@ -986,162 +1000,120 @@ handleAddImage = () => {
                     this.setState({ submit_error: true, submitting: false });
                   }
               });
-        }
-
-          // formData.append("data", JSON.stringify(data));
-
-          // const config = {
-          //   headers: {
-          //     Authorization:
-          //       "Bearer " +
-          //       JSON.parse(localStorage.getItem("info")).nexus_token,
-          //     MAuthorization: "MBearer " + localStorage.getItem("info"),
-          //     "Content-Type": "multipart/form-data"
-          //   }
-          // };
-
-          // if (this.props.editingEntity && !this.state.LocationSaved) {
-          //   axios
-          //     .put(
-          //       `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}`,
-          //       formData,
-          //       config
-          //     )
-          //     .then(res => {
-          //       this.props.onUpdated(res.data);
-          //     })
-          //     .catch(error => {
-          //       this.setState({ submit_error: true });
-          //     });
-          // } else {
-          //   axios
-          //     .post(
-          //       `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens`,
-          //       formData,
-          //       config
-          //     )
-          //     .then(res => {
-          //       this.props.onCreated(res.data);
-          //     })
-          //     .catch(error => {
-          //       this.setState({
-          //         submit_error: true,
-          //         error_message: error && error.asdf && error.response && error.response.data && error.response.data.displayMessage || this.state.error_message
-          //       });
-          //     });
-          // }
-
+          }
         }
       }
     });
   };
 
-  validateUUID = () => {
-    let isValid = true;
-    const uuid = this.state.source_uuid;
-    // const patt = new RegExp("^.{3}-.{4}-.{3}$");
-    // if (patt.test(uuid)) {
-    this.setState({
-      validatingUUID: true
-    });
-    if (true) {
-      const config = {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-          "Content-Type": "multipart/form-data"
-        }
-      };
+  // validateUUID = () => {
+  //   let isValid = true;
+  //   const uuid = this.state.source_uuid;
+  //   // const patt = new RegExp("^.{3}-.{4}-.{3}$");
+  //   // if (patt.test(uuid)) {
+  //   this.setState({
+  //     validatingUUID: true
+  //   });
+  //   if (true) {
+  //     const config = {
+  //       headers: {
+  //         Authorization:
+  //           "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+  //         "Content-Type": "multipart/form-data"
+  //       }
+  //     };
 
-      return axios
-        .get(
-          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}`,
-          config
-        )
-        .then(res => {
-          if (res.data) {
-            this.setState(prevState => ({
-              source_entity: res.data,
-              formErrors: { ...prevState.formErrors, source_uuid: "valid" }
-            }), () => {
-              // Get sex info
-              axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.state.source_entity.source_uuid}`,
-                config
-              ).then(res => {
-                const metadata_str = res.data.entity_node?.metadata;
-                if (metadata_str === undefined) {
-                  this.setState({
-                    source_entity: {
-                      specimen: {
-                        ...this.state.source_entity.specimen,
-                        sex: ""
-                      }
-                    }
-                  });
-                } else {
-                  const metadata = JSON.parse(metadata_str);
-                  try {
-                    const sex = metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
-                    this.setState({
-                      source_entity: {
-                        specimen: {
-                          ...this.state.source_entity.specimen,
-                          sex: sex
-                        }
-                      }
-                    });
-                  } catch {
-                    this.setState({
-                      source_entity: {
-                        specimen: {
-                          ...this.state.source_entity.specimen,
-                          sex: ""
-                        }
-                      }
-                    });
-                  }
-                }
-              }).catch(err => {
-                console.log(err);
-              })
-            });
-            return isValid;
-          } else {
-            this.setState(prevState => ({
-              source_entity: null,
-              formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
-            }));
-            isValid = false;
-            alert("The Source UUID does not exist.");
-            return isValid;
-          }
-        })
-        .catch(err => {
-          this.setState(prevState => ({
-            source_entity: null,
-            formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
-          }));
-          isValid = false;
-          alert("The Source UUID does not exist.");
-          return isValid;
-        })
-        .then(() => {
-          this.setState({
-            validatingUUID: false
-          });
-          return isValid;
-        });
-    } else {
-      this.setState(prevState => ({
-        formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
-      }));
-      isValid = false;
-      alert("The Source UUID is invalid.");
-      return new Promise((resolve, reject) => {
-        resolve(false);
-      });
-    }
-  };
+  //     return axios
+  //       .get(
+  //         `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}`,
+  //         config
+  //       )
+  //       .then(res => {
+  //         if (res.data) {
+  //           this.setState(prevState => ({
+  //             source_entity: res.data,
+  //             formErrors: { ...prevState.formErrors, source_uuid: "valid" }
+  //           }), () => {
+  //             // Get sex info
+  //             axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.state.source_entity.source_uuid}`,
+  //               config
+  //             ).then(res => {
+  //               const metadata_str = res.data.entity_node?.metadata;
+  //               if (metadata_str === undefined) {
+  //                 this.setState({
+  //                   source_entity: {
+  //                     specimen: {
+  //                       ...this.state.source_entity.specimen,
+  //                       sex: ""
+  //                     }
+  //                   }
+  //                 });
+  //               } else {
+  //                 const metadata = JSON.parse(metadata_str);
+  //                 try {
+  //                   const sex = metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
+  //                   this.setState({
+  //                     source_entity: {
+  //                       specimen: {
+  //                         ...this.state.source_entity.specimen,
+  //                         sex: sex
+  //                       }
+  //                     }
+  //                   });
+  //                 } catch {
+  //                   this.setState({
+  //                     source_entity: {
+  //                       specimen: {
+  //                         ...this.state.source_entity.specimen,
+  //                         sex: ""
+  //                       }
+  //                     }
+  //                   });
+  //                 }
+  //               }
+  //             }).catch(err => {
+  //               console.log(err);
+  //             })
+  //           });
+  //           return isValid;
+  //         } else {
+  //           this.setState(prevState => ({
+  //             source_entity: null,
+  //             formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
+  //           }));
+  //           isValid = false;
+  //           alert("The Source UUID does not exist.");
+  //           return isValid;
+  //         }
+  //       })
+  //       .catch(err => {
+  //         this.setState(prevState => ({
+  //           source_entity: null,
+  //           formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
+  //         }));
+  //         isValid = false;
+  //         alert("The Source UUID does not exist.");
+  //         return isValid;
+  //       })
+  //       .then(() => {
+  //         this.setState({
+  //           validatingUUID: false
+  //         });
+  //         return isValid;
+  //       });
+  //   } else {
+  //     this.setState(prevState => ({
+  //       formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
+  //     }));
+  //     isValid = false;
+  //     alert("The Source UUID is invalid.");
+  //     return new Promise((resolve, reject) => {
+  //       resolve(false);
+  //     });
+  //   }
+  // };
+
+  
 
   renderButtons() {
     if (this.props.editingEntity) {
@@ -1417,6 +1389,9 @@ handleAddImage = () => {
           isValid = false;
 
       }
+
+      console.log('validate images')
+
       // validate the images
       this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
@@ -1496,6 +1471,7 @@ handleAddImage = () => {
       //   }
       // });
 
+      console.log('validate SOURCE UUID')
       if (!validateRequired(this.state.source_uuid)) {
         console.log('not valid uuid')
         this.setState(prevState => ({
@@ -1505,9 +1481,11 @@ handleAddImage = () => {
         resolve(isValid);
       } else {
 
+      console.log('validate SOURCE UUID valid')
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, source_uuid: "" }
         }));
+        resolve(isValid);
         // this.validateUUID().then(res => {
         //   resolve(isValid && res);
         // });
@@ -1553,11 +1531,16 @@ handleAddImage = () => {
     });
   };
 
+  // code for table selection the source entity
   handleSelectClick = ids => {
+    console.log('SOURCE UUID', ids)
     this.setState(
       {
         source_uuid: ids[0].hubmap_id,
         source_entity: ids[0].entity,
+        source_uuid_list: ids[0].source_uuid,   // just add the single for now
+        source_entity_type: ids[0].entity.entity_type,
+        sex: this.getGender(ids[0].entity),
         LookUpShow: false
       }
     
@@ -1829,32 +1812,19 @@ handleAddImage = () => {
                       value={this.state.specimen_type}
                     >
                       <option value="">----</option>
-                      {TISSUE_TYPES.map((optgs, index) => {
+                      {TISSUE_TYPES[this.state.source_entity_type].map((optgs, index) => {
                         return (
                           <optgroup
                             key={index}
                             label="____________________________________________________________"
                           >
                             {Object.entries(optgs).map(op => {
-                              if (op[0] === "organ") {
-                                if (
-                                  this.state.entity_type === "Donor"
-                                ) {
-                                  return (
-                                    <option key={op[0]} value={op[0]}>
-                                      {op[1]}
-                                    </option>
-                                  );
-                                } else {
-                                  return null;
-                                }
-                              } else {
                                 return (
                                   <option key={op[0]} value={op[0]}>
                                     {op[1]}
                                   </option>
                                 );
-                              }
+                              
                             })}
                           </optgroup>
                         );
@@ -2269,7 +2239,7 @@ handleAddImage = () => {
                       >
                         <p>
                           Provide formatted location data from <br />
-            CCF Location Registration Tool for <br />
+                          CCF Location Registration Tool for <br />
             this sample.
           </p>
                       </ReactTooltip>
@@ -2288,26 +2258,25 @@ handleAddImage = () => {
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organ={this.state.organ}
                       sex={this.state.source_entity.sex}
-                      user={this.state.source_entity.create_by_user_displayname}
+                      user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
                       parent="TissueForm" />
                   )}
 
                   { this.state.rui_check && (
                     <React.Fragment>
-                      <div className="col-sm-1 checkb">
-                        <img src={check}
+            
+                      <div className="col-sm-2">
+                      <img src={check}
                           alt="check"
                           className="check" />
-                      </div>
-                      <div className="col-sm-2">
                         <button
                           className="btn btn-link"
                           type="button"
                           onClick={this.openRUIModalHandler}
                         >
                           View Location
-						   </button>
+						            </button>
                       </div>
                       <RUIModal
                         className="Modal"

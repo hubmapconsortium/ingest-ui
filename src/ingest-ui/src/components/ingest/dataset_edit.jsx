@@ -757,8 +757,8 @@ class DatasetEdit extends Component {
             data["user_group_uuid"] = this.state.selected_group;
           }
 
-          var formData = new FormData();
-          formData.append("data", JSON.stringify(data));
+          // var formData = new FormData();
+          // formData.append("data", JSON.stringify(data));
           const config = {
             headers: {
               Authorization:
@@ -777,7 +777,7 @@ class DatasetEdit extends Component {
               uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}`;
             }
             axios
-              .put(uri, formData, config)
+              .put(uri, JSON.stringify(data), config)
               .then((res) => {
                 this.props.onUpdated(res.data);
               })

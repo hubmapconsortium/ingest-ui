@@ -45,9 +45,9 @@ export const SAMPLE_TYPES = [
   { other: "Other" }
 ];
 
-export const TISSUE_TYPES = [
-  { organ: "Organ", blood: "Blood" },
-  {
+export const TISSUE_TYPES = {
+   Donor: [{ organ: "Organ", blood: "Blood" }],
+   Sample: [{
     biopsy: "Biopsy",
     cell_lysate: "Cell lysate",
     ffpe_block: "FFPE block",
@@ -68,9 +68,7 @@ export const TISSUE_TYPES = [
     segment: "Segment",
     serum: "Serum",
     single_cell_cryopreserved: "Single cell cryopreserved",
-    tissue_lysate: "Tissue lysate"
-  },
-  {
+    tissue_lysate: "Tissue lysate",
     clarity_hydrogel: "CLARITY hydrogel",
     cryosections_curls_from_fresh_frozen_oct:
       "Cryosections/curls from fresh frozen OCT",
@@ -78,17 +76,14 @@ export const TISSUE_TYPES = [
     ffpe_slide: "FFPE slide",
     fixed_frozen_section_slide: "Fixed Frozen section slide",
     fresh_frozen_section_slide: "Fresh Frozen section slide",
-    fresh_frozen_tissue_section: "Fresh Frozen Tissue Section"
-  },
-  {
+    fresh_frozen_tissue_section: "Fresh Frozen Tissue Section",
     gdna: "gDNA",
     nuclei: "Nuclei",
     protein: "Protein",
     rna_total: "RNA, total",
-    ran_poly_a_enriched: "RNA, poly-A enriched"
-  },
-  { other: "Other" }
-];
+    ran_poly_a_enriched: "RNA, poly-A enriched",
+    other: "Other" }]
+};
 
 export const ORGAN_TYPES = {
   AO: "Aorta",

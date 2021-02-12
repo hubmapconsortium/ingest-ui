@@ -72,20 +72,11 @@ export function api_filter_es_query_builder(fields) {
 
   let boolQuery = esb.boolQuery();
 
+  // if no field criteria is sent just default to a 
   if (Object.keys(fields).length === 0 && fields.constructor === Object) {
-   // boolQuery.must(esb.matchAllQuery());
-    //boolQuery.must(esb.matchQuery("entity_type", "Donor"));
-    //boolQuery.filter(esb.termQuery("entity_type", "Sample"));
-    boolQuery.should([
-        esb.termQuery('entity_type.keyword', 'Donor'),
-        esb.termQuery('entity_type.keyword', 'Sample')
-    ]);
+    boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset'));  
   } else {
    
-
-    // boolQuery.filter(esb.termQuery("entity_type", "Donor"));
-    // boolQuery.filter(esb.termQuery("entity_type", "Sample"));
-
     if (fields["group_name"]) {
       boolQuery.must(esb.matchQuery("group_name", fields["group_name"]));
     } 
@@ -96,19 +87,17 @@ export function api_filter_es_query_builder(fields) {
       } else {
         boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
       }
-    } else if (fields["entity_type"] === 'DonorSample') {  // hack to deal with not type selected from the UI, this clues from the donor/sample filer
-       // boolQuery.should([
-       //  esb.termQuery('entity_type.keyword', 'Donor'),
-       //  esb.termQuery('entity_type.keyword', 'Sample')]);
-      boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
-      // boolQuery.filter(esb.matchQuery('entity_type', 'Donor'));
-      //boolQuery.filter(esb.matchQuery('entity_type', 'Sample'));
     } else {
-       boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));
+        if (fields["entity_type"]) {
+          if (fields["entity_type"] === 'DonorSample') {  // hack to deal with not type selected from the UI, this clues from the donor/sample filer
+            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
+          } else {
+            boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));
+          }
+        } else {
+           boolQuery.must(esb.matchQuery("entity_type", 'Donor'));  // default everything to Donor; this maybe temp
+        }
     }
-    // if (fields["specimen_type"]) {
-    //   boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
-    // } 
 
     if (fields["search_term"]) {
          boolQuery.filter(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 
