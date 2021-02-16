@@ -235,7 +235,7 @@ class TissueForm extends Component {
       // });
 
       let images = this.props.editingEntity.image_files;
- //     let metadatas = this.props.editingEntity.metadata_files;
+      let metadatas = this.props.editingEntity.metadata_files;
   
       const image_list = [];
       const metadata_list = [];
@@ -253,14 +253,15 @@ class TissueForm extends Component {
         });
       } catch {}
 
-      // metadatas.forEach((metadata, index) => {
-      //   metadata_list.push({
-      //     id: index + 1,
-      //     ref: React.createRef(),
-      //     file_name: getFileNameOnPath(metadata.filepath),
-      //     file_uuid: metadata.file_uuid
-      //   });
-      // });
+      // get the metadata files
+      metadatas.forEach((metadata, index) => {
+        metadata_list.push({
+          id: index + 1,
+          ref: React.createRef(),
+          file_name: metadata.filename,
+          file_uuid: metadata.file_uuid
+        });
+      });
     
 
       this.setState(
@@ -281,7 +282,7 @@ class TissueForm extends Component {
           visit: this.props.editingEntity.visit ? this.props.editingEntity.visit : "",
           description: this.props.editingEntity.description,
           images: image_list,
-          //metadatas: metadata_list
+          metadatas: metadata_list
           
         }
         // ,
@@ -643,13 +644,13 @@ class TissueForm extends Component {
     });
   };
 
-  handleDeleteMetadataFile = () => {
-    this.setState({
-      metadata_file_name: "Choose a file",
-      metadataFileKey: Date.now(),
-      metadata_file: ""
-    });
-  };
+  // handleDeleteMetadataFile = () => {
+  //   this.setState({
+  //     metadata_file_name: "Choose a file",
+  //     metadataFileKey: Date.now(),
+  //     metadata_file: ""
+  //   });
+  // };
 
  onFileChange = (type, id) => {
     switch (type) {
@@ -775,17 +776,34 @@ class TissueForm extends Component {
     });
   };
 
-  handleDeleteImage = imageId => {
-    const images = this.state.images.filter(i => i.id !== imageId);
-    this.setState({
-      images
-    });
-  };
+  // handleDeleteImage = imageId => {
+  //   const images = this.state.images.filter(i => i.id !== imageId);
+  //   this.setState({
+  //     images
+  //   });
+  // };
 
-  handleDeleteMetadata = metadataId => {
-    const metadatas = this.state.metadatas.filter(i => i.id !== metadataId);
+  // handleDeleteMetadata = metadataId => {
+  //   const metadatas = this.state.metadatas.filter(i => i.id !== metadataId);
+  //   this.setState({
+  //     metadatas
+  //   });
+  // };
+
+  handleDeleteMetadata = id => {
+    const deleted_meta = this.state.metadatas.find(i => i.id === id);
+    const new_metadatas = this.state.new_metadatas.filter(dm => dm !== deleted_meta.file_name);
+    let deleted_metas = [...this.state.deleted_metas];
+
+    console.log('deleted meta', deleted_meta)
+    if (new_metadatas.length === this.state.metadatas.length){
+      deleted_metas.push(deleted_meta.file_uuid);
+    }
+    const metas = this.state.metadatas.filter(i => i.id !== id);
     this.setState({
-      metadatas
+      metas,
+      new_metadatas,
+      deleted_metas
     });
   };
 
@@ -798,19 +816,6 @@ handleAddImage = () => {
       images: [...this.state.images, { id: newId, ref: React.createRef() }]
     });
   };
-
-  // handleAddMetadata = () => {
-  //   let newId = 1;
-  //   if (this.state.metadatas.length > 0) {
-  //     newId = this.state.metadatas[this.state.metadatas.length - 1].id + 1;
-  //   }
-  //   this.setState({
-  //     metadatas: [
-  //       ...this.state.metadatas,
-  //       { id: newId, ref: React.createRef() }
-  //     ]
-  //   });
-  // };
 
   handleDeleteImage = id => {
     const deleted_image = this.state.images.find(i => i.id === id);
@@ -844,6 +849,12 @@ handleAddImage = () => {
         otype !== "SP" &&
         otype !== "LI" &&
         otype !== "RK";
+  }
+
+  // special case for donors
+  isOrganBloodType = sptype => {
+    return sptype === "organ" ||
+          sptype === "blood";
   }
  
  getGender = (entity) => {
@@ -887,7 +898,7 @@ handleAddImage = () => {
             specimen_type_other: this.state.specimen_type_other,
             //source_uuid: this.state.source_uuid,
             direct_ancestor_uuid: this.state.source_uuid_list,
-            organ: this.state.source_entity.organ || this.state.organ || "",
+            organ: this.props.editingEntity.organ || this.state.organ || "",
             organ_other: this.state.organ_other,
             visit: this.state.visit,
             //sample_count: this.state.sample_count,
@@ -909,23 +920,30 @@ handleAddImage = () => {
             data["rui_location"] = JSON.parse(this.state.rui_location);
           }
 
-          this.state.metadatas.forEach(i => {
-            if (i.ref.current.metadata_file.current.files[0]) {
-              data.metadatas.push({
-                id: "metadata_" + i.id,
-                file_name: i.ref.current.metadata_file.current.files[0].name
-              });
-              // formData.append(
-              //   "metadata_" + i.id,
-              //   i.ref.current.metadata_file.current.files[0]
-              // );
-            } else {
-              data.metadatas.push({
-                id: "metadata_" + i.id,
-                file_name: i.file_name
-              });
+          console.log('submit metadatas', this.state.metadatas);
+          if (this.state.metadatas.length > 0) {
+            let metadata_files_to_add = [];
+            let existing_meta_files_to_update = [];
+ 
+            this.state.metadatas.forEach(i => {
+              if (i.ref.current.state.temp_file_id !== "") {
+                metadata_files_to_add.push({
+                  temp_file_id: i.ref.current.state.temp_file_id,
+                  file_name: i.ref.current.metadata_file.current.files[0].name
+                });
+              } 
+            });
+          // check to see if we really did add any new images 
+            if (metadata_files_to_add.length > 0 ) {
+              data['metadata_files_to_add'] = metadata_files_to_add;
             }
-          });
+        
+         }
+
+         if (this.state.deleted_metas.length > 0)  { 
+           data['metadata_files_to_remove'] = this.state.deleted_metas;
+         }
+
           if (this.state.images.length > 0) {
             let image_files_to_add = [];
             let existing_image_files_to_update = [];
@@ -968,7 +986,7 @@ handleAddImage = () => {
             data['image_files_to_remove'] = this.state.deleted_images
           }
 
-           console.log("SUBMMITED data")
+        console.log("SUBMMITED data")
         console.log(data)
       
 
@@ -1752,8 +1770,7 @@ handleAddImage = () => {
                             : this.state.source_entity.entity_type}
                         </div>
               
-                        {this.state.source_entity.specimen_type ===
-                          "organ" && (
+                        {this.isOrganBloodType(this.state.source_entity.specimen_type) && (
                             <div className="col-sm-12">
                               <b>Organ Type:</b>{" "}
                               {
@@ -1931,7 +1948,7 @@ handleAddImage = () => {
                 )}
               </div>
             )}
-            {["organ", "biopsy"].includes(this.state.specimen_type) &&
+            {["organ", "biopsy", "blood"].includes(this.state.specimen_type) &&
               (!this.props.readOnly || this.state.visit !== undefined) && (
                 <div className="form-group row">
                   <label
@@ -2612,7 +2629,7 @@ handleAddImage = () => {
                       readOnly={this.props.readOnly}
                       formId={this.state.form_id}
                       onFileChange={this.onFileChange}
-                      validate={this.validateMetadataFiles}
+                      validate={this.validateImagesFiles}
                       onDelete={this.handleDeleteImage}
                     />
                   ))}

@@ -40,8 +40,8 @@ class EntityList extends Component {
     pages: [10, 25, 50],
     page: 0,
     setPage: 0,
-    rowsPerPage: 10,
-    setRowsPerPage: 10,
+    rowsPerPage: 25,
+    setRowsPerPage: 25,
     authToken: JSON.parse(localStorage.getItem("info")).nexus_token
   };
 
@@ -67,7 +67,7 @@ class EntityList extends Component {
 
   handleChangeRowsPerPage = (event) => {
     this.setState({
-        rowsPerPage: parseInt(event.target.value, 10),
+        rowsPerPage: parseInt(event.target.value, 25),
         page: 0
     });
   };
