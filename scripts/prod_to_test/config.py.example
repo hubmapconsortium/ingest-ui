@@ -1,5 +1,0 @@
-
-config = {
-    'ELASTICSEARCH_DOMAIN_ENDPOINT': 'https://elasticsearch.us-east-1.es.amazonaws.com',
-    'ENTITY_WEBSERVICE_URL': 'http://localhost:5003'
-}
