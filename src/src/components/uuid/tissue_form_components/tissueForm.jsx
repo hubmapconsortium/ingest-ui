@@ -29,7 +29,7 @@ import MetadataUpload from "../metadataUpload";
 import LabIDsModal from "../labIdsModal";
 import RUIModal from "./ruiModal";
 import RUIIntegration from "./ruiIntegration";
-import { api_update_entity, api_create_entity } from '../../../service/entity_api';
+import { api_update_entity, api_create_entity, api_create_multiple_entities } from '../../../service/entity_api';
 
 class TissueForm extends Component {
   state = {
@@ -150,7 +150,7 @@ class TissueForm extends Component {
     if (this.props.editingEntity) {
       axios
         .get(
-          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}/siblingids`,
+          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}/ingest-group-ids`,
           config
         )
         .then(res => {
@@ -253,16 +253,17 @@ class TissueForm extends Component {
         });
       } catch {}
 
-      // get the metadata files
-      metadatas.forEach((metadata, index) => {
-        metadata_list.push({
-          id: index + 1,
-          ref: React.createRef(),
-          file_name: metadata.filename,
-          file_uuid: metadata.file_uuid
+      try {
+        // get the metadata files
+        metadatas.forEach((metadata, index) => {
+          metadata_list.push({
+            id: index + 1,
+            ref: React.createRef(),
+            file_name: metadata.filename,
+            file_uuid: metadata.file_uuid
+          });
         });
-      });
-    
+      } catch {}
 
       this.setState(
         {
@@ -873,6 +874,18 @@ handleAddImage = () => {
           }
     }
   }
+  // get the organ type which depends on if a source entity was specified or 
+  // if it's an edit just used the designated organ
+  getOrgan = () => {
+    try {
+      return this.state.source_entity.organ;
+    } catch {
+      try {
+        return this.state.organ;
+      } catch {}
+    }
+    return "";
+  }
 
   handleSubmit = e => {
     e.preventDefault();
@@ -898,7 +911,7 @@ handleAddImage = () => {
             specimen_type_other: this.state.specimen_type_other,
             //source_uuid: this.state.source_uuid,
             direct_ancestor_uuid: this.state.source_uuid_list,
-            organ: this.props.editingEntity.organ || this.state.organ || "",
+            organ: this.getOrgan(),
             organ_other: this.state.organ_other,
             visit: this.state.visit,
             //sample_count: this.state.sample_count,
@@ -912,6 +925,12 @@ handleAddImage = () => {
             //images: [],
             //metadatas: []
           };
+
+          // hack for blood as an organ
+          if (this.state.specimen_type === 'blood') {
+            data['specimen_type'] = 'organ';
+            data['organ'] = 'BD';
+          }
           if (this.state.selected_group) {
             data["group_uuid"] = this.state.selected_group;
           }
@@ -1013,7 +1032,14 @@ handleAddImage = () => {
                   if (response.status == 200) {
                     console.log('create Entity...');
                     console.log(response.results);
-                    this.props.onCreated({new_samples: [], entity: response.results});
+
+                    // now generate some multiples
+                    api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                     .then((resp) => {
+                        if (resp.status == 200) {
+                             this.props.onCreated({new_samples: resp.results, entity: response.results});
+                        }
+                      });
                   } else {
                     this.setState({ submit_error: true, submitting: false });
                   }
@@ -2198,7 +2224,7 @@ handleAddImage = () => {
                     hide={this.hideLabIDsModal}
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
-                    metadata={this.props.editingEntity.properties}
+                    metadata={this.props.editingEntity}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>

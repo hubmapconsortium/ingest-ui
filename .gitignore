@@ -23,16 +23,16 @@ src/log
 **/*.log*
 
 # UI react-app
-src/ingest-ui/node_modules
-src/ingest-ui/.env
+src/node_modules
 src/ingest-ui/.pnp
 src/ingest-ui/.pnp.js
+src/package-lock.json
 
 # testing
 src/react-app/coverage
 
 # .env. files (not the .env file)
-src/.env
+src/.env.*
 
 # misc
 .DS_Store

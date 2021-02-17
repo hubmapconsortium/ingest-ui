@@ -129,7 +129,7 @@ class MetadataUpload extends Component {
                         (this.state.metadataFileValid ? "" : "is-invalid")
                       }
                       name={"metadata_file_" + this.props.id}
-                      id={"metadata_file_" + +this.props.id}
+                      id={"metadata_file_" + this.props.id}
                       onChange={this.handleMetadataFileChange}
                       ref={this.metadata_file}
                       disabled={this.state.metadata_file_name != "" &&

@@ -84,3 +84,31 @@ export function api_create_entity(entitytype, data, auth) {
         return {status: 500, results: err.response}
       });
 };
+
+/* 
+ * api_create_multiple_entities - create multiple entities
+ *
+ */
+export function api_create_multiple_entities(count, data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/multiple-samples/${count}`;
+        
+  return axios 
+     .post(url, data, options)
+      .then(res => {
+        console.log(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};

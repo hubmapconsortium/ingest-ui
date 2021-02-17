@@ -22,51 +22,78 @@ class LabIDsModal extends Component {
     rui_locations: { name: '' },
     sample_name: "",
     update: false,
-    metadata: this.props.metadata
+    metadata: this.props,
   };
 
   componentDidMount() {
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        "Content-Type": "multipart/form-data"
-      }
-    };
 
-    axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.metadata.source_uuid}`,
-      config
-    ).then(res => {
-      const metadata_str = res.data.entity_node?.metadata;
-      if (metadata_str == undefined) {
-        this.setState({
-          metadata: {
-            ...this.state.metadata,
-            sex: ""
+    console.log('LabIDsModal', this.props)
+    this.setState({
+            metadata: {
+              ...this.state.metadata.direct_ancestor,
+              sex: this.getGender(this.state.metadata.direct_ancestor)
+            }
+          });
+    // const config = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //     "Content-Type": "multipart/form-data"
+    //   }
+    // };
+
+    // axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.metadata.source_uuid}`,
+    //   config
+    // ).then(res => {
+    //   const metadata_str = res.data.entity_node?.metadata;
+    //   if (metadata_str == undefined) {
+    //     this.setState({
+    //       metadata: {
+    //         ...this.state.metadata,
+    //         sex: ""
+    //       }
+    //     });
+    //   } else {
+    //     const metadata = JSON.parse(metadata_str);
+    //     try {
+    //       const sex = metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
+    //       this.setState({
+    //         metadata: {
+    //           ...this.state.metadata,
+    //           sex: sex
+    //         }
+    //       });
+    //     } catch {
+    //       this.setState({
+    //         metadata: {
+    //           ...this.state.metadata,
+    //           sex: ""
+    //         }
+    //       });
+    //     }
+    //   }
+    // }).catch(err => {
+    //   console.log(err);
+    // })
+
+
+  }
+
+ getGender = (entity) => {
+
+    const metadata = entity?.metadata;
+
+    console.log(metadata)
+    if (metadata === undefined) {
+      return ""
+    } else {
+          //traverse the organ array for a concept that matches
+          try {
+            return metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
+          } catch {
+              return "";
           }
-        });
-      } else {
-        const metadata = JSON.parse(metadata_str);
-        try {
-          const sex = metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
-          this.setState({
-            metadata: {
-              ...this.state.metadata,
-              sex: sex
-            }
-          });
-        } catch {
-          this.setState({
-            metadata: {
-              ...this.state.metadata,
-              sex: ""
-            }
-          });
-        }
-      }
-    }).catch(err => {
-      console.log(err);
-    })
+    }
   }
 
   handleRUIJson = dataFromChild => {
@@ -258,7 +285,7 @@ class LabIDsModal extends Component {
                   (["LK", "RK", "HT", "SP"].includes(this.props.metadata.organ)) && (
                     <React.Fragment>
                       <h5 className='card-title'>Assign Lab IDs and Sample Location</h5><br />
-                      {this.state.ids && (
+                      {this.props.ids && (
                         <div className="form-group row">
                           <span className='col-sm-5 col-form-label text-right mod-id'>Lab Sample Id</span>
                           <React.Fragment>
@@ -268,11 +295,11 @@ class LabIDsModal extends Component {
                           </React.Fragment>
                         </div>
                       )}
-                      {this.state.ids &&
-                        this.state.ids.map(id => (
-                          <div key={id.hubmap_identifier} className='form-group row'>
+                      {this.props.ids &&
+                        this.props.ids.map(id => (
+                          <div key={id.submission_id} className='form-group row'>
                             <label className='col-sm-2 col-form-label text-right'>
-                              {id.hubmap_identifier}
+                              {id.submission_id}
                             </label>
                             <div className='col-sm-3'>
                               <input
@@ -299,7 +326,7 @@ class LabIDsModal extends Component {
                                   <RUIIntegration handleJsonRUI={this.handleRUIJson}
                                     organ={this.state.metadata.organ}
                                     sex={this.state.metadata.sex}
-                                    user={this.state.metadata.provenance_user_displayname}
+                                    user={this.state.metadata.created_by_user_displayname}
                                     location={this.state.rui_locations[id.uuid] || ""} />
                                 )}
                                 <div className="col-sm-1 checkb">
@@ -435,11 +462,11 @@ class LabIDsModal extends Component {
                       <div className="form-group row">
                         <span className='col-sm-10 col-form-label text-right mod-id'>Lab Sample Id</span>
                       </div>
-                      {this.state.ids &&
-                        this.state.ids.map(id => (
-                          <div key={id.hubmap_identifier} className='form-group row'>
+                      {this.props.ids &&
+                        this.props.ids.map(id => (
+                          <div key={id.submission_id} className='form-group row'>
                             <label className='col-sm-4 col-form-label text-right'>
-                              {id.hubmap_identifier}
+                              {id.submission}
                             </label>
                             <div className='col-sm-6'>
                               <input
