@@ -49,7 +49,7 @@ class TissueForm extends Component {
     specimen_type: "",
     specimen_type_other: "",
     source_uuid: "",
-    source_uuid_list: [],
+    source_uuid_list: "",
     organ: "",
     organ_other: "",
     visit: "",
@@ -268,6 +268,7 @@ class TissueForm extends Component {
       this.setState(
         {
           source_uuid: this.getID(),
+          source_entity: this.props.editingEntity.direct_ancestor,
           author: this.props.editingEntity.created_by_user_email,
           lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id,
           rui_location: this.props.editingEntity.rui_location || "",
@@ -397,56 +398,6 @@ class TissueForm extends Component {
           }));
         }
         break;
-      // case "protocol_file":
-      //   this.setState({ protocol_file: e.target.files[0] });
-      //   this.setState({
-      //     protocol_file_name: e.target.files[0] && e.target.files[0].name
-      //   });
-      //   if (
-      //     !validateRequired(value) &&
-      //     !validateRequired(this.protocol.current.value)
-      //   ) {
-      //     this.setState(prevState => ({
-      //       formErrors: {
-      //         ...prevState.formErrors,
-      //         protocol_file: "required",
-      //         protocol: "required"
-      //       }
-      //     }));
-      //   } else if (e.target.files[0]) {
-      //     if (
-      //       !validateFileType(e.target.files[0].type, [
-      //         "application/msword",
-      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      //         "application/pdf"
-      //       ])
-      //     ) {
-      //       this.setState(prevState => ({
-      //         formErrors: {
-      //           ...prevState.formErrors,
-      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf",
-      //           protocol: ""
-      //         }
-      //       }));
-      //     } else {
-      //       this.setState(prevState => ({
-      //         formErrors: {
-      //           ...prevState.formErrors,
-      //           protocol_file: "",
-      //           protocol: ""
-      //         }
-      //       }));
-      //     }
-      //   } else {
-      //     this.setState(prevState => ({
-      //       formErrors: {
-      //         ...prevState.formErrors,
-      //         protocol_file: "",
-      //         protocol: ""
-      //       }
-      //     }));
-      //   }
-      //   break;
       case "specimen_type":
         this.setState({ specimen_type: value });
         if (!validateRequired(value)) {
@@ -876,21 +827,20 @@ handleAddImage = () => {
   }
   // get the organ type which depends on if a source entity was specified or 
   // if it's an edit just used the designated organ
-  getOrgan = () => {
-    try {
-      return this.state.source_entity.organ;
-    } catch {
-      try {
-        return this.state.organ;
-      } catch {}
-    }
-    return "";
-  }
+  // getOrgan = () => {
+  //   try {
+  //     return this.state.source_entity.organ;
+  //   } catch {
+  //     try {
+  //       return this.state.organ;
+  //     } catch {}
+  //   }
+  //   return "";
+  // }
 
   handleSubmit = e => {
     e.preventDefault();
     this.validateForm().then(isValid => {
-      console.log('passed validation')
       if (isValid) {
         if (
           !this.props.editingEntity &&
@@ -911,7 +861,7 @@ handleAddImage = () => {
             specimen_type_other: this.state.specimen_type_other,
             //source_uuid: this.state.source_uuid,
             direct_ancestor_uuid: this.state.source_uuid_list,
-            organ: this.getOrgan(),
+            organ: this.state.organ,
             organ_other: this.state.organ_other,
             visit: this.state.visit,
             //sample_count: this.state.sample_count,
@@ -927,10 +877,10 @@ handleAddImage = () => {
           };
 
           // hack for blood as an organ
-          if (this.state.specimen_type === 'blood') {
-            data['specimen_type'] = 'organ';
-            data['organ'] = 'BD';
-          }
+          // if (this.state.specimen_type === 'blood') {
+          //   data['specimen_type'] = 'organ';
+          //   data['organ'] = 'BD';
+          // }
           if (this.state.selected_group) {
             data["group_uuid"] = this.state.selected_group;
           }
@@ -1033,13 +983,17 @@ handleAddImage = () => {
                     console.log('create Entity...');
                     console.log(response.results);
 
-                    // now generate some multiples
-                    api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                     .then((resp) => {
-                        if (resp.status == 200) {
+                    if (this.state.sample_count > 0) {
+                      // now generate some multiples
+                      api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                        .then((resp) => {
+                          if (resp.status == 200) {
                              this.props.onCreated({new_samples: resp.results, entity: response.results});
-                        }
+                          }
                       });
+                   } else {
+                      this.props.onCreated({new_samples: [], entity: response.results});
+                   }
                   } else {
                     this.setState({ submit_error: true, submitting: false });
                   }
@@ -1336,93 +1290,6 @@ handleAddImage = () => {
         }));
       }
 
-      // if (
-      //   !(
-      //     (validateRequired(this.state.protocol) ||
-      //       validateRequired(this.state.protocol_file) ||
-      //       validateRequired(
-      //         this.state.protocol_file_name === "Choose a file"
-      //           ? ""
-      //           : this.state.protocol_file_name
-      //       )) &&
-      //     validateProtocolIODOI(this.state.protocol) &&
-      //     validateFileType(this.state.protocol_file.type, [
-      //       "application/msword",
-      //       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      //       "application/pdf"
-      //     ]) &&
-      //     validateFileType(getFileMIMEType(this.state.protocol_file_name), [
-      //       "application/msword",
-      //       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      //       "application/pdf"
-      //     ])
-      //   )
-      // ) {
-      // //   if (
-      //     !validateRequired(this.state.protocol_file) &&
-      //     !validateRequired(this.state.protocol) &&
-      //     !validateRequired(
-      //       this.state.protocol_file_name === "Choose a file"
-      //         ? ""
-      //         : this.state.protocol_file_name
-      //     )
-      //   ) {
-      //     this.setState(prevState => ({
-      //       formErrors: { ...prevState.formErrors, protocol: "required" }
-      //     }));
-      //     isValid = false;
-      //   } else {
-      //     if (!validateProtocolIODOI(this.state.protocol)) {
-      //       this.setState(prevState => ({
-      //         formErrors: {
-      //           ...prevState.formErrors,
-      //           protocol: "Please enter a valid protocols.io DOI"
-      //         }
-      //       }));
-      //       isValid = false;
-      //     }
-      //     if (
-      //       !validateFileType(this.state.protocol_file.type, [
-      //         "application/msword",
-      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      //         "application/pdf"
-      //       ])
-      //     ) {
-      //       this.setState(prevState => ({
-      //         formErrors: {
-      //           ...prevState.formErrors,
-      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf"
-      //         }
-      //       }));
-      //       isValid = false;
-      //     } else {
-      //       this.setState(prevState => ({
-      //         formErrors: { ...prevState.formErrors, protocol_file: "" }
-      //       }));
-      //     }
-      //     if (
-      //       !validateFileType(getFileMIMEType(this.state.protocol_file_name), [
-      //         "application/msword",
-      //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      //         "application/pdf"
-      //       ])
-      //     ) {
-      //       this.setState(prevState => ({
-      //         formErrors: {
-      //           ...prevState.formErrors,
-      //           protocol_file: "Allowed file types: .doc, .docx, or .pdf"
-      //         }
-      //       }));
-      //       isValid = false;
-      //     } else {
-      //       this.setState(prevState => ({
-      //         formErrors: { ...prevState.formErrors, protocol_file: "" }
-      //       }));
-      //     }
-      //   }
-
-      // }
-
       if (!validateProtocolIODOI(this.state.protocol_url)) {
           this.setState(prevState => ({
             formErrors: {
@@ -1536,26 +1403,6 @@ handleAddImage = () => {
       }      
     });
   }
-
-  // handleAddProtocol = () => {
-  //   let newId = 1;
-  //   if (this.state.protocols.length > 0) {
-  //     newId = this.state.protocols[this.state.protocols.length - 1].id + 1;
-  //   }
-  //   this.setState({
-  //     protocols: [
-  //       ...this.state.protocols,
-  //       { id: newId, ref: React.createRef() }
-  //     ]
-  //   });
-  // };
-
-  // handleRemoveProtocol = id => {
-  //   const protocols = this.state.protocols.filter(i => i.id !== id);
-  //   this.setState({
-  //     protocols
-  //   });
-  // };
 
   handleLookUpClick = () => {
     this.setState({
@@ -1771,21 +1618,7 @@ handleAddImage = () => {
                 <div className="col-sm-7 offset-sm-2">
                   <div className="card">
                     <div className="card-body">
-                      {/*<div className="row">
-                        <div className="col-sm-12">
-                          <h3 className="card-title">
-                            HuBMAP Submission ID:{" "}
-                            <b>
-                              <span>
-                                {
-                                  this.state.source_entity.ntityhubmap_display_id
-                                }
-                              </span>
-                            </b>
-                          </h3>
-                        </div>
-                      </div>
-                    */}
+        
                       <div className="row">
                         <div className="col-sm-6">
                           <b>Type:</b>{" "}
@@ -1806,18 +1639,33 @@ handleAddImage = () => {
                               }
                             </div>
                           )}
-                        <div className="col-sm-12">
-                          <b>Submission ID:</b>{" "}{this.state.source_entity.hubmap_display_id}
-                        </div>
-                        <div className="col-sm-12">
-                          <p>
-                            <b>Description: </b>{" "}
-                            {truncateString(
-                              this.state.source_entity.description,
-                              230
-                            )}
-                          </p>
-                        </div>
+                        {this.state.source_entity.submission_id && (
+                            <div className="col-sm-12">
+                              <b>Submission ID:</b>{" "}{this.state.source_entity.submission_id}
+                            </div>
+                        )}
+                        {this.state.source_entity.lab_donor_id && (
+                            <div className="col-sm-12">
+                                <b>Lab ID: </b>{" "}
+                                {this.state.source_entity.lab_donor_id}     
+                            </div>
+                          )}
+                        
+                            {this.state.source_entity.group_name && (
+                            <div className="col-sm-12">
+                                <b>Group Name: </b>{" "}
+                                {this.state.source_entity.group_name}
+                            </div>
+                          )}
+                          {this.state.source_entity.description && (
+                            <div className="col-sm-12">
+                              <p>
+                                <b>Description: </b>{" "}
+                                {truncateString(this.state.source_entity.description, 230)}
+                              </p>
+                            </div>
+                          )}
+
                       </div>
                     </div>
                   </div>
@@ -1899,7 +1747,7 @@ handleAddImage = () => {
                 <React.Fragment>
             
                   <div className="col-sm-3">
-                   <input type="text" readonly className="form-control" id="_readonly_specimen_type" 
+                   <input type="text" readOnly className="form-control" id="_readonly_specimen_type" 
                    value={flattenSampleType(SAMPLE_TYPES)[this.state.specimen_type]}></input>
                     <p>
                       {this.state.specimen_type_other &&

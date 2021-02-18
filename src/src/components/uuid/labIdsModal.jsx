@@ -466,7 +466,7 @@ class LabIDsModal extends Component {
                         this.props.ids.map(id => (
                           <div key={id.submission_id} className='form-group row'>
                             <label className='col-sm-4 col-form-label text-right'>
-                              {id.submission}
+                              {id.submission_id}
                             </label>
                             <div className='col-sm-6'>
                               <input
