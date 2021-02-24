@@ -51,10 +51,10 @@ class NewDatasetModal extends Component {
                         htmlFor="dataset_name"
                         className="col-sm-4 col-form-label text-right"
                       >
-                        Dataset Name
+                        Dataset Name:
                       </label>
-                      <div className="col-sm-8 col-form-label">
-                        <label name="dataset_name">{this.props.name}</label>
+                      <div className="col-sm-8">
+                        <label name="dataset_name">{this.props.entity.title}</label>
                       </div>
                     </div>
                   </div>
@@ -66,29 +66,15 @@ class NewDatasetModal extends Component {
                         htmlFor="dataset_display_id"
                         className="col-sm-4 col-form-label text-right"
                       >
-                        HuBMAP Dataset DOI
+                        HuBMAP Dataset DOI:
                       </label>
-                      <div className="col-sm-8 col-form-label">
-                        <label name="dataset_display_id">{this.props.hubmap_id}</label>
+                      <div className="col-sm-8">
+                        <label name="dataset_display_id">{this.props.entity.hubmap_id}</label>
                       </div>
                     </div>
                   </div>
                 </div>
-                {/* <div className="row">
-                  <div className="col-sm-6">
-                    <div className="form-group row">
-                      <label
-                        htmlFor="dataset_display_id"
-                        className="col-sm-4 col-form-label text-right"
-                      >
-                        Dataset DOI
-                      </label>
-                      <div className="col-sm-8 col-form-label">
-                        <label name="dataset_display_id">{this.props.doi}</label>
-                      </div>
-                    </div>
-                  </div>
-                </div> */}
+                
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group row">

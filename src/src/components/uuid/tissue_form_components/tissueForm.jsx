@@ -29,7 +29,7 @@ import MetadataUpload from "../metadataUpload";
 import LabIDsModal from "../labIdsModal";
 import RUIModal from "./ruiModal";
 import RUIIntegration from "./ruiIntegration";
-import { api_update_entity, api_create_entity, api_create_multiple_entities } from '../../../service/entity_api';
+import { api_update_entity, api_create_entity, api_create_multiple_entities, api_get_entity_ancestor } from '../../../service/entity_api';
 
 class TissueForm extends Component {
   state = {
@@ -135,6 +135,7 @@ class TissueForm extends Component {
         const groups = res.data.groups.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
+        console.log('groups', groups)
         this.setState({
           groups: groups
         });
@@ -326,6 +327,7 @@ class TissueForm extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
+    console.log('handleInputChange', name, value)
     switch (name) {
       case "lab":
         this.setState({ lab: value });
@@ -880,10 +882,7 @@ handleAddImage = () => {
           // if (this.state.specimen_type === 'blood') {
           //   data['specimen_type'] = 'organ';
           //   data['organ'] = 'BD';
-          // }
-          if (this.state.selected_group) {
-            data["group_uuid"] = this.state.selected_group;
-          }
+          // 
 
           if ( this.state.rui_location && this.state.rui_location.length !== "") {
             data["rui_location"] = JSON.parse(this.state.rui_location);
@@ -973,9 +972,14 @@ handleAddImage = () => {
       
               });
         } else {
-          if (this.state.selected_group) {
-            data["group_uuid"] = this.state.selected_group;
+          console.log('selected group', this.state.selected_group);
+
+          if (this.state.selected_group && this.state.selected_group.length > 0) {
+              data["group_uuid"] = this.state.selected_group;
+          } else {
+              data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
           }
+
           console.log("Create a new Entity....")
            api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
@@ -1422,9 +1426,25 @@ handleAddImage = () => {
     });
   };
 
-  // code for table selection the source entity
+  // Callback for the SOURCE for table selection 
   handleSelectClick = ids => {
     console.log('SOURCE UUID', ids)
+
+    if (ids) {
+        api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+                .then((response) => {
+                  if (response.status == 200) {
+                    console.log('Entity ancestors...', response.results);
+                    console.log(response.results);
+                    if (response.results.length > 0) {
+                      this.setState({
+                        organ: response.results[0].organ
+                      });
+                  } 
+                }
+              });
+    }
+
     this.setState(
       {
         source_uuid: ids[0].hubmap_id,
@@ -1537,7 +1557,7 @@ handleAddImage = () => {
                   <p>
                     The HuBMAP Unique identifier of the direct origin entity,
                     <br />
-                    other sample or doner, where this sample came from.
+                    other sample or donor, where this sample came from.
                   </p>
                 </ReactTooltip>
               </label>
@@ -1621,7 +1641,7 @@ handleAddImage = () => {
         
                       <div className="row">
                         <div className="col-sm-6">
-                          <b>Type:</b>{" "}
+                          <b>Source Type:</b>{" "}
                           {this.state.source_entity.specimen_type
                             ? flattenSampleType(SAMPLE_TYPES)[
                             this.state.source_entity.specimen_type

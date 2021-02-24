@@ -112,3 +112,63 @@ export function api_create_multiple_entities(count, data, auth) {
         return {status: 500, results: err.response}
       });
 };
+
+
+/* 
+ * api_create_multiple_entities - create multiple entities
+ *
+ */
+export function api_update_multiple_entities(data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/multiple-samples`;
+        
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+        console.log(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};
+
+
+
+/*
+ * get ancestor-organs for the specified Entity 
+ * 
+ * return:  { status, results}
+ */
+export function api_get_entity_ancestor(uuid, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`;
+        
+  return axios 
+    .get(url,options)
+      .then(res => {
+        console.log(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};

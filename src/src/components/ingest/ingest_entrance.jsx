@@ -6,7 +6,7 @@ import NewDatasetModal from "./newDatasetModal";
 
 class IngestEntrance extends Component {
   state = {
-    editingDataset: null,
+    editingDataset: "",
     is_curator: false,
     filter_group: "",
     globus_url: ""
@@ -82,18 +82,20 @@ class IngestEntrance extends Component {
   handleDatasetUpdated = () => {
     this.setState({
       updateSuccess: true,
-      editingDataset: null
+      editingDataset: null,
+      NewDatasetShow: false
     });
     setTimeout(() => {
       this.setState({ updateSuccess: null });
     }, 5000);
   };
 
-  handleDatasetCreated = () => {
+  handleDatasetCreated = (entity) => {
+    console.log('handleDatasetCreated', entity)
     this.setState({
       creatingNewDataset: false,
       createSuccess: true,
-      editingDataset: null
+      editingDataset: entity
     });
     setTimeout(() => {
       this.setState({ createSuccess: null });
@@ -117,6 +119,7 @@ class IngestEntrance extends Component {
   }
 
   render() {
+    console.log("IngestEntrance", this.state)
     return (
       <div>
       <h3>Dataset Submission</h3>
@@ -158,18 +161,20 @@ class IngestEntrance extends Component {
             changeLink={this.onChangeGlobusLink.bind(this)}
           />
         )}
+        {this.state.NewDatasetShow && (
           <NewDatasetModal
             show={this.state.NewDatasetShow}
             //hide={this.hideNewDatasetModal}
             //select={this.handleSelectClick}
             parent="dataset"
             globus_directory_url_path={this.state.globus_url}
-            name={this.state.title}
-            display_doi={this.state.display_doi}
+            entity={this.state.editingDataset}
+            //name={this.state.editingDataset.description}
+            //display_doi={this.state.editingDataset.display_doi}
             //doi={this.state.doi}
             onDismiss={() => this.setState({ NewDatasetShow: false })}
          />
-        
+         )}
       </div>
     );
   }

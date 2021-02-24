@@ -19,7 +19,7 @@ import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
 import { api_search } from '../../service/search_api';
 import { api_get_entity } from '../../service/entity_api';
-import { api_has_write } from '../../service/ingest_api';
+import { api_allowable_edit_states } from '../../service/ingest_api';
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
 import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
@@ -115,12 +115,12 @@ class EntityList extends Component {
         let entity_data = response.results;
 
         // check to see if user can edit
-        api_has_write(entity.uuid, this.state.authToken)
+        api_allowable_edit_states(entity.uuid, this.state.authToken)
           .then((resp) => {
           if (resp.status === 200) {
-            console.log('has write...');
+            console.log('api_allowable_edit_states...');
             console.log(resp.results);
-            let read_only_state = !resp.results;  //toggle this value sense results are actually opposite for UI
+            let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
             this.setState({
               updateSuccess: null,
               editingEntity: entity_data,

@@ -40,7 +40,7 @@ export function api_users_groups(auth) {
  * 
  * return:  { status, results}
  */
-export function api_has_write(uuid, auth) { 
+export function api_allowable_edit_states(uuid, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -49,13 +49,41 @@ export function api_has_write(uuid, auth) {
       }
     };
 
-  let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/has-write`;
+  let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states`;
         
   return axios 
     .get(url,options)
       .then(res => {
         //console.log(res);
-          let results = res.data.has_write;
+          //let results = res.data.has_write;
+      
+        return {status: res.status, results: res.data}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};
+
+/* 
+ * create a dataset
+ *
+ */
+export function api_create_dataset(data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`;
+        
+  return axios 
+     .post(url, data, options)
+      .then(res => {
+        console.log(res);
+          let results = res.data;
       
         return {status: res.status, results: results}
       })
@@ -63,3 +91,31 @@ export function api_has_write(uuid, auth) {
         return {status: 500, results: err.response}
       });
 };
+
+// /* 
+//  * update a dataset
+//  *
+//  */
+// export function api_update_dataset(data, auth) { 
+//   const options = {
+//       headers: {
+//         Authorization:
+//           "Bearer " + auth,
+//         "Content-Type": "application/json"
+//       }
+//     };
+
+//   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`;
+        
+//   return axios 
+//      .post(url, data, options)
+//       .then(res => {
+//         console.log(res);
+//           let results = res.data;
+      
+//         return {status: res.status, results: results}
+//       })
+//       .catch(err => {
+//         return {status: 500, results: err.response}
+//       });
+// };

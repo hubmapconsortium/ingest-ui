@@ -23,7 +23,7 @@ class Forms extends Component {
     this.setState({
       createSuccess: false,
       formType: "sample",
-      specimenType: e.entitytype === "Sample" ? "" : "organ",
+      specimenType: e.entity_type === "Sample" ? "" : "organ",
       sourceUUID: e.hubmap_identifier
     });
   };

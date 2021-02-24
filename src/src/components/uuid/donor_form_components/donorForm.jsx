@@ -384,12 +384,15 @@ class DonorForm extends Component {
       
               });
         } else {
-          if (this.state.selected_group) {
-            data["group_uuid"] = this.state.selected_group;
-          }
-          console.log("Create a new Entity....")
-           api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                .then((response) => {
+            if (this.state.selected_group && this.state.selected_group.length > 0) {
+              data["group_uuid"] = this.state.selected_group;
+            } else {
+              data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+            }
+
+            console.log("Create a new Entity....")
+            api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                 .then((response) => {
                   if (response.status == 200) {
                     console.log('create Entity...');
                     console.log(response.results);

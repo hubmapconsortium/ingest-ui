@@ -10,6 +10,7 @@ import check from './tissue_form_components/check25.jpg';
 import Modal from "./modal";
 import axios from "axios";
 import RUIIntegration from "./tissue_form_components/ruiIntegration";
+import { api_update_multiple_entities } from '../../service/entity_api';
 
 class LabIDsModal extends Component {
 
@@ -193,22 +194,45 @@ class LabIDsModal extends Component {
   }
 
   createSampleList = () => {
-    let labIds_locations = [];
+    let labIds_locations = {};
     Object.keys(this.state.assigned_ids).map(x => {
+  
       let sample = {};
-      sample["uuid"] = x;
-      sample["lab_identifier"] = this.state.assigned_ids[x];
+      //sample["uuid"] = x;
+
+      sample["lab_tissue_sample_id"] = this.state.assigned_ids[x];
       Object.keys(this.state.rui_locations).map(y => {
         if (x === y) {
-          sample["rui_location"] = this.state.rui_locations[y];
+          if (this.state.rui_locations[y] && this.state.rui_locations[y].length > 0) {
+            sample["rui_location"] = JSON.parse(this.state.rui_locations[y]);
+          }
         }
         return sample;
       });
-      labIds_locations.push(sample);
+      //labIds_locations.push({[x]: sample});
+      labIds_locations[x] = sample;
       return;
     });
     return labIds_locations;
   };
+
+  //  old_createSampleList = () => {
+  //   let labIds_locations = [];
+  //   Object.keys(this.state.assigned_ids).map(x => {
+  //     let sample = {};
+  //     sample["uuid"] = x;
+  //     sample["lab_identifier"] = this.state.assigned_ids[x];
+  //     Object.keys(this.state.rui_locations).map(y => {
+  //       if (x === y) {
+  //         sample["rui_location"] = this.state.rui_locations[y];
+  //       }
+  //       return sample;
+  //     });
+  //     labIds_locations.push(sample);
+  //     return;
+  //   });
+  //   return labIds_locations;
+  // };
 
   handleInputChange = e => {
     const { name, value } = e.target;
@@ -232,37 +256,59 @@ class LabIDsModal extends Component {
         success: false
       },
       () => {
-        const config = {
-          headers: {
-            Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-            MAuthorization: "MBearer " + localStorage.getItem("info"),
-            "Content-Type": "application/json"
-          }
-        };
-        let formData = this.createSampleList();
-        axios
-          .put(
-            `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens`,
-            formData,
-            config
-          )
-          .then(res => {
-            this.setState(
-              {
-                submitting: false,
-                success: true
-              }
-              , () => {
-                if (this.props.onSaveLocation) {
-                  this.props.onSaveLocation(true);
-                }
-                this.props.hide();
+        // const config = {
+        //   headers: {
+        //     Authorization:
+        //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        //     MAuthorization: "MBearer " + localStorage.getItem("info"),
+        //     "Content-Type": "application/json"
+        //   }
+        // };
+        //let formData = this.createSampleList();
+        // axios
+        //   .put(
+        //     `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens`,
+        //     formData,
+        //     config
+        //   )
+        //   .then(res => {
+        //     this.setState(
+        //       {
+        //         submitting: false,
+        //         success: true
+        //       }
+        //       , () => {
+        //         if (this.props.onSaveLocation) {
+        //           this.props.onSaveLocation(true);
+        //         }
+        //         this.props.hide();
+        //       });
+        //   })
+        //   .catch(error => {
+        //     this.setState({ submitting: false, submit_error: true });
+        //   });
+
+          // prepare the data
+          let data = this.createSampleList();
+          console.log('LabIDsModal', data);
+            // now update multiple lab id entities
+              api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                  .then((resp) => {
+                    if (resp.status == 200) {
+                        this.setState(
+                    {
+                      submitting: false,
+                      success: true
+                    }, () => {
+                      if (this.props.onSaveLocation) {
+                          this.props.onSaveLocation(true);
+                      }
+                        this.props.hide();
+                      });
+                    } else {
+                      this.setState({ submitting: false, submit_error: true });
+                    }
               });
-          })
-          .catch(error => {
-            this.setState({ submitting: false, submit_error: true });
-          });
       }
     );
   };
