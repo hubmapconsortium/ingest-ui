@@ -10,7 +10,7 @@ import check from './tissue_form_components/check25.jpg';
 import Modal from "./modal";
 import axios from "axios";
 import RUIIntegration from "./tissue_form_components/ruiIntegration";
-import { api_update_multiple_entities } from '../../service/entity_api';
+import { entity_api_update_multiple_entities } from '../../service/entity_api';
 
 class LabIDsModal extends Component {
 
@@ -292,7 +292,7 @@ class LabIDsModal extends Component {
           let data = this.createSampleList();
           console.log('LabIDsModal', data);
             // now update multiple lab id entities
-              api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              entity_api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                   .then((resp) => {
                     if (resp.status == 200) {
                         this.setState(

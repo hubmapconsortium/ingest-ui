@@ -26,8 +26,8 @@ import {
 import ReactTooltip from "react-tooltip";
 import HIPPA from "../HIPPA";
 import GroupModal from "../groupModal";
-import { api_users_groups } from '../../../service/ingest_api';
-import { api_update_entity, api_create_entity } from '../../../service/entity_api';
+import { ingest_api_users_groups } from '../../../service/ingest_api';
+import { entity_api_update_entity, entity_api_create_entity } from '../../../service/entity_api';
 
 class DonorForm extends Component {
   state = {
@@ -79,7 +79,7 @@ class DonorForm extends Component {
 
   UNSAFE_componentWillMount() {
 
-   api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+   ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
       if (results.status == 200) { 
       const groups = results.results.filter(
@@ -372,7 +372,7 @@ class DonorForm extends Component {
 
         if (this.props.editingEntity) {
           console.log("Updating Entity....")
-          api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+          entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
                     console.log('Update Entity...');
@@ -391,7 +391,7 @@ class DonorForm extends Component {
             }
 
             console.log("Create a new Entity....")
-            api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+            entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                  .then((response) => {
                   if (response.status == 200) {
                     console.log('create Entity...');

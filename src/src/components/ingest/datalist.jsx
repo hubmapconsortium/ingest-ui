@@ -15,7 +15,7 @@ import ReactTooltip from "react-tooltip";
 import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
 import { api_search } from '../../service/search_api';
-import { api_get_entity } from '../../service/entity_api';
+import { entity_api_get_entity } from '../../service/entity_api';
 
 class DataList extends Component {
   state = {
@@ -261,7 +261,7 @@ handleChangePage = (event, newPage) => {
 
   handleActionClick = (e) => {
 
-    api_get_entity(e.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    entity_api_get_entity(e.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
       if (response.status === 200) {
         let entity_data = response.results;

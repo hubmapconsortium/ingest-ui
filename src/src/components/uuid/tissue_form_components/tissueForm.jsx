@@ -29,7 +29,7 @@ import MetadataUpload from "../metadataUpload";
 import LabIDsModal from "../labIdsModal";
 import RUIModal from "./ruiModal";
 import RUIIntegration from "./ruiIntegration";
-import { api_update_entity, api_create_entity, api_create_multiple_entities, api_get_entity_ancestor } from '../../../service/entity_api';
+import { entity_api_update_entity, entity_api_create_entity, entity_api_create_multiple_entities, entity_api_get_entity_ancestor } from '../../../service/entity_api';
 
 class TissueForm extends Component {
   state = {
@@ -960,7 +960,7 @@ handleAddImage = () => {
 
         if (this.props.editingEntity && !this.state.LocationSaved) {
           console.log("Updating Entity....")
-          api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+          entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
                     console.log('Update Entity...');
@@ -981,7 +981,7 @@ handleAddImage = () => {
           }
 
           console.log("Create a new Entity....")
-           api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+           entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
                     console.log('create Entity...');
@@ -989,7 +989,7 @@ handleAddImage = () => {
 
                     if (this.state.sample_count > 0) {
                       // now generate some multiples
-                      api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                      entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                         .then((resp) => {
                           if (resp.status == 200) {
                              this.props.onCreated({new_samples: resp.results, entity: response.results});
@@ -1431,7 +1431,7 @@ handleAddImage = () => {
     console.log('SOURCE UUID', ids)
 
     if (ids) {
-        api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+        entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
                     console.log('Entity ancestors...', response.results);

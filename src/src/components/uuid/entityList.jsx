@@ -18,8 +18,8 @@ import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
 import { api_search } from '../../service/search_api';
-import { api_get_entity } from '../../service/entity_api';
-import { api_allowable_edit_states } from '../../service/ingest_api';
+import { entity_api_get_entity } from '../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
 import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
@@ -95,7 +95,7 @@ class EntityList extends Component {
   getEntityData = (uuid) => {
 
     console.log(uuid);
-    api_get_entity(uuid, this.state.authToken)
+    entity_api_get_entity(uuid, this.state.authToken)
     .then((response) => {
       if (response.status === 200) {
       console.log('Entity results...');
@@ -109,13 +109,13 @@ class EntityList extends Component {
  editForm = (entity, display_id, es) => {
     console.log('in the editForm')
     
-    api_get_entity(entity.uuid, this.state.authToken)
+    entity_api_get_entity(entity.uuid, this.state.authToken)
     .then((response) => {
       if (response.status === 200) {
         let entity_data = response.results;
 
         // check to see if user can edit
-        api_allowable_edit_states(entity.uuid, this.state.authToken)
+        ingest_api_allowable_edit_states(entity.uuid, this.state.authToken)
           .then((resp) => {
           if (resp.status === 200) {
             console.log('api_allowable_edit_states...');

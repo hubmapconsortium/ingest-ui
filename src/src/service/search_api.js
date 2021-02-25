@@ -19,7 +19,7 @@ export function api_search(params, auth) {
     };
 
     console.log(options)
-  let payload = api_filter_es_query_builder(params);
+  let payload = search_api_filter_es_query_builder(params);
 
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
@@ -50,21 +50,7 @@ export function api_search(params, auth) {
  * Elasticsearch query builder helper
  *
  */
-// export function api_es_query_builder(fields) {
-
-//   let requestBody = esb.requestBodySearch();
- 
-//   console.log(fields)
-
-//   Object.keys(fields).forEach(f => {
-//   //console.log(f + ':' + p[f])
-//     requestBody.query(esb.matchQuery(f, fields[f]));
-//   })
-//   console.log(requestBody.toJSON());
-//   return requestBody.toJSON();
-// }
-
-export function api_filter_es_query_builder(fields) {
+export function search_api_filter_es_query_builder(fields) {
 
   let requestBody =  esb.requestBodySearch();
  console.log("here in the filter es builder")

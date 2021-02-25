@@ -21,8 +21,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
-import { api_allowable_edit_states, api_create_dataset } from '../../service/ingest_api';
-import { api_create_entity, api_update_entity } from '../../service/entity_api';
+import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
+import { entity_api_create_entity, entity_api_update_entity } from '../../service/entity_api';
 
 class DatasetEdit extends Component {
   state = {
@@ -95,7 +95,7 @@ class DatasetEdit extends Component {
     document.addEventListener("click", this.handleClickOutside);
 
     // check to see which buttons to enable
-     api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+     ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
       .then((resp) => {
       if (resp.status === 200) {
         console.log('edit states...', resp.results);
@@ -783,17 +783,27 @@ class DatasetEdit extends Component {
                 .catch((error) => {
                   this.setState({ submit_error: true, submitting: false });
                 });
-              } else {
-                 api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                .then((response) => {
-                  if (response.status == 200) {
-                    console.log('Update Dataset...');
-                    console.log(response.results);
-                    this.props.onUpdated(response.results);
-                  } else {
-                    this.setState({ submit_error: true, submitting: false });
-                  }
-      
+            } else if (i === "processing") {
+               console.log('Submit Dataset...');
+                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                  .then((response) => {
+                    if (response.status == 200) {
+                      console.log(response.results);
+                      this.props.onUpdated(response.results);
+                    } else {
+                      this.setState({ submit_error: true, submitting: false });
+                    }
+                });
+              } else { // just update
+                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                      .then((response) => {
+                          if (response.status == 200) {
+                            console.log('Update Dataset...');
+                             console.log(response.results);
+                            this.props.onUpdated(response.results);
+                          } else {
+                            this.setState({ submit_error: true, submitting: false });
+                          }
                 });
               }
           } else {  // new creations
@@ -808,7 +818,7 @@ class DatasetEdit extends Component {
 
               //console.log('DATASET TO SAVE', JSON.stringify(data))
               // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-               api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status == 200) {
                     //console.log('create Dataset...', response.results);
@@ -1292,7 +1302,7 @@ class DatasetEdit extends Component {
                 <div className='col-sm-2 text-right'>
                   <button
                     type='button'
-                    className='btn btn-secondary btn-block'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Cancel
@@ -1309,7 +1319,7 @@ class DatasetEdit extends Component {
                     className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
-                    Back To Search
+                    Cancel
                   </button>
                 </div>
               </div>

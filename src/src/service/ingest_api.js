@@ -7,7 +7,7 @@ import axios from "axios";
  * User Group API
  *
  */
-export function api_users_groups(auth) { 
+export function ingest_api_users_groups(auth) { 
    const options = {
       headers: {
         Authorization:
@@ -40,7 +40,7 @@ export function api_users_groups(auth) {
  * 
  * return:  { status, results}
  */
-export function api_allowable_edit_states(uuid, auth) { 
+export function ingest_api_allowable_edit_states(uuid, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -68,7 +68,7 @@ export function api_allowable_edit_states(uuid, auth) {
  * create a dataset
  *
  */
-export function api_create_dataset(data, auth) { 
+export function ingest_api_create_dataset(data, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -92,30 +92,30 @@ export function api_create_dataset(data, auth) {
       });
 };
 
-// /* 
-//  * update a dataset
-//  *
-//  */
-// export function api_update_dataset(data, auth) { 
-//   const options = {
-//       headers: {
-//         Authorization:
-//           "Bearer " + auth,
-//         "Content-Type": "application/json"
-//       }
-//     };
+/* 
+ * submit a dataset
+ *
+ */
+export function ingest_api_dataset_submit(uuid, data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
 
-//   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
         
-//   return axios 
-//      .post(url, data, options)
-//       .then(res => {
-//         console.log(res);
-//           let results = res.data;
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+        console.log(res);
+          let results = res.data;
       
-//         return {status: res.status, results: results}
-//       })
-//       .catch(err => {
-//         return {status: 500, results: err.response}
-//       });
-// };
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};

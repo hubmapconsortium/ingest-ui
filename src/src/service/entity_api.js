@@ -5,7 +5,7 @@ import axios from "axios";
  * 
  * return:  { status, results}
  */
-export function api_get_entity(uuid, auth) { 
+export function entity_api_get_entity(uuid, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -33,7 +33,7 @@ export function api_get_entity(uuid, auth) {
  * update_entity - updates data of an existing entity
  *
  */
-export function api_update_entity(uuid, data, auth) { 
+export function entity_api_update_entity(uuid, data, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -61,7 +61,7 @@ export function api_update_entity(uuid, data, auth) {
  * create_entity - create a new entity
  *
  */
-export function api_create_entity(entitytype, data, auth) { 
+export function entity_api_create_entity(entitytype, data, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -86,10 +86,10 @@ export function api_create_entity(entitytype, data, auth) {
 };
 
 /* 
- * api_create_multiple_entities - create multiple entities
+ * entity_api_create_multiple_entities - create multiple entities
  *
  */
-export function api_create_multiple_entities(count, data, auth) { 
+export function entity_api_create_multiple_entities(count, data, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -115,10 +115,10 @@ export function api_create_multiple_entities(count, data, auth) {
 
 
 /* 
- * api_create_multiple_entities - create multiple entities
+ * entity_api_create_multiple_entities - create multiple entities
  *
  */
-export function api_update_multiple_entities(data, auth) { 
+export function entity_api_update_multiple_entities(data, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -149,7 +149,7 @@ export function api_update_multiple_entities(data, auth) {
  * 
  * return:  { status, results}
  */
-export function api_get_entity_ancestor(uuid, auth) { 
+export function entity_api_get_entity_ancestor(uuid, auth) { 
   const options = {
       headers: {
         Authorization:
