@@ -50,6 +50,7 @@ class TissueForm extends Component {
     specimen_type_other: "",
     source_uuid: "",
     source_uuid_list: "",
+    ancestor_organ: "",
     organ: "",
     organ_other: "",
     visit: "",
@@ -1433,37 +1434,33 @@ handleAddImage = () => {
   // Callback for the SOURCE for table selection 
   handleSelectClick = ids => {
     console.log('SOURCE UUID', ids)
+    let ancestor_organ = ""
 
     if (ids) {
-        entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-                .then((response) => {
-                  if (response.status == 200) {
-                    console.log('Entity ancestors...', response.results);
-                    console.log(response.results);
-                    if (response.results.length > 0) {
-                      this.setState({
-                        organ: response.results[0].organ
-                      });
-                  } 
-                }
-              });
+      // check to see if we have an "top-level" ancestor 
+      entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+        .then((response) => {
+          if (response.status == 200) {
+              console.log('Entity ancestors...', response.results);
+              console.log(response.results);
+              if (response.results.length > 0) {
+                  ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
+              }
+          } else {
+              ancestor_organ = ids[0].entity.organ;  // use the direct ancestor
+          }
+          this.setState({
+            source_uuid: ids[0].hubmap_id,
+            source_entity: ids[0].entity,
+            source_uuid_list: ids[0].source_uuid,   // just add the single for now
+            source_entity_type: ids[0].entity.entity_type,
+            organ: ancestor_organ,
+            ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
+            sex: this.getGender(ids[0].entity),
+            LookUpShow: false
+          });
+        });
     }
-
-    this.setState(
-      {
-        source_uuid: ids[0].hubmap_id,
-        source_entity: ids[0].entity,
-        source_uuid_list: ids[0].source_uuid,   // just add the single for now
-        source_entity_type: ids[0].entity.entity_type,
-        sex: this.getGender(ids[0].entity),
-        LookUpShow: false
-      }
-    
-      // ,
-      // () => {
-      //   this.validateUUID();
-      // }
-    );
       console.log('source results', ids[0])
   };
 
@@ -2135,7 +2132,7 @@ handleAddImage = () => {
             {!this.props.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ) &&
+             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&
               (
                 <div className="form-group">
                   <label
@@ -2221,7 +2218,7 @@ handleAddImage = () => {
                     className="col-sm-2 col-form-label text-right"
                   >
                     Sample Location
-				</label>
+				          </label>
                   <React.Fragment>
                     <div className="col-sm-3">
                       <button
@@ -2230,7 +2227,7 @@ handleAddImage = () => {
                         onClick={this.openRUIModalHandler}
                       >
                         View Location
-						   </button>
+						        </button>
                     </div>
                     <RUIModal
                       className="Modal"
