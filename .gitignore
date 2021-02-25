@@ -31,8 +31,9 @@ src/package-lock.json
 # testing
 src/react-app/coverage
 
-# .env. files (not the .env file)
+# env files
 src/.env.*
+src/.env
 
 # misc
 .DS_Store
