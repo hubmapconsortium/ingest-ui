@@ -296,11 +296,15 @@ class TissueForm extends Component {
         // }
       );
     } else {
+
+  console.log('AFTER DONOR: ', this.props);
       this.setState(
         {
           specimen_type: this.props.specimenType,
-          source_uuid: this.props.sourceUUID
+          source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
+          source_uuid_list: this.props.uuid  // true uuid
         }
+
         // ,
         // () => {
         //   if (this.state.source_uuid !== undefined) {

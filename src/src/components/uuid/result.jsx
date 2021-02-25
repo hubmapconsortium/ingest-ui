@@ -129,7 +129,7 @@ class Result extends Component {
                       type="button"
                       onClick={() =>
                         this.props.onCreateNext(
-                          this.props.result["new_samples"][0]
+                          this.props.result.entity
                         )
                       }
                     >
@@ -143,7 +143,7 @@ class Result extends Component {
                         type="button"
                         onClick={() =>
                           this.props.onCreateNext(
-                            this.props.result["new_samples"][0]
+                            this.props.result.entity
                           )
                         }
                       >
