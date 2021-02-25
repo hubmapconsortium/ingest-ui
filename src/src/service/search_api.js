@@ -105,7 +105,7 @@ export function api_filter_es_query_builder(fields) {
     }
   
   }
-  requestBody.query(boolQuery).size(10000);
+  requestBody.query(boolQuery).size(50);
 
   console.log(requestBody.toJSON());
   return requestBody.toJSON();
