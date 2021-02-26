@@ -94,18 +94,20 @@ class DatasetEdit extends Component {
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside);
 
-    // check to see which buttons to enable
-     ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-      .then((resp) => {
-      if (resp.status === 200) {
-        console.log('edit states...', resp.results);
-  
-        this.setState({
-          writeable: resp.results.has_write_priv,
-          has_submit: resp.results.has_submit_priv
-          });
-      }
-    });
+    if (this.props.editingDataset.uuid) {
+      // check to see which buttons to enable
+       ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+        .then((resp) => {
+        if (resp.status === 200) {
+          console.log('edit states...', resp.results);
+    
+          this.setState({
+            writeable: resp.results.has_write_priv,
+            has_submit: resp.results.has_submit_priv
+            });
+        }
+      });
+    }
 
 
     const config = {
@@ -1385,7 +1387,7 @@ class DatasetEdit extends Component {
   var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
   return (<div className='form-group form-check'>
     <input type='checkbox' className='form-check-input' name={val.name} id={idstr}
-    onClick={this.handleInputChange} checked={this.state.data_types.has(val.name)}
+    onChange={this.handleInputChange} checked={this.state.data_types.has(val.name)}
     />
     <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
     </div>

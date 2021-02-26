@@ -20,11 +20,15 @@ class Forms extends Component {
   }
 
   onCreateNext = e => {
+    console.log('onCreateNext', e)
+    let ancestor = e
     this.setState({
       createSuccess: false,
       formType: "sample",
       specimenType: e.entity_type === "Sample" ? "" : "organ",
-      sourceUUID: e.hubmap_identifier
+      sourceUUID: e.hubmap_id,   // this is source hubmap id, which is for visual purpose
+      uuid: e.uuid      // send the true uuid
+     
     });
   };
 
@@ -52,6 +56,7 @@ class Forms extends Component {
           handleCancel={this.props.onCancel}
           specimenType={this.state.specimenType}
           sourceUUID={this.state.sourceUUID}
+          uuid={this.state.uuid}
         />
       );
     } else {
