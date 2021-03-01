@@ -23,7 +23,7 @@ class LabIDsModal extends Component {
     rui_locations: { name: '' },
     sample_name: "",
     update: false,
-    metadata: this.props,
+    metadata: this.props.metadata,
   };
 
   componentDidMount() {
@@ -35,6 +35,7 @@ class LabIDsModal extends Component {
               sex: this.getGender(this.state.metadata.direct_ancestor)
             }
           });
+    console.log('state',this.state)
     // const config = {
     //   headers: {
     //     Authorization:
@@ -414,10 +415,10 @@ class LabIDsModal extends Component {
                                       type="info"
                                       effect="solid"
                                     >
-                                      <h4>Provide formatted location data from <br />
+                                      <p>Provide formatted location data from <br />
                               CCF Location Registration Tool for <br />
                               this sample.
-                            </h4>
+                            </p>
                                     </ReactTooltip>
                                   </span>
                                 </div>
@@ -438,7 +439,7 @@ class LabIDsModal extends Component {
                                   <RUIIntegration handleJsonRUI={this.handleRUIJson}
                                     organ={this.state.metadata.organ}
                                     sex={this.state.metadata.sex}
-                                    user={this.state.metadata.provenance_user_displayname}
+                                    user={this.state.metadata.created_by_user_displayname}
                                     location={this.state.rui_locations[id.uuid] || ""} />
                                 )}
                                 {this.state.rui_checks[id.uuid] &&
@@ -486,11 +487,11 @@ class LabIDsModal extends Component {
                                       type="info"
                                       effect="solid"
                                     >
-                                      <h4>
+                                      <p>
                                         Provide formatted location data from <br />
                             CCF Location Registration Tool for <br />
                             this sample.
-                            </h4>
+                            </p>
                                     </ReactTooltip>
                                   </span>
                                 </div>
