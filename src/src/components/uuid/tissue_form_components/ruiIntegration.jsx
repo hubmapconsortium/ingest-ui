@@ -37,6 +37,7 @@ class RUIIntegration extends Component {
    */
 
   componentDidMount() {
+    console.log('RUI...', this.props)
     const runtime_script = document.createElement("script");
     runtime_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/runtime.js`;
     runtime_script.async = true;

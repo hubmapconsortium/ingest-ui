@@ -35,3 +35,14 @@ export function tsToDate(timestamp) {
           ":"+date.getSeconds());
 }
 
+export function parseErrorMessage(err) {
+  console.log('parseErrorMessage', err)
+  try { 
+     var l = err["error"].split(":");   // parse out the : which separates the error number and message
+console.log('error message', l)
+
+     return l[1]
+  }
+  catch {}
+ return err
+}

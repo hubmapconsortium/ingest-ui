@@ -119,3 +119,32 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
         return {status: 500, results: err.response}
       });
 };
+
+/* 
+ * submit a dataset
+ *
+ */
+export function ingest_api_derived_dataset(uuid, data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
+        
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+        console.log(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};
+

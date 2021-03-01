@@ -6,21 +6,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faPlus,
   faUserShield,
   faSearch, faPaperclip
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
-  validateProtocolIODOI,
-  validateFileType
+  validateProtocolIODOI
+//  validateFileType
 } from "../../../utils/validators";
 import check from './check25.jpg';
-import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
+//import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
-import { truncateString } from "../../../utils/string_helper";
+import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
-import Protocol from "./protocol";
+//import Protocol from "./protocol";
 import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES } from "../../../constants";
@@ -77,7 +76,7 @@ class TissueForm extends Component {
     deleted_images: [],
     groups: [],
     selected_group: "",
-
+    error_message_detail: "",
     error_message: "Oops! Something went wrong. Please contact administrator for help.",
     formErrors: {
       lab: "",
@@ -156,23 +155,24 @@ class TissueForm extends Component {
           config
         )
         .then(res => {
-          if (res.data.siblingid_list.length > 0) {
-            res.data.siblingid_list.push({
-              hubmap_identifier: this.props.editingEntity.hubmap_id,
-              uuid: this.props.editingEntity.uuid,
-              lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id || "",
-              rui_location: this.props.editingEntity.rui_location || ""
-            });
-            res.data.siblingid_list.sort((a, b) => {
+          if (res.data.ingest_group_ids.length > 0) {
+            console.log("pre siblingid_list", res.data.ingest_group_ids);
+            // res.data.ingest_group_ids.push({
+            //   hubmap_identifier: this.props.editingEntity.hubmap_id,
+            //   uuid: this.props.editingEntity.uuid,
+            //   lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id || "",
+            //   rui_location: this.props.editingEntity.rui_location || ""
+            // });
+            res.data.ingest_group_ids.sort((a, b) => {
               if (
                 parseInt(
-                  a.hubmap_identifier.substring(
-                    a.hubmap_identifier.lastIndexOf("-") + 1
+                  a.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
                   )
                 ) >
                 parseInt(
-                  b.hubmap_identifier.substring(
-                    a.hubmap_identifier.lastIndexOf("-") + 1
+                  b.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
                   )
                 )
               ) {
@@ -180,13 +180,13 @@ class TissueForm extends Component {
               }
               if (
                 parseInt(
-                  b.hubmap_identifier.substring(
-                    a.hubmap_identifier.lastIndexOf("-") + 1
+                  b.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
                   )
                 ) >
                 parseInt(
-                  a.hubmap_identifier.substring(
-                    a.hubmap_identifier.lastIndexOf("-") + 1
+                  a.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
                   )
                 )
               ) {
@@ -195,24 +195,26 @@ class TissueForm extends Component {
               return 0;
             });
 
+            console.log("this.props.editingEntities.length", this.props.editingEntities.length);
             this.setState({
               entities: this.props.editingEntities,
-              ids: res.data.siblingid_list,
+              ids: res.data.ingest_group_ids,
               multiple_id: this.props.editingEntities.length > 1 ? true : false
             });
-            const first_lab_id = this.props.editingEntities[0].hubmap_id;
-            const last_lab_id =
-              this.props.editingEntities[this.props.editingEntities.length - 1]
-                .hubmap_id;
-
-            if (this.props.editingEntities.length > 1) {
-              this.setState({
-                editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
-                  } ${flattenSampleType(SAMPLE_TYPES)[
-                  this.props.editingEntity.specimen_type
-                  ]
-                  } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
-              });
+          
+            //if (this.props.editingEntities.length > 1) {
+              
+            if (res.data.ingest_group_ids.length > 1) {
+                const first_lab_id = res.data.ingest_group_ids[0].submission_id; //this.props.editingEntities[0].submission_id;
+                const last_lab_id = res.data.ingest_group_ids[res.data.ingest_group_ids-1].submission_id;  // this.props.editingEntities[this.props.editingEntities.length - 1].submission_id;
+                console.log('ingest_group_ids', res.data.ingest_group_ids)
+                this.setState({
+                    editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
+                     } ${flattenSampleType(SAMPLE_TYPES)[
+                      this.props.editingEntity.specimen_type
+                      ]
+                    } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
+                });
             }
           }
         })
@@ -896,7 +898,6 @@ handleAddImage = () => {
           console.log('submit metadatas', this.state.metadatas);
           if (this.state.metadatas.length > 0) {
             let metadata_files_to_add = [];
-            let existing_meta_files_to_update = [];
  
             this.state.metadatas.forEach(i => {
               if (i.ref.current.state.temp_file_id !== "") {
@@ -967,7 +968,7 @@ handleAddImage = () => {
           console.log("Updating Entity....")
           entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
-                  if (response.status == 200) {
+                  if (response.status === 200) {
                     console.log('Update Entity...');
                     console.log(response.results);
                     this.props.onUpdated(response.results);
@@ -988,7 +989,7 @@ handleAddImage = () => {
           console.log("Create a new Entity....")
            entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
-                  if (response.status == 200) {
+                  if (response.status === 200) {
                     console.log('create Entity...');
                     console.log(response.results);
 
@@ -996,15 +997,18 @@ handleAddImage = () => {
                       // now generate some multiples
                       entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                         .then((resp) => {
-                          if (resp.status == 200) {
+                          if (resp.status ===200) {
                              this.props.onCreated({new_samples: resp.results, entity: response.results});
                           }
                       });
                    } else {
                       this.props.onCreated({new_samples: [], entity: response.results});
                    }
+                  } if (response.status === 400) {
+                    console.log('400 error', response)
+                     this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
                   } else {
-                    this.setState({ submit_error: true, submitting: false });
+                    this.setState({ submit_error: true, submitting: false});
                   }
               });
           }
@@ -1216,7 +1220,7 @@ handleAddImage = () => {
     return new Promise((resolve, reject) => {
       let isValid = true;
 
-      const usedFileName = new Set();
+      //const usedFileName = new Set();
       // this.state.protocols.forEach((protocol, index) => {
       //   if (protocol.protocol_file !== "") {
       //     usedFileName.add(getFileNameOnPath(protocol.protocol_file));
@@ -1440,7 +1444,7 @@ handleAddImage = () => {
       // check to see if we have an "top-level" ancestor 
       entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
-          if (response.status == 200) {
+          if (response.status === 200) {
               console.log('Entity ancestors...', response.results);
               console.log(response.results);
               if (response.results.length > 0) {
@@ -1466,7 +1470,6 @@ handleAddImage = () => {
 
  // only handles one selection at this time
   getSourceAncestor(source_uuids){
-    let id = ""; 
     try {
       return source_uuids[0].hubmap_id;  // just get the first one
     } catch {
@@ -1476,7 +1479,6 @@ handleAddImage = () => {
 
     // only handles one selection at this time
   getSourceAncestorEntity(source_uuids){
-    let id = ""; 
     try {
       return source_uuids[0];  // just get the first one
     } catch {
@@ -1845,15 +1847,14 @@ handleAddImage = () => {
             )}
             {["organ", "biopsy", "blood"].includes(this.state.specimen_type) &&
               (!this.props.readOnly || this.state.visit !== undefined) && (
-                <div className="form-group row">
+                <div className="form-group">
                   <label
                     htmlFor="visit"
-                    className="col-sm-2 col-form-label text-right"
                   >
                     Visit
                   </label>
                   {!this.props.readOnly && (
-                    <div className="col-sm-9">
+                   
                       <input
                         type="text"
                         name="visit"
@@ -1866,7 +1867,7 @@ handleAddImage = () => {
                         onChange={this.handleInputChange}
                         value={this.state.visit}
                       />
-                    </div>
+                  
                   )}
                   {this.props.readOnly && (
                     <div>
@@ -1960,7 +1961,7 @@ handleAddImage = () => {
               this.state.specimen_type !== "organ" &&
               !this.props.editingEntity && (
                 <div className="form-group row">
-                  <div className="col-sm-8 offset-sm-2">
+                  <div className="col-sm-8">
                     <div className="form-group form-check">
                       <input
                         type="checkbox"
@@ -1981,7 +1982,7 @@ handleAddImage = () => {
                   </div>
                   {this.state.multiple_id && (
                     <React.Fragment>
-                      <div className="col-sm-4 offset-sm-2">
+                      <div className="col-sm-4 offset-sm-1">
                         <input
                           type="number"
                           className={
@@ -2254,7 +2255,7 @@ handleAddImage = () => {
                             className="btn btn-primary btn-block"
                           >
                             Modify Location Information
-				         </button>
+				                  </button>
                         </div>
                         { this.state.rui_click && (
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
@@ -2534,6 +2535,9 @@ handleAddImage = () => {
             )}
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
+                <p>
+                {this.state.error_message_detail}
+                </p>
                 {this.state.error_message}
               </div>
             )}
