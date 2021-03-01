@@ -17,7 +17,7 @@ import {
 import check from './check25.jpg';
 //import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
-import { truncateString } from "../../../utils/string_helper";
+import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
 //import Protocol from "./protocol";
 import IDSearchModal from "./idSearchModal";
@@ -76,7 +76,7 @@ class TissueForm extends Component {
     deleted_images: [],
     groups: [],
     selected_group: "",
-
+    error_message_detail: "",
     error_message: "Oops! Something went wrong. Please contact administrator for help.",
     formErrors: {
       lab: "",
@@ -1004,8 +1004,11 @@ handleAddImage = () => {
                    } else {
                       this.props.onCreated({new_samples: [], entity: response.results});
                    }
+                  } if (response.status === 400) {
+                    console.log('400 error', response)
+                     this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
                   } else {
-                    this.setState({ submit_error: true, submitting: false });
+                    this.setState({ submit_error: true, submitting: false});
                   }
               });
           }
@@ -2532,6 +2535,9 @@ handleAddImage = () => {
             )}
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
+                <p>
+                {this.state.error_message_detail}
+                </p>
                 {this.state.error_message}
               </div>
             )}
