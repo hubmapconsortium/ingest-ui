@@ -442,7 +442,7 @@ class DonorForm extends Component {
                 className="btn btn-primary"
                 disabled={this.state.submitting}
               >
-                {this.state.submitting && (
+                 {this.state.submitting && (
                   <FontAwesomeIcon
                     className="inline-icon"
                     icon={faSpinner}
@@ -983,7 +983,7 @@ class DonorForm extends Component {
                               icon={faPaperclip}
                               title="Uploaded images (multiple allowed)."
                             />
-                            Attach an Image(s)
+                            Add an Image File
                           </button>
                          <small id="emailHelp" className="form-text text-muted"> 
                           <span className="text-danger inline-icon">
