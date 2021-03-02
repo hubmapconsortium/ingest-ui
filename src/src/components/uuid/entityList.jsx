@@ -209,6 +209,7 @@ class EntityList extends Component {
     const group = this.state.filter_group;
     const sample_type = this.state.filter_sample_type;
     const keywords = this.state.filter_keywords;
+    this.setState({ loading: true });
 //     let requestBody = esb.requestBodySearch().query(
 //       esb.boolQuery()
 //           .must(esb.matchQuery('group_name', group))
@@ -308,7 +309,7 @@ class EntityList extends Component {
   renderFilterControls() {
 
     //const classes = useStyles();
-    if (!this.state.loading && !this.state.editingEntity) {
+    if (!this.state.editingEntity) {
       return (
         <div>
           <div className="card mt-2">
@@ -452,7 +453,6 @@ class EntityList extends Component {
   }
 
 renderTable() {
-  this.renderLoadingSpinner()
   if (!this.state.loading && !this.state.editingEntity) {
 
       return (
@@ -664,6 +664,7 @@ renderTable() {
         {this.renderFilterControls()}
        {/* {this.renderKey()}*/}
         {this.renderTable()}
+        {this.renderLoadingSpinner()}
         {this.renderEditForm()}
         {/* <Modal
           show={this.state.show}
