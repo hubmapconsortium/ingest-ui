@@ -23,16 +23,13 @@ export function naturalLanguageJoin(strArr) {
   return "";
 }
 
+// convert a timestampe to human readble format for display puposes
 export function tsToDate(timestamp) {
   
-  var date = new Date(timestamp);
+  var millisec = timestamp * 1000;
+  var date = new Date(millisec);
 
-  return (date.getDate()+
-          "/"+(date.getMonth()+1)+
-          "/"+date.getFullYear()+
-          " "+date.getHours()+
-          ":"+date.getMinutes()+
-          ":"+date.getSeconds());
+  return date.toLocaleString()
 }
 
 export function parseErrorMessage(err) {

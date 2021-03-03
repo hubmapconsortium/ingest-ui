@@ -407,6 +407,7 @@ class DonorForm extends Component {
   };
 
   errorClass(error) {
+    console.log('errorClass', error)
     return error.length === 0 ? "" : "is-invalid";
   }
 
@@ -442,7 +443,7 @@ class DonorForm extends Component {
                 className="btn btn-primary"
                 disabled={this.state.submitting}
               >
-                {this.state.submitting && (
+                 {this.state.submitting && (
                   <FontAwesomeIcon
                     className="inline-icon"
                     icon={faSpinner}
@@ -518,10 +519,24 @@ class DonorForm extends Component {
             }
           }));
           isValid = false;
+    } else {
+      this.setState(prevState => ({
+        formErrors: { ...prevState.formErrors, protocol_url: "" }
+      }));
     }
 
+  if (!validateRequired(this.state.protocol_url)) {
+      this.setState(prevState => ({
+        formErrors: { ...prevState.formErrors, protocol_url: "required" }
+      }));
+      isValid = false;
+    } else {
+      this.setState(prevState => ({
+        formErrors: { ...prevState.formErrors, protocol_url: "" }
+      }));
+    }
     // if (!this.props.editingEntity) {
-      console.log('valid images')
+
     this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
         console.log('image invalid', image.file_name)
@@ -983,7 +998,7 @@ class DonorForm extends Component {
                               icon={faPaperclip}
                               title="Uploaded images (multiple allowed)."
                             />
-                            Attach an Image(s)
+                            Add an Image File
                           </button>
                          <small id="emailHelp" className="form-text text-muted"> 
                           <span className="text-danger inline-icon">

@@ -14,6 +14,7 @@ import {
   validateProtocolIODOI
 //  validateFileType
 } from "../../../utils/validators";
+import { tsToDate } from "../../../utils/string_helper";
 import check from './check25.jpg';
 //import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
@@ -41,8 +42,8 @@ class TissueForm extends Component {
     //   }
     // ],
 
-    protocol: "",
-    protocol_file: "",
+//    protocol: "",
+    protocol_url: "",
     entity_type: "",
     source_entity_type: "Donor",
     specimen_type: "",
@@ -82,8 +83,7 @@ class TissueForm extends Component {
       lab: "",
       // lab_tissue_id: "",
       // protocols: "",
-      protocol: "",
-      protocol_file: "",
+      protocol_url: "",
       specimen_type: "",
       specimen_type_other: "",
       organ: "",
@@ -103,8 +103,8 @@ class TissueForm extends Component {
   constructor(props) {
     super(props);
     // create a ref to store the file Input DOM element   
-    this.protocolFile = React.createRef();
-    this.protocol = React.createRef();
+    //this.protocolFile = React.createRef();
+    //this.protocol = React.createRef();
     // this.handleSavedLocations = this.handleSavedLocations.bind(this);
   }
 
@@ -277,7 +277,7 @@ class TissueForm extends Component {
           lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id,
           rui_location: this.props.editingEntity.rui_location || "",
           // protocols: protocols_json,
-          protocol: this.props.editingEntity.protocol_url,
+          protocol_url: this.props.editingEntity.protocol_url,
           // protocol_file_name: getFileNameOnPath(
           //   this.props.editingEntity.properties.protocol_file
           // ),
@@ -380,29 +380,29 @@ class TissueForm extends Component {
           }));
         }
         break;
-      case "protocol":
-        this.setState({ protocol: value });
-        if (
-          !validateRequired(value)
-        ) {
+      case "protocol_url":
+      console.log('im at the protocol_url', value)
+        this.setState({ protocol_url: value });
+        if (!validateRequired(value)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: "required"
+              protocol_url: "required"
             }
           }));
+          console.log("protocol_url is INVALID")
         } else if (!validateProtocolIODOI(value)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: "Please enter a valid protocols.io URL"
+              protocol_url: "Please enter a valid protocols.io URL"
             }
           }));
         } else {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol: ""
+              protocol_url: ""
             }
           }));
         }
@@ -597,13 +597,13 @@ class TissueForm extends Component {
     }
   };
 
-  handleDeleteProtocolFile = () => {
-    this.setState({
-      protocol_file_name: "Choose a file",
-      protocolFileKey: Date.now(),
-      protocol_file: ""
-    });
-  };
+  // handleDeleteProtocolFile = () => {
+  //   this.setState({
+  //     protocol_file_name: "Choose a file",
+  //     protocolFileKey: Date.now(),
+  //     protocol_file: ""
+  //   });
+  // };
 
   // handleDeleteMetadataFile = () => {
   //   this.setState({
@@ -864,7 +864,7 @@ handleAddImage = () => {
           });
           let data = {
             lab_tissue_sample_id: this.state.lab_tissue_id,
-            protocol_url: this.state.protocol,
+            protocol_url: this.state.protocol_url,
            // rui_location: this.state.rui_location,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
@@ -1220,27 +1220,6 @@ handleAddImage = () => {
     return new Promise((resolve, reject) => {
       let isValid = true;
 
-      //const usedFileName = new Set();
-      // this.state.protocols.forEach((protocol, index) => {
-      //   if (protocol.protocol_file !== "") {
-      //     usedFileName.add(getFileNameOnPath(protocol.protocol_file));
-      //   }
-      //   if (!protocol.ref.current.validate()) {
-      //     isValid = false;
-      //   }
-
-      //   if (protocol.ref.current.protocol_file.current.files[0]) {
-      //     if (
-      //       usedFileName.has(
-      //         protocol.ref.current.protocol_file.current.files[0].name
-      //       )
-      //     ) {
-      //       protocol["error"] = "Duplicated file name is not allowed.";
-      //       isValid = false;
-      //     }
-      //   }
-      // });
-
       if (!validateRequired(this.state.specimen_type)) {
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, specimen_type: "required" }
@@ -1303,7 +1282,15 @@ handleAddImage = () => {
         }));
       }
 
-      if (!validateProtocolIODOI(this.state.protocol_url)) {
+      if (!validateRequired(this.state.protocol_url)) {
+        this.setState(prevState => ({
+            formErrors: {
+              ...prevState.formErrors,
+              protocol_url: "required"
+            }
+          }));
+          isValid = false;
+      } else if (!validateProtocolIODOI(this.state.protocol_url)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -1312,9 +1299,11 @@ handleAddImage = () => {
           }));
           isValid = false;
 
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, protocol_url: "" }
+        }));
       }
-
-      console.log('validate images')
 
       // validate the images
       this.state.images.forEach((image, index) => {
@@ -1395,21 +1384,17 @@ handleAddImage = () => {
       //   }
       // });
 
-      console.log('validate SOURCE UUID')
       if (!validateRequired(this.state.source_uuid)) {
-        console.log('not valid uuid')
         this.setState(prevState => ({
           formErrors: { ...prevState.formErrors, source_uuid: "required" }
         }));
         isValid = false;
         resolve(isValid);
       } else {
-
-      console.log('validate SOURCE UUID valid')
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "" }
-        }));
-        resolve(isValid);
+          this.setState(prevState => ({
+            formErrors: { ...prevState.formErrors, source_uuid: "" }
+          }));
+          resolve(isValid);
         // this.validateUUID().then(res => {
         //   resolve(isValid && res);
         // });
@@ -1437,7 +1422,6 @@ handleAddImage = () => {
 
   // Callback for the SOURCE for table selection 
   handleSelectClick = ids => {
-    console.log('SOURCE UUID', ids)
     let ancestor_organ = ""
 
     if (ids) {
@@ -1445,8 +1429,8 @@ handleAddImage = () => {
       entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
-              console.log('Entity ancestors...', response.results);
-              console.log(response.results);
+              // console.log('Entity ancestors...', response.results);
+              // console.log(response.results);
               if (response.results.length > 0) {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
               }
@@ -1465,7 +1449,6 @@ handleAddImage = () => {
           });
         });
     }
-      console.log('source results', ids[0])
   };
 
  // only handles one selection at this time
@@ -1541,7 +1524,24 @@ handleAddImage = () => {
               18 identifiers specified by HIPAA
               </span>
           </div>
-         
+           {this.props.editingEntity && (
+            <React.Fragment>
+            <div className="row">
+              <div className="col-sm-5 offset-sm-2 portal-label">
+                  HuBMAP ID: {this.props.editingEntity.hubmap_id}
+              </div>
+              <div className="col-sm-4 text-right portal-label">
+              Submission ID: {this.props.editingEntity.submission_id}
+              </div>
+                <div className="col-sm-5 offset-sm-2 portal-label">
+                  Entered by: {this.props.editingEntity.created_by_user_email}
+              </div>
+              <div className="col-sm-4 text-right portal-label">
+                  Entry Date: {tsToDate(this.props.editingEntity.created_timestamp)}
+              </div>
+              </div>
+            </React.Fragment>
+          )}
           <Paper className="paper-container">
           <form onSubmit={this.handleSubmit}>
             <div className="form-group">
@@ -1878,7 +1878,7 @@ handleAddImage = () => {
               )}
             <div className="form-group">
               <label
-                htmlFor="protocol">
+                htmlFor="protocol_url">
                 Case Selection Protocol <span className="text-danger">*</span> <span className="text-danger inline-icon">
                   <FontAwesomeIcon icon={faUserShield} />
                 </span>
@@ -1904,59 +1904,28 @@ handleAddImage = () => {
               {!this.props.readOnly && (
                 <div>
                   <input
-                    ref={this.protocol}
+                    ref={this.protocol_url}
                     type="text"
-                    name="protocol"
-                    id="protocol"
+                    name="protocol_url"
+                    id="protocol_url"
                     className={
                       "form-control " +
-                      this.errorClass(this.state.formErrors.protocol)
+                      this.errorClass(this.state.formErrors.protocol_url)
                     }
                     onChange={this.handleInputChange}
-                    value={this.state.protocol}
+                    value={this.state.protocol_url}
                     placeholder="protocols.io DOI"
                   />
-                  {this.state.formErrors.protocol &&
-                    this.state.formErrors.protocol !== "required" && (
-                      <div className="invalid-feedback">
-                        {this.state.formErrors.protocol}
-                      </div>
-                    )}
+                 
                 </div>
               )}
               {this.props.readOnly && (
                 <div>
-                    <input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol}></input>
+                    <input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol_url}></input>
                 </div>
               )}
             
             </div>
-            {/* {this.state.protocols.map((protocol, index) => {
-              return (
-                <Protocol
-                  key={protocol.id}
-                  id={protocol.id}
-                  ref={protocol.ref}
-                  protocol={protocol}
-                  error={protocol.error}
-                  remove={this.handleRemoveProtocol}
-                  readOnly={this.props.readOnly}
-                />
-              );
-            })}
-          {!this.props.readOnly && (
-              <div className="form-group row">
-                <div className="col-sm-8 offset-sm-2">
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={this.handleAddProtocol}
-                  >
-                    Add Protocol
-                  </button>
-                </div>
-              </div>
-            )} */}
             {!this.props.readOnly &&
               this.state.specimen_type !== "organ" &&
               !this.props.editingEntity && (
@@ -2442,7 +2411,7 @@ handleAddImage = () => {
                             icon={faPaperclip}
                             title="Uploaded meta data"
                           />
-	                          Attach Metadata
+	                          Add a Metadata File
 	                        </button>
                            <ReactTooltip
                               id="add_meta_tooltip"
@@ -2494,7 +2463,7 @@ handleAddImage = () => {
                             icon={faPaperclip}
                             title="Uploaded images (multiple allowed)."
                           />
-	                          Attach Image(s)
+	                          Add an Image file
 	                        </button> 
                           <small id="emailHelp" className="form-text text-muted"> 
                           <span className="text-danger inline-icon">
