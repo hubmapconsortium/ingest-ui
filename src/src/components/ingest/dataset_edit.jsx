@@ -1871,7 +1871,7 @@ class DatasetEdit extends Component {
                       id='contains_human_genetic_sequences_no'
                       value='no'
                       // defaultChecked={true}
-                      checked={this.state.contains_human_genetic_sequences === false}
+                      //checked={this.state.contains_human_genetic_sequences === false}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
@@ -1886,7 +1886,7 @@ class DatasetEdit extends Component {
                       name='contains_human_genetic_sequences'
                       id='contains_human_genetic_sequences_yes'
                       value='yes'
-                      checked={this.state.contains_human_genetic_sequences === true}
+                      //checked={this.state.contains_human_genetic_sequences === true}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
