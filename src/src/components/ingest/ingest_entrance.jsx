@@ -172,7 +172,7 @@ class IngestEntrance extends Component {
             //name={this.state.editingDataset.description}
             //display_doi={this.state.editingDataset.display_doi}
             //doi={this.state.doi}
-            onDismiss={() => this.setState({ NewDatasetShow: false })}
+            onDismiss={() => this.setState({ NewDatasetShow: false, editingDataset: null })}
          />
          )}
       </div>

@@ -41,7 +41,7 @@ class DatasetEdit extends Component {
     description: "",
     source_uuids: [],
     globus_path: "",
-    writeable: false,
+    writeable: true,
     has_submit_privs: false,
     has_submit: false,
   //  is_curator: null,
@@ -94,7 +94,10 @@ class DatasetEdit extends Component {
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside);
 
-    if (this.props.editingDataset.uuid) {
+    console.log('props', this.props)
+
+    if (this.props.editingDataset) {
+      if (this.props.editingDataset.uuid)
       // check to see which buttons to enable
        ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((resp) => {
@@ -410,9 +413,13 @@ class DatasetEdit extends Component {
           source_uuid: value,
         });
         break;
-      case "contains_human_genetic_sequences":
+      case "contains_human_genetic_sequences":   
+        let gene_seq = false; 
+        if (value == 'yes') {
+          gene_seq = true;
+        }
         this.setState({
-          contains_human_genetic_sequences: value,
+          contains_human_genetic_sequences: gene_seq,  // need to convert to a boolean
         });
         break;
       case "description":
@@ -1252,7 +1259,7 @@ class DatasetEdit extends Component {
             );
           }
         } else {
-            console.log("I'm HERE in the else status=",  this.state.status)
+          
           if (
             ["NEW", "INVALID", "REOPENED", "ERROR"].includes(
               this.state.status.toUpperCase()
@@ -1330,7 +1337,7 @@ class DatasetEdit extends Component {
         }
       }
     } else {  // buttons for a new record
-      console.log("FOR NEW RECORDS",  this.state.submitting)
+    
       return (
 
         <div className='row'>
@@ -1556,7 +1563,7 @@ class DatasetEdit extends Component {
                   </span>
                
 
-              {!this.props.readOnly && (
+              {this.state.writeable && (
                
                   <input
                     type='text'
@@ -1572,7 +1579,7 @@ class DatasetEdit extends Component {
                   />
                 
               )}
-              {this.props.readOnly && (
+              {!this.state.writeable && (
                 <div className='col-sm-9 col-form-label'>
                   <p>{this.state.name}</p>
                 </div>
@@ -1690,7 +1697,7 @@ class DatasetEdit extends Component {
                     other sample or doner, where this sample came from.
                   </p>
                 </ReactTooltip>
-              {!this.props.readOnly && (
+              {this.state.writeable && (
                 <React.Fragment>
                    <div className="input-group">
                     <input
@@ -1728,7 +1735,7 @@ class DatasetEdit extends Component {
                   />
                 </React.Fragment>
               )}
-              {this.props.readOnly && (
+              {!this.state.writeable && (
                 <React.Fragment>
                   <div className='col-sm-9 col-form-label'>
                     <p>{this.state.source_uuid}</p>
@@ -1814,7 +1821,7 @@ class DatasetEdit extends Component {
                   <p>Description Tips</p>
                 </ReactTooltip>
               </span>
-            {!this.props.readOnly && (
+            {this.state.writeable && (
               <React.Fragment>
                 <div>
                   <textarea
@@ -1831,7 +1838,7 @@ class DatasetEdit extends Component {
                 </div>
               </React.Fragment>
             )}
-            {this.props.readOnly && (
+            {!this.state.writeable && (
               <div className='col-sm-9 col-form-label'>
                 <p>{this.state.description}</p>
               </div>
@@ -1860,8 +1867,7 @@ class DatasetEdit extends Component {
 
                     <p>Gene Sequences Tips</p>
                   </ReactTooltip>
-
-              {!this.props.readOnly && (
+              {this.props.editingDataset && (
                 <div className='col-sm-9'>
                   <div className='form-check form-check-inline'>
                     <input
@@ -1871,7 +1877,7 @@ class DatasetEdit extends Component {
                       id='contains_human_genetic_sequences_no'
                       value='no'
                       // defaultChecked={true}
-                      //checked={this.state.contains_human_genetic_sequences === false}
+                      checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
@@ -1886,7 +1892,7 @@ class DatasetEdit extends Component {
                       name='contains_human_genetic_sequences'
                       id='contains_human_genetic_sequences_yes'
                       value='yes'
-                      //checked={this.state.contains_human_genetic_sequences === true}
+                      checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
@@ -1899,13 +1905,50 @@ class DatasetEdit extends Component {
                   </small>
                 </div>
               )}
+              {!this.props.editingDataset && (
+                <div className='col-sm-9'>
+                  <div className='form-check form-check-inline'>
+                    <input
+                      className='form-check-input'
+                      type='radio'
+                      name='contains_human_genetic_sequences'
+                      id='contains_human_genetic_sequences_no'
+                      value='no'
+                      // defaultChecked={true}
+                      //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
+                      onChange={this.handleInputChange}
+                      //disabled={this.props.editingDataset}
+                    />
+                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
+                      No
+                    </label>
+                  </div>
+                  <div className='form-check form-check-inline'>
+                    <input
+                      className='form-check-input'
+                      type='radio'
+                      name='contains_human_genetic_sequences'
+                      id='contains_human_genetic_sequences_yes'
+                      value='yes'
+                      //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
+                      onChange={this.handleInputChange}
+                      //disabled={this.props.editingDataset}
+                    />
+                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
+                      Yes
+                    </label>
+                  </div>
+                  <small id='PHIHelpBlock' className='form-text text-muted'>
+                    Will this data contain any human genomic sequence data?
+                  </small>
+                </div>
+              )}
 
-
-              {this.props.readOnly && (
+              {/*!this.state.writeable && (
                 <div className='col-sm-9 col-form-label'>
                   <p>{this.state.contains_human_genetic_sequences}</p>
                 </div>
-              )}
+              )*/}
             
             </div>
 
@@ -1968,7 +2011,7 @@ class DatasetEdit extends Component {
                   <p>Data Type Tips</p>
                 </ReactTooltip>
               </span>
-        {!this.props.readOnly && (
+        {this.state.writeable&& (
 		        <React.Fragment>
                 <div className='col-sm-9'>
                 <div className='row'>
@@ -1985,7 +2028,7 @@ class DatasetEdit extends Component {
                 </div>
 	             </React.Fragment>
             )}
-            {this.props.readOnly && (
+            {!this.state.writeable && (
               <div className='col-sm-9 col-form-label'>
                 <p>Readonly</p>
               </div>
