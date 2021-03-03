@@ -63,10 +63,12 @@ export function search_api_filter_es_query_builder(fields) {
     boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset'));  
   } else {
    
+    // was a group name selected
     if (fields["group_name"]) {
       boolQuery.must(esb.matchQuery("group_name", fields["group_name"]));
     } 
 
+    // was specimen types selected
     if (fields["specimen_type"]) {
       if (fields["specimen_type"] !== 'donor') {
         boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
@@ -74,14 +76,15 @@ export function search_api_filter_es_query_builder(fields) {
         boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
       }
     } else {
+        // was entity types select
         if (fields["entity_type"]) {
-          if (fields["entity_type"] === 'DonorSample') {  // hack to deal with not type selected from the UI, this clues from the donor/sample filer
+          if (fields["entity_type"] === 'DonorSample') {  // hack to deal with no type selected from the UI, this clues from the donor/sample filer
             boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
           } else {
             boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));
           }
         } else {
-           boolQuery.must(esb.matchQuery("entity_type", 'Donor'));  // default everything to Donor; this maybe temp
+           boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset'));  // default everything ; this maybe temp
         }
     }
 
