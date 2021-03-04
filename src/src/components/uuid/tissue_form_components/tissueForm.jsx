@@ -269,22 +269,36 @@ class TissueForm extends Component {
         });
       } catch {}
 
+      // convert the rui from a json to string, if there
+      try {
+        let r = JSON.stringify(this.props.editingEntity.rui_location, null, 3)
+        this.setState({
+          rui_location: r  
+        })
+      } catch{
+      }
+
+
+
+
+ console.log('DIRECT ancestor', this.props.editingEntity.direct_ancestor)
       this.setState(
         {
           source_uuid: this.getID(),
           source_entity: this.props.editingEntity.direct_ancestor,
+          source_entity_type: this.props.editingEntity.direct_ancestor.entity_type,
           author: this.props.editingEntity.created_by_user_email,
           lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id,
-          rui_location: this.props.editingEntity.rui_location || "",
+          //rui_location: this.props.editingEntity.rui_location || "",
           // protocols: protocols_json,
           protocol_url: this.props.editingEntity.protocol_url,
           // protocol_file_name: getFileNameOnPath(
           //   this.props.editingEntity.properties.protocol_file
           // ),
           entity_type: this.props.editingEntity.entity_type,
-          specimen_type: this.props.editingEntity.specimen_type,
+          specimen_type: this.determineSpecimenType(),
           specimen_type_other: this.props.editingEntity.specimen_type_other,
-          organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : "",
+          organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
           visit: this.props.editingEntity.visit ? this.props.editingEntity.visit : "",
           description: this.props.editingEntity.description,
           images: image_list,
@@ -292,15 +306,15 @@ class TissueForm extends Component {
           
         }
         // ,
+
         // () => {
         //   if (this.state.source_uuid !== undefined) {
         //     this.validateUUID();
         //   }
         // }
       );
-    } else {
 
-  console.log('AFTER DONOR: ', this.props);
+    } else {
       this.setState(
         {
           specimen_type: this.props.specimenType,
@@ -316,6 +330,15 @@ class TissueForm extends Component {
         // }
       );
     }
+  }
+
+  determineSpecimenType = () => {
+    if (this.props.editingEntity.direct_ancestor.entity_type === 'Sample') {
+      if (this.props.editingEntity.direct_ancestor.specimen_type !== 'organ') {
+        return this.props.editingEntity.direct_ancestor.specimen_type;
+      }
+    }
+    return this.props.editingEntity.specimen_type;
   }
 
   getID = () => {
@@ -1743,6 +1766,38 @@ handleAddImage = () => {
                           </optgroup>
                         );
                       })}
+
+                       {/*TISSUE_TYPES[this.props.editingEntity.entity_type].map((optgs, index) => {
+                        return (
+                          <optgroup
+                            key={index}
+                            label="____________________________________________________________"
+                          >
+                            {Object.entries(optgs).map(op => {
+                              if (op[0] === "organ") {
+                                if (
+                                  this.state.source_entity &&
+                                  this.state.source_entity.entity_type === "Donor"
+                                ) {
+                                  return (
+                                    <option key={op[0]} value={op[0]}>
+                                      {op[1]}
+                                    </option>
+                                  );
+                                } else {
+                                  return null;
+                                }
+                              } else {
+                                return (
+                                  <option key={op[0]} value={op[0]}>
+                                    {op[1]}
+                                  </option>
+                                );
+                              }
+                            })}
+                          </optgroup>
+                        );
+                      })*/}
                     </select>
                   </div>
 
@@ -1926,7 +1981,8 @@ handleAddImage = () => {
               )}
             
             </div>
-            {!this.props.readOnly &&
+            {/*  MULTIPLES DISABLED UNTIL AFTER THE RELEASE - 3/4/2021
+            !this.props.readOnly &&
               this.state.specimen_type !== "organ" &&
               !this.props.editingEntity && (
                 <div className="form-group row">
@@ -1986,7 +2042,7 @@ handleAddImage = () => {
                     </React.Fragment>
                   )}
                 </div>
-              )}
+              )*/}
             {!this.state.multiple_id &&
               !this.state.editingMultiWarning &&
               (!this.props.readOnly ||
@@ -2180,7 +2236,7 @@ handleAddImage = () => {
             {this.props.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ) &&
+             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.organ) &&
               (
                 <div className="form-group row">
                   <label
@@ -2228,7 +2284,7 @@ handleAddImage = () => {
                         </div>
                         { this.state.rui_click && (
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
-                            organ={this.state.organ}
+                            organ={this.state.source_entity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
@@ -2251,7 +2307,7 @@ handleAddImage = () => {
                         </div>
                         { this.state.rui_click && (
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
-                            organ={this.state.organ}
+                            organ={this.state.source_entity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}

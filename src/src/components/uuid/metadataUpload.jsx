@@ -132,8 +132,8 @@ class MetadataUpload extends Component {
                       id={"metadata_file_" + this.props.id}
                       onChange={this.handleMetadataFileChange}
                       ref={this.metadata_file}
-                      disabled={this.state.metadata_file_name != "" &&
-                                this.state.metadata_file_name != "Choose a file"}
+                      disabled={this.state.metadata_file_name !== "" &&
+                                this.state.metadata_file_name !== "Choose a file"}
                     />
                     <label className="custom-file-label" htmlFor="metadata">
                       {this.state.metadata_file_name}

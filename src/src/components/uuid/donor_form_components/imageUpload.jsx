@@ -165,8 +165,8 @@ class ImageUpload extends Component {
                       id={"image_file_" + +this.props.id}
                       onChange={this.handleImageFileChange}
                       ref={this.image_file}
-                      disabled={this.state.image_file_name != "" &&
-                                this.state.image_file_name != "Choose a file"}
+                      disabled={this.state.image_file_name !== "" &&
+                                this.state.image_file_name !== "Choose a file"}
                     />
                     <label className="custom-file-label" htmlFor="metadata">
                       {this.state.image_file_name}

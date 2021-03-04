@@ -407,7 +407,6 @@ class DonorForm extends Component {
   };
 
   errorClass(error) {
-    console.log('errorClass', error)
     return error.length === 0 ? "" : "is-invalid";
   }
 
