@@ -774,18 +774,20 @@ class TissueForm extends Component {
   //   });
   // };
 
-  handleDeleteMetadata = id => {
-    const deleted_meta = this.state.metadatas.find(i => i.id === id);
-    const new_metadatas = this.state.new_metadatas.filter(dm => dm !== deleted_meta.file_name);
+  handleDeleteMetadata = metadataId => {
+
+    //  console.log('before metadata', this.state.metadatas)
+    const remove_meta = this.state.metadatas.find(i => i.id === metadataId); // find our metadata file in the existing
+    const metadatas = this.state.metadatas.filter(i => i.id !== metadataId)  // recreate the metadata w/o the deleted
+    const new_metadatas = this.state.new_metadatas.filter(dm => dm !== remove_meta.uuid);
     let deleted_metas = [...this.state.deleted_metas];
 
-    console.log('deleted meta', deleted_meta)
-    if (new_metadatas.length === this.state.metadatas.length){
-      deleted_metas.push(deleted_meta.file_uuid);
-    }
-    const metas = this.state.metadatas.filter(i => i.id !== id);
+    //console.log('add remove meta', remove_meta)
+    deleted_metas.push(remove_meta.file_uuid);
+
+    //console.log('after metadata', metadatas)
     this.setState({
-      metas,
+      metadatas,
       new_metadatas,
       deleted_metas
     });
@@ -936,7 +938,7 @@ handleAddImage = () => {
             }
         
          }
-
+         console.log(this.state.deleted_metas)
          if (this.state.deleted_metas.length > 0)  { 
            data['metadata_files_to_remove'] = this.state.deleted_metas;
          }
