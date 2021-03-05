@@ -44,8 +44,8 @@ function export_version() {
     echo "INGEST_UI_VERSION: $INGEST_UI_VERSION"
 }
 
-if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" ]]; then
-    echo "Unknown build environment '$1', specify one of the following: localhost|dev|test|stage|prod"
+if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" && "$1" != "refactor" ]]; then
+    echo "Unknown build environment '$1', specify one of the following: localhost|dev|test|stage|prod|refactor"
 else
     if [[ "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
         echo "Unknown command '$2', specify one of the following: check|config|build|start|stop|down"
@@ -65,7 +65,7 @@ else
         if [ "$2" = "check" ]; then
             # Bash array
             config_paths=(
-                '../src/ingest-ui/.env'
+                '../src/.env'
             )
 
             for pth in "${config_paths[@]}"; do
@@ -88,9 +88,9 @@ else
 
             # Copy over the source code
             mkdir ingest-ui/src
-            cp -r ../src/ingest-ui/* ingest-ui/src
+            cp -r ../src/* ingest-ui/src
             # Also explicitly copy the .env file
-            cp ../src/ingest-ui/.env ingest-ui/src
+            cp ../src/.env ingest-ui/src
 
             docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui build
         elif [ "$2" = "start" ]; then
