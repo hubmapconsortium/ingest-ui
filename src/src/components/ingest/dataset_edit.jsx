@@ -241,8 +241,6 @@ class DatasetEdit extends Component {
       if(this.props.editingDataset ==='' ){
         savedGeneticsStatus = undefined;
       }else{
-        console.log(this.props.editingDataset);
-        console.log("this.props.editingDataset!!!");
         savedGeneticsStatus = this.props.editingDataset.contains_human_genetic_sequences;
       }
         this.setState(
@@ -884,7 +882,7 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-      
+
       if (!validateRequired(this.state.name)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, name: "required" },
