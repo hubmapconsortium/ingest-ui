@@ -37,7 +37,7 @@ class DatasetEdit extends Component {
     // },
     source_uuid: "",
     source_uuid_list: [],
-    contains_human_genetic_sequences: false,
+    contains_human_genetic_sequences: undefined,
     description: "",
     source_uuids: [],
     globus_path: "",
@@ -60,6 +60,7 @@ class DatasetEdit extends Component {
       source_uuid: "",
       data_types: "",
       other_dt: "",
+      contains_human_genetic_sequences:""
     },
   };
 
@@ -236,6 +237,14 @@ class DatasetEdit extends Component {
 
    
       this.updateStateDataTypeInfo();
+      var savedGeneticsStatus = undefined;
+      if(this.props.editingDataset ==='' ){
+        savedGeneticsStatus = undefined;
+      }else{
+        console.log(this.props.editingDataset);
+        console.log("this.props.editingDataset!!!");
+        savedGeneticsStatus = this.props.editingDataset.contains_human_genetic_sequences;
+      }
         this.setState(
         {
           status: this.props.editingDataset.status.toUpperCase(),
@@ -254,7 +263,7 @@ class DatasetEdit extends Component {
           source_uuid_list: this.props.editingDataset.direct_ancestors,
           source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           // source_uuid_type: this.props.editingDataset.properties.specimen_type,
-          contains_human_genetic_sequences: this.props.editingDataset.contains_human_genetic_sequences,
+          contains_human_genetic_sequences: savedGeneticsStatus,
           description: this.props.editingDataset.description,
           // assay_metadata_status: this.props.editingDataset.properties
           //   .assay_metadata_status,
@@ -413,10 +422,12 @@ class DatasetEdit extends Component {
           source_uuid: value,
         });
         break;
-      case "contains_human_genetic_sequences":   
-        let gene_seq = false; 
+      case "contains_human_genetic_sequences":  
+        let gene_seq = undefined; 
         if (value == 'yes') {
           gene_seq = true;
+        } else if(value == 'no'){
+          gene_seq = false;
         }
         this.setState({
           contains_human_genetic_sequences: gene_seq,  // need to convert to a boolean
@@ -873,8 +884,7 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-
-
+      
       if (!validateRequired(this.state.name)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, name: "required" },
@@ -906,8 +916,7 @@ class DatasetEdit extends Component {
         }));
         isValid = false;
         resolve(isValid);
-      } 
-      else {
+      } else {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, source_uuid: "" },
         }));
@@ -915,7 +924,7 @@ class DatasetEdit extends Component {
         //   resolve(isValid && res);
         // });
       }
-
+      
       if (this.state.data_types.size === 0 && this.state.other_dt === "") {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
@@ -940,6 +949,20 @@ class DatasetEdit extends Component {
         }));
       }
 
+      if (this.state.contains_human_genetic_sequences === true ) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
+        }));
+      } else if(this.state.contains_human_genetic_sequences === false){
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
+        }));
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "required" },
+        }));
+        isValid = false;       
+      }
       resolve(isValid);
     });
   }
@@ -1909,7 +1932,10 @@ class DatasetEdit extends Component {
                 <div className='col-sm-9'>
                   <div className='form-check form-check-inline'>
                     <input
-                      className='form-check-input'
+                      className={
+                        "form-control form-check-input " +
+                        this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
+                      }
                       type='radio'
                       name='contains_human_genetic_sequences'
                       id='contains_human_genetic_sequences_no'
@@ -1918,6 +1944,7 @@ class DatasetEdit extends Component {
                       //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       //disabled={this.props.editingDataset}
+                      required
                     />
                     <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
                       No
@@ -1925,7 +1952,10 @@ class DatasetEdit extends Component {
                   </div>
                   <div className='form-check form-check-inline'>
                     <input
-                      className='form-check-input'
+                      className={
+                        "form-control form-check-input " +
+                        this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
+                      }
                       type='radio'
                       name='contains_human_genetic_sequences'
                       id='contains_human_genetic_sequences_yes'
@@ -1933,6 +1963,7 @@ class DatasetEdit extends Component {
                       //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       //disabled={this.props.editingDataset}
+                      required
                     />
                     <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
                       Yes
