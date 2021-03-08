@@ -94,7 +94,8 @@ export function search_api_filter_es_query_builder(fields) {
     }
   
   }
-  requestBody.query(boolQuery).size(100).sort(esb.sort('last_modified_timestamp', 'desc'));
+  //requestBody.query(boolQuery).size(100).sort(esb.sort('last_modified_timestamp', 'desc'));
+  requestBody.query(boolQuery).size(100);
 
   console.debug(requestBody.toJSON());
   return requestBody.toJSON();
