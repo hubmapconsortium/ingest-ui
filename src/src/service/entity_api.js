@@ -19,7 +19,7 @@ export function entity_api_get_entity(uuid, auth) {
   return axios 
     .get(url,options)
       .then(res => {
-        console.log(res);
+        console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -47,7 +47,7 @@ export function entity_api_update_entity(uuid, data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-        console.log(res);
+        console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -75,7 +75,7 @@ export function entity_api_create_entity(entitytype, data, auth) {
   return axios 
      .post(url, data, options)
       .then(res => {
-        console.log(res);
+        console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -103,7 +103,7 @@ export function entity_api_create_multiple_entities(count, data, auth) {
   return axios 
      .post(url, data, options)
       .then(res => {
-        console.log(res);
+        console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -132,7 +132,7 @@ export function entity_api_update_multiple_entities(data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-        console.log(res);
+        console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -163,7 +163,7 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
   return axios 
     .get(url,options)
       .then(res => {
-        console.log(res);
+        console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}

@@ -91,7 +91,7 @@ class IngestEntrance extends Component {
   };
 
   handleDatasetCreated = (entity) => {
-    console.log('handleDatasetCreated', entity)
+    console.debug('handleDatasetCreated', entity)
     this.setState({
       creatingNewDataset: false,
       createSuccess: true,
@@ -119,7 +119,7 @@ class IngestEntrance extends Component {
   }
 
   render() {
-    console.log("IngestEntrance", this.state)
+    console.debug("IngestEntrance", this.state)
     return (
       <div>
       <h3>Dataset Submission</h3>

@@ -18,7 +18,7 @@ export function api_search(params, auth) {
       }
     };
 
-    console.log(options)
+    console.debug(options)
   let payload = search_api_filter_es_query_builder(params);
 
   return axios 
@@ -26,7 +26,7 @@ export function api_search(params, auth) {
               payload, options
       )
       .then(res => {
-        console.log(res);
+        console.debug(res);
           let hits = res.data.hits.hits;
       
           let entities = {};
@@ -53,8 +53,8 @@ export function api_search(params, auth) {
 export function search_api_filter_es_query_builder(fields) {
 
   let requestBody =  esb.requestBodySearch();
- console.log("here in the filter es builder")
- console.log(fields);
+ console.debug("here in the filter es builder")
+ console.debug(fields);
 
   let boolQuery = esb.boolQuery();
 
@@ -94,9 +94,9 @@ export function search_api_filter_es_query_builder(fields) {
     }
   
   }
-  requestBody.query(boolQuery).size(50);
+  requestBody.query(boolQuery).size(100).sort(esb.sort('last_modified_timestamp', 'desc'));
 
-  console.log(requestBody.toJSON());
+  console.debug(requestBody.toJSON());
   return requestBody.toJSON();
 }
 

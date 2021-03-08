@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
-import Intro from "./intro";
+//import Intro from "./intro";
 import EntityList from "./entityList";
 import Forms from "./forms";
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
