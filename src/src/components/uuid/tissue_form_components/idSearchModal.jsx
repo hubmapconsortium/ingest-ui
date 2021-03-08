@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Modal from "../modal";
-import axios from "axios";
+//import axios from "axios";
 import { SAMPLE_TYPES } from "../../../constants";
 import { flattenSampleType } from "../../../utils/constants_helper";
 import IDSearchModalMultiSelect from "./idSearchModalMultiSelect";
@@ -46,9 +46,9 @@ class IDSearchModal extends Component {
     }
 
     if (sample_type) {
-      if (sample_type == 'donor') {
+      if (sample_type === 'donor') {
         params["entity_type"] = "Donor";
-      } else if (sample_type == 'dataset') {
+      } else if (sample_type === 'dataset') {
             params["entity_type"] = "Dataset";
         } else {
           params["specimen_type"] = sample_type;
@@ -62,7 +62,7 @@ class IDSearchModal extends Component {
     api_search(params, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
 
-      if (response.status == 200) {
+      if (response.status === 200) {
       console.log('Model Search results...');
       console.log(response.results);
       this.setState(

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import './App.css';
-import Navigation from './components/Navbar.js';
+//import Navigation from './components/Navbar.js';
 import Routes from './Routes';
 import Login from './components/uuid/login';
 import Main from './components/Main';
 import UUIDEntrance from './components/uuid/uuid_entrance';
 import IngestEntrance from './components/ingest/ingest_entrance';
-import CollectionsEntrance from './Collections/collections_entrance';
+//import CollectionsEntrance from './Collections/collections_entrance';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -17,7 +17,7 @@ import {
 import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import { Route, BrowserRouter as Router, Switch, Link } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Switch} from 'react-router-dom';
 
 class App extends Component {
   // The constructor is primarily used in React to set initial state or to bind methods

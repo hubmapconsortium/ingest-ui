@@ -135,7 +135,7 @@ class TissueForm extends Component {
         const groups = res.data.groups.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
-        console.log('groups', groups)
+        console.debug('groups', groups)
         this.setState({
           groups: groups
         });
@@ -156,7 +156,7 @@ class TissueForm extends Component {
         )
         .then(res => {
           if (res.data.ingest_group_ids.length > 0) {
-            console.log("pre siblingid_list", res.data.ingest_group_ids);
+            console.debug("pre siblingid_list", res.data.ingest_group_ids);
             // res.data.ingest_group_ids.push({
             //   hubmap_identifier: this.props.editingEntity.hubmap_id,
             //   uuid: this.props.editingEntity.uuid,
@@ -195,7 +195,7 @@ class TissueForm extends Component {
               return 0;
             });
 
-            console.log("this.props.editingEntities.length", this.props.editingEntities.length);
+            console.debug("this.props.editingEntities.length", this.props.editingEntities.length);
             this.setState({
               entities: this.props.editingEntities,
               ids: res.data.ingest_group_ids,
@@ -207,7 +207,7 @@ class TissueForm extends Component {
             if (res.data.ingest_group_ids.length > 1) {
                 const first_lab_id = res.data.ingest_group_ids[0].submission_id; //this.props.editingEntities[0].submission_id;
                 const last_lab_id = res.data.ingest_group_ids[res.data.ingest_group_ids-1].submission_id;  // this.props.editingEntities[this.props.editingEntities.length - 1].submission_id;
-                console.log('ingest_group_ids', res.data.ingest_group_ids)
+                console.debug('ingest_group_ids', res.data.ingest_group_ids)
                 this.setState({
                     editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
                      } ${flattenSampleType(SAMPLE_TYPES)[
@@ -281,7 +281,7 @@ class TissueForm extends Component {
 
 
 
- console.log('DIRECT ancestor', this.props.editingEntity.direct_ancestor)
+ console.debug('DIRECT ancestor', this.props.editingEntity.direct_ancestor)
       this.setState(
         {
           source_uuid: this.getID(),
@@ -342,7 +342,7 @@ class TissueForm extends Component {
   }
 
   getID = () => {
-    console.log("in getting id...", this.props.editingEntity)
+    console.debug("in getting id...", this.props.editingEntity)
     try {
        return this.props.editingEntity.donor.display_doi
      } catch {}
@@ -351,13 +351,13 @@ class TissueForm extends Component {
       return this.props.editingEntity.direct_ancestor.hubmap_id
     } catch {}
 
-    console.log('something is wrong..')
+    console.debug('something is wrong..')
     return "<Error Unavailable>"
   }
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    console.log('handleInputChange', name, value)
+    console.debug('handleInputChange', name, value)
     switch (name) {
       case "lab":
         this.setState({ lab: value });
@@ -404,7 +404,7 @@ class TissueForm extends Component {
         }
         break;
       case "protocol_url":
-      console.log('im at the protocol_url', value)
+      console.debug('im at the protocol_url', value)
         this.setState({ protocol_url: value });
         if (!validateRequired(value)) {
           this.setState(prevState => ({
@@ -413,7 +413,7 @@ class TissueForm extends Component {
               protocol_url: "required"
             }
           }));
-          console.log("protocol_url is INVALID")
+          console.debug("protocol_url is INVALID")
         } else if (!validateProtocolIODOI(value)) {
           this.setState(prevState => ({
             formErrors: {
@@ -666,11 +666,11 @@ class TissueForm extends Component {
       }
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
-        console.log('image', id)
+        console.debug('image', id)
         let images = [...this.state.images];
-        console.log('images', images)
+        console.debug('images', images)
         images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
-        console.log('images file data', images[i].ref.current.image_file.current.files)
+        console.debug('images file data', images[i].ref.current.image_file.current.files)
         let new_images = [...this.state.new_images];
         new_images.push(images[i].file_name);
         return new Promise((resolve, reject) => {
@@ -776,16 +776,16 @@ class TissueForm extends Component {
 
   handleDeleteMetadata = metadataId => {
 
-    //  console.log('before metadata', this.state.metadatas)
+    //  console.debug('before metadata', this.state.metadatas)
     const remove_meta = this.state.metadatas.find(i => i.id === metadataId); // find our metadata file in the existing
     const metadatas = this.state.metadatas.filter(i => i.id !== metadataId)  // recreate the metadata w/o the deleted
     const new_metadatas = this.state.new_metadatas.filter(dm => dm !== remove_meta.uuid);
     let deleted_metas = [...this.state.deleted_metas];
 
-    //console.log('add remove meta', remove_meta)
+    //console.debug('add remove meta', remove_meta)
     deleted_metas.push(remove_meta.file_uuid);
 
-    //console.log('after metadata', metadatas)
+    //console.debug('after metadata', metadatas)
     this.setState({
       metadatas,
       new_metadatas,
@@ -808,7 +808,7 @@ handleAddImage = () => {
     const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
     let deleted_images = [...this.state.deleted_images];
 
-    console.log('deleted image', deleted_image)
+    console.debug('deleted image', deleted_image)
     if (new_images.length === this.state.new_images.length){
       //deleted_images.push(deleted_image.file_name);
       deleted_images.push(deleted_image.file_uuid);
@@ -847,7 +847,7 @@ handleAddImage = () => {
 
     const metadata = entity?.metadata;
 
-    console.log(metadata)
+    console.debug(metadata)
     if (metadata === undefined) {
       return ""
     } else {
@@ -920,7 +920,7 @@ handleAddImage = () => {
             data["rui_location"] = JSON.parse(this.state.rui_location);
           }
 
-          console.log('submit metadatas', this.state.metadatas);
+          console.debug('submit metadatas', this.state.metadatas);
           if (this.state.metadatas.length > 0) {
             let metadata_files_to_add = [];
  
@@ -938,7 +938,7 @@ handleAddImage = () => {
             }
         
          }
-         console.log(this.state.deleted_metas)
+         console.debug(this.state.deleted_metas)
          if (this.state.deleted_metas.length > 0)  { 
            data['metadata_files_to_remove'] = this.state.deleted_metas;
          }
@@ -946,7 +946,7 @@ handleAddImage = () => {
           if (this.state.images.length > 0) {
             let image_files_to_add = [];
             let existing_image_files_to_update = [];
-            console.log('submit images', this.state.images)
+            console.debug('submit images', this.state.images)
             this.state.images.forEach(i => {
 
             // if a file has a non-blank temp_file_id then assume it a new image 
@@ -985,17 +985,17 @@ handleAddImage = () => {
             data['image_files_to_remove'] = this.state.deleted_images
           }
 
-        console.log("SUBMMITED data")
-        console.log(data)
+        console.debug("SUBMMITED data")
+        console.debug(data)
       
 
         if (this.props.editingEntity && !this.state.LocationSaved) {
-          console.log("Updating Entity....")
+          console.debug("Updating Entity....")
           entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    console.log('Update Entity...');
-                    console.log(response.results);
+                    console.debug('Update Entity...');
+                    console.debug(response.results);
                     this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false });
@@ -1003,7 +1003,7 @@ handleAddImage = () => {
       
               });
         } else {
-          console.log('selected group', this.state.selected_group);
+          console.debug('selected group', this.state.selected_group);
 
           if (this.state.selected_group && this.state.selected_group.length > 0) {
               data["group_uuid"] = this.state.selected_group;
@@ -1011,12 +1011,12 @@ handleAddImage = () => {
               data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
           }
 
-          console.log("Create a new Entity....")
+          console.debug("Create a new Entity....")
            entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    console.log('create Entity...');
-                    console.log(response.results);
+                    console.debug('create Entity...');
+                    console.debug(response.results);
 
                     if (this.state.sample_count > 0) {
                       // now generate some multiples
@@ -1030,7 +1030,7 @@ handleAddImage = () => {
                       this.props.onCreated({new_samples: [], entity: response.results});
                    }
                   } if (response.status === 400) {
-                    console.log('400 error', response)
+                    console.debug('400 error', response)
                      this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
                   } else {
                     this.setState({ submit_error: true, submitting: false});
@@ -1108,7 +1108,7 @@ handleAddImage = () => {
   //                 }
   //               }
   //             }).catch(err => {
-  //               console.log(err);
+  //               console.debug(err);
   //             })
   //           });
   //           return isValid;
@@ -1333,12 +1333,12 @@ handleAddImage = () => {
       // validate the images
       this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-       // console.log('image invalid', image.file_name)
+       // console.debug('image invalid', image.file_name)
         isValid = false;
         image.ref.current.validate();
       }
       if (!validateRequired(image.ref.current.image_file_description.current.value)) {
-         //console.log('descr missing')
+         //console.debug('descr missing')
         isValid = false;
         image.ref.current.validate();
       }
@@ -1454,8 +1454,8 @@ handleAddImage = () => {
       entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
-              // console.log('Entity ancestors...', response.results);
-              // console.log(response.results);
+              // console.debug('Entity ancestors...', response.results);
+              // console.debug(response.results);
               if (response.results.length > 0) {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
               }

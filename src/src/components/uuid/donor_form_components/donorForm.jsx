@@ -17,11 +17,11 @@ import {
   // faTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { tsToDate } from "../../../utils/string_helper";
-import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
+//import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import {
   validateRequired,
   validateProtocolIODOI,
-  validateFileType
+//  validateFileType
 } from "../../../utils/validators";
 import ReactTooltip from "react-tooltip";
 import HIPPA from "../HIPPA";
@@ -81,7 +81,7 @@ class DonorForm extends Component {
 
    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
-      if (results.status == 200) { 
+      if (results.status === 200) { 
       const groups = results.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
@@ -97,7 +97,7 @@ class DonorForm extends Component {
 
     if (this.props.editingEntity) {
       //const pf = this.props.editingEntity.protocol_file;
-      const mf = this.props.editingEntity.portal_metadata_upload_files;
+ //     const mf = this.props.editingEntity.portal_metadata_upload_files;
       let images = this.props.editingEntity.image_files;
 
       this.setState({
@@ -233,7 +233,7 @@ class DonorForm extends Component {
     const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
     let deleted_images = [...this.state.deleted_images];
 
-    console.log('deleted image', deleted_image)
+    console.debug('deleted image', deleted_image)
     if (new_images.length === this.state.new_images.length){
       //deleted_images.push(deleted_image.file_name);
       deleted_images.push(deleted_image.file_uuid);
@@ -250,11 +250,11 @@ class DonorForm extends Component {
     switch (type) {
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
-        console.log('image', id)
+        console.debug('image', id)
         let images = [...this.state.images];
-        console.log('images', images)
+        console.debug('images', images)
         images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
-        console.log('images file data', images[i].ref.current.image_file.current.files)
+        console.debug('images file data', images[i].ref.current.image_file.current.files)
         let new_images = [...this.state.new_images];
         new_images.push(images[i].file_name);
         return new Promise((resolve, reject) => {
@@ -276,7 +276,7 @@ class DonorForm extends Component {
             }
           });
         });
-        break;
+       // break;
       }
       default:
         break;
@@ -326,7 +326,7 @@ class DonorForm extends Component {
         if (this.state.images.length > 0) {
           let image_files_to_add = [];
           let existing_image_files_to_update = [];
-        //console.log('submit images', this.state.images)
+        //console.debug('submit images', this.state.images)
         this.state.images.forEach(i => {
 
             // if a file has a non-blank temp_file_id then assume it a new image 
@@ -366,17 +366,17 @@ class DonorForm extends Component {
         // "image_files_to_add": [{"temp_file_id":"5hcg4ksj6cxkw2cgpmp5", "description":"this is a test file"}]}
         //formData.append("data", JSON.stringify(data));
 
-        console.log("SUBMMITED data")
-        console.log(data)
+        console.debug("SUBMMITED data")
+        console.debug(data)
       
 
         if (this.props.editingEntity) {
-          console.log("Updating Entity....")
+          console.debug("Updating Entity....")
           entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
-                  if (response.status == 200) {
-                    console.log('Update Entity...');
-                    console.log(response.results);
+                  if (response.status === 200) {
+                    console.debug('Update Entity...');
+                    console.debug(response.results);
                     this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false });
@@ -390,12 +390,12 @@ class DonorForm extends Component {
               data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
             }
 
-            console.log("Create a new Entity....")
+            console.debug("Create a new Entity....")
             entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                  .then((response) => {
-                  if (response.status == 200) {
-                    console.log('create Entity...');
-                    console.log(response.results);
+                  if (response.status === 200) {
+                    console.debug('create Entity...');
+                    console.debug(response.results);
                     this.props.onCreated({new_samples: [], entity: response.results});
                   } else {
                     this.setState({ submit_error: true, submitting: false });
@@ -538,12 +538,12 @@ class DonorForm extends Component {
 
     this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-        console.log('image invalid', image.file_name)
+        console.debug('image invalid', image.file_name)
         isValid = false;
         image.ref.current.validate();
       }
       if (!validateRequired(image.ref.current.image_file_description.current.value)) {
-         console.log('descr missing')
+         console.debug('descr missing')
         isValid = false;
         image.ref.current.validate();
       }
@@ -560,7 +560,7 @@ class DonorForm extends Component {
     // const usedFileName = new Set();
     // this.state.images.forEach((image, index) => {
     //   usedFileName.add(image.file_name);
-    //   console.log('image check for dups', image)
+    //   console.debug('image check for dups', image)
     //   if (image.ref.current.image_file.current.files[0]) {
     //     if (usedFileName.has(image.ref.current.image_file.current.files[0].name)) {
     //       image["error"] = "Duplicated file name is not allowed.";

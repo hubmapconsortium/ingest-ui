@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
-import { flattenSampleType } from "../../utils/constants_helper";
+//import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
+//import { flattenSampleType } from "../../utils/constants_helper";
 import LabIDsModal from "./labIdsModal";
 
 class Result extends Component {
@@ -49,7 +49,7 @@ class Result extends Component {
   };
 
   render() {
-    console.log('Multiples RESULTS!!!!', this.props.result)
+    console.debug('Multiples RESULTS!!!!', this.props.result)
     return (
       <React.Fragment>
         {this.props.result["new_samples"] && (
@@ -123,7 +123,7 @@ class Result extends Component {
                         />
                       </React.Fragment>
                     )}
-                  {this.props.result.entity.entity_type == "Donor" && (
+                  {this.props.result.entity.entity_type === "Donor" && (
                     <button
                       className="btn btn-success btn-block"
                       type="button"
