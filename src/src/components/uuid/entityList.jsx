@@ -67,7 +67,7 @@ class EntityList extends Component {
 
   handleChangeRowsPerPage = (event) => {
     this.setState({
-        rowsPerPage: parseInt(event.target.value, 25),
+        rowsPerPage: parseInt(event.target.value),
         page: 0
     });
   };
