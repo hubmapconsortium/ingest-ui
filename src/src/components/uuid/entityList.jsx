@@ -94,20 +94,20 @@ class EntityList extends Component {
   // }
   getEntityData = (uuid) => {
 
-    console.log(uuid);
+    console.debug(uuid);
     entity_api_get_entity(uuid, this.state.authToken)
     .then((response) => {
       if (response.status === 200) {
-      console.log('Entity results...');
-      console.log(response.results);
+      console.debug('Entity results...');
+      console.debug(response.results);
       return response.results;
       }
-      console.log(response.status);
+      console.debug(response.status);
     });
   }
 
  editForm = (entity, display_id, es) => {
-    console.log('in the editForm')
+    console.debug('in the editForm')
     
     entity_api_get_entity(entity.uuid, this.state.authToken)
     .then((response) => {
@@ -118,8 +118,8 @@ class EntityList extends Component {
         ingest_api_allowable_edit_states(entity.uuid, this.state.authToken)
           .then((resp) => {
           if (resp.status === 200) {
-            console.log('api_allowable_edit_states...');
-            console.log(resp.results);
+            console.debug('api_allowable_edit_states...');
+            console.debug(resp.results);
             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
             this.setState({
               updateSuccess: null,
@@ -139,9 +139,9 @@ class EntityList extends Component {
   };
 
 /*  editForm = (entity, display_id, es) => {
-    console.log('in the editForm')
+    console.debug('in the editForm')
     let et = this.getEntityData(entity.uuid);
-    console.log(et)
+    console.debug(et)
 
     this.setState({
       updateSuccess: null,
@@ -237,8 +237,8 @@ class EntityList extends Component {
     if (keywords) {
       params["search_term"] = keywords;
     }
-    console.log(' filterEntity....')
-    console.log(params);
+    console.debug(' filterEntity....')
+    console.debug(params);
 
     // let query = api_es_query_builder(params);
 
@@ -246,8 +246,8 @@ class EntityList extends Component {
     .then((response) => {
 
       if (response.status === 200) {
-      //console.log('Search results...');
-      //console.log(entities);
+      //console.debug('Search results...');
+      //console.debug(entities);
       this.setState(
           {
           loading: false,
@@ -278,31 +278,6 @@ class EntityList extends Component {
       //   //this.filterEntity();
       // }
     );
-    // const config = {
-    //   headers: {
-    //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-    //     "Content-Type": "multipart/form-data"
-    //   }
-    // };
-
-    // axios
-    //   .get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`, config)
-    //   .then(res => {
-    //     this.setState({
-    //       loading: false,
-    //       entities: res.data.specimens
-    //     });
-    //   })
-    //   .catch(err => {
-    //     if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
-    // this.setState({
-    //   filtered: false
-    // });
   };
 
 
@@ -475,9 +450,9 @@ renderTable() {
                 .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
                 .map(es => {
                 const entity = es[0];
-                //console.log(entity)
+                //console.debug(entity)
                 let first_lab_id = entity.hubmap_display_id ? entity.hubmap_display_id : "Unavailable";   // hack because data inconsistencies
-                //console.log(entity.hubmap_display_id);
+                //console.debug(entity.hubmap_display_id);
                 let last_lab_id = "";
                 let id_common_part = first_lab_id.substring(
                   0,
