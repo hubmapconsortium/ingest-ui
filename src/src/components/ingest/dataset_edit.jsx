@@ -139,45 +139,6 @@ class DatasetEdit extends Component {
 	return Promise.reject(error);
       });
 
-    // axios
-    //   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
-    //   .then((res) => {
-    //     this.setState({
-    //       collections: res.data.collections,
-    //     });
-    //   })
-    //   .catch((err) => {
-    //     if (err.response === undefined) {
-    //     } else if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
-
-    // axios
-    //   .get(
-    //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/userroles`,
-    //     config
-    //   )
-    //   .then((res) => {
-    //     res.data.roles.map((r) => {
-    //       if (r.name === "hubmap-data-curator") {
-    //         this.setState({ is_curator: true });
-    //       }
-    //       return r;
-    //     });
-
-    //     if (this.state.is_curator === null) {
-    //       this.setState({ is_curator: false });
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     if (err.response === undefined) {
-    //     } else if (err.response.status === 401) {
-    //       localStorage.setItem("isAuthenticated", false);
-    //       window.location.reload();
-    //     }
-    //   });
 
     axios
       .get(
@@ -261,6 +222,7 @@ class DatasetEdit extends Component {
           source_uuid_list: this.props.editingDataset.direct_ancestors,
           source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           // source_uuid_type: this.props.editingDataset.properties.specimen_type,
+          //contains_human_genetic_sequences: this.props.editingDataset.contains_human_genetic_sequences,
           contains_human_genetic_sequences: savedGeneticsStatus,
           description: this.props.editingDataset.description,
           // assay_metadata_status: this.props.editingDataset.properties
@@ -956,6 +918,7 @@ class DatasetEdit extends Component {
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
         }));
       } else {
+        console.log("VALID gene is not filled in")
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "required" },
         }));
@@ -1869,7 +1832,7 @@ class DatasetEdit extends Component {
             <div className='form-group row'>
               <label
                 htmlFor='contains_human_genetic_sequences'
-                className='col-sm-2 col-form-label text-right'
+                className='col-sm-2 col-form-label text-right '
               >
                 Gene Sequences <span className='text-danger'> * </span>
               </label>
@@ -1931,7 +1894,7 @@ class DatasetEdit extends Component {
                   <div className='form-check form-check-inline'>
                     <input
                       className={
-                        "form-control form-check-input " +
+                        "form-check-input" +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
                       }
                       type='radio'
@@ -1942,7 +1905,7 @@ class DatasetEdit extends Component {
                       //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       //disabled={this.props.editingDataset}
-                      required
+                      //required
                     />
                     <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
                       No
@@ -1951,7 +1914,7 @@ class DatasetEdit extends Component {
                   <div className='form-check form-check-inline'>
                     <input
                       className={
-                        "form-control form-check-input " +
+                        "form-check-input " +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
                       }
                       type='radio'
@@ -1961,7 +1924,7 @@ class DatasetEdit extends Component {
                       //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       //disabled={this.props.editingDataset}
-                      required
+                      //required
                     />
                     <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
                       Yes
@@ -1970,6 +1933,12 @@ class DatasetEdit extends Component {
                   <small id='PHIHelpBlock' className='form-text text-muted'>
                     Will this data contain any human genomic sequence data?
                   </small>
+                   { this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
+                      <div className='alert alert-danger'>
+                       Human Genomic Sequence indicator is Required
+                    </div>
+                   )}
+                 
                 </div>
               )}
 
@@ -2058,9 +2027,11 @@ class DatasetEdit extends Component {
 	             </React.Fragment>
             )}
             {!this.state.writeable && (
-              <div className='col-sm-9 col-form-label'>
-                <p>Readonly</p>
-              </div>
+                <div className='col-sm-9'>
+                <div className='row'>
+                    {true && this.renderAssayArray()}
+                </div>
+                </div>
             )}
             
           </div>
