@@ -65,15 +65,15 @@ export function search_api_filter_es_query_builder(fields) {
    
     // was a group name selected
     if (fields["group_name"]) {
-      boolQuery.must(esb.matchQuery("group_name", fields["group_name"]));
+      boolQuery.must(esb.matchQuery("group_name.keyword", fields["group_name"]));
     } 
 
     // was specimen types selected
     if (fields["specimen_type"]) {
       if (fields["specimen_type"] !== 'donor') {
-        boolQuery.must(esb.matchQuery("specimen_type", fields["specimen_type"]));
+        boolQuery.must(esb.matchQuery("specimen_type.keyword", fields["specimen_type"]));
       } else {
-        boolQuery.must(esb.matchQuery("entity_type", 'Donor'));
+        boolQuery.must(esb.matchQuery("entity_type.keyword", 'Donor'));
       }
     } else {
         // was entity types select
@@ -81,7 +81,7 @@ export function search_api_filter_es_query_builder(fields) {
           if (fields["entity_type"] === 'DonorSample') {  // hack to deal with no type selected from the UI, this clues from the donor/sample filer
             boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
           } else {
-            boolQuery.must(esb.matchQuery("entity_type", fields["entity_type"]));
+            boolQuery.must(esb.matchQuery("entity_type.keyword", fields["entity_type"]));
           }
         } else {
            boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset'));  // default everything ; this maybe temp
@@ -89,15 +89,22 @@ export function search_api_filter_es_query_builder(fields) {
     }
 
     if (fields["search_term"]) {
-         boolQuery.filter(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 
+      //let scrubbed = fixKeywordText(fields["search_term"]);
+      boolQuery.filter(esb.multiMatchQuery(['description', 'group_name', 'hubmap_display_id', 'display_doi', 
           'lab_donor_id', 'hubmap_id', 'created_by_user_displayname', 'title'], fields["search_term"]));
     }
   
   }
-  //requestBody.query(boolQuery).size(100).sort(esb.sort('last_modified_timestamp', 'desc'));
-  requestBody.query(boolQuery).size(100);
+  requestBody.query(boolQuery).size(100).sort(esb.sort('last_modified_timestamp', 'desc'));
+  //requestBody.query(boolQuery).size(100);
 
   console.debug(requestBody.toJSON());
   return requestBody.toJSON();
 }
 
+export function fixKeywordText(text) {
+  let x = text.replace(/-/gi, "\\-");
+  console.debug('scrubbed', x)
+return x
+
+}
