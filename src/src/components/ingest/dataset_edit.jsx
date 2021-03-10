@@ -1890,11 +1890,11 @@ class DatasetEdit extends Component {
                 </div>
               )}
               {!this.props.editingDataset && (
-                <div className='col-sm-9'>
+                <div className="col-sm-9 ">
                   <div className='form-check form-check-inline'>
-                    <input
+                    <input className="form-check-input"
                       className={
-                        "form-check-input" +
+                        "form-check-input " +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
                       }
                       type='radio'
@@ -1912,7 +1912,7 @@ class DatasetEdit extends Component {
                     </label>
                   </div>
                   <div className='form-check form-check-inline'>
-                    <input
+                    <input className="form-check-input"
                       className={
                         "form-check-input " +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
@@ -1935,7 +1935,7 @@ class DatasetEdit extends Component {
                   </small>
                    { this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
                       <div className='alert alert-danger'>
-                       Human Genomic Sequence indicator is Required
+                      Genomic Sequences indicator is Required
                     </div>
                    )}
                  
