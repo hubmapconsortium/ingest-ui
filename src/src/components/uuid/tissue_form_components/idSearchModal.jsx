@@ -127,7 +127,7 @@ class IDSearchModal extends Component {
 
   render() {
     return (
-      <Modal show={this.props.show} handleClose={this.props.hide}>
+      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
         <div className="row">
           {this.state.LookUpShow && <IDSearchModalMultiSelect
             show={this.state.LookUpShow}
@@ -289,8 +289,8 @@ class IDSearchModal extends Component {
                   )}
                 {this.state.HuBMAPIDResults &&
                   this.state.HuBMAPIDResults.length > 0 && (
-                    <div className="scrollbar-div">
-                      <table className="table table-hover">
+                    <div className="scrollbar-div short-table">
+                      <table className="table table-hover" id="SourceIDSearch">
                         <thead>
                           <tr>
                             <th>HuBMAP ID</th>
@@ -369,21 +369,8 @@ class IDSearchModal extends Component {
                                     {es.length > 1 && (
                                       <React.Fragment key={result.display_doi}>
                                         <div className="row">
-                                          <div
-                                            className="col-sm-6"
-                                          >
-		                                       <FontAwesomeIcon icon={faCopy} key={result.display_doi}
-				                                  onClick={e => {e.stopPropagation(); let temp_arr = es.map(e => {
-				                                  
-				                                     return { display_doi: e.display_doi, entity: e };
-				                                  });
-				                                     this.setState({uuid_list: temp_arr, LookUpShow: true});
-				                                     
-				                                     //alert(temp_arr);
-				                                  } }
-                                              /> 
-                                          </div>
-                                          <div className="col-sm-6">
+
+                                          <div className="col-sm-12">
                                             {first_lab_id} <br />
                                             <span className="badge badge-secondary">
                                               <small>through</small>
@@ -397,8 +384,7 @@ class IDSearchModal extends Component {
                                     {es.length === 1 && (
                                       <React.Fragment>
                                         <div className="row">
-                                          <div className="col-sm-6"></div>
-                                          <div className="col-sm-6">
+                                          <div className="col-sm-12">
                                             {first_lab_id}
                                           </div>
                                         </div>
@@ -431,7 +417,6 @@ class IDSearchModal extends Component {
                                           <td>
                                             <React.Fragment>
                                               <div className="row">
-                                                <div className="col-sm-6"></div>
                                                 <div className="col-sm-6">
                                                   {result.display_doi}
                                                 </div>
