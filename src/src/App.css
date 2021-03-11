@@ -130,6 +130,16 @@ caption {
   height: 900px;
   overflow: auto;
 }
+.short-table{
+  /*Temp fix for modal tables that are too tall. 
+  Replace with responsive solution next*/
+  height: 400px; 
+}
+
+#SourceIDSearch td,
+#SourceIDSearch th{
+  text-align: left;
+}
 
 .display-block {
   display: block !important;
