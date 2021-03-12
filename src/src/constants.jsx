@@ -46,9 +46,10 @@ export const SAMPLE_TYPES = [
 ];
 
 export const TISSUE_TYPES = {
-   Donor: [{ organ: "Organ"}],
+   Donor: [{ 
+    organ: "Organ"
+  }],
    Sample: [{
-    blood: "Blood",
     biopsy: "Biopsy",
     cell_lysate: "Cell lysate",
     ffpe_block: "FFPE block",
