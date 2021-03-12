@@ -272,16 +272,29 @@ class TissueForm extends Component {
       // convert the rui from a json to string, if there
       try {
         let r = JSON.stringify(this.props.editingEntity.rui_location, null, 3)
-        this.setState({
-          rui_location: r  
+        
+        if (r) {
+          this.setState({
+            rui_location: r,
+            rui_check: true
+          })
+        } else {
+          this.setState({
+          rui_location: "",
+          rui_check: false
         })
-      } catch{
+      }
+      } catch {
+        this.setState({
+          rui_location: "",
+          rui_check: false
+        })
       }
 
+      console.debug('state', this.state)
 
 
 
- console.debug('DIRECT ancestor', this.props.editingEntity.direct_ancestor)
       this.setState(
         {
           source_uuid: this.getID(),
@@ -859,14 +872,14 @@ handleAddImage = () => {
           }
     }
   }
-  // get the organ type which depends on if a source entity was specified or 
-  // if it's an edit just used the designated organ
-  getOrgan = () => {
-    if (this.state.specimen_type !== 'organ') {
-      return 'organ';
-    }
-    return this.state.organ;  // returns organ of ancestor
-  }
+  // // get the organ type which depends on if a source entity was specified or 
+  // // if it's an edit just used the designated organ
+  // getOrgan = () => {
+  //   if (this.state.specimen_type !== 'organ') {
+  //     return 'organ';
+  //   }
+  //   return this.state.organ;  // returns organ of ancestor
+  // }
 
   handleSubmit = e => {
     e.preventDefault();
@@ -886,25 +899,17 @@ handleAddImage = () => {
           let data = {
             lab_tissue_sample_id: this.state.lab_tissue_id,
             protocol_url: this.state.protocol_url,
-           // rui_location: this.state.rui_location,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
-            //source_uuid: this.state.source_uuid,
             direct_ancestor_uuid: this.state.source_uuid_list,
-            organ: this.getOrgan(),
             organ_other: this.state.organ_other,
             visit: this.state.visit,
-            //sample_count: this.state.sample_count,
             description: this.state.description,
-            // metadata: this.state.metadata,
-            // metadata_file:
-            //   this.state.metadata_file_name === "Choose a file"
-            //     ? ""
-            //     : this.state.metadata_file_name,
-            // // protocols: [],
-            //images: [],
-            //metadatas: []
           };
+
+          if (this.state.specimen_type === 'organ') {
+            data["organ"] = this.state.organ;
+          }
 
           if ( this.state.rui_location && this.state.rui_location.length !== "") {
             data["rui_location"] = JSON.parse(this.state.rui_location);
