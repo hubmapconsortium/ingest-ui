@@ -861,16 +861,12 @@ handleAddImage = () => {
   }
   // get the organ type which depends on if a source entity was specified or 
   // if it's an edit just used the designated organ
-  // getOrgan = () => {
-  //   try {
-  //     return this.state.source_entity.organ;
-  //   } catch {
-  //     try {
-  //       return this.state.organ;
-  //     } catch {}
-  //   }
-  //   return "";
-  // }
+  getOrgan = () => {
+    if (this.state.specimen_type !== 'organ') {
+      return 'organ';
+    }
+    return this.state.organ;  // returns organ of ancestor
+  }
 
   handleSubmit = e => {
     e.preventDefault();
@@ -895,7 +891,7 @@ handleAddImage = () => {
             specimen_type_other: this.state.specimen_type_other,
             //source_uuid: this.state.source_uuid,
             direct_ancestor_uuid: this.state.source_uuid_list,
-            organ: this.state.organ,
+            organ: this.getOrgan(),
             organ_other: this.state.organ_other,
             visit: this.state.visit,
             //sample_count: this.state.sample_count,
@@ -909,12 +905,6 @@ handleAddImage = () => {
             //images: [],
             //metadatas: []
           };
-
-          // hack for blood as an organ
-          // if (this.state.specimen_type === 'blood') {
-          //   data['specimen_type'] = 'organ';
-          //   data['organ'] = 'BD';
-          // 
 
           if ( this.state.rui_location && this.state.rui_location.length !== "") {
             data["rui_location"] = JSON.parse(this.state.rui_location);
