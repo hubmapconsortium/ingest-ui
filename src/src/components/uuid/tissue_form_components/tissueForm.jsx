@@ -7,7 +7,7 @@ import {
   faQuestionCircle,
   faSpinner,
   faUserShield,
-  faSearch, faPaperclip
+  faSearch, faPaperclip, faCopy
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
@@ -30,6 +30,7 @@ import LabIDsModal from "../labIdsModal";
 import RUIModal from "./ruiModal";
 import RUIIntegration from "./ruiIntegration";
 import { entity_api_update_entity, entity_api_create_entity, entity_api_create_multiple_entities, entity_api_get_entity_ancestor } from '../../../service/entity_api';
+import { ingest_api_get_associated_ids } from '../../../service/ingest_api';
 
 class TissueForm extends Component {
   state = {
@@ -149,94 +150,27 @@ class TissueForm extends Component {
       });
 
     if (this.props.editingEntity) {
-      axios
-        .get(
-          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}/ingest-group-ids`,
-          config
-        )
-        .then(res => {
-          if (res.data.ingest_group_ids.length > 0) {
-            console.debug("pre siblingid_list", res.data.ingest_group_ids);
-            // res.data.ingest_group_ids.push({
-            //   hubmap_identifier: this.props.editingEntity.hubmap_id,
-            //   uuid: this.props.editingEntity.uuid,
-            //   lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id || "",
-            //   rui_location: this.props.editingEntity.rui_location || ""
-            // });
-            res.data.ingest_group_ids.sort((a, b) => {
-              if (
-                parseInt(
-                  a.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                ) >
-                parseInt(
-                  b.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                )
-              ) {
-                return 1;
-              }
-              if (
-                parseInt(
-                  b.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                ) >
-                parseInt(
-                  a.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                )
-              ) {
-                return -1;
-              }
-              return 0;
-            });
 
-            console.debug("this.props.editingEntities.length", this.props.editingEntities.length);
-            this.setState({
-              entities: this.props.editingEntities,
-              ids: res.data.ingest_group_ids,
-              multiple_id: this.props.editingEntities.length > 1 ? true : false
-            });
+      // get associated entity IDS
+        ingest_api_get_associated_ids(this.props.editingEntity.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          .then((resp) => {
+            console.debug('ingest_api_get_associated_ids', resp)
+          if (resp.status === 200) {
           
-            //if (this.props.editingEntities.length > 1) {
+          //console.debug("ASSOC IDS", resp.results);
+            if (resp.results.length > 1) {
+              const first_lab_id = resp.results[0].submission_id;
+              const last_lab_id = resp.results[resp.results.length-1].submission_id;
               
-            if (res.data.ingest_group_ids.length > 1) {
-                const first_lab_id = res.data.ingest_group_ids[0].submission_id; //this.props.editingEntities[0].submission_id;
-                const last_lab_id = res.data.ingest_group_ids[res.data.ingest_group_ids-1].submission_id;  // this.props.editingEntities[this.props.editingEntities.length - 1].submission_id;
-                console.debug('ingest_group_ids', res.data.ingest_group_ids)
-                this.setState({
-                    editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
-                     } ${flattenSampleType(SAMPLE_TYPES)[
-                      this.props.editingEntity.specimen_type
-                      ]
-                    } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
-                });
+              this.setState({
+                  editingMultiWarning: `This sample was originally created in a group of ${resp.results.length} 
+                      other samples, with ids in the range of ${first_lab_id} through ${last_lab_id}`
+              });
             }
-          }
-        })
-        .catch(err => {
-          if (err.response === undefined) {
-          } else if (err.response.status === 401) {
-            localStorage.setItem("isAuthenticated", false);
-            window.location.reload();
+            //console.debug('MULTI MESSAGE', this.state.editingMultiWarning)
           }
         });
-
-      // let protocols_json = JSON.parse(
-      //   this.props.editingEntity.properties.protocols
-      //     .replace(/\\/g, "\\\\")
-      //     .replace(/'/g, '"')
-      // );
-
-      // protocols_json.map((p, i) => {
-      //   p["id"] = i + 1;
-      //   p["ref"] = React.createRef();
-      //   return p;
-      // });
+     
 
       let images = this.props.editingEntity.image_files;
       let metadatas = this.props.editingEntity.metadata_files;
@@ -1523,11 +1457,7 @@ handleAddImage = () => {
     return (
       <div className="row">
         
-        {this.state.editingMultiWarning && !this.props.readOnly && (
-          <div className="alert alert-danger col-sm-12" role="alert">
-            {this.state.editingMultiWarning}
-          </div>
-        )}
+      
         <div className="col-sm-12 pads">
           <div className="col-sm-12 text-center"><h4>Sample Information</h4></div>
           <div
@@ -1544,6 +1474,11 @@ handleAddImage = () => {
               18 identifiers specified by HIPAA
               </span>
           </div>
+          {this.state.editingMultiWarning && !this.props.readOnly && (
+          <div className="alert alert-info col-sm-12" role="alert">
+            <FontAwesomeIcon icon={faCopy} /> {this.state.editingMultiWarning}
+          </div>
+          )}
            {this.props.editingEntity && (
             <React.Fragment>
             <div className="row">
@@ -1562,6 +1497,7 @@ handleAddImage = () => {
               </div>
             </React.Fragment>
           )}
+    
           <Paper className="paper-container">
           <form onSubmit={this.handleSubmit}>
             <div className="form-group">
@@ -2091,7 +2027,9 @@ handleAddImage = () => {
               )
             }
 
-            {this.state.ids &&
+            {/*  ALLOWED EDITING OF MULTIPLE IDS at once
+
+            this.state.ids &&
               (this.props.editingEntity && this.props.editingEntities.length > 1 &&
                (!["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ))) && (
                 <React.Fragment>
@@ -2121,8 +2059,8 @@ handleAddImage = () => {
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
-              )}
-            {this.props.editingEntity &&
+              )*/}
+            {/*this.props.editingEntity &&
               this.state.multiple_id &&
               this.state.source_entity !== undefined &&
              (["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ)) && (
@@ -2153,7 +2091,7 @@ handleAddImage = () => {
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
-              )}
+              )*/}
             {!this.props.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
