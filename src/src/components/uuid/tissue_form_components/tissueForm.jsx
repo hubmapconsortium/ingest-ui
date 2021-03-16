@@ -1978,7 +1978,7 @@ handleAddImage = () => {
               )}
             
             </div>
-            {/*  MULTIPLES DISABLED UNTIL AFTER THE RELEASE - 3/4/2021
+            {
             !this.props.readOnly &&
               this.state.specimen_type !== "organ" &&
               !this.props.editingEntity && (
@@ -2039,7 +2039,7 @@ handleAddImage = () => {
                     </React.Fragment>
                   )}
                 </div>
-              )*/}
+              )}
             {!this.state.multiple_id &&
               !this.state.editingMultiWarning &&
               (!this.props.readOnly ||
@@ -2117,6 +2117,7 @@ handleAddImage = () => {
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
                     metadata={this.props.editingEntity}
+                    ancestor_organ={this.state.ancestor_organ}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
@@ -2124,7 +2125,7 @@ handleAddImage = () => {
             {this.props.editingEntity &&
               this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             (["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ)) && (
+             (["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ)) && (
                 <React.Fragment>
                   <div className="form-group">
                     <label
@@ -2148,6 +2149,7 @@ handleAddImage = () => {
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
                     metadata={this.props.editingEntity}
+                    ancestor_organ={this.state.ancestor_organ}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
