@@ -86,6 +86,7 @@ class NewDatasetModal extends Component {
                       </label>*/}
                       <div className="col-sm-8 col-form-label">
                         <a
+                          target="_blank"
                           name="globus_directory_url_path"
                           href={this.props.globus_directory_url_path}
                         >
