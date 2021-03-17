@@ -148,3 +148,66 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
       });
 };
 
+/* gets a list of associated IDS if the entity has multiple records. 
+   these are multi-labs records
+*/
+export function ingest_api_get_associated_ids(uuid, auth) {
+   const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+    console.debug("ASSOC UUID", uuid)
+   return axios
+        .get(
+          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}/ingest-group-ids`, options)
+        .then(res => {
+          if (res.data.ingest_group_ids.length > 1) {
+            console.debug("pre siblingid_list", res.data.ingest_group_ids);
+            // res.data.ingest_group_ids.push({
+            //   hubmap_identifier: this.props.editingEntity.hubmap_id,
+            //   uuid: this.props.editingEntity.uuid,
+            //   lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id || "",
+            //   rui_location: this.props.editingEntity.rui_location || ""
+            // });
+            res.data.ingest_group_ids.sort((a, b) => {
+              if (
+                parseInt(
+                  a.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
+                  )
+                ) >
+                parseInt(
+                  b.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
+                  )
+                )
+              ) {
+                return 1;
+              }
+              if (
+                parseInt(
+                  b.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
+                  )
+                ) >
+                parseInt(
+                  a.submission_id.substring(
+                    a.submission_id.lastIndexOf("-") + 1
+                  )
+                )
+              ) {
+                return -1;
+              }
+              return 0;
+            });
+          }
+          return {status: res.status, results: res.data.ingest_group_ids}
+        })
+        .catch(err => {
+          return {status: 500, results: err.response}
+        });
+}
