@@ -1,5 +1,3 @@
-
-// These ones show on the main Search/Filter page
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SAMPLE_TYPES = [
   { donor: "Donor" },
@@ -42,16 +40,14 @@ export const SAMPLE_TYPES = [
     nuclei: "Nuclei",
     protein: "Protein",
     rna_total: "RNA, total",
-    ran_poly_a_enriched: "RNA, poly-A enriched",
-    sequence_library:"Sequence Library"
+    ran_poly_a_enriched: "RNA, poly-A enriched"
   },
   { other: "Other" }
 ];
 
-// These ones show on the Create new Donor/Sample page
 export const TISSUE_TYPES = {
    Donor: [{ 
-    organ: "Organ",
+    organ: "Organ"
   }],
    Sample: [{
     biopsy: "Biopsy",
@@ -75,7 +71,6 @@ export const TISSUE_TYPES = {
     serum: "Serum",
     single_cell_cryopreserved: "Single cell cryopreserved",
     tissue_lysate: "Tissue lysate",
-  },{
     clarity_hydrogel: "CLARITY hydrogel",
     cryosections_curls_from_fresh_frozen_oct:
       "Cryosections/curls from fresh frozen OCT",
@@ -83,15 +78,12 @@ export const TISSUE_TYPES = {
     ffpe_slide: "FFPE slide",
     fixed_frozen_section_slide: "Fixed Frozen section slide",
     fresh_frozen_section_slide: "Fresh Frozen section slide",
-    fresh_frozen_tissue_section: "Fresh Frozen Tissue Section"
-  },{
+    fresh_frozen_tissue_section: "Fresh Frozen Tissue Section",
     gdna: "gDNA",
     nuclei: "Nuclei",
     protein: "Protein",
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched",
-    sequence_library:"Sequence Library"
-  },{
     other: "Other" }]
 };
 
