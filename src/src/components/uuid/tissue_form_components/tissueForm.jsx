@@ -294,7 +294,7 @@ class TissueForm extends Component {
           //   this.props.editingEntity.properties.protocol_file
           // ),
           entity_type: this.props.editingEntity.entity_type,
-          specimen_type: this.props.editingEntity.specimen_type,   //this.determineSpecimenType(),
+          specimen_type: this.props.editingEntity.specimen_type, // this.determineSpecimenType(),
           specimen_type_other: this.props.editingEntity.specimen_type_other,
           organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
           visit: this.props.editingEntity.visit ? this.props.editingEntity.visit : "",
@@ -320,7 +320,10 @@ class TissueForm extends Component {
       this.setState(
         {
           specimen_type: this.props.specimenType,
+          source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
+          source_entity: this.props.ancestor_entity ? this.props.ancestor_entity : "",
           source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
+          ancestor_organ: this.props.ancestor_entity ? this.props.ancestor_entity.organ : "",
           source_uuid_list: this.props.uuid  // true uuid
         }
 
@@ -334,14 +337,35 @@ class TissueForm extends Component {
     }
   }
 
-  determineSpecimenType = () => {
-    if (this.props.editingEntity.direct_ancestor.entity_type === 'Sample') {
-      if (this.props.editingEntity.direct_ancestor.specimen_type !== 'organ') {
-        return this.props.editingEntity.direct_ancestor.specimen_type;
-      }
-    }
-    return this.props.editingEntity.specimen_type;
-  }
+
+
+  // determineSpecimenType = () => {
+  //   try {
+  //     if (this.props.editingEntity.direct_ancestor && 
+  //         this.props.editingEntity.direct_ancestor.entity_type === 'Sample') {
+  //       if (this.props.editingEntity.direct_ancestor.specimen_type !== 'organ') {
+  //         return this.props.editingEntity.direct_ancestor.specimen_type;
+  //       }
+  //     } else if (this.props.editingEntity.direct_ancestor &&
+  //         this.props.editingEntity.direct_ancestor.entity_type === 'Donor') {
+  //       return "organ";
+  //     }
+  //   } catch{}
+  //   return this.props.editingEntity.specimen_type;
+  // }
+
+  // whichTissueCodeSet = () => {
+  //   try { 
+  //     if (this.props.editingEntity.direct_ancestor && 
+  //       this.props.editingEntity.direct_ancestor.entity_type === 'Donor') {
+  //       return "Donor";
+  //     }
+  //   } catch {
+  //     if (this.state.source_entity_type)
+  //   }
+  //   return "Sample";
+  // }
+
 
   getID = () => {
     console.debug("in getting id...", this.props.editingEntity)
@@ -1748,7 +1772,7 @@ handleAddImage = () => {
                       value={this.state.specimen_type}
                     >
                       <option value="">----</option>
-                      {TISSUE_TYPES["Sample"].map((optgs, index) => {
+                      {TISSUE_TYPES[this.state.source_entity_type].map((optgs, index) => {
                         return (
                           <optgroup
                             key={index}
