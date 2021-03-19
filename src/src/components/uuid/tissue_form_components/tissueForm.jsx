@@ -932,153 +932,49 @@ handleAddImage = () => {
       
               });
         } else {
-          console.debug('selected group', this.state.selected_group);
+              console.debug('selected group', this.state.selected_group);
 
-          if (this.state.selected_group && this.state.selected_group.length > 0) {
-              data["group_uuid"] = this.state.selected_group;
-          } else {
-              data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
-          }
+              if (this.state.selected_group && this.state.selected_group.length > 0) {
+                  data["group_uuid"] = this.state.selected_group;
+              } else {
+                  data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+              }
 
-          console.debug("Create a new Entity....")
-           entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                .then((response) => {
-                  if (response.status === 200) {
-                    console.debug('create Entity...');
-                    console.debug(response.results);
+          
+              if (this.state.sample_count < 1) {
+                  console.debug("Create a new Entity....", this.state.sample_count)
+                entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    .then((response) => {
+                      if (response.status === 200) {
+                        console.debug('create Entity...');
+                        console.debug(response.results);
 
-                    if (this.state.sample_count > 0) {
-                      // now generate some multiples
-                      entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                        this.props.onCreated({new_samples: [], entity: response.results});
+                        this.setState({ submit_error: true, submitting: false});
+                        
+                      } else if (response.status === 400) {
+                         this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
+                      } 
+                  });
+                } else if (this.state.sample_count > 0) {
+                  console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
+                    // now generate some multiples
+                    entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                         .then((resp) => {
-                          if (resp.status ===200) {
-                             this.props.onCreated({new_samples: resp.results, entity: response.results});
-                          }
-                      });
-                   } else {
-                      this.props.onCreated({new_samples: [], entity: response.results});
-                   }
-                  } if (response.status === 400) {
-                    console.debug('400 error', response)
-                     this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
-                  } else {
-                    this.setState({ submit_error: true, submitting: false});
-                  }
-              });
-          }
+                            if (resp.status === 200) {
+                                 //this.props.onCreated({new_samples: resp.results, entity: response.results});
+                                 this.props.onCreated({new_samples: resp.results, entity: data});   // fro multiples send the 'starter' data used to create the multiples
+                                 this.setState({ submit_error: true, submitting: false});
+                            }  else if (resp.status === 400) {
+                                this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(resp.results) });
+                            } 
+                        });
+                }
+            }
         }
       }
     });
   };
-
-  // validateUUID = () => {
-  //   let isValid = true;
-  //   const uuid = this.state.source_uuid;
-  //   // const patt = new RegExp("^.{3}-.{4}-.{3}$");
-  //   // if (patt.test(uuid)) {
-  //   this.setState({
-  //     validatingUUID: true
-  //   });
-  //   if (true) {
-  //     const config = {
-  //       headers: {
-  //         Authorization:
-  //           "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-  //         "Content-Type": "multipart/form-data"
-  //       }
-  //     };
-
-  //     return axios
-  //       .get(
-  //         `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}`,
-  //         config
-  //       )
-  //       .then(res => {
-  //         if (res.data) {
-  //           this.setState(prevState => ({
-  //             source_entity: res.data,
-  //             formErrors: { ...prevState.formErrors, source_uuid: "valid" }
-  //           }), () => {
-  //             // Get sex info
-  //             axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.state.source_entity.source_uuid}`,
-  //               config
-  //             ).then(res => {
-  //               const metadata_str = res.data.entity_node?.metadata;
-  //               if (metadata_str === undefined) {
-  //                 this.setState({
-  //                   source_entity: {
-  //                     specimen: {
-  //                       ...this.state.source_entity.specimen,
-  //                       sex: ""
-  //                     }
-  //                   }
-  //                 });
-  //               } else {
-  //                 const metadata = JSON.parse(metadata_str);
-  //                 try {
-  //                   const sex = metadata.organ_donor_data.find(e => e.grouping_concept_preferred_term === "Sex").preferred_term.toLowerCase();
-  //                   this.setState({
-  //                     source_entity: {
-  //                       specimen: {
-  //                         ...this.state.source_entity.specimen,
-  //                         sex: sex
-  //                       }
-  //                     }
-  //                   });
-  //                 } catch {
-  //                   this.setState({
-  //                     source_entity: {
-  //                       specimen: {
-  //                         ...this.state.source_entity.specimen,
-  //                         sex: ""
-  //                       }
-  //                     }
-  //                   });
-  //                 }
-  //               }
-  //             }).catch(err => {
-  //               console.debug(err);
-  //             })
-  //           });
-  //           return isValid;
-  //         } else {
-  //           this.setState(prevState => ({
-  //             source_entity: null,
-  //             formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
-  //           }));
-  //           isValid = false;
-  //           alert("The Source UUID does not exist.");
-  //           return isValid;
-  //         }
-  //       })
-  //       .catch(err => {
-  //         this.setState(prevState => ({
-  //           source_entity: null,
-  //           formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
-  //         }));
-  //         isValid = false;
-  //         alert("The Source UUID does not exist.");
-  //         return isValid;
-  //       })
-  //       .then(() => {
-  //         this.setState({
-  //           validatingUUID: false
-  //         });
-  //         return isValid;
-  //       });
-  //   } else {
-  //     this.setState(prevState => ({
-  //       formErrors: { ...prevState.formErrors, source_uuid: "invalid" }
-  //     }));
-  //     isValid = false;
-  //     alert("The Source UUID is invalid.");
-  //     return new Promise((resolve, reject) => {
-  //       resolve(false);
-  //     });
-  //   }
-  // };
-
-  
 
   renderButtons() {
     if (this.props.editingEntity) {
@@ -1280,79 +1176,21 @@ handleAddImage = () => {
         isValid = false;
     }
 
-      // this.state.images.forEach((image, index) => {
-      //   if (
-      //     !validateRequired(image.file_name) &&
-      //     !validateRequired(image.ref.current.image_file.current.value)
-      //   ) {
-      //     isValid = false;
-      //     image.ref.current.validate();
-      //   }
-      //   if (
-      //     !validateRequired(
-      //       image.ref.current.image_file_description.current.value
-      //     )
-      //   ) {
-      //     isValid = false;
-      //     image.ref.current.validate();
-      //   }
-      // });
-
-      // this.state.images.forEach((image, index) => {
-      //   usedFileName.add(image.file_name);
-
-      //   if (image.ref.current.image_file.current.files[0]) {
-      //     if (
-      //       usedFileName.has(image.ref.current.image_file.current.files[0].name)
-      //     ) {
-      //       image["error"] = "Duplicated file name is not allowed.";
-      //       isValid = false;
-      //     }
-      //   }
-      // });
-
-      // if (!this.props.editingEntity) {
-      //   // Creating
-      //   this.state.metadatas.forEach((metadata, index) => {
-      //     if (
-      //       !validateRequired(metadata.ref.current.metadata_file.current.value)
-      //     ) {
-      //       isValid = false;
-      //       metadata.ref.current.validate();
-      //     }
-      //   });
-      // }
-
-      // this.state.metadatas.forEach((metadata, index) => {
-      //   usedFileName.add(metadata.file_name);
-
-      //   if (metadata.ref.current.metadata_file.current.files[0]) {
-      //     if (
-      //       usedFileName.has(
-      //         metadata.ref.current.metadata_file.current.files[0].name
-      //       )
-      //     ) {
-      //       metadata["error"] = "Duplicated file name is not allowed.";
-      //       isValid = false;
-      //     }
-      //   }
-      // });
-
-      if (!validateRequired(this.state.source_uuid)) {
+    if (!validateRequired(this.state.source_uuid)) {
+      this.setState(prevState => ({
+        formErrors: { ...prevState.formErrors, source_uuid: "required" }
+      }));
+      isValid = false;
+      resolve(isValid);
+    } else {
         this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "required" }
+          formErrors: { ...prevState.formErrors, source_uuid: "" }
         }));
-        isValid = false;
         resolve(isValid);
-      } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, source_uuid: "" }
-          }));
-          resolve(isValid);
-        // this.validateUUID().then(res => {
-        //   resolve(isValid && res);
-        // });
-      }      
+      // this.validateUUID().then(res => {
+      //   resolve(isValid && res);
+      // });
+    }      
     });
   }
 
@@ -1549,29 +1387,6 @@ handleAddImage = () => {
                       />
                     </button>
                   </div>
-                  {/*<div className="col-sm-1">
-                    <button
-                      className="btn btn-light"
-                      type="button"
-                      onClick={this.handleLookUpClick}
-                    >
-                      <FontAwesomeIcon
-                          icon={faSearch}
-                          data-tip
-                          data-for="source_uuid_tooltip"
-                      />
-                    </button>
-                  </div> */}
-                  {/* <div className="col-sm-2">
-                    <button
-                      className="btn btn-primary"
-                      type="button"
-                      onClick={this.validateUUID}
-                      disabled={this.state.validatingUUID}
-                    >
-                      {this.state.validatingUUID ? "..." : "Validate"}
-                    </button>
-                  </div> */}
                   <IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
@@ -1584,10 +1399,6 @@ handleAddImage = () => {
                  <div>
                     <input type="text" readOnly className="form-control" id="static_source_uuid" value={this.state.source_uuid}></input>
                   </div>
-                  {/*<div className="col-sm-9 col-form-label">
-                    <p>{this.state.source_uuid}</p>
-                  </div>{" "}
-                */}
                 </React.Fragment>
               )}
             
@@ -1699,38 +1510,6 @@ handleAddImage = () => {
                           </optgroup>
                         );
                       })}
-
-                       {/*TISSUE_TYPES[this.props.editingEntity.entity_type].map((optgs, index) => {
-                        return (
-                          <optgroup
-                            key={index}
-                            label="____________________________________________________________"
-                          >
-                            {Object.entries(optgs).map(op => {
-                              if (op[0] === "organ") {
-                                if (
-                                  this.state.source_entity &&
-                                  this.state.source_entity.entity_type === "Donor"
-                                ) {
-                                  return (
-                                    <option key={op[0]} value={op[0]}>
-                                      {op[1]}
-                                    </option>
-                                  );
-                                } else {
-                                  return null;
-                                }
-                              } else {
-                                return (
-                                  <option key={op[0]} value={op[0]}>
-                                    {op[1]}
-                                  </option>
-                                );
-                              }
-                            })}
-                          </optgroup>
-                        );
-                      })*/}
                     </select>
                   </div>
 
@@ -1976,11 +1755,7 @@ handleAddImage = () => {
                   )}
                 </div>
               )}
-            {!this.state.multiple_id &&
-              !this.state.editingMultiWarning &&
-              (!this.props.readOnly ||
-                this.state.lab_tissue_id !== undefined) && (
-
+          
                 <div className="form-group">
                   <label
                     htmlFor="lab_tissue_id">
@@ -2024,8 +1799,8 @@ handleAddImage = () => {
                   )}
                 
                 </div>
-              )
-            }
+              
+            
 
             {/*  ALLOWED EDITING OF MULTIPLE IDS at once
 
@@ -2115,8 +1890,8 @@ handleAddImage = () => {
                         <p>
                           Provide formatted location data from <br />
                           CCF Location Registration Tool for <br />
-            this sample.
-          </p>
+                          this sample.
+                        </p>
                       </ReactTooltip>
                     </span>
 				        </label>
@@ -2127,7 +1902,7 @@ handleAddImage = () => {
                       className="btn btn-primary btn-block"
                     >
                       Register Location
-				  </button>
+				            </button>
                   </div>
                   { this.state.rui_click && (
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
@@ -2239,7 +2014,7 @@ handleAddImage = () => {
                             onClick={this.handleAddRUILocation}
                             className="btn btn-primary btn-block"
                           >
-                            Modify Location Information
+                            Add Location Information
 				         </button>
                         </div>
                         { this.state.rui_click && (
@@ -2343,49 +2118,9 @@ handleAddImage = () => {
                 )}
               </div>
             </div>
-            {/*}
-            <div className="form-group">
-              <label
-                htmlFor="metadata">
-                Metadata <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="metadata_tooltip"
-                />
-                <ReactTooltip
-                  id="metadata_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
-                >
-                  <p>
-                    Metadata describing the specimen. <br />
-                      This could be typed in (or copy/pasted) or an uploaded file
-                      such as a spreadsheet.
-                    </p>
-                </ReactTooltip>
-	              </label>
-              {!this.props.readOnly && (
-                <div>
-                  <textarea
-                    name="metadata"
-                    id="metadata"
-                    cols="30"
-                    rows="5"
-                    className="form-control"
-                    value={this.state.metadata}
-                    onChange={this.handleInputChange}
-                  />
-                </div>
-              )}
-              {this.props.readOnly && (
-                <div className="col-sm-9 col-form-label">
-                  <p>{this.state.metadata}</p>
-                </div>
-              )}
-            </div>
-          */}
-            {(!this.props.readOnly || this.state.metadatas.length > 0) && (
+              
+            {(!this.props.readOnly || this.state.metadatas.length > 0) && 
+              !this.state.multiple_id &&(
               <div className="form-group">
                 
                 <div>
@@ -2437,7 +2172,8 @@ handleAddImage = () => {
                 
               </div>
             )}
-            {(!this.props.readOnly || this.state.images.length > 0) && (
+            {(!this.props.readOnly || this.state.images.length > 0) && 
+               !this.state.multiple_id && (
               <div className="form-group">
                
                 <div>
