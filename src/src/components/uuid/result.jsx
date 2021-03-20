@@ -136,8 +136,7 @@ class Result extends Component {
                       Register an organ from this donor
                     </button>
                   )}
-                  {this.props.result.entity.entity_type ===
-                    "Organ" && (
+                  { this.props.result.entity.specimen_type === "organ" && (
                       <button
                         className="btn btn-success btn-block"
                         type="button"
