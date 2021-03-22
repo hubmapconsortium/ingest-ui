@@ -304,7 +304,7 @@ class TissueForm extends Component {
           
         } );
 
-       
+      this.getSourceAncestorOrgan(this.props.editingEntity);
 
       console.debug('state', this.state)
         // ,
@@ -317,16 +317,17 @@ class TissueForm extends Component {
      
 
     } else {
-      this.setState(
-        {
-          specimen_type: this.props.specimenType,
-          source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
-          source_entity: this.props.ancestor_entity ? this.props.ancestor_entity : "",
-          source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
-          ancestor_organ: this.props.ancestor_entity ? this.props.ancestor_entity.organ : "",
-          source_uuid_list: this.props.uuid  // true uuid
-        }
-
+        console.debug('NEW RECORD', this.props.direct_ancestor)
+        this.setState(
+          {
+            specimen_type: this.props.specimenType,
+            source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
+            source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
+            source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
+            ancestor_organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+            organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+            source_uuid_list: this.props.uuid  // true uuid
+          }
         // ,
         // () => {
         //   if (this.state.source_uuid !== undefined) {
@@ -334,9 +335,30 @@ class TissueForm extends Component {
         //   }idz
         // }
       );
+        // if (this.props.ancestor_entity) {
+        //     this.getSourceAncestorOrgan(this.props.ancestor_entity);
+        // }
     }
   }
 
+  getSourceAncestorOrgan(entity) {
+    var ancestor_organ = ""
+    // check to see if we have an "top-level" ancestor 
+      entity_api_get_entity_ancestor( entity.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+        .then((response) => {
+          if (response.status === 200) {
+               console.debug('Entity ancestors...', response.results);
+              if (response.results.length > 0) {
+                  
+                  //console.debug('Entity ancestors...ORGAN', ancestor_organ);
+                  this.setState({
+                    source_entity: response.results[0],
+                    ancestor_organ: response.results[0].organ   // use "top" ancestor organ
+                  })
+              }
+          } 
+        });
+  }
 
 
   // determineSpecimenType = () => {
@@ -2179,14 +2201,14 @@ handleAddImage = () => {
                 </React.Fragment>
               )}
             {!this.props.editingEntity &&
-              !this.state.multiple_id &&
+              //!this.state.multiple_id &&
               this.state.source_entity !== undefined &&
              ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&
               (
                 <div className="form-group">
                   <label
                     htmlFor="location">
-                    Sample Location <span>
+                    Sample Location {" "}<span>
                       <FontAwesomeIcon
                         icon={faQuestionCircle}
                         data-tip
@@ -2257,45 +2279,38 @@ handleAddImage = () => {
                 </div>
               )}
             {this.props.editingEntity &&
-              !this.state.multiple_id &&
+              //!this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.organ) &&
+             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&    //source_entity.organ
               (
-                <div className="form-group row">
+                <div className="form-group">
                   <label
                     htmlFor="location"
-                    className="col-sm-2 col-form-label text-right"
-                  >
-                    Sample Location
-				          </label>
-                  <React.Fragment>
-                    <div className="col-sm-3">
-                      <button
-                        className="btn btn-link"
-                        type="button"
-                        onClick={this.openRUIModalHandler}
+                    className="col-sm-2 col-form-label"
+                  >Sample Location {" "}
+                  <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="rui_tooltip"
+                      />
+                      <ReactTooltip
+                        id="rui_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
                       >
-                        View Location
-						        </button>
-                    </div>
-                    <RUIModal
-                      className="Modal"
-                      show={this.state.rui_show}
-                      handleClose={this.closeRUIModalHandler}>
-                      {this.state.rui_location}
-                    </RUIModal>
-                    <div className="col-sm-2">
-                    </div>
-                  </React.Fragment>
-
+                        <p>
+                          Provide formatted location data from <br />
+                          CCF Location Registration Tool for <br />
+                          this sample.
+                      </p>
+                      </ReactTooltip>
+                  </label>
+                 
                   { !this.props.readOnly &&
                     this.state.rui_check && (
                       <React.Fragment>
-                        <div className="col-sm-1 checkb">
-                          <img src={check}
-                            alt="check"
-                            className="check" />
-                        </div>
+                       
                         <div className="col-sm-3 text-center">
                           <button
                             type="button"
@@ -2315,6 +2330,28 @@ handleAddImage = () => {
                         )}
                       </React.Fragment>
                     )}
+                     {this.state.rui_check && (
+
+                      <React.Fragment>
+                    <div className="col-sm-3">
+                      <button
+                        className="btn btn-link"
+                        type="button"
+                        onClick={this.openRUIModalHandler}
+                      >
+                        View Location
+                    </button>
+                    </div>
+                    <RUIModal
+                      className="Modal"
+                      show={this.state.rui_show}
+                      handleClose={this.closeRUIModalHandler}>
+                      {this.state.rui_location}
+                    </RUIModal>
+                    <div className="col-sm-2">
+                    </div>
+                  </React.Fragment>
+                  )}
 
                   { !this.props.readOnly &&
                     !this.state.rui_check && (
@@ -2325,9 +2362,11 @@ handleAddImage = () => {
                             onClick={this.handleAddRUILocation}
                             className="btn btn-primary btn-block"
                           >
-                            Add Location Information
-				         </button>
+                            Register Location
+				                </button>
+                
                         </div>
+                    
                         { this.state.rui_click && (
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organ={this.state.source_entity.organ}
@@ -2347,25 +2386,7 @@ handleAddImage = () => {
                     </div>
                   )}
                   <div className="col-sm-1 my-auto text-center">
-                    <span>
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="rui_tooltip"
-                      />
-                      <ReactTooltip
-                        id="rui_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <p>
-                          Provide formatted location data from <br />
-						 CCF Location Registration Tool for <br />
-						 this sample.
-					   </p>
-                      </ReactTooltip>
-                    </span>
+                    
                   </div>
                 </div>
               )}
