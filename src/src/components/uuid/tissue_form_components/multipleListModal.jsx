@@ -4,6 +4,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@material-ui/core/Dialog';
+import Checkbox from '@material-ui/core/Checkbox';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -13,13 +17,17 @@ import {
 // import check from './check25.jpg';
 import Modal from "../modal";
 import axios from "axios";
+import Forms from "../forms";
+import TissueEditDialog from "./tissueEditDialog";
+
 //import RUIIntegration from "./ruiIntegration";
 import { entity_api_update_multiple_entities } from '../../../service/entity_api';
 
 class MultipleListModal extends Component {
 
   state = {
-     submitting: false
+     submitting: false,
+     formType: "sample"
     //rui_json: "",
     // rui_click: { name: '' },
     // rui_checks: { name: '' },
@@ -34,17 +42,15 @@ class MultipleListModal extends Component {
   componentDidMount() {
 
     console.log('MultipleListModal', this.props)
+   
+    
+    const first_lab_id = this.props.ids[0].submission_id; 
+    const last_lab_id = this.props.ids[this.props.ids.length-1].submission_id; 
     this.setState({
-            submitting: false
-            // metadata: {
-            //   ...this.state.metadata.direct_ancestor,
-            //   sex: this.getGender(this.state.metadata.direct_ancestor)
-            // }
-          });
+         submitting: false, 
+        multiMessage: `${this.props.ids.length} samples added ${first_lab_id} through ${last_lab_id}`
+    });
   }
-
-
-
 
   handleClose = e => {
     // this.setState({
@@ -53,15 +59,15 @@ class MultipleListModal extends Component {
     // });
   };
 
-  handleInputChange = e => {
-    const { name, value } = e.target;
-    console.log(name);
-    console.log(value);
-    this.setState(prevState => {
-      let assigned_ids = Object.assign({}, prevState.assigned_ids);
-      assigned_ids[name] = value;
-      return { assigned_ids };
-    });
+  handleInputChange = selected => {
+    console.log('handleInputChange', selected);
+
+    // <TissueEditDialog />
+    // this.setState(prevState => {
+    //   let assigned_ids = Object.assign({}, prevState.assigned_ids);
+    //   assigned_ids[name] = value;
+    //   return { assigned_ids };
+    // });
   };
 
   handleInputKeyPress = () => {
@@ -77,8 +83,8 @@ class MultipleListModal extends Component {
       () => {
   
           // prepare the data
-          let data = this.createSampleList();
-          console.log('MultipleListModal', data);
+          //let data = this.createSampleList();
+          console.log('MultipleListModal');
             // now update multiple lab id entities
               // entity_api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
               //     .then((resp) => {
@@ -103,51 +109,44 @@ class MultipleListModal extends Component {
 
   render() {
     return (
-      <Modal
-        dialogClassName="add-multi"
-        show={this.props.show}
-        handleClose={this.props.hide}
-      >
+    
+    <Dialog onClose={this.props.hide} aria-labelledby="simple-dialog-title" open={this.props.show}>
+      <DialogTitle id="simple-dialog-title">
+          {this.state.multiMessage}
+      </DialogTitle>
         <div className='row'>
+          <div className='col-sm-12 text-center'>
+          Use the list below to edit individual Sample information
+          </div>
           <div className='col-sm-12'>
             <div className='card text-center'>
-              <div className='card-body scrollbar-div'>
+      
+              <div className='card-body'>
 
-                <List component="nav" aria-label="samples">
+                <List component="nav" aria-label="samples" >
                     {this.props.ids.map((idopt, index) => {
                         return (
-                          <ListItem button>
-                             <ListItemText primary={`${idopt.submission_id}`} />
+                          <ListItem key={idopt.submission_id} button>
+                            <ListItemIcon>
+                             <Checkbox
+                                edge="start"
+                                //checked={checked.indexOf(value) !== -1}
+                                tabIndex={-1}
+                                disableRipple
+                                inputProps={{ 'aria-labelledby': idopt.submission_id }}
+                                />
+                            </ListItemIcon>
+                             <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`} onClick={() => this.handleInputChange(idopt)}/>
                           </ListItem>
                         );
                       })}
                 </List>
     
               </div>
-              <hr />
-            
-              <div className='form-group row'>
-                <div className='col-sm-12 text-center'>
-                  <button
-                    className='btn btn-primary'
-                    onClick={this.handleSubmit}
-                    disabled={this.state.submitting}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Submit"}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
-      </Modal>
+      </Dialog>
     );
   }
 }

@@ -294,8 +294,8 @@ class IDSearchModal extends Component {
                         <thead>
                           <tr>
                             <th>HuBMAP ID</th>
+                            <th>Submission ID</th>
                             <th>Type</th>
-                            <th>Name</th>
                             <th>Entered By</th>
                           </tr>
                         </thead>
@@ -391,6 +391,9 @@ class IDSearchModal extends Component {
                                       </React.Fragment>
                                     )}
                                   </td>
+                                   <td>
+                                    {result.submission_id}
+                                  </td>
                                   <td>
                                     {result.entity_type === "Sample"
                                       ? flattenSampleType(SAMPLE_TYPES)[
@@ -398,10 +401,7 @@ class IDSearchModal extends Component {
                                         ]
                                       : result.entity_type}
                                   </td>
-                                  <td>
-                                    {result.lab_donor_id ||
-                                        result.lab_tissue_sample_id}
-                                  </td>
+                                 
                                   <td>
                                     {result.created_by_user_email}
                                   </td>
@@ -423,6 +423,9 @@ class IDSearchModal extends Component {
                                               </div>
                                             </React.Fragment>
                                           </td>
+                                           <td>
+                                            {result.submission_id}
+                                          </td>
                                           <td>
                                             {result.entity_type === "Sample"
                                               ? flattenSampleType(SAMPLE_TYPES)[
@@ -430,10 +433,7 @@ class IDSearchModal extends Component {
                                                 ]
                                               : result.entity_type}
                                           </td>
-                                          <td>
-                                            {result.lab_donor_id ||
-                                                result.lab_tissue_sample_id}
-                                          </td>
+                                         
                                           <td>
                                             {
                                               result.created_by_user_email
