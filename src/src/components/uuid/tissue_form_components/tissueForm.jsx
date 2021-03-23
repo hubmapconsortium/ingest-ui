@@ -226,6 +226,16 @@ class TissueForm extends Component {
           }
         });
 
+   // convert the rui from a json to string, if there
+        
+      var rui_data = JSON.stringify(this.props.editingEntity.rui_location, null, 3);
+      var has_rui = false;
+      
+      console.debug('RUI', rui_data)
+      if (rui_data && rui_data.length > 0) {
+        console.debug('RUI FOUND')
+         has_rui = true;
+      }
       // let protocols_json = JSON.parse(
       //   this.props.editingEntity.properties.protocols
       //     .replace(/\\/g, "\\\\")
@@ -269,32 +279,6 @@ class TissueForm extends Component {
         });
       } catch {}
 
-      // convert the rui from a json to string, if there
-      try {
-        let r = JSON.stringify(this.props.editingEntity.rui_location, null, 3)
-        
-        if (r) {
-          this.setState({
-            rui_location: r,
-            rui_check: true
-          })
-        } else {
-          this.setState({
-          rui_location: "",
-          rui_check: false
-        })
-      }
-      } catch {
-        this.setState({
-          rui_location: "",
-          rui_check: false
-        })
-      }
-
-      console.debug('state', this.state)
-
-
-
       this.setState(
         {
           source_uuid: this.getID(),
@@ -302,14 +286,15 @@ class TissueForm extends Component {
           source_entity_type: this.props.editingEntity.direct_ancestor.entity_type,
           author: this.props.editingEntity.created_by_user_email,
           lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id,
-          //rui_location: this.props.editingEntity.rui_location || "",
+          rui_location: JSON.stringify(this.props.editingEntity.rui_location, null, 3) || "",
+          rui_check: JSON.stringify(this.props.editingEntity.rui_location, null, 3) ? true : false,
           // protocols: protocols_json,
           protocol_url: this.props.editingEntity.protocol_url,
           // protocol_file_name: getFileNameOnPath(
           //   this.props.editingEntity.properties.protocol_file
           // ),
           entity_type: this.props.editingEntity.entity_type,
-          specimen_type: this.determineSpecimenType(),
+          specimen_type: this.props.editingEntity.specimen_type, // this.determineSpecimenType(),
           specimen_type_other: this.props.editingEntity.specimen_type_other,
           organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
           visit: this.props.editingEntity.visit ? this.props.editingEntity.visit : "",
@@ -317,7 +302,11 @@ class TissueForm extends Component {
           images: image_list,
           metadatas: metadata_list
           
-        }
+        } );
+
+      this.getSourceAncestorOrgan(this.props.editingEntity);
+
+      console.debug('state', this.state)
         // ,
 
         // () => {
@@ -325,16 +314,20 @@ class TissueForm extends Component {
         //     this.validateUUID();
         //   }
         // }
-      );
+     
 
     } else {
-      this.setState(
-        {
-          specimen_type: this.props.specimenType,
-          source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
-          source_uuid_list: this.props.uuid  // true uuid
-        }
-
+        console.debug('NEW RECORD', this.props.direct_ancestor)
+        this.setState(
+          {
+            specimen_type: this.props.specimenType,
+            source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
+            source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
+            source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
+            ancestor_organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+            organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+            source_uuid_list: this.props.uuid  // true uuid
+          }
         // ,
         // () => {
         //   if (this.state.source_uuid !== undefined) {
@@ -342,17 +335,59 @@ class TissueForm extends Component {
         //   }idz
         // }
       );
+        // if (this.props.ancestor_entity) {
+        //     this.getSourceAncestorOrgan(this.props.ancestor_entity);
+        // }
     }
   }
 
-  determineSpecimenType = () => {
-    if (this.props.editingEntity.direct_ancestor.entity_type === 'Sample') {
-      if (this.props.editingEntity.direct_ancestor.specimen_type !== 'organ') {
-        return this.props.editingEntity.direct_ancestor.specimen_type;
-      }
-    }
-    return this.props.editingEntity.specimen_type;
+  getSourceAncestorOrgan(entity) {
+    var ancestor_organ = ""
+    // check to see if we have an "top-level" ancestor 
+      entity_api_get_entity_ancestor( entity.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+        .then((response) => {
+          if (response.status === 200) {
+               console.debug('Entity ancestors...', response.results);
+              if (response.results.length > 0) {
+                  
+                  //console.debug('Entity ancestors...ORGAN', ancestor_organ);
+                  this.setState({
+                    source_entity: response.results[0],
+                    ancestor_organ: response.results[0].organ   // use "top" ancestor organ
+                  })
+              }
+          } 
+        });
   }
+
+
+  // determineSpecimenType = () => {
+  //   try {
+  //     if (this.props.editingEntity.direct_ancestor && 
+  //         this.props.editingEntity.direct_ancestor.entity_type === 'Sample') {
+  //       if (this.props.editingEntity.direct_ancestor.specimen_type !== 'organ') {
+  //         return this.props.editingEntity.direct_ancestor.specimen_type;
+  //       }
+  //     } else if (this.props.editingEntity.direct_ancestor &&
+  //         this.props.editingEntity.direct_ancestor.entity_type === 'Donor') {
+  //       return "organ";
+  //     }
+  //   } catch{}
+  //   return this.props.editingEntity.specimen_type;
+  // }
+
+  // whichTissueCodeSet = () => {
+  //   try { 
+  //     if (this.props.editingEntity.direct_ancestor && 
+  //       this.props.editingEntity.direct_ancestor.entity_type === 'Donor') {
+  //       return "Donor";
+  //     }
+  //   } catch {
+  //     if (this.state.source_entity_type)
+  //   }
+  //   return "Sample";
+  // }
+
 
   getID = () => {
     console.debug("in getting id...", this.props.editingEntity)
@@ -582,13 +617,13 @@ class TissueForm extends Component {
   };
 
 
-  trigerAddViewState = () => {
-    this.setState({
-      ...this.State,
-      rui_check: true,
-      rui_view: true
-    })
-  }
+  // trigerAddViewState = () => {
+  //   this.setState({
+  //     ...this.State,
+  //     rui_check: true,
+  //     rui_view: true
+  //   })
+  // }
 
   openRUIModalHandler = () => {
     this.setState({
@@ -998,39 +1033,51 @@ handleAddImage = () => {
       
               });
         } else {
-          console.debug('selected group', this.state.selected_group);
+            console.debug('selected group', this.state.selected_group);
 
-          if (this.state.selected_group && this.state.selected_group.length > 0) {
-              data["group_uuid"] = this.state.selected_group;
-          } else {
-              data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
-          }
+            if (this.state.selected_group && this.state.selected_group.length > 0) {
+                data["group_uuid"] = this.state.selected_group;
+            } else {
+                data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+            }
 
-          console.debug("Create a new Entity....")
-           entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                .then((response) => {
-                  if (response.status === 200) {
-                    console.debug('create Entity...');
-                    console.debug(response.results);
+            entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    .then((response) => {
+                      if (response.status === 200) {
+                        console.debug('create Entity...');
+                        console.debug(response.results);
 
-                    if (this.state.sample_count > 0) {
-                      // now generate some multiples
-                      entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                        .then((resp) => {
-                          if (resp.status ===200) {
-                             this.props.onCreated({new_samples: resp.results, entity: response.results});
-                          }
-                      });
-                   } else {
-                      this.props.onCreated({new_samples: [], entity: response.results});
-                   }
-                  } if (response.status === 400) {
-                    console.debug('400 error', response)
-                     this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
-                  } else {
-                    this.setState({ submit_error: true, submitting: false});
-                  }
-              });
+                        this.props.onCreated({new_samples: [], entity: response.results});
+                        this.setState({ submit_error: true, submitting: false});
+                        
+                      } else if (response.status === 400) {
+                         this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
+                      } 
+                  });
+           // entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+           //      .then((response) => {
+           //        if (response.status === 200) {
+           //          console.debug('create Entity...');
+           //          console.debug(response.results);
+
+           //          if (this.state.sample_count > 0) {
+           //            // now generate some multiples
+           //            entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+           //              .then((resp) => {
+           //                if (resp.status ===200) {
+           //                   this.props.onCreated({new_samples: resp.results, entity: response.results});
+           //                }
+           //            });
+           //         } else {
+           //            this.props.onCreated({new_samples: [], entity: response.results});
+           //         }
+           //        } if (response.status === 400) {
+           //          console.debug('400 error', response)
+           //           this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
+           //        } else {
+           //          this.setState({ submit_error: true, submitting: false});
+           //        }
+           //    });
           }
         }
       }
@@ -1502,6 +1549,7 @@ handleAddImage = () => {
   };
 
   handleLabIdsUpdate = e => {
+    console.debug('HERE IN THE handleLabIdsUpdate')
     let new_ids = [];
     this.state.entities.map(id => {
       return new_ids.push({
@@ -2153,14 +2201,14 @@ handleAddImage = () => {
                 </React.Fragment>
               )}
             {!this.props.editingEntity &&
-              !this.state.multiple_id &&
+              //!this.state.multiple_id &&
               this.state.source_entity !== undefined &&
              ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&
               (
                 <div className="form-group">
                   <label
                     htmlFor="location">
-                    Sample Location <span>
+                    Sample Location {" "}<span>
                       <FontAwesomeIcon
                         icon={faQuestionCircle}
                         data-tip
@@ -2231,45 +2279,38 @@ handleAddImage = () => {
                 </div>
               )}
             {this.props.editingEntity &&
-              !this.state.multiple_id &&
+              //!this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.source_entity.organ) &&
+             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&    //source_entity.organ
               (
-                <div className="form-group row">
+                <div className="form-group">
                   <label
                     htmlFor="location"
-                    className="col-sm-2 col-form-label text-right"
-                  >
-                    Sample Location
-				          </label>
-                  <React.Fragment>
-                    <div className="col-sm-3">
-                      <button
-                        className="btn btn-link"
-                        type="button"
-                        onClick={this.openRUIModalHandler}
+                    className="col-sm-2 col-form-label"
+                  >Sample Location {" "}
+                  <FontAwesomeIcon
+                        icon={faQuestionCircle}
+                        data-tip
+                        data-for="rui_tooltip"
+                      />
+                      <ReactTooltip
+                        id="rui_tooltip"
+                        place="top"
+                        type="info"
+                        effect="solid"
                       >
-                        View Location
-						        </button>
-                    </div>
-                    <RUIModal
-                      className="Modal"
-                      show={this.state.rui_show}
-                      handleClose={this.closeRUIModalHandler}>
-                      {this.state.rui_location}
-                    </RUIModal>
-                    <div className="col-sm-2">
-                    </div>
-                  </React.Fragment>
-
+                        <p>
+                          Provide formatted location data from <br />
+                          CCF Location Registration Tool for <br />
+                          this sample.
+                      </p>
+                      </ReactTooltip>
+                  </label>
+                 
                   { !this.props.readOnly &&
                     this.state.rui_check && (
                       <React.Fragment>
-                        <div className="col-sm-1 checkb">
-                          <img src={check}
-                            alt="check"
-                            className="check" />
-                        </div>
+                       
                         <div className="col-sm-3 text-center">
                           <button
                             type="button"
@@ -2289,6 +2330,28 @@ handleAddImage = () => {
                         )}
                       </React.Fragment>
                     )}
+                     {this.state.rui_check && (
+
+                      <React.Fragment>
+                    <div className="col-sm-3">
+                      <button
+                        className="btn btn-link"
+                        type="button"
+                        onClick={this.openRUIModalHandler}
+                      >
+                        View Location
+                    </button>
+                    </div>
+                    <RUIModal
+                      className="Modal"
+                      show={this.state.rui_show}
+                      handleClose={this.closeRUIModalHandler}>
+                      {this.state.rui_location}
+                    </RUIModal>
+                    <div className="col-sm-2">
+                    </div>
+                  </React.Fragment>
+                  )}
 
                   { !this.props.readOnly &&
                     !this.state.rui_check && (
@@ -2299,9 +2362,11 @@ handleAddImage = () => {
                             onClick={this.handleAddRUILocation}
                             className="btn btn-primary btn-block"
                           >
-                            Modify Location Information
-				         </button>
+                            Register Location
+				                </button>
+                
                         </div>
+                    
                         { this.state.rui_click && (
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organ={this.state.source_entity.organ}
@@ -2321,25 +2386,7 @@ handleAddImage = () => {
                     </div>
                   )}
                   <div className="col-sm-1 my-auto text-center">
-                    <span>
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="rui_tooltip"
-                      />
-                      <ReactTooltip
-                        id="rui_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <p>
-                          Provide formatted location data from <br />
-						 CCF Location Registration Tool for <br />
-						 this sample.
-					   </p>
-                      </ReactTooltip>
-                    </span>
+                    
                   </div>
                 </div>
               )}
