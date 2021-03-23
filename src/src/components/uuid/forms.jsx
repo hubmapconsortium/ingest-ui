@@ -26,8 +26,10 @@ class Forms extends Component {
       createSuccess: false,
       formType: "sample",
       specimenType: e.entity_type === "Sample" ? "" : "organ",
+      source_entity_type: e.entity_type, 
       sourceUUID: e.hubmap_id,   // this is source hubmap id, which is for visual purpose
-      uuid: e.uuid      // send the true uuid
+      uuid: e.uuid,      // send the true uuid
+      ancestor_entity: e   // just sending this entire entity for now, which has alll the info;  REDSIGN NEEDED
      
     });
   };
@@ -55,8 +57,10 @@ class Forms extends Component {
           onCreated={this.onCreated}
           handleCancel={this.props.onCancel}
           specimenType={this.state.specimenType}
+          source_entity_type={this.state.source_entity_type}
           sourceUUID={this.state.sourceUUID}
           uuid={this.state.uuid}
+          direct_ancestor={this.state.ancestor_entity}
         />
       );
     } else {
