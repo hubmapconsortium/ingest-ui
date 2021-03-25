@@ -92,19 +92,19 @@ class EntityList extends Component {
   //   } 
   //   return ""
   // }
-  getEntityData = (uuid) => {
+  // getEntityData = (uuid) => {
 
-    console.debug(uuid);
-    entity_api_get_entity(uuid, this.state.authToken)
-    .then((response) => {
-      if (response.status === 200) {
-      console.debug('Entity results...');
-      console.debug(response.results);
-      return response.results;
-      }
-      console.debug(response.status);
-    });
-  }
+  //   console.debug(uuid);
+  //   entity_api_get_entity(uuid, this.state.authToken)
+  //   .then((response) => {
+  //     if (response.status === 200) {
+  //     console.debug('Entity results...');
+  //     console.debug(response.results);
+  //     return response.results;
+  //     }
+  //     console.debug(response.status);
+  //   });
+  // }
 
  editForm = (entity, display_id, es) => {
     console.debug('in the editForm')
@@ -134,8 +134,6 @@ class EntityList extends Component {
         });
       }
     });
-
-
   };
 
 /*  editForm = (entity, display_id, es) => {

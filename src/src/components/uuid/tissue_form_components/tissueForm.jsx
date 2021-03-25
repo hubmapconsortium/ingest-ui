@@ -29,7 +29,14 @@ import MetadataUpload from "../metadataUpload";
 import LabIDsModal from "../labIdsModal";
 import RUIModal from "./ruiModal";
 import RUIIntegration from "./ruiIntegration";
-import { entity_api_update_entity, entity_api_create_entity, entity_api_create_multiple_entities, entity_api_get_entity_ancestor } from '../../../service/entity_api';
+import { entity_api_get_entity, 
+    entity_api_update_entity, 
+    entity_api_create_entity,
+    entity_api_create_multiple_entities, 
+    entity_api_get_entity_ancestor 
+} from '../../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
+import { useHistory } from "react-router-dom";
 
 class TissueForm extends Component {
   state = {
@@ -43,6 +50,7 @@ class TissueForm extends Component {
     // ],
 
 //    protocol: "",
+    param_uuid: "",
     protocol_url: "",
     entity_type: "",
     source_entity_type: "Donor",
@@ -106,6 +114,7 @@ class TissueForm extends Component {
     //this.protocolFile = React.createRef();
     //this.protocol = React.createRef();
     // this.handleSavedLocations = this.handleSavedLocations.bind(this);
+
   }
 
   handleRUIJson = (dataFromChild) => {
@@ -118,6 +127,10 @@ class TissueForm extends Component {
   };
 
   componentDidMount() {
+
+     let history = this.props.history;
+     console.debug('HISTORY', history)
+
     const config = {
       headers: {
         Authorization:
@@ -126,6 +139,7 @@ class TissueForm extends Component {
       }
     };
 
+    // THIS NEEDS MOVED TO CAPTURE AT THE START OF THE SESSION
     axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
@@ -148,20 +162,67 @@ class TissueForm extends Component {
         }
       });
 
-    if (this.props.editingEntity) {
+
+      console.debug('PARAM', this.props)
+      try {
+          // if a parameter uuid was passed directly to the screen, then look it up
+        const param_uuid = this.props.match.params.uuid;
+        console.debug('PARAM WAS PASSED', param_uuid)
+        entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          .then((response) => {
+              if (response.status === 200) {
+                let entity_data = response.results;
+                // check to see if user can edit
+                ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+                    .then((resp) => {
+                        if (resp.status === 200) {
+                          console.debug('api_allowable_edit_states...');
+                          console.debug(resp.results);
+                          let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+                          this.setState({
+                            editingEntity: entity_data,
+                            readOnly: read_only_state,   // used for hidding UI components
+                            param_uuid: param_uuid 
+                          });
+                          this.initialize();
+                        }         
+                });
+              }
+        });
+
+      } catch {  // no params were detected
+         this.setState({
+          editingEntity: this.props.editingEntity
+        }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
+            this.initialize();
+        });
+      }
+    }
+
+    initialize() {
+
+    const config = {
+        headers: {
+          Authorization:
+            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Content-Type": "application/json"
+        }
+    };
+
+    if (this.state.editingEntity) {
       axios
         .get(
-          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.props.editingEntity.uuid}/ingest-group-ids`,
+          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.state.editingEntity.uuid}/ingest-group-ids`,
           config
         )
         .then(res => {
           if (res.data.ingest_group_ids.length > 0) {
             console.debug("pre siblingid_list", res.data.ingest_group_ids);
             // res.data.ingest_group_ids.push({
-            //   hubmap_identifier: this.props.editingEntity.hubmap_id,
-            //   uuid: this.props.editingEntity.uuid,
-            //   lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id || "",
-            //   rui_location: this.props.editingEntity.rui_location || ""
+            //   hubmap_identifier: this.state.editingEntity.hubmap_id,
+            //   uuid: this.state.editingEntity.uuid,
+            //   lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id || "",
+            //   rui_location: this.state.editingEntity.rui_location || ""
             // });
             res.data.ingest_group_ids.sort((a, b) => {
               if (
@@ -211,7 +272,7 @@ class TissueForm extends Component {
                 this.setState({
                     editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
                      } ${flattenSampleType(SAMPLE_TYPES)[
-                      this.props.editingEntity.specimen_type
+                      this.state.editingEntity.specimen_type
                       ]
                     } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
                 });
@@ -228,7 +289,7 @@ class TissueForm extends Component {
 
    // convert the rui from a json to string, if there
         
-      var rui_data = JSON.stringify(this.props.editingEntity.rui_location, null, 3);
+      var rui_data = JSON.stringify(this.state.editingEntity.rui_location, null, 3);
       var has_rui = false;
       
       console.debug('RUI', rui_data)
@@ -237,7 +298,7 @@ class TissueForm extends Component {
          has_rui = true;
       }
       // let protocols_json = JSON.parse(
-      //   this.props.editingEntity.properties.protocols
+      //   this.state.editingEntity.properties.protocols
       //     .replace(/\\/g, "\\\\")
       //     .replace(/'/g, '"')
       // );
@@ -248,8 +309,8 @@ class TissueForm extends Component {
       //   return p;
       // });
 
-      let images = this.props.editingEntity.image_files;
-      let metadatas = this.props.editingEntity.metadata_files;
+      let images = this.state.editingEntity.image_files;
+      let metadatas = this.state.editingEntity.metadata_files;
   
       const image_list = [];
       const metadata_list = [];
@@ -282,29 +343,29 @@ class TissueForm extends Component {
       this.setState(
         {
           source_uuid: this.getID(),
-          source_entity: this.props.editingEntity.direct_ancestor,
-          source_entity_type: this.props.editingEntity.direct_ancestor.entity_type,
-          author: this.props.editingEntity.created_by_user_email,
-          lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id,
-          rui_location: JSON.stringify(this.props.editingEntity.rui_location, null, 3) || "",
-          rui_check: JSON.stringify(this.props.editingEntity.rui_location, null, 3) ? true : false,
+          source_entity: this.state.editingEntity.direct_ancestor,
+          source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
+          author: this.state.editingEntity.created_by_user_email,
+          lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id,
+          rui_location: JSON.stringify(this.state.editingEntity.rui_location, null, 3) || "",
+          rui_check: JSON.stringify(this.state.editingEntity.rui_location, null, 3) ? true : false,
           // protocols: protocols_json,
-          protocol_url: this.props.editingEntity.protocol_url,
+          protocol_url: this.state.editingEntity.protocol_url,
           // protocol_file_name: getFileNameOnPath(
-          //   this.props.editingEntity.properties.protocol_file
+          //   this.state.editingEntity.properties.protocol_file
           // ),
-          entity_type: this.props.editingEntity.entity_type,
-          specimen_type: this.props.editingEntity.specimen_type, // this.determineSpecimenType(),
-          specimen_type_other: this.props.editingEntity.specimen_type_other,
-          organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
-          visit: this.props.editingEntity.visit ? this.props.editingEntity.visit : "",
-          description: this.props.editingEntity.description,
+          entity_type: this.state.editingEntity.entity_type,
+          specimen_type: this.state.editingEntity.specimen_type, // this.determineSpecimenType(),
+          specimen_type_other: this.state.editingEntity.specimen_type_other,
+          organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
+          visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
+          description: this.state.editingEntity.description,
           images: image_list,
           metadatas: metadata_list
           
         } );
 
-      this.getSourceAncestorOrgan(this.props.editingEntity);
+      this.getSourceAncestorOrgan(this.state.editingEntity);
 
       console.debug('state', this.state)
         // ,
@@ -341,6 +402,31 @@ class TissueForm extends Component {
     }
   }
 
+  getEntity = (uuid) => {
+      console.debug('in the editForm')
+      
+      entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      .then((response) => {
+        if (response.status === 200) {
+          let entity_data = response.results;
+
+          // check to see if user can edit
+          ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+            .then((resp) => {
+            if (resp.status === 200) {
+              console.debug('api_allowable_edit_states...');
+              console.debug(resp.results);
+              let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+              this.setState({
+                editingEntity: entity_data,
+                readOnly: read_only_state   // used for hidding UI components
+                });
+            }
+          });
+        }
+      });
+    };
+
   getSourceAncestorOrgan(entity) {
     var ancestor_organ = ""
     // check to see if we have an "top-level" ancestor 
@@ -361,46 +447,22 @@ class TissueForm extends Component {
   }
 
 
-  // determineSpecimenType = () => {
-  //   try {
-  //     if (this.props.editingEntity.direct_ancestor && 
-  //         this.props.editingEntity.direct_ancestor.entity_type === 'Sample') {
-  //       if (this.props.editingEntity.direct_ancestor.specimen_type !== 'organ') {
-  //         return this.props.editingEntity.direct_ancestor.specimen_type;
-  //       }
-  //     } else if (this.props.editingEntity.direct_ancestor &&
-  //         this.props.editingEntity.direct_ancestor.entity_type === 'Donor') {
-  //       return "organ";
-  //     }
-  //   } catch{}
-  //   return this.props.editingEntity.specimen_type;
-  // }
-
-  // whichTissueCodeSet = () => {
-  //   try { 
-  //     if (this.props.editingEntity.direct_ancestor && 
-  //       this.props.editingEntity.direct_ancestor.entity_type === 'Donor') {
-  //       return "Donor";
-  //     }
-  //   } catch {
-  //     if (this.state.source_entity_type)
-  //   }
-  //   return "Sample";
-  // }
-
-
   getID = () => {
-    console.debug("in getting id...", this.props.editingEntity)
+    console.debug("in getting id...", this.state.editingEntity)
     try {
-       return this.props.editingEntity.donor.display_doi
+       return this.state.editingEntity.donor.display_doi
      } catch {}
 
      try {
-      return this.props.editingEntity.direct_ancestor.hubmap_id
+      return this.state.editingEntity.direct_ancestor.hubmap_id
     } catch {}
 
     console.debug('something is wrong..')
     return "<Error Unavailable>"
+  }
+
+  handleCancel = () => {
+    this.props.history.goBack();
   }
 
   handleInputChange = e => {
@@ -579,9 +641,9 @@ class TissueForm extends Component {
       case "visit":
         this.setState({ visit: value });
         break;
-      case "description":
-        this.setState({ description: value });
-        break;
+      // case "description":
+      //   this.setState({ description: value });
+      //   break;
       // case "metadata":
       //   this.setState({ metadata: value });
       //   break;
@@ -921,7 +983,7 @@ handleAddImage = () => {
     this.validateForm().then(isValid => {
       if (isValid) {
         if (
-          !this.props.editingEntity &&
+          !this.state.editingEntity &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
@@ -1019,14 +1081,18 @@ handleAddImage = () => {
         console.debug(data)
       
 
-        if (this.props.editingEntity && !this.state.LocationSaved) {
+        if (this.state.editingEntity && !this.state.LocationSaved) {
           console.debug("Updating Entity....")
-          entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
                     console.debug('Update Entity...');
                     console.debug(response.results);
-                    this.props.onUpdated(response.results);
+                    if (this.state.param_uuid === "") {  // if this was not initiated by a url param
+                      this.props.onUpdated(response.results);
+                    } else {
+                      this.props.history.goBack();
+                    }
                   } else {
                     this.setState({ submit_error: true, submitting: false });
                   }
@@ -1185,7 +1251,7 @@ handleAddImage = () => {
   
 
   renderButtons() {
-    if (this.props.editingEntity) {
+    if (this.state.editingEntity) {
       if (this.props.readOnly) {
         return (
           <div className="row"><div className="col-sm-12">
@@ -1197,7 +1263,7 @@ handleAddImage = () => {
                 className="btn btn-primary"
                 onClick={() => this.props.handleCancel()}
               >
-                Back to Search
+                Back
               </button>
             </div>
           </div>
@@ -1226,9 +1292,9 @@ handleAddImage = () => {
               <button
                 type="button"
                 className="btn btn-link"
-                onClick={() => this.props.handleCancel()}
+                onClick={() => this.status.handleCancel()}
               >
-                Back to Search
+                Back
               </button>
             </div>
           </div>
@@ -1415,7 +1481,7 @@ handleAddImage = () => {
       //   }
       // });
 
-      // if (!this.props.editingEntity) {
+      // if (!this.state.editingEntity) {
       //   // Creating
       //   this.state.metadatas.forEach((metadata, index) => {
       //     if (
@@ -1583,20 +1649,20 @@ handleAddImage = () => {
               18 identifiers specified by HIPAA
               </span>
           </div>
-           {this.props.editingEntity && (
+           {this.state.editingEntity && (
             <React.Fragment>
             <div className="row">
               <div className="col-sm-5 offset-sm-2 portal-label">
-                  HuBMAP ID: {this.props.editingEntity.hubmap_id}
+                  HuBMAP ID: {this.state.editingEntity.hubmap_id}
               </div>
               <div className="col-sm-4 text-right portal-label">
-              Submission ID: {this.props.editingEntity.submission_id}
+              Submission ID: {this.state.editingEntity.submission_id}
               </div>
                 <div className="col-sm-5 offset-sm-2 portal-label">
-                  Entered by: {this.props.editingEntity.created_by_user_email}
+                  Entered by: {this.state.editingEntity.created_by_user_email}
               </div>
               <div className="col-sm-4 text-right portal-label">
-                  Entry Date: {tsToDate(this.props.editingEntity.created_timestamp)}
+                  Entry Date: {tsToDate(this.state.editingEntity.created_timestamp)}
               </div>
               </div>
             </React.Fragment>
@@ -1803,7 +1869,7 @@ handleAddImage = () => {
                         );
                       })}
 
-                       {/*TISSUE_TYPES[this.props.editingEntity.entity_type].map((optgs, index) => {
+                       {/*TISSUE_TYPES[this.state.editingEntity.entity_type].map((optgs, index) => {
                         return (
                           <optgroup
                             key={index}
@@ -2020,7 +2086,7 @@ handleAddImage = () => {
             {
             !this.props.readOnly &&
               this.state.specimen_type !== "organ" &&
-              !this.props.editingEntity && (
+              !this.state.editingEntity && (
                 <div className="form-group row">
                   <div className="col-sm-8">
                     <div className="form-group form-check">
@@ -2131,7 +2197,7 @@ handleAddImage = () => {
             }
 
             {this.state.ids &&
-              (this.props.editingEntity && this.props.editingEntities.length > 1 &&
+              (this.state.editingEntity && this.props.editingEntities.length > 1 &&
                (!["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ))) && (
                 <React.Fragment>
                   <div className="form-group">
@@ -2155,12 +2221,12 @@ handleAddImage = () => {
                     hide={this.hideLabIDsModal}
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
-                    metadata={this.props.editingEntity}
+                    metadata={this.state.editingEntity}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
               )}
-            {this.props.editingEntity &&
+            {this.state.editingEntity &&
               this.state.multiple_id &&
               this.state.source_entity !== undefined &&
              (["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ)) && (
@@ -2186,12 +2252,12 @@ handleAddImage = () => {
                     hide={this.hideLabIDsModal}
                     ids={this.state.ids}
                     update={this.handleLabIdsUpdate}
-                    metadata={this.props.editingEntity}
+                    metadata={this.state.editingEntity}
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
               )}
-            {!this.props.editingEntity &&
+            {!this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
              ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&
@@ -2269,7 +2335,7 @@ handleAddImage = () => {
                  
                 </div>
               )}
-            {this.props.editingEntity &&
+            {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
              ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&    //source_entity.organ

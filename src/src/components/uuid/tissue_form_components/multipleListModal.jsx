@@ -4,7 +4,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-
+import { Link } from 'react-router-dom';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -74,46 +74,42 @@ class MultipleListModal extends Component {
     console.log("Press");
   }
 
-  handleSubmit = () => {
-    this.setState(
-      {
-        submitting: true,
-        success: false
-      },
-      () => {
+  // handleSubmit = () => {
+  //   this.setState(
+  //     {
+  //       submitting: true,
+  //       success: false
+  //     },
+  //     () => {
   
-          // prepare the data
-          //let data = this.createSampleList();
-          console.log('MultipleListModal');
-            // now update multiple lab id entities
-              // entity_api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-              //     .then((resp) => {
-              //       if (resp.status == 200) {
-              //           this.setState(
-              //       {
-              //         submitting: false,
-              //         success: true
-              //       }, () => {
-              //         if (this.props.onSaveLocation) {
-              //             this.props.onSaveLocation(true);
-              //         }
-              //           this.props.hide();
-              //         });
-              //       } else {
-              //         this.setState({ submitting: false, submit_error: true });
-              //       }
-              // });
-      }
-    );
-  };
+  //         // prepare the data
+  //         //let data = this.createSampleList();
+  //         console.log('MultipleListModal');
+  //           // now update multiple lab id entities
+  //             // entity_api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+  //             //     .then((resp) => {
+  //             //       if (resp.status == 200) {
+  //             //           this.setState(
+  //             //       {
+  //             //         submitting: false,
+  //             //         success: true
+  //             //       }, () => {
+  //             //         if (this.props.onSaveLocation) {
+  //             //             this.props.onSaveLocation(true);
+  //             //         }
+  //             //           this.props.hide();
+  //             //         });
+  //             //       } else {
+  //             //         this.setState({ submitting: false, submit_error: true });
+  //             //       }
+  //             // });
+  //     }
+  //   );
+  // };
 
   render() {
     return (
     
-    <Dialog onClose={this.props.hide} aria-labelledby="simple-dialog-title" open={this.props.show}>
-      <DialogTitle id="simple-dialog-title">
-          {this.state.multiMessage}
-      </DialogTitle>
         <div className='row'>
           <div className='col-sm-12 text-center'>
           Use the list below to edit individual Sample information
@@ -126,8 +122,8 @@ class MultipleListModal extends Component {
                 <List component="nav" aria-label="samples" >
                     {this.props.ids.map((idopt, index) => {
                         return (
-                          <ListItem key={idopt.submission_id} button>
-                            <ListItemIcon>
+                          <ListItem  key={idopt.submission_id} button component={Link} to={`/sample/${idopt.uuid}`}>
+                            {/*<ListItemIcon>
                              <Checkbox
                                 edge="start"
                                 //checked={checked.indexOf(value) !== -1}
@@ -136,7 +132,9 @@ class MultipleListModal extends Component {
                                 inputProps={{ 'aria-labelledby': idopt.submission_id }}
                                 />
                             </ListItemIcon>
-                             <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`} onClick={() => this.handleInputChange(idopt)}/>
+                            <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`} onClick={() => this.handleInputChange(idopt)}/>
+                          */}
+                             <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`}/>
                           </ListItem>
                         );
                       })}
@@ -146,7 +144,6 @@ class MultipleListModal extends Component {
             </div>
           </div>
         </div>
-      </Dialog>
     );
   }
 }

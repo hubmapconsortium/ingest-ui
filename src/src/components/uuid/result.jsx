@@ -90,11 +90,12 @@ class Result extends Component {
                     (
                       <React.Fragment>
       
-                        <button
+                       {/* <button
                           className="btn btn-primary  btn-block"
                           onClick={this.enterLabIDs}>
                            Click To View Sample List
                       </button>
+                    */}
 
                         <MultipleListModal
                           show={this.state.LabIDsModalShow}
