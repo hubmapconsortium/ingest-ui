@@ -14,10 +14,20 @@ import {
   faAddressCard,
   faWindowClose
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  Button,
+  Hidden,
+  IconButton,
+  Typography
+} from "@material-ui/core";
+import MenuIcon from "@material-ui/icons/Menu";
 import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
 import { Route, BrowserRouter as Router, Switch} from 'react-router-dom';
+
+
+
 
 class App extends Component {
   // The constructor is primarily used in React to set initial state or to bind methods
@@ -133,14 +143,15 @@ class App extends Component {
   renderHeader() {
     const logout_url = `${process.env.REACT_APP_BACKEND_URL}/logout`;
     let logout = this.state.isAuthenticated ? (
-      <a
+      
+      <Button
         href={logout_url}
-        className="btn btn-light"
+        className=""
         onClick={this.handleLogout}
         ref={a => (this.logoutButton = a)}
       >
         Logout
-      </a>
+      </Button>
     ) : (
         ""
       );
@@ -148,31 +159,57 @@ class App extends Component {
     // Must wrap the componments in an enclosing tag
     return (
       <header id="header" className="navbar navbar-light">
-        <nav className="container">
-          <a className="navbar-brand" href="/">
-            <img
-              //src="https://hubmapconsortium.org/wp-content/uploads/2019/01/HuBMAP-Retina-Logo-Color-300x110.png"
-              src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-              //width="300"
-              height="40"
-              className="d-inline-block align-top"
-              alt="HuBMAP logo"
-            />
-          </a>
+        <nav className="container menu-bar" id="navMenu">
+          <div id="MenuLeft">
+            <a className="navbar-brand" href="/">
+              <img
+                //src="https://hubmapconsortium.org/wp-content/uploads/2019/01/HuBMAP-Retina-Logo-Color-300x110.png"
+                src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
+                //width="300"
+                height="40"
+                className="d-inline-block align-top"
+                id="MenuLogo"
+                alt="HuBMAP logo"
+              />
+            </a>
+            <Hidden mdUp>
+                <IconButton
+                  className={"IconBTN"}
+                  onClick={console.log("open Nav")}
+                  aria-label="Open Navigation"
+                >
+                  <MenuIcon color="primary" />
+                </IconButton>
+              </Hidden>
+              <Button className="nav-link" href="/donors-samples">
+                Donors &amp; Samples
+                </Button>
+              <Button className="nav-link" href="/datasets">
+                Datasets
+              </Button>
+          </div>
+          <div id="MenuRight">
+
           {this.state.isAuthenticated && (
             <div className="float-right">
               <span className="username">
-                {this.state.email} |{" "}
-                <a href={`${process.env.REACT_APP_PROFILE_URL}/profile`}>
+                <Typography variant="button" class="username-menu">
+                  {this.state.email}{" "}
+                </Typography>
+                <Button
+                href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
+                className="" >
                   Edit Profile
-                </a>
+                </Button>
               </span>
               {logout}
             </div>
+          
           )}
+          </div>
         </nav>
       </header>
-    );
+   );
   }
 
   handleEnterUUID = () => {
