@@ -4,9 +4,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import { Link } from 'react-router-dom';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
+import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,25 +20,26 @@ import {
 import Modal from "../modal";
 import axios from "axios";
 import Forms from "../forms";
-import TissueEditDialog from "./tissueEditDialog";
 
-//import RUIIntegration from "./ruiIntegration";
-import { entity_api_update_multiple_entities } from '../../../service/entity_api';
+import Grid from '@material-ui/core/Grid';
+import TissueForm from './tissueForm';
+import { entity_api_get_entity, 
+    entity_api_update_entity, 
+    entity_api_create_entity,
+    entity_api_create_multiple_entities, 
+    entity_api_get_entity_ancestor 
+} from '../../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
 
 class MultipleListModal extends Component {
 
   state = {
-     submitting: false,
-     formType: "sample"
-    //rui_json: "",
-    // rui_click: { name: '' },
-    // rui_checks: { name: '' },
-    // rui_view: false,
-    // activate_input: true,
-    // rui_locations: { name: '' },
-    // sample_name: "",
-    // update: false,
-    // metadata: this.props.metadata,
+    edit_uuid: "",
+    submitting: false,
+    formType: "sample",
+    editingEntity: "",
+    readOnly: true,
+    currentEditList: ""
   };
 
   componentDidMount() {
@@ -59,71 +62,68 @@ class MultipleListModal extends Component {
     // });
   };
 
-  handleInputChange = selected => {
-    console.log('handleInputChange', selected);
+  handleOnUpdate = () => {
+    console.debug('UPDATE Complete', this.state.currentEditList)
+  }
 
-    // <TissueEditDialog />
-    // this.setState(prevState => {
-    //   let assigned_ids = Object.assign({}, prevState.assigned_ids);
-    //   assigned_ids[name] = value;
-    //   return { assigned_ids };
-    // });
+  handleEdit = selected => {
+    console.log('handleEdit', selected);
+    this.setState ({
+      currentEditList: selected
+    });
+    this.editForm(selected.uuid);  
   };
 
   handleInputKeyPress = () => {
     console.log("Press");
   }
 
-  // handleSubmit = () => {
-  //   this.setState(
-  //     {
-  //       submitting: true,
-  //       success: false
-  //     },
-  //     () => {
-  
-  //         // prepare the data
-  //         //let data = this.createSampleList();
-  //         console.log('MultipleListModal');
-  //           // now update multiple lab id entities
-  //             // entity_api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-  //             //     .then((resp) => {
-  //             //       if (resp.status == 200) {
-  //             //           this.setState(
-  //             //       {
-  //             //         submitting: false,
-  //             //         success: true
-  //             //       }, () => {
-  //             //         if (this.props.onSaveLocation) {
-  //             //             this.props.onSaveLocation(true);
-  //             //         }
-  //             //           this.props.hide();
-  //             //         });
-  //             //       } else {
-  //             //         this.setState({ submitting: false, submit_error: true });
-  //             //       }
-  //             // });
-  //     }
-  //   );
-  // };
+  editForm = (uuid) => {
+    console.debug('in the editForm')
+    
+    entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    .then((response) => {
+      if (response.status === 200) {
+        let entity_data = response.results;
+
+        // check to see if user can edit
+        ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          .then((resp) => {
+          if (resp.status === 200) {
+            let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+            this.setState({
+              edit_uuid: entity_data.uuid,
+              editingEntity: entity_data,
+              readOnly: read_only_state,   // used for hidding UI components
+              });
+        //this.props.onEdit();
+
+          }
+        });
+      }
+    });
+  };
 
   render() {
     return (
-    
         <div className='row'>
-          <div className='col-sm-12 text-center'>
-          Use the list below to edit individual Sample information
-          </div>
-          <div className='col-sm-12'>
-            <div className='card text-center'>
-      
-              <div className='card-body'>
-
-                <List component="nav" aria-label="samples" >
+          <div className='col-sm-3'>
+          <Paper style={{maxHeight: 700, overflow: 'auto'}}>
+                
+                <List component="nav" aria-label="samples" subheader={
+                    <ListSubheader component="div" id="nested-list-subheader">
+                        Sample ID List
+                    </ListSubheader>
+                       }>
+                
                     {this.props.ids.map((idopt, index) => {
                         return (
-                          <ListItem  key={idopt.submission_id} button component={Link} to={`/sample/${idopt.uuid}`}>
-                            {/*<ListItemIcon>
+                    
+                           <ListItem  key={idopt.submission_id} button>
+                            {/*
+
+                            <ListItem  key={idopt.submission_id} button component={Link} to={`/sample/${idopt.uuid}`}>
+                            <ListItemIcon>
                              <Checkbox
                                 edge="start"
                                 //checked={checked.indexOf(value) !== -1}
@@ -132,17 +132,31 @@ class MultipleListModal extends Component {
                                 inputProps={{ 'aria-labelledby': idopt.submission_id }}
                                 />
                             </ListItemIcon>
+                             <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`}/>
                             <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`} onClick={() => this.handleInputChange(idopt)}/>
                           */}
-                             <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`}/>
+    
+                              <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`} onClick={() => this.handleEdit(idopt)}/>
                           </ListItem>
                         );
                       })}
                 </List>
-    
+              </Paper>
               </div>
+            <div className='col-sm-9'>
+              <div>
+              <Paper>
+
+                  <TissueForm
+                    key={this.state.edit_uuid}
+                    editingEntity={this.state.editingEntity}
+                    readOnly={this.state.readOnly}
+                    //handleCancel={this.cancelEdit}
+                    onUpdated={this.handleOnUpdate}
+                    />
+                 </Paper>
+              </div>  
             </div>
-          </div>
         </div>
     );
   }

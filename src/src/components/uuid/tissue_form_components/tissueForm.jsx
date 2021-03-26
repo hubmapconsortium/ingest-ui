@@ -462,7 +462,7 @@ class TissueForm extends Component {
   }
 
   handleCancel = () => {
-    this.props.history.goBack();
+    this.props.handleCancel();
   }
 
   handleInputChange = e => {
@@ -1261,7 +1261,7 @@ handleAddImage = () => {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => this.props.handleCancel()}
+                onClick={() => this.handleCancel()}
               >
                 Back
               </button>
@@ -1292,7 +1292,7 @@ handleAddImage = () => {
               <button
                 type="button"
                 className="btn btn-link"
-                onClick={() => this.status.handleCancel()}
+                onClick={() => this.handleCancel()}
               >
                 Back
               </button>
@@ -1325,9 +1325,9 @@ handleAddImage = () => {
             <button
               type="button"
               className="btn btn-link"
-              onClick={() => this.props.handleCancel()}
+              onClick={() => this.handleCancel()}
             >
-              Back to Search
+              Back
             </button>
             </div>
         </div>
@@ -1627,7 +1627,7 @@ handleAddImage = () => {
   render() {
     return (
       <div className="row">
-        
+             <Paper className="paper-container">
         {this.state.editingMultiWarning && !this.props.readOnly && (
           <div className="alert alert-danger col-sm-12" role="alert">
             {this.state.editingMultiWarning}
@@ -1636,7 +1636,7 @@ handleAddImage = () => {
         <div className="col-sm-12 pads">
           <div className="col-sm-12 text-center"><h4>Sample Information</h4></div>
           <div
-            className="alert alert-danger col-sm-9 offset-sm-2"
+            className="alert alert-danger col-sm-10 offset-sm-1"
             role="alert"
           >
             <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
@@ -1652,22 +1652,22 @@ handleAddImage = () => {
            {this.state.editingEntity && (
             <React.Fragment>
             <div className="row">
-              <div className="col-sm-5 offset-sm-2 portal-label">
+              <div className="col-sm-5 offset-sm-1 portal-label">
                   HuBMAP ID: {this.state.editingEntity.hubmap_id}
               </div>
-              <div className="col-sm-4 text-right portal-label">
+              <div className="col-sm-5 text-right portal-label">
               Submission ID: {this.state.editingEntity.submission_id}
               </div>
-                <div className="col-sm-5 offset-sm-2 portal-label">
+                <div className="col-sm-5 offset-sm-1 portal-label">
                   Entered by: {this.state.editingEntity.created_by_user_email}
               </div>
-              <div className="col-sm-4 text-right portal-label">
+              <div className="col-sm-5 text-right portal-label">
                   Entry Date: {tsToDate(this.state.editingEntity.created_timestamp)}
               </div>
               </div>
             </React.Fragment>
           )}
-          <Paper className="paper-container">
+     
           <form onSubmit={this.handleSubmit}>
             <div className="form-group">
               <label htmlFor="source_uuid">
@@ -2550,7 +2550,8 @@ handleAddImage = () => {
               )}
             </div>
           */}
-            {(!this.props.readOnly || this.state.metadatas.length > 0) && (
+            {((!this.props.readOnly || this.state.metadatas.length > 0) && 
+              !this.state.multiple_id) && (
               <div className="form-group">
                 
                 <div>
@@ -2602,7 +2603,8 @@ handleAddImage = () => {
                 
               </div>
             )}
-            {(!this.props.readOnly || this.state.images.length > 0) && (
+            {((!this.props.readOnly || this.state.images.length > 0) &&
+              !this.state.multiple_id) && (
               <div className="form-group">
                
                 <div>
@@ -2670,7 +2672,7 @@ handleAddImage = () => {
             )}
             {this.renderButtons()}
           </form>
-          </Paper>
+          
         </div>
         <GroupModal
           show={this.state.GroupSelectShow}
@@ -2679,6 +2681,7 @@ handleAddImage = () => {
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}
         />
+        </Paper>
       </div>
     );
   }

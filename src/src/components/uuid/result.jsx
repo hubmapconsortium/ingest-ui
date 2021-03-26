@@ -65,8 +65,9 @@ class Result extends Component {
               </div>
             )}
             {this.props.result["new_samples"].length > 1 && (
-              <div className="alert alert-success" role="alert">
-                {this.props.result["new_samples"].length} sample ids were
+              <div className="alert alert-info" role="alert">
+              You have added multiples samples: <br />
+                { this.props.result["new_samples"].length} sample ids were
                 generated:{" "}
                 <b>
                   {this.props.result["new_samples"][0]["submission_id"]}
@@ -79,14 +80,24 @@ class Result extends Component {
                     ]["submission_id"]
                   }
                 </b>
+                .<br /><br />Use the list of sample IDS to navigate to each individual sample to add specific Lab ID, Locations or specific metadata files or images
+                  {/*<button
+                          className="btn btn-primary  btn-block"
+                          onClick={this.enterLabIDs}>
+                           Click To Edit Sample List
+                      </button>*/}
               </div>
             )}
             <div>
             
-              <div className="row mb-2">
+              {/*<div className="row mb-2">
                 <div className="col-sm-4 offset-sm-4 lab-id-modal">
+              */}
+                <div className="row">
+                <div>
                  
                   {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
+                    //this.state.LabIDsModalShow &&
                     (
                       <React.Fragment>
       
@@ -102,6 +113,7 @@ class Result extends Component {
                           hide={this.hideLabIDsModal}
                           ids={this.props.result["new_samples"]}
                           submit={this.handleSubmit}
+                          handleCancel={this.props.handleReturnClick}
                         />
                       </React.Fragment>
                     )
