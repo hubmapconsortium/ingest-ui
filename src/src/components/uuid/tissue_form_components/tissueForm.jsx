@@ -1088,6 +1088,7 @@ handleAddImage = () => {
                   if (response.status === 200) {
                     console.debug('Update Entity...');
                     console.debug(response.results);
+                    this.setState({ submit_error: false, submitting: false });
                     if (this.state.param_uuid === "") {  // if this was not initiated by a url param
                       this.props.onUpdated(response.results);
                     } else {
