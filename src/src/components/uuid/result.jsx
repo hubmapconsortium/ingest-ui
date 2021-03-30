@@ -55,13 +55,9 @@ class Result extends Component {
       <React.Fragment>
         {this.props.result["new_samples"] && (
           <React.Fragment>
-            {this.props.result && (
+            {this.props.result["new_samples"].length < 1 && (
               <div className="alert alert-success" role="alert">
                 Save Successful
-                {/* Here are your new IDs for reference: <br/><br/><b>HubMAP ID:</b>&nbsp;{this.props.result.entity.hubmap_id}<br/>
-                <b>Submission ID:</b>&nbsp;{this.props.result.entity.submission_id}
-              */}
-               
               </div>
             )}
             {this.props.result["new_samples"].length > 1 && (

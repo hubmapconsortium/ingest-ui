@@ -36,7 +36,7 @@ import { entity_api_get_entity,
     entity_api_get_entity_ancestor 
 } from '../../../service/entity_api';
 import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
-import { useHistory } from "react-router-dom";
+// import { useHistory } from "react-router-dom";
 
 class TissueForm extends Component {
   state = {
@@ -50,6 +50,7 @@ class TissueForm extends Component {
     // ],
 
 //    protocol: "",
+    back_btn_hide: false,
     param_uuid: "",
     protocol_url: "",
     entity_type: "",
@@ -128,8 +129,8 @@ class TissueForm extends Component {
 
   componentDidMount() {
 
-     let history = this.props.history;
-     console.debug('HISTORY', history)
+    // let history = this.props.history;
+    // //console.debug('HISTORY', history)
 
     const config = {
       headers: {
@@ -149,7 +150,7 @@ class TissueForm extends Component {
         const groups = res.data.groups.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
-        console.debug('groups', groups)
+        ////console.debug('groups', groups)
         this.setState({
           groups: groups
         });
@@ -163,11 +164,11 @@ class TissueForm extends Component {
       });
 
 
-      console.debug('PARAM', this.props)
+      ////console.debug('PARAM', this.props)
       try {
           // if a parameter uuid was passed directly to the screen, then look it up
         const param_uuid = this.props.match.params.uuid;
-        console.debug('PARAM WAS PASSED', param_uuid)
+        ////console.debug('PARAM WAS PASSED', param_uuid)
         entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
           .then((response) => {
               if (response.status === 200) {
@@ -176,8 +177,8 @@ class TissueForm extends Component {
                 ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
                     .then((resp) => {
                         if (resp.status === 200) {
-                          console.debug('api_allowable_edit_states...');
-                          console.debug(resp.results);
+                          ////console.debug('api_allowable_edit_states...');
+                          ////console.debug(resp.results);
                           let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
                           this.setState({
                             editingEntity: entity_data,
@@ -201,209 +202,190 @@ class TissueForm extends Component {
 
     initialize() {
 
-    const config = {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-          "Content-Type": "application/json"
-        }
-    };
-
-    if (this.state.editingEntity) {
-      axios
-        .get(
-          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.state.editingEntity.uuid}/ingest-group-ids`,
-          config
-        )
-        .then(res => {
-          if (res.data.ingest_group_ids.length > 0) {
-            console.debug("pre siblingid_list", res.data.ingest_group_ids);
-            // res.data.ingest_group_ids.push({
-            //   hubmap_identifier: this.state.editingEntity.hubmap_id,
-            //   uuid: this.state.editingEntity.uuid,
-            //   lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id || "",
-            //   rui_location: this.state.editingEntity.rui_location || ""
-            // });
-            res.data.ingest_group_ids.sort((a, b) => {
-              if (
-                parseInt(
-                  a.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                ) >
-                parseInt(
-                  b.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                )
-              ) {
-                return 1;
-              }
-              if (
-                parseInt(
-                  b.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                ) >
-                parseInt(
-                  a.submission_id.substring(
-                    a.submission_id.lastIndexOf("-") + 1
-                  )
-                )
-              ) {
-                return -1;
-              }
-              return 0;
-            });
-
-            console.debug("this.props.editingEntities.length", this.props.editingEntities.length);
-            this.setState({
-              entities: this.props.editingEntities,
-              ids: res.data.ingest_group_ids,
-              multiple_id: this.props.editingEntities.length > 1 ? true : false
-            });
-          
-            //if (this.props.editingEntities.length > 1) {
-              
-            if (res.data.ingest_group_ids.length > 1) {
-                const first_lab_id = res.data.ingest_group_ids[0].submission_id; //this.props.editingEntities[0].submission_id;
-                const last_lab_id = res.data.ingest_group_ids[res.data.ingest_group_ids-1].submission_id;  // this.props.editingEntities[this.props.editingEntities.length - 1].submission_id;
-                console.debug('ingest_group_ids', res.data.ingest_group_ids)
-                this.setState({
-                    editingMultiWarning: `Editing affects the ${this.props.editingEntities.length
-                     } ${flattenSampleType(SAMPLE_TYPES)[
-                      this.state.editingEntity.specimen_type
-                      ]
-                    } samples ${first_lab_id} through ${last_lab_id} that were created at the same time`
-                });
-            }
-          }
-        })
-        .catch(err => {
-          if (err.response === undefined) {
-          } else if (err.response.status === 401) {
-            localStorage.setItem("isAuthenticated", false);
-            window.location.reload();
-          }
-        });
-
-   // convert the rui from a json to string, if there
-        
-      var rui_data = JSON.stringify(this.state.editingEntity.rui_location, null, 3);
-      var has_rui = false;
-      
-      console.debug('RUI', rui_data)
-      if (rui_data && rui_data.length > 0) {
-        console.debug('RUI FOUND')
-         has_rui = true;
+      if (this.props.hideBackButton) { 
+        this.hideBackButton();
       }
-      // let protocols_json = JSON.parse(
-      //   this.state.editingEntity.properties.protocols
-      //     .replace(/\\/g, "\\\\")
-      //     .replace(/'/g, '"')
-      // );
 
-      // protocols_json.map((p, i) => {
-      //   p["id"] = i + 1;
-      //   p["ref"] = React.createRef();
-      //   return p;
-      // });
+    
+      const config = {
+          headers: {
+            Authorization:
+              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Content-Type": "application/json"
+          }
+      };
 
-      let images = this.state.editingEntity.image_files;
-      let metadatas = this.state.editingEntity.metadata_files;
-  
-      const image_list = [];
-      const metadata_list = [];
+      if (this.state.editingEntity) {
+        axios
+          .get(
+            `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${this.state.editingEntity.uuid}/ingest-group-ids`,
+            config
+          )
+          .then(res => {
+            if (res.data.ingest_group_ids.length > 0) {
+              //console.debug("pre siblingid_list", res.data.ingest_group_ids);
+              
+              res.data.ingest_group_ids.sort((a, b) => {
+                if (
+                  parseInt(
+                    a.submission_id.substring(
+                      a.submission_id.lastIndexOf("-") + 1
+                    )
+                  ) >
+                  parseInt(
+                    b.submission_id.substring(
+                      a.submission_id.lastIndexOf("-") + 1
+                    )
+                  )
+                ) {
+                  return 1;
+                }
+                if (
+                  parseInt(
+                    b.submission_id.substring(
+                      a.submission_id.lastIndexOf("-") + 1
+                    )
+                  ) >
+                  parseInt(
+                    a.submission_id.substring(
+                      a.submission_id.lastIndexOf("-") + 1
+                    )
+                  )
+                ) {
+                  return -1;
+                }
+                return 0;
+              });
+                
+              const first_lab_id = res.data.ingest_group_ids[0].submission_id; //this.props.editingEntities[0].submission_id;
+              const last_lab_id = res.data.ingest_group_ids[res.data.ingest_group_ids.length-1].submission_id;  // this.props.editingEntities[this.props.editingEntities.length - 1].submission_id;
+              ////console.debug('ingest_group_ids', res.data.ingest_group_ids)
+              this.setState({
+                  editingMultiWarning: `This sample is part of a group of ${res.data.ingest_group_ids.length} other 
+                   ${flattenSampleType(SAMPLE_TYPES)[
+                    this.state.editingEntity.specimen_type
+                    ]
+                  } samples, ranging from ${first_lab_id} through ${last_lab_id}`
+              });
+      
 
-      // get any images that exist
-      try {
-        images.forEach((image, index) => {
-          image_list.push({
-            id: index + 1,
-            ref: React.createRef(),
-            file_name: image.filename,     
-            description: image.description,
-            file_uuid: image.file_uuid
+   // //console.debug("this.props.editingEntities.length", this.props.editingEntities.length);
+              this.setState({
+                entities: this.props.editingEntities,
+                ids: res.data.ingest_group_ids,
+                multiple_id: this.props.editingEntities.length > 1 ? true : false
+              });
+
+            }
+          })
+          .catch(err => {
+            if (err.response === undefined) {
+            } else if (err.response.status === 401) {
+              localStorage.setItem("isAuthenticated", false);
+              window.location.reload();
+            }
           });
-        });
-      } catch {}
 
-      try {
-        // get the metadata files
-        metadatas.forEach((metadata, index) => {
-          metadata_list.push({
-            id: index + 1,
-            ref: React.createRef(),
-            file_name: metadata.filename,
-            file_uuid: metadata.file_uuid
-          });
-        });
-      } catch {}
-
-      this.setState(
-        {
-          source_uuid: this.getID(),
-          source_entity: this.state.editingEntity.direct_ancestor,
-          source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
-          author: this.state.editingEntity.created_by_user_email,
-          lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id,
-          rui_location: JSON.stringify(this.state.editingEntity.rui_location, null, 3) || "",
-          rui_check: JSON.stringify(this.state.editingEntity.rui_location, null, 3) ? true : false,
-          // protocols: protocols_json,
-          protocol_url: this.state.editingEntity.protocol_url,
-          // protocol_file_name: getFileNameOnPath(
-          //   this.state.editingEntity.properties.protocol_file
-          // ),
-          entity_type: this.state.editingEntity.entity_type,
-          specimen_type: this.state.editingEntity.specimen_type, // this.determineSpecimenType(),
-          specimen_type_other: this.state.editingEntity.specimen_type_other,
-          organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
-          visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
-          description: this.state.editingEntity.description,
-          images: image_list,
-          metadatas: metadata_list
+     // convert the rui from a json to string, if there
           
-        } );
-
-      this.getSourceAncestorOrgan(this.state.editingEntity);
-
-      console.debug('state', this.state)
-        // ,
-
-        // () => {
-        //   if (this.state.source_uuid !== undefined) {
-        //     this.validateUUID();
-        //   }
+        //var rui_data = JSON.stringify(this.state.editingEntity.rui_location, null, 3);
+        // var has_rui = false;
+        
+        // if (rui_data && rui_data.length > 0) {
+        //    has_rui = true;
         // }
-     
 
-    } else {
-        console.debug('NEW RECORD', this.props.direct_ancestor)
+        let images = this.state.editingEntity.image_files;
+        let metadatas = this.state.editingEntity.metadata_files;
+    
+        const image_list = [];
+        const metadata_list = [];
+
+        // get any images that exist
+        try {
+          images.forEach((image, index) => {
+            image_list.push({
+              id: index + 1,
+              ref: React.createRef(),
+              file_name: image.filename,     
+              description: image.description,
+              file_uuid: image.file_uuid
+            });
+          });
+        } catch {}
+
+        try {
+          // get the metadata files
+          metadatas.forEach((metadata, index) => {
+            metadata_list.push({
+              id: index + 1,
+              ref: React.createRef(),
+              file_name: metadata.filename,
+              file_uuid: metadata.file_uuid
+            });
+          });
+        } catch {}
+
         this.setState(
           {
-            specimen_type: this.props.specimenType,
-            source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
-            source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
-            source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
-            ancestor_organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
-            organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
-            source_uuid_list: this.props.uuid  // true uuid
-          }
-        // ,
-        // () => {
-        //   if (this.state.source_uuid !== undefined) {
-        //     this.validateUUID();
-        //   }idz
-        // }
-      );
-        // if (this.props.ancestor_entity) {
-        //     this.getSourceAncestorOrgan(this.props.ancestor_entity);
-        // }
-    }
+            source_uuid: this.getID(),
+            source_entity: this.state.editingEntity.direct_ancestor,
+            source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
+            author: this.state.editingEntity.created_by_user_email,
+            lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id,
+            rui_location: JSON.stringify(this.state.editingEntity.rui_location, null, 3) || "",
+            rui_check: JSON.stringify(this.state.editingEntity.rui_location, null, 3) ? true : false,
+            // protocols: protocols_json,
+            protocol_url: this.state.editingEntity.protocol_url,
+            // protocol_file_name: getFileNameOnPath(
+            //   this.state.editingEntity.properties.protocol_file
+            // ),
+            entity_type: this.state.editingEntity.entity_type,
+            specimen_type: this.state.editingEntity.specimen_type, // this.determineSpecimenType(),
+            specimen_type_other: this.state.editingEntity.specimen_type_other,
+            organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
+            visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
+            description: this.state.editingEntity.description,
+            images: image_list,
+            metadatas: metadata_list
+            
+          } );
+
+        this.getSourceAncestorOrgan(this.state.editingEntity);
+          // ,
+
+          // () => {
+          //   if (this.state.source_uuid !== undefined) {
+          //     this.validateUUID();
+          //   }
+          // }
+       
+
+      } else {
+          this.setState(
+            {
+              specimen_type: this.props.specimenType,
+              source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
+              source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
+              source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
+              ancestor_organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+              organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+              source_uuid_list: this.props.uuid  // true uuid
+            }
+          // ,
+          // () => {
+          //   if (this.state.source_uuid !== undefined) {
+          //     this.validateUUID();
+          //   }idz
+          // }
+        );
+          // if (this.props.ancestor_entity) {
+          //     this.getSourceAncestorOrgan(this.props.ancestor_entity);
+          // }
+      }
   }
 
   getEntity = (uuid) => {
-      console.debug('in the editForm')
       
       entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
       .then((response) => {
@@ -414,8 +396,6 @@ class TissueForm extends Component {
           ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
             .then((resp) => {
             if (resp.status === 200) {
-              console.debug('api_allowable_edit_states...');
-              console.debug(resp.results);
               let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
               this.setState({
                 editingEntity: entity_data,
@@ -428,15 +408,15 @@ class TissueForm extends Component {
     };
 
   getSourceAncestorOrgan(entity) {
-    var ancestor_organ = ""
+    //var ancestor_organ = ""
     // check to see if we have an "top-level" ancestor 
       entity_api_get_entity_ancestor( entity.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
-               console.debug('Entity ancestors...', response.results);
+               //console.debug('Entity ancestors...', response.results);
               if (response.results.length > 0) {
                   
-                  //console.debug('Entity ancestors...ORGAN', ancestor_organ);
+                  ////console.debug('Entity ancestors...ORGAN', ancestor_organ);
                   this.setState({
                     source_entity: response.results[0],
                     ancestor_organ: response.results[0].organ   // use "top" ancestor organ
@@ -448,7 +428,7 @@ class TissueForm extends Component {
 
 
   getID = () => {
-    console.debug("in getting id...", this.state.editingEntity)
+  
     try {
        return this.state.editingEntity.donor.display_doi
      } catch {}
@@ -456,8 +436,6 @@ class TissueForm extends Component {
      try {
       return this.state.editingEntity.direct_ancestor.hubmap_id
     } catch {}
-
-    console.debug('something is wrong..')
     return "<Error Unavailable>"
   }
 
@@ -467,7 +445,6 @@ class TissueForm extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    console.debug('handleInputChange', name, value)
     switch (name) {
       case "lab":
         this.setState({ lab: value });
@@ -514,7 +491,6 @@ class TissueForm extends Component {
         }
         break;
       case "protocol_url":
-      console.debug('im at the protocol_url', value)
         this.setState({ protocol_url: value });
         if (!validateRequired(value)) {
           this.setState(prevState => ({
@@ -523,7 +499,7 @@ class TissueForm extends Component {
               protocol_url: "required"
             }
           }));
-          console.debug("protocol_url is INVALID")
+        
         } else if (!validateProtocolIODOI(value)) {
           this.setState(prevState => ({
             formErrors: {
@@ -641,9 +617,9 @@ class TissueForm extends Component {
       case "visit":
         this.setState({ visit: value });
         break;
-      // case "description":
-      //   this.setState({ description: value });
-      //   break;
+      case "description":
+        this.setState({ description: value });
+        break;
       // case "metadata":
       //   this.setState({ metadata: value });
       //   break;
@@ -772,15 +748,15 @@ class TissueForm extends Component {
             }
           });
         });
-        break;
+        //break;
       }
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
-        console.debug('image', id)
+        // //console.debug('image', id)
         let images = [...this.state.images];
-        console.debug('images', images)
+        //console.debug('images', images)
         images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
-        console.debug('images file data', images[i].ref.current.image_file.current.files)
+        //console.debug('images file data', images[i].ref.current.image_file.current.files)
         let new_images = [...this.state.new_images];
         new_images.push(images[i].file_name);
         return new Promise((resolve, reject) => {
@@ -802,7 +778,7 @@ class TissueForm extends Component {
             }
           });
         });
-        break;
+        //break;
       }
       default:
         break;
@@ -886,16 +862,16 @@ class TissueForm extends Component {
 
   handleDeleteMetadata = metadataId => {
 
-    //  console.debug('before metadata', this.state.metadatas)
+    //  //console.debug('before metadata', this.state.metadatas)
     const remove_meta = this.state.metadatas.find(i => i.id === metadataId); // find our metadata file in the existing
     const metadatas = this.state.metadatas.filter(i => i.id !== metadataId)  // recreate the metadata w/o the deleted
     const new_metadatas = this.state.new_metadatas.filter(dm => dm !== remove_meta.uuid);
     let deleted_metas = [...this.state.deleted_metas];
 
-    //console.debug('add remove meta', remove_meta)
+    ////console.debug('add remove meta', remove_meta)
     deleted_metas.push(remove_meta.file_uuid);
 
-    //console.debug('after metadata', metadatas)
+    ////console.debug('after metadata', metadatas)
     this.setState({
       metadatas,
       new_metadatas,
@@ -918,7 +894,7 @@ handleAddImage = () => {
     const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
     let deleted_images = [...this.state.deleted_images];
 
-    console.debug('deleted image', deleted_image)
+    //console.debug('deleted image', deleted_image)
     if (new_images.length === this.state.new_images.length){
       //deleted_images.push(deleted_image.file_name);
       deleted_images.push(deleted_image.file_uuid);
@@ -957,7 +933,7 @@ handleAddImage = () => {
 
     const metadata = entity?.metadata;
 
-    console.debug(metadata)
+    //console.debug(metadata)
     if (metadata === undefined) {
       return ""
     } else {
@@ -1012,7 +988,7 @@ handleAddImage = () => {
             data["rui_location"] = JSON.parse(this.state.rui_location);
           }
 
-          console.debug('submit metadatas', this.state.metadatas);
+          //console.debug('submit metadatas', this.state.metadatas);
           if (this.state.metadatas.length > 0) {
             let metadata_files_to_add = [];
  
@@ -1030,7 +1006,7 @@ handleAddImage = () => {
             }
         
          }
-         console.debug(this.state.deleted_metas)
+         //console.debug(this.state.deleted_metas)
          if (this.state.deleted_metas.length > 0)  { 
            data['metadata_files_to_remove'] = this.state.deleted_metas;
          }
@@ -1038,7 +1014,7 @@ handleAddImage = () => {
           if (this.state.images.length > 0) {
             let image_files_to_add = [];
             let existing_image_files_to_update = [];
-            console.debug('submit images', this.state.images)
+            //console.debug('submit images', this.state.images)
             this.state.images.forEach(i => {
 
             // if a file has a non-blank temp_file_id then assume it a new image 
@@ -1077,17 +1053,17 @@ handleAddImage = () => {
             data['image_files_to_remove'] = this.state.deleted_images
           }
 
-        console.debug("SUBMMITED data")
-        console.debug(data)
+        //console.debug("SUBMMITED data")
+        //console.debug(data)
       
 
         if (this.state.editingEntity && !this.state.LocationSaved) {
-          console.debug("Updating Entity....")
+          //console.debug("Updating Entity....")
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    console.debug('Update Entity...');
-                    console.debug(response.results);
+                    //console.debug('Update Entity...');
+                    //console.debug(response.results);
                     this.setState({ submit_error: false, submitting: false });
                     if (this.state.param_uuid === "") {  // if this was not initiated by a url param
                       this.props.onUpdated(response.results);
@@ -1100,7 +1076,7 @@ handleAddImage = () => {
       
               });
         } else {
-            console.debug('selected group', this.state.selected_group);
+            //console.debug('selected group', this.state.selected_group);
 
             if (this.state.selected_group && this.state.selected_group.length > 0) {
                 data["group_uuid"] = this.state.selected_group;
@@ -1108,12 +1084,12 @@ handleAddImage = () => {
                 data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
             }
             if (this.state.sample_count < 1) {
-                console.debug("Create a new Entity....", this.state.sample_count)
+                //console.debug("Create a new Entity....", this.state.sample_count)
                 entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                     .then((response) => {
                       if (response.status === 200) {
-                        console.debug('create Entity...');
-                        console.debug(response.results);
+                        //console.debug('create Entity...');
+                        //console.debug(response.results);
 
                         this.props.onCreated({new_samples: [], entity: response.results});
                         this.setState({ submit_error: true, submitting: false});
@@ -1123,7 +1099,7 @@ handleAddImage = () => {
                       } 
                   });
                 } else if (this.state.sample_count > 0) {
-                  console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
+                  //console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
                     // now generate some multiples
                     entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((resp) => {
@@ -1208,7 +1184,7 @@ handleAddImage = () => {
   //                 }
   //               }
   //             }).catch(err => {
-  //               console.debug(err);
+  //               //console.debug(err);
   //             })
   //           });
   //           return isValid;
@@ -1290,13 +1266,16 @@ handleAddImage = () => {
                 )}
                 {!this.state.submitting && "Update"}
               </button>
+            {!this.state.back_btn_hide && (
               <button
+                id="editBackBtn"
                 type="button"
                 className="btn btn-link"
                 onClick={() => this.handleCancel()}
               >
                 Back
               </button>
+              )}
             </div>
           </div>
         );
@@ -1433,12 +1412,12 @@ handleAddImage = () => {
       // validate the images
       this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-       // console.debug('image invalid', image.file_name)
+       // //console.debug('image invalid', image.file_name)
         isValid = false;
         image.ref.current.validate();
       }
       if (!validateRequired(image.ref.current.image_file_description.current.value)) {
-         //console.debug('descr missing')
+         ////console.debug('descr missing')
         isValid = false;
         image.ref.current.validate();
       }
@@ -1554,8 +1533,8 @@ handleAddImage = () => {
       entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
-              // console.debug('Entity ancestors...', response.results);
-              // console.debug(response.results);
+              // //console.debug('Entity ancestors...', response.results);
+              // //console.debug(response.results);
               if (response.results.length > 0) {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
               }
@@ -1594,6 +1573,12 @@ handleAddImage = () => {
     return ""
   }
 
+  hideBackButton = () => {
+    this.setState({
+      back_btn_hide: true
+    });
+  }
+
   handleSavedLocations = (e) => {
     this.setState({ LocationSaved: true });
   };
@@ -1607,7 +1592,7 @@ handleAddImage = () => {
   };
 
   handleLabIdsUpdate = e => {
-    console.debug('HERE IN THE handleLabIdsUpdate')
+    //console.debug('HERE IN THE handleLabIdsUpdate')
     let new_ids = [];
     this.state.entities.map(id => {
       return new_ids.push({
@@ -1630,7 +1615,7 @@ handleAddImage = () => {
       <div className="row">
              <Paper className="paper-container">
         {this.state.editingMultiWarning && !this.props.readOnly && (
-          <div className="alert alert-danger col-sm-12" role="alert">
+          <div className="alert alert-info col-sm-12" role="alert">
             {this.state.editingMultiWarning}
           </div>
         )}

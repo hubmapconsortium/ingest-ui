@@ -1,43 +1,25 @@
 import React, { Component } from "react";
-import ReactTooltip from "react-tooltip";
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
-//import CheckIcon from '@material-ui/icons/Check';
-import { Link } from 'react-router-dom';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Dialog from '@material-ui/core/Dialog';
+
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
+import Snackbar from '@material-ui/core/Snackbar';
+import IconButton from '@material-ui/core/IconButton';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faQuestionCircle,
-  faSpinner, 
-  faCheck
-} from "@fortawesome/free-solid-svg-icons";
-// import RUIModal from './ruiModal';
-// import check from './check25.jpg';
-import Modal from "../modal";
-import axios from "axios";
-import Forms from "../forms";
-
-import Grid from '@material-ui/core/Grid';
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import TissueForm from './tissueForm';
-import { entity_api_get_entity, 
-    entity_api_update_entity, 
-    entity_api_create_entity,
-    entity_api_create_multiple_entities, 
-    entity_api_get_entity_ancestor 
-} from '../../../service/entity_api';
+import { entity_api_get_entity } from '../../../service/entity_api';
 import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
-import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
+import { parseErrorMessage } from "../../../utils/string_helper";
 
 class MultipleListModal extends Component {
 
   state = {
-    multiples: [],
+    multiples: this.props.ids,
     checked: false,
     edit_uuid: "",
     submitting: false,
@@ -47,78 +29,80 @@ class MultipleListModal extends Component {
     readOnly: true,
     currentEditList: "",
     error_message_detail: "",
-    error_message: "Oops! Something went wrong. Please contact administrator for help."
+    error_message: "Oops! Something went wrong. Please contact administrator for help.",
+    setOpen: false,
+    show_snack: false,
+    snackmessage: ""
   };
 
-  constructor(props) {
-    super(props);
-    // create a ref to store the file Input DOM element   
-    //this.protocolFile = React.createRef();
-    //this.protocol = React.createRef();
-    // this.handleSavedLocations = this.handleSavedLocations.bind(this);
-
-// loop through ids and add a check indicator for ui/list box
-    let new_multi = []
-    this.props.ids.forEach( element => {
-      element.checked = false;
-
-      new_multi.push(element);
-    })
-    
-    console.debug(new_multi)
-     this.setState({
-        multiples: new_multi
-    });
-   
-  }
+  // constructor(props) {
+  //   super(props);
+  // }
 
   componentDidMount() {
 
-    console.log('MultipleListModal', this.props)
+    console.log('MultipleListModal', this.state.multiples)
 
-    const first_lab_id = this.props.ids[0].submission_id; 
-    const last_lab_id = this.props.ids[this.props.ids.length-1].submission_id; 
+    const first_lab_id = this.state.multiples[0].submission_id; 
+    const last_lab_id = this.state.multiples[this.state.multiples.length-1].submission_id; 
     this.setState({
         submitting: false, 
-        multiMessage: `${this.props.ids.length} samples added ${first_lab_id} through ${last_lab_id}`
+        multiMessage: `${this.state.multiples.length} samples added ${first_lab_id} through ${last_lab_id}`
     });
     
   }
 
-  handleClose = e => {
-    // this.setState({
-    //   rui_show: false,
-    //   rui_hide: true
-    // });
+ // openSnack = () => {
+ //  this.setState ({
+ //    setOpen: true
+ //  });
+ //  };
+
+ closeSnack = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState ({
+      show_snack: false,
+      snackmessage: ""
+    });
   };
 
+  // handleCancel = e => {
+  //   // this.setState({
+  //   //   rui_show: false,
+  //   //   rui_hide: true
+  //   // });
+  // };
+
   handleOnUpdate = () => {
-    console.debug('UPDATE Complete', this.state.currentEditList)
+    ////console.debug('UPDATE Complete', this.state.currentEditList)
     
     // let cbs = document.getElementById("cb_"+this.state.currentEditList.uuid);
     // cbs.checked = true;
 
-    // console.debug('CHECK BOX', cbs)
+    // //console.debug('CHECK BOX', cbs)
+    //this.openSnack();
+
     let m = this.setCheckIndicator(this.state.currentEditList.uuid, true);
-    console.debug('STATUS', m);
+    //console.debug('STATUS', m);
     
-    setTimeout(() => {
-    
-      this.setState({
+    this.setState({
         updateSuccess: true,
         editingEntity: null,
         checked: true,
+        show_snack: true,
+        snackmessage: "Save was succesful",
         multiples: m
       });
-
-
-    }, 5000);
   }
 
   handleEdit = (selected) => {
-    console.debug('handleEdit', selected);
+    //console.debug('handleEdit', selected);
     this.setState ({
-      currentEditList: selected
+      currentEditList: selected,
+      show_snack: true,
+      snackmessage: "Sample data was loaded",
     });
     this.editForm(selected.uuid);  
   };
@@ -130,18 +114,18 @@ class MultipleListModal extends Component {
   setCheckIndicator = (uuid, status) => {
     let m = [];
     this.state.multiples.forEach((item,index)=> {
-      console.debug('setCheckIndicator ITEM', item)
-      if(item.uuid == uuid ) {
+      //console.debug('setCheckIndicator ITEM', item)
+      if(item.uuid === uuid ) {
         item.checked = status;
       }
       m.push(item);
     });
-    console.debug('setCheckIndicator', m);
+    //console.debug('setCheckIndicator', m);
     return m;
   }
 
   editForm = (uuid) => {
-    console.debug('in the editForm')
+    //console.debug('in the editForm')
     
     entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
@@ -183,6 +167,25 @@ class MultipleListModal extends Component {
               </div>
             )}
           <div className='col-sm-3'>
+          <div>
+            <Snackbar open={this.state.show_snack} 
+                      onClose={this.closeSnack}
+                      anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                      }}
+                      autoHideDuration={6000} 
+                      message={this.state.snackmessage}
+                      action={
+                            <React.Fragment>
+                              <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
+                                 <FontAwesomeIcon icon={faTimes} size="1x" />
+                              </IconButton>
+                            </React.Fragment>
+                          }
+            />
+        
+          </div>
           <Paper style={{maxHeight: 700, overflow: 'auto'}}>
                 
                 <List component="nav" aria-label="samples" subheader={
@@ -191,38 +194,19 @@ class MultipleListModal extends Component {
                     </ListSubheader>
                        }>
                 
-                    {this.props.ids.map((idopt, index) => {
+                    {this.state.multiples.map((item, index) => {
                         return (
                     
-                           <ListItem  key={idopt.submission_id} button>
-                            {/*
-
-                            <ListItem  key={idopt.submission_id} button component={Link} to={`/sample/${idopt.uuid}`}>
+                           <ListItem  key={item.submission_id} button>
                             <ListItemIcon>
-                             <Checkbox
-                                edge="start"
-                                //checked={checked.indexOf(value) !== -1}
-                                tabIndex={-1}
-                                disableRipple
-                                inputProps={{ 'aria-labelledby': idopt.submission_id }}
-                                />
-                            </ListItemIcon>
-                             <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`}/>
-                            <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`} onClick={() => this.handleInputChange(idopt)}/>
-
-
-                             <ListItemIcon>
-                                  <CheckIcon />
-                                </ListItemIcon>
-                          */}
-                            <ListItemIcon>
-                              <Checkbox id={`cb_${idopt.uuid}`}
-                                  checked={idopt.checked}
-                                  //onChange={handleChange}
-                                  color="secondary"
+                              <Checkbox id={`cb_${item.uuid}`}
+                                  checked={item.checked}
+                                  // color="secondary"
+                                  size="small"
+                                  inputProps={{ 'aria-label': 'checkbox with small size' }}
                                 />
                                 </ListItemIcon>
-                              <ListItemText id={idopt.submission_id} primary={`${idopt.submission_id}`} onClick={(e) => this.handleEdit(idopt, e)}/>
+                              <ListItemText id={item.submission_id} primary={`${item.submission_id}`} onClick={(e) => this.handleEdit(item, e)}/>
                           </ListItem>
                         );
                       })}
@@ -237,8 +221,9 @@ class MultipleListModal extends Component {
                     key={this.state.edit_uuid}
                     editingEntity={this.state.editingEntity}
                     readOnly={this.state.readOnly}
-                    //handleCancel={this.cancelEdit}
+                    //handleCancel={this.handleCancel}
                     onUpdated={this.handleOnUpdate}
+                    hideBackButton="true"
                     />
                  </Paper>
               </div>  
