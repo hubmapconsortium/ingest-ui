@@ -52,7 +52,7 @@
 .modal-main, .modal-organ {
   padding: 1em;
   position: fixed;
-  background: white;
+  background: #E6E6E6;
   width: 85%;
 
   height: auto;

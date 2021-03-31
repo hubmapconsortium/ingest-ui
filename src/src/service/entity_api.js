@@ -105,8 +105,12 @@ export function entity_api_create_multiple_entities(count, data, auth) {
       .then(res => {
         console.debug(res);
           let results = res.data;
-      
-        return {status: res.status, results: results}
+          let fin = [];
+           results.forEach( element => {
+              element.checked = false; // add a checked attribute for later UI usage
+              fin.push(element);
+            });
+        return {status: res.status, results: fin}
       })
       .catch(err => {
         return {status: err.response.status, results: err.response.data}
@@ -134,7 +138,7 @@ export function entity_api_update_multiple_entities(data, auth) {
       .then(res => {
         console.debug(res);
           let results = res.data;
-      
+         
         return {status: res.status, results: results}
       })
       .catch(err => {
