@@ -190,7 +190,7 @@ class MultipleListModal extends Component {
                 
                 <List component="nav" aria-label="samples" subheader={
                     <ListSubheader component="div" id="nested-list-subheader">
-                        Sample ID List
+                        Select an ID to edit data
                     </ListSubheader>
                        }>
                 

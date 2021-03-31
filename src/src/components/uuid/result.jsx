@@ -50,7 +50,7 @@ class Result extends Component {
   };
 
   render() {
-    console.debug('Multiples RESULTS!!!!', this.props.result)
+    //console.debug('Multiples RESULTS!!!!', this.props.result)
     return (
       <React.Fragment>
         {this.props.result["new_samples"] && (
@@ -62,9 +62,7 @@ class Result extends Component {
             )}
             {this.props.result["new_samples"].length > 1 && (
               <div className="alert alert-info" role="alert">
-              You have added multiples samples: <br />
-                { this.props.result["new_samples"].length} sample ids were
-                generated:{" "}
+              You have generated multiples samples:{" "}
                 <b>
                   {this.props.result["new_samples"][0]["submission_id"]}
                 </b>{" "}
@@ -144,9 +142,9 @@ class Result extends Component {
               </div>
             </div>
             <div className="row">
-              <div className="col-sm-4 offset-sm-4">
+              <div className="col-sm-7 offset-sm-3 mt-4">
                 <button
-                  className="btn btn-link  btn-block"
+                  className="btn btn-secondary btn-block"
                   type="button"
                   onClick={this.handleReturnClick}
                 >

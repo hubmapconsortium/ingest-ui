@@ -2132,7 +2132,7 @@ handleAddImage = () => {
                 </div>
               )}
             {!this.state.multiple_id &&
-              !this.state.editingMultiWarning &&
+              //!this.state.editingMultiWarning &&
               (!this.props.readOnly ||
                 this.state.lab_tissue_id !== undefined) && (
 
