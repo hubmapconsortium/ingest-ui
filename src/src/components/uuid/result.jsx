@@ -74,12 +74,6 @@ class Result extends Component {
                     ]["submission_id"]
                   }
                 </b>
-                .<br /><br />Use the list of sample IDS to navigate to each individual sample to add specific Lab ID, Locations or specific metadata files or images
-                  {/*<button
-                          className="btn btn-primary  btn-block"
-                          onClick={this.enterLabIDs}>
-                           Click To Edit Sample List
-                      </button>*/}
               </div>
             )}
             <div>
@@ -88,7 +82,7 @@ class Result extends Component {
                 <div className="col-sm-4 offset-sm-4 lab-id-modal">
               */}
                 <div className="row">
-                <div>
+               
                  
                   {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
                     //this.state.LabIDsModalShow &&
@@ -138,7 +132,7 @@ class Result extends Component {
                         Register tissue samples from this organ
                       </button>
                     )}
-                </div>
+               
               </div>
             </div>
             <div className="row">

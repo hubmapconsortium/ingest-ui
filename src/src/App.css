@@ -472,3 +472,18 @@ caption {
     text-decoration: none;
     color: rgb(55, 129, 209);
 }                      
+
+ul.no-bullets {
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  margin: 0px 0px 0px 0px;
+  padding-left: 0px;
+}

@@ -1,13 +1,16 @@
 import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
   faUserShield,
-  faSearch, faPaperclip
+  faSearch, faPaperclip, faAngleDown
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
@@ -79,6 +82,7 @@ class TissueForm extends Component {
 
     metadatas: [],
     images: [],
+    ids: [],
 
     new_metadatas: [],
     deleted_metas: [],
@@ -109,14 +113,14 @@ class TissueForm extends Component {
     }
   };
 
-  constructor(props) {
-    super(props);
-    // create a ref to store the file Input DOM element   
-    //this.protocolFile = React.createRef();
-    //this.protocol = React.createRef();
-    // this.handleSavedLocations = this.handleSavedLocations.bind(this);
+  // constructor(props) {
+  //   super(props);
+  //   // create a ref to store the file Input DOM element   
+  //   //this.protocolFile = React.createRef();
+  //   //this.protocol = React.createRef();
+  //   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
 
-  }
+  // }
 
   handleRUIJson = (dataFromChild) => {
     this.setState({
@@ -223,7 +227,7 @@ class TissueForm extends Component {
           )
           .then(res => {
             if (res.data.ingest_group_ids.length > 0) {
-              //console.debug("pre siblingid_list", res.data.ingest_group_ids);
+              console.debug("pre siblingid_list", res.data.ingest_group_ids);
               
               res.data.ingest_group_ids.sort((a, b) => {
                 if (
@@ -440,7 +444,11 @@ class TissueForm extends Component {
   }
 
   handleCancel = () => {
-    this.props.handleCancel();
+    if (this.props.history) {
+      this.props.history.goBack();
+    } else {
+      this.props.handleCancel();
+    }
   }
 
   handleInputChange = e => {
@@ -1614,10 +1622,41 @@ handleAddImage = () => {
     return (
       <div className="row">
              <Paper className="paper-container">
-        {this.state.editingMultiWarning && !this.props.readOnly && (
-          <div className="alert alert-info col-sm-12" role="alert">
+        {this.state.editingMultiWarning && !this.props.readOnly 
+          && !this.state.back_btn_hide && (
+          <div className="alert alert-primary col-sm-12" role="alert">
             {this.state.editingMultiWarning}
-          </div>
+
+            <Accordion>
+                <AccordionSummary
+                  expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                Click here to see the list of all sample IDs
+              </AccordionSummary>
+              <AccordionDetails>
+                  <ul>
+                    {this.state.ids && this.state.ids.forEach((item, index) => {
+                       if (item.uuid === this.state.editingEntity.uuid) {
+                        return (
+                          <li>
+                          {item.submission_id} (viewing)
+                          </li>
+                        );
+                      } else {
+                         return (
+                          <li>
+                          <a className="btn btn-link" href={`sample/${item.uuid}`}>{item.submission_id}</a>
+                          </li>
+                        );
+                      }
+                      
+                      })}
+                    </ul>
+              </AccordionDetails>
+            </Accordion>
+          </div>   
         )}
         <div className="col-sm-12 pads">
           <div className="col-sm-12 text-center"><h4>Sample Information</h4></div>
@@ -2182,7 +2221,7 @@ handleAddImage = () => {
               )
             }
 
-            {this.state.ids &&
+            {/*this.state.ids &&
               (this.state.editingEntity && this.props.editingEntities.length > 1 &&
                (!["LK", "RK", "HT", "SP", "LI"].includes(this.state.organ))) && (
                 <React.Fragment>
@@ -2211,7 +2250,7 @@ handleAddImage = () => {
                     onSaveLocation={this.handleSavedLocations}
                   />
                 </React.Fragment>
-              )}
+              )*/}
             {this.state.editingEntity &&
               this.state.multiple_id &&
               this.state.source_entity !== undefined &&

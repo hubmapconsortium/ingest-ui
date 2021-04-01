@@ -157,16 +157,41 @@ class MultipleListModal extends Component {
 
   render() {
     return (
-        <div className='row'>
-         {this.state.submit_error && (
-              <div className="alert alert-danger col-sm-12" role="alert">
-                <p>
-                {this.state.error_message_detail}
-                </p>
-                {this.state.error_message}
-              </div>
-            )}
-          <div className='col-sm-3'>
+        <div className='w-100'>
+  
+         <div className='col-sm-12'>
+          <span><b>Click on the ID below to edit information</b></span>
+            <Paper style={{maxHeight: 700, overflow: 'auto'}}>
+
+                  <ul className="no-bullets">
+                
+                    {this.state.multiples.map((item, index) => {
+                        return (
+                          <li>
+                              <Checkbox id={`cb_${item.uuid}`}
+                                  checked={item.checked}
+                                  disabled 
+                                  // color="secondary"
+                                  size="small"
+                                  inputProps={{ 'aria-label': 'checkbox with small size' }}
+                                /> {" "} 
+                                <button type="button" className="btn btn-link" onClick={(e) => this.handleEdit(item, e)}>{`${item.submission_id}`}</button>
+                          </li>
+                        );
+                      })}
+                  </ul>
+              </Paper>
+            </div>
+            <div className='col-sm-12'>
+                  <TissueForm
+                    key={this.state.edit_uuid}
+                    editingEntity={this.state.editingEntity}
+                    readOnly={this.state.readOnly}
+                    //handleCancel={this.handleCancel}
+                    onUpdated={this.handleOnUpdate}
+                    hideBackButton="true"
+                    />
+            </div>
           <div>
             <Snackbar open={this.state.show_snack} 
                       onClose={this.closeSnack}
@@ -183,52 +208,9 @@ class MultipleListModal extends Component {
                               </IconButton>
                             </React.Fragment>
                           }
-            />
-        
-          </div>
-          <Paper style={{maxHeight: 700, overflow: 'auto'}}>
-                
-                <List component="nav" aria-label="samples" subheader={
-                    <ListSubheader component="div" id="nested-list-subheader">
-                        Select an ID to edit data
-                    </ListSubheader>
-                       }>
-                
-                    {this.state.multiples.map((item, index) => {
-                        return (
-                    
-                           <ListItem  key={item.submission_id} button>
-                            <ListItemIcon>
-                              <Checkbox id={`cb_${item.uuid}`}
-                                  checked={item.checked}
-                                  // color="secondary"
-                                  size="small"
-                                  inputProps={{ 'aria-label': 'checkbox with small size' }}
-                                />
-                                </ListItemIcon>
-                              <ListItemText id={item.submission_id} primary={`${item.submission_id}`} onClick={(e) => this.handleEdit(item, e)}/>
-                          </ListItem>
-                        );
-                      })}
-                </List>
-              </Paper>
-              </div>
-            <div className='col-sm-9'>
-              <div>
-              <Paper>
-
-                  <TissueForm
-                    key={this.state.edit_uuid}
-                    editingEntity={this.state.editingEntity}
-                    readOnly={this.state.readOnly}
-                    //handleCancel={this.handleCancel}
-                    onUpdated={this.handleOnUpdate}
-                    hideBackButton="true"
-                    />
-                 </Paper>
-              </div>  
+            /> 
             </div>
-        </div>
+      </div>
     );
   }
 }
