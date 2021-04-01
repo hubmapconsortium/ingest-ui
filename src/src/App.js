@@ -181,14 +181,18 @@ class App extends Component {
                   <MenuIcon color="primary" />
                 </IconButton>
               </Hidden>
-              <Button className="nav-link" href="/donors-samples">
-                Donors &amp; Samples
-                </Button>
-              <Button className="nav-link" href="/datasets">
-                Datasets
-              </Button>
-          </div>
-          <div id="MenuRight">
+              {this.state.isAuthenticated && (
+                <div className="d-inline">
+                  <Button className="nav-link" href="/donors-samples">
+                    Donors &amp; Samples
+                    </Button>
+                  <Button className="nav-link" href="/datasets">
+                    Datasets
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div id="MenuRight">
 
           {this.state.isAuthenticated && (
             <div className="float-right">
