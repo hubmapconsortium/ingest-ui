@@ -100,9 +100,7 @@ class MultipleListModal extends Component {
   handleEdit = (selected) => {
     //console.debug('handleEdit', selected);
     this.setState ({
-      currentEditList: selected,
-      show_snack: true,
-      snackmessage: "Sample data was loaded",
+      currentEditList: selected
     });
     this.editForm(selected.uuid);  
   };
@@ -142,6 +140,8 @@ class MultipleListModal extends Component {
             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
             this.setState({ 
               readOnly: read_only_state,   // used for hidding UI components 
+              show_snack: true,
+              snackmessage: "Sample data was loaded"
               });
         //this.props.onEdit();
 
@@ -159,7 +159,7 @@ class MultipleListModal extends Component {
     return (
         <div className='w-100'>
   
-         <div className='col-sm-12'>
+         <div className='col-sm-12 mb-2'>
           <span><b>Click on the ID below to edit information</b></span>
             <Paper style={{maxHeight: 700, overflow: 'auto'}}>
 

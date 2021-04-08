@@ -483,7 +483,30 @@ ul.no-bullets {
   padding: 0;
 }
 
+ul {
+  height: 200px;
+  width: 1045px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
 ul li {
   margin: 0px 0px 0px 0px;
   padding-left: 0px;
+}
+
+div.idlist {
+  width: 1045px;
+  height: 200px;
+  overflow: auto;
+}
+
+a.disabled {
+  font-weight: bold;
+  pointer-events: none;
+  cursor: default;
 }
