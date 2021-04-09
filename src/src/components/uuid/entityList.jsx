@@ -29,6 +29,7 @@ class EntityList extends Component {
   state = {
     editingEntity: null,
     viewingEntity: null,
+    isDirty: false,
     loading: false,
     entities: [],
     // group_name: "IEC Testing Group",
@@ -71,6 +72,13 @@ class EntityList extends Component {
         page: 0
     });
   };
+
+   handleDirty = (isDirty) => {
+    this.setState({
+      isDirty: isDirty
+    });
+    console.debug('EntityList:isDirty', isDirty);
+  }
 
   // selectClassforDataType(dataType) {
   //   dataType = dataType.toLowerCase();
@@ -608,6 +616,7 @@ renderTable() {
           />
         );
       } else if (dataType === "sample") {
+        console.debug('entiyList: IM HERE');
         return (
           <TissueForm
             displayId={this.state.editingDisplayId}
@@ -616,6 +625,7 @@ renderTable() {
             readOnly={this.state.readOnly}
             handleCancel={this.cancelEdit}
             onUpdated={this.onUpdated}
+            handleDirty={this.handleDirty}
           />
         );
       } else {

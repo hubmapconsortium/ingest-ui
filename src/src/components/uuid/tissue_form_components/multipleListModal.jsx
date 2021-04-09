@@ -8,6 +8,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import Snackbar from '@material-ui/core/Snackbar';
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -32,7 +33,9 @@ class MultipleListModal extends Component {
     error_message: "Oops! Something went wrong. Please contact administrator for help.",
     setOpen: false,
     show_snack: false,
-    snackmessage: ""
+    show_dirty_warning: false,
+    snackmessage: "", 
+    isDirty: false
   };
 
   // constructor(props) {
@@ -64,6 +67,7 @@ class MultipleListModal extends Component {
     }
     this.setState ({
       show_snack: false,
+      show_dirty_warning: false,
       snackmessage: ""
     });
   };
@@ -92,6 +96,7 @@ class MultipleListModal extends Component {
         editingEntity: null,
         checked: true,
         show_snack: true,
+        show_dirty_warning: false,
         snackmessage: "Save was succesful",
         multiples: m
       });
@@ -99,6 +104,13 @@ class MultipleListModal extends Component {
 
   handleEdit = (selected) => {
     //console.debug('handleEdit', selected);
+    if (this.state.isDirty) {
+
+      this.setState({ 
+          show_dirty_warning: true,
+        });
+      return;
+    }
     this.setState ({
       currentEditList: selected
     });
@@ -107,6 +119,22 @@ class MultipleListModal extends Component {
 
   handleInputKeyPress = () => {
     console.log("Press");
+  }
+
+  handleDirty = (isDirty) => {
+    this.setState({
+      isDirty: isDirty
+    });
+    console.debug('MultipleListModal:isDirty', isDirty);
+  }
+
+  handleCancelChanges = () => {
+    this.handleDirty(false);
+
+     this.setState({ 
+        show_dirty_warning: false,
+     });
+
   }
 
   setCheckIndicator = (uuid, status) => {
@@ -141,8 +169,9 @@ class MultipleListModal extends Component {
             this.setState({ 
               readOnly: read_only_state,   // used for hidding UI components 
               show_snack: true,
-              snackmessage: "Sample data was loaded"
-              });
+              snackmessage: "Sample data was loaded",
+              show_dirty_warning: false,
+            });
         //this.props.onEdit();
 
           } else if (resp.status === 400) {
@@ -159,8 +188,8 @@ class MultipleListModal extends Component {
     return (
         <div className='w-100'>
   
-         <div className='col-sm-12 mb-2'>
-          <span><b>Click on the ID below to edit information</b></span>
+         <div className='col-sm-12 mb-2 mt-2'>
+          <span><b>You can modify individual sample data by selecting an ID from the sample group below.  A check mark will indicate those samples that have been modified/saved</b></span>
             <Paper style={{maxHeight: 700, overflow: 'auto'}}>
 
                   <ul className="no-bullets">
@@ -173,7 +202,7 @@ class MultipleListModal extends Component {
                                   disabled 
                                   // color="secondary"
                                   size="small"
-                                  inputProps={{ 'aria-label': 'checkbox with small size' }}
+                                  inputProps={{ 'aria-label': 'Submission ID' }}
                                 /> {" "} 
                                 <button type="button" className="btn btn-link" onClick={(e) => this.handleEdit(item, e)}>{`${item.submission_id}`}</button>
                           </li>
@@ -190,6 +219,7 @@ class MultipleListModal extends Component {
                     //handleCancel={this.handleCancel}
                     onUpdated={this.handleOnUpdate}
                     hideBackButton="true"
+                    handleDirty={this.handleDirty}
                     />
             </div>
           <div>
@@ -209,6 +239,29 @@ class MultipleListModal extends Component {
                             </React.Fragment>
                           }
             /> 
+
+            <Snackbar open={this.state.show_dirty_warning} 
+                      //onClose={this.closeSnack}
+                      anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'center',
+                      }}
+                      //autoHideDuration={6000} 
+                      severity="warning"
+                      message="You have made changes, to save press the UPDATE button.  To Cancel, click here ->"
+                      action={
+                             <React.Fragment>
+                              <Button color="secondary" size="small" onClick={this.handleCancelChanges}>
+                                  Cancel Changes
+                              </Button>
+                              <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
+                                 <FontAwesomeIcon icon={faTimes} size="1x" />
+                              </IconButton>
+                            </React.Fragment>
+                      }  
+                  >
+            </Snackbar> 
+        
             </div>
       </div>
     );

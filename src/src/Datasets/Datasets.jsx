@@ -368,7 +368,7 @@ class Datasets extends Component {
                   <thead>
                     <tr>
                       <th scope='col'>ID</th>
-                      <th scope='col'>Name</th>
+                      <th scope='col'>Dataset Name</th>
                       <th scope='col'>Lab</th>
                       <th scope='col'>Collection</th>
                       <th scope='col'>Created By</th>
@@ -435,7 +435,7 @@ class Datasets extends Component {
                       return (
                         <tr key={dataset.uuid}>
                           <td>{dataset.entity_display_doi}</td>
-                          <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.properties.name}</div></td>
+                          <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.title}</div></td>
                           <td>{dataset.properties.provenance_group_name}</td>
                           <td>
                             <button

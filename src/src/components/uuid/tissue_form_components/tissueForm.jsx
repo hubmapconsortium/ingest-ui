@@ -45,14 +45,7 @@ class TissueForm extends Component {
   state = {
     lab: "",
     lab_tissue_id: "",
-    // protocols: [
-    //   {
-    //     id: 1,
-    //     ref: React.createRef()
-    //   }
-    // ],
-
-//    protocol: "",
+    isDirty: false,
     back_btn_hide: false,
     param_uuid: "",
     protocol_url: "",
@@ -172,7 +165,7 @@ class TissueForm extends Component {
       try {
           // if a parameter uuid was passed directly to the screen, then look it up
         const param_uuid = this.props.match.params.uuid;
-        ////console.debug('PARAM WAS PASSED', param_uuid)
+        console.debug('PARAM WAS PASSED', param_uuid)
         entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
           .then((response) => {
               if (response.status === 200) {
@@ -450,8 +443,19 @@ class TissueForm extends Component {
     }
   }
 
+  setDirty = (dirty) => {
+    this.setState( {isDirty: dirty});  // users changed something
+
+    try {
+      this.props.handleDirty(dirty);  // if there's a handler in the parent set that
+    } catch {}
+  }
+
   handleInputChange = e => {
     const { name, value } = e.target;
+  
+    this.setDirty(true);
+
     switch (name) {
       case "lab":
         this.setState({ lab: value });
@@ -958,70 +962,74 @@ handleAddImage = () => {
             data["rui_location"] = JSON.parse(this.state.rui_location);
           }
 
-          //console.debug('submit metadatas', this.state.metadatas);
-          if (this.state.metadatas.length > 0) {
-            let metadata_files_to_add = [];
- 
-            this.state.metadatas.forEach(i => {
-              if (i.ref.current.state.temp_file_id !== "") {
-                metadata_files_to_add.push({
-                  temp_file_id: i.ref.current.state.temp_file_id,
-                  file_name: i.ref.current.metadata_file.current.files[0].name
-                });
-              } 
-            });
-          // check to see if we really did add any new images 
-            if (metadata_files_to_add.length > 0 ) {
-              data['metadata_files_to_add'] = metadata_files_to_add;
-            }
-        
-         }
-         //console.debug(this.state.deleted_metas)
-         if (this.state.deleted_metas.length > 0)  { 
-           data['metadata_files_to_remove'] = this.state.deleted_metas;
-         }
+          // only add images/meta if use didn't check multiples
+          if (this.state.sample_count < 1) {
 
-          if (this.state.images.length > 0) {
-            let image_files_to_add = [];
-            let existing_image_files_to_update = [];
-            //console.debug('submit images', this.state.images)
-            this.state.images.forEach(i => {
-
-            // if a file has a non-blank temp_file_id then assume it a new image 
-              if (i.ref.current.state.temp_file_id !== "") {
-                image_files_to_add.push({
-                  temp_file_id: i.ref.current.state.temp_file_id,
-                  description: i.ref.current.image_file_description.current.value.replace(
-                    /"/g,
-                    '\\"'
-                  )
-                });
-              } else {  // this will send image data that may have been updated
-                existing_image_files_to_update.push({
-                   file_uuid: i.file_uuid,
-                   description: i.ref.current.image_file_description.current.value.replace(
-                    /"/g,
-                    '\\"'
-                  )
-                })
-
-              }
-            });
-
+            //console.debug('submit metadatas', this.state.metadatas);
+            if (this.state.metadatas.length > 0 ) {
+              let metadata_files_to_add = [];
+   
+              this.state.metadatas.forEach(i => {
+                if (i.ref.current.state.temp_file_id !== "") {
+                  metadata_files_to_add.push({
+                    temp_file_id: i.ref.current.state.temp_file_id,
+                    file_name: i.ref.current.metadata_file.current.files[0].name
+                  });
+                } 
+              });
             // check to see if we really did add any new images 
-            if (image_files_to_add.length > 0 ) {
-              data['image_files_to_add'] = image_files_to_add;
-            }
-            // send any updates to the existing descriptions, there is no check for changes
-            if (existing_image_files_to_update.length > 0) {
-              data["image_files"] = existing_image_files_to_update;
-            }
+              if (metadata_files_to_add.length > 0 ) {
+                data['metadata_files_to_add'] = metadata_files_to_add;
+              }
+          
+           }
+           //console.debug(this.state.deleted_metas)
+           if (this.state.deleted_metas.length > 0)  { 
+             data['metadata_files_to_remove'] = this.state.deleted_metas;
+           }
+
+            if (this.state.images.length > 0) {
+              let image_files_to_add = [];
+              let existing_image_files_to_update = [];
+              //console.debug('submit images', this.state.images)
+              this.state.images.forEach(i => {
+
+              // if a file has a non-blank temp_file_id then assume it a new image 
+                if (i.ref.current.state.temp_file_id !== "") {
+                  image_files_to_add.push({
+                    temp_file_id: i.ref.current.state.temp_file_id,
+                    description: i.ref.current.image_file_description.current.value.replace(
+                      /"/g,
+                      '\\"'
+                    )
+                  });
+                } else {  // this will send image data that may have been updated
+                  existing_image_files_to_update.push({
+                     file_uuid: i.file_uuid,
+                     description: i.ref.current.image_file_description.current.value.replace(
+                      /"/g,
+                      '\\"'
+                    )
+                  })
+
+                }
+              });
+
+              // check to see if we really did add any new images 
+              if (image_files_to_add.length > 0) {
+                data['image_files_to_add'] = image_files_to_add;
+              }
+              // send any updates to the existing descriptions, there is no check for changes
+              if (existing_image_files_to_update.length > 0 ) {
+                data["image_files"] = existing_image_files_to_update;
+              }
           }
         
           // check for any removed images
           if (this.state.deleted_images.length > 0) {
             data['image_files_to_remove'] = this.state.deleted_images
           }
+        }
 
         //console.debug("SUBMMITED data")
         //console.debug(data)
@@ -1034,14 +1042,18 @@ handleAddImage = () => {
                   if (response.status === 200) {
                     //console.debug('Update Entity...');
                     //console.debug(response.results);
-                    this.setState({ submit_error: false, submitting: false });
+                    this.setState({ submit_error: false, submitting: false, isDirty: false });
                     if (this.state.param_uuid === "") {  // if this was not initiated by a url param
                       this.props.onUpdated(response.results);
+                      this.setDirty(false);
+
                     } else {
                       this.props.history.goBack();
                     }
                   } else {
-                    this.setState({ submit_error: true, submitting: false });
+                    this.setState({ submit_error: true, submitting: false, isDirty: false });
+                    this.setDirty(false);
+
                   }
       
               });
@@ -1271,28 +1283,28 @@ handleAddImage = () => {
           formErrors: { ...prevState.formErrors, protocol_url: "" }
         }));
       }
-
+      
+      if (this.state.sample_count < 1) { // only validate if we are not doing multiples
       // validate the images
-      this.state.images.forEach((image, index) => {
-      if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-       // //console.debug('image invalid', image.file_name)
-        isValid = false;
-        image.ref.current.validate();
-      }
-      if (!validateRequired(image.ref.current.image_file_description.current.value)) {
-         ////console.debug('descr missing')
-        isValid = false;
-        image.ref.current.validate();
-      }
-    });
-    // }
+        this.state.images.forEach((image, index) => {
+          if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
+           // //console.debug('image invalid', image.file_name)
+            isValid = false;
+            image.ref.current.validate();
+          }
+          if (!validateRequired(image.ref.current.image_file_description.current.value)) {
+             ////console.debug('descr missing')
+            isValid = false;
+            image.ref.current.validate();
+          }
+        });
 
-    const hasImageDuplicates = new Set(this.state.images).size !== this.state.images.length
-    if (hasImageDuplicates) {
-       // image["error"] = "Duplicated file name is not allowed.";
-        isValid = false;
-    }
-
+        const hasImageDuplicates = new Set(this.state.images).size !== this.state.images.length
+        if (hasImageDuplicates) {
+           // image["error"] = "Duplicated file name is not allowed.";
+            isValid = false;
+        }
+      }
 
     if (!validateRequired(this.state.source_uuid)) {
       this.setState(prevState => ({
