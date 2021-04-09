@@ -91,11 +91,11 @@ export function search_api_filter_es_query_builder(fields) {
     if (fields["search_term"]) {
       //let scrubbed = fixKeywordText(fields["search_term"]);
       boolQuery.filter(esb.multiMatchQuery(['description.keyword', 'hubmap_display_id.keyword', 'display_doi.keyword', 
-          'lab_donor_id.keyword', 'created_by_user_displayname', 'created_by_user_email'], fields["search_term"]));
+          'lab_donor_id.keyword', 'created_by_user_displayname', 'created_by_user_email', 'title.keyword'], fields["search_term"]));
     }
   
   }
-  requestBody.query(boolQuery).size(100).sort(esb.sort('last_modified_timestamp', 'desc'));
+  requestBody.query(boolQuery).size(250).sort(esb.sort('last_modified_timestamp', 'desc'));
   //requestBody.query(boolQuery).size(100);
 
   console.debug(requestBody.toJSON());

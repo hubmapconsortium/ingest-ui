@@ -414,7 +414,7 @@ handleChangePage = (event, newPage) => {
                   <TableHead>
                     <TableRow className="portal-jss120">
                       <TableCell align="center" width="50px">HuBMAP ID</TableCell>
-                      <TableCell align="center">Description</TableCell>
+                      <TableCell align="center">Dataset Name</TableCell>
                       <TableCell align="center">Lab Group</TableCell>
                       <TableCell align="center">Data Access Level</TableCell>
                       <TableCell align="center">Entered By</TableCell>
@@ -487,7 +487,7 @@ handleChangePage = (event, newPage) => {
                               {dataset.display_doi}
                             </button>
                            </TableCell>
-                          <TableCell align="left">{dataset.description}</TableCell>
+                          <TableCell align="left"><td><div style={{ wordBreak: "break-all", width: "15em"}}>{dataset.title}</div></td></TableCell>
                           <TableCell align="left">{dataset.group_name}</TableCell>
                           <TableCell align="left">
                             {dataset.data_access_level}
