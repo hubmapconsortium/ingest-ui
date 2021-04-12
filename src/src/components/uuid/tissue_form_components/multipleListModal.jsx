@@ -248,7 +248,7 @@ class MultipleListModal extends Component {
                       }}
                       //autoHideDuration={6000} 
                       severity="warning"
-                      message="You have made changes, to save press the UPDATE button.  To Cancel, click here ->"
+                      message="You have made changes, press the UPDATE button to save. To Cancel, click here ->"
                       action={
                              <React.Fragment>
                               <Button color="secondary" size="small" onClick={this.handleCancelChanges}>

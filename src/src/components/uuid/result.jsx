@@ -31,24 +31,6 @@ class Result extends Component {
     this.props.onReturn();
   };
 
-  enterLabIDs = () => {
-    this.setState({
-      LabIDsModalShow: true
-    });
-  };
-
-  hideLabIDsModal = () => {
-    this.setState({
-      LabIDsModalShow: false
-    });
-  };
-
-  hideGroupSelectModal = () => {
-    this.setState({
-      LabIDsModalShow: false
-    });
-  };
-
   render() {
     //console.debug('Multiples RESULTS!!!!', this.props.result)
     return (
@@ -88,19 +70,10 @@ class Result extends Component {
                     //this.state.LabIDsModalShow &&
                     (
                       <React.Fragment>
-      
-                       {/* <button
-                          className="btn btn-primary  btn-block"
-                          onClick={this.enterLabIDs}>
-                           Click To View Sample List
-                      </button>
-                    */}
 
                         <MultipleListModal
-                          show={this.state.LabIDsModalShow}
-                          hide={this.hideLabIDsModal}
                           ids={this.props.result["new_samples"]}
-                          submit={this.handleSubmit}
+                          //submit={this.handleSubmit}
                           handleCancel={this.props.handleReturnClick}
                         />
                       </React.Fragment>
