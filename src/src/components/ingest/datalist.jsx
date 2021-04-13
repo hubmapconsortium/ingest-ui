@@ -187,8 +187,8 @@ handleChangePage = (event, newPage) => {
     .then((response) => {
 
       if (response.status == 200) {
-      console.log('Dataset Search results...');
-      console.log(response.results);
+      //console.log('Dataset Search results...');
+      //console.log(response.results);
       this.setState(
           {
           loading: false,
@@ -266,7 +266,7 @@ handleChangePage = (event, newPage) => {
     .then((response) => {
       if (response.status === 200) {
         let entity_data = response.results;
-        console.log('editing',entity_data)
+        //console.log('editing',entity_data)
         this.props.viewEdit(entity_data);
       }
     });
@@ -428,7 +428,7 @@ handleChangePage = (event, newPage) => {
                       .slice(this.state.page * this.state.rowsPerPage, (this.state.page * this.state.rowsPerPage)+this.state.rowsPerPage)
                       .map((ds) => {
                         const dataset = ds[0];
-                        console.log(dataset);
+                        //console.log(dataset);
                       const status = dataset.status
                         ? dataset.status.toUpperCase()
                         : "";
