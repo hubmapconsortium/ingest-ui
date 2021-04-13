@@ -24,7 +24,7 @@ class DataList extends Component {
 
     is_curator: false,
     datasets: [],
-    filtered_totals: 0,
+//    filtered_totals: 0,
     pages: [10, 25, 50],
     page: 0,
     setPage: 0,
@@ -193,7 +193,8 @@ handleChangePage = (event, newPage) => {
           {
           loading: false,
           datasets: response.results,
-          filtered_totals: Object.keys(response.results).length,
+//          filtered_totals: Object.keys(response.results).length,
+          page: 0
           }
         );
       }
@@ -424,7 +425,7 @@ handleChangePage = (event, newPage) => {
                   </TableHead>
                   <TableBody>      
                     { Object.values(this.state.datasets)
-                      .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
+                      .slice(this.state.page * this.state.rowsPerPage, (this.state.page * this.state.rowsPerPage)+this.state.rowsPerPage)
                       .map((ds) => {
                         const dataset = ds[0];
                         console.log(dataset);
