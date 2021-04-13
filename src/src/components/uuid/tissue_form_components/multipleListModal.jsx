@@ -48,10 +48,14 @@ class MultipleListModal extends Component {
 
     const first_lab_id = this.state.multiples[0].submission_id; 
     const last_lab_id = this.state.multiples[this.state.multiples.length-1].submission_id; 
+    
     this.setState({
         submitting: false, 
-        multiMessage: `${this.state.multiples.length} samples added ${first_lab_id} through ${last_lab_id}`
+        multiMessage: `${this.state.multiples.length} samples added ${first_lab_id} through ${last_lab_id}`,
+        edit_uuid:  this.state.multiples[0].uuid
     });
+
+    this.editForm(this.state.multiples[0].uuid);
     
   }
 
@@ -173,6 +177,8 @@ class MultipleListModal extends Component {
               show_dirty_warning: false,
             });
         //this.props.onEdit();
+        console.debug('in the editForm', response.results)
+        //this.forceUpdate();
 
           } else if (resp.status === 400) {
             this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(resp.results) });
@@ -189,7 +195,8 @@ class MultipleListModal extends Component {
         <div className='w-100'>
   
          <div className='col-sm-12 mb-2 mt-2'>
-          <span><b>You can modify individual sample data by selecting an ID from the sample group below.  A check mark will indicate those samples that have been modified/saved</b></span>
+          <span className='alert alert-success'><b>** You have generated multiples samples. Expand the panel below to view the sample group list</b></span>
+           {/*}
             <Paper style={{maxHeight: 700, overflow: 'auto'}}>
 
                   <ul className="no-bullets">
@@ -210,7 +217,9 @@ class MultipleListModal extends Component {
                       })}
                   </ul>
               </Paper>
+            */}
             </div>
+            {this.state.editingEntity && ( //only show the screen after the entity is available
             <div className='col-sm-12'>
                   <TissueForm
                     key={this.state.edit_uuid}
@@ -222,6 +231,7 @@ class MultipleListModal extends Component {
                     handleDirty={this.handleDirty}
                     />
             </div>
+            )}
           <div>
             <Snackbar open={this.state.show_snack} 
                       onClose={this.closeSnack}

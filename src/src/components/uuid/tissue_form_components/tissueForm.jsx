@@ -186,7 +186,7 @@ class TissueForm extends Component {
       try {
           // if a parameter uuid was passed directly to the screen, then look it up and fill in data
         const param_uuid = this.props.match.params.uuid;
-        //console.debug('PARAM WAS PASSED', param_uuid)
+        console.debug('PARAM WAS PASSED', param_uuid)
         entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
           .then((response) => {
               if (response.status === 200) {
@@ -217,6 +217,7 @@ class TissueForm extends Component {
         });
 
       } catch {  // no params were detected
+        console.debug('NO PARAM', this.props.editingEntity)
          this.setState({
           editingEntity: this.props.editingEntity
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available

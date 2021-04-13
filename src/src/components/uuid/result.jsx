@@ -3,6 +3,7 @@ import React, { Component } from "react";
 //import { flattenSampleType } from "../../utils/constants_helper";
 //import LabIDsModal from "./labIdsModal";
 import MultipleListModal from "./tissue_form_components/multipleListModal"
+//import TissueForm from "./tissue_form_components/tissueForm";
 
 class Result extends Component {
   state = { results: [] };
@@ -42,7 +43,7 @@ class Result extends Component {
                 Save Successful
               </div>
             )}
-            {this.props.result["new_samples"].length > 1 && (
+            {/*this.props.result["new_samples"].length > 1 && (
               <div className="alert alert-info" role="alert">
               You have generated multiples samples:{" "}
                 <b>
@@ -57,18 +58,15 @@ class Result extends Component {
                   }
                 </b>
               </div>
-            )}
+            )*/}
             <div>
-            
-              {/*<div className="row mb-2">
-                <div className="col-sm-4 offset-sm-4 lab-id-modal">
-              */}
                 <div className="row">
                
                  
                   {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
                     //this.state.LabIDsModalShow &&
                     (
+
                       <React.Fragment>
 
                         <MultipleListModal
@@ -76,6 +74,7 @@ class Result extends Component {
                           //submit={this.handleSubmit}
                           handleCancel={this.props.handleReturnClick}
                         />
+
                       </React.Fragment>
                     )
                   }
@@ -108,6 +107,7 @@ class Result extends Component {
                
               </div>
             </div>
+
             <div className="row">
               <div className="col-sm-7 offset-sm-3 mt-4">
                 <button
@@ -119,6 +119,7 @@ class Result extends Component {
                 </button>
               </div>
             </div>
+
           </React.Fragment>
         )}
       </React.Fragment>
