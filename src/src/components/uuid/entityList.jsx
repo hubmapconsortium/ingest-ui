@@ -19,7 +19,8 @@ import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
 import { api_search } from '../../service/search_api';
 import { entity_api_get_entity } from '../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
+import { ingest_api_allowable_edit_states, ingest_api_get_associated_ids } from '../../service/ingest_api';
+//import MultipleListModal from "./tissue_form_components/multipleListModal";
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"
 import {ReactComponent as SAMPLE_IMAGE} from "../../assets/img/sample.svg"
@@ -29,6 +30,7 @@ class EntityList extends Component {
   state = {
     editingEntity: null,
     viewingEntity: null,
+    isDirty: false,
     loading: false,
     entities: [],
     // group_name: "IEC Testing Group",
@@ -42,7 +44,9 @@ class EntityList extends Component {
     setPage: 0,
     rowsPerPage: 25,
     setRowsPerPage: 25,
-    authToken: JSON.parse(localStorage.getItem("info")).nexus_token
+    authToken: JSON.parse(localStorage.getItem("info")).nexus_token,
+    // showAsMultipleFormat: "",
+    // multiples: []
   };
 
   constructor(props) {
@@ -71,6 +75,13 @@ class EntityList extends Component {
         page: 0
     });
   };
+
+   handleDirty = (isDirty) => {
+    this.setState({
+      isDirty: isDirty
+    });
+    console.debug('EntityList:isDirty', isDirty);
+  }
 
   // selectClassforDataType(dataType) {
   //   dataType = dataType.toLowerCase();
@@ -594,7 +605,30 @@ renderTable() {
       );
   }
 
-  renderEditForm() {
+  // checkForMultiples(entity) {
+
+  //   ingest_api_get_associated_ids(entity.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+  //    .then((resp) => {
+  //         if (resp.status === 200) {
+  //           console.debug('checkForMultiples', resp.results);
+
+  //           if (resp.results.length > 1) {
+  //             var multi = {new_samples: resp.results, entity: entity}
+  //             this.setState({
+  //               showAsMultipleFormat: 'SINGLE',
+  //               multiples: multi
+  //             });
+  //             return true;
+              
+  //           } else {
+  //             console.debug('SINGLE -NO MULTIPLES')
+  //             return false;
+  //           }
+  //         }
+  //       });
+  // }
+
+renderEditForm() {
     if (this.state.editingEntity) {
       const dataType = this.state.editingEntity.entity_type.toLowerCase();
       if (dataType === "donor") {
@@ -616,6 +650,7 @@ renderTable() {
             readOnly={this.state.readOnly}
             handleCancel={this.cancelEdit}
             onUpdated={this.onUpdated}
+            handleDirty={this.handleDirty}
           />
         );
       } else {

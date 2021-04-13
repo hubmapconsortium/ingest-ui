@@ -487,7 +487,7 @@ handleChangePage = (event, newPage) => {
                               {dataset.display_doi}
                             </button>
                            </TableCell>
-                          <TableCell align="left"><td><div style={{ wordBreak: "break-all", width: "15em"}}>{dataset.title}</div></td></TableCell>
+                          <TableCell align="left"><div style={{ wordBreak: "break-all", width: "15em"}}>{dataset.title}</div></TableCell>
                           <TableCell align="left">{dataset.group_name}</TableCell>
                           <TableCell align="left">
                             {dataset.data_access_level}

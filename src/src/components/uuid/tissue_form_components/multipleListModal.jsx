@@ -8,6 +8,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import Snackbar from '@material-ui/core/Snackbar';
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -32,7 +33,9 @@ class MultipleListModal extends Component {
     error_message: "Oops! Something went wrong. Please contact administrator for help.",
     setOpen: false,
     show_snack: false,
-    snackmessage: ""
+    show_dirty_warning: false,
+    snackmessage: "", 
+    isDirty: false
   };
 
   // constructor(props) {
@@ -45,10 +48,14 @@ class MultipleListModal extends Component {
 
     const first_lab_id = this.state.multiples[0].submission_id; 
     const last_lab_id = this.state.multiples[this.state.multiples.length-1].submission_id; 
+    
     this.setState({
         submitting: false, 
-        multiMessage: `${this.state.multiples.length} samples added ${first_lab_id} through ${last_lab_id}`
+        multiMessage: `${this.state.multiples.length} samples added ${first_lab_id} through ${last_lab_id}`,
+        edit_uuid:  this.state.multiples[0].uuid
     });
+
+    this.editForm(this.state.multiples[0].uuid);
     
   }
 
@@ -64,6 +71,7 @@ class MultipleListModal extends Component {
     }
     this.setState ({
       show_snack: false,
+      show_dirty_warning: false,
       snackmessage: ""
     });
   };
@@ -92,6 +100,7 @@ class MultipleListModal extends Component {
         editingEntity: null,
         checked: true,
         show_snack: true,
+        show_dirty_warning: false,
         snackmessage: "Save was succesful",
         multiples: m
       });
@@ -99,16 +108,37 @@ class MultipleListModal extends Component {
 
   handleEdit = (selected) => {
     //console.debug('handleEdit', selected);
+    if (this.state.isDirty) {
+
+      this.setState({ 
+          show_dirty_warning: true,
+        });
+      return;
+    }
     this.setState ({
-      currentEditList: selected,
-      show_snack: true,
-      snackmessage: "Sample data was loaded",
+      currentEditList: selected
     });
     this.editForm(selected.uuid);  
   };
 
   handleInputKeyPress = () => {
     console.log("Press");
+  }
+
+  handleDirty = (isDirty) => {
+    this.setState({
+      isDirty: isDirty
+    });
+    console.debug('MultipleListModal:isDirty', isDirty);
+  }
+
+  handleCancelChanges = () => {
+    this.handleDirty(false);
+
+     this.setState({ 
+        show_dirty_warning: false,
+     });
+
   }
 
   setCheckIndicator = (uuid, status) => {
@@ -142,8 +172,13 @@ class MultipleListModal extends Component {
             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
             this.setState({ 
               readOnly: read_only_state,   // used for hidding UI components 
-              });
+              show_snack: true,
+              snackmessage: "Sample data was loaded",
+              show_dirty_warning: false,
+            });
         //this.props.onEdit();
+        console.debug('in the editForm', response.results)
+        //this.forceUpdate();
 
           } else if (resp.status === 400) {
             this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(resp.results) });
@@ -157,16 +192,46 @@ class MultipleListModal extends Component {
 
   render() {
     return (
-        <div className='row'>
-         {this.state.submit_error && (
-              <div className="alert alert-danger col-sm-12" role="alert">
-                <p>
-                {this.state.error_message_detail}
-                </p>
-                {this.state.error_message}
-              </div>
+        <div className='w-100'>
+  
+         <div className='col-sm-12 mb-2 mt-2'>
+          <span className='alert alert-success'><b>** You have generated multiples samples. Expand the panel below to view the sample group list</b></span>
+           {/*}
+            <Paper style={{maxHeight: 700, overflow: 'auto'}}>
+
+                  <ul className="no-bullets">
+                
+                    {this.state.multiples.map((item, index) => {
+                        return (
+                          <li>
+                              <Checkbox id={`cb_${item.uuid}`}
+                                  checked={item.checked}
+                                  disabled 
+                                  // color="secondary"
+                                  size="small"
+                                  inputProps={{ 'aria-label': 'Submission ID' }}
+                                /> {" "} 
+                                <button type="button" className="btn btn-link" onClick={(e) => this.handleEdit(item, e)}>{`${item.submission_id}`}</button>
+                          </li>
+                        );
+                      })}
+                  </ul>
+              </Paper>
+            */}
+            </div>
+            {this.state.editingEntity && ( //only show the screen after the entity is available
+            <div className='col-sm-12'>
+                  <TissueForm
+                    key={this.state.edit_uuid}
+                    editingEntity={this.state.editingEntity}
+                    readOnly={this.state.readOnly}
+                    //handleCancel={this.handleCancel}
+                    onUpdated={this.handleOnUpdate}
+                    hideBackButton="true"
+                    handleDirty={this.handleDirty}
+                    />
+            </div>
             )}
-          <div className='col-sm-3'>
           <div>
             <Snackbar open={this.state.show_snack} 
                       onClose={this.closeSnack}
@@ -183,52 +248,32 @@ class MultipleListModal extends Component {
                               </IconButton>
                             </React.Fragment>
                           }
-            />
-        
-          </div>
-          <Paper style={{maxHeight: 700, overflow: 'auto'}}>
-                
-                <List component="nav" aria-label="samples" subheader={
-                    <ListSubheader component="div" id="nested-list-subheader">
-                        Select an ID to edit data
-                    </ListSubheader>
-                       }>
-                
-                    {this.state.multiples.map((item, index) => {
-                        return (
-                    
-                           <ListItem  key={item.submission_id} button>
-                            <ListItemIcon>
-                              <Checkbox id={`cb_${item.uuid}`}
-                                  checked={item.checked}
-                                  // color="secondary"
-                                  size="small"
-                                  inputProps={{ 'aria-label': 'checkbox with small size' }}
-                                />
-                                </ListItemIcon>
-                              <ListItemText id={item.submission_id} primary={`${item.submission_id}`} onClick={(e) => this.handleEdit(item, e)}/>
-                          </ListItem>
-                        );
-                      })}
-                </List>
-              </Paper>
-              </div>
-            <div className='col-sm-9'>
-              <div>
-              <Paper>
+            /> 
 
-                  <TissueForm
-                    key={this.state.edit_uuid}
-                    editingEntity={this.state.editingEntity}
-                    readOnly={this.state.readOnly}
-                    //handleCancel={this.handleCancel}
-                    onUpdated={this.handleOnUpdate}
-                    hideBackButton="true"
-                    />
-                 </Paper>
-              </div>  
+            <Snackbar open={this.state.show_dirty_warning} 
+                      //onClose={this.closeSnack}
+                      anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'center',
+                      }}
+                      //autoHideDuration={6000} 
+                      severity="warning"
+                      message="You have made changes, press the UPDATE button to save. To Cancel, click here ->"
+                      action={
+                             <React.Fragment>
+                              <Button color="secondary" size="small" onClick={this.handleCancelChanges}>
+                                  Cancel Changes
+                              </Button>
+                              <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
+                                 <FontAwesomeIcon icon={faTimes} size="1x" />
+                              </IconButton>
+                            </React.Fragment>
+                      }  
+                  >
+            </Snackbar> 
+        
             </div>
-        </div>
+      </div>
     );
   }
 }

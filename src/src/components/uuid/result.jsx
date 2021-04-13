@@ -3,6 +3,7 @@ import React, { Component } from "react";
 //import { flattenSampleType } from "../../utils/constants_helper";
 //import LabIDsModal from "./labIdsModal";
 import MultipleListModal from "./tissue_form_components/multipleListModal"
+//import TissueForm from "./tissue_form_components/tissueForm";
 
 class Result extends Component {
   state = { results: [] };
@@ -31,24 +32,6 @@ class Result extends Component {
     this.props.onReturn();
   };
 
-  enterLabIDs = () => {
-    this.setState({
-      LabIDsModalShow: true
-    });
-  };
-
-  hideLabIDsModal = () => {
-    this.setState({
-      LabIDsModalShow: false
-    });
-  };
-
-  hideGroupSelectModal = () => {
-    this.setState({
-      LabIDsModalShow: false
-    });
-  };
-
   render() {
     //console.debug('Multiples RESULTS!!!!', this.props.result)
     return (
@@ -60,7 +43,7 @@ class Result extends Component {
                 Save Successful
               </div>
             )}
-            {this.props.result["new_samples"].length > 1 && (
+            {/*this.props.result["new_samples"].length > 1 && (
               <div className="alert alert-info" role="alert">
               You have generated multiples samples:{" "}
                 <b>
@@ -74,41 +57,24 @@ class Result extends Component {
                     ]["submission_id"]
                   }
                 </b>
-                .<br /><br />Use the list of sample IDS to navigate to each individual sample to add specific Lab ID, Locations or specific metadata files or images
-                  {/*<button
-                          className="btn btn-primary  btn-block"
-                          onClick={this.enterLabIDs}>
-                           Click To Edit Sample List
-                      </button>*/}
               </div>
-            )}
+            )*/}
             <div>
-            
-              {/*<div className="row mb-2">
-                <div className="col-sm-4 offset-sm-4 lab-id-modal">
-              */}
                 <div className="row">
-                <div>
+               
                  
                   {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
                     //this.state.LabIDsModalShow &&
                     (
+
                       <React.Fragment>
-      
-                       {/* <button
-                          className="btn btn-primary  btn-block"
-                          onClick={this.enterLabIDs}>
-                           Click To View Sample List
-                      </button>
-                    */}
 
                         <MultipleListModal
-                          show={this.state.LabIDsModalShow}
-                          hide={this.hideLabIDsModal}
                           ids={this.props.result["new_samples"]}
-                          submit={this.handleSubmit}
+                          //submit={this.handleSubmit}
                           handleCancel={this.props.handleReturnClick}
                         />
+
                       </React.Fragment>
                     )
                   }
@@ -138,9 +104,10 @@ class Result extends Component {
                         Register tissue samples from this organ
                       </button>
                     )}
-                </div>
+               
               </div>
             </div>
+
             <div className="row">
               <div className="col-sm-7 offset-sm-3 mt-4">
                 <button
@@ -152,6 +119,7 @@ class Result extends Component {
                 </button>
               </div>
             </div>
+
           </React.Fragment>
         )}
       </React.Fragment>

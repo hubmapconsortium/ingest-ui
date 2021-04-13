@@ -51,7 +51,7 @@ export const SAMPLE_TYPES = [
 // These ones show on the Create new Donor/Sample page
 export const TISSUE_TYPES = {
    Donor: [{ 
-    organ: "Organ",
+    organ: "Organ"
   }],
    Sample: [{
     biopsy: "Biopsy",
