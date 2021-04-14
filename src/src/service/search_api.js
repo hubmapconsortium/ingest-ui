@@ -18,7 +18,7 @@ export function api_search(params, auth) {
       }
     };
 
-    console.debug(options)
+    //console.debug(options)
   let payload = search_api_filter_es_query_builder(params);
 
   return axios 
@@ -26,7 +26,7 @@ export function api_search(params, auth) {
               payload, options
       )
       .then(res => {
-        console.debug(res);
+        //console.debug(res);
           let hits = res.data.hits.hits;
       
           let entities = {};
@@ -53,8 +53,8 @@ export function api_search(params, auth) {
 export function search_api_filter_es_query_builder(fields) {
 
   let requestBody =  esb.requestBodySearch();
- console.debug("here in the filter es builder")
- console.debug(fields);
+ //console.debug("here in the filter es builder")
+ //console.debug(fields);
 
   let boolQuery = esb.boolQuery();
 
@@ -98,13 +98,13 @@ export function search_api_filter_es_query_builder(fields) {
   requestBody.query(boolQuery).size(250).sort(esb.sort('last_modified_timestamp', 'desc'));
   //requestBody.query(boolQuery).size(100);
 
-  console.debug(requestBody.toJSON());
+  //console.debug(requestBody.toJSON());
   return requestBody.toJSON();
 }
 
 export function fixKeywordText(text) {
   let x = text.replace(/-/gi, "\\-");
-  console.debug('scrubbed', x)
+  //console.debug('scrubbed', x)
 return x
 
 }
