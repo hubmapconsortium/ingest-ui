@@ -5,7 +5,8 @@ import Collection from "./Collections/Collection";
 import ErrorPage from './utils/error_page';
 import Home from "./Home/Home";
 import history from './history';
-import TissueForm from './components/uuid/tissue_form_components/tissueForm'
+import TissueForm from './components/uuid/tissue_form_components/tissueForm';
+import SearchComponent from './components/search/SearchComponent';
 
 export default class Routes extends Component {
     render() {
@@ -22,6 +23,7 @@ export default class Routes extends Component {
                     <Route path="/collections/:uuid" component={Collection} />
                     <Route path="/collections" component={Collections} />
                     <Route path="/err-response" component={ErrorPage} />
+                    <Route path="/search" component={SearchComponent} />
                 </Switch>
             </Router>
         )

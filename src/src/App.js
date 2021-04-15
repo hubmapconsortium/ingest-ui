@@ -197,7 +197,7 @@ class App extends Component {
           {this.state.isAuthenticated && (
             <div className="float-right">
               <span className="username">
-                <Typography variant="button" class="username-menu">
+                <Typography variant="button" className="username-menu">
                   {this.state.email}{" "}
                 </Typography>
                 <Button
