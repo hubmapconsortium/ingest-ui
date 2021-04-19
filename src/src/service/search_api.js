@@ -20,7 +20,7 @@ export function api_search(params, auth) {
     };
 
     console.debug(options)
-  let payload = search_api_filter_es_query_builder(params);
+  let payload = search_api_filter_es_query_builder(params, 0, 100);
 
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
@@ -47,7 +47,7 @@ export function api_search(params, auth) {
       });
 };
 
-export function api_search2(params, auth) { 
+export function api_search2(params, auth, from, size) { 
   const options = {
       headers: {
         Authorization:
@@ -57,7 +57,7 @@ export function api_search2(params, auth) {
     };
 
     console.debug(options)
-  let payload = search_api_filter_es_query_builder(params);
+  let payload = search_api_filter_es_query_builder(params, from , size);
 
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
@@ -75,7 +75,7 @@ export function api_search2(params, auth) {
             
           });
            console.debug(entities);
-        return {status: res.status, results: entities}
+        return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
       .catch(err => {
          return {status: 500, results: err.response}
@@ -86,7 +86,7 @@ export function api_search2(params, auth) {
  * Elasticsearch query builder helper
  *
  */
-export function search_api_filter_es_query_builder(fields) {
+export function search_api_filter_es_query_builder(fields, from, size) {
 
   let requestBody =  esb.requestBodySearch();
  console.debug("here in the filter es builder")
@@ -129,11 +129,11 @@ export function search_api_filter_es_query_builder(fields) {
     if (fields["search_term"]) {
       //let scrubbed = fixKeywordText(fields["search_term"]);
       boolQuery.filter(esb.multiMatchQuery(['description.keyword', 'hubmap_display_id.keyword', 'display_doi.keyword', 
-          'lab_donor_id.keyword', 'created_by_user_displayname', 'created_by_user_email'], fields["search_term"]));
+          'lab_donor_id.keyword', 'lab_tissue_sample_id.keyword', 'created_by_user_displayname', 'created_by_user_email'], fields["search_term"]));
     }
   
   }
-  requestBody.query(boolQuery).size(500).sort(esb.sort('last_modified_timestamp', 'desc'));
+  requestBody.query(boolQuery).from(from).size(size).sort(esb.sort('last_modified_timestamp', 'desc'));
   //requestBody.query(boolQuery).size(100);
 
   console.debug(requestBody.toJSON());
