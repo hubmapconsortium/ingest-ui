@@ -513,6 +513,13 @@ class TissueForm extends Component {
     } catch {}
   }
 
+  snackCancel = () => {
+     this.setState( {
+        isDirty: false,
+        show_dirty_warning: false
+     });  
+  }
+
   handleInputChange = e => {
     const { name, value } = e.target;
   
@@ -1020,7 +1027,8 @@ handleAddImage = () => {
             data["organ"] = this.state.organ;
           }
 
-          if ( this.state.rui_location && this.state.rui_location.length !== "") {
+          if ( this.state.rui_location && this.state.rui_location.length !== ""  
+                && this.state.sample_count < 1) {
             data["rui_location"] = JSON.parse(this.state.rui_location);
           }
 
@@ -1478,20 +1486,19 @@ handleAddImage = () => {
         {this.state.related_group_ids.length > 1
           && (
           <div className="alert alert-primary col-sm-12" role="alert">
-            {this.state.editingMultiWarning}
-
+            {this.state.editingMultiWarning}{" "}
+            <p>Click below to expand and view the groups list. Then select an Sample ID to edit the sample data.  Press the update button to save your changes.</p>
             <Accordion>
                 <AccordionSummary
                   expandIcon={<FontAwesomeIcon icon={faAngleDown} />}
                   aria-controls="panel1a-content"
                   id="panel1a-header"
-                >
-                <span>Click here to see the list of all sample IDs in the group</span>
+                >Sample Group List
               </AccordionSummary>
               <AccordionDetails>
               <div className="row">
                <div className='idlist'>
-             
+                
                   <ul>
                     { this.state.related_group_ids.length > 0 && this.state.related_group_ids.map((item, index) => {
                       if (item.uuid === this.state.editingEntity.uuid) {
@@ -2010,8 +2017,8 @@ handleAddImage = () => {
                       { this.state.source_entity &&
                           (this.isSpecialOrganType(this.state.organ)) && (
                           <div className="col-sm-4">
-                            <small>
-                              Lab IDs and Sample Locations can be assigned on the next screen after
+                            <small className='portal-label'>
+                              Lab IDs, Sample Locations and files/images can be assigned on the next screen after
                               generating the HuBMAP IDs
                           </small>
                           </div>
@@ -2019,8 +2026,8 @@ handleAddImage = () => {
                       { this.state.source_entity &&
                         (this.isNotSpecialOrganType(this.state.organ)) && (
                           <div className="col-sm-4">
-                            <small>
-                              Lab IDs can be assigned on the next screen after
+                            <small className='portal-label'>
+                              Lab IDs and files/images can be assigned on the next screen after
                               generating the HuBMAP IDs
                           </small>
                           </div>
@@ -2530,21 +2537,16 @@ handleAddImage = () => {
                       }}
                       //autoHideDuration={6000} 
                       severity="warning"
-                      //message="You have made changes, press the UPDATE button to save"
+                      message={<span id="client-snackbar">You have made changes, please UPDATE to save.</span>}
                       action={
-                             <React.Fragment>
-                              <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
-                                 <FontAwesomeIcon icon={faTimes} size="1x" />
-                              </IconButton>
-                            </React.Fragment>
-                      }  
+                        <React.Fragment>
+                         <Button color="inherit" size="small" onClick={this.snackCancel}>
+                            Cancel Changes
+                          </Button>
+                          </React.Fragment>
+                      }
                   >
-                  <SnackbarContent style={{
-                      backgroundColor:'orange',
-                      foregroundColor:'black'
-                    }}
-                      message={<span id="client-snackbar">You have made changes, press the UPDATE button to save</span>}
-                  />
+
             </Snackbar> 
       </div>
     );
