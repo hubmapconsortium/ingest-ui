@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 //import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 //import { flattenSampleType } from "../../utils/constants_helper";
-import LabIDsModal from "./labIdsModal";
+//import LabIDsModal from "./labIdsModal";
+import MultipleListModal from "./tissue_form_components/multipleListModal"
+//import TissueForm from "./tissue_form_components/tissueForm";
 
 class Result extends Component {
   state = { results: [] };
@@ -30,42 +32,20 @@ class Result extends Component {
     this.props.onReturn();
   };
 
-  enterLabIDs = () => {
-    this.setState({
-      LabIDsModalShow: true
-    });
-  };
-
-  hideLabIDsModal = () => {
-    this.setState({
-      LabIDsModalShow: false
-    });
-  };
-
-  hideGroupSelectModal = () => {
-    this.setState({
-      LabIDsModalShow: false
-    });
-  };
-
   render() {
-    console.debug('Multiples RESULTS!!!!', this.props.result)
+    //console.debug('Multiples RESULTS!!!!', this.props.result)
     return (
       <React.Fragment>
         {this.props.result["new_samples"] && (
           <React.Fragment>
-            {this.props.result && (
+            {this.props.result["new_samples"].length < 1 && (
               <div className="alert alert-success" role="alert">
-                Save Successful.  Here are your new IDs for reference: <br/><br/>
-                <b>HubMAP ID:</b>&nbsp;{this.props.result.entity.hubmap_id}<br/>
-                <b>Submission ID:</b>&nbsp;{this.props.result.entity.submission_id}
-               
+                Save Successful
               </div>
             )}
-            {this.props.result["new_samples"].length > 1 && (
-              <div className="alert alert-success" role="alert">
-                {this.props.result["new_samples"].length} sample ids were
-                generated:{" "}
+            {/*this.props.result["new_samples"].length > 1 && (
+              <div className="alert alert-info" role="alert">
+              You have generated multiples samples:{" "}
                 <b>
                   {this.props.result["new_samples"][0]["submission_id"]}
                 </b>{" "}
@@ -78,51 +58,26 @@ class Result extends Component {
                   }
                 </b>
               </div>
-            )}
+            )*/}
             <div>
-            
-              <div className="row mb-2">
-                <div className="col-sm-4 offset-sm-4 lab-id-modal">
+                <div className="row">
+               
+                 
                   {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
-                   (["LK", "RK", "HT", "SP", "LI"].includes(this.props.result["entity"].organ)) && (
-                      <React.Fragment>
-                        <button
-                          className="btn btn-primary  btn-block"
-                          onClick={this.enterLabIDs}
-                        >
-                          Assign Lab IDs and Sample Locations
+                    //this.state.LabIDsModalShow &&
+                    (
 
-                      </button>
-                        <LabIDsModal
-                          show={this.state.LabIDsModalShow}
-                          hide={this.hideLabIDsModal}
+                      <React.Fragment>
+
+                        <MultipleListModal
                           ids={this.props.result["new_samples"]}
-                          submit={this.handleSubmit}
-                          metadata={this.props.result["entity"]}
+                          //submit={this.handleSubmit}
+                          handleCancel={this.props.handleReturnClick}
                         />
+
                       </React.Fragment>
                     )
                   }
-                  {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
-                   (!["LK", "RK", "HT", "SP", "LI"].includes(this.props.result["entity"].organ)) && (
-                      <React.Fragment>
-                        <button
-                          className="btn btn-primary  btn-block"
-                          onClick={this.enterLabIDs}
-                        >
-                          Assign Lab IDs
-
-                      </button>
-
-                        <LabIDsModal
-                          show={this.state.LabIDsModalShow}
-                          hide={this.hideLabIDsModal}
-                          ids={this.props.result["new_samples"]}
-                          submit={this.handleSubmit}
-                          metadata={this.props.result["entity"]}
-                        />
-                      </React.Fragment>
-                    )}
                   {this.props.result.entity.entity_type === "Donor" && (
                     <button
                       className="btn btn-success btn-block"
@@ -149,13 +104,14 @@ class Result extends Component {
                         Register tissue samples from this organ
                       </button>
                     )}
-                </div>
+               
               </div>
             </div>
+
             <div className="row">
-              <div className="col-sm-4 offset-sm-4">
+              <div className="col-sm-7 offset-sm-3 mt-4">
                 <button
-                  className="btn btn-link  btn-block"
+                  className="btn btn-secondary btn-block"
                   type="button"
                   onClick={this.handleReturnClick}
                 >
@@ -163,6 +119,7 @@ class Result extends Component {
                 </button>
               </div>
             </div>
+
           </React.Fragment>
         )}
       </React.Fragment>
