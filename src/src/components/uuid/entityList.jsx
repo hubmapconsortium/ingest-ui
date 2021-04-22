@@ -525,7 +525,7 @@ renderTable() {
                     
                       <TableCell align="left" className="nowrap">
                         
-                          <button
+                        <button
                             className="btn btn-link portal-links portal-jss298"
                             onClick={() =>
                               this.editForm(entity, display_id, es)
