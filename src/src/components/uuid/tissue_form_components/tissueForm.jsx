@@ -5,7 +5,7 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Snackbar from '@material-ui/core/Snackbar';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
+//import SnackbarContent from '@material-ui/core/SnackbarContent';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import axios from "axios";
@@ -34,7 +34,7 @@ import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
-import LabIDsModal from "../labIdsModal";
+//import LabIDsModa7l from "../labIdsModal";
 import RUIModal from "./ruiModal";
 import RUIIntegration from "./ruiIntegration";
 import { entity_api_get_entity, 
@@ -50,7 +50,6 @@ class TissueForm extends Component {
   state = {
     lab: "",
     lab_tissue_id: "",
-    isDirty: false,
     back_btn_hide: false,
     param_uuid: "",
     protocol_url: "",
@@ -1120,7 +1119,7 @@ handleAddImage = () => {
                       isDirty: false });
 
                     //console.debug('handleSubmit - related count', this.state.related_group_ids.length)
-                    if (this.state.related_group_ids.length == 1) {  // if we have multiples just stay on the page
+                    if (this.state.related_group_ids.length === 1) {  // if we have multiples just stay on the page
                       
                       this.props.onUpdated(response.results);
                     } 

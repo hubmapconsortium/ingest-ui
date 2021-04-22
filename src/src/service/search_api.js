@@ -1,6 +1,7 @@
 // Search APIs
 
 import axios from "axios";
+import { GROUPS } from "./groups";
 export const esb = require('elastic-builder');
 
 
@@ -19,7 +20,7 @@ export function api_search(params, auth) {
     };
 
     //console.debug(options)
-  let payload = search_api_filter_es_query_builder(params);
+  let payload = search_api_filter_es_query_builder(params, 0, 100);
 
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
@@ -46,11 +47,46 @@ export function api_search(params, auth) {
       });
 };
 
+export function api_search2(params, auth, from, size) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+    console.debug(options)
+  let payload = search_api_filter_es_query_builder(params, from , size);
+
+  return axios 
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
+              payload, options
+      )
+      .then(res => {
+       
+          let hits = res.data.hits.hits;
+      
+          let entities = [];
+          hits.forEach(s => {
+            let data = s['_source']
+            data['id'] = s['_source']['hubmap_id']
+            entities.push(data);
+            
+          });
+           console.debug(entities);
+        return {status: res.status, results: entities, total: res.data.hits.total.value}
+      })
+      .catch(err => {
+         return {status: 500, results: err.response}
+      });
+};
+
 /*
  * Elasticsearch query builder helper
  *
  */
-export function search_api_filter_es_query_builder(fields) {
+export function search_api_filter_es_query_builder(fields, from, size) {
 
   let requestBody =  esb.requestBodySearch();
  //console.debug("here in the filter es builder")
@@ -66,6 +102,8 @@ export function search_api_filter_es_query_builder(fields) {
     // was a group name selected
     if (fields["group_name"]) {
       boolQuery.must(esb.matchQuery("group_name.keyword", fields["group_name"]));
+    } else if (fields["group_uuid"]) {
+      boolQuery.must(esb.matchQuery("group_uuid.keyword", fields["group_uuid"]));
     } 
 
     // was specimen types selected
@@ -91,11 +129,11 @@ export function search_api_filter_es_query_builder(fields) {
     if (fields["search_term"]) {
       //let scrubbed = fixKeywordText(fields["search_term"]);
       boolQuery.filter(esb.multiMatchQuery(['description.keyword', 'hubmap_display_id.keyword', 'display_doi.keyword', 
-          'lab_donor_id.keyword', 'created_by_user_displayname', 'created_by_user_email', 'title.keyword'], fields["search_term"]));
+          'lab_donor_id.keyword', 'lab_tissue_sample_id.keyword', 'created_by_user_displayname', 'created_by_user_email'], fields["search_term"]));
     }
   
   }
-  requestBody.query(boolQuery).size(250).sort(esb.sort('last_modified_timestamp', 'desc'));
+  requestBody.query(boolQuery).from(from).size(size).sort(esb.sort('last_modified_timestamp', 'desc'));
   //requestBody.query(boolQuery).size(100);
 
   //console.debug(requestBody.toJSON());
@@ -106,5 +144,28 @@ export function fixKeywordText(text) {
   let x = text.replace(/-/gi, "\\-");
   //console.debug('scrubbed', x)
 return x
+}
 
+// this is a shell function that reads from a static file groups.jsx
+export function search_api_search_group_list() {
+  let groups = [];
+
+  GROUPS.forEach(function(group) { 
+    if (group.data_provider) {  // only show the data_providers
+      groups.push(group);
+    }
+  });
+
+  groups.sort((a, b) => {
+    if (a.tmc_prefix < b.tmc_prefix) {
+      return -1;
+    }
+    if (a.tmc_prefix  > b.tmc_prefix) {
+      return 1;
+    }
+    // must be equal
+    return 0;
+  });
+
+  return groups;
 }

@@ -197,7 +197,7 @@ class App extends Component {
           {this.state.isAuthenticated && (
             <div className="float-right">
               <span className="username">
-                <Typography variant="button" class="username-menu">
+                <Typography variant="button" className="username-menu">
                   {this.state.email}{" "}
                 </Typography>
                 <Button
@@ -281,6 +281,7 @@ class App extends Component {
               </div>
             </div>
           )}
+        {/* THIS CAN MOVE TO ROUTES.JS */}
           <Router>
             <Switch>
               <Route path="/" exact component={Main} />
@@ -288,6 +289,7 @@ class App extends Component {
               <Route path="/datasets" exact component={IngestEntrance} />
             </Switch>
           </Router>
+        
 
           {/* {this.state.system === "uuid" && 
               <UUIDEntrance  />}

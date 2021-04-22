@@ -24,6 +24,7 @@ class Forms extends Component {
     this.setState({
       formType: this.props.formType
     });
+    console.debug('FORMS', this.props.formType);
   }
 
   onCreateNext = e => {
