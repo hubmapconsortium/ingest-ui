@@ -20,15 +20,15 @@ export default class Routes extends Component {
                     <Route path="/Donor" component={DonorForm} />
                     <Route path="/Sample" component={TissueForm} />
                     <Route path="/Datasets" component={DataList} />
-                    <Route path="/Dataset" component={DatasetEdit} /> */}  
-                    <Route path="/" component={SearchComponent} />
+                    <Route path="/Dataset" component={DatasetEdit} /> 
+                    <Route path="/" component={SearchComponent} />*/}  
                     <Route path="/sample/:uuid" component={TissueForm} />
                     <Route path="/collections/:uuid" component={Collection} />
                     <Route path="/collections" component={Collections} />
                     <Route path="/err-response" component={ErrorPage} />
                     <Route path="/search" component={SearchComponent} />
-                    <Route path="/donors-samples" exact component={UUIDEntrance} />
-                    <Route path="/datasets" exact component={IngestEntrance} />
+                   {/*} <Route path="/donors-samples" exact component={UUIDEntrance} />
+                    <Route path="/datasets" exact component={IngestEntrance} />*/}
                 </Switch>
             </Router>
         )

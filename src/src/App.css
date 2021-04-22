@@ -53,10 +53,10 @@
 
 .mymodal {
   position: fixed;
-  top: 0;
+  top: 10;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 80%;
   background: rgb(244, 244, 244, 0.8);
   z-index: 10;
 }
@@ -84,8 +84,9 @@
   background: #E6E6E6;
   width: 85%;
 
-  height: auto;
+  height: 80%;
   top: 50%;
+  bottom: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   overflow:visible;

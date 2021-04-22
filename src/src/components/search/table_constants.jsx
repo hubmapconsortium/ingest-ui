@@ -20,25 +20,25 @@ export const COLUMN_DEF_DONOR = [
 
 // SAMPLE COLUMNS
 export const COLUMN_DEF_SAMPLE = [
-  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 160 },
+  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 165 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 150 },
-  	{ field: 'group_name', headerName: 'Group Name', width: 250},
   	{
 	    field: "computed_lab_id_type",
 	    headerName: "Lab ID",
 	    //description: "This column has a value getter and is not sortable.",
 	    sortable: false,
-	    width: 167,
+	    width: 173,
 	    valueGetter: getLabId
-  	},
-	{
-	    field: "computed_submission_type",
-	    headerName: "Type",
-	    //description: "This column has a value getter and is not sortable.",
-	    sortable: false,
-	    width: 190,
-	    valueGetter: getSampleType
-  	},   
+  	}, { field: 'display_subtype', headerName: 'Type', width: 200},
+	// {
+	//     field: "computed_submission_type",
+	//     headerName: "Type",
+	//     //description: "This column has a value getter and is not sortable.",
+	//     sortable: false,
+	//     width: 190,
+	//     valueGetter: getSampleType
+ //  	},   
+    { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
   	{ field: 'lab_donor_id', headerName: 'LABID', hide: true},

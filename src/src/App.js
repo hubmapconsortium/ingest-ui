@@ -4,8 +4,8 @@ import './App.css';
 import Routes from './Routes';
 import Login from './components/uuid/login';
 import Main from './components/Main';
-// import UUIDEntrance from './components/uuid/uuid_entrance';
-// import IngestEntrance from './components/ingest/ingest_entrance';
+import UUIDEntrance from './components/uuid/uuid_entrance';
+import IngestEntrance from './components/ingest/ingest_entrance';
 //import CollectionsEntrance from './Collections/collections_entrance';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -281,14 +281,15 @@ class App extends Component {
               </div>
             </div>
           )}
-          {/*<Router>
+        {/* THIS CAN MOVE TO ROUTES.JS */}
+          <Router>
             <Switch>
               <Route path="/" exact component={Main} />
               <Route path="/donors-samples" exact component={UUIDEntrance} />
               <Route path="/datasets" exact component={IngestEntrance} />
             </Switch>
           </Router>
-        */}
+        
 
           {/* {this.state.system === "uuid" && 
               <UUIDEntrance  />}

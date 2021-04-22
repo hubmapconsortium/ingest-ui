@@ -2,8 +2,12 @@ import React, { Component } from "react";
 import { DataGrid, GridToolbar} from '@material-ui/data-grid';
 import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
-//import Modal from "../modal";
+import Forms from "../uuid/forms";
+import Modal from "../uuid/modal";
 
+import DonorForm from "../uuid/donor_form_components/donorForm";
+import TissueForm from "../uuid/tissue_form_components/tissueForm";
+import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES, GROUPS } from "../../constants";
 import { flattenSampleType } from "../../utils/constants_helper";
 
@@ -11,7 +15,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET } from './table_constants';
-import axios from "axios";
+
+import { entity_api_get_entity } from '../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
 
 
 class SearchComponent extends Component {
@@ -23,9 +29,15 @@ class SearchComponent extends Component {
     column_def: COLUMN_DEF_DONOR,
     keywords: "",
     show_info_panel: true,
+    show_search: true,
     results_total: 0,
     page: 0,
-    pageSize: 25
+    pageSize: 25,
+    editForm: false,
+    show_modal: false,
+    hide_modal: true, 
+    updateSuccess: false,
+    globus_url: ""
   };
 
   constructor(props) {
@@ -108,13 +120,66 @@ class SearchComponent extends Component {
     // }
   }
 
-  handleTableCellClick = (params) => {
-    console.debug('CELL CLICK: entity', params.row.entity_type)
-    console.debug('CELL CLICK: uuid', params.row.uuid)
+ cancelEdit = () => {
+    this.setState({ editingEntity: null, 
+      show_modal: false,  
+      show_search: true
+    });
+    //this.filterEntity();
+    //this.props.onCancel();
+  };
 
+  onUpdated = data => {
+    //this.filterEntity();
+    this.setState({
+      updateSuccess: true,
+      editingEntity: null,
+      show_search: true,
+    });
+    setTimeout(() => {
+      this.setState({ updateSuccess: null });
+    }, 5000);
+    //this.props.onCancel();
+  };
+
+  handleTableCellClick = (params) => {
+
+    //onsole.debug('handleTableCellClick', params)
+    //if(params.field !== 'hubmap_id') {
+      if (params.row) {
+    // console.debug('CELL CLICK: entity', params.row.entity_type);
+    // console.debug('CELL CLICK: uuid', params.row.uuid);
+
+    entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    .then((response) => {
+      if (response.status === 200) {
+        let entity_data = response.results;
+
+        // check to see if user can edit
+        ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          .then((resp) => {
+            console.debug('ingest_api_allowable_edit_states done', resp)
+          if (resp.status === 200) {
+            let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+            this.setState({
+              updateSuccess: null,
+              editingEntity: entity_data,
+              //editingDisplayId: display_id,
+              readOnly: read_only_state,   // used for hidding UI components
+              editForm: true,
+              show_modal: true,
+              show_search: false,
+              });
+        //this.props.onEdit();
+
+          }
+        });
+      }
+    });
+    }
   }
 
-   handleClearFilter = () => {
+  handleClearFilter = () => {
 
     this.setState(
       {
@@ -127,22 +192,77 @@ class SearchComponent extends Component {
     this.keywords.current.value = "";
   };
 
+ onChangeGlobusLink(newLink, newDataset) {
+    const {name, display_doi, doi} = newDataset;
+    this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
+  }
+
+
+  /**
+    RENDER SECTION BELOW - All UI Components
+  **/
+
   render() {
     return (
         <div style={{ width: '100%' }}>
-          {this.state.show_info_panel && (
+          {this.state.show_search && this.state.show_info_panel && (
             this.renderInfoPanel())}
-          {this.renderFilterControls()}
+          {this.state.show_search && (
+            this.renderFilterControls()
+            )}
 
-          {this.state.datarows &&
+          {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
           {this.renderLoadingSpinner()}
+          {this.renderEditForm()}
 
         </div>
       );
 
+  }
+
+
+  renderEditForm() {
+    if (this.state.editingEntity) {
+      const dataType = this.state.editingEntity.entity_type;
+      if (dataType === "Donor") {
+        return (
+          <DonorForm
+            //displayId={this.state.editingDisplayId}
+            editingEntity={this.state.editingEntity}
+            readOnly={this.state.readOnly}
+            handleCancel={this.cancelEdit}
+            onUpdated={this.onUpdated}
+          />
+        );
+      } else if (dataType === "Sample") {
+        return (
+          <TissueForm
+            displayId={this.state.editingDisplayId}
+            editingEntity={this.state.editingEntity}
+            editingEntities={this.state.editingEntities}
+            readOnly={this.state.readOnly}
+            handleCancel={this.cancelEdit}
+            onUpdated={this.onUpdated}
+            handleDirty={this.handleDirty}
+          />
+        );
+      } else if (dataType === "Dataset") {
+          return (
+            <DatasetEdit
+              handleCancel={this.cancelEdit}
+              editingDataset={this.state.editingEntity}
+              onUpdated={this.onUpdated}
+              //onCreated={this.handleDatasetCreated}
+              changeLink={this.onChangeGlobusLink.bind(this)}
+            />
+          );
+      } else {
+        return <div />;
+      }
+    }
   }
 
   renderInfoPanel() {
@@ -153,9 +273,9 @@ class SearchComponent extends Component {
               The HuBMAP Data Ingest Portal is the central resource for registering, 
               managing and ingesting data generated by the consortium. A standardized 
               data curation and processing workflow ensure that only high quality is released.
-              Use the search to locate the Donor, Sample or Dataset
+              <br/><br/> Use the filter to search for Donors, Samples or Datasets. If you know a specific ID you can enter
+              it into the keyword field to locate individual entities.
         </span>
-        
         </div>
         );
   }
@@ -174,16 +294,39 @@ class SearchComponent extends Component {
   return (
       <Paper className="paper-container">
       <div style={{ height: 700, width: '100%' }}>
-        <DataGrid rows={this.state.datarows} columns={this.state.column_def} 
+        <DataGrid rows={this.state.datarows}
+              columns={this.state.column_def}
+              //columns={this.state.column_def.map((column) => ({
+              //    ...column,
+              //    disableClickEventBubbling: true
+              //}))}
               pageSize={this.state.pageSize} 
               pagination
+              hideFooterSelectedRowCount
               rowCount={this.state.results_total}
               paginationMode="server"
               onPageChange={this.handlePageChange}
               loading={this.state.loading}
-              components={{
-                Toolbar: GridToolbar,
-              }}
+              //checkboxSelection
+              //components={{
+              //  Toolbar: GridToolbar,
+              //}}
+              /*onSelectionModelChange={(selection) => {
+    
+                  const newSelectionModel = selection.selectionModel;
+                  if (newSelectionModel.length > 1) {
+                    const selectionSet = new Set(this.state.selectionModel);
+                    const result = newSelectionModel.filter(
+                      (s) => !selectionSet.has(s)
+                     );
+                    console.log('length>1', result)
+                   this.handleTableSelection(result);
+                } else {
+                  console.log('length < 1',newSelectionModel )
+                    this.handleTableSelection(newSelectionModel);
+                }
+              }}*/
+              //selectionModel={this.state.selectionModel}
               onCellClick={this.handleTableCellClick}
         />
       </div>
