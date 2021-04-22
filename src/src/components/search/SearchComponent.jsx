@@ -146,7 +146,9 @@ class SearchComponent extends Component {
 
     //onsole.debug('handleTableCellClick', params)
     //if(params.field !== 'hubmap_id') {
-      if (params.row) {
+    if(params.field === 'uuid') return; // skip this field
+
+    if (params.row) {
     // console.debug('CELL CLICK: entity', params.row.entity_type);
     // console.debug('CELL CLICK: uuid', params.row.uuid);
 

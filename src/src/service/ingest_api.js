@@ -20,13 +20,13 @@ export function ingest_api_users_groups(auth) {
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
  .then(res => {
-  //console.debug(res.data)
+  ////console.debug(res.data)
   const group_list = res.data.groups
           .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
           .map(g => {
             return g;
           });
-    //console.debug(group_list);
+    ////console.debug(group_list);
     return {status: res.status, results: group_list}
  })
  .catch(err => {
@@ -54,7 +54,7 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
   return axios 
     .get(url,options)
       .then(res => {
-        //console.debug(res);
+        ////console.debug(res);
           //let results = res.data.has_write;
       
         return {status: res.status, results: res.data}
@@ -82,7 +82,7 @@ export function ingest_api_create_dataset(data, auth) {
   return axios 
      .post(url, data, options)
       .then(res => {
-        console.debug(res);
+        //console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -110,7 +110,7 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-        console.debug(res);
+        //console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -138,7 +138,7 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-        console.debug(res);
+        //console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -160,13 +160,13 @@ export function ingest_api_get_associated_ids(uuid, auth) {
       }
     };
 
-    console.debug("ASSOC UUID", uuid)
+    //console.debug("ASSOC UUID", uuid)
    return axios
         .get(
           `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}/ingest-group-ids`, options)
         .then(res => {
           if (res.data.ingest_group_ids.length > 1) {
-            console.debug("pre siblingid_list", res.data.ingest_group_ids);
+            //console.debug("pre siblingid_list", res.data.ingest_group_ids);
             // res.data.ingest_group_ids.push({
             //   hubmap_identifier: this.props.editingEntity.hubmap_id,
             //   uuid: this.props.editingEntity.uuid,
@@ -210,4 +210,26 @@ export function ingest_api_get_associated_ids(uuid, auth) {
         .catch(err => {
           return {status: 500, results: err.response}
         });
+}
+
+export function ingest_api_get_globus_url(uuid, auth) {
+  const config = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    return axios
+      .get(
+        `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${uuid}`,
+        config
+      )
+      .then((res) => {
+        return {status: 200, results: res.data}
+      })
+      .catch((err) => {
+        return {status: 500, results: err.response}
+      });
 }

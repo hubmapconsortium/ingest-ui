@@ -1,16 +1,18 @@
-import * as React from 'react';
-import Button from '@material-ui/core/Button';
+import React from "react";
 import ReactTooltip from "react-tooltip";
 import { flattenSampleType } from "../../utils/constants_helper";
 import { SAMPLE_TYPES } from "../../constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 
+import { ingest_api_get_globus_url } from '../../service/ingest_api';
+
+
 // table column definitions
 
 // DONOR COLUMNS
 export const COLUMN_DEF_DONOR = [
-  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 160 },
+  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 145 },
   	{ field: 'lab_name', headerName: 'Deidentified Name', width: 190 },
   	{ field: 'group_name', headerName: 'Group Name', width: 250},
@@ -20,7 +22,7 @@ export const COLUMN_DEF_DONOR = [
 
 // SAMPLE COLUMNS
 export const COLUMN_DEF_SAMPLE = [
-  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 165 },
+  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 150 },
   	{
 	    field: "computed_lab_id_type",
@@ -49,7 +51,7 @@ export const COLUMN_DEF_SAMPLE = [
 
 // DATASET COLUMNS
 export const COLUMN_DEF_DATASET = [
-  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 160 },
+  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'title', headerName: 'Dataset Name', width: 250,
   		renderCell:(params: ValueFormatterParams) => (
   			 <React.Fragment>
@@ -80,37 +82,36 @@ export const COLUMN_DEF_DATASET = [
               className='btn btn-link'
               onClick={() => handleDataClick(params.value)}>
             	<FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
-            </button>                         
-              <ReactTooltip
-                  id='folder_tooltip'
-                  //place='top'
-                  type='info'
-                  effect='solid'
-              >
-                <p>Click here to direct you to the data repository storage location</p>
-              </ReactTooltip>
-              </React.Fragment>
-              )
+      </button>                         
+      </React.Fragment>
+    )
 	}
  ];
 
 
 // Computed column functions
 
-function getSampleType(params: ValueGetterParams) {
+// function getSampleType(params: ValueGetterParams) {
 
-	if (params.getValue('entity_type') === 'Sample') {
-		return flattenSampleType(SAMPLE_TYPES)[params.getValue("specimen_type")];
-	}
-  return params.getValue('entity_type');
-}
+// 	if (params.getValue('entity_type') === 'Sample') {
+// 		return flattenSampleType(SAMPLE_TYPES)[params.getValue("specimen_type")];
+// 	}
+//   return params.getValue('entity_type');
+// }
 
 function getLabId(params: ValueGetterParams) {
 	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
 }
 
 function handleDataClick(dataset_uuid) {
-	alert(dataset_uuid)
+
+  ingest_api_get_globus_url(dataset_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          .then((resp) => {
+            console.debug('ingest_api_get_globus_url', resp)
+          if (resp.status === 200) {
+             window.open(resp.results, "_blank");
+          }
+  });
 }
 
 function getPublishStatusColor(status) {
