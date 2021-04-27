@@ -6,7 +6,7 @@ import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
-import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
+//import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 import { truncateString } from "../../utils/string_helper";
@@ -21,6 +21,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
+import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_create_entity, entity_api_update_entity } from '../../service/entity_api';
 
@@ -499,25 +500,36 @@ class DatasetEdit extends Component {
   };
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
-  handleSelectClick = (ids) => {
+  handleSelectClick = (selection) => {
     // console.log('handleSelectClick', ids)
-    let id = this.getSourceAncestor(ids);
-    console.log('ive selected', ids)
+    //let id = this.getSourceAncestor(ids);
+    //console.log('Dataset selected', selection.row.uuid)
+    var slist = [];
+    slist.push({uuid: selection.row.uuid});
+    console.debug('SLIST', slist)
     this.setState(
       {
-        source_uuid: id, 
-        source_uuid_list: ids,
-        source_entity: ids[0].entity,  // save the entire entity to use for information
+        source_uuid: selection.row.hubmap_id, 
+        source_uuid_list: slist,
+        source_entity: selection.row,  // save the entire entity to use for information
         LookUpShow: false,
       }
-      // old code here: not sure why it needs to be revalidated esp user has selected from a valid list
-      // ,
-      // () => {
-      //   console.log('ive just been clicked', ids)
-      //   this.validateUUID();
-      // }
     );
   };
+
+  // handleSelectClick = (ids) => {
+  //   // console.log('handleSelectClick', ids)
+  //   let id = this.getSourceAncestor(ids);
+  //   console.log('ive selected', ids)
+  //   this.setState(
+  //     {
+  //       source_uuid: id, 
+  //       source_uuid_list: ids,
+  //       source_entity: ids[0].entity,  // save the entire entity to use for information
+  //       LookUpShow: false,
+  //     }
+  //   );
+  // };
 
   getUuidList = (new_uuid_list) => {
     //this.setState({uuid_list: new_uuid_list});
@@ -750,7 +762,7 @@ class DatasetEdit extends Component {
                 JSON.parse(localStorage.getItem("info")).nexus_token
             },
           };
-          console.log('submit', this.props.c)
+         
           if (this.props.editingDataset) {
             // if user selected Publish
             if (i === "published") {
@@ -1709,14 +1721,21 @@ class DatasetEdit extends Component {
                       />
                     </button>
                   </div>
-                  <IDSearchModal
+                  {/*<IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                     parent='dataset'
                     parentCallback={this.getUuidList}
                     currentSourceIds={this.state.source_uuid_list}
-                  />
+                  />*/}
+                   <Modal show={this.state.LookUpShow} handleClose={this.hideLookUpModal} scrollable={true}>
+                    <SearchComponent
+                      select={this.handleSelectClick}
+                      custom_title="Search for a Source ID for your Dataset"
+                      filter_type="Dataset"
+                    />
+                   </Modal>
                 </React.Fragment>
               )}
               {!this.state.writeable && (

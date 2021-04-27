@@ -29,7 +29,9 @@ import { flattenSampleType } from "../../../utils/constants_helper";
 import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
 //import Protocol from "./protocol";
-import IDSearchModal from "./idSearchModal";
+import Modal from "../modal";
+import SearchComponent from "../../search/SearchComponent";
+//import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
@@ -1419,12 +1421,15 @@ handleAddImage = () => {
   };
 
   // Callback for the SOURCE for table selection 
-  handleSelectClick = ids => {
+  handleSelectClick = selection => {
     let ancestor_organ = ""
 
-    if (ids) {
+    console.debug('tissueForm Selection', selection);
+
+    if (selection) {
       // check to see if we have an "top-level" ancestor 
-      entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      //entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
               // ////console.debug('Entity ancestors...', response.results);
@@ -1433,16 +1438,16 @@ handleAddImage = () => {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
               }
           } else {
-              ancestor_organ = ids[0].entity.organ;  // use the direct ancestor
+              ancestor_organ = selection.row.organ;  // use the direct ancestor
           }
           this.setState({
-            source_uuid: ids[0].hubmap_id,
-            source_entity: ids[0].entity,
-            source_uuid_list: ids[0].source_uuid,   // just add the single for now
-            source_entity_type: ids[0].entity.entity_type,
+            source_uuid: selection.row.hubmap_id,
+            source_entity: selection.row,
+            source_uuid_list: selection.row.uuid,   // just add the single for now
+            source_entity_type: selection.row.entity_type,
             organ: ancestor_organ,
             ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
-            sex: this.getGender(ids[0].entity),
+            sex: this.getGender(selection.row),
             LookUpShow: false
           });
         });
@@ -1630,12 +1635,21 @@ handleAddImage = () => {
                     >
                       {this.state.validatingUUID ? "..." : "Validate"}
                     </button>
-                  </div> */}
+                  </div> 
                   <IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                   />
+                  */}
+                   <Modal show={this.state.LookUpShow} handleClose={this.hideLookUpModal} scrollable={true}>
+                    <SearchComponent
+                      select={this.handleSelectClick}
+                      custom_title="Search for a Source ID for your Sample"
+                      filter_type="Sample"
+                    />
+                   </Modal>
+
                 </React.Fragment>
               )}
               {this.props.readOnly && (
