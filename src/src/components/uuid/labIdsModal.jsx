@@ -322,14 +322,14 @@ class LabIDsModal extends Component {
         handleClose={this.props.hide}
         organ={this.props.show &&
           this.props.ids &&
-          (["LK", "RK", "HT", "SP"].includes(this.props.metadata.organ) ? true : false)}
+          (["LK", "RK", "HT", "SP"].includes(this.state.metadata.organ) ? true : false)}
       >
         <div className='row'>
           <div className='col-sm-12'>
             <div className='card text-center'>
               <div className='card-body scrollbar-div'>
                 {this.props.show === true &&
-                  (["LK", "RK", "HT", "SP"].includes(this.props.metadata.organ)) && (
+                  (["LK", "RK", "HT", "SP"].includes(this.state.metadata.organ)) && (
                     <React.Fragment>
                       <h5 className='card-title'>Assign Lab IDs and Sample Location</h5><br />
                       {this.props.ids && (
@@ -502,7 +502,7 @@ class LabIDsModal extends Component {
                     </React.Fragment>
                   )}
                 {this.props.show === true &&
-                  (!["LK", "RK", "HT", "SP"].includes(this.props.metadata.organ)) && (
+                  (!["LK", "RK", "HT", "SP"].includes(this.state.metadata.organ)) && (
                     <React.Fragment>
                       <h5 className='card-title'>Assign Lab IDs</h5>
                       <br />

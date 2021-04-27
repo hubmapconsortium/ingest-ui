@@ -5,6 +5,7 @@ import Collection from "./Collections/Collection";
 import ErrorPage from './utils/error_page';
 import Home from "./Home/Home";
 import history from './history';
+import TissueForm from './components/uuid/tissue_form_components/tissueForm'
 
 export default class Routes extends Component {
     render() {
@@ -17,6 +18,7 @@ export default class Routes extends Component {
                     <Route path="/Sample" component={TissueForm} />
                     <Route path="/Datasets" component={DataList} />
                     <Route path="/Dataset" component={DatasetEdit} /> */}  
+                    <Route path="/sample/:uuid" component={TissueForm} />
                     <Route path="/collections/:uuid" component={Collection} />
                     <Route path="/collections" component={Collections} />
                     <Route path="/err-response" component={ErrorPage} />

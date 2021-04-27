@@ -13,9 +13,38 @@
   background-color: #f4f4f4;
 }
 
+#navMenu{
+  
+  display: flex; /* or inline-flex */
+  flex-flow: row nowrap; /* is default: columns along the main-axis (row) and no wrapping to next lines */
+  align-items: flex-end; /* bottom */
+}
+.navbar-brand{
+  display: inline-block;
+}
+#MenuLeft{
+  float: left;
+}
+#MenuRight{
+  float: right;
+}
+.menu-bar button{
+  color:#f2f2f2;
+  /*background-color: #9933cc;*/
+}
+.menu-bar a{
+  vertical-align: bottom;
+  display: inline-block;
+  color:#f2f2f2;
+}
+
 .username {
-  margin-right: 20px;
   color: white;
+}
+.username .username-menu {
+  line-height: 2.5;
+  text-transform:initial;
+  margin-right: 2px;
 }
 
 .inline-icon {
@@ -52,7 +81,7 @@
 .modal-main, .modal-organ {
   padding: 1em;
   position: fixed;
-  background: white;
+  background: #E6E6E6;
   width: 85%;
 
   height: auto;
@@ -381,12 +410,12 @@ caption {
 
 
 /* Hubmap Standard CSS for text */
-.table-fmt: {
+.table-fmt{
     minWidth: 650;
     width: "100%";
 }
 
-.table-hdr-fmt: {
+.table-hdr-fmt {
   font-size: 0.95rem;
     font-family: Inter Variable, Helvetica, Arial, sans-serif;
     font-weight: bold;
@@ -472,3 +501,42 @@ caption {
     text-decoration: none;
     color: rgb(55, 129, 209);
 }                      
+
+ul.no-bullets {
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  height: 200px;
+  width: 1045px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  margin: 0px 0px 0px 0px;
+  padding-left: 0px;
+}
+
+div.idlist {
+  padding-top: 0px;
+  width: 1045px;
+  height: 200px;
+  overflow: auto;
+}
+
+a.disabled {
+  font-weight: bold;
+  pointer-events: none;
+  cursor: default;
+}

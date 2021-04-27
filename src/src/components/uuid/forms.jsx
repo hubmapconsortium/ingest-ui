@@ -4,7 +4,7 @@ import TissueForm from "./tissue_form_components/tissueForm";
 import Result from "./result";
 
 class Forms extends Component {
-  state = { formType: "----", createSuccess: false };
+  state = { formType: "----", createSuccess: false, isDirty: false };
 
   handleFormTypeChange = e => {
     this.setState({
@@ -12,6 +12,13 @@ class Forms extends Component {
       createSuccess: false
     });
   };
+
+ handleDirty = (isDirty) => {
+    this.setState({
+      isDirty: isDirty
+    });
+    console.debug('Forms:isDirty', isDirty);
+  }
 
   UNSAFE_componentWillMount() {
     this.setState({

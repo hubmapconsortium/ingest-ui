@@ -24,7 +24,7 @@ class DataList extends Component {
 
     is_curator: false,
     datasets: [],
-    filtered_totals: 0,
+//    filtered_totals: 0,
     pages: [10, 25, 50],
     page: 0,
     setPage: 0,
@@ -187,13 +187,14 @@ handleChangePage = (event, newPage) => {
     .then((response) => {
 
       if (response.status == 200) {
-      console.log('Dataset Search results...');
-      console.log(response.results);
+      //console.log('Dataset Search results...');
+      //console.log(response.results);
       this.setState(
           {
           loading: false,
           datasets: response.results,
-          filtered_totals: Object.keys(response.results).length,
+//          filtered_totals: Object.keys(response.results).length,
+          page: 0
           }
         );
       }
@@ -265,7 +266,7 @@ handleChangePage = (event, newPage) => {
     .then((response) => {
       if (response.status === 200) {
         let entity_data = response.results;
-        console.log('editing',entity_data)
+        //console.log('editing',entity_data)
         this.props.viewEdit(entity_data);
       }
     });
@@ -424,10 +425,10 @@ handleChangePage = (event, newPage) => {
                   </TableHead>
                   <TableBody>      
                     { Object.values(this.state.datasets)
-                      .slice(this.state.page * this.state.rowsPerPage, this.state.page * this.state.rowsPerPage + this.state.rowsPerPage)
+                      .slice(this.state.page * this.state.rowsPerPage, (this.state.page * this.state.rowsPerPage)+this.state.rowsPerPage)
                       .map((ds) => {
                         const dataset = ds[0];
-                        console.log(dataset);
+                        //console.log(dataset);
                       const status = dataset.status
                         ? dataset.status.toUpperCase()
                         : "";
@@ -487,7 +488,7 @@ handleChangePage = (event, newPage) => {
                               {dataset.display_doi}
                             </button>
                            </TableCell>
-                          <TableCell align="left"><td><div style={{ wordBreak: "break-all", width: "15em"}}>{dataset.title}</div></td></TableCell>
+                          <TableCell align="left"><div style={{ wordBreak: "break-all", width: "15em"}}>{dataset.title}</div></TableCell>
                           <TableCell align="left">{dataset.group_name}</TableCell>
                           <TableCell align="left">
                             {dataset.data_access_level}
