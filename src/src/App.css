@@ -37,6 +37,9 @@
   display: inline-block;
   color:#f2f2f2;
 }
+.option-menu {
+  width: 20%;
+}
 
 .username {
   color: white;
@@ -622,4 +625,11 @@ a.disabled {
 
 .search-filter {
   background-color: white;
+}
+
+.portal-jss117 {
+    font-size: 0.80rem;
+    font-family: Inter Variable, Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    line-height: 1.66;
 }

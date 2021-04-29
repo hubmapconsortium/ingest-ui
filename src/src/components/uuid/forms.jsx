@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
+import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 
 class Forms extends Component {
@@ -71,6 +72,18 @@ class Forms extends Component {
           direct_ancestor={this.state.ancestor_entity}
         />
       );
+    } else if (this.state.formType === "dataset") {
+        return (
+         <DatasetEdit
+            //handleCancel={this.cancelEdit}
+            //editingDataset={this.state.editingDataset}
+            //onUpdated={this.handleDatasetUpdated}
+            //onCreated={this.handleDatasetCreated}
+            //changeLink={this.onChangeGlobusLink.bind(this)}
+          />
+        )
+
+
     } else {
       return null;
     }

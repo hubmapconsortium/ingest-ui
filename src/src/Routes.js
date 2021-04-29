@@ -9,6 +9,7 @@ import TissueForm from './components/uuid/tissue_form_components/tissueForm';
 import SearchComponent from './components/search/SearchComponent';
 import UUIDEntrance from './components/uuid/uuid_entrance';
 import IngestEntrance from './components/ingest/ingest_entrance';
+import DataList from './components/ingest/datalist';
 
 export default class Routes extends Component {
     render() {
@@ -20,8 +21,8 @@ export default class Routes extends Component {
                     <Route path="/Donor" component={DonorForm} />
                     <Route path="/Sample" component={TissueForm} />
                     <Route path="/Datasets" component={DataList} />
-                    <Route path="/Dataset" component={DatasetEdit} /> 
-                    <Route path="/" component={SearchComponent} />*/}  
+                    <Route path="/Dataset" component={DatasetEdit} /> */}
+                    <Route path="/" component={SearchComponent} /> 
                     <Route path="/sample/:uuid" component={TissueForm} />
                     <Route path="/collections/:uuid" component={Collection} />
                     <Route path="/collections" component={Collections} />

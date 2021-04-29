@@ -6,13 +6,15 @@ import Login from './components/uuid/login';
 import Main from './components/Main';
 import UUIDEntrance from './components/uuid/uuid_entrance';
 import IngestEntrance from './components/ingest/ingest_entrance';
+import Forms from "./components/uuid/forms";
 //import CollectionsEntrance from './Collections/collections_entrance';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faExclamationTriangle,
   faAddressCard,
-  faWindowClose
+  faWindowClose, 
+  faUpload
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Button,
@@ -27,8 +29,9 @@ import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
 import { Route, BrowserRouter as Router, Switch} from 'react-router-dom';
-import {ReactComponent as DONOR_IMAGE} from "./assets/img/donor.svg"
-import {ReactComponent as SAMPLE_IMAGE} from "./assets/img/sample.svg"
+import {ReactComponent as DONOR_IMAGE} from "./assets/img/donor.svg";
+import {ReactComponent as SAMPLE_IMAGE} from "./assets/img/sample.svg";
+import {ReactComponent as DATASET_IMAGE} from "./assets/img/dataset.svg";
 
 
 
@@ -36,7 +39,9 @@ import {ReactComponent as SAMPLE_IMAGE} from "./assets/img/sample.svg"
 class App extends Component {
   state = {
     anchorEl: null,
-    show_menu_popup: false
+    show_menu_popup: false,
+    creatingNewEntity: false,
+    formType: ""
   }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
@@ -146,17 +151,20 @@ class App extends Component {
     }
   }
 
-  handleLogout = e => {
-    localStorage.setItem("isAuthenticated", false);
-    localStorage.removeItem("info");
-  };
+handleLogout = e => {
+  localStorage.setItem("isAuthenticated", false);
+  localStorage.removeItem("info");
+};
 
 handleMenuSelection = (event) => {
 console.debug('HI', event.currentTarget.innerText)
+  var formtype = event.currentTarget.innerText;
 
   this.setState({
       anchorEl: null,
-      show_menu_popup: false
+      show_menu_popup: false,
+      creatingNewEntity: true,
+      formType: formtype.toLowerCase()
     })
   }
 
@@ -242,10 +250,12 @@ console.debug('HI', event.currentTarget.innerText)
                     keepMounted
                     open={Boolean(this.state.show_menu_popup)}
                     onClose={this.handleClose}
+                    className="option-menu"
                   >
-                    <MenuItem id="mi_donor" onClick={this.handleMenuSelection}>Donor</MenuItem>
-                    <MenuItem id="mi_sample" onClick={this.handleMenuSelection}>Sample</MenuItem>
-                    <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
+                    <MenuItem id="mi_donor" onClick={this.handleMenuSelection}><DONOR_IMAGE />{"  "}Donor</MenuItem>
+                    <MenuItem id="mi_sample" onClick={this.handleMenuSelection}><SAMPLE_IMAGE />{"  "}Sample</MenuItem>
+                    <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}><DATASET_IMAGE />{"  "}Dataset</MenuItem>
+                    <MenuItem id="mi_dataupload" onClick={this.handleMenuSelection}><DATASET_IMAGE />{"  "}Data Upload</MenuItem>
                   </Menu>
               
      
@@ -341,7 +351,7 @@ console.debug('HI', event.currentTarget.innerText)
               </div>
             </div>
           )}
-        {/* THIS CAN MOVE TO ROUTES.JS */}
+        {/* THIS CAN MOVE TO ROUTES.JS 
           <Router>
             <Switch>
               <Route path="/" exact component={Main} />
@@ -349,7 +359,7 @@ console.debug('HI', event.currentTarget.innerText)
               <Route path="/datasets" exact component={IngestEntrance} />
             </Switch>
           </Router>
-        
+        */}
 
           {/* {this.state.system === "uuid" && 
               <UUIDEntrance  />}
@@ -453,6 +463,11 @@ console.debug('HI', event.currentTarget.innerText)
 
         </div>
 
+          <div className="col-sm-12">
+            {this.state.isAuthenticated && this.state.creatingNewEntity && (
+              <Forms formType={this.state.formType} onCancel={this.onCancel} />
+            )}
+          </div>
       </div>
     );
   }
