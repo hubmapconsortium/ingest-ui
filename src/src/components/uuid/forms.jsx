@@ -3,9 +3,16 @@ import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@material-ui/core/Dialog';
 
 class Forms extends Component {
-  state = { formType: "----", createSuccess: false, isDirty: false };
+  state = { formType: "----",
+    createSuccess: false,
+    isDirty: false,
+    open:false
+
+  };
 
   handleFormTypeChange = e => {
     this.setState({
@@ -23,7 +30,8 @@ class Forms extends Component {
 
   UNSAFE_componentWillMount() {
     this.setState({
-      formType: this.props.formType
+      formType: this.props.formType,
+        open: true
     });
     console.debug('FORMS', this.props.formType);
   }
@@ -43,6 +51,11 @@ class Forms extends Component {
     });
   };
 
+
+  handleClose = () => {
+    console.debug('CLOSED');
+  }
+
   renderForm() {
     if (this.state.createSuccess) {
       return (
@@ -54,7 +67,7 @@ class Forms extends Component {
       );
     }
     if (this.state.formType === "donor") {
-      return (
+      return (       
         <DonorForm
           onCreated={this.onCreated}
           handleCancel={this.props.onCancel}
@@ -75,7 +88,7 @@ class Forms extends Component {
     } else if (this.state.formType === "dataset") {
         return (
          <DatasetEdit
-            //handleCancel={this.cancelEdit}
+            handleCancel={this.props.onCancel}
             //editingDataset={this.state.editingDataset}
             //onUpdated={this.handleDatasetUpdated}
             //onCreated={this.handleDatasetCreated}

@@ -1340,11 +1340,10 @@ class DatasetEdit extends Component {
           <div className="col-sm-12">
           <Divider />
           </div>
-          <div className='col-sm-3 offset-sm-2 text-center pads'>
-            <Divider />
+          <div className='col-md-12 text-right pads'>
             <button
               type='button'
-              className='btn btn-info btn-block'
+              className='btn btn-primary'
               disabled={this.state.submitting}
               onClick={() => this.handleButtonClick("new")}
               data-status='new'
@@ -1358,11 +1357,9 @@ class DatasetEdit extends Component {
               )}
               {!this.state.submitting && "Create"}
             </button>
-          </div>
-          <div className='col-sm-4 text-right pads'>
-            <button
+             <button
               type='button'
-              className='btn btn-secondary btn-block'
+              className='btn btn-link'
               onClick={() => this.props.handleCancel()}
             >
               Back To Search

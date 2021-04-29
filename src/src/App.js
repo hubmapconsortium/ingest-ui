@@ -22,26 +22,26 @@ import {
   IconButton,
   Typography,
   Menu,
-  MenuItem
+  MenuItem,
+  Divider,
+  Dialog
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
 import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import { Route, BrowserRouter as Router, Switch} from 'react-router-dom';
+import { Route, BrowserRouter as Router, Switch, Link} from 'react-router-dom';
 import {ReactComponent as DONOR_IMAGE} from "./assets/img/donor.svg";
 import {ReactComponent as SAMPLE_IMAGE} from "./assets/img/sample.svg";
 import {ReactComponent as DATASET_IMAGE} from "./assets/img/dataset.svg";
-
-
-
 
 class App extends Component {
   state = {
     anchorEl: null,
     show_menu_popup: false,
     creatingNewEntity: false,
-    formType: ""
+    formType: "",
+    open_edit_dialog: false
   }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
@@ -164,7 +164,8 @@ console.debug('HI', event.currentTarget.innerText)
       anchorEl: null,
       show_menu_popup: false,
       creatingNewEntity: true,
-      formType: formtype.toLowerCase()
+      formType: formtype.toLowerCase(),
+      open_edit_dialog: true
     })
   }
 
@@ -180,11 +181,12 @@ console.debug('HI', event.currentTarget.innerText)
   handleClose = () => {
     this.setState({
       anchorEl: null,
-      show_menu_popup: false
+      show_menu_popup: false,
+      open_edit_dialog: false
     })
   };
 
-  showDropDwon = () => {
+  showDropDwn = () => {
     this.setState(prevState => ({
       showDropDown: !prevState.showDropDown
     }));
@@ -252,10 +254,11 @@ console.debug('HI', event.currentTarget.innerText)
                     onClose={this.handleClose}
                     className="option-menu"
                   >
-                    <MenuItem id="mi_donor" onClick={this.handleMenuSelection}><DONOR_IMAGE />{"  "}Donor</MenuItem>
-                    <MenuItem id="mi_sample" onClick={this.handleMenuSelection}><SAMPLE_IMAGE />{"  "}Sample</MenuItem>
-                    <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}><DATASET_IMAGE />{"  "}Dataset</MenuItem>
-                    <MenuItem id="mi_dataupload" onClick={this.handleMenuSelection}><DATASET_IMAGE />{"  "}Data Upload</MenuItem>
+                    <MenuItem id="mi_donor" onClick={this.handleMenuSelection}>Donor</MenuItem>
+                    <MenuItem id="mi_sample" onClick={this.handleMenuSelection}>Sample</MenuItem>
+                    <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
+                    <Divider />
+                    <MenuItem id="mi_dataupload" onClick={this.handleMenuSelection}>Data Upload</MenuItem>
                   </Menu>
               
      
@@ -465,7 +468,9 @@ console.debug('HI', event.currentTarget.innerText)
 
           <div className="col-sm-12">
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              <Forms formType={this.state.formType} onCancel={this.onCancel} />
+              <Dialog fullWidth={true} maxWidth="xl" onClose={this.handleClose} aria-labelledby="edit-dialog" open={this.state.open_edit_dialog}>
+                <Forms formType={this.state.formType} onCancel={this.handleClose} />
+              </Dialog>
             )}
           </div>
       </div>
