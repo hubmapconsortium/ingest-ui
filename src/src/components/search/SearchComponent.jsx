@@ -328,7 +328,7 @@ renderInfoPanel() {
         <div>
         <span className="portal-jss116 text-center">
               ** To register new entities, use the NEW REGISTRATION menu above to select which type you wish to create.
-        </span> 
+        </span> <br /><br />
         </div>
         );
   }

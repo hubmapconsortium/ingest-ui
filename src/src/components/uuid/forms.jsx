@@ -5,13 +5,15 @@ import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
+import NewDatasetModal from "../ingest/newDatasetModal";
 
 class Forms extends Component {
   state = { formType: "----",
     createSuccess: false,
     isDirty: false,
-    open:false
-
+    open:false,
+    entity: null,
+    showDatasetResultsDialog: false
   };
 
   handleFormTypeChange = e => {
@@ -35,6 +37,13 @@ class Forms extends Component {
     });
     console.debug('FORMS', this.props.formType);
   }
+  onCreated = data => {
+    this.setState({
+      entity: data,
+      formType: "----",
+      createSuccess: true
+    });
+  };
 
   onCreateNext = e => {
     console.log('onCreateNext', e)
@@ -51,6 +60,11 @@ class Forms extends Component {
     });
   };
 
+  onChangeGlobusLink(newLink, newDataset) {
+    console.debug(newDataset)
+    const {name, display_doi, doi} = newDataset;
+    this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi, createSuccess: true});
+  }
 
   handleClose = () => {
     console.debug('CLOSED');
@@ -91,27 +105,34 @@ class Forms extends Component {
             handleCancel={this.props.onCancel}
             //editingDataset={this.state.editingDataset}
             //onUpdated={this.handleDatasetUpdated}
-            //onCreated={this.handleDatasetCreated}
-            //changeLink={this.onChangeGlobusLink.bind(this)}
+            onCreated={this.onCreated}
+            changeLink={this.onChangeGlobusLink.bind(this)}
           />
         )
-
-
     } else {
       return null;
     }
   }
 
-  onCreated = data => {
-    this.setState({
-      result: data,
-      formType: "----",
-      createSuccess: true
-    });
-  };
-
   render() {
-    return <div>{this.renderForm()}</div>;
+    return <div>
+      {this.renderForm()}
+      {this.state.showDatasetResultsDialog && ( // for results of a new Dataset
+          <NewDatasetModal
+            show={this.state.showDatasetResultsDialog}
+            //hide={this.hideNewDatasetModal}
+            //select={this.handleSelectClick}
+            parent="dataset"
+            globus_directory_url_path={this.state.globus_url}
+            entity={this.state.entity}
+            //name={this.state.editingDataset.description}
+            //display_doi={this.state.editingDataset.display_doi}
+            //doi={this.state.doi}
+            onDismiss={() => this.setState({ showDatasetResultsDialog: false, editingDataset: null })}
+         />
+         )}
+
+    </div>;
   }
 }
 

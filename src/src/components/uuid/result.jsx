@@ -39,8 +39,10 @@ class Result extends Component {
         {this.props.result["new_samples"] && (
           <React.Fragment>
             {this.props.result["new_samples"].length < 1 && (
-              <div className="alert alert-success" role="alert">
-                Save Successful
+                <div className="row">
+                  <div className="col-sm-12 text-center">            
+                  <h4>Save was Successful</h4>
+              </div>
               </div>
             )}
             {/*this.props.result["new_samples"].length > 1 && (
@@ -62,7 +64,7 @@ class Result extends Component {
             <div>
                 <div className="row">
                
-                 
+                  <div className="col-sm-12 mr-2 mb-2 text-center">
                   {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
                     //this.state.LabIDsModalShow &&
                     (
@@ -80,7 +82,7 @@ class Result extends Component {
                   }
                   {this.props.result.entity.entity_type === "Donor" && (
                     <button
-                      className="btn btn-success btn-block"
+                      className="btn btn-primary"
                       type="button"
                       onClick={() =>
                         this.props.onCreateNext(
@@ -93,7 +95,7 @@ class Result extends Component {
                   )}
                   { this.props.result.entity.specimen_type === "organ" && (
                       <button
-                        className="btn btn-success btn-block"
+                        className="btn btn-primary"
                         type="button"
                         onClick={() =>
                           this.props.onCreateNext(
@@ -104,19 +106,14 @@ class Result extends Component {
                         Register tissue samples from this organ
                       </button>
                     )}
-               
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-sm-7 offset-sm-3 mt-4">
-                <button
-                  className="btn btn-secondary btn-block"
-                  type="button"
-                  onClick={this.handleReturnClick}
-                >
-                  Return to Search
-                </button>
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={this.handleReturnClick}
+                  >
+                    Return to Search
+                  </button>
+                  </div>
               </div>
             </div>
 

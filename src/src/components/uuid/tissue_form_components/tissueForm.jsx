@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
@@ -68,6 +71,8 @@ class TissueForm extends Component {
     description: "",
     metadata: "",
     metadata_file: "",
+    LookUpShow: false,
+    lookUpCancelled: false,
     multiple_id: false,
     rui_check: false,
     rui_view: false,
@@ -1014,7 +1019,7 @@ handleAddImage = () => {
             submitting: true
           });
           let data = {
-            lab_tissue_sample_id: this.state.lab_tissue_id,
+  
             protocol_url: this.state.protocol_url,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
@@ -1028,13 +1033,15 @@ handleAddImage = () => {
             data["organ"] = this.state.organ;
           }
 
-          if ( this.state.rui_location && this.state.rui_location.length !== ""  
-                && this.state.sample_count < 1) {
-            data["rui_location"] = JSON.parse(this.state.rui_location);
-          }
-
-          // only add images/meta if use didn't check multiples
+          // only add these fields if user didn't check multiples
           if (this.state.sample_count < 1) {
+
+            data["lab_tissue_sample_id"] = this.state.lab_tissue_id;
+
+            if (this.state.rui_location && this.state.rui_location.length !== "") 
+            {
+              data["rui_location"] = JSON.parse(this.state.rui_location);
+            }
 
             ////console.debug('submit metadatas', this.state.metadatas);
             if (this.state.metadatas.length > 0 ) {
@@ -1403,14 +1410,29 @@ handleAddImage = () => {
   }
 
   handleLookUpClick = () => {
-    this.setState({
-      LookUpShow: true
-    });
+    //console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
+    if (this.state.source_uuid === undefined && !this.state.lookUpCancelled) {
+      this.setState({
+        LookUpShow: true
+      });
+    }
+     this.setState({
+        lookUpCancelled: false
+      });
   };
 
   hideLookUpModal = () => {
+    //console.debug('IM HERE TRYING TO HIDE THE DIALOG')
     this.setState({
       LookUpShow: false
+    });
+  };
+
+  cancelLookUpModal = () => {
+    //console.debug('IM HERE TRYING TO HIDE THE DIALOG')
+    this.setState({
+      LookUpShow: false,
+      lookUpCancelled: true
     });
   };
 
@@ -1424,7 +1446,7 @@ handleAddImage = () => {
   handleSelectClick = selection => {
     let ancestor_organ = ""
 
-    console.debug('tissueForm Selection', selection);
+    //console.debug('tissueForm Selection', selection);
 
     if (selection) {
       // check to see if we have an "top-level" ancestor 
@@ -1641,14 +1663,24 @@ handleAddImage = () => {
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                   />
-                  */}
+
                    <Modal show={this.state.LookUpShow} handleClose={this.hideLookUpModal} scrollable={true}>
+                  */}
+                  
+                    <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
+                     <DialogContent>
                     <SearchComponent
                       select={this.handleSelectClick}
                       custom_title="Search for a Source ID for your Sample"
                       filter_type="Sample"
                     />
-                   </Modal>
+                    </DialogContent>
+                     <DialogActions>
+                      <Button onClick={this.cancelLookUpModal} color="primary">
+                        Close
+                     </Button>
+                    </DialogActions>
+                   </Dialog>
 
                 </React.Fragment>
               )}
