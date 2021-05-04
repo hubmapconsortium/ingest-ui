@@ -1327,10 +1327,10 @@ class DatasetEdit extends Component {
                 <div className='col-sm-2 text-right'>
                   <button
                     type='button'
-                    className='btn btn-secondary'
+                    className='btn btn-link'
                     onClick={() => this.props.handleCancel()}
                   >
-                    Cancel
+                    Return to Search
                   </button>
                 </div>
               </div>
@@ -1341,10 +1341,10 @@ class DatasetEdit extends Component {
                 <div className='col-sm-2 offset-sm-10'>
                   <button
                     type='button'
-                    className='btn btn-secondary'
+                    className='btn btn-link'
                     onClick={() => this.props.handleCancel()}
                   >
-                    Cancel
+                    Return to Search
                   </button>
                 </div>
               </div>

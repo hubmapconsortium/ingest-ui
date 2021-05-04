@@ -17,8 +17,7 @@ import { api_search2, search_api_search_group_list } from '../../service/search_
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET } from './table_constants';
 
 import { entity_api_get_entity } from '../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
-
+import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
 
 class SearchComponent extends Component {
   state = {
@@ -49,21 +48,21 @@ class SearchComponent extends Component {
   }
 
   componentDidMount() { 
-    // not sure if this is proper way to do this, but this will help
-    // prevent that search component from rendering if user is not authorized
-    try {
-      var v = JSON.parse(localStorage.getItem("info")).nexus_token;
-      this.setState({
-        isAuthenticated: true
-      });
-    } catch { 
-      this.setState({
-        isAuthenticated: false
-      });
-    }
-      
-    
-     this.setFilterType();
+
+     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+
+      if (results.status === 200) { 
+        this.setState({
+          isAuthenticated: true
+        }, () => {
+           this.setFilterType();
+        });
+      } else if (results.status === 401) {
+          this.setState({
+            isAuthenticated: false
+          });
+        }
+    });
   }
   
   /*
