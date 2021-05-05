@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
@@ -29,7 +32,9 @@ import { flattenSampleType } from "../../../utils/constants_helper";
 import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
 //import Protocol from "./protocol";
-import IDSearchModal from "./idSearchModal";
+import Modal from "../modal";
+import SearchComponent from "../../search/SearchComponent";
+//import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
@@ -66,6 +71,8 @@ class TissueForm extends Component {
     description: "",
     metadata: "",
     metadata_file: "",
+    LookUpShow: false,
+    lookUpCancelled: false,
     multiple_id: false,
     rui_check: false,
     rui_view: false,
@@ -1012,7 +1019,7 @@ handleAddImage = () => {
             submitting: true
           });
           let data = {
-            lab_tissue_sample_id: this.state.lab_tissue_id,
+  
             protocol_url: this.state.protocol_url,
             specimen_type: this.state.specimen_type,
             specimen_type_other: this.state.specimen_type_other,
@@ -1026,13 +1033,15 @@ handleAddImage = () => {
             data["organ"] = this.state.organ;
           }
 
-          if ( this.state.rui_location && this.state.rui_location.length !== ""  
-                && this.state.sample_count < 1) {
-            data["rui_location"] = JSON.parse(this.state.rui_location);
-          }
-
-          // only add images/meta if use didn't check multiples
+          // only add these fields if user didn't check multiples
           if (this.state.sample_count < 1) {
+
+            data["lab_tissue_sample_id"] = this.state.lab_tissue_id;
+
+            if (this.state.rui_location && this.state.rui_location.length !== "") 
+            {
+              data["rui_location"] = JSON.parse(this.state.rui_location);
+            }
 
             ////console.debug('submit metadatas', this.state.metadatas);
             if (this.state.metadatas.length > 0 ) {
@@ -1142,7 +1151,7 @@ handleAddImage = () => {
                 data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
             }
             if (this.state.sample_count < 1) {
-                ////console.debug("Create a new Entity....", this.state.sample_count)
+                console.debug("Create a new Entity....", this.state.sample_count)
                 entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                     .then((response) => {
                       if (response.status === 200) {
@@ -1157,11 +1166,12 @@ handleAddImage = () => {
                       } 
                   });
                 } else if (this.state.sample_count > 0) {
-                  ////console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
+                    console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
                     // now generate some multiples
                     entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((resp) => {
                         if (resp.status === 200) {
+                          console.debug('MULTIPLES DATA', data)
                                  //this.props.onCreated({new_samples: resp.results, entity: response.results});
                           this.props.onCreated({new_samples: resp.results, entity: data});   // fro multiples send the 'starter' data used to create the multiples
                           this.setState({ submit_error: true, submitting: false});
@@ -1175,8 +1185,6 @@ handleAddImage = () => {
       }
     });
   };
-
-
 
   renderButtons() {
     if (this.state.editingEntity) {
@@ -1401,14 +1409,29 @@ handleAddImage = () => {
   }
 
   handleLookUpClick = () => {
-    this.setState({
-      LookUpShow: true
-    });
+    //console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
+    if (this.state.source_uuid === undefined && !this.state.lookUpCancelled) {
+      this.setState({
+        LookUpShow: true
+      });
+    }
+     this.setState({
+        lookUpCancelled: false
+      });
   };
 
   hideLookUpModal = () => {
+    //console.debug('IM HERE TRYING TO HIDE THE DIALOG')
     this.setState({
       LookUpShow: false
+    });
+  };
+
+  cancelLookUpModal = () => {
+    //console.debug('IM HERE TRYING TO HIDE THE DIALOG')
+    this.setState({
+      LookUpShow: false,
+      lookUpCancelled: true
     });
   };
 
@@ -1419,12 +1442,15 @@ handleAddImage = () => {
   };
 
   // Callback for the SOURCE for table selection 
-  handleSelectClick = ids => {
+  handleSelectClick = selection => {
     let ancestor_organ = ""
 
-    if (ids) {
+    //console.debug('tissueForm Selection', selection);
+
+    if (selection) {
       // check to see if we have an "top-level" ancestor 
-      entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      //entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
               // ////console.debug('Entity ancestors...', response.results);
@@ -1433,16 +1459,16 @@ handleAddImage = () => {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
               }
           } else {
-              ancestor_organ = ids[0].entity.organ;  // use the direct ancestor
+              ancestor_organ = selection.row.organ;  // use the direct ancestor
           }
           this.setState({
-            source_uuid: ids[0].hubmap_id,
-            source_entity: ids[0].entity,
-            source_uuid_list: ids[0].source_uuid,   // just add the single for now
-            source_entity_type: ids[0].entity.entity_type,
+            source_uuid: selection.row.hubmap_id,
+            source_entity: selection.row,
+            source_uuid_list: selection.row.uuid,   // just add the single for now
+            source_entity_type: selection.row.entity_type,
             organ: ancestor_organ,
             ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
-            sex: this.getGender(ids[0].entity),
+            sex: this.getGender(selection.row),
             LookUpShow: false
           });
         });
@@ -1630,12 +1656,31 @@ handleAddImage = () => {
                     >
                       {this.state.validatingUUID ? "..." : "Validate"}
                     </button>
-                  </div> */}
+                  </div> 
                   <IDSearchModal
                     show={this.state.LookUpShow}
                     hide={this.hideLookUpModal}
                     select={this.handleSelectClick}
                   />
+
+                   <Modal show={this.state.LookUpShow} handleClose={this.hideLookUpModal} scrollable={true}>
+                  */}
+                  
+                    <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
+                     <DialogContent>
+                    <SearchComponent
+                      select={this.handleSelectClick}
+                      custom_title="Search for a Source ID for your Sample"
+                      filter_type="Sample"
+                    />
+                    </DialogContent>
+                     <DialogActions>
+                      <Button onClick={this.cancelLookUpModal} color="primary">
+                        Close
+                     </Button>
+                    </DialogActions>
+                   </Dialog>
+
                 </React.Fragment>
               )}
               {this.props.readOnly && (
@@ -2124,12 +2169,14 @@ handleAddImage = () => {
           </button>
                   </div>
                   { this.state.rui_click && (
+                  <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organ={this.state.organ}
                       sex={this.state.source_entity.sex}
                       user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
                       parent="TissueForm" />
+                      </Dialog>
                   )}
 
                   { this.state.rui_check && (
@@ -2255,12 +2302,14 @@ handleAddImage = () => {
                         </div>
                     
                         { this.state.rui_click && (
+                          <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organ={this.state.source_entity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
                             parent="TissueForm" />
+                          </Dialog>
                         )}
                       </React.Fragment>
                     )}

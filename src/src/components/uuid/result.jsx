@@ -33,54 +33,37 @@ class Result extends Component {
   };
 
   render() {
-    //console.debug('Multiples RESULTS!!!!', this.props.result)
+    //console.debug('RESULTS!!!!', this.props.result)
     return (
       <React.Fragment>
-        {this.props.result["new_samples"] && (
-          <React.Fragment>
-            {this.props.result["new_samples"].length < 1 && (
-              <div className="alert alert-success" role="alert">
-                Save Successful
+              <div className="row">
+                <div className="col-sm-12 text-center">            
+                  <h4>Save was Successful</h4>
+                </div>
               </div>
-            )}
-            {/*this.props.result["new_samples"].length > 1 && (
-              <div className="alert alert-info" role="alert">
-              You have generated multiples samples:{" "}
-                <b>
-                  {this.props.result["new_samples"][0]["submission_id"]}
-                </b>{" "}
-                through{" "}
-                <b>
-                  {
-                    this.props.result["new_samples"][
-                    this.props.result["new_samples"].length - 1
-                    ]["submission_id"]
-                  }
-                </b>
-              </div>
-            )*/}
-            <div>
-                <div className="row">
-               
-                 
-                  {(this.props.result["new_samples"] && this.props.result["new_samples"].length > 1) &&
+              <div className="row">
+                {(this.props.result["new_samples"] 
+                      && this.props.result["new_samples"].length > 1) &&
                     //this.state.LabIDsModalShow &&
                     (
-
                       <React.Fragment>
-
+                      <div>
                         <MultipleListModal
                           ids={this.props.result["new_samples"]}
                           //submit={this.handleSubmit}
                           handleCancel={this.props.handleReturnClick}
                         />
-
+                        </div>
                       </React.Fragment>
                     )
                   }
-                  {this.props.result.entity.entity_type === "Donor" && (
+              </div>
+              <div className="row">
+                <div className="col-sm-12 mt-2 mr-2 mb-2 text-center">
+                  {this.props.result !== undefined  && 
+                    this.props.result.entity.entity_type === "Donor" && (
                     <button
-                      className="btn btn-success btn-block"
+                      className="btn btn-primary"
                       type="button"
                       onClick={() =>
                         this.props.onCreateNext(
@@ -91,9 +74,10 @@ class Result extends Component {
                       Register an organ from this donor
                     </button>
                   )}
-                  { this.props.result.entity.specimen_type === "organ" && (
+                  { this.props.result !== undefined  && 
+                      this.props.result.entity.specimen_type === "organ" && (
                       <button
-                        className="btn btn-success btn-block"
+                        className="btn btn-primary"
                         type="button"
                         onClick={() =>
                           this.props.onCreateNext(
@@ -104,24 +88,16 @@ class Result extends Component {
                         Register tissue samples from this organ
                       </button>
                     )}
-               
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={this.handleReturnClick}
+                  >
+                    Return to Search
+                  </button>
+                  </div>
               </div>
-            </div>
-
-            <div className="row">
-              <div className="col-sm-7 offset-sm-3 mt-4">
-                <button
-                  className="btn btn-secondary btn-block"
-                  type="button"
-                  onClick={this.handleReturnClick}
-                >
-                  Return to Search
-                </button>
-              </div>
-            </div>
-
-          </React.Fragment>
-        )}
+            
       </React.Fragment>
     );
   }
