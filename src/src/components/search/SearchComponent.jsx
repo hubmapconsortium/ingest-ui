@@ -49,6 +49,7 @@ class SearchComponent extends Component {
 
   componentDidMount() { 
 
+    try {
      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
       if (results.status === 200) { 
@@ -63,6 +64,11 @@ class SearchComponent extends Component {
           });
         }
     });
+   } catch {
+     this.setState({
+        isAuthenticated: false
+      });
+   }
   }
   
   /*

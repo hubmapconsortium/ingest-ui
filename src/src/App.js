@@ -157,7 +157,7 @@ handleLogout = e => {
 };
 
 handleMenuSelection = (event) => {
-console.debug('HI', event.currentTarget.innerText)
+//console.debug('HI', event.currentTarget.innerText)
   var formtype = event.currentTarget.innerText;
 
   this.setState({

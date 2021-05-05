@@ -33,7 +33,7 @@ class Result extends Component {
   };
 
   render() {
-    console.debug('RESULTS!!!!', this.props.result)
+    //console.debug('RESULTS!!!!', this.props.result)
     return (
       <React.Fragment>
               <div className="row">
@@ -42,21 +42,25 @@ class Result extends Component {
                 </div>
               </div>
               <div className="row">
-                <div className="col-sm-12 mr-2 mb-2 text-center">
-                  {(this.props.results !== undefined  && this.props.result["new_samples"] 
+                {(this.props.result["new_samples"] 
                       && this.props.result["new_samples"].length > 1) &&
                     //this.state.LabIDsModalShow &&
                     (
                       <React.Fragment>
+                      <div>
                         <MultipleListModal
                           ids={this.props.result["new_samples"]}
                           //submit={this.handleSubmit}
                           handleCancel={this.props.handleReturnClick}
                         />
+                        </div>
                       </React.Fragment>
                     )
                   }
-                  {this.props.results !== undefined  && 
+              </div>
+              <div className="row">
+                <div className="col-sm-12 mt-2 mr-2 mb-2 text-center">
+                  {this.props.result !== undefined  && 
                     this.props.result.entity.entity_type === "Donor" && (
                     <button
                       className="btn btn-primary"
@@ -70,7 +74,7 @@ class Result extends Component {
                       Register an organ from this donor
                     </button>
                   )}
-                  { this.props.results !== undefined  && 
+                  { this.props.result !== undefined  && 
                       this.props.result.entity.specimen_type === "organ" && (
                       <button
                         className="btn btn-primary"

@@ -1151,7 +1151,7 @@ handleAddImage = () => {
                 data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
             }
             if (this.state.sample_count < 1) {
-                ////console.debug("Create a new Entity....", this.state.sample_count)
+                console.debug("Create a new Entity....", this.state.sample_count)
                 entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                     .then((response) => {
                       if (response.status === 200) {
@@ -1166,11 +1166,12 @@ handleAddImage = () => {
                       } 
                   });
                 } else if (this.state.sample_count > 0) {
-                  ////console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
+                    console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
                     // now generate some multiples
                     entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((resp) => {
                         if (resp.status === 200) {
+                          console.debug('MULTIPLES DATA', data)
                                  //this.props.onCreated({new_samples: resp.results, entity: response.results});
                           this.props.onCreated({new_samples: resp.results, entity: data});   // fro multiples send the 'starter' data used to create the multiples
                           this.setState({ submit_error: true, submitting: false});
@@ -1184,8 +1185,6 @@ handleAddImage = () => {
       }
     });
   };
-
-
 
   renderButtons() {
     if (this.state.editingEntity) {
@@ -2170,12 +2169,14 @@ handleAddImage = () => {
           </button>
                   </div>
                   { this.state.rui_click && (
+                  <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organ={this.state.organ}
                       sex={this.state.source_entity.sex}
                       user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
                       parent="TissueForm" />
+                      </Dialog>
                   )}
 
                   { this.state.rui_check && (
@@ -2301,12 +2302,14 @@ handleAddImage = () => {
                         </div>
                     
                         { this.state.rui_click && (
+                          <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organ={this.state.source_entity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
                             parent="TissueForm" />
+                          </Dialog>
                         )}
                       </React.Fragment>
                     )}

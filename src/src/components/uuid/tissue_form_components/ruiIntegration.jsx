@@ -71,7 +71,7 @@ class RUIIntegration extends Component {
       baseHref: `${process.env.REACT_APP_RUI_BASE_URL}/`,
       embedded: (sex !== "" && sex !== undefined),
       tutorialMode: false,
-      homeUrl: '/donors-samples',
+      homeUrl: '/search',
       user: {
         firstName: user_name.split(" ")[0],
         lastName: user_name.split(" ")[1]

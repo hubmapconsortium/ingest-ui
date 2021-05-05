@@ -290,11 +290,16 @@ caption {
 }
 
 .rui {
-  z-index: 100;
+  z-index: 999999;
 }
 
 .rui .footer{
    background-color:greenyellow;
+}
+
+.cdk-overlay-container {
+    position: fixed;
+    z-index: 9999999;
 }
 
 .closeScreen {

@@ -39,7 +39,8 @@ class Forms extends Component {
   }
   onCreated = data => {
     this.setState({
-      entity: data,
+      entity: data.entity,
+      result: data,
       formType: "----",
       createSuccess: true
     });
