@@ -21,14 +21,25 @@ class RUIIntegration extends Component {
   }
   /**
    * Calculate & Update state of new dimensions
-   */
-  updateDimensions() {
+
+   updateDimensions() {
     if (window.innerWidth < 1100) {
       this.setState({ width: 1100, height: 647 });
     } else {
       const update_width = Math.min(window.innerWidth - 40, 2000);
       const update_height = Math.round(window.innerHeight - 40, 2000);
       this.setState({ width: update_width, height: update_height, margin_left: -100 });
+    }
+  }
+
+   */
+  updateDimensions() {
+    if (window.innerWidth < 1100) {
+      this.setState({ width: 1100, height: 647 });
+    } else {
+      const update_width = Math.min(window.innerWidth - 10, 2000);
+      const update_height = Math.round(window.innerHeight - 10, 2000);
+      this.setState({ width: update_width, height: update_height, margin_left: -20 });
     }
   }
 
