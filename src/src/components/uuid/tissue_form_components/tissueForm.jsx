@@ -2254,12 +2254,14 @@ handleAddImage = () => {
                           </button>
                         </div>
                         { this.state.rui_click && (
+                           <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organ={this.state.source_entity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
                             parent="TissueForm" />
+                            </Dialog>
                         )}
                       </React.Fragment>
                     )}
