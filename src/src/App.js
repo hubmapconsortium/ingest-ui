@@ -244,7 +244,7 @@ handleMenuSelection = (event) => {
                   </Button>
                 */}
                    <Button aria-controls="simple-menu" aria-haspopup="true" onClick={this.handleClick}>
-                     New Registration
+                     Register New Item
                   </Button>
                   <Menu
                     id="simple-menu"
@@ -257,8 +257,9 @@ handleMenuSelection = (event) => {
                     <MenuItem id="mi_donor" onClick={this.handleMenuSelection}>Donor</MenuItem>
                     <MenuItem id="mi_sample" onClick={this.handleMenuSelection}>Sample</MenuItem>
                     <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
-                    <Divider />
+                    {/*<Divider />
                     <MenuItem id="mi_dataupload" onClick={this.handleMenuSelection}>Data Upload</MenuItem>
+                  */}
                   </Menu>
               
      

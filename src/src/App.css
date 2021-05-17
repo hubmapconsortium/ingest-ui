@@ -30,8 +30,13 @@
 }
 .menu-bar button{
   color:#f2f2f2;
-  /*background-color: #9933cc;*/
 }
+
+.menu-bar button:hover{
+  color: #1A5276;
+  background-color: #D4E6F1 !important;
+}
+
 .menu-bar a{
   vertical-align: bottom;
   display: inline-block;
@@ -638,4 +643,14 @@ a.disabled {
     font-family: Inter Variable, Helvetica, Arial, sans-serif;
     font-weight: 300;
     line-height: 1.66;
+}
+
+/* this is to override the DataGrid with pointer cursor */
+.MuiDataGrid-root .MuiDataGrid-cell {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(224, 224, 224, 1);
+    text-overflow: ellipsis;
+    cursor: pointer;
 }

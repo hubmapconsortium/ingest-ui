@@ -78,7 +78,7 @@ class SearchComponent extends Component {
 
     var new_filter_list = [];
 
-    console.debug('FILTER TYPES', SAMPLE_TYPES)
+    //console.debug('FILTER TYPES', SAMPLE_TYPES)
     if (this.props.filter_type) {
       if (this.props.filter_type === 'Dataset') {
         SAMPLE_TYPES.forEach((type)=>{
@@ -138,13 +138,13 @@ class SearchComponent extends Component {
       params["search_term"] = keywords;
     }
 
-    //console.debug('search parm', params)
+    //console.debug('search page size: ', this.state.pageSize);
 
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
 
       if (response.status === 200) {
-      console.debug('SEARCH RESULTS', response);
+      //console.debug('SEARCH RESULTS', response);
       this.setState(
           {
           datarows: response.results, // Object.values(response.results)
@@ -158,7 +158,7 @@ class SearchComponent extends Component {
   };
 
   handlePageChange = (params) => {
-    console.debug('Page changed', params)
+    //console.debug('Page changed', params)
     this.setState({
           page: params.page,
           pageSize: params.pageSize
@@ -169,7 +169,7 @@ class SearchComponent extends Component {
   }
 
   handleTableSelection = (row) => {
-    console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
+    //console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
     // if (row.length > 0) {
     //   alert(row)
     // }
@@ -204,8 +204,8 @@ class SearchComponent extends Component {
     if(params.field === 'uuid') return; // skip this field
 
     if (params.row) {
-    // console.debug('CELL CLICK: entity', params.row.entity_type);
-   console.debug('Local CELL CLICK: uuid', params.row.uuid);
+    // //console.debug('CELL CLICK: entity', params.row.entity_type);
+   //console.debug('Local CELL CLICK: uuid', params.row.uuid);
 
     entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
@@ -215,7 +215,7 @@ class SearchComponent extends Component {
         // check to see if user can edit
         ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
           .then((resp) => {
-            console.debug('ingest_api_allowable_edit_states done', resp)
+            //console.debug('ingest_api_allowable_edit_states done', resp)
           if (resp.status === 200) {
             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
             this.setState({
@@ -332,7 +332,7 @@ renderInfoPanel() {
       return (
         <div>
         <span className="portal-jss116 text-center">
-              ** To register new entities, use the NEW REGISTRATION menu above to select which type you wish to create.
+              ** To register new items, use the REGISTER NEW ITEM menu above to select which type you wish to create.
         </span> <br /><br />
         </div>
         );
@@ -358,12 +358,14 @@ renderInfoPanel() {
               //    ...column,
               //    disableClickEventBubbling: true
               //}))}
+              disableColumnMenu={true}
               pageSize={this.state.pageSize} 
               pagination
               hideFooterSelectedRowCount
               rowCount={this.state.results_total}
               paginationMode="server"
               onPageChange={this.handlePageChange}
+              onPageSizeChange={this.handlePageChange}
               loading={this.state.loading}
               //checkboxSelection
               //components={{
@@ -377,10 +379,10 @@ renderInfoPanel() {
                     const result = newSelectionModel.filter(
                       (s) => !selectionSet.has(s)
                      );
-                    console.log('length>1', result)
+                    //console.log('length>1', result)
                    this.handleTableSelection(result);
                 } else {
-                  console.log('length < 1',newSelectionModel )
+                  //console.log('length < 1',newSelectionModel )
                     this.handleTableSelection(newSelectionModel);
                 }
               }}*/
