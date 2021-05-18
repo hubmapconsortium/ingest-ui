@@ -5,6 +5,7 @@ export const SAMPLE_TYPES = [
   { donor: "Donor" },
   { organ: "Organ"},
   { dataset: "Dataset"}, 
+  { uploads: "Data Uploads"},
   {
     biopsy: "Biopsy",
     cell_lysate: "Cell lysate",

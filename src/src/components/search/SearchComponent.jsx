@@ -14,7 +14,7 @@ import { flattenSampleType } from "../../utils/constants_helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faInfoCircle, faFilter, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
-import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET } from './table_constants';
+import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
@@ -130,6 +130,9 @@ class SearchComponent extends Component {
       } else if (sample_type === 'dataset') {
             params["entity_type"] = "Dataset";
             which_cols_def = COLUMN_DEF_DATASET;
+        } else if (sample_type === 'uploads') {
+            params["entity_type"] = "Upload";
+            which_cols_def = COLUMN_DEF_UPLOADS;
         } else {
           params["specimen_type"] = sample_type;
       } 
@@ -320,6 +323,10 @@ class SearchComponent extends Component {
               //onCreated={this.handleDatasetCreated}
               changeLink={this.onChangeGlobusLink.bind(this)}
             />
+          );
+      } else if (dataType === "Upload") {
+          return (
+            <div>placeholder for uploads</div>
           );
       } else {
         return <div />;
