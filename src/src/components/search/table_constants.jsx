@@ -88,6 +88,44 @@ export const COLUMN_DEF_DATASET = [
 	}
  ];
 
+// UPLOADS COLUMNS
+export const COLUMN_DEF_UPLOADS = [
+    { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
+    { field: 'title', headerName: 'Upload Name', width: 250,
+      renderCell:(params: ValueFormatterParams) => (
+         <React.Fragment>
+          <span>{params.value}</span>
+        </React.Fragment>
+      )
+
+    },
+  { field: 'group_name', headerName: 'Group Name', width: 200},
+  { field: 'created_by_user_email', headerName: 'Created By', width: 210},
+  { field: 'status', headerName: 'Submission Status', width: 160,
+    renderCell: (params: ValueFormatterParams) => (
+      <span
+              style={{
+                width: "100px"
+              }}
+              className={"badge " + getPublishStatusColor(params.value)}>
+              {params.value}
+            </span>
+      )
+  },
+  
+  { field: 'uuid', headerName: 'Directory', width: 100,
+  renderCell: (params: ValueFormatterParams) => (
+     <React.Fragment>
+      <button
+              className='btn btn-link'
+              onClick={() => handleDataClick(params.value)}>
+              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+      </button>                         
+      </React.Fragment>
+    )
+  }
+ ];
+
 
 // Computed column functions
 

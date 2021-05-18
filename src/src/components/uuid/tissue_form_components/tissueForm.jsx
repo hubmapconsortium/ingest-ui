@@ -1409,7 +1409,6 @@ handleAddImage = () => {
   }
 
   handleLookUpClick = () => {
-    ////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
     if (this.state.source_uuid === undefined && !this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
@@ -1421,14 +1420,14 @@ handleAddImage = () => {
   };
 
   hideLookUpModal = () => {
-    ////console.debug('IM HERE TRYING TO HIDE THE DIALOG')
+  
     this.setState({
       LookUpShow: false
     });
   };
 
   cancelLookUpModal = () => {
-    ////console.debug('IM HERE TRYING TO HIDE THE DIALOG')
+   
     this.setState({
       LookUpShow: false,
       lookUpCancelled: true
