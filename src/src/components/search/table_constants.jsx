@@ -138,7 +138,12 @@ export const COLUMN_DEF_UPLOADS = [
 // }
 
 function getLabId(params: ValueGetterParams) {
-	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
+
+return `${params.getValue('lab_donor_id') || ''} ${
+    params.getValue('lab_tissue_sample_id') || ''
+  }`;
+
+//	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
 }
 
 function handleDataClick(dataset_uuid) {
