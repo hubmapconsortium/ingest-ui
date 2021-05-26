@@ -24,10 +24,9 @@ export function naturalLanguageJoin(strArr) {
 }
 
 // convert a timestampe to human readble format for display puposes
-export function tsToDate(timestamp) {
+export function tsToDate(timestamp_ms) {
   
-  var millisec = timestamp * 1000;
-  var date = new Date(millisec);
+  var date = new Date(timestamp_ms);
 
   return date.toLocaleString()
 }
