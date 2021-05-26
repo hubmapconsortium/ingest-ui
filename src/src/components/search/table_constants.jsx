@@ -139,9 +139,11 @@ export const COLUMN_DEF_UPLOADS = [
 
 function getLabId(params: ValueGetterParams) {
 
-return `${params.getValue('lab_donor_id') || ''} ${
-    params.getValue('lab_tissue_sample_id') || ''
-  }`;
+ // console.debug('params:', params.row)
+  try {
+    return params.row['lab_donor_id'] || params.row['lab_tissue_sample_id']
+  } catch { }
+return ""
 
 //	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
 }

@@ -99,6 +99,7 @@ class TissueForm extends Component {
     setOpen: false,
     show_snack: false,
     show_dirty_warning: false,
+    GroupSelectShow: false,
     snackmessage: "", 
     isDirty: false,
     formErrors: {
