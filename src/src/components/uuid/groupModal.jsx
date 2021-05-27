@@ -17,7 +17,7 @@ class GroupModal extends Component {
   render() {
     return (
     
-       <Dialog  onClose={this.props.hide} aria-labelledby="group-dialog" open={this.props.show}>
+       <Dialog aria-labelledby="group-dialog" open={this.props.show}>
        <DialogContent>
         <div className="row">
           <div className="col-sm-12">
@@ -51,11 +51,15 @@ class GroupModal extends Component {
          </DialogContent>
            <DialogActions>
             <Button
-            className="btn btn-primary"
+            className="btn btn-primary mr-1"
             onClick={this.props.submit}>
             Submit
           </Button>
-                      
+          <Button
+            className="btn btn-secondary"
+            onClick={this.props.hide}>
+            Cancel
+          </Button>          
           </DialogActions>
         </Dialog>
     

@@ -131,3 +131,20 @@ export const ORGAN_TYPES = {
   UT: "Uterus",
   OT: "Other"
 };
+
+export const RUI_ORGAN_TYPES = ["LK", "RK", "HT", "SP", "LI"];
+
+export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "5777527e-ec11-11e8-ab41-0af86edb4424"];
+
+export const ES_SEARCHABLE_FIELDS = [
+  "description.keyword", 
+  "hubmap_display_id.keyword", 
+  "display_doi.keyword", 
+  "lab_donor_id.keyword", 
+  "display_subtype.keyword",
+  "lab_name.keyword",
+  "lab_tissue_sample_id.keyword",
+  "lab_donor_id.keyword",
+  "created_by_user_displayname", 
+  "created_by_user_email"
+  ];

@@ -2,7 +2,10 @@
 
 import axios from "axios";
 import { GROUPS } from "./groups";
+import { ES_SEARCHABLE_FIELDS } from "../constants";
+
 export const esb = require('elastic-builder');
+
 
 
 /*
@@ -58,7 +61,7 @@ export function api_search2(params, auth, from, size) {
 
   let payload = search_api_filter_es_query_builder(params, from , size);
 
-  console.debug('payload', payload)
+  //console.debug('payload', payload)
 
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
@@ -91,7 +94,7 @@ export function search_api_filter_es_query_builder(fields, from, size) {
 
   let requestBody =  esb.requestBodySearch();
  //console.debug("here in the filter es builder")
- console.debug(fields);
+ //console.debug(fields);
 
   let boolQuery = esb.boolQuery();
 
@@ -129,8 +132,7 @@ export function search_api_filter_es_query_builder(fields, from, size) {
 
     if (fields["search_term"]) {
       //let scrubbed = fixKeywordText(fields["search_term"]);
-      boolQuery.filter(esb.multiMatchQuery(['description.keyword', 'hubmap_display_id.keyword', 'display_doi.keyword', 
-          'lab_donor_id.keyword', 'lab_tissue_sample_id.keyword', 'created_by_user_displayname', 'created_by_user_email'], fields["search_term"]));
+      boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["search_term"]));
     }
   
   }

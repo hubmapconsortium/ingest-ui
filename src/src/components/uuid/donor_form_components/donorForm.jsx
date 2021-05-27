@@ -40,7 +40,8 @@ class DonorForm extends Component {
     protocol_file: "",
     description: "",
     metadata_file: "",
-
+    show: false,
+    GroupSelectShow: false,
     images: [],
     //metadatas: [],
     // new_metadatas: [],
@@ -66,8 +67,6 @@ class DonorForm extends Component {
      // metadatas: "",
       images: "",
     },
-
-    show: false
   };
 
   constructor(props) {
@@ -82,11 +81,11 @@ class DonorForm extends Component {
    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
       if (results.status === 200) { 
-      const groups = results.results.filter(
-          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-        );
+      // const groups = results.results.filter(
+      //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+      //   );
         this.setState({
-          groups: groups
+          groups: results.results
         });
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -390,7 +389,7 @@ class DonorForm extends Component {
               data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
             }
 
-            //console.debug("Create a new Entity....")
+            //console.debug("Create a new Entity....group uuid", data["group_uuid"])
             entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                  .then((response) => {
                   if (response.status === 200) {
@@ -439,7 +438,7 @@ class DonorForm extends Component {
             <div className="col-md-12 text-right pads">
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
               >
                  {this.state.submitting && (
@@ -472,7 +471,7 @@ class DonorForm extends Component {
             <div className="col-md-12 text-right pads">
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary mr-1"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (

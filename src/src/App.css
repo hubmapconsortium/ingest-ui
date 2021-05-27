@@ -44,6 +44,7 @@
 }
 .option-menu {
   width: 20%;
+  height: initial;
 }
 
 .username {

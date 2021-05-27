@@ -7,9 +7,9 @@ import Home from "./Home/Home";
 import history from './history';
 import TissueForm from './components/uuid/tissue_form_components/tissueForm';
 import SearchComponent from './components/search/SearchComponent';
-import UUIDEntrance from './components/uuid/uuid_entrance';
-import IngestEntrance from './components/ingest/ingest_entrance';
-import DataList from './components/ingest/datalist';
+// import UUIDEntrance from './components/uuid/uuid_entrance';
+// import IngestEntrance from './components/ingest/ingest_entrance';
+//import DataList from './components/ingest/datalist';
 
 export default class Routes extends Component {
     render() {

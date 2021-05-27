@@ -32,11 +32,11 @@ import { flattenSampleType } from "../../../utils/constants_helper";
 import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
 //import Protocol from "./protocol";
-import Modal from "../modal";
+//import Modal from "../modal";
 import SearchComponent from "../../search/SearchComponent";
 //import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
-import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES } from "../../../constants";
+import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
 //import LabIDsModa7l from "../labIdsModal";
@@ -123,14 +123,14 @@ class TissueForm extends Component {
     }
   };
 
-  constructor(props) {
-    super(props);
-  //   // create a ref to store the file Input DOM element   
-  //   //this.protocolFile = React.createRef();
-  //   //this.protocol = React.createRef();
-  //   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
+  // constructor(props) {
+  //   super(props);
+  // //   // create a ref to store the file Input DOM element   
+  // //   //this.protocolFile = React.createRef();
+  // //   //this.protocol = React.createRef();
+  // //   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
 
-  }
+  // }
 
   handleRUIJson = (dataFromChild) => {
     this.setState({
@@ -966,20 +966,23 @@ handleAddImage = () => {
   };
 
   isSpecialOrganType = otype => {
-    return otype === "LK" ||
-          otype === "HT" ||
-          otype === "SP" ||
-          otype === "LI" ||
-          otype === "RK";
+
+    return RUI_ORGAN_TYPES.includes(otype);
+    // return otype === "LK" ||
+    //       otype === "HT" ||
+    //       otype === "SP" ||
+    //       otype === "LI" ||
+    //       otype === "RK";
   }
 
-  isNotSpecialOrganType = otype => {
-     return otype !== "LK" &&
-        otype !== "HT" &&
-        otype !== "SP" &&
-        otype !== "LI" &&
-        otype !== "RK";
-  }
+  // isNotSpecialOrganType = otype => {
+
+  //    return otype !== "LK" &&
+  //       otype !== "HT" &&
+  //       otype !== "SP" &&
+  //       otype !== "LI" &&
+  //       otype !== "RK";
+  // }
 
   // special case for donors
   isOrganBloodType = sptype => {
@@ -1214,7 +1217,7 @@ handleAddImage = () => {
             <div className="col-sm-12 text-right pads">
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
               >
                 {this.state.submitting && (
@@ -1247,10 +1250,10 @@ handleAddImage = () => {
           <div className="col-sm-12">
               <Divider />
             </div>
-            <div className="col-md-12 text-right pads">
+            <div className="col-md-11 text-right pads">
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary mr-1"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (
@@ -2068,7 +2071,7 @@ handleAddImage = () => {
                           </div>
                         )}
                       { this.state.source_entity &&
-                        (this.isNotSpecialOrganType(this.state.organ)) && (
+                        (this.isSpecialOrganType(this.state.organ) !== true) && (
                           <div className="col-sm-4">
                             <small className='portal-label'>
                               Lab IDs and files/images can be assigned on the next screen after
@@ -2134,7 +2137,7 @@ handleAddImage = () => {
             {!this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&
+              this.isSpecialOrganType(this.state.ancestor_organ) &&
               (
                 <div className="form-group">
                   <label
@@ -2214,7 +2217,7 @@ handleAddImage = () => {
             {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-             ["LK", "RK", "HT", "SP", "LI"].includes(this.state.ancestor_organ) &&    //source_entity.organ
+              this.isSpecialOrganType(this.state.ancestor_organ) &&    //source_entity.organ
               (
                 <div className="form-group">
                   <label

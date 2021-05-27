@@ -1,7 +1,4 @@
 import React from "react";
-import ReactTooltip from "react-tooltip";
-import { flattenSampleType } from "../../utils/constants_helper";
-import { SAMPLE_TYPES } from "../../constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 

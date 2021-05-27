@@ -10,11 +10,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
-import CreateCollectionModal from "./createCollectionModal";
+//import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 import { truncateString } from "../../utils/string_helper";
-import { SAMPLE_TYPES, ORGAN_TYPES} from "../../constants";
-import { flattenSampleType } from "../../utils/constants_helper";
+import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
@@ -26,7 +25,7 @@ import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
-import { entity_api_create_entity, entity_api_update_entity } from '../../service/entity_api';
+import { entity_api_update_entity } from '../../service/entity_api';
 
 class DatasetEdit extends Component {
   state = {
@@ -50,6 +49,7 @@ class DatasetEdit extends Component {
     has_submit: false,
     lookUpCancelled: false,
     LookUpShow: false,
+    GroupSelectShow: false,
   //  is_curator: null,
     source_uuid_type: "",
     data_types: new Set(),
@@ -176,7 +176,7 @@ class DatasetEdit extends Component {
 
       if (this.props.editingDataset) {
 	  
-      let source_uuids;
+      //let source_uuids;
       try {
         // use only the first direct ancestor
          this.setState({
@@ -405,9 +405,9 @@ class DatasetEdit extends Component {
         break;
       case "contains_human_genetic_sequences":  
         let gene_seq = undefined; 
-        if (value == 'yes') {
+        if (value === 'yes') {
           gene_seq = true;
-        } else if(value == 'no'){
+        } else if(value === 'no'){
           gene_seq = false;
         }
         this.setState({
@@ -799,7 +799,7 @@ class DatasetEdit extends Component {
                ////console.log('Submit Dataset...');
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                   .then((response) => {
-                    if (response.status == 200) {
+                    if (response.status === 200) {
                       ////console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
@@ -809,7 +809,7 @@ class DatasetEdit extends Component {
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((response) => {
-                          if (response.status == 200) {
+                          if (response.status === 200) {
                             ////console.log('Update Dataset...');
                              ////console.log(response.results);
                             this.props.onUpdated(response.results);
@@ -832,7 +832,7 @@ class DatasetEdit extends Component {
               // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
-                  if (response.status == 200) {
+                  if (response.status === 200) {
                     //////console.log('create Dataset...', response.results);
                      this.setState({
                         //globus_path: res.data.globus_directory_url_path,
@@ -848,7 +848,7 @@ class DatasetEdit extends Component {
                     this.setState({
                       globus_path: res.data,
                     }, () => {
-                      this.props.onCreated(response.results);
+                      this.props.onCreated({entity: response.results}); // set as an entity for the Results
                       this.onChangeGlobusURL();
                     });
                   })
@@ -962,7 +962,6 @@ class DatasetEdit extends Component {
 
   // only handles one selection at this time
   getSourceAncestor(source_uuids){
-    let id = ""; 
     try {
       return source_uuids[0].hubmap_id;  // just get the first one
     } catch {
@@ -972,7 +971,6 @@ class DatasetEdit extends Component {
 
     // only handles one selection at this time
   getSourceAncestorEntity(source_uuids){
-    let id = ""; 
     try {
       return source_uuids[0];  // just get the first one
     } catch {
@@ -1069,7 +1067,7 @@ class DatasetEdit extends Component {
 
   renderButtons() {
     if (this.props.editingDataset) {
-      if (this.state.writeable == false) {
+      if (this.state.writeable === false) {
         ////console.log("editing but not writeable",  this.state.writeable)
         return (
           <div className='row'>
@@ -1287,7 +1285,7 @@ class DatasetEdit extends Component {
                 <div className='col-sm-3 offset-sm-2 text-center'>
                   <button
                     type='button'
-                    className='btn btn-info btn-block'
+                    className='btn btn-info btn-block mr-1'
                     disabled={this.state.submitting}
                     onClick={() =>
                       this.handleButtonClick(this.state.status.toLowerCase())
@@ -1315,7 +1313,7 @@ class DatasetEdit extends Component {
                     >
                       {this.state.submitting && (
                         <FontAwesomeIcon
-                          className='inline-icon'
+                          className='inline-icon mr-1'
                           icon={faSpinner}
                           spin
                         />
@@ -1327,7 +1325,7 @@ class DatasetEdit extends Component {
                 <div className='col-sm-2 text-right'>
                   <button
                     type='button'
-                    className='btn btn-link'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Cancel
@@ -1341,7 +1339,7 @@ class DatasetEdit extends Component {
                 <div className='col-sm-2 offset-sm-10'>
                   <button
                     type='button'
-                    className='btn btn-link'
+                    className='btn btn-secondary'
                     onClick={() => this.props.handleCancel()}
                   >
                     Cancel
@@ -1363,7 +1361,7 @@ class DatasetEdit extends Component {
           <div className='col-md-12 text-right pads'>
             <button
               type='button'
-              className='btn btn-primary'
+              className='btn btn-primary mr-1'
               disabled={this.state.submitting}
               onClick={() => this.handleButtonClick("new")}
               data-status='new'
@@ -1446,7 +1444,7 @@ class DatasetEdit extends Component {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
 	    var entries_per_col = Math.ceil(len / 3);
-	    var num_cols = Math.ceil(len / entries_per_col);
+	    //var num_cols = Math.ceil(len / entries_per_col);
 	    return (<>
 		    <div className='col-sm-4'> {this.renderAssayColumn(0, entries_per_col)} </div>
 		    <div className='col-sm-4'> {this.renderAssayColumn(entries_per_col, 2*entries_per_col)} </div>
@@ -1905,7 +1903,7 @@ class DatasetEdit extends Component {
                       id='contains_human_genetic_sequences_no'
                       value='no'
                       // defaultChecked={true}
-                      checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
+                      checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
@@ -1920,7 +1918,7 @@ class DatasetEdit extends Component {
                       name='contains_human_genetic_sequences'
                       id='contains_human_genetic_sequences_yes'
                       value='yes'
-                      checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
+                      checked={this.state.contains_human_genetic_sequences  === true && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
@@ -1936,7 +1934,7 @@ class DatasetEdit extends Component {
               {!this.props.editingDataset && (
                 <div className="col-sm-9 ">
                   <div className='form-check form-check-inline'>
-                    <input className="form-check-input"
+                    <input 
                       className={
                         "form-check-input " +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
@@ -1956,7 +1954,7 @@ class DatasetEdit extends Component {
                     </label>
                   </div>
                   <div className='form-check form-check-inline'>
-                    <input className="form-check-input"
+                    <input 
                       className={
                         "form-check-input " +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
