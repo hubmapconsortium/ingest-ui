@@ -1,20 +1,41 @@
 import React, { Component } from "react";
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import Divider from '@material-ui/core/Divider';
+import Paper from '@material-ui/core/Paper';
+import axios from "axios";
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faQuestionCircle,
+  faSpinner,
+  faUserShield,
+  faTimes,
+  faSearch, faPaperclip, faAngleDown,
+  faExternalLinkAlt, faFolder
+} from "@fortawesome/free-solid-svg-icons";
+import Modal from "../uuid/modal";
+import GroupModal from "../uuid/groupModal";
+import ReactTooltip from "react-tooltip";
 import Icon from '@material-ui/core/Icon';
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Box from '@material-ui/core/Box';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import { entity_api_get_entity } from '../../service/entity_api';
+import { tsToDate } from "../../utils/string_helper";
 
+// import GroupModal from "../../groupModal";
+import { entity_api_get_entity, 
+  entity_api_update_entity, 
+  entity_api_create_entity,
+  entity_api_create_multiple_entities, 
+  entity_api_get_entity_ancestor 
+} from '../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import FormControl from '@material-ui/core/FormControl';  
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { FiberManualRecordTwoTone } from "@material-ui/icons";
@@ -39,71 +60,133 @@ class EditUploads extends Component {
     confirmModal: false
   }
 
+  
 
-  // constructor(props) {
-  //   super(props);
-  //   // this.group = React.createRef();
-    confirmModal
-  // }
+  componentDidMount() {
+    
+    console.debug(this.props.editingUpload);
+    // let history = this.props.history;
+    const config = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        "Content-Type": "application/json",
+      },
+    };
+    let entity_data = this.props.editingUpload;
+    this.setState({
+      groups: this.props.groups,
+      updateSuccess: null,
+      show:true,
+      editingEntity:entity_data,
+      e_title:entity_data.title,
+      e_hid:entity_data.hubmap_id,
+      e_uuid:entity_data.uuid,
+      e_desc:entity_data.description,
+      e_author:entity_data.created_by_user_displayname,
+      e_created:entity_data.created_timestamp,
+      e_group:entity_data.group_name,
+      e_datasets:entity_data.datasets,
+      e_GURL:"",
+      e_status:entity_data.status,
+      editForm: true,
+      show_modal: true,
+      show_search: false,
+      new_entity: false,  
+      creatingNewUploadFolder:true,
+      writeable:true,
+      groups: [],
+        formErrors: {
+          name: "",
+          source_uuid: "",
+        },
+      },
+      () => {
+        switch (this.state.e_status.toUpperCase()) {
+          case "NEW":
+            this.setState({
+              badge_class: "badge-purple",
+            });
+            break;
+          case "REOPENED":
+            this.setState({
+              badge_class: "badge-purple",
+            });
+            break;
+          case "INVALID":
+            this.setState({
+              badge_class: "badge-warning",
+            });
+            break;
+          case "QA":
+            this.setState({
+              badge_class: "badge-info",
+            });
+            break;
+          case "LOCKED":
+            this.setState({
+              badge_class: "badge-secondary",
+            });
+            break;
+          case "ERROR":
+            this.setState({
+              badge_class: "badge-danger",
+            });
+            break;
+          case "PUBLISHED":
+            this.setState({
+              badge_class: "badge-success",
+            });
+            break;
+          case "UNPUBLISHED":
+            this.setState({
+              badge_class: "badge-light",
+            });
+            break;
+          case "DEPRECATED":
+            break;
+          default:
+            break;
+        }
 
-  getUpload = (uuid) =>{
-    // console.log("START GET UPLOAD");
-    entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-    .then((response) => {
-      // console.log("GETUPLOAD");
-      // console.log(uuid);
-      // console.log(response);
-      if (response.status === 200) {
-        let entity_data = response.results;
-        this.setState({
-          updateSuccess: null,
-          show:true,
-          editingEntity:entity_data,
-          e_title:entity_data.title,
-          e_hid:entity_data.hubmap_id,
-          e_uuid:entity_data.uuid,
-          e_desc:entity_data.description,
-          e_author:entity_data.created_by_user_displayname,
-          e_created:entity_data.created_timestamp,
-          e_group:entity_data.group_name,
-          e_datasets:entity_data.datasets,
-          e_GURL:"",
-          e_status:entity_data.status,
-          editForm: true,
-          show_modal: true,
-          show_search: false,
-          new_entity: false,  
-          creatingNewUploadFolder:true,
-        });
-        // this.fetchGlobusURL(entity_data.uuid)
-        // this.fetchGlobusURL(entity_data.uuid);
-        console.debug(this.state);
+        axios
+          .get(
+            `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingUpload.uuid}`,
+            config
+          )
+          .then((res) => {
+            this.setState({
+              globus_path: res.data,
+            });
+          })
+          .catch((err) => {
+            this.setState({
+              globus_path: "",
+              globus_path_tips: "Globus URL Unavailable",
+            });
+            if (err.response && err.response.status === 401) {
+              localStorage.setItem("isAuthenticated", false);
+              window.location.reload();
+            }
+          });
+      });
 
-        // check to see if user can edit
-        // ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-        //   .then((resp) => {
-        //     console.debug('ingest_api_allowable_edit_states done', resp)
-        //   if (resp.status === 200) {
-        //     let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-        //     this.setState({
-        //       updateSuccess: null,
-        //       show:true,
-        //       editingEntity: entity_data,
-        //       //editingDisplayId: display_id,
-        //       readOnly: read_only_state,   // used for hidding UI components
-        //       editForm: true,
-        //       show_modal: true,
-        //       show_search: false,
-        //       new_entity: false
-        //       });
-        //       console.debug(this.state);
-        //   }
-        // });
 
-      }
-    });
-  }
+    
+    console.debug(this.state);
+    
+    
 
+  };
+
+    handleCancel = () => {
+      if (this.props.history) {
+        this.props.history.goBack();
+     } else {
+       this.props.handleCancel();
+     }
+   }
+ 
 
   showConfirmModal = () => {
     this.setState({ confirmModal: true });
@@ -114,23 +197,160 @@ class EditUploads extends Component {
     this.setState({ confirmModal: false });
   };
 
-  onCreated = data => {
-    this.setState({
-      entity: data.entity,
-      result: data,
-      formType: "----",
-      createSuccess: true
+  handleSubmit = (i) => {
+    this.validateForm().then((isValid) => {
+    
+      if (isValid) {
+        if (
+          !this.props.editingDataset &&
+          this.state.groups.length > 1 &&
+          !this.state.GroupSelectShow
+        ) {
+          this.setState({ GroupSelectShow: true });
+        } else {
+          this.setState({
+            GroupSelectShow: false,
+            submitting: true,
+          });
+          this.setState({ submitting: true });
+
+
+          // package the data up
+          let data = {
+            title: this.state.name,
+            //collection_uuid: this.state.collection.uuid,
+            contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
+            description: this.state.description,
+            //status: this.state.new_status,
+            //is_protected: this.state.is_protected,
+          };
+  
+ 
+          // var formData = new FormData();
+          // formData.append("data", JSON.stringify(data));
+          const config = {
+            headers: {
+              Authorization:
+                "Bearer " +
+                JSON.parse(localStorage.getItem("info")).nexus_token
+            },
+          };
+         
+          if (this.props.editingDataset) {
+            // if user selected Publish
+            if (i === "published") {
+              let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
+              axios
+                .put(uri, JSON.stringify(data), config)
+                .then((res) => {
+                  this.props.onUpdated(res.data);
+                })
+                .catch((error) => {
+                  this.setState({ submit_error: true, submitting: false });
+                });
+            } else if (i === "processing") {
+               ////console.log('Submit Dataset...');
+                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                  .then((response) => {
+                    if (response.status === 200) {
+                      ////console.log(response.results);
+                      this.props.onUpdated(response.results);
+                    } else {
+                      this.setState({ submit_error: true, submitting: false });
+                    }
+                });
+              } else { // just update
+                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                      .then((response) => {
+                          if (response.status === 200) {
+                            ////console.log('Update Dataset...');
+                             ////console.log(response.results);
+                            this.props.onUpdated(response.results);
+                          } else {
+                            this.setState({ submit_error: true, submitting: false });
+                          }
+                });
+              }
+          } else {  // new creations
+
+
+            // the group info on a create, check for the defaults
+              if (this.state.selected_group && this.state.selected_group.length > 0) {
+                data["group_uuid"] = this.state.selected_group;
+              } else {
+                data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+              }
+
+              //////console.log('DATASET TO SAVE', JSON.stringify(data))
+              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                .then((response) => {
+                  if (response.status === 200) {
+                    //////console.log('create Dataset...', response.results);
+                     this.setState({
+                        //globus_path: res.data.globus_directory_url_path,
+                        display_doi: response.results.display_doi,
+                        //doi: res.data.doi,
+                      });
+                     axios
+                  .get(
+                    `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${response.results.uuid}`,
+                    config
+                  )
+                  .then((res) => {
+                    this.setState({
+                      globus_path: res.data,
+                    }, () => {
+                      this.props.onCreated({entity: response.results}); // set as an entity for the Results
+                      this.onChangeGlobusURL();
+                    });
+                  })
+                  .catch((err) => {
+                    ////console.log('ERROR', err)
+                    this.setState({
+                      globus_path: "",
+                      globus_path_tips: "Globus URL Unavailable",
+                    });
+                    if (err.response && err.response.status === 401) {
+                      localStorage.setItem("isAuthenticated", false);
+                      window.location.reload();
+                    }
+                  });
+                  } else {
+                    this.setState({ submit_error: true, submitting: false });
+                  }
+              });
+          }  //else
+        }
+      }
     });
   };
 
-  onSaved = data => {
-    console.log("Data Saved: ");
-    console.log(data);
+
+  handleInputChange = (e) => {
+    const { id, name, value } = e.target;
+    switch (name) {
+      case "name":
+        this.setState({
+          name: value,
+        });
+        break;
+      case "description":
+        this.setState({
+          description: value,
+        });
+        break;
+      case "status":
+        this.setState({
+          new_status: value,
+        });
+        break;
+      default:
+        break;
+    }
+    
   };
 
-  handleClose = () => {
-    console.debug('CLOSED');
-  }
 
 
   highlightInvalidDatasets(){
@@ -144,13 +364,338 @@ class EditUploads extends Component {
       });
       console.log("END highlightInvalidDatasets");
   } 
-  
-  
-  componentDidMount() { 
-      console.log("componentDidMount");
-      console.log(this.props.targetUUID);
-      this.getUpload(this.props.targetUUID);
+
+
+  renderButtons() {
+    if (this.props.editingUpload) {
+      if (this.state.writeable === false) {
+        ////console.log("editing but not writeable",  this.state.writeable)
+        return (
+          <div className='row'>
+            <div className='col-sm-2 offset-sm-10'>
+              <button
+                type='button'
+                className='btn btn-secondary'
+                onClick={() => this.props.handleCancel()}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        );
+      } else {
+        ////console.log("checking Has submit rights",  this.state.has_submit_privs)
+        if (this.state.has_submit_privs) {
+            
+          if (this.state.e_status.toUpperCase() === "QA") {
+            return (
+              <div className='row'>
+                <div className='col-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-info btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() =>
+                      this.handleButtonClick(this.state.e_status.toLowerCase())
+                    }
+                    data-status={this.state.e_status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Save"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-primary btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("published")}
+                    data-status='published'
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Publish"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-primary btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("reopened")}
+                    data-status={this.state.e_status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Reopen"}
+                  </button>
+                </div>
+                <div className='col-sm-3 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-dark btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("hold")}
+                    data-status='invalid'
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Hold"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-right'>
+                  <button
+                    type='button'
+                    className='btn btn-secondary'
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            );
+            } else if (this.state.e_status.toUpperCase() === "PUBLISHED") {  // not QA if statement
+            return (
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-primary btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("reopened")}
+                    data-status='reopened'
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Reopen"}
+                  </button>
+                </div>
+                <div className='col-sm-4 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-danger btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("unpublished")}
+                    data-status='unpublished'
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Unpublish"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-right'>
+                  <button
+                    type='button'
+                    className='btn btn-secondary'
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            );
+            } else if (this.state.e_status.toUpperCase() === "UNPUBLISHED") {  // not PUBLISHED if stmt
+            return (
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'></div>
+                <div className='col-sm-4 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-primary btn-block'
+                    disabled={this.state.submitting}
+                    onClick={() => this.handleButtonClick("published")}
+                    data-status='published'
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Publish"}
+                  </button>
+                </div>
+                <div className='col-sm-2 text-right'>
+                  <button
+                    type='button'
+                    className='btn btn-secondary'
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            );
+            } else {  // not UNPUBLISHED
+            return (
+              <div className='row'>
+                <div className='col-sm-2 offset-sm-10'>
+                  <button
+                    type='button'
+                    className='btn btn-secondary'
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            );
+          }
+        } else {
+          
+          if (
+            ["NEW", "INVALID", "REOPENED", "ERROR"].includes(
+              this.state.e_status.toUpperCase()
+            )
+          ) {
+          
+            return (
+              <div className='row'>
+                <div className='col-sm-3 offset-sm-2 text-center'>
+                  <button
+                    type='button'
+                    className='btn btn-info btn-block mr-1'
+                    disabled={this.state.submitting}
+                    onClick={() =>
+                      this.handleButtonClick(this.state.e_status.toLowerCase())
+                    }
+                    data-status={this.state.e_status.toLowerCase()}
+                  >
+                    {this.state.submitting && (
+                      <FontAwesomeIcon
+                        className='inline-icon'
+                        icon={faSpinner}
+                        spin
+                      />
+                    )}
+                    {!this.state.submitting && "Save"}
+                  </button>
+                </div>
+                <div className='col-sm-4 text-center'>
+                  {this.state.has_submit && (
+                    <button
+                      type='button'
+                      className='btn btn-primary btn-block'
+                      disabled={this.state.submitting}
+                      onClick={() => this.handleButtonClick("processing")}
+                      data-status={this.state.e_status.toLowerCase()}
+                    >
+                      {this.state.submitting && (
+                        <FontAwesomeIcon
+                          className='inline-icon mr-1'
+                          icon={faSpinner}
+                          spin
+                        />
+                      )}
+                      {!this.state.submitting && "Submit"}
+                    </button>
+                  )}
+                </div>
+                <div className='col-sm-2 text-right'>
+                  <button
+                    type='button'
+                    className='btn btn-secondary'
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            );
+          } else {
+            return (
+              <div className='row'>
+                <div className='col-sm-2 offset-sm-10'>
+                  <button
+                    type='button'
+                    className='btn btn-secondary'
+                    onClick={() => this.props.handleCancel()}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            );
+          }
+        }
+      }
+    } else {  // buttons for a new record
+    
+      return (
+
+        <div className='row'>
+          <div className="col-sm-12">
+          <Divider />
+          </div>
+          <div className='col-md-12 text-right pads'>
+            <button
+              type='button'
+              className='btn btn-primary mr-1'
+              disabled={this.state.submitting}
+              onClick={() => this.handleButtonClick("new")}
+              data-status='new'
+            >
+              {this.state.submitting && (
+                <FontAwesomeIcon
+                  className='inline-icon'
+                  icon={faSpinner}
+                  spin
+                />
+              )}
+              {!this.state.submitting && "Create"}
+            </button>
+             <button
+              type='button'
+              className='btn btn-secondary'
+              onClick={() => this.props.handleCancel()}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    }
   }
+
+  
+  
+  // componentDidMount() { 
+  //     console.log("componentDidMount");
+  //     console.log(this.props.targetUUID);
+  //     this.getUpload(this.props.targetUUID);
+  // }
 
   // componentDidUpdate(prevProps, prevState) {
   //   if (prevProps.targetUUID !== this.props.targetUUID) {
@@ -164,7 +709,7 @@ class EditUploads extends Component {
     console.log(prevProps);
     // Typical usage (don't forget to compare props):
     if (this.props.targetUUID !== prevProps.targetUUID) {
-      this.getUpload(this.props.targetUUID);
+      // this.getUpload(this.props.targetUUID);
     }
   }
 
@@ -189,108 +734,16 @@ class EditUploads extends Component {
 
   validateUploadContent(){  
     return true;
-    // this.setState({
-    //   processingValidate: true
-    // });
 
-    // // let data = {
-    // //   uuid:this.state.e_UUID 
-    // // };
-
-    // const config = {
-    //   headers: {
-    //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-    //     "Content-Type": "multipart/form-data",
-    //   },
-    // };
-
-    // axios
-    //   .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/`+thisuuid+'/validate', config)
-      
-    //   .then(response => {
-    //     if (response.status === 200) {
-    //       console.debug(response.data);
-    //       this.setState({ 
-    //         submit_error: false, 
-    //         submitting: false,
-    //         successfulUploadCreation:true,
-    //         processingUpload: false,
-    //       });
-
-    //       console.debug(this.props);
-    //       this.props.onCreated({
-    //         entity: response.data,
-    //         uuid:"TESTUUID"
-    //       });
-          
-    //     }else {
-    //       this.setState({ 
-    //         submit_error: true, 
-    //         submitting: false ,
-    //         processingUpload:false,
-    //         errorMessage:response,
-    //       });
-    //       console.debug("NON 200: "+response.status);
-    //       console.debug(response);
-    //     }
-    //   })
-    //   .catch(error => {
-    //     console.log("Uploads FOlder Created NOT OK!");
-    //     var err ="";
-    //     if(error.response){
-    //       err = error.response.data.error;
-    //       console.log(err);
-    //     }else{
-    //       err = error;
-    //       console.log(error);
-    //     }
-    //     this.setState({ 
-    //       submit_error: true, 
-    //       submitting: false,
-    //       errorMessage:err,
-    //       processingUpload:false
-    //     });
-        
-    //   });
 };
 
 
-  isFormValid() {
-    let isValid = true;
-    // if (!validateRequired(this.state.title)) {
-    //   this.setState(prevState => ({
-    //     formErrors: { ...prevState.formErrors, title: "required" }
-    //   }));
-    //   isValid = false;
-    // } else {
-    //   this.setState(prevState => ({
-    //     formErrors: { ...prevState.formErrors, title: "" }
-    //   }));
-    // }
-
-    return isValid;
-  }
 
   errorClass(error) {
     if (error === "valid") return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
   }
 
-
-  cancelEdit = () => {
-    this.setState({ creatingNewSubmission: false, editingSubmission: null });
-    if (this.props.history) {
-        this.props.history.goBack();
-    }
-  };
-
-
-  getInitialState = () => {
-    return {
-      inputValue_title: ''
-    };
-  }
 
   updateInputValue = (evt) => {
     console.log(evt.target.id);
@@ -307,12 +760,6 @@ class EditUploads extends Component {
   }
 
 
-  getUploadUUID = () => {
-    console.log("getUploadUUID "+this.state.newUpload );
-    return this.state.newUpload;
-  }
-
-  
   renderLoadingSpinner() {
       return (
         <div className='text-center'>
@@ -376,9 +823,6 @@ class EditUploads extends Component {
 
   renderCreatedDate() {
       let date = new Date(this.state.e_created);
-      // console.log("renderCreatedDate");
-      // console.log(date);
-      // console.log(this.state.e_created);
       var formatted = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
       return formatted;
   }
@@ -399,35 +843,42 @@ class EditUploads extends Component {
     return "OK"
   }
 
-  // renderConfirmModal(){
-  //   return(
-      
-  //   )
-  // }
 
-
-  // renderConfirmButtons() {
-  //     return (
-  //       <div className="submission-item row mb-1">
-  //         <div className="col-3" ></div>
-  //         <div  className="col-9 m-0 p-0">
-  //           <Button size="large" color="primary" onClick={() => } >Yes</Button> 
-  //           <Button size="large" onClick={() => this.hideConfirmModal()}> Cancel</Button>
-  //         </div>
-  //       </div>
-  //     );
-  // }
 
   renderActionButtons() {
-      return (
-        <div className="submission-item row mb-1">
-          <div className="col-3" ></div>
-          <div  className="col-9 m-0 p-0">
-            <Button size="large" color="primary" onClick={() => this.showConfirmModal()} >Validate</Button> 
-            <Button size="large" onClick={() => this.handleCancel()}> Cancel</Button>
-          </div>
+    return (
+      <div className="row">
+      <div className="col-sm-12">
+        <Divider />
+      </div>
+        <div className="col-sm-12 text-right pads">
+          <button
+            type="submit"
+            className="btn btn-primary mr-1"
+            disabled={this.state.submitting}
+          >
+            {this.state.submitting && (
+              <FontAwesomeIcon
+                className="inline-icon"
+                icon={faSpinner}
+                spin
+              />
+            )}
+            {!this.state.submitting && "Update"}
+          </button>
+        {!this.state.back_btn_hide && (
+          <button
+            id="editBackBtn"
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => this.handleCancel()}
+          >
+            Cancel
+          </button>
+          )}
         </div>
-      );
+      </div>
+    );
   }
   
   renderValidateDialog() {
@@ -441,7 +892,7 @@ class EditUploads extends Component {
       return (
         <div className='w-100'>
           <FormControl className="newUploadForm">
-           <TextField 
+            <TextField 
             id="field" 
             name="submissionName" 
             label="Title"
@@ -477,6 +928,8 @@ class EditUploads extends Component {
       </div>
       );
   }
+
+  
   
 
   
@@ -484,106 +937,179 @@ class EditUploads extends Component {
   render() {
     return (
       <React.Fragment>
-        <Dialog 
-          onClose={this.handleEditClose} 
-          open={this.state.open_edit_content_dialog} >
-            <DialogTitle id="simple-dialog-title">Editing </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-              {this.renderEditInputForm}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.validateUploadContent} color="primary">
-                Update
-              </Button>
-              <Button onClick={this.hideConfirmModal} color="primary" autoFocus>
-                Cancle
-              </Button>
-            </DialogActions>
-          </Dialog>
+      <Paper className="paper-container">
+      <form>
+        <div>
+            <div className='row mt-3 mb-3'>
+                
+                 
+              <div className='col-sm-12'>
+                <h3 className='float-left'>
+                    <span
+                      className={"mr-1 badge " + this.state.badge_class}
+                      style={{ cursor: "pointer" }}
+                      onClick={() =>
+                        this.showErrorMsgModal(
+                          this.props.editingUpload.pipeline_message
+                        )
+                      }
+                    >
+                      {this.props.editingUpload.e_status}
+                    </span> 
+                    {this.props.editingUpload &&
+                      "HuBMAP Upload ID " +
+                      this.props.editingUpload.uuid}
+                  </h3>
+                </div>
+              </div>
 
-          <Dialog 
-            open={this.state.confirmModal} 
-            onClose={this.hideConfirmModal} >
-          <DialogTitle id="simple-dialog-title">Run the validation?</DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-              Has all data been uploaded to the Globus directory?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.validateUploadContent} color="primary">
-                Yes
-              </Button>
-              <Button onClick={this.hideConfirmModal} color="primary" autoFocus>
-                Cancle
-              </Button>
-            </DialogActions>
-        </Dialog>
+            <div className='row mt-3 mb-3'>
+               <div className="col-sm-12">
+                  <p>
+                    <strong>
+                      <big>
+                       
+                        {this.state.globus_path && (
 
-        {(this.state.creatingNewUploadFolder ) && (
-
-        <Card>
-        CARD
-        <CardContent>
-          <div id="SubmissionForm">
-          <div className="row container-fluid mb-3">
-            <div className="col-12">
-
-
-            <Typography variant="h4" className="d-inline-block"> 
-              {this.state.e_title} 
-            </Typography> 
-
-            <Button 
-                onClick={this.handleEditContentDialog}
-                > 
-              <Icon className="mr-1">
-                  edit_icon_two_tone
-                </Icon> 
-            </Button>
-          
-
-            {this.renderStatusBadge()} 
-
-
-            <Typography variant="caption" color="textSecondary" className="w-100 d-block"> Created {this.renderCreatedDate()} </Typography>
-          </div>
-          </div>
-
-          <div className="row container-fluid">
-
-
-            <div className="col-3 submission-column submission-cell" >
-
-              <Box className="nextstep ">
-                Author: <Typography color="textSecondary"> {this.state.e_author} </Typography><br />
-                Group: <Typography color="textSecondary"> {this.state.e_group} </Typography><br />
-                Globus: <Typography color="textSecondary"> {this.state.e_GURL} </Typography><br />
-              </Box>
-
-
+                          <a
+                            href={this.state.globus_path}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                          >
+                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
+                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+                          </a>
+                        )}
+                       
+                      </big>
+                    </strong>
+                  </p>
             </div>
+          </div>
+          <div className='form-group'>
+            <label htmlFor='name'>
+              Upload Name <span className='text-danger'>*</span>
+            </label>
+              <span className="px-2">
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='name_tooltip'
+                />
+                <ReactTooltip
+                  id='name_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Upload Name Tips</p>
+                </ReactTooltip>
+                </span>
 
-
-            <div className="col-9 submission-column submission-cell" >
-
-            <div>
-              Description: <Typography color="textSecondary"> {this.state.e_desc} </Typography><br />
+            {this.state.writeable && (
+                <input
+                  type='text'
+                  name='name'
+                  id='name'
+                  className={
+                    "form-control " +
+                    this.errorClass(this.state.formErrors.name)
+                  }
+                  placeholder='Dataset name'
+                  onChange={this.handleInputChange}
+                  value={this.state.e_title}
+                />
+              
+            )}
+            {!this.state.writeable && (
+              <div className='col-sm-9 col-form-label'>
+                <p>{this.state.e_title}</p>
+              </div>
+            )}
+            
+          </div>
+          <div className='form-group'>
+            <label
+              htmlFor='description'>
+              Description 
+            </label>
+            <span className="px-2">
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='description_tooltip'
+                />
+                <ReactTooltip
+                  id='description_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Description Tips</p>
+                </ReactTooltip>
+              </span>
+            {this.state.writeable && (
+              <React.Fragment>
+                <div>
+                  <textarea
+                    type='text'
+                    name='description'
+                    id='description'
+                    cols='30'
+                    rows='5'
+                    className='form-control'
+                    placeholder='Description'
+                    onChange={this.handleInputChange}
+                    value={this.state.e_desc}
+                  />
+                </div>
+              </React.Fragment>
+            )}
+            {!this.state.writeable && (
+              <div className='col-sm-9 col-form-label'>
+                <p>{this.state.e_desc}</p>
+              </div>
+            )}
+            
+        
+          {this.state.submit_error && (
+            <div className='alert alert-danger col-sm-12' role='alert'>
+              Oops! Something went wrong. Please contact administrator for help.
             </div>
-
-              Data Sets: 
-            </div>
-
+          )}
           </div>
           </div>
 
-          {this.renderActionButtons()}
-          </CardContent>
-        </Card>
-        )}
-      </React.Fragment>
+        {this.renderButtons()}
+      </form>
+
+      <GroupModal
+        show={this.state.GroupSelectShow}
+        hide={this.hideGroupSelectModal}
+        groups={this.state.groups}
+        submit={this.handleSubmit}
+        handleInputChange={this.handleInputChange}
+      />
+      <Modal
+        show={this.state.errorMsgShow}
+        handleClose={this.hideErrorMsgModal}
+      >
+        <div className='row'>
+          <div className='col-sm-12 text-center alert'>
+            <h4>
+              {(this.props.editingUpload &&
+                this.props.editingUpload.status.toUpperCase()) ||
+                "STATUS"}
+            </h4>
+            <div
+              dangerouslySetInnerHTML={{ __html: this.state.e_statusErrorMsg }}
+            ></div>
+          </div>
+        </div>
+      </Modal>
+      </Paper>
+    </React.Fragment>
+
     );
   }
 }

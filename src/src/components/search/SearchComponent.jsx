@@ -2,9 +2,9 @@ import React, { Component } from "react";
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 
+import axios from "axios";
 import DonorForm from "../uuid/donor_form_components/donorForm";
 import TissueForm from "../uuid/tissue_form_components/tissueForm";
-import UploadsForm from "../uploads/createUploads";
 import UploadsEdit from "../uploads/editUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES } from "../../constants";
@@ -67,6 +67,45 @@ class SearchComponent extends Component {
         isAuthenticated: false
       });
    }
+
+   const config = {
+    headers: {
+      Authorization:
+        "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+      "Content-Type": "application/json"
+    }
+  };
+   axios
+      .get(
+        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+        config
+      )
+      .then((res) => {
+        console.debug("groups RES: ", res);
+        // const display_names = res.data.groups
+        //   .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+        //   .map((g) => {
+        //     return g.displayname;
+        //   });
+        // this.setState({
+        //   groups: display_names,
+        // });
+        const groups = res.data.groups.filter(
+          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+        );
+
+        console.debug(groups);
+        this.setState({
+          groups: groups
+        });
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload();
+        }
+      });
+   
   }
   
   /*
@@ -122,6 +161,7 @@ class SearchComponent extends Component {
     }
 
     if (sample_type) {
+      console.debug(sample_type);
       if (sample_type === 'donor') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
@@ -148,6 +188,7 @@ class SearchComponent extends Component {
       //console.debug('SEARCH RESULTS', response);
         if (response.total === 1) {  // for single returned items, customize the columns to match
           which_cols_def = this.columnDefType(response.results[0].entity_type);
+          console.debug("which_cols_def: ", which_cols_def);
         }
       this.setState(
           {
@@ -156,12 +197,14 @@ class SearchComponent extends Component {
           column_def: which_cols_def
           }
         );
+        
       }
        this.setState({ loading: false });
     });
   };
 
   columnDefType = (et) => {
+    console.debug("ET ", et);
     if (et === 'Donor') {
         return COLUMN_DEF_DONOR;
     } 
@@ -222,32 +265,46 @@ class SearchComponent extends Component {
 
     if (params.row) {
     // //console.debug('CELL CLICK: entity', params.row.entity_type);
-   //console.debug('Local CELL CLICK: uuid', params.row.uuid);
+    console.debug('Local CELL CLICK: uuid', params.row.uuid);
 
     entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
       if (response.status === 200) {
         let entity_data = response.results;
 
-        // check to see if user can edit
-        ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-          .then((resp) => {
-            //console.debug('ingest_api_allowable_edit_states done', resp)
-          if (resp.status === 200) {
-            let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-            this.setState({
-              updateSuccess: null,
-              editingEntity: entity_data,
-              //editingDisplayId: display_id,
-              readOnly: read_only_state,   // used for hidding UI components
-              editForm: true,
-              show_modal: true,
-              show_search: false,
-              });
-        //this.props.onEdit();
+        if(entity_data.read_only_state){
+          ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+            .then((resp) => {
+              console.debug('ingest_api_allowable_edit_states done', resp)
+            if (resp.status === 200) {
+              let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+              this.setState({
+                updateSuccess: null,
+                editingEntity: entity_data,
+                //editingDisplayId: display_id,
+                readOnly: read_only_state,   // used for hidding UI components
+                editForm: true,
+                show_modal: true,
+                show_search: false,
+                });
+          //this.props.onEdit();
+            }
+          });
+        }else{
+          this.setState({
+            updateSuccess: null,
+            editingEntity: entity_data,
+            //editingDisplayId: display_id,
+            readOnly: "read_only_state",   // used for hidding UI components
+            editForm: true,
+            show_modal: true,
+            show_search: false,
+            });
+        }
 
-          }
-        });
+
+        // check to see if user can edit
+        
       }
     });
     }
@@ -340,11 +397,11 @@ class SearchComponent extends Component {
           );
       } else if (dataType === "Upload") {
           return (
-            <UploadsForm
+            <UploadsEdit
             handleCancel={this.cancelEdit}
             editingUpload={this.state.editingEntity}
             onUpdated={this.onUpdated}
-            //onCreated={this.handleDatasetCreated}
+            groups={this.state.groups}
             changeLink={this.onChangeGlobusLink.bind(this)}
           />
           );

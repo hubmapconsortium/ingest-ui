@@ -40,6 +40,7 @@ export function ingest_api_users_groups(auth) {
  * return:  { status, results}
  */
 export function ingest_api_allowable_edit_states(uuid, auth) { 
+  console.debug(uuid, auth);
   const options = {
       headers: {
         Authorization:
@@ -53,7 +54,8 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
   return axios 
     .get(url,options)
       .then(res => {
-        ////console.debug(res);
+        console.debug("res");
+        console.debug(res);
           //let results = res.data.has_write;
       
         return {status: res.status, results: res.data}
