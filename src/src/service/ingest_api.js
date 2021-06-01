@@ -2,7 +2,6 @@
 
 import axios from "axios";
 
-
 /*
  * User Group API
  *
@@ -22,11 +21,11 @@ export function ingest_api_users_groups(auth) {
  .then(res => {
   ////console.debug(res.data)
   const group_list = res.data.groups
-          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+          .filter(g => g.data_provider)
           .map(g => {
             return g;
           });
-    ////console.debug(group_list);
+    //console.debug(group_list);
     return {status: res.status, results: group_list}
  })
  .catch(err => {

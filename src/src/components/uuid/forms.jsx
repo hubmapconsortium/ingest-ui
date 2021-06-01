@@ -1,9 +1,12 @@
 import React, { Component } from "react";
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 import NewDatasetModal from "../ingest/newDatasetModal";
+
 
 class Forms extends Component {
   state = { formType: "----",
@@ -11,7 +14,9 @@ class Forms extends Component {
     isDirty: false,
     open:false,
     entity: null,
-    showDatasetResultsDialog: false
+    showDatasetResultsDialog: false,
+    showSuccessDialog: false,
+    result_dialog_size: "xs"
   };
 
   handleFormTypeChange = e => {
@@ -36,11 +41,18 @@ class Forms extends Component {
     console.debug('FORMS', this.props.formType);
   }
   onCreated = data => {
+    console.debug('FORMS onCreated:', data);
+    if (data["new_samples"]) {  // means that we need to show a larger screen
+      this.setState({
+        result_dialog_size: "xl"
+      });
+    }
     this.setState({
       entity: data.entity,
       result: data,
       formType: "----",
-      createSuccess: true
+      createSuccess: true,
+      showSuccessDialog: true
     });
   };
 
@@ -49,6 +61,7 @@ class Forms extends Component {
 //    let ancestor = e
     this.setState({
       createSuccess: false,
+      showSuccessDialog: true,
       formType: "sample",
       specimenType: e.entity_type === "Sample" ? "" : "organ",
       source_entity_type: e.entity_type, 
@@ -72,11 +85,16 @@ class Forms extends Component {
   renderForm() {
     if (this.state.createSuccess) {
       return (
+        <Dialog aria-labelledby="result-dialog" open={this.state.showSuccessDialog} maxWidth={this.state.result_dialog_size}>
+        <DialogContent>
         <Result
           result={this.state.result}
           onReturn={this.props.onCancel}
           onCreateNext={this.onCreateNext}
+          //entity={this.state.entity}
         />
+        </DialogContent>
+        </Dialog>
       );
     }
     if (this.state.formType === "donor") {

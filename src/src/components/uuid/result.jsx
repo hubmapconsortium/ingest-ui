@@ -1,9 +1,5 @@
 import React, { Component } from "react";
-//import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
-//import { flattenSampleType } from "../../utils/constants_helper";
-//import LabIDsModal from "./labIdsModal";
-import MultipleListModal from "./tissue_form_components/multipleListModal"
-//import TissueForm from "./tissue_form_components/tissueForm";
+import MultipleListModal from "./tissue_form_components/multipleListModal";
 
 class Result extends Component {
   state = { results: [] };
@@ -37,9 +33,7 @@ class Result extends Component {
     return (
       <React.Fragment>
               <div className="row">
-                <div className="col-sm-12 text-center">            
-                  <h4>Save was Successful</h4>
-                </div>
+                  
               </div>
               <div className="row">
                 {(this.props.result["new_samples"] 
@@ -58,12 +52,35 @@ class Result extends Component {
                     )
                   }
               </div>
+              {this.props.result !== undefined  && (
               <div className="row">
+                    {this.props.result.entity  && ( 
+                      <div className="portal-jss116 col-sm-12 ml-2 mb-2">Save was successful</div>
+                    )}
+                    {this.props.result.entity.hubmap_id && ( 
+                      <div className="portal-jss116 col-sm-12 ml-2">
+                          HuBMAP ID: {this.props.result.entity.hubmap_id}
+                      </div>
+                    )}
+                    {this.props.result.entity.submission_id && (
+                      <div className="portal-jss116 col-sm-12 ml-2">
+                          Submission ID: {this.props.result.entity.submission_id}
+                      </div>
+                    )}
+                    {this.props.result.entity.entity_type && (
+                      <div className="portal-jss116 col-sm-12 ml-2">
+                          Type: {this.props.result.entity.entity_type}
+                      </div>
+                    )}
+              </div>
+              )}
+              <div className="row">
+
                 <div className="col-sm-12 mt-2 mr-2 mb-2 text-center">
                   {this.props.result !== undefined  && 
                     this.props.result.entity.entity_type === "Donor" && (
                     <button
-                      className="btn btn-primary"
+                      className="btn btn-primary mr-2"
                       type="button"
                       onClick={() =>
                         this.props.onCreateNext(
@@ -77,7 +94,7 @@ class Result extends Component {
                   { this.props.result !== undefined  && 
                       this.props.result.entity.specimen_type === "organ" && (
                       <button
-                        className="btn btn-primary"
+                        className="btn btn-primary mr-2"
                         type="button"
                         onClick={() =>
                           this.props.onCreateNext(
@@ -89,11 +106,11 @@ class Result extends Component {
                       </button>
                     )}
                   <button
-                    className="btn btn-secondary"
+                    className="btn btn-success"
                     type="button"
                     onClick={this.handleReturnClick}
                   >
-                    Return to Search
+                    Done
                   </button>
                   </div>
               </div>

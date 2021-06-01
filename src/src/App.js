@@ -3,37 +3,25 @@ import './App.css';
 //import Navigation from './components/Navbar.js';
 import Routes from './Routes';
 import Login from './components/uuid/login';
-import Main from './components/Main';
-import UUIDEntrance from './components/uuid/uuid_entrance';
-import IngestEntrance from './components/ingest/ingest_entrance';
+import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
-//import CollectionsEntrance from './Collections/collections_entrance';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faExclamationTriangle,
   faAddressCard,
-  faWindowClose, 
-  faUpload
+  faWindowClose
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Button,
-  Hidden,
-  IconButton,
   Typography,
   Menu,
-  MenuItem,
-  Divider,
-  Dialog
+  MenuItem
 } from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/Menu";
 import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import { Route, BrowserRouter as Router, Switch, Link} from 'react-router-dom';
-import {ReactComponent as DONOR_IMAGE} from "./assets/img/donor.svg";
-import {ReactComponent as SAMPLE_IMAGE} from "./assets/img/sample.svg";
-import {ReactComponent as DATASET_IMAGE} from "./assets/img/dataset.svg";
+//import { BrowserRouter as Router } from 'react-router-dom';
 
 class App extends Component {
   state = {
@@ -182,7 +170,8 @@ handleMenuSelection = (event) => {
     this.setState({
       anchorEl: null,
       show_menu_popup: false,
-      open_edit_dialog: false
+      open_edit_dialog: false, 
+      creatingNewEntity: false
     })
   };
 
@@ -371,6 +360,7 @@ handleMenuSelection = (event) => {
               <IngestEntrance  />} */}
           {/**  {this.state.system === "collection" && 
               <CollectionsEntrance  />} */}
+
         </div>
       );
     }
@@ -426,6 +416,7 @@ handleMenuSelection = (event) => {
       })
   }
 
+
   // Display the final output
   render() {
     const collections = window.location.href.includes("/collections") ? true : false;
@@ -467,11 +458,19 @@ handleMenuSelection = (event) => {
 
         </div>
 
+        
+         {this.state.isAuthenticated && !this.state.creatingNewEntity && (
+          <div className="col-sm-12">
+            <SearchComponent />
+          </div>
+          )}
+
+          
           <div className="col-sm-12">
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              <Dialog fullWidth={true} maxWidth="xl" onClose={this.handleClose} aria-labelledby="edit-dialog" open={this.state.open_edit_dialog}>
+              
                 <Forms formType={this.state.formType} onCancel={this.handleClose} />
-              </Dialog>
+
             )}
           </div>
       </div>

@@ -1,18 +1,14 @@
 import React, { Component } from "react";
-import { DataGrid, GridToolbar} from '@material-ui/data-grid';
-import TextField from '@material-ui/core/TextField';
+import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
-import Forms from "../uuid/forms";
-import Modal from "../uuid/modal";
 
 import DonorForm from "../uuid/donor_form_components/donorForm";
 import TissueForm from "../uuid/tissue_form_components/tissueForm";
 import DatasetEdit from "../ingest/dataset_edit";
-import { SAMPLE_TYPES, GROUPS } from "../../constants";
-import { flattenSampleType } from "../../utils/constants_helper";
+import { SAMPLE_TYPES } from "../../constants";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner, faInfoCircle, faFilter, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
@@ -148,6 +144,9 @@ class SearchComponent extends Component {
 
       if (response.status === 200) {
       //console.debug('SEARCH RESULTS', response);
+        if (response.total === 1) {  // for single returned items, customize the columns to match
+          which_cols_def = this.columnDefType(response.results[0].entity_type);
+        }
       this.setState(
           {
           datarows: response.results, // Object.values(response.results)
@@ -159,6 +158,19 @@ class SearchComponent extends Component {
        this.setState({ loading: false });
     });
   };
+
+  columnDefType = (et) => {
+    if (et === 'Donor') {
+        return COLUMN_DEF_DONOR;
+    } 
+    if (et === 'Dataset') {
+        return COLUMN_DEF_DATASET;
+    } 
+    if (et === 'Upload') {
+        return COLUMN_DEF_UPLOADS;
+    } 
+    return COLUMN_DEF_SAMPLE;
+  }
 
   handlePageChange = (params) => {
     //console.debug('Page changed', params)
