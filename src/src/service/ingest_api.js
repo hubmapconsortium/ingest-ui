@@ -234,3 +234,36 @@ export function ingest_api_get_globus_url(uuid, auth) {
         return {status: 500, results: err.response}
       });
 }
+
+
+
+
+/* 
+ * Validate
+ *
+ */
+export function ingest_api_validate_upload(uuid, data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+    
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/validate`;
+console.debug(data);
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+        //console.debug(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};
+
+

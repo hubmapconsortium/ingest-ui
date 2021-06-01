@@ -7,6 +7,7 @@ import axios from "axios";
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import { validateRequired } from "../../utils/validators";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -37,7 +38,9 @@ import { entity_api_get_entity,
 } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import FormControl from '@material-ui/core/FormControl';  
-import { ingest_api_get_globus_url } from '../../service/ingest_api';
+import { ingest_api_get_globus_url, 
+  ingest_api_create_upload,
+  ingest_api_validate_upload } from '../../service/ingest_api';
 import { FiberManualRecordTwoTone } from "@material-ui/icons";
 
 
@@ -197,12 +200,11 @@ class EditUploads extends Component {
     this.setState({ confirmModal: false });
   };
 
-  handleSubmit = (i) => {
+  handleValidateUpload = (i) => {
     this.validateForm().then((isValid) => {
-    
       if (isValid) {
         if (
-          !this.props.editingDataset &&
+          !this.props.editingUpload &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
@@ -217,110 +219,26 @@ class EditUploads extends Component {
 
           // package the data up
           let data = {
-            title: this.state.name,
-            //collection_uuid: this.state.collection.uuid,
-            contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            description: this.state.description,
-            //status: this.state.new_status,
-            //is_protected: this.state.is_protected,
+            title: this.state.e_title,
+            description: this.state.e_desc
           };
   
- 
-          // var formData = new FormData();
-          // formData.append("data", JSON.stringify(data));
-          const config = {
-            headers: {
-              Authorization:
-                "Bearer " +
-                JSON.parse(localStorage.getItem("info")).nexus_token
-            },
-          };
-         
-          if (this.props.editingDataset) {
+
+          if (this.props.editingUpload) {
+
+            console.debug(JSON.stringify(data));
+            console.debug(JSON.parse(localStorage.getItem("info")));
             // if user selected Publish
-            if (i === "published") {
-              let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
-              axios
-                .put(uri, JSON.stringify(data), config)
-                .then((res) => {
-                  this.props.onUpdated(res.data);
-                })
-                .catch((error) => {
-                  this.setState({ submit_error: true, submitting: false });
-                });
-            } else if (i === "processing") {
-               ////console.log('Submit Dataset...');
-                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                  .then((response) => {
-                    if (response.status === 200) {
-                      ////console.log(response.results);
-                      this.props.onUpdated(response.results);
-                    } else {
-                      this.setState({ submit_error: true, submitting: false });
-                    }
-                });
-              } else { // just update
-                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                      .then((response) => {
-                          if (response.status === 200) {
-                            ////console.log('Update Dataset...');
-                             ////console.log(response.results);
-                            this.props.onUpdated(response.results);
-                          } else {
-                            this.setState({ submit_error: true, submitting: false });
-                          }
-                });
-              }
-          } else {  // new creations
-
-
-            // the group info on a create, check for the defaults
-              if (this.state.selected_group && this.state.selected_group.length > 0) {
-                data["group_uuid"] = this.state.selected_group;
-              } else {
-                data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
-              }
-
-              //////console.log('DATASET TO SAVE', JSON.stringify(data))
-              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-                .then((response) => {
+            ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              .then((response) => {
+                console.debug(response.results);
                   if (response.status === 200) {
-                    //////console.log('create Dataset...', response.results);
-                     this.setState({
-                        //globus_path: res.data.globus_directory_url_path,
-                        display_doi: response.results.display_doi,
-                        //doi: res.data.doi,
-                      });
-                     axios
-                  .get(
-                    `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${response.results.uuid}`,
-                    config
-                  )
-                  .then((res) => {
-                    this.setState({
-                      globus_path: res.data,
-                    }, () => {
-                      this.props.onCreated({entity: response.results}); // set as an entity for the Results
-                      this.onChangeGlobusURL();
-                    });
-                  })
-                  .catch((err) => {
-                    ////console.log('ERROR', err)
-                    this.setState({
-                      globus_path: "",
-                      globus_path_tips: "Globus URL Unavailable",
-                    });
-                    if (err.response && err.response.status === 401) {
-                      localStorage.setItem("isAuthenticated", false);
-                      window.location.reload();
-                    }
-                  });
+                    this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false });
                   }
-              });
-          }  //else
+            });
+          } 
         }
       }
     });
@@ -330,14 +248,14 @@ class EditUploads extends Component {
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
     switch (name) {
-      case "name":
+      case "title":
         this.setState({
-          name: value,
+          e_title: value,
         });
         break;
       case "description":
         this.setState({
-          description: value,
+          e_desc: value,
         });
         break;
       case "status":
@@ -600,7 +518,7 @@ class EditUploads extends Component {
                         spin
                       />
                     )}
-                    {!this.state.submitting && "Save"}
+                    {!this.state.submitting && "Validate"}
                   </button>
                 </div>
                 <div className='col-sm-4 text-center'>
@@ -717,6 +635,14 @@ class EditUploads extends Component {
   //ingest-api/uploads/<uuid>/reorganize-into-datasets
 
 
+  handleButtonClick = (i) => {
+    this.setState({
+      new_status: i
+    }, () => {
+      this.handleValidateUpload(i);
+    })
+  };
+
 
   fetchGlobusURL = (uploads_uuid) => {  
 
@@ -732,10 +658,38 @@ class EditUploads extends Component {
   };
 
 
-  validateUploadContent(){  
-    return true;
 
-};
+
+  validateForm() {
+    return new Promise((resolve, reject) => {
+      let isValid = true;
+      console.debug(validateRequired(this.state.e_title), validateRequired(this.state.e_desc));
+
+      if (!validateRequired(this.state.e_title)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "" },
+        }));
+      }
+
+      if (!validateRequired(this.state.e_desc)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "" },
+        }));
+      }
+     
+      resolve(isValid);
+    });
+  }
 
 
 
@@ -746,14 +700,14 @@ class EditUploads extends Component {
 
 
   updateInputValue = (evt) => {
-    console.log(evt.target.id);
-    if(evt.target.id==="Submission_Name"){
+    console.debug(evt.target.id, evt.target.value);
+    if(evt.target.id==="title"){
       this.setState({
-        inputValue_title: evt.target.value
+        e_title: evt.target.value
       });
-    }else if(evt.target.id==="Submission_Desc"){
+    }else if(evt.target.id==="description"){
       this.setState({
-        inputValue_desc: evt.target.value
+        e_desc: evt.target.value
       });
     }
     
@@ -769,79 +723,6 @@ class EditUploads extends Component {
     // }
   }
 
-
-  renderStatusBadge (){
-    // console.debug(this.state);
-    let status = this.state.e_status.toUpperCase();
-    // let status = this.state.e_status.toUpperCase();
-    let badge_class = "";
-    // let btn_text = dataset.writeable ? "Edit" : "View";
-    switch (status) {
-      case "NEW":
-        badge_class = "badge-purple";
-        break;
-      case "INVALID":
-        badge_class = "badge-warning";
-        break;
-      case "ERROR":
-        badge_class = "badge-red";
-        break;
-      case "VALID":
-        badge_class = "badge-primary";
-        break;
-      case "PUBLISHED":
-        badge_class = "badge-default";
-        break;
-      default:
-        break;
-    }    
-    return (
-      <span className={"badge " + badge_class +" upload-status"}>
-        <Typography className="status-text" >{status}</Typography>
-      </span>
-    )
-  }
-
-  renderTitleInput() {
-      return (
-        <div>
-            <TextField 
-              id="Submission_Name" 
-              name="submissionName" 
-              label="Title"
-              type="text"
-              value={this.state.e_title} 
-              onChange={this.updateInputValue}
-              size="small"
-              margin="dense"
-              />
-        </div>
-      );
-    // }
-  }
-
-
-  renderCreatedDate() {
-      let date = new Date(this.state.e_created);
-      var formatted = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-      return formatted;
-  }
-
-  handleEditContentDialog = () => {
-    this.setState({ 
-      open_edit_content_dialog: true 
-    });
-  }
-
-  handleEditCotentClose = () => {
-    this.setState({ 
-      open_edit_content_dialog: false 
-    });
-  }
-
-  handleUpdate(){
-    return "OK"
-  }
 
 
 
@@ -864,7 +745,7 @@ class EditUploads extends Component {
                 spin
               />
             )}
-            {!this.state.submitting && "Update"}
+            {!this.state.submitting && "Validate"}
           </button>
         {!this.state.back_btn_hide && (
           <button
@@ -880,57 +761,6 @@ class EditUploads extends Component {
       </div>
     );
   }
-  
-  renderValidateDialog() {
-      return (
-        <div>FNORD</div>
-        );
-  }
-  
-  
-  renderEditInputForm = (e) => {
-      return (
-        <div className='w-100'>
-          <FormControl className="newUploadForm">
-            <TextField 
-            id="field" 
-            name="submissionName" 
-            label="Title"
-            type="text"
-            value={this.state.inputValue_title} 
-            onChange={this.updateInputValue}
-            fullWidth={true}
-            size="small"
-            margin="dense"
-            />
-  </FormControl>
-      </div>
-      );
-  }
-  
-  
-  handleEditContentDialog = (e) => {
-      return (
-        <div className='w-100'>
-          <FormControl className="newUploadForm"> EDITME
-           <TextField 
-            id="field" 
-            name="submissionName" 
-            label="Title"
-            type="text"
-            value={this.state.inputValue_title} 
-            onChange={this.updateInputValue}
-            fullWidth={true}
-            size="small"
-            margin="dense"
-            />
-  </FormControl>
-      </div>
-      );
-  }
-
-  
-  
 
   
     // dev int
@@ -1009,14 +839,14 @@ class EditUploads extends Component {
             {this.state.writeable && (
                 <input
                   type='text'
-                  name='name'
-                  id='name'
+                  name='title'
+                  id='title'
                   className={
                     "form-control " +
                     this.errorClass(this.state.formErrors.name)
                   }
                   placeholder='Dataset name'
-                  onChange={this.handleInputChange}
+                  onChange={this.updateInputValue}
                   value={this.state.e_title}
                 />
               
@@ -1059,7 +889,7 @@ class EditUploads extends Component {
                     rows='5'
                     className='form-control'
                     placeholder='Description'
-                    onChange={this.handleInputChange}
+                    onChange={this.updateInputValue}
                     value={this.state.e_desc}
                   />
                 </div>
@@ -1087,7 +917,7 @@ class EditUploads extends Component {
         show={this.state.GroupSelectShow}
         hide={this.hideGroupSelectModal}
         groups={this.state.groups}
-        submit={this.handleSubmit}
+        submit={this.handleValidateUpload}
         handleInputChange={this.handleInputChange}
       />
       <Modal
