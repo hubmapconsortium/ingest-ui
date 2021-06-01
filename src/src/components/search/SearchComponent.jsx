@@ -4,6 +4,8 @@ import Paper from '@material-ui/core/Paper';
 
 import DonorForm from "../uuid/donor_form_components/donorForm";
 import TissueForm from "../uuid/tissue_form_components/tissueForm";
+import UploadsForm from "../uploads/createUploads";
+import UploadsEdit from "../uploads/editUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES } from "../../constants";
 
@@ -338,7 +340,13 @@ class SearchComponent extends Component {
           );
       } else if (dataType === "Upload") {
           return (
-            <div>placeholder for uploads</div>
+            <UploadsForm
+            handleCancel={this.cancelEdit}
+            editingUpload={this.state.editingEntity}
+            onUpdated={this.onUpdated}
+            //onCreated={this.handleDatasetCreated}
+            changeLink={this.onChangeGlobusLink.bind(this)}
+          />
           );
       } else {
         return <div />;
