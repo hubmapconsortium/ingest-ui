@@ -1,14 +1,12 @@
 import React, { Component } from "react";
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
-import UploadsForm from "../uploads/createUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 import NewDatasetModal from "../ingest/newDatasetModal";
 
-
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
 class Forms extends Component {
   state = { formType: "----",
     createSuccess: false,
@@ -34,13 +32,25 @@ class Forms extends Component {
     console.debug('Forms:isDirty', isDirty);
   }
 
-  UNSAFE_componentWillMount() {
+  UNSAFE_componentWillMount = () => {
     this.setState({
-      formType: this.props.formType,
+      formType: this.props.formType.toLowerCase,
         open: true
     });
-    console.debug('FORMS', this.props.formType);
+    if(this.props.formType.toLowerCase==="uploads" && this.state.createSuccess === true && this.state.editingEntity){
+      this.setState({
+        creatingNewUpload: false,
+        creatingNewEntity: true,
+        entity:this.props
+      });
+    }
   }
+
+  hideNewUploadsModal = () => {
+    this.setState({
+      showNewUploadsDialog: false
+    });
+  };
   onCreated = data => {
     console.debug('FORMS onCreated:', data);
     if (data["new_samples"]) {  // means that we need to show a larger screen
@@ -125,16 +135,6 @@ class Forms extends Component {
             changeLink={this.onChangeGlobusLink.bind(this)}
           />
         )
-    } else if (this.state.formType === "dataset") {
-        return (
-         <UploadsForm
-            handleCancel={this.props.onCancel}
-            uuid={this.state.uuid}
-            //onUpdated={this.handleDatasetUpdated}
-            onCreated={this.onCreated}
-            changeLink={this.onChangeGlobusLink.bind(this)}
-          />
-        )
     } else {
       return null;
     }
@@ -157,6 +157,7 @@ class Forms extends Component {
             onDismiss={() => this.setState({ showDatasetResultsDialog: false, editingDataset: null })}
          />
          )}
+      
 
     </div>;
   }

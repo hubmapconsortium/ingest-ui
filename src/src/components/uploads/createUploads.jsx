@@ -1,25 +1,20 @@
 import React, { Component } from "react";
-import { ingest_api_users_groups } from '../../service/ingest_api';
 import axios from "axios";
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import Box from '@material-ui/core/Box';
-
-// import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
-// import GroupSelector from '../uuid/selectGroup.jsx'
-import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import FormControl from '@material-ui/core/FormControl';
 
+import ReactTooltip from "react-tooltip";
+import { ingest_api_users_groups } from '../../service/ingest_api';
 // function Alert(props: AlertProps) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
 
-class CreateUplods extends Component {
+class CreateUploads extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -28,7 +23,12 @@ class CreateUplods extends Component {
       groups:[],
       processingUpload:false,
       successfulUploadCreation:false,
-      errorMessage:" "
+      errorMessage:" ",
+      showNewUpload:true,
+      formErrors: {
+           title: "",
+           description: ""
+         },
     };
 
   }
@@ -37,7 +37,10 @@ class CreateUplods extends Component {
   componentDidMount() {
     var tgl = this.getUserGroups();
     console.log(tgl);
+    console.debug(this.state);
   }
+
+  
 
 
   handleCreateUploadFolder(){  
@@ -58,8 +61,7 @@ class CreateUplods extends Component {
           MAuthorization: "MBearer " + localStorage.getItem("info"),
           "Content-Type": "application/json"
         }
-      };
-
+      }
 
       axios
         .post(
@@ -68,22 +70,11 @@ class CreateUplods extends Component {
           config
         )
         .then(response => {
+          console.debug("response: ", response);
           if (response.status === 200) {
             console.debug(response.data);
-            this.setState({ 
-              submit_error: false, 
-              submitting: false,
-              successfulUploadCreation:true,
-              processingUpload: false,
-            });
-
-            console.debug(this.props);
-            this.props.onCreated({
-              entity: response.data,
-              uuid:"TESTUUID"
-            });
-            
-          }else {
+            this.props.onCreated(response.data);            
+          } else {
             this.setState({ 
               submit_error: true, 
               submitting: false ,
@@ -96,6 +87,7 @@ class CreateUplods extends Component {
         })
         .catch(error => {
           console.log("Uploads FOlder Created NOT OK!");
+          console.debug(error);
           var err ="";
           if(error.response){
             err = error.response.data.error;
@@ -116,8 +108,8 @@ class CreateUplods extends Component {
 
 
   errorClass(error) {
-    if (error === "valid") return "is-valid";
-    return error.length === 0 ? "" : "is-invalid";
+    // if (error === "valid") return "is-valid";
+    // return error.length === 0 ? "" : "is-invalid";
   }
 
 
@@ -180,42 +172,6 @@ class CreateUplods extends Component {
       );
   }
 
-  renderTitleInput() {
-    return (
-      <div className='w-100'>
-          <TextField 
-            id="Submission_Name" 
-            name="submissionName" 
-            label="Title"
-            type="text"
-            value={this.state.inputValue_title} 
-            onChange={this.updateInputValue}
-            fullWidth={true}
-            size="small"
-            margin="dense"
-            />
-      </div>
-    );
-  }
-
-  renderDesc() {
-    return (
-      <div className="">
-          <TextField 
-            id="Submission_Desc" 
-            name="submissionDesc" 
-            rows="4"  
-            label="Description"
-            value={this.state.inputValue_desc} 
-            onChange={this.updateInputValue}
-            helperText="Optional"
-            fullWidth={true}
-            margin="dense"
-          />
-      </div>
-    );
-  }  
-
   getUserGroups(){
     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
       if (results.status === 200) { 
@@ -258,76 +214,142 @@ class CreateUplods extends Component {
   }  
 
 
-  renderActionButtons() {
-      return (
-        <div className="submission-item row mb-1 mt-2">
-          <div className="col-3" ></div>
-          <div  className="col-9 m-0 p-0">
-            <Button size="large" color="primary" onClick={() => this.handleCreateUploadFolder()} >Create</Button> 
-            <Button size="large" variant="text" onClick={() => this.props.handleCancel()}> Cancel</Button>
+  renderActionButtons = () =>  {
+    return (
+        <div className="row">
+          <div className="col-sm-12">
+          <Divider />
+          </div>
+          <div className="col-md-12 text-right pads">
+              <button
+              className="btn btn-primary mr-1"
+              onClick={() => this.handleCreateUploadFolder()}
+              >
+                  {this.state.submitting && (
+                  <FontAwesomeIcon
+                  className="inline-icon"
+                  icon={faSpinner}
+                  spin
+                  />
+              )}
+              {!this.state.submitting && "Create"}
+              </button>
+              <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => this.props.handleCancel()}
+              >
+                  Cancel
+              </button>
           </div>
         </div>
       );
+    
   }
   
 
   render() {
     return (
       <React.Fragment>
-        {(this.state.creatingNewUploadFolder ) && (
-        <Card >
-          <CardHeader 
-            className="newHeader"
-            title="Creating"
-            subheader="You're creating a new folder  "
-          /> 
-          <CardContent>
-
         {(this.state.processingUpload) && (
           this.renderLoadingSpinner()
         )}
         {(!this.state.processingUpload) && (
-          <div id="SubmissionForm">
-            <div className="row container-fluid">
-            <div className="col-3 submission-column submission-cell" >
-                <Box className="nextstep ">
-                  <Typography variant="subtitle1" color="textSecondary"> What's Next? </Typography>
-                  <p><small>This line of text is meant to be treated as fine print.</small></p>
-                </Box>
-            </div>
-              <div className="col-9 submission-column submission-cell" >
-                {(this.state.errorMessage.length>=2) && (
-                  this.renderErrorMessage()
-                )}
-                {(this.state.successfulUploadCreation) && (
-                  this.renderSuccessMessage()
-                )}
-                <FormControl className="newUploadForm">
-                  <div className='submission-item  d-inline-block'>
-                    {this.renderTitleInput()} 
-                  </div>
-                  <div className='submission-item  d-inline-block'>
-                    {this.renderDesc()} 
-                  </div>
-                  {!this.state.groups.length <=1 && (
-                    <div className='submission-item mt-2 d-inline-block' >
-                      {this.renderGroupSelect()}
-                    </div>
-                  )}
-                  </FormControl > 
-                </div>
+
+          
+          <form>
+            <div className='row mt-3 mb-3'>
+              <div className='col-sm-12'>
+                  <h3 className='float-left'>
+                  New Upload
+                </h3>
               </div>
-              {this.renderActionButtons()}
             </div>
+
+            <div className='form-group'>
+                <label htmlFor='title'>
+                  Upload Title <span className='text-danger'>*</span>
+                </label>
+                  <span className="px-2">
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for='title_tooltip'
+                    />
+                    <ReactTooltip
+                      id='title_tooltip'
+                      place='top'
+                      type='info'
+                      effect='solid'
+                    >
+                      <p>Upload Title Tips</p>
+                    </ReactTooltip>
+                  </span>
+                    <input
+                      type='text'
+                      name='title'
+                      id='Submission_Name'
+                      className={
+                        "form-control " +
+                        this.errorClass(this.state.formErrors.name)
+                      }
+                      placeholder='Upload Title'
+                      onChange={this.updateInputValue}
+                      value={this.state.e_title}
+                    />
+              </div>
+
+            <div className='form-group'>
+                <label
+                  htmlFor='description'>
+                  Description 
+                </label>
+                <span className="px-2">
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for='description_tooltip'
+                    />
+                    <ReactTooltip
+                      id='description_tooltip'
+                      place='top'
+                      type='info'
+                      effect='solid'
+                    >
+                      <p>Description Tips</p>
+                    </ReactTooltip>
+                  </span>
+                  <React.Fragment>
+                    <div>
+                      <textarea
+                        type='text'
+                        name='description'
+                        id='Submission_Desc'
+                        cols='30'
+                        rows='5'
+                        className='form-control'
+                        placeholder='Description'
+                        onChange={this.updateInputValue}
+                        value={this.state.e_desc}
+                      />
+                    </div>
+                  </React.Fragment>
+
+                  {this.renderGroupSelect()}
+                
+            
+              {this.state.submit_error && (
+                <div className='alert alert-danger col-sm-12' role='alert'>
+                  Oops! Something went wrong. Please contact administrator for help.
+                </div>
+              )}
+              </div>
+            {this.renderActionButtons()}
+          </form>
           )}
-
-
-          </CardContent>
-          </Card>
-        )}
         </React.Fragment>
     );
   }
 }
 
-export default CreateUplods;
+export default CreateUploads;

@@ -1,47 +1,25 @@
 import React, { Component } from "react";
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import axios from "axios";
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
 import { validateRequired } from "../../utils/validators";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faUserShield,
-  faTimes,
-  faSearch, faPaperclip, faAngleDown,
   faExternalLinkAlt, faFolder
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import ReactTooltip from "react-tooltip";
-import Icon from '@material-ui/core/Icon';
-import Box from '@material-ui/core/Box';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import { tsToDate } from "../../utils/string_helper";
 
+import { DataGrid } from '@material-ui/data-grid';
+import { COLUMN_DEF_DATASET } from '../search/table_constants';
+
 // import GroupModal from "../../groupModal";
-import { entity_api_get_entity, 
-  entity_api_update_entity, 
-  entity_api_create_entity,
-  entity_api_create_multiple_entities, 
-  entity_api_get_entity_ancestor 
-} from '../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
-import FormControl from '@material-ui/core/FormControl';  
 import { ingest_api_get_globus_url, 
-  ingest_api_create_upload,
   ingest_api_validate_upload } from '../../service/ingest_api';
-import { FiberManualRecordTwoTone } from "@material-ui/icons";
 
 
 
@@ -78,7 +56,6 @@ class EditUploads extends Component {
     };
     let entity_data = this.props.editingUpload;
     this.setState({
-      groups: this.props.groups,
       updateSuccess: null,
       show:true,
       editingEntity:entity_data,
@@ -98,6 +75,7 @@ class EditUploads extends Component {
       new_entity: false,  
       creatingNewUploadFolder:true,
       writeable:true,
+      globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
         formErrors: {
           name: "",
@@ -111,9 +89,9 @@ class EditUploads extends Component {
               badge_class: "badge-purple",
             });
             break;
-          case "REOPENED":
+          case "PROCESSING":
             this.setState({
-              badge_class: "badge-purple",
+              badge_class: "badge-info",
             });
             break;
           case "INVALID":
@@ -121,14 +99,9 @@ class EditUploads extends Component {
               badge_class: "badge-warning",
             });
             break;
-          case "QA":
+          case "VALID":
             this.setState({
               badge_class: "badge-info",
-            });
-            break;
-          case "LOCKED":
-            this.setState({
-              badge_class: "badge-secondary",
             });
             break;
           case "ERROR":
@@ -136,14 +109,11 @@ class EditUploads extends Component {
               badge_class: "badge-danger",
             });
             break;
-          case "PUBLISHED":
+          case "REORGANIZED":
             this.setState({
               badge_class: "badge-success",
-            });
-            break;
-          case "UNPUBLISHED":
-            this.setState({
-              badge_class: "badge-light",
+              writeable: false,
+              globusLinkText: "Open data repository "
             });
             break;
           case "DEPRECATED":
@@ -177,6 +147,7 @@ class EditUploads extends Component {
 
     
     console.debug(this.state);
+    console.debug(this.props.editingUpload);
     
     
 
@@ -185,10 +156,10 @@ class EditUploads extends Component {
     handleCancel = () => {
       if (this.props.history) {
         this.props.history.goBack();
-     } else {
-       this.props.handleCancel();
-     }
-   }
+      } else {
+        this.props.handleCancel();
+      }
+    }
  
 
   showConfirmModal = () => {
@@ -246,7 +217,7 @@ class EditUploads extends Component {
 
 
   handleInputChange = (e) => {
-    const { id, name, value } = e.target;
+    const { name, value } = e.target;
     switch (name) {
       case "title":
         this.setState({
@@ -284,317 +255,16 @@ class EditUploads extends Component {
   } 
 
 
-  renderButtons() {
-    if (this.props.editingUpload) {
-      if (this.state.writeable === false) {
-        ////console.log("editing but not writeable",  this.state.writeable)
-        return (
-          <div className='row'>
-            <div className='col-sm-2 offset-sm-10'>
-              <button
-                type='button'
-                className='btn btn-secondary'
-                onClick={() => this.props.handleCancel()}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        );
-      } else {
-        ////console.log("checking Has submit rights",  this.state.has_submit_privs)
-        if (this.state.has_submit_privs) {
-            
-          if (this.state.e_status.toUpperCase() === "QA") {
-            return (
-              <div className='row'>
-                <div className='col-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-info btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() =>
-                      this.handleButtonClick(this.state.e_status.toLowerCase())
-                    }
-                    data-status={this.state.e_status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Save"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("published")}
-                    data-status='published'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Publish"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("reopened")}
-                    data-status={this.state.e_status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Reopen"}
-                  </button>
-                </div>
-                <div className='col-sm-3 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-dark btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("hold")}
-                    data-status='invalid'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Hold"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-            } else if (this.state.e_status.toUpperCase() === "PUBLISHED") {  // not QA if statement
-            return (
-              <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("reopened")}
-                    data-status='reopened'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Reopen"}
-                  </button>
-                </div>
-                <div className='col-sm-4 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-danger btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("unpublished")}
-                    data-status='unpublished'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Unpublish"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-            } else if (this.state.e_status.toUpperCase() === "UNPUBLISHED") {  // not PUBLISHED if stmt
-            return (
-              <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'></div>
-                <div className='col-sm-4 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("published")}
-                    data-status='published'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Publish"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-            } else {  // not UNPUBLISHED
-            return (
-              <div className='row'>
-                <div className='col-sm-2 offset-sm-10'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-          }
-        } else {
-          
-          if (
-            ["NEW", "INVALID", "REOPENED", "ERROR"].includes(
-              this.state.e_status.toUpperCase()
-            )
-          ) {
-          
-            return (
-              <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-info btn-block mr-1'
-                    disabled={this.state.submitting}
-                    onClick={() =>
-                      this.handleButtonClick(this.state.e_status.toLowerCase())
-                    }
-                    data-status={this.state.e_status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Validate"}
-                  </button>
-                </div>
-                <div className='col-sm-4 text-center'>
-                  {this.state.has_submit && (
-                    <button
-                      type='button'
-                      className='btn btn-primary btn-block'
-                      disabled={this.state.submitting}
-                      onClick={() => this.handleButtonClick("processing")}
-                      data-status={this.state.e_status.toLowerCase()}
-                    >
-                      {this.state.submitting && (
-                        <FontAwesomeIcon
-                          className='inline-icon mr-1'
-                          icon={faSpinner}
-                          spin
-                        />
-                      )}
-                      {!this.state.submitting && "Submit"}
-                    </button>
-                  )}
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            );
-          } else {
-            return (
-              <div className='row'>
-                <div className='col-sm-2 offset-sm-10'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            );
-          }
-        }
-      }
-    } else {  // buttons for a new record
-    
-      return (
 
+  renderButtonBar(){
+      return (
         <div className='row'>
           <div className="col-sm-12">
           <Divider />
           </div>
           <div className='col-md-12 text-right pads'>
-            <button
-              type='button'
-              className='btn btn-primary mr-1'
-              disabled={this.state.submitting}
-              onClick={() => this.handleButtonClick("new")}
-              data-status='new'
-            >
-              {this.state.submitting && (
-                <FontAwesomeIcon
-                  className='inline-icon'
-                  icon={faSpinner}
-                  spin
-                />
-              )}
-              {!this.state.submitting && "Create"}
-            </button>
-             <button
+            {this.renderActionButton()}
+              <button
               type='button'
               className='btn btn-secondary'
               onClick={() => this.props.handleCancel()}
@@ -604,24 +274,61 @@ class EditUploads extends Component {
           </div>
         </div>
       );
-    }
+  } 
+
+
+  renderActionButton() {
+    if (["NEW", "INVALID", "ERROR"].includes(
+      this.state.e_status.toUpperCase()
+    )){
+    return ( 
+      <button
+        type='button'
+        className='btn btn-info mr-1'
+        disabled={this.state.submitting}
+        onClick={() => this.handleButtonClick(this.state.e_status.toLowerCase()) }
+        data-status={this.state.e_status.toLowerCase()}
+      >
+        {this.state.submitting && (
+        <FontAwesomeIcon
+          className='inline-icon'
+          icon={faSpinner}
+          spin
+        />
+      )}
+      {!this.state.submitting && "Validate"}
+    </button>
+    );
+  } else if (["VALID"].includes(this.state.e_status.toUpperCase())){
+    return (
+      <button
+        type='button'
+        className='btn btn-info mr-1'
+        disabled={this.state.submitting}
+        onClick={() => this.handleButtonClick(this.state.e_status.toLowerCase()) }
+        data-status={this.state.e_status.toLowerCase()}
+      >
+        {this.state.submitting && (
+        <FontAwesomeIcon
+          className='inline-icon'
+          icon={faSpinner}
+          spin
+        />
+      )}
+      {!this.state.submitting && "Create Datasets"}
+    </button>
+    );
+  }else if (
+    ["REORGANIZED"].includes(
+      this.state.e_status.toUpperCase()
+    )){
+    return ("");
+  } else {
+    return ("");
   }
-
+  };
+    
   
-  
-  // componentDidMount() { 
-  //     console.log("componentDidMount");
-  //     console.log(this.props.targetUUID);
-  //     this.getUpload(this.props.targetUUID);
-  // }
-
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (prevProps.targetUUID !== this.props.targetUUID) {
-  //     this.getUpload(targetUUID);
-  //     console.log('targetUUID state has changed.')
-  //   }
-  // }
-
   componentDidUpdate(prevProps) { 
     console.log("componentDidUpdate");
     console.log(prevProps);
@@ -631,10 +338,6 @@ class EditUploads extends Component {
     }
   }
 
-  //ingest-api/uploads/<uuid>/validate
-  //ingest-api/uploads/<uuid>/reorganize-into-datasets
-
-
   handleButtonClick = (i) => {
     this.setState({
       new_status: i
@@ -642,7 +345,6 @@ class EditUploads extends Component {
       this.handleValidateUpload(i);
     })
   };
-
 
   fetchGlobusURL = (uploads_uuid) => {  
 
@@ -686,12 +388,23 @@ class EditUploads extends Component {
           formErrors: { ...prevState.formErrors, description: "" },
         }));
       }
-     
+    
       resolve(isValid);
     });
   }
 
+  handlePageChange = (params) => {
+    this.setState({
+          page: params.page,
+          pageSize: params.pageSize
+        }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
+            this.handleSearchClick();
+        });
+  }
 
+  handleTableSelection = (row) => {
+    console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
+  }
 
   errorClass(error) {
     if (error === "valid") return "is-valid";
@@ -724,44 +437,6 @@ class EditUploads extends Component {
   }
 
 
-
-
-  renderActionButtons() {
-    return (
-      <div className="row">
-      <div className="col-sm-12">
-        <Divider />
-      </div>
-        <div className="col-sm-12 text-right pads">
-          <button
-            type="submit"
-            className="btn btn-primary mr-1"
-            disabled={this.state.submitting}
-          >
-            {this.state.submitting && (
-              <FontAwesomeIcon
-                className="inline-icon"
-                icon={faSpinner}
-                spin
-              />
-            )}
-            {!this.state.submitting && "Validate"}
-          </button>
-        {!this.state.back_btn_hide && (
-          <button
-            id="editBackBtn"
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => this.handleCancel()}
-          >
-            Cancel
-          </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   
     // dev int
   render() {
@@ -772,7 +447,6 @@ class EditUploads extends Component {
         <div>
             <div className='row mt-3 mb-3'>
                 
-                 
               <div className='col-sm-12'>
                 <h3 className='float-left'>
                     <span
@@ -784,7 +458,7 @@ class EditUploads extends Component {
                         )
                       }
                     >
-                      {this.props.editingUpload.e_status}
+                      {this.props.editingUpload.status}
                     </span> 
                     {this.props.editingUpload &&
                       "HuBMAP Upload ID " +
@@ -793,12 +467,25 @@ class EditUploads extends Component {
                 </div>
               </div>
 
-            <div className='row mt-3 mb-3'>
-               <div className="col-sm-12">
-                  <p>
+              <React.Fragment>
+            <div className="row  mb-3 ">
+              
+              <div className="col-sm-6">
+                <div className="col-sm-12 portal-label">
+                Group Name: {this.props.editingUpload.group_name}
+                </div>
+                  <div className="col-sm-12 portal-label">
+                    Entered by: {this.props.editingUpload.created_by_user_email}
+                </div>
+                <div className="col-sm-12 portal-label">
+                    Entry Date: {tsToDate(this.props.editingUpload.created_timestamp)}
+                </div>
+              </div>
+              <div className="col-sm-6">
+              <p>
                     <strong>
                       <big>
-                       
+
                         {this.state.globus_path && (
 
                           <a
@@ -806,33 +493,36 @@ class EditUploads extends Component {
                             target='_blank'
                             rel='noopener noreferrer'
                           >
-                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
+                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+                                {this.state.globusLinkText}{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
                           </a>
                         )}
-                       
+                      
                       </big>
                     </strong>
                   </p>
-            </div>
-          </div>
+              </div>
+
+              </div>
+            </React.Fragment>
           <div className='form-group'>
-            <label htmlFor='name'>
-              Upload Name <span className='text-danger'>*</span>
+            <label htmlFor='title'>
+              Upload Title <span className='text-danger'>*</span>
             </label>
               <span className="px-2">
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for='name_tooltip'
+                  data-for='title_tooltip'
                 />
                 <ReactTooltip
-                  id='name_tooltip'
+                  id='title_tooltip'
                   place='top'
                   type='info'
                   effect='solid'
                 >
-                  <p>Upload Name Tips</p>
+                  <p>Upload Title Tips</p>
                 </ReactTooltip>
                 </span>
 
@@ -845,7 +535,7 @@ class EditUploads extends Component {
                     "form-control " +
                     this.errorClass(this.state.formErrors.name)
                   }
-                  placeholder='Dataset name'
+                  placeholder='Upload Title'
                   onChange={this.updateInputValue}
                   value={this.state.e_title}
                 />
@@ -858,6 +548,8 @@ class EditUploads extends Component {
             )}
             
           </div>
+
+          
           <div className='form-group'>
             <label
               htmlFor='description'>
@@ -901,6 +593,23 @@ class EditUploads extends Component {
               </div>
             )}
             
+            {this.props.editingUpload.datasets && (
+
+                <DataGrid 
+                    rows={this.props.editingUpload.datasets}
+                    columns={COLUMN_DEF_DATASET}
+                    disableColumnMenu={true}
+                    pageSize={this.state.pageSize} 
+                    pagination
+                    hideFooterSelectedRowCount
+                    rowCount={this.state.results_total}
+                    paginationMode="server"
+                    onPageChange={this.handlePageChange}
+                    onPageSizeChange={this.handlePageChange}
+                    loading={this.state.loading}
+                />
+            )}
+            
         
           {this.state.submit_error && (
             <div className='alert alert-danger col-sm-12' role='alert'>
@@ -910,7 +619,7 @@ class EditUploads extends Component {
           </div>
           </div>
 
-        {this.renderButtons()}
+        {this.renderButtonBar()}
       </form>
 
       <GroupModal

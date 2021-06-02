@@ -18,10 +18,14 @@ import {
   Menu,
   MenuItem
 } from "@material-ui/core";
-import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
-import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
 //import { BrowserRouter as Router } from 'react-router-dom';
+import Divider from '@material-ui/core/Divider';
+
+
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import UploadsForm from "./components/uploads/createUploads";
 
 class App extends Component {
   state = {
@@ -29,7 +33,9 @@ class App extends Component {
     show_menu_popup: false,
     creatingNewEntity: false,
     formType: "",
-    open_edit_dialog: false
+    open_edit_dialog: false.valueOf,
+    creatingNewUpload: false,
+    editNewEntity: null,
   }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
@@ -79,6 +85,7 @@ class App extends Component {
       email: app_info.email || "",
       globus_id: app_info.globus_id || "",
       creatingNewEntity: false,
+      creatingNewUpload: false,
       system: "",
       registered: true
     };
@@ -147,7 +154,7 @@ handleLogout = e => {
 handleMenuSelection = (event) => {
 //console.debug('HI', event.currentTarget.innerText)
   var formtype = event.currentTarget.innerText;
-
+  
   this.setState({
       anchorEl: null,
       show_menu_popup: false,
@@ -156,9 +163,15 @@ handleMenuSelection = (event) => {
       open_edit_dialog: true
     })
   }
+  
+
+  handleUploadsDialog = (event) => {
+    this.setState({
+      creatingNewUpload: true,
+    })
+  }
 
   handleClick = (event) => {
-
     console.debug('clicked', event.currentTarget);
     this.setState({
       anchorEl: event.currentTarget,
@@ -173,6 +186,20 @@ handleMenuSelection = (event) => {
       open_edit_dialog: false, 
       creatingNewEntity: false
     })
+  };
+
+  onCreated = data => {
+    console.debug(data);
+    console.debug(data.entity_type);
+    this.setState({
+      show_menu_popup: false,
+      createSuccess: true,
+      creatingNewEntity: false,
+      creatingNewUpload: false,
+      editNewEntity: data,
+      formType: data.entity_type.toLowerCase(),
+      preSearch: "uploads"
+    });
   };
 
   showDropDwn = () => {
@@ -199,7 +226,7 @@ handleMenuSelection = (event) => {
 
     // Must wrap the componments in an enclosing tag
     return (
-         <header id="header" className="navbar navbar-light">
+        <header id="header" className="navbar navbar-light">
         <nav className="container menu-bar" id="navMenu">
           <div id="MenuLeft">
             <a className="navbar-brand" href="/">
@@ -246,9 +273,9 @@ handleMenuSelection = (event) => {
                     <MenuItem id="mi_donor" onClick={this.handleMenuSelection}>Donor</MenuItem>
                     <MenuItem id="mi_sample" onClick={this.handleMenuSelection}>Sample</MenuItem>
                     <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
-                    {/*<Divider />
-                    <MenuItem id="mi_dataupload" onClick={this.handleMenuSelection}>Data Upload</MenuItem>
-                  */}
+                    <Divider />
+                    <MenuItem id="mi_dataupload" onClick={this.handleUploadsDialog}>Data Upload</MenuItem>
+                 
                   </Menu>
               
      
@@ -423,7 +450,7 @@ handleMenuSelection = (event) => {
     //const system = this.state.system;
     return (
       <div>
-        <IdleTimer
+        {/* <IdleTimer
           ref={ref => {
             this.idleTimer = ref;
           }}
@@ -433,7 +460,7 @@ handleMenuSelection = (event) => {
           onAction={this.onAction}
           debounce={250}
           timeout={SESSION_TIMEOUT_IDLE_TIME}
-        />
+        /> */}
         <Modal show={this.state.show} handleClose={this.hideModal}>
           <div className="row">
             <div className="col-sm-12 text-center">
@@ -457,22 +484,36 @@ handleMenuSelection = (event) => {
           </div>
 
         </div>
-
+            
         
-         {this.state.isAuthenticated && !this.state.creatingNewEntity && (
+        {this.state.isAuthenticated && !this.state.creatingNewEntity && (
           <div className="col-sm-12">
-            <SearchComponent />
+            <SearchComponent editNewEntity={this.state.editNewEntity} />
           </div>
           )}
-
-          
           <div className="col-sm-12">
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              
-                <Forms formType={this.state.formType} onCancel={this.handleClose} />
-
-            )}
+              <Forms formType={this.state.formType} onCancel={this.handleClose} />
+              )}
           </div>
+          
+          {this.state.isAuthenticated && this.state.creatingNewUpload && (
+          <div className="col-sm-12">
+            <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideNewUploadsModal} aria-labelledby="source-lookup-dialog" open={this.state.creatingNewUpload}>
+            <DialogContent>
+              <UploadsForm
+                handleCancel={this.props.onCancel}
+                testVal="fnord"
+                onCreated={this.onCreated}
+              />
+            </DialogContent>
+            </Dialog>
+          </div>
+          )}
+          
+
+          
+          
       </div>
     );
   }

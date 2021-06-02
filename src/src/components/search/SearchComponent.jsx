@@ -45,8 +45,7 @@ class SearchComponent extends Component {
     this.keywords = React.createRef();
   }
 
-  componentDidMount() { 
-
+  componentDidMount() {     
     try {
      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
@@ -246,6 +245,7 @@ class SearchComponent extends Component {
 
   onUpdated = data => {
     //this.filterEntity();
+    console.debug(this.props)
     this.setState({
       updateSuccess: true,
       editingEntity: null,
@@ -254,6 +254,12 @@ class SearchComponent extends Component {
     setTimeout(() => {
       this.setState({ updateSuccess: null });
     }, 5000);
+
+    if(!this.state.editingEntity && this.props.editNewEntity){
+      this.setState({ 
+        editingEntity: this.props.editNewEntity
+      });
+    }
     //this.props.onCancel();
   };
 
@@ -362,6 +368,8 @@ class SearchComponent extends Component {
 
   renderEditForm() {
     if (this.state.editingEntity) {
+
+     
       const dataType = this.state.editingEntity.entity_type;
       if (dataType === "Donor") {
         return (
