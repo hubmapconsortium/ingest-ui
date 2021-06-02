@@ -398,35 +398,35 @@ handleMenuSelection = (event) => {
   onAction = e => { };
 
   onIdle = e => {
-    // if (localStorage.getItem("isAuthenticated") === "true") {
-    //   this.setState(
-    //     {
-    //       logout_in: 60
-    //     },
-    //     () => {
-    //       setTimeout(countDown.bind(this), 1000);
+    if (localStorage.getItem("isAuthenticated") === "true") {
+      this.setState(
+        {
+          logout_in: 60
+        },
+        () => {
+          setTimeout(countDown.bind(this), 1000);
 
-    //       function countDown() {
-    //         this.setState(
-    //           {
-    //             logout_in: this.state.logout_in - 1
-    //           },
-    //           () => {
-    //             if (this.state.logout_in > 0) {
-    //               this.setState({
-    //                 timer: setTimeout(countDown.bind(this), 1000)
-    //               });
-    //             }
-    //             if (this.state.logout_in === 0) {
-    //               this.logoutButton.click();
-    //             }
-    //           }
-    //         );
-    //       }
-    //       this.setState({ show: true });
-    //     }
-    //   );
-    // }
+          function countDown() {
+            this.setState(
+              {
+                logout_in: this.state.logout_in - 1
+              },
+              () => {
+                if (this.state.logout_in > 0) {
+                  this.setState({
+                    timer: setTimeout(countDown.bind(this), 1000)
+                  });
+                }
+                if (this.state.logout_in === 0) {
+                  this.logoutButton.click();
+                }
+              }
+            );
+          }
+          this.setState({ show: true });
+        }
+      );
+    }
   };
 
   onActive = e => { };
