@@ -62,7 +62,7 @@ class ImageUpload extends Component {
                 }
               };
 
-              axios.post(`${process.env.REACT_APP_ENTITY_API_URL}/file-upload`, data, options)
+              axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
                 .then(res => {
                   console.log('handleImageFileChange', res.data)
                   this.setState({ uploadPercentage: 100 }, () => {
