@@ -493,7 +493,7 @@ handleMenuSelection = (event) => {
           )}
           <div className="col-sm-12">
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              <Forms formType={this.state.formType} onCancel={this.handleClose} />
+              <Forms formType={this.state.formType} onCancel={this.handleClose} targetEntity={this.state.targetEntity}  />
               )}
           </div>
           
@@ -502,7 +502,6 @@ handleMenuSelection = (event) => {
             <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideNewUploadsModal} aria-labelledby="source-lookup-dialog" open={this.state.creatingNewUpload}>
             <DialogContent>
               <UploadsForm
-                handleCancel={this.props.onCancel}
                 testVal="fnord"
                 onCreated={this.onCreated}
               />

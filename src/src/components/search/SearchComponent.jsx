@@ -43,6 +43,7 @@ class SearchComponent extends Component {
     this.group = React.createRef();
     this.sampleType = React.createRef();
     this.keywords = React.createRef();
+    this.keywords = React.createRef();
   }
 
   componentDidMount() {     
@@ -106,6 +107,21 @@ class SearchComponent extends Component {
       });
    
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.editNewEntity !== this.props.editNewEntity) {
+      console.log("PROP UPDATE");
+      console.debug(this.props.editNewEntity);
+      this.setState({
+        editingEntity: this.props.editNewEntity,
+        editForm: true,
+        show_modal: true,
+        show_search: false
+        });
+    }
+  }
+
+  //editNewEntity
   
   /*
   set filter fo the Types dropdown, which depends on the propos.filter_type, if avaliable

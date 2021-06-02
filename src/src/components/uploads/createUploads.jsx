@@ -230,14 +230,14 @@ class CreateUploads extends Component {
                   className="inline-icon"
                   icon={faSpinner}
                   spin
-                  />
+                   />
               )}
               {!this.state.submitting && "Create"}
               </button>
               <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => this.props.handleCancel()}
+              onClick={() => this.cancelEdit()}
               >
                   Cancel
               </button>

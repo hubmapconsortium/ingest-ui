@@ -15,7 +15,7 @@ class Forms extends Component {
     entity: null,
     showDatasetResultsDialog: false,
     showSuccessDialog: false,
-    result_dialog_size: "xs"
+    result_dialog_size: "xs",
   };
 
   handleFormTypeChange = e => {
@@ -37,7 +37,9 @@ class Forms extends Component {
       formType: this.props.formType.toLowerCase,
         open: true
     });
-    if(this.props.formType.toLowerCase==="uploads" && this.state.createSuccess === true && this.state.editingEntity){
+    if(this.props.formType.toLowerCase==="uploads" && this.props.targetEntity){
+      console.LOG("FOUND this.props.targetEntity PROP");
+      console.debug(this.props.targetEntity);
       this.setState({
         creatingNewUpload: false,
         creatingNewEntity: true,
@@ -61,7 +63,7 @@ class Forms extends Component {
     this.setState({
       entity: data.entity,
       result: data,
-      formType: "----",
+      // formType: "----",
       createSuccess: true,
       showSuccessDialog: true
     });
@@ -79,7 +81,6 @@ class Forms extends Component {
       sourceUUID: e.hubmap_id,   // this is source hubmap id, which is for visual purpose
       uuid: e.uuid,      // send the true uuid
       ancestor_entity: e   // just sending this entire entity for now, which has alll the info;  REDSIGN NEEDED
-     
     });
   };
 
