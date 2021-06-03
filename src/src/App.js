@@ -452,7 +452,7 @@ handleMenuSelection = (event) => {
     //const system = this.state.system;
     return (
       <div>
-        {/* <IdleTimer
+        <IdleTimer
           ref={ref => {
             this.idleTimer = ref;
           }}
@@ -462,7 +462,7 @@ handleMenuSelection = (event) => {
           onAction={this.onAction}
           debounce={250}
           timeout={SESSION_TIMEOUT_IDLE_TIME}
-        /> */}
+        />
         <Modal show={this.state.show} handleClose={this.hideModal}>
           <div className="row">
             <div className="col-sm-12 text-center">
