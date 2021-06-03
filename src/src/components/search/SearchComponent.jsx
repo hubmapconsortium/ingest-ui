@@ -110,8 +110,8 @@ class SearchComponent extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
-      console.log("PROP UPDATE");
-      console.debug(this.props.editNewEntity);
+      // console.log("PROP UPDATE");
+      // console.debug(this.props.editNewEntity);
       this.setState({
         editingEntity: this.props.editNewEntity,
         editForm: true,
@@ -198,7 +198,7 @@ class SearchComponent extends Component {
 
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
-
+      console.debug("Serch Res", response.results);
       if (response.status === 200) {
       //console.debug('SEARCH RESULTS', response);
         if (response.total === 1) {  // for single returned items, customize the columns to match
@@ -212,6 +212,7 @@ class SearchComponent extends Component {
           column_def: which_cols_def
           }
         );
+        
         
       }
        this.setState({ loading: false });

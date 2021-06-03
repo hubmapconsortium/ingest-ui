@@ -1,12 +1,8 @@
 import React, { Component } from "react";
 import axios from "axios";
 import Divider from '@material-ui/core/Divider';
-import Paper from '@material-ui/core/Paper';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
-import FormControl from '@material-ui/core/FormControl';
 
 import ReactTooltip from "react-tooltip";
 import { ingest_api_users_groups } from '../../service/ingest_api';
@@ -237,7 +233,7 @@ class CreateUploads extends Component {
               <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => this.cancelEdit()}
+              onClick={() => this.props.onClose}
               >
                   Cancel
               </button>

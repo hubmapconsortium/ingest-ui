@@ -1,12 +1,14 @@
 import React, { Component } from "react";
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
+import UploadsForm from "../uploads/createUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 import NewDatasetModal from "../ingest/newDatasetModal";
 
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
+
 class Forms extends Component {
   state = { formType: "----",
     createSuccess: false,
@@ -15,7 +17,7 @@ class Forms extends Component {
     entity: null,
     showDatasetResultsDialog: false,
     showSuccessDialog: false,
-    result_dialog_size: "xs",
+    result_dialog_size: "xs"
   };
 
   handleFormTypeChange = e => {
@@ -32,27 +34,13 @@ class Forms extends Component {
     console.debug('Forms:isDirty', isDirty);
   }
 
-  UNSAFE_componentWillMount = () => {
+  UNSAFE_componentWillMount() {
     this.setState({
-      formType: this.props.formType.toLowerCase,
+      formType: this.props.formType,
         open: true
     });
-    if(this.props.formType.toLowerCase==="uploads" && this.props.targetEntity){
-      console.LOG("FOUND this.props.targetEntity PROP");
-      console.debug(this.props.targetEntity);
-      this.setState({
-        creatingNewUpload: false,
-        creatingNewEntity: true,
-        entity:this.props
-      });
-    }
+    console.debug('FORMS', this.props.formType);
   }
-
-  hideNewUploadsModal = () => {
-    this.setState({
-      showNewUploadsDialog: false
-    });
-  };
   onCreated = data => {
     console.debug('FORMS onCreated:', data);
     if (data["new_samples"]) {  // means that we need to show a larger screen
@@ -63,7 +51,7 @@ class Forms extends Component {
     this.setState({
       entity: data.entity,
       result: data,
-      // formType: "----",
+      formType: "----",
       createSuccess: true,
       showSuccessDialog: true
     });
@@ -81,6 +69,7 @@ class Forms extends Component {
       sourceUUID: e.hubmap_id,   // this is source hubmap id, which is for visual purpose
       uuid: e.uuid,      // send the true uuid
       ancestor_entity: e   // just sending this entire entity for now, which has alll the info;  REDSIGN NEEDED
+     
     });
   };
 
@@ -136,6 +125,16 @@ class Forms extends Component {
             changeLink={this.onChangeGlobusLink.bind(this)}
           />
         )
+    } else if (this.state.formType === "dataset") {
+        // return (
+        // //  <UploadsForm  // Loads from a dialog in app.js
+        // //     handleCancel={this.props.onCancel}
+        // //     uuid={this.state.uuid}
+        // //     //onUpdated={this.handleDatasetUpdated}
+        // //     onCreated={this.onCreated}
+        // //     changeLink={this.onChangeGlobusLink.bind(this)}
+        // //   />
+        // )
     } else {
       return null;
     }
@@ -158,7 +157,6 @@ class Forms extends Component {
             onDismiss={() => this.setState({ showDatasetResultsDialog: false, editingDataset: null })}
          />
          )}
-      
 
     </div>;
   }

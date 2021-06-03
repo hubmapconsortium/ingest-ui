@@ -1,25 +1,50 @@
 import React, { Component } from "react";
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import axios from "axios";
+import Typography from '@material-ui/core/Typography';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 import { validateRequired } from "../../utils/validators";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
+  faUserShield,
+  faTimes,
+  faSearch, faPaperclip, faAngleDown,
   faExternalLinkAlt, faFolder
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import ReactTooltip from "react-tooltip";
+import Icon from '@material-ui/core/Icon';
+import Box from '@material-ui/core/Box';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import { tsToDate } from "../../utils/string_helper";
 
 import { DataGrid } from '@material-ui/data-grid';
 import { COLUMN_DEF_DATASET } from '../search/table_constants';
 
 // import GroupModal from "../../groupModal";
+import { entity_api_get_entity, 
+  entity_api_update_entity, 
+  entity_api_create_entity,
+  entity_api_create_multiple_entities, 
+  entity_api_get_entity_ancestor 
+} from '../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
+import FormControl from '@material-ui/core/FormControl';  
 import { ingest_api_get_globus_url, 
+  ingest_api_create_upload,
   ingest_api_validate_upload } from '../../service/ingest_api';
+import { FiberManualRecordTwoTone } from "@material-ui/icons";
 
 
 
@@ -28,17 +53,17 @@ class EditUploads extends Component {
   
   state = {
     editingEntity: "entity_data",
-    e_title:"title",
-    e_desc:"desc",
-    e_author:"created_by_user_displayname",
-    e_created:"created_timestamp",
-    e_group:"group",
-    e_HID:"hubmap_id",
-    e_UUID:"uuid",
-    e_datasets:"datasets",
-    e_status:"status",
+    title:"title",
+    description:"desc",
+    author:"created_by_user_displayname",
+    created:"created_timestamp",
+    group:"group",
+    hid:"hubmap_id",
+    uuid:"uuid",
+    datasets:{},
+    status:"status",
     creatingNewUploadFolder: true,
-    confirmModal: false
+    confirmModal: false,
   }
 
   
@@ -56,19 +81,19 @@ class EditUploads extends Component {
     };
     let entity_data = this.props.editingUpload;
     this.setState({
+      groups: this.props.groups,
       updateSuccess: null,
       show:true,
       editingEntity:entity_data,
-      e_title:entity_data.title,
-      e_hid:entity_data.hubmap_id,
-      e_uuid:entity_data.uuid,
-      e_desc:entity_data.description,
-      e_author:entity_data.created_by_user_displayname,
-      e_created:entity_data.created_timestamp,
-      e_group:entity_data.group_name,
-      e_datasets:entity_data.datasets,
-      e_GURL:"",
-      e_status:entity_data.status,
+      title:entity_data.title,
+      hid:entity_data.hubmap_id,
+      uuid:entity_data.uuid,
+      description:entity_data.description,
+      author:entity_data.created_by_user_displayname,
+      created:entity_data.created_timestamp,
+      group:entity_data.group_name,
+      datasets:entity_data.datasets,
+      status:entity_data.status,
       editForm: true,
       show_modal: true,
       show_search: false,
@@ -78,12 +103,10 @@ class EditUploads extends Component {
       globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
         formErrors: {
-          name: "",
-          source_uuid: "",
-        },
+          name: ""        },
       },
       () => {
-        switch (this.state.e_status.toUpperCase()) {
+        switch (this.state.status.toUpperCase()) {
           case "NEW":
             this.setState({
               badge_class: "badge-purple",
@@ -190,8 +213,8 @@ class EditUploads extends Component {
 
           // package the data up
           let data = {
-            title: this.state.e_title,
-            description: this.state.e_desc
+            title: this.state.title,
+            description: this.state.description
           };
   
 
@@ -217,16 +240,16 @@ class EditUploads extends Component {
 
 
   handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { id, name, value } = e.target;
     switch (name) {
       case "title":
         this.setState({
-          e_title: value,
+          title: value,
         });
         break;
       case "description":
         this.setState({
-          e_desc: value,
+          description: value,
         });
         break;
       case "status":
@@ -279,15 +302,15 @@ class EditUploads extends Component {
 
   renderActionButton() {
     if (["NEW", "INVALID", "ERROR"].includes(
-      this.state.e_status.toUpperCase()
+      this.state.status.toUpperCase()
     )){
     return ( 
       <button
         type='button'
         className='btn btn-info mr-1'
         disabled={this.state.submitting}
-        onClick={() => this.handleButtonClick(this.state.e_status.toLowerCase()) }
-        data-status={this.state.e_status.toLowerCase()}
+        onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+        data-status={this.state.status.toLowerCase()}
       >
         {this.state.submitting && (
         <FontAwesomeIcon
@@ -299,14 +322,14 @@ class EditUploads extends Component {
       {!this.state.submitting && "Validate"}
     </button>
     );
-  } else if (["VALID"].includes(this.state.e_status.toUpperCase())){
+  } else if (["VALID"].includes(this.state.status.toUpperCase())){
     return (
       <button
         type='button'
         className='btn btn-info mr-1'
         disabled={this.state.submitting}
-        onClick={() => this.handleButtonClick(this.state.e_status.toLowerCase()) }
-        data-status={this.state.e_status.toLowerCase()}
+        onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+        data-status={this.state.status.toLowerCase()}
       >
         {this.state.submitting && (
         <FontAwesomeIcon
@@ -320,7 +343,7 @@ class EditUploads extends Component {
     );
   }else if (
     ["REORGANIZED"].includes(
-      this.state.e_status.toUpperCase()
+      this.state.status.toUpperCase()
     )){
     return ("");
   } else {
@@ -365,9 +388,9 @@ class EditUploads extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-      console.debug(validateRequired(this.state.e_title), validateRequired(this.state.e_desc));
+      console.debug(validateRequired(this.state.title), validateRequired(this.state.description));
 
-      if (!validateRequired(this.state.e_title)) {
+      if (!validateRequired(this.state.title)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, title: "required" },
         }));
@@ -378,7 +401,7 @@ class EditUploads extends Component {
         }));
       }
 
-      if (!validateRequired(this.state.e_desc)) {
+      if (!validateRequired(this.state.description)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, description: "required" },
         }));
@@ -416,11 +439,11 @@ class EditUploads extends Component {
     console.debug(evt.target.id, evt.target.value);
     if(evt.target.id==="title"){
       this.setState({
-        e_title: evt.target.value
+        title: evt.target.value
       });
     }else if(evt.target.id==="description"){
       this.setState({
-        e_desc: evt.target.value
+        description: evt.target.value
       });
     }
     
@@ -537,13 +560,13 @@ class EditUploads extends Component {
                   }
                   placeholder='Upload Title'
                   onChange={this.updateInputValue}
-                  value={this.state.e_title}
+                  value={this.state.title}
                 />
               
             )}
             {!this.state.writeable && (
               <div className='col-sm-9 col-form-label'>
-                <p>{this.state.e_title}</p>
+                <p>{this.state.title}</p>
               </div>
             )}
             
@@ -582,21 +605,20 @@ class EditUploads extends Component {
                     className='form-control'
                     placeholder='Description'
                     onChange={this.updateInputValue}
-                    value={this.state.e_desc}
+                    value={this.state.description}
                   />
                 </div>
               </React.Fragment>
             )}
             {!this.state.writeable && (
               <div className='col-sm-9 col-form-label'>
-                <p>{this.state.e_desc}</p>
+                <p>{this.state.description}</p>
               </div>
             )}
             
-            {this.props.editingUpload.datasets && (
+            {/* {this.state.datasets.length > 0 (
 
-                <DataGrid 
-                    rows={this.props.editingUpload.datasets}
+                <DataGrid rows={this.props.editingUpload.datasets}
                     columns={COLUMN_DEF_DATASET}
                     disableColumnMenu={true}
                     pageSize={this.state.pageSize} 
@@ -608,7 +630,7 @@ class EditUploads extends Component {
                     onPageSizeChange={this.handlePageChange}
                     loading={this.state.loading}
                 />
-            )}
+            )} */}
             
         
           {this.state.submit_error && (
@@ -622,13 +644,6 @@ class EditUploads extends Component {
         {this.renderButtonBar()}
       </form>
 
-      <GroupModal
-        show={this.state.GroupSelectShow}
-        hide={this.hideGroupSelectModal}
-        groups={this.state.groups}
-        submit={this.handleValidateUpload}
-        handleInputChange={this.handleInputChange}
-      />
       <Modal
         show={this.state.errorMsgShow}
         handleClose={this.hideErrorMsgModal}
@@ -641,7 +656,7 @@ class EditUploads extends Component {
                 "STATUS"}
             </h4>
             <div
-              dangerouslySetInnerHTML={{ __html: this.state.e_statusErrorMsg }}
+              dangerouslySetInnerHTML={{ __html: this.state.statusErrorMsg }}
             ></div>
           </div>
         </div>

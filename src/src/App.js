@@ -152,7 +152,7 @@ handleLogout = e => {
 };
 
 handleMenuSelection = (event) => {
-//console.debug('HI', event.currentTarget.innerText)
+  console.debug('HI', event.currentTarget.innerText)
   var formtype = event.currentTarget.innerText;
   
   this.setState({
@@ -180,11 +180,13 @@ handleMenuSelection = (event) => {
   };
 
   handleClose = () => {
+    console.log("handleClose");
     this.setState({
       anchorEl: null,
       show_menu_popup: false,
       open_edit_dialog: false, 
-      creatingNewEntity: false
+      creatingNewEntity: false,
+      creatingNewUpload: false
     })
   };
 
@@ -493,13 +495,13 @@ handleMenuSelection = (event) => {
           )}
           <div className="col-sm-12">
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              <Forms formType={this.state.formType} onCancel={this.handleClose} targetEntity={this.state.targetEntity}  />
+              <Forms formType={this.state.formType} onCancel={this.handleClose} />
               )}
           </div>
           
           {this.state.isAuthenticated && this.state.creatingNewUpload && (
           <div className="col-sm-12">
-            <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideNewUploadsModal} aria-labelledby="source-lookup-dialog" open={this.state.creatingNewUpload}>
+            <Dialog fullWidth={true} maxWidth="lg" onClose={this.handleClose} aria-labelledby="source-lookup-dialog" open={this.state.creatingNewUpload}>
             <DialogContent>
               <UploadsForm
                 testVal="fnord"
