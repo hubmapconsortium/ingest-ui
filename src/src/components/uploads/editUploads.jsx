@@ -52,9 +52,9 @@ class EditUploads extends Component {
       },
     };
     let entity_data = this.props.editingUpload;
-    this.props.editingUpload
+    
     this.setState({
-      groups: this.props.groups,
+      // groups: this.props.groups,
       updateSuccess: null,
       show:true,
       editingEntity:entity_data,
@@ -213,7 +213,7 @@ class EditUploads extends Component {
 
 
   handleInputChange = (e) => {
-    const { id, name, value } = e.target;
+    const { name, value } = e.target;
     switch (name) {
       case "title":
         this.setState({
