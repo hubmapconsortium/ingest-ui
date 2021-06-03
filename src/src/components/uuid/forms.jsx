@@ -3,6 +3,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
+import UploadsForm from "../uploads/createUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 import NewDatasetModal from "../ingest/newDatasetModal";
@@ -119,13 +120,21 @@ class Forms extends Component {
     } else if (this.state.formType === "dataset") {
         return (
          <DatasetEdit
-            handleCancel={this.props.onCancel}
-            //editingDataset={this.state.editingDataset}
-            //onUpdated={this.handleDatasetUpdated}
             onCreated={this.onCreated}
+            handleCancel={this.props.onCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}
           />
         )
+    } else if (this.state.formType === "dataset") {
+        // return (
+        // //  <UploadsForm  // Loads from a dialog in app.js
+        // //     handleCancel={this.props.onCancel}
+        // //     uuid={this.state.uuid}
+        // //     //onUpdated={this.handleDatasetUpdated}
+        // //     onCreated={this.onCreated}
+        // //     changeLink={this.onChangeGlobusLink.bind(this)}
+        // //   />
+        // )
     } else {
       return null;
     }
