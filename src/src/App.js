@@ -3,6 +3,7 @@ import './App.css';
 //import Navigation from './components/Navbar.js';
 import Routes from './Routes';
 import Login from './components/uuid/login';
+import IdleTimer from "react-idle-timer";
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 import axios from 'axios';
