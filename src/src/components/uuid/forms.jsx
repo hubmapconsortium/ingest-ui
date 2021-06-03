@@ -3,7 +3,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
-import UploadsForm from "../uploads/createUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 import NewDatasetModal from "../ingest/newDatasetModal";
