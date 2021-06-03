@@ -1,50 +1,22 @@
 import React, { Component } from "react";
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import axios from "axios";
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
 import { validateRequired } from "../../utils/validators";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faUserShield,
-  faTimes,
-  faSearch, faPaperclip, faAngleDown,
   faExternalLinkAlt, faFolder
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
-import GroupModal from "../uuid/groupModal";
 import ReactTooltip from "react-tooltip";
-import Icon from '@material-ui/core/Icon';
-import Box from '@material-ui/core/Box';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import { tsToDate } from "../../utils/string_helper";
 
-import { DataGrid } from '@material-ui/data-grid';
-import { COLUMN_DEF_DATASET } from '../search/table_constants';
 
 // import GroupModal from "../../groupModal";
-import { entity_api_get_entity, 
-  entity_api_update_entity, 
-  entity_api_create_entity,
-  entity_api_create_multiple_entities, 
-  entity_api_get_entity_ancestor 
-} from '../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
-import FormControl from '@material-ui/core/FormControl';  
 import { ingest_api_get_globus_url, 
-  ingest_api_create_upload,
   ingest_api_validate_upload } from '../../service/ingest_api';
-import { FiberManualRecordTwoTone } from "@material-ui/icons";
 
 
 
@@ -80,6 +52,7 @@ class EditUploads extends Component {
       },
     };
     let entity_data = this.props.editingUpload;
+    this.props.editingUpload
     this.setState({
       groups: this.props.groups,
       updateSuccess: null,
