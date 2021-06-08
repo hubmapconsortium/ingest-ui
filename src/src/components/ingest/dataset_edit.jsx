@@ -215,7 +215,7 @@ class DatasetEdit extends Component {
           status: this.props.editingDataset.status.toUpperCase(),
           display_doi: this.props.editingDataset.hubmap_id,
           //doi: this.props.editingDataset.entity_doi,
-          name: this.props.editingDataset.title,
+          lab_dataset_id: this.props.editingDataset.lab_dataset_id,
           globus_path: "", //this.props.editingDataset.properties.globus_directory_url_path,
           // collection: this.props.editingDataset.properties.collection
           //   ? this.props.editingDataset.properties.collection
@@ -339,6 +339,12 @@ class DatasetEdit extends Component {
     this.setState({ errorMsgShow: false });
   };
 
+  hideGroupSelectModal = () => {
+    this.setState({
+      GroupSelectShow: false
+    });
+  };
+
   handleLookUpClick = () => {
     //////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
     if (this.state.source_uuid === undefined && !this.state.lookUpCancelled) {
@@ -381,9 +387,9 @@ class DatasetEdit extends Component {
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
     switch (name) {
-      case "name":
+      case "lab_dataset_id":
         this.setState({
-          name: value,
+          lab_dataset_id: value,
         });
         break;
       // case "collection":
@@ -754,7 +760,7 @@ class DatasetEdit extends Component {
 
           // package the data up
           let data = {
-            title: this.state.name,
+            lab_dataset_id: this.state.lab_dataset_id,
             //collection_uuid: this.state.collection.uuid,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
             data_types: data_types,
@@ -876,31 +882,6 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-
-      if (!validateRequired(this.state.name)) {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, name: "required" },
-        }));
-        isValid = false;
-      } else {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, name: "" },
-        }));
-      }
-      // if (
-      //   this.state.collection !== "" &&
-      //   this.state.collection.label === undefined
-      // ) {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, collection: "required" },
-      //   }));
-      //   isValid = false;
-      //   resolve(isValid);
-      // } else {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, collection: "" },
-      //   }));
-      // }
 
       if (!validateRequired(this.state.source_uuid)) {
         this.setState((prevState) => ({
@@ -1395,7 +1376,7 @@ class DatasetEdit extends Component {
 
   onChangeGlobusURL() {
     this.props.changeLink(this.state.globus_path, {
-      name: this.state.name,
+      name: this.state.lab_dataset_id,
       display_doi: this.state.display_doi,
       doi: this.state.doi,
     });
@@ -1554,7 +1535,7 @@ class DatasetEdit extends Component {
             </div>
             <div className='form-group'>
               <label htmlFor='name'>
-                Dataset Name <span className='text-danger'>*</span>
+               Lab Name or ID
               </label>
            
                 <span className="px-2">
@@ -1569,7 +1550,7 @@ class DatasetEdit extends Component {
                     type='info'
                     effect='solid'
                   >
-                    <p>Dataset Name Tips</p>
+                    <p>Lab Name or ID</p>
                   </ReactTooltip>
                   </span>
                
@@ -1584,108 +1565,21 @@ class DatasetEdit extends Component {
                       "form-control " +
                       this.errorClass(this.state.formErrors.name)
                     }
-                    placeholder='Dataset name'
+                    placeholder='Lab Name or ID'
                     onChange={this.handleInputChange}
-                    value={this.state.name}
+                    value={this.state.lab_dataset_id}
                   />
                 
               )}
               {!this.state.writeable && (
                 <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.name}</p>
+                  <p>{this.state.lab_dataset_id}</p>
                 </div>
               )}
               
             </div>
 
-           {/*} <div className='form-group row'>
-              <label
-                htmlFor='name'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Collection
-              </label>
-              {!this.props.readOnly && (
-                <React.Fragment>
-                  <div className='col-sm-7'>
-                    <input
-                      type='text'
-                      name='collection'
-                      id='collection'
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.collection)
-                      }
-                      placeholder='Collection'
-                      onChange={this.handleInputChange}
-                      onKeyDown={this.handler}
-                      value={this.state.collection.label}
-                      autoComplete='off'
-                    />
-                    {this.state.showCollectionsDropDown && (
-                      <div
-                        className='dropdown-menu display-block ml-2'
-                        aria-labelledby='dropdownMenuButton'
-                      >
-                        {this.state.collection_candidates.map((collection) => {
-                          return (
-                            <div
-                              key={collection.uuid}
-                              className='card-body'
-                              onClick={() =>
-                                this.handleCollectionClick(collection)
-                              }
-                            >
-                              <h5 className='card-title'>{collection.label}</h5>
-                              <p className='card-text'>
-                                {truncateString(collection.description, 230)}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                  <div className='col-sm-2 my-auto text-right'>
-                    {this.state.groups && (
-                      <button
-                        className='btn btn-primary'
-                        type='button'
-                        onClick={this.handleAddNewCollection}
-                      >
-                        Add New
-                      </button>
-                    )}
-                  </div>
-                  <CreateCollectionModal
-                    show={this.state.AddCollectionShow}
-                    hide={this.hideAddCollectionModal}
-                  />
-                </React.Fragment>
-              )}
-              {this.props.readOnly && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.collection}</p>
-                </div>
-              )}
-              <div className='col-sm-1 my-auto text-center'>
-                <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for='collection_tooltip'
-                  />
-                  <ReactTooltip
-                    id='collection_tooltip'
-                    place='top'
-                    type='info'
-                    effect='solid'
-                  >
-                    <p>Collection Tips</p>
-                  </ReactTooltip>
-                </span>
-              </div>
-            </div> */}
+          
             <div className='form-group'>
               <label
                 htmlFor='source_uuid'>
@@ -1991,43 +1885,6 @@ class DatasetEdit extends Component {
               )*/}
             
             </div>
-
-            {/* <div className='form-group row'>
-              <label
-                htmlFor='is_protected'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Protected Access
-              </label>
-              {!this.props.readOnly && (
-                <div className='col-sm-9'>
-                  <div className='form-check form-check-inline'>
-                    <input
-                      className='form-check-input'
-                      type='checkbox'
-                      name='is_protected'
-                      id='is_protected'
-                      checked={this.state.is_protected}
-                      onChange={this.handleInputChange}
-                    />
-                    <label className='form-check-label' htmlFor='is_protected'>
-                      This dataset is currently granted{" "}
-                      <strong>protected</strong> status. <br />
-                      In order to access the data in this dataset you must
-                      contact:{" "}
-                      <a href='mailto:[placeholder]@hubmapconsortium.org'>
-                        [placeholder]@hubmapconsortium.org
-                      </a>
-                    </label>
-                  </div>
-                </div>
-              )}
-              {this.props.readOnly && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.is_protected}</p>
-                </div>
-              )}
-			</div> */}
           </div>
           <div className='form-group row'>
             <label
@@ -2077,53 +1934,7 @@ class DatasetEdit extends Component {
             )}
             
           </div>
-          {/*<div className='form-group row'>
-            <label
-              htmlFor='description'
-              className='col-sm-2 col-form-label text-right'
-            >
-              Description
-            </label>
-            {!this.props.readOnly && (
-              <React.Fragment>
-                <div className='col-sm-9'>
-                  <textarea
-                    type='text'
-                    name='description'
-                    id='description'
-                    cols='30'
-                    rows='5'
-                    className='form-control'
-                    placeholder='Description'
-                    onChange={this.handleInputChange}
-                    value={this.state.description}
-                  />
-                </div>
-              </React.Fragment>
-            )}
-            {this.props.readOnly && (
-              <div className='col-sm-9 col-form-label'>
-                <p>{this.state.description}</p>
-              </div>
-            )}
-            <div className='col-sm-1 my-auto text-center'>
-              <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='description_tooltip'
-                />
-                <ReactTooltip
-                  id='description_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>Description Tips</p>
-                </ReactTooltip>
-              </span>
-            </div>
-          </div> */}
+ 
           {this.state.assay_metadata_status !== undefined && (
             <div className='form-group row'>
               <label

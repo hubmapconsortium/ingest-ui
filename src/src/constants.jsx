@@ -136,6 +136,7 @@ export const RUI_ORGAN_TYPES = ["LK", "RK", "HT", "SP", "LI"];
 
 export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "5777527e-ec11-11e8-ab41-0af86edb4424"];
 
+// this is a list of fields for the keyword search.  note: must ID fields need to use .keyword
 export const ES_SEARCHABLE_FIELDS = [
   "description.keyword", 
   "hubmap_display_id.keyword", 
@@ -145,6 +146,7 @@ export const ES_SEARCHABLE_FIELDS = [
   "lab_name.keyword",
   "lab_tissue_sample_id.keyword",
   "lab_donor_id.keyword",
+  "lab_dataset_id.keyword",
   "created_by_user_displayname", 
   "created_by_user_email"
   ];

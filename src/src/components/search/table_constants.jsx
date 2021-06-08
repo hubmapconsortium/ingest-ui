@@ -49,17 +49,10 @@ export const COLUMN_DEF_SAMPLE = [
 // DATASET COLUMNS
 export const COLUMN_DEF_DATASET = [
   	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
-  	{ field: 'title', headerName: 'Dataset Name', width: 250,
-  		renderCell:(params: ValueFormatterParams) => (
-  			 <React.Fragment>
-  				<span>{params.value}</span>
-  			</React.Fragment>
-  		)
-
-  	},
-  //	{ field: 'group_name', headerName: 'Group Name', width: 200},
-	{ field: 'data_access_level', headerName: 'Access Level', width: 150},
+  	{ field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200},
+  	{ field: 'group_name', headerName: 'Group Name', width: 200},
 	{ field: 'created_by_user_email', headerName: 'Created By', width: 210},
+  { field: 'data_access_level', headerName: 'Access Level', width: 150},
 	{ field: 'status', headerName: 'Submission Status', width: 200,
 		renderCell: (params: ValueFormatterParams) => (
 			<span
