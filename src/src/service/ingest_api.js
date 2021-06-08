@@ -25,7 +25,7 @@ export function ingest_api_users_groups(auth) {
           .map(g => {
             return g;
           });
-    //console.debug(group_list);
+    console.debug('API USER GROUPs', group_list);
     return {status: res.status, results: group_list}
  })
  .catch(err => {
