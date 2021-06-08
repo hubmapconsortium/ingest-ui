@@ -3,10 +3,8 @@ import './App.css';
 //import Navigation from './components/Navbar.js';
 import Routes from './Routes';
 import Login from './components/uuid/login';
-import Main from './components/Main';
-import UUIDEntrance from './components/uuid/uuid_entrance';
-import IngestEntrance from './components/ingest/ingest_entrance';
-//import CollectionsEntrance from './Collections/collections_entrance';
+import SearchComponent from './components/search/SearchComponent';
+import Forms from "./components/uuid/forms";
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -16,25 +14,29 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Button,
-  Hidden,
-  IconButton,
-  Typography
+  Typography,
+  Menu,
+  MenuItem
 } from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/Menu";
 import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import { Route, BrowserRouter as Router, Switch} from 'react-router-dom';
-
-
-
+//import { BrowserRouter as Router } from 'react-router-dom';
 
 class App extends Component {
+  state = {
+    anchorEl: null,
+    show_menu_popup: false,
+    creatingNewEntity: false,
+    formType: "",
+    open_edit_dialog: false
+  }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
   // Any place else in our component, you should rely on setState() instead.
   constructor(props) {
     super(props);
+
     this.idleTimer = null;
     // Testing, set local storage flag
     // Note: many browsers local storage can only store string
@@ -80,6 +82,8 @@ class App extends Component {
       system: "",
       registered: true
     };
+
+    console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
 
     // Binding event handler methods to an instance
     this.handleLogout = this.handleLogout.bind(this);
@@ -135,9 +139,46 @@ class App extends Component {
     }
   }
 
-  handleLogout = e => {
-    localStorage.setItem("isAuthenticated", false);
-    localStorage.removeItem("info");
+handleLogout = e => {
+  localStorage.setItem("isAuthenticated", false);
+  localStorage.removeItem("info");
+};
+
+handleMenuSelection = (event) => {
+//console.debug('HI', event.currentTarget.innerText)
+  var formtype = event.currentTarget.innerText;
+
+  this.setState({
+      anchorEl: null,
+      show_menu_popup: false,
+      creatingNewEntity: true,
+      formType: formtype.toLowerCase(),
+      open_edit_dialog: true
+    })
+  }
+
+  handleClick = (event) => {
+
+    console.debug('clicked', event.currentTarget);
+    this.setState({
+      anchorEl: event.currentTarget,
+      show_menu_popup: true
+    })
+  };
+
+  handleClose = () => {
+    this.setState({
+      anchorEl: null,
+      show_menu_popup: false,
+      open_edit_dialog: false, 
+      creatingNewEntity: false
+    })
+  };
+
+  showDropDwn = () => {
+    this.setState(prevState => ({
+      showDropDown: !prevState.showDropDown
+    }));
   };
 
   renderHeader() {
@@ -158,7 +199,7 @@ class App extends Component {
 
     // Must wrap the componments in an enclosing tag
     return (
-      <header id="header" className="navbar navbar-light">
+         <header id="header" className="navbar navbar-light">
         <nav className="container menu-bar" id="navMenu">
           <div id="MenuLeft">
             <a className="navbar-brand" href="/">
@@ -172,7 +213,7 @@ class App extends Component {
                 alt="HuBMAP logo"
               />
             </a>
-            <Hidden mdUp>
+            {/*<Hidden mdUp>
                 <IconButton
                   className={"IconBTN"}
                   onClick={console.log("open Nav")}
@@ -181,14 +222,36 @@ class App extends Component {
                   <MenuIcon color="primary" />
                 </IconButton>
               </Hidden>
+            */}
               {this.state.isAuthenticated && (
                 <div className="d-inline">
-                  <Button className="nav-link" href="/donors-samples">
+                 {/* <Button className="nav-link" href="/donors-samples">
                     Donors &amp; Samples
                     </Button>
                   <Button className="nav-link" href="/datasets">
                     Datasets
                   </Button>
+                */}
+                   <Button aria-controls="simple-menu" aria-haspopup="true" onClick={this.handleClick}>
+                     Register New Item
+                  </Button>
+                  <Menu
+                    id="simple-menu"
+                    anchorEl={this.state.anchorEl}
+                    keepMounted
+                    open={Boolean(this.state.show_menu_popup)}
+                    onClose={this.handleClose}
+                    className="option-menu"
+                  >
+                    <MenuItem id="mi_donor" onClick={this.handleMenuSelection}>Donor</MenuItem>
+                    <MenuItem id="mi_sample" onClick={this.handleMenuSelection}>Sample</MenuItem>
+                    <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
+                    {/*<Divider />
+                    <MenuItem id="mi_dataupload" onClick={this.handleMenuSelection}>Data Upload</MenuItem>
+                  */}
+                  </Menu>
+              
+     
                 </div>
               )}
             </div>
@@ -197,7 +260,7 @@ class App extends Component {
           {this.state.isAuthenticated && (
             <div className="float-right">
               <span className="username">
-                <Typography variant="button" class="username-menu">
+                <Typography variant="button" className="username-menu">
                   {this.state.email}{" "}
                 </Typography>
                 <Button
@@ -281,6 +344,7 @@ class App extends Component {
               </div>
             </div>
           )}
+        {/* THIS CAN MOVE TO ROUTES.JS 
           <Router>
             <Switch>
               <Route path="/" exact component={Main} />
@@ -288,6 +352,7 @@ class App extends Component {
               <Route path="/datasets" exact component={IngestEntrance} />
             </Switch>
           </Router>
+        */}
 
           {/* {this.state.system === "uuid" && 
               <UUIDEntrance  />}
@@ -295,6 +360,7 @@ class App extends Component {
               <IngestEntrance  />} */}
           {/**  {this.state.system === "collection" && 
               <CollectionsEntrance  />} */}
+
         </div>
       );
     }
@@ -350,6 +416,7 @@ class App extends Component {
       })
   }
 
+
   // Display the final output
   render() {
     const collections = window.location.href.includes("/collections") ? true : false;
@@ -391,6 +458,21 @@ class App extends Component {
 
         </div>
 
+        
+         {this.state.isAuthenticated && !this.state.creatingNewEntity && (
+          <div className="col-sm-12">
+            <SearchComponent />
+          </div>
+          )}
+
+          
+          <div className="col-sm-12">
+            {this.state.isAuthenticated && this.state.creatingNewEntity && (
+              
+                <Forms formType={this.state.formType} onCancel={this.handleClose} />
+
+            )}
+          </div>
       </div>
     );
   }
