@@ -386,24 +386,14 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
+    console.debug('**name', name)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
           lab_dataset_id: value,
         });
+        console.debug('*** lab_dataset_id', value)
         break;
-      // case "collection":
-      //   let ret = this.state.collections.filter((c) => {
-      //     if(c.label){
-      //       return c.label.toLowerCase().includes(value.toLowerCase());
-      //     }
-      //   });
-      //   this.setState({
-      //     collection: value,
-      //     showCollectionsDropDown: value !== "",
-      //     collection_candidates: ret,
-      //   });
-      //   break;
       case "source_uuid":
         this.setState({
           source_uuid: value,
@@ -826,6 +816,9 @@ class DatasetEdit extends Component {
               }
           } else {  // new creations
 
+            if (this.state.lab_dataset_id) {
+              data["lab_dataset_id"] = this.state.lab_dataset_id;
+            }
 
             // the group info on a create, check for the defaults
               if (this.state.selected_group && this.state.selected_group.length > 0) {
@@ -1534,7 +1527,7 @@ class DatasetEdit extends Component {
               </div>
             </div>
             <div className='form-group'>
-              <label htmlFor='name'>
+              <label htmlFor='lab_dataset_id'>
                Lab Name or ID
               </label>
            
@@ -1542,10 +1535,10 @@ class DatasetEdit extends Component {
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
-                    data-for='name_tooltip'
+                    data-for='lab_dataset_id_tooltip'
                   />
                   <ReactTooltip
-                    id='name_tooltip'
+                    id='lab_dataset_id_tooltip'
                     place='top'
                     type='info'
                     effect='solid'
@@ -1559,8 +1552,8 @@ class DatasetEdit extends Component {
                
                   <input
                     type='text'
-                    name='name'
-                    id='name'
+                    name='lab_dataset_id'
+                    id='lab_dataset_id'
                     className={
                       "form-control " +
                       this.errorClass(this.state.formErrors.name)
