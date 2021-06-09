@@ -502,7 +502,18 @@ handleMenuSelection = (event) => {
           
           {this.state.isAuthenticated && this.state.creatingNewUpload && (
           <div className="col-sm-12">
-            <Dialog fullWidth={true} maxWidth="lg" onClose={this.handleClose} aria-labelledby="source-lookup-dialog" open={this.state.creatingNewUpload}>
+            <Dialog 
+              open={this.state.creatingNewUpload}
+              fullWidth={true} 
+              maxWidth="lg" 
+              aria-labelledby="source-lookup-dialog" 
+              // onClose={this.handleClose} 
+              onClose={(event, reason) => {
+                if (reason !== 'backdropClick') {
+                  this.handleClose()
+                }
+              }}
+            >
             <DialogContent>
               <UploadsForm
                 testVal="ERIS"
