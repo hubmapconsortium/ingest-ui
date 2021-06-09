@@ -182,13 +182,13 @@ handleMenuSelection = (event) => {
   };
 
   handleClose = () => {
-    console.log("handleClose");
+    console.log("App.js handleClose");
     this.setState({
+      creatingNewUpload: false,
       anchorEl: null,
       show_menu_popup: false,
       open_edit_dialog: false, 
-      creatingNewEntity: false,
-      creatingNewUpload: false
+      creatingNewEntity: false
     })
   };
 
@@ -264,7 +264,7 @@ handleMenuSelection = (event) => {
                   </Button>
                 */}
                    <Button aria-controls="simple-menu" aria-haspopup="true" onClick={this.handleClick}>
-                     Register New Item
+                      Register New Item
                   </Button>
                   <Menu
                     id="simple-menu"
@@ -279,7 +279,6 @@ handleMenuSelection = (event) => {
                     <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
                     <Divider />
                     <MenuItem id="mi_dataupload" onClick={this.handleUploadsDialog}>Data Upload</MenuItem>
-                 
                   </Menu>
               
      
@@ -506,8 +505,9 @@ handleMenuSelection = (event) => {
             <Dialog fullWidth={true} maxWidth="lg" onClose={this.handleClose} aria-labelledby="source-lookup-dialog" open={this.state.creatingNewUpload}>
             <DialogContent>
               <UploadsForm
-                testVal="fnord"
+                testVal="ERIS"
                 onCreated={this.onCreated}
+                cancelEdit={this.handleClose}
               />
             </DialogContent>
             </Dialog>

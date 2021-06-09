@@ -34,6 +34,7 @@ class CreateUploads extends Component {
     var tgl = this.getUserGroups();
     console.log(tgl);
     console.debug(this.state);
+    console.debug(this.props);
   }
 
   
@@ -110,7 +111,14 @@ class CreateUploads extends Component {
 
 
   cancelEdit = () => {
-    this.setState({ creatingNewSubmission: false, editingSubmission: null });
+    console.debug("form js cancelEdit!!");
+    this.setState({ 
+      creatingNewSubmission: false, 
+      editingSubmission: null ,
+      processingUpload:false,
+      submitting: false,
+      creatingNewUpload:false
+    });
   };
 
 
@@ -226,19 +234,19 @@ class CreateUploads extends Component {
                   className="inline-icon"
                   icon={faSpinner}
                   spin
-                   />
+                />
               )}
               {!this.state.submitting && "Create"}
               </button>
               <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => this.props.onClose}
+              onClick={this.props.cancelEdit}
               >
                   Cancel
               </button>
           </div>
-        </div>
+        </div>  
       );
     
   }
