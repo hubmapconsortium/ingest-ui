@@ -12,6 +12,7 @@ class GroupModal extends Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({ groups: nextProps.groups });
+    //console.debug('groups', nextProps.groups)
   }
 
   render() {
