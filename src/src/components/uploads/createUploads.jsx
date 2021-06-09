@@ -198,6 +198,7 @@ class CreateUploads extends Component {
   }
 
   renderGroupSelect(){
+    //Select the data provider group that this data belongs to
     return (
       <div className="col3">
         <select
@@ -265,14 +266,14 @@ class CreateUploads extends Component {
             <div className='row mt-3 mb-3'>
               <div className='col-sm-12'>
                   <h3 className='float-left'>
-                  New Upload
+                  Create a new Data Upload
                 </h3>
               </div>
             </div>
 
             <div className='form-group'>
                 <label htmlFor='title'>
-                  Upload Title <span className='text-danger'>*</span>
+                  Title <span className='text-danger'>*</span>
                 </label>
                   <span className="px-2">
                     <FontAwesomeIcon
@@ -286,7 +287,7 @@ class CreateUploads extends Component {
                       type='info'
                       effect='solid'
                     >
-                      <p>Upload Title Tips</p>
+                      <p>A name for this upload. This will be used internally by Consortium members for the purposes of finding this Data Upload</p>
                     </ReactTooltip>
                   </span>
                     <input
@@ -320,7 +321,7 @@ class CreateUploads extends Component {
                       type='info'
                       effect='solid'
                     >
-                      <p>Description Tips</p>
+                      <p>A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload.</p>
                     </ReactTooltip>
                   </span>
                   <React.Fragment>
@@ -338,9 +339,29 @@ class CreateUploads extends Component {
                       />
                     </div>
                   </React.Fragment>
+                </div>
 
+                <div className='form-group'>
+                  <label
+                    htmlFor='Submission_Group'>
+                    Select the data provider group that this data belongs to 
+                  </label>
+                  <span className="px-2">
+                    <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for='group_tooltip'
+                    />
+                    <ReactTooltip
+                      id='group_tooltip'
+                      place='top'
+                      type='info'
+                      effect='solid'
+                    >
+                      <p>Choose the Data Provider group which the data included in this Data Upload will be associated with/is being uploaded by.</p>
+                    </ReactTooltip>
+                  </span>
                   {this.renderGroupSelect()}
-                
             
               {this.state.submit_error && (
                 <div className='alert alert-danger col-sm-12' role='alert'>
