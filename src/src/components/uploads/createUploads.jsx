@@ -22,9 +22,9 @@ class CreateUploads extends Component {
       errorMessage:" ",
       showNewUpload:true,
       formErrors: {
-           title: "",
-           description: ""
-         },
+          title: "",
+          description: ""
+        },
     };
 
   }
@@ -34,6 +34,7 @@ class CreateUploads extends Component {
     var tgl = this.getUserGroups();
     console.log(tgl);
     console.debug(this.state);
+    console.debug(this.props);
   }
 
   
@@ -110,7 +111,14 @@ class CreateUploads extends Component {
 
 
   cancelEdit = () => {
-    this.setState({ creatingNewSubmission: false, editingSubmission: null });
+    console.debug("form js cancelEdit!!");
+    this.setState({ 
+      creatingNewSubmission: false, 
+      editingSubmission: null ,
+      processingUpload:false,
+      submitting: false,
+      creatingNewUpload:false
+    });
   };
 
 
@@ -138,7 +146,7 @@ class CreateUploads extends Component {
 
   renderLoadingSpinner() {
       return (
-        <div className='text-center'>
+        <div className='text-center mx-2 my-4'>
           <FontAwesomeIcon icon={faSpinner} spin size='6x' />
           <h3>Generating your new folder.</h3>
           <h6>Please do not refresh or leave this page</h6>
@@ -190,6 +198,7 @@ class CreateUploads extends Component {
   }
 
   renderGroupSelect(){
+    //Select the data provider group that this data belongs to
     return (
       <div className="col3">
         <select
@@ -226,19 +235,19 @@ class CreateUploads extends Component {
                   className="inline-icon"
                   icon={faSpinner}
                   spin
-                   />
+                />
               )}
               {!this.state.submitting && "Create"}
               </button>
               <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => this.props.onClose}
+              onClick={this.props.cancelEdit}
               >
                   Cancel
               </button>
           </div>
-        </div>
+        </div>  
       );
     
   }
@@ -246,105 +255,136 @@ class CreateUploads extends Component {
 
   render() {
     return (
-      <React.Fragment>
-        {(this.state.processingUpload) && (
-          this.renderLoadingSpinner()
-        )}
-        {(!this.state.processingUpload) && (
+      <div>
+      <div className="row">
+        <div className="col-12">
+          <h3 className='float-left'>
+            Create a new Data Upload
+          </h3>
+        </div>
+      </div>
 
+
+      <div className="row">
+        <div className="col-md-9">
           
-          <form>
-            <div className='row mt-3 mb-3'>
-              <div className='col-sm-12'>
-                  <h3 className='float-left'>
-                  New Upload
-                </h3>
-              </div>
-            </div>
-
-            <div className='form-group'>
-                <label htmlFor='title'>
-                  Upload Title <span className='text-danger'>*</span>
-                </label>
-                  <span className="px-2">
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for='title_tooltip'
-                    />
-                    <ReactTooltip
-                      id='title_tooltip'
-                      place='top'
-                      type='info'
-                      effect='solid'
-                    >
-                      <p>Upload Title Tips</p>
-                    </ReactTooltip>
-                  </span>
-                    <input
-                      type='text'
-                      name='title'
-                      id='Submission_Name'
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.name)
-                      }
-                      placeholder='Upload Title'
-                      onChange={this.updateInputValue}
-                      value={this.state.e_title}
-                    />
-              </div>
-
-            <div className='form-group'>
-                <label
-                  htmlFor='description'>
-                  Description 
-                </label>
-                <span className="px-2">
-                    <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for='description_tooltip'
-                    />
-                    <ReactTooltip
-                      id='description_tooltip'
-                      place='top'
-                      type='info'
-                      effect='solid'
-                    >
-                      <p>Description Tips</p>
-                    </ReactTooltip>
-                  </span>
-                  <React.Fragment>
-                    <div>
-                      <textarea
-                        type='text'
-                        name='description'
-                        id='Submission_Desc'
-                        cols='30'
-                        rows='5'
-                        className='form-control'
-                        placeholder='Description'
-                        onChange={this.updateInputValue}
-                        value={this.state.e_desc}
-                      />
-                    </div>
-                  </React.Fragment>
-
-                  {this.renderGroupSelect()}
-                
-            
-              {this.state.submit_error && (
-                <div className='alert alert-danger col-sm-12' role='alert'>
-                  Oops! Something went wrong. Please contact administrator for help.
-                </div>
-              )}
-              </div>
-            {this.renderActionButtons()}
-          </form>
+          {(this.state.processingUpload) && (
+            this.renderLoadingSpinner()
           )}
-        </React.Fragment>
-    );
+          {(!this.state.processingUpload) && (
+            <div>
+              <form>
+
+                <div className='form-group'>
+                    <label htmlFor='title'>
+                      Title <span className='text-danger'>*</span>
+                    </label>
+                      <span className="px-2">
+                        <FontAwesomeIcon
+                          icon={faQuestionCircle}
+                          data-tip
+                          data-for='title_tooltip'
+                        />
+                        <ReactTooltip
+                          id='title_tooltip'
+                          place='top'
+                          type='info'
+                          effect='solid'
+                        >
+                          <p>A name for this upload. This will be used internally by Consortium members for the purposes of finding this Data Upload</p>
+                        </ReactTooltip>
+                      </span>
+                        <input
+                          type='text'
+                          name='title'
+                          id='Submission_Name'
+                          className={
+                            "form-control " +
+                            this.errorClass(this.state.formErrors.name)
+                          }
+                          placeholder='Upload Title'
+                          onChange={this.updateInputValue}
+                          value={this.state.e_title}
+                        />
+                  </div>
+
+                <div className='form-group'>
+                    <label
+                      htmlFor='description'>
+                      Description 
+                    </label>
+                    <span className="px-2">
+                        <FontAwesomeIcon
+                          icon={faQuestionCircle}
+                          data-tip
+                          data-for='description_tooltip'
+                        />
+                        <ReactTooltip
+                          id='description_tooltip'
+                          place='top'
+                          type='info'
+                          effect='solid'
+                        >
+                          <p>A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload.</p>
+                        </ReactTooltip>
+                      </span>
+                      <React.Fragment>
+                        <div>
+                          <textarea
+                            type='text'
+                            name='description'
+                            id='Submission_Desc'
+                            cols='30'
+                            rows='5'
+                            className='form-control'
+                            placeholder='Description'
+                            onChange={this.updateInputValue}
+                            value={this.state.e_desc}
+                          />
+                        </div>
+                      </React.Fragment>
+                    </div>
+
+                    <div className='form-group'>
+                      <label
+                        htmlFor='Submission_Group'>
+                        Select the data provider group that this data belongs to 
+                      </label>
+                      <span className="px-2">
+                        <FontAwesomeIcon
+                          icon={faQuestionCircle}
+                          data-tip
+                          data-for='group_tooltip'
+                        />
+                        <ReactTooltip
+                          id='group_tooltip'
+                          place='top'
+                          type='info'
+                          effect='solid'
+                        >
+                          <p>Choose the Data Provider group which the data included in this Data Upload will be associated with/is being uploaded by.</p>
+                        </ReactTooltip>
+                      </span>
+                      {this.renderGroupSelect()}
+                
+                  {this.state.submit_error && (
+                    <div className='alert alert-danger col-sm-12' role='alert'>
+                      Oops! Something went wrong. Please contact administrator for help.
+                    </div>
+                  )}
+                  </div>
+                {this.renderActionButtons()}
+              </form>
+            </div>
+          )}
+
+        </div>
+        <div className='col-md-3 mt-4'>
+          Register a new Data Upload which will be used to bulk upload data which will organized by the HIVE into multiple Datasets. For more information about registering and uploading data see the <a href="https://docs.google.com/document/d/1KR2TC2y-NIjbBRHTu0giSZATMUfPKxN_/edit" target="new"> Data Submission Guide.</a>
+        </div>
+      </div>
+      </div>
+      );
   }
 }
 
