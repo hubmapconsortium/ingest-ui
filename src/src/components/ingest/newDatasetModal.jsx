@@ -3,7 +3,6 @@ import Modal from "../uuid/modal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserShield } from "@fortawesome/free-solid-svg-icons";
 import HIPPA from "../uuid/HIPPA.jsx";
-import { flexbox } from '@material-ui/system';
 import Box from '@material-ui/core/Box';
 
 
@@ -72,6 +71,7 @@ class NewDatasetModal extends Component {
                     target="_blank"
                     name="globus_directory_url_path"
                     href={this.props.globus_directory_url_path}
+                    rel="noopener noreferrer"
                   >
                     <h4>Click to Upload Dataset Files</h4>
                   </a>

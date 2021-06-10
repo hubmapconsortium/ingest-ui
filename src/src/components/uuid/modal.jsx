@@ -17,9 +17,9 @@ class Modal extends Component {
         <section className={showRUILocation}>
           {children}
           <div className="row">
-            <div className="col-sm-12 text-center">
+            <div className="col-sm-12 pads text-center">
               <button
-                className="btn btn-link"
+                className="btn btn-secondary"
                 type="button"
                 onClick={handleClose}
               >

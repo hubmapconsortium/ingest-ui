@@ -1,5 +1,5 @@
 import React, { Component }from "react";
-
+import Dialog from '@material-ui/core/Dialog';
 
 class RUIModal extends Component {
   
@@ -13,12 +13,7 @@ class RUIModal extends Component {
 
     return (      
       <div className={showHideClassname}>
-       <div className="modal-wrapper"
-          style={{
-          transform: this.props.show ? 'translateY(0vh)' : 'translateY(-100vh)',
-          opacity: this.props.show ? '1' : '0'
-          }}
-        >
+         <Dialog aria-labelledby="rui-info-dialog" open={show}>
         <div >      
           <h3>Sample Location Information</h3>
         </div>
@@ -38,7 +33,7 @@ class RUIModal extends Component {
               </button>
             </div>
           </div>
-        </div>
+      </Dialog>
       </div>
     );
   }

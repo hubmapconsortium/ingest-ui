@@ -2,7 +2,6 @@
 
 import axios from "axios";
 
-
 /*
  * User Group API
  *
@@ -22,11 +21,11 @@ export function ingest_api_users_groups(auth) {
  .then(res => {
   ////console.debug(res.data)
   const group_list = res.data.groups
-          .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
+          .filter(g => g.data_provider)
           .map(g => {
             return g;
           });
-    ////console.debug(group_list);
+    console.debug('API USER GROUPs', group_list);
     return {status: res.status, results: group_list}
  })
  .catch(err => {
@@ -210,4 +209,26 @@ export function ingest_api_get_associated_ids(uuid, auth) {
         .catch(err => {
           return {status: 500, results: err.response}
         });
+}
+
+export function ingest_api_get_globus_url(uuid, auth) {
+  const config = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    return axios
+      .get(
+        `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${uuid}`,
+        config
+      )
+      .then((res) => {
+        return {status: 200, results: res.data}
+      })
+      .catch((err) => {
+        return {status: 500, results: err.response}
+      });
 }
