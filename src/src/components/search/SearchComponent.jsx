@@ -279,10 +279,11 @@ class SearchComponent extends Component {
     return  (
         
         <div style={{ width: '100%' }}>
-          {
+          {/*
           this.state.show_search && this.state.show_info_panel &&
            !this.props.custom_title && (
-            this.renderInfoPanel())}
+            this.renderInfoPanel())
+            */}
           {this.state.show_search && (
             this.renderFilterControls()
             )}
@@ -417,25 +418,25 @@ renderInfoPanel() {
     return (
 //      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
        // <div className="row">
-       //   <div className="col-sm-12">
-            <div className="card text-center">
+       //   <div className="col-sm-6">
+            <div className="card">
               {this.props.custom_title && (
-                <span className="portal-label">{this.props.custom_title}</span>
+                <span className="portal-label text-center">{this.props.custom_title}</span>
               )}
               {!this.props.custom_title && (
-                <span className="portal-label">Search</span>
+                <span className="portal-label text-center">Search</span>
               )}
-              <span className="portal-jss117">
+              <span className="portal-jss116 text-center">
               Use the filter controls to search for Donors, Samples, Datasets or Data Uploads.
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
         </span>
               <div className="card-body search-filter">
       
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="form-group row">
-                      <label htmlFor="group" className="offset-sm-2 portal-jss116">Group</label>
-                       <div className="col-sm-9">
+                
+        
+                    <div className="form-group">
+                      <label htmlFor="group" className="portal-jss116">Group</label>
+                       <div className="col-sm-12">
                         <select
                           name="group"
                           id="group"
@@ -454,11 +455,12 @@ renderInfoPanel() {
                         </select>
                       </div>
                     </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group row">
+        
+                  
+                 
+                    <div className="form-group">
                       <label htmlFor="specimen_type" className="portal-jss116">Type</label>
-                      <div className="col-sm-9">
+                      <div className="col-sm-12">
                         <select
                           name="specimen_type"
                           id="specimen_type"
@@ -485,21 +487,26 @@ renderInfoPanel() {
                           })}
                         </select>
                       </div>
+                      
                     </div>
-                  </div>
-                </div>
-                <div className="row pads">
+ 
+                
+                <div className="form-group">
+                  <label htmlFor="keywords" className="portal-jss116">Keyword</label>
                   <div className="col-sm-12">
                     <input
                         type="text"
                         className="form-control"
-                        name="keyworkds"
+                        name="keywords"
                         id="keywords"
                         placeholder="Enter a keyword or HuBMAP/Submission/Lab ID"
                         ref={this.keywords}
                       />
                   </div>
-                </div>
+                  </div>
+             
+          
+                
 
                 <div className="row mb-5">
                   <div className="col-sm-4 offset-sm-2">
