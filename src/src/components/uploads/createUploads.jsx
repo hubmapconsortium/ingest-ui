@@ -263,10 +263,15 @@ class CreateUploads extends Component {
           </h3>
         </div>
       </div>
+      <div className="row">
+        <div className='col-12 mb-4'>
+            Register a new Data Upload which will be used to bulk upload data which will organized by the HIVE into multiple Datasets. For more information about registering and uploading data see the <a href="https://docs.google.com/document/d/1KR2TC2y-NIjbBRHTu0giSZATMUfPKxN_/edit" target="new"> Data Submission Guide.</a>
+          </div>
+      </div>
 
 
       <div className="row">
-        <div className="col-md-9">
+        <div className="col-md-12">
           
           {(this.state.processingUpload) && (
             this.renderLoadingSpinner()
@@ -379,9 +384,7 @@ class CreateUploads extends Component {
           )}
 
         </div>
-        <div className='col-md-3 mt-4'>
-          Register a new Data Upload which will be used to bulk upload data which will organized by the HIVE into multiple Datasets. For more information about registering and uploading data see the <a href="https://docs.google.com/document/d/1KR2TC2y-NIjbBRHTu0giSZATMUfPKxN_/edit" target="new"> Data Submission Guide.</a>
-        </div>
+        
       </div>
       </div>
       );
