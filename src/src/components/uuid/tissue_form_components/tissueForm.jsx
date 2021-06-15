@@ -1122,8 +1122,8 @@ handleAddImage = () => {
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    //////console.debug('Update Entity...');
-                    //////console.debug(response.results);
+                    console.debug('Update Entity...', this.state.related_group_ids.length );
+                    console.debug(response.results);
                     this.setState({ submit_error: false, 
                       submitting: false, 
                       show_snack: true,
@@ -1131,14 +1131,12 @@ handleAddImage = () => {
                       snackmessage: "Save was succesful",
                       isDirty: false });
 
-                    ////console.debug('handleSubmit - related count', this.state.related_group_ids.length)
-                    if (this.state.related_group_ids.length === 1) {  // if we have multiples just stay on the page
+                    // if they are NOT editing a multiples just do normal update and closed the page,
+                    // if will just show an Save snackmessage so they can edit other samples
+                    if (this.state.related_group_ids.length < 2) {  
                       
                       this.props.onUpdated(response.results);
-                    } 
-                    // else {
-                    //   this.props.history.goBack();
-                    // }
+                    }
                   } else {
                     this.setState({ submit_error: true, submitting: false, isDirty: false });
                     this.setDirty(false);
