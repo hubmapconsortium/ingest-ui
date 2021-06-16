@@ -22,7 +22,6 @@ import {
 } from "@material-ui/core";
 import Modal from "./components/uuid/modal";
 //import { BrowserRouter as Router } from 'react-router-dom';
-import Divider from '@material-ui/core/Divider';
 
 
 import Dialog from '@material-ui/core/Dialog';
@@ -277,7 +276,6 @@ handleMenuSelection = (event) => {
                     <MenuItem id="mi_donor" onClick={this.handleMenuSelection}>Donor</MenuItem>
                     <MenuItem id="mi_sample" onClick={this.handleMenuSelection}>Sample</MenuItem>
                     <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
-                    <Divider />
                     <MenuItem id="mi_dataupload" onClick={this.handleUploadsDialog}>Data Upload</MenuItem>
                   </Menu>
               
@@ -413,16 +411,16 @@ handleMenuSelection = (event) => {
             this.setState(
               {
                 logout_in: this.state.logout_in - 1
-              },
-              () => {
-                if (this.state.logout_in > 0) {
-                  this.setState({
-                    timer: setTimeout(countDown.bind(this), 1000)
-                  });
-                }
-                if (this.state.logout_in === 0) {
-                  this.logoutButton.click();
-                }
+              // },
+              // () => {
+              //   if (this.state.logout_in > 0) {
+              //     this.setState({
+              //       timer: setTimeout(countDown.bind(this), 1000)
+              //     });
+              //   }
+              //   if (this.state.logout_in === 0) {
+              //     this.logoutButton.click();
+              //   }
               }
             );
           }
@@ -516,7 +514,6 @@ handleMenuSelection = (event) => {
             >
             <DialogContent>
               <UploadsForm
-                testVal="ERIS"
                 onCreated={this.onCreated}
                 cancelEdit={this.handleClose}
               />
