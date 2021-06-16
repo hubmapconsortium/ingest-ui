@@ -15,9 +15,6 @@ import { tsToDate } from "../../utils/string_helper";
 
 
 import Alert from '@material-ui/lab/Alert';
-import IconButton from '@material-ui/core/IconButton';
-import Collapse from '@material-ui/core/Collapse';
-import CloseIcon from '@material-ui/icons/Close';
 
 
 // import GroupModal from "../../groupModal";
@@ -456,19 +453,14 @@ class EditUploads extends Component {
 
 
   renderValidationMessage (){
-    
-      if(this.state.validation_message){
-        var res = this.state.validation_message.substring(0, 5);
-        console.debug(res);
-
-        if(res==="ERROR"){
-          return (
-            <Alert severity="error">{this.state.validation_message}</Alert>
-          )
-        }
+    if(this.state.validation_message){
+      var res = this.state.validation_message.substring(0, 5);
+      if(res==="ERROR"){
+        return (
+          <Alert severity="error">{this.state.validation_message}</Alert>
+        )
       }
-     
-    // }
+    }
   }
 
 
