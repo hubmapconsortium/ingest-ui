@@ -7,11 +7,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faExternalLinkAlt, faFolder
-} from "@fortawesome/free-solid-svg-icons";
+  faExternalLinkAlt, faFolder}
+  from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";
 import { tsToDate } from "../../utils/string_helper";
+
+
+import Alert from '@material-ui/lab/Alert';
 
 
 // import GroupModal from "../../groupModal";
@@ -36,12 +39,13 @@ class EditUploads extends Component {
     status:"status",
     creatingNewUploadFolder: true,
     confirmModal: false,
+    writeable: false
   }
 
   
 
   componentDidMount() {
-    
+
     console.debug(this.props.editingUpload);
     // let history = this.props.history;
     const config = {
@@ -52,6 +56,7 @@ class EditUploads extends Component {
       },
     };
     let entity_data = this.props.editingUpload;
+    
     
     this.setState({
       // groups: this.props.groups,
@@ -72,7 +77,8 @@ class EditUploads extends Component {
       show_search: false,
       new_entity: false,  
       creatingNewUploadFolder:true,
-      writeable:true,
+      validation_message: entity_data.validation_message,
+      writeable:false,
       globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
         formErrors: {
@@ -81,35 +87,46 @@ class EditUploads extends Component {
       () => {
         switch (this.state.status.toUpperCase()) {
           case "NEW":
+            console.debug("WRITEABLE");
             this.setState({
               badge_class: "badge-purple",
+              writeable: true
             });
-            break;
-          case "PROCESSING":
-            this.setState({
-              badge_class: "badge-info",
-            });
-            break;
-          case "INVALID":
-            this.setState({
-              badge_class: "badge-warning",
-            });
-            break;
-          case "VALID":
-            this.setState({
-              badge_class: "badge-info",
-            });
-            break;
+          break;
           case "ERROR":
+            console.debug("WRITEABLE");
             this.setState({
               badge_class: "badge-danger",
+            writeable: true
+            });
+          break;
+          case "INVALID":
+            console.debug("WRITEABLE");
+            this.setState({
+              badge_class: "badge-warning",
+              writeable: true
+            });
+          break;
+          case "VALID":
+            console.debug("NOT WRITEABLE");
+            this.setState({
+              badge_class: "badge-info",
+              writeable: false
+            });
+          break;
+          case "PROCESSING":
+            console.debug("NOT WRITEABLE");
+            this.setState({
+              badge_class: "badge-info",
+              writeable: false
             });
             break;
           case "REORGANIZED":
+            console.debug("NOT WRITEABLE");
             this.setState({
               badge_class: "badge-success",
-              writeable: false,
-              globusLinkText: "Open data repository "
+              globusLinkText: "Open data repository ",
+              writeable: false
             });
             break;
           case "DEPRECATED":
@@ -117,6 +134,8 @@ class EditUploads extends Component {
           default:
             break;
         }
+
+        //validation_message
 
         axios
           .get(
@@ -156,7 +175,7 @@ class EditUploads extends Component {
         this.props.handleCancel();
       }
     }
- 
+
 
   showConfirmModal = () => {
     this.setState({ confirmModal: true });
@@ -433,6 +452,18 @@ class EditUploads extends Component {
   }
 
 
+  renderValidationMessage (){
+    if(this.state.validation_message){
+      var res = this.state.validation_message.substring(0, 5);
+      if(res==="ERROR"){
+        return (
+          <Alert severity="error">{this.state.validation_message}</Alert>
+        )
+      }
+    }
+  }
+
+
   
     // dev int
   render() {
@@ -489,7 +520,7 @@ class EditUploads extends Component {
                             target='_blank'
                             rel='noopener noreferrer'
                           >
-                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip' className="mr-2"/>
                                 {this.state.globusLinkText}{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
                           </a>
@@ -499,11 +530,11 @@ class EditUploads extends Component {
                     </strong>
                   </p>
               </div>
-
               </div>
             </React.Fragment>
           <div className='form-group'>
-            <label htmlFor='title'>
+          {this.renderValidationMessage()}
+            <label htmlFor='title'  className="mt-3">
               Upload Title <span className='text-danger'>*</span>
             </label>
               <span className="px-2">
