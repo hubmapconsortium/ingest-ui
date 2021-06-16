@@ -12,10 +12,7 @@ import {
 import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";
 import { tsToDate } from "../../utils/string_helper";
-
-
-import Alert from '@material-ui/lab/Alert';
-
+import { Alert, AlertTitle } from '@material-ui/lab';
 
 // import GroupModal from "../../groupModal";
 import { ingest_api_get_globus_url, 
@@ -448,16 +445,17 @@ class EditUploads extends Component {
           <FontAwesomeIcon icon={faSpinner} spin size='6x' />
         </div>
       );
-    // }
   }
 
 
   renderValidationMessage (){
     if(this.state.validation_message){
-      var res = this.state.validation_message.substring(0, 5);
-      if(res==="ERROR"){
+      if(this.state.status === "Error"|| this.state.status === "Invalid" ){
         return (
-          <Alert severity="error">{this.state.validation_message}</Alert>
+          <Alert severity="error">
+            <AlertTitle>{this.state.status}</AlertTitle>
+            {this.state.validation_message}
+          </Alert>
         )
       }
     }
