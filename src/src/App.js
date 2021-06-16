@@ -154,9 +154,9 @@ handleLogout = e => {
 };
 
 handleMenuSelection = (event) => {
-  console.debug('HI', event.currentTarget.innerText)
-  var formtype = event.currentTarget.innerText;
-  
+
+  var formtype = event.currentTarget.innerText.trim();
+
   this.setState({
       anchorEl: null,
       show_menu_popup: false,
@@ -255,33 +255,12 @@ handleMenuSelection = (event) => {
               </Hidden>
             */}
               {this.state.isAuthenticated && (
-                <div className="d-inline">
-                 {/* <Button className="nav-link" href="/donors-samples">
-                    Donors &amp; Samples
-                    </Button>
-                  <Button className="nav-link" href="/datasets">
-                    Datasets
-                  </Button>
-                */}
-                   <Button aria-controls="simple-menu" aria-haspopup="true" onClick={this.handleClick}>
-                      Register New Item
-                  </Button>
-                  <Menu
-                    id="simple-menu"
-                    anchorEl={this.state.anchorEl}
-                    keepMounted
-                    open={Boolean(this.state.show_menu_popup)}
-                    onClose={this.handleClose}
-                    className="option-menu"
-                  >
-                    <MenuItem id="mi_donor" onClick={this.handleMenuSelection}>Donor</MenuItem>
-                    <MenuItem id="mi_sample" onClick={this.handleMenuSelection}>Sample</MenuItem>
-                    <MenuItem id="mi_dataset" onClick={this.handleMenuSelection}>Dataset</MenuItem>
-                    <Divider />
-                    <MenuItem id="mi_dataupload" onClick={this.handleUploadsDialog}>Data Upload</MenuItem>
-                  </Menu>
-              
-     
+                <div className="d-inline">                
+                <span className="menu-bar-static-label">REGISTER NEW:</span>
+                
+                <Button className="nav-link" onClick={this.handleMenuSelection}>Donor</Button>
+                <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
+                <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
                 </div>
               )}
             </div>
