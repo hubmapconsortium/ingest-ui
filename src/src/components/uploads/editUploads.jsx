@@ -7,11 +7,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faExternalLinkAlt, faFolder, faDoorClosed
-} from "@fortawesome/free-solid-svg-icons";
+  faExternalLinkAlt, faFolder}
+  from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";
 import { tsToDate } from "../../utils/string_helper";
+
+
+import Alert from '@material-ui/lab/Alert';
+import IconButton from '@material-ui/core/IconButton';
+import Collapse from '@material-ui/core/Collapse';
+import CloseIcon from '@material-ui/icons/Close';
 
 
 // import GroupModal from "../../groupModal";
@@ -42,7 +48,7 @@ class EditUploads extends Component {
   
 
   componentDidMount() {
-    
+
     console.debug(this.props.editingUpload);
     // let history = this.props.history;
     const config = {
@@ -74,6 +80,7 @@ class EditUploads extends Component {
       show_search: false,
       new_entity: false,  
       creatingNewUploadFolder:true,
+      validation_message: entity_data.validation_message,
       writeable:false,
       globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
@@ -130,6 +137,8 @@ class EditUploads extends Component {
           default:
             break;
         }
+
+        //validation_message
 
         axios
           .get(
@@ -446,6 +455,23 @@ class EditUploads extends Component {
   }
 
 
+  renderValidationMessage (){
+    
+      if(this.state.validation_message){
+        var res = this.state.validation_message.substring(0, 5);
+        console.debug(res);
+
+        if(res==="ERROR"){
+          return (
+            <Alert severity="error">{this.state.validation_message}</Alert>
+          )
+        }
+      }
+     
+    // }
+  }
+
+
   
     // dev int
   render() {
@@ -512,11 +538,11 @@ class EditUploads extends Component {
                     </strong>
                   </p>
               </div>
-
               </div>
             </React.Fragment>
           <div className='form-group'>
-            <label htmlFor='title'>
+          {this.renderValidationMessage()}
+            <label htmlFor='title'  className="mt-3">
               Upload Title <span className='text-danger'>*</span>
             </label>
               <span className="px-2">
