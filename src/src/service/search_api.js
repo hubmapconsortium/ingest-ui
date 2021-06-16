@@ -159,16 +159,16 @@ export function search_api_search_group_list() {
     }
   });
 
-  groups.sort((a, b) => {
-    if (a.tmc_prefix < b.tmc_prefix) {
-      return -1;
-    }
-    if (a.tmc_prefix  > b.tmc_prefix) {
-      return 1;
-    }
-    // must be equal
-    return 0;
-  });
+  // groups.sort((a, b) => {
+  //   if (a.tmc_prefix < b.tmc_prefix) {
+  //     return -1;
+  //   }
+  //   if (a.tmc_prefix  > b.tmc_prefix) {
+  //     return 1;
+  //   }
+  //   // must be equal
+  //   return 0;
+  // });
 
   return groups;
 }
