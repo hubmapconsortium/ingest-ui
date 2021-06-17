@@ -96,6 +96,7 @@ class TissueForm extends Component {
     selected_group: "",
     error_message_detail: "",
     error_message: "Oops! Something went wrong. Please contact administrator for help.",
+    readOnly: false,
     setOpen: false,
     show_snack: false,
     show_dirty_warning: false,
@@ -190,52 +191,42 @@ class TissueForm extends Component {
       });
 
 
-      ////////console.debug('PARAM', this.props)
+      //console.debug('PARAM', this.props)
+    
       try {
-          // if a parameter uuid was passed directly to the screen, then look it up and fill in data
-        const param_uuid = this.props.match.params.uuid;
-        //console.debug('PARAM WAS PASSED', param_uuid)
-        entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-          .then((response) => {
-              if (response.status === 200) {
-                let entity_data = response.results;
-                // check to see if user can edit
-                ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-                    .then((resp) => {
-                        if (resp.status === 200) {
-                          ////////console.debug('api_allowable_edit_states...');
-                          ////////console.debug(resp.results);
-                          let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-                          this.setState({
-                            editingEntity: entity_data,
-                            readOnly: read_only_state,   // used for hidding UI components
-                            param_uuid: param_uuid 
-                          }, () => {
-                            this.checkForRelatedGroupIds(entity_data);
-                            this.initialize();
-                         
-                            ////console.debug('PARAM ROUTINE', this.state);
-                          }
+          //const param_uuid = this.props.match.params.uuid;
+          const param_uuid = this.props.editingEntity.uuid;
+          //console.debug('UUID', param_uuid)
+          entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+            .then((response) => {
+                if (response.status === 200) {
+                  let entity_data = response.results;
+                  // check to see if user can edit
+                  ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+                      .then((resp) => {
+                          if (resp.status === 200) {
+                            //console.debug('api_allowable_edit_states...', resp.results);
+                            ////////console.debug(resp.results);
+                            const read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+                            //console.debug('HAS has_write_priv', read_only_state)
+                            this.setState({
+                              editingEntity: entity_data,
+                              readOnly: read_only_state,   // used for hidding UI components
+                              param_uuid: param_uuid 
+                            }, () => {
+                              this.checkForRelatedGroupIds(entity_data);
+                              this.initialize();
+                           
+                              //console.debug('readOnly', this.state.readOnly);
+                            }
 
-                          );
-                         
-                        }         
-                });
-              }
-        });
-
-      } catch {  // no params were detected
-        //console.debug('NO PARAM', this.props.editingEntity)
-         this.setState({
-          editingEntity: this.props.editingEntity
-        }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
-            this.initialize();
-            if (this.props.editingEntity) {
-              this.checkForRelatedGroupIds(this.props.editingEntity);
-            }
-            //////console.debug('STATE', this.state)
-        });
-      }
+                            );
+                           
+                          }         
+                  });
+                }
+          });
+      } catch {}
     }
 
     initialize() {
@@ -967,23 +958,8 @@ handleAddImage = () => {
   };
 
   isSpecialOrganType = otype => {
-
     return RUI_ORGAN_TYPES.includes(otype);
-    // return otype === "LK" ||
-    //       otype === "HT" ||
-    //       otype === "SP" ||
-    //       otype === "LI" ||
-    //       otype === "RK";
   }
-
-  // isNotSpecialOrganType = otype => {
-
-  //    return otype !== "LK" &&
-  //       otype !== "HT" &&
-  //       otype !== "SP" &&
-  //       otype !== "LI" &&
-  //       otype !== "RK";
-  // }
 
   // special case for donors
   isOrganBloodType = sptype => {
@@ -1191,7 +1167,7 @@ handleAddImage = () => {
 
   renderButtons() {
     if (this.state.editingEntity) {
-      if (this.props.readOnly) {
+      if (this.state.readOnly) {
         return (
           <div className="row"><div className="col-sm-12">
           <Divider />
@@ -1412,15 +1388,22 @@ handleAddImage = () => {
   }
 
   handleLookUpClick = () => {
-    if (this.state.source_uuid === undefined && !this.state.lookUpCancelled) {
+//    console.debug('source_uuid', this.state.source_uuid)
+//    console.debug('lookUpCancelled', this.state.lookUpCancelled)
+
+    if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
+      });
+    } else {
+      this.setState({
+        LookUpShow: false
       });
     }
      this.setState({
         lookUpCancelled: false
-      });
-  };
+      }); 
+  }
 
   hideLookUpModal = () => {
   
@@ -1447,7 +1430,7 @@ handleAddImage = () => {
   handleSelectClick = selection => {
     let ancestor_organ = ""
 
-    ////console.debug('tissueForm Selection', selection);
+    //console.debug('tissueForm Selection', selection);
 
     if (selection) {
       // check to see if we have an "top-level" ancestor 
@@ -1471,7 +1454,8 @@ handleAddImage = () => {
             organ: ancestor_organ,
             ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
             sex: this.getGender(selection.row),
-            LookUpShow: false
+            LookUpShow: false,
+            lookUpCancelled: false
           });
         });
     }
@@ -1608,7 +1592,7 @@ handleAddImage = () => {
                 </ReactTooltip>
               </label>
             
-              {!this.props.readOnly && (
+              {!this.state.readOnly && (
                 <React.Fragment>
                   <div className="input-group">
                     <input
@@ -1621,7 +1605,7 @@ handleAddImage = () => {
                       }
                       value={this.state.source_uuid || ''}
                       onChange={this.handleInputChange}
-                      onFocus={this.handleLookUpClick}
+                      //onFocus={this.handleLookUpClick}
                       autoComplete='off'
                     />
                      <button
@@ -1636,37 +1620,6 @@ handleAddImage = () => {
                       />
                     </button>
                   </div>
-                  {/*<div className="col-sm-1">
-                    <button
-                      className="btn btn-light"
-                      type="button"
-                      onClick={this.handleLookUpClick}
-                    >
-                      <FontAwesomeIcon
-                          icon={faSearch}
-                          data-tip
-                          data-for="source_uuid_tooltip"
-                      />
-                    </button>
-                  </div> */}
-                  {/* <div className="col-sm-2">
-                    <button
-                      className="btn btn-primary"
-                      type="button"
-                      onClick={this.validateUUID}
-                      disabled={this.state.validatingUUID}
-                    >
-                      {this.state.validatingUUID ? "..." : "Validate"}
-                    </button>
-                  </div> 
-                  <IDSearchModal
-                    show={this.state.LookUpShow}
-                    hide={this.hideLookUpModal}
-                    select={this.handleSelectClick}
-                  />
-
-                   <Modal show={this.state.LookUpShow} handleClose={this.hideLookUpModal} scrollable={true}>
-                  */}
                   
                     <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
                      <DialogContent>
@@ -1685,7 +1638,7 @@ handleAddImage = () => {
 
                 </React.Fragment>
               )}
-              {this.props.readOnly && (
+              {this.state.readOnly && (
                 <React.Fragment>
                  <div>
                     <input type="text" readOnly className="form-control" id="static_source_uuid" value={this.state.source_uuid}></input>
@@ -1774,7 +1727,7 @@ handleAddImage = () => {
                   <p>The type of specimen.</p>
                 </ReactTooltip>
               </label>
-              {!this.props.readOnly && (
+              {!this.state.readOnly && (
                 <React.Fragment>
                   <div>
                     <select
@@ -1860,7 +1813,7 @@ handleAddImage = () => {
                   </div>
                 </React.Fragment>
               )}
-              {this.props.readOnly && (
+              {this.state.readOnly && (
                 <React.Fragment>
             
                   <div className="col-sm-3">
@@ -1884,7 +1837,7 @@ handleAddImage = () => {
                 >
                   Organ Type<span className="text-danger">*</span>
                 </label>
-                {!this.props.readOnly && (
+                {!this.state.readOnly && (
                   <React.Fragment>
                     <div className="col-sm-6">
                       <select
@@ -1925,7 +1878,7 @@ handleAddImage = () => {
                     )}
                   </React.Fragment>
                 )}
-                {this.props.readOnly && (
+                {this.state.readOnly && (
                   <div>
                    <input type="text" readOnly className="form-control" id="static_organ" value={this.state.organ === "OT" ? this.state.organ_other : ORGAN_TYPES[this.state.organ]}></input>
 
@@ -1940,14 +1893,14 @@ handleAddImage = () => {
               </div>
             )}
             {["organ", "biopsy", "blood"].includes(this.state.specimen_type) &&
-              (!this.props.readOnly || this.state.visit !== undefined) && (
+              (!this.state.readOnly || this.state.visit !== undefined) && (
                 <div className="form-group">
                   <label
                     htmlFor="visit"
                   >
                     Visit
                   </label>
-                  {!this.props.readOnly && (
+                  {!this.state.readOnly && (
                    
                       <input
                         type="text"
@@ -1963,7 +1916,7 @@ handleAddImage = () => {
                       />
                   
                   )}
-                  {this.props.readOnly && (
+                  {this.state.readOnly && (
                     <div>
                     <input type="text" readOnly className="form-control" id="static_visit" value={this.state.visit}></input>
                     </div>
@@ -1995,7 +1948,7 @@ handleAddImage = () => {
                   </ReactTooltip>
                 </span>
               </label>
-              {!this.props.readOnly && (
+              {!this.state.readOnly && (
                 <div>
                   <input
                     ref={this.protocol_url}
@@ -2013,7 +1966,7 @@ handleAddImage = () => {
                  
                 </div>
               )}
-              {this.props.readOnly && (
+              {this.state.readOnly && (
                 <div>
                     <input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol_url}></input>
                 </div>
@@ -2021,7 +1974,7 @@ handleAddImage = () => {
             
             </div>
             {
-            !this.props.readOnly &&
+            !this.state.readOnly &&
               this.state.specimen_type !== "organ" &&
               !this.state.editingEntity && (
                 <div className="form-group row">
@@ -2084,7 +2037,7 @@ handleAddImage = () => {
               )}
             {!this.state.multiple_id &&
               //!this.state.editingMultiWarning &&
-              (!this.props.readOnly ||
+              (!this.state.readOnly ||
                 this.state.lab_tissue_id !== undefined) && (
 
                 <div className="form-group">
@@ -2109,7 +2062,7 @@ handleAddImage = () => {
                       </p>
                     </ReactTooltip>
                   </label>
-                  {!this.props.readOnly && (
+                  {!this.state.readOnly && (
                     <div>
                       <input
                         type="text"
@@ -2122,7 +2075,7 @@ handleAddImage = () => {
                       />
                     </div>
                   )}
-                  {this.props.readOnly && (
+                  {this.state.readOnly && (
                       <div>
                     <input type="text" readOnly className="form-control" id="static_lab_tissue_id" value={this.state.lab_tissue_id}></input>
                 </div>
@@ -2242,7 +2195,7 @@ handleAddImage = () => {
                       </ReactTooltip>
                   </label>
                  
-                  { !this.props.readOnly &&
+                  { !this.state.readOnly &&
                     this.state.rui_check && (
                       <React.Fragment>
                        
@@ -2290,7 +2243,7 @@ handleAddImage = () => {
                   </React.Fragment>
                   )}
 
-                  { !this.props.readOnly &&
+                  { !this.state.readOnly &&
                     !this.state.multiple_id &&
                     !this.state.rui_check && (
                       <React.Fragment>
@@ -2317,11 +2270,11 @@ handleAddImage = () => {
                         )}
                       </React.Fragment>
                     )}
-                  {/**  {  !this.props.readOnly && 
+                  {/**  {  !this.state.readOnly && 
             this.state.rui_click && (
                 <RUIIntegration handleJsonRUI= {this.handleRUIJson} />
                    )} **/}
-                  { this.props.readOnly && (
+                  { this.state.readOnly && (
                     <div className="col-sm-4">
                     </div>
                   )}
@@ -2330,7 +2283,7 @@ handleAddImage = () => {
                   </div>
                 </div>
               )}
-            {(!this.props.readOnly || this.state.description !== undefined) && (
+            {(!this.state.readOnly || this.state.description !== undefined) && (
               <div className="form-group">
                 <label
                   htmlFor="description">
@@ -2348,7 +2301,7 @@ handleAddImage = () => {
                     <p>A free text description of the specimen.</p>
                   </ReactTooltip>
                   </label>
-                {!this.props.readOnly && (
+                {!this.state.readOnly && (
                   <div>
                     <textarea
                       name="description"
@@ -2361,7 +2314,7 @@ handleAddImage = () => {
                     />
                   </div>
                 )}
-                {this.props.readOnly && (
+                {this.state.readOnly && (
                     <div>
                       {/*<p>{truncateString(this.state.description, 400)}</p>*/}
                        <input type="text" readOnly className="form-control" id="static_description" value={this.state.description}></input>
@@ -2412,7 +2365,7 @@ handleAddImage = () => {
                     </p>
                 </ReactTooltip>
                 </label>
-              {!this.props.readOnly && (
+              {!this.state.readOnly && (
                 <div>
                   <textarea
                     name="metadata"
@@ -2425,19 +2378,19 @@ handleAddImage = () => {
                   />
                 </div>
               )}
-              {this.props.readOnly && (
+              {this.state.readOnly && (
                 <div className="col-sm-9 col-form-label">
                   <p>{this.state.metadata}</p>
                 </div>
               )}
             </div>
           */}
-            {((!this.props.readOnly || this.state.metadatas.length > 0) && 
+            {((!this.state.readOnly || this.state.metadatas.length > 0) && 
               !this.state.multiple_id) && (
               <div className="form-group">
                 
                 <div>
-                  {!this.props.readOnly && (
+                  {!this.state.readOnly && (
                     <div>
                       <div>
                         <button
@@ -2474,7 +2427,7 @@ handleAddImage = () => {
                       file_name={metadata.file_name}
                       ref={metadata.ref}
                       error={metadata.error}
-                      readOnly={this.props.readOnly}
+                      readOnly={this.state.readOnly}
                       formId={this.state.form_id}
                       onFileChange={this.onFileChange}
                       validate={this.validateMetadataFiles}
@@ -2485,12 +2438,12 @@ handleAddImage = () => {
                 
               </div>
             )}
-            {((!this.props.readOnly || this.state.images.length > 0) &&
+            {((!this.state.readOnly || this.state.images.length > 0) &&
               !this.state.multiple_id) && (
               <div className="form-group">
                
                 <div>
-                  {!this.props.readOnly && (
+                  {!this.state.readOnly && (
                     <div>
                       <div>
                         <button
@@ -2533,7 +2486,7 @@ handleAddImage = () => {
                       description={image.description}
                       ref={image.ref}
                       error={image.error}
-                      readOnly={this.props.readOnly}
+                      readOnly={this.state.readOnly}
                       formId={this.state.form_id}
                       onFileChange={this.onFileChange}
                       validate={this.validateImagesFiles}
