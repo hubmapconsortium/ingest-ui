@@ -12,10 +12,7 @@ import {
 import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";
 import { tsToDate } from "../../utils/string_helper";
-
-
-import Alert from '@material-ui/lab/Alert';
-
+import { Alert, AlertTitle } from '@material-ui/lab';
 
 // import GroupModal from "../../groupModal";
 import { ingest_api_get_globus_url, 
@@ -89,6 +86,7 @@ class EditUploads extends Component {
           case "NEW":
             console.debug("WRITEABLE");
             this.setState({
+              validation_message_style:null,
               badge_class: "badge-purple",
               writeable: true
             });
@@ -96,13 +94,15 @@ class EditUploads extends Component {
           case "ERROR":
             console.debug("WRITEABLE");
             this.setState({
+              validation_message_style:"error",
               badge_class: "badge-danger",
-            writeable: true
+              writeable: true
             });
           break;
           case "INVALID":
             console.debug("WRITEABLE");
             this.setState({
+              validation_message_style:"warning",
               badge_class: "badge-warning",
               writeable: true
             });
@@ -110,6 +110,7 @@ class EditUploads extends Component {
           case "VALID":
             console.debug("NOT WRITEABLE");
             this.setState({
+              validation_message_style:null,
               badge_class: "badge-info",
               writeable: false
             });
@@ -117,6 +118,7 @@ class EditUploads extends Component {
           case "PROCESSING":
             console.debug("NOT WRITEABLE");
             this.setState({
+              validation_message_style:null,
               badge_class: "badge-info",
               writeable: false
             });
@@ -124,6 +126,7 @@ class EditUploads extends Component {
           case "REORGANIZED":
             console.debug("NOT WRITEABLE");
             this.setState({
+              validation_message_style:null,
               badge_class: "badge-success",
               globusLinkText: "Open data repository ",
               writeable: false
@@ -448,16 +451,17 @@ class EditUploads extends Component {
           <FontAwesomeIcon icon={faSpinner} spin size='6x' />
         </div>
       );
-    // }
   }
 
 
   renderValidationMessage (){
     if(this.state.validation_message){
-      var res = this.state.validation_message.substring(0, 5);
-      if(res==="ERROR"){
+      if(this.state.status === "Error"|| this.state.status === "Invalid" ){
         return (
-          <Alert severity="error">{this.state.validation_message}</Alert>
+          <Alert severity={this.state.validation_message_style}>
+            <AlertTitle>{this.state.status}</AlertTitle>
+            {this.state.validation_message}
+          </Alert>
         )
       }
     }
