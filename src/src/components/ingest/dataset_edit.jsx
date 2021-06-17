@@ -347,7 +347,7 @@ class DatasetEdit extends Component {
 
   handleLookUpClick = () => {
     //////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
-    if (this.state.source_uuid === undefined && !this.state.lookUpCancelled) {
+    if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
       });
@@ -386,19 +386,19 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    console.debug('**name', name)
+    //console.debug('**name', name)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
           lab_dataset_id: value,
         });
-        console.debug('*** lab_dataset_id', value)
+        //console.debug('*** lab_dataset_id', value)
         break;
-      case "source_uuid":
-        this.setState({
-          source_uuid: value,
-        });
-        break;
+      // case "source_uuid":
+      //   this.setState({
+      //     source_uuid: value,
+      //   });
+      //   break;
       case "contains_human_genetic_sequences":  
         let gene_seq = undefined; 
         if (value === 'yes') {
@@ -531,6 +531,7 @@ class DatasetEdit extends Component {
         LookUpShow: false,
       }
     );
+      this.cancelLookUpModal();
   };
 
   // handleSelectClick = (ids) => {

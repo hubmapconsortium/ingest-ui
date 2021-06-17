@@ -638,8 +638,8 @@ class TissueForm extends Component {
           }));
         }
         break;
-      case "source_uuid":
-        this.setState({ source_uuid: value });
+      //case "source_uuid":
+        //this.setState({ source_uuid: value });
         // // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
         // // if (patt.test(value)) {
         // //   this.setState({ source_uuid: value + "-" });
@@ -656,7 +656,7 @@ class TissueForm extends Component {
         //     formErrors: { ...prevState.formErrors, source_uuid: "" }
         //   }));
         // }
-        break;
+       // break;
       case "organ":
         this.setState({ organ: value });
         if (!validateRequired(value)) {
@@ -1389,7 +1389,7 @@ handleAddImage = () => {
 
   handleLookUpClick = () => {
 //    console.debug('source_uuid', this.state.source_uuid)
-//    console.debug('lookUpCancelled', this.state.lookUpCancelled)
+    console.debug('lookUpCancelled', this.state.lookUpCancelled)
 
     if (!this.state.lookUpCancelled) {
       this.setState({
@@ -1430,7 +1430,7 @@ handleAddImage = () => {
   handleSelectClick = selection => {
     let ancestor_organ = ""
 
-    //console.debug('tissueForm Selection', selection);
+    console.debug('tissueForm Selection', selection);
 
     if (selection) {
       // check to see if we have an "top-level" ancestor 
@@ -1438,7 +1438,7 @@ handleAddImage = () => {
       entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
-              // //////console.debug('Entity ancestors...', response.results);
+              console.debug('Entity ancestors...', response.results);
               // //////console.debug(response.results);
               if (response.results.length > 0) {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
@@ -1446,6 +1446,7 @@ handleAddImage = () => {
           } else {
               ancestor_organ = selection.row.organ;  // use the direct ancestor
           }
+          console.debug('here setting state vars', ancestor_organ)
           this.setState({
             source_uuid: selection.row.hubmap_id,
             source_entity: selection.row,
@@ -1453,10 +1454,9 @@ handleAddImage = () => {
             source_entity_type: selection.row.entity_type,
             organ: ancestor_organ,
             ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
-            sex: this.getGender(selection.row),
-            LookUpShow: false,
-            lookUpCancelled: false
+            sex: this.getGender(selection.row)
           });
+          this.cancelLookUpModal();
         });
     }
   };
@@ -1605,7 +1605,7 @@ handleAddImage = () => {
                       }
                       value={this.state.source_uuid || ''}
                       onChange={this.handleInputChange}
-                      //onFocus={this.handleLookUpClick}
+                      onFocus={this.handleLookUpClick}
                       autoComplete='off'
                     />
                      <button
