@@ -16,13 +16,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Button,
-  Typography,
-  Menu,
-  MenuItem
+  Typography
 } from "@material-ui/core";
 import Modal from "./components/uuid/modal";
 //import { BrowserRouter as Router } from 'react-router-dom';
-import Divider from '@material-ui/core/Divider';
 
 
 import Dialog from '@material-ui/core/Dialog';
@@ -92,7 +89,7 @@ class App extends Component {
       registered: true
     };
 
-    console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
+    //console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
 
     // Binding event handler methods to an instance
     this.handleLogout = this.handleLogout.bind(this);
@@ -174,7 +171,7 @@ handleMenuSelection = (event) => {
   }
 
   handleClick = (event) => {
-    console.debug('clicked', event.currentTarget);
+    //console.debug('clicked', event.currentTarget);
     this.setState({
       anchorEl: event.currentTarget,
       show_menu_popup: true
@@ -182,7 +179,7 @@ handleMenuSelection = (event) => {
   };
 
   handleClose = () => {
-    console.log("App.js handleClose");
+    //console.log("App.js handleClose");
     this.setState({
       creatingNewUpload: false,
       anchorEl: null,
@@ -193,8 +190,8 @@ handleMenuSelection = (event) => {
   };
 
   onCreated = data => {
-    console.debug(data);
-    console.debug(data.entity_type);
+    //console.debug(data);
+    //console.debug(data.entity_type);
     this.setState({
       show_menu_popup: false,
       createSuccess: true,
@@ -218,12 +215,10 @@ handleMenuSelection = (event) => {
       
       <Button
         href={logout_url}
-        className=""
+        className="nav-link"
         onClick={this.handleLogout}
-        ref={a => (this.logoutButton = a)}
-      >
-        Logout
-      </Button>
+        //ref={a => (this.logoutButton = a)}
+      >Logout</Button>
     ) : (
         ""
       );
@@ -244,16 +239,7 @@ handleMenuSelection = (event) => {
                 alt="HuBMAP logo"
               />
             </a>
-            {/*<Hidden mdUp>
-                <IconButton
-                  className={"IconBTN"}
-                  onClick={console.log("open Nav")}
-                  aria-label="Open Navigation"
-                >
-                  <MenuIcon color="primary" />
-                </IconButton>
-              </Hidden>
-            */}
+      
               {this.state.isAuthenticated && (
                 <div className="d-inline">                
                 <span className="menu-bar-static-label">REGISTER NEW:</span>
@@ -264,8 +250,7 @@ handleMenuSelection = (event) => {
                 </div>
               )}
             </div>
-            <div id="MenuRight">
-
+        <div id="MenuRight">
           {this.state.isAuthenticated && (
             <div className="float-right">
               <span className="username">
@@ -274,7 +259,7 @@ handleMenuSelection = (event) => {
                 </Typography>
                 <Button
                 href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
-                className="" >
+                className="nav-link" >
                   Edit Profile
                 </Button>
               </span>
