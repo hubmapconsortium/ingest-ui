@@ -22,7 +22,7 @@ export function api_search(params, auth) {
       }
     };
 
-    //console.debug(options)
+    ////console.debug(options)
   let payload = search_api_filter_es_query_builder(params, 0, 100);
 
   return axios 
@@ -30,7 +30,7 @@ export function api_search(params, auth) {
               payload, options
       )
       .then(res => {
-        //console.debug(res);
+        ////console.debug(res);
           let hits = res.data.hits.hits;
       
           let entities = {};
@@ -61,7 +61,7 @@ export function api_search2(params, auth, from, size) {
 
   let payload = search_api_filter_es_query_builder(params, from , size);
 
-  //console.debug('payload', payload)
+  ////console.debug('payload', payload)
 
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
@@ -78,7 +78,7 @@ export function api_search2(params, auth, from, size) {
             entities.push(data);
             
           });
-           console.debug(entities);
+           //console.debug(entities);
         return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
       .catch(err => {
@@ -93,8 +93,8 @@ export function api_search2(params, auth, from, size) {
 export function search_api_filter_es_query_builder(fields, from, size) {
 
   let requestBody =  esb.requestBodySearch();
- //console.debug("here in the filter es builder")
- //console.debug(fields);
+ ////console.debug("here in the filter es builder")
+ ////console.debug(fields);
 
   let boolQuery = esb.boolQuery();
 
@@ -139,13 +139,13 @@ export function search_api_filter_es_query_builder(fields, from, size) {
   requestBody.query(boolQuery).from(from).size(size).sort(esb.sort('last_modified_timestamp', 'desc'));
   //requestBody.query(boolQuery).size(100);
 
-  //console.debug(requestBody.toJSON());
+  ////console.debug(requestBody.toJSON());
   return requestBody.toJSON();
 }
 
 export function fixKeywordText(text) {
   let x = text.replace(/-/gi, "\\-");
-  //console.debug('scrubbed', x)
+  ////console.debug('scrubbed', x)
 return x
 }
 

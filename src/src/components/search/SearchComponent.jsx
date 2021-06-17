@@ -24,7 +24,6 @@ class SearchComponent extends Component {
     filtered: false,
     entity_type_list: SAMPLE_TYPES,
     column_def: COLUMN_DEF_DONOR,
-    keywords: "",
     show_info_panel: true,
     show_search: true,
     results_total: 0,
@@ -35,16 +34,18 @@ class SearchComponent extends Component {
     hide_modal: true, 
     updateSuccess: false,
     globus_url: "",
-    isAuthenticated: false
+    isAuthenticated: false,
+    group: "All Components",
+    sampleType: "----",
+    keywords: ""
   };
 
-  constructor(props) {
-    super(props);
-    this.group = React.createRef();
-    this.sampleType = React.createRef();
-    this.keywords = React.createRef();
-    this.keywords = React.createRef();
-  }
+  // constructor(props) {
+  //   super(props);
+  //   // this.group = React.createRef();
+  //   // this.sampleType = React.createRef();
+  //   // this.keywords = React.createRef();
+  // }
 
   componentDidMount() {     
     try {
@@ -81,7 +82,7 @@ class SearchComponent extends Component {
         config
       )
       .then((res) => {
-        console.debug("groups RES: ", res);
+        //console.debug("groups RES: ", res);
         // const display_names = res.data.groups
         //   .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
         //   .map((g) => {
@@ -94,7 +95,7 @@ class SearchComponent extends Component {
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
 
-        console.debug(groups);
+        //console.debug(groups);
         this.setState({
           groups: groups
         });
@@ -105,13 +106,17 @@ class SearchComponent extends Component {
           window.location.reload();
         }
       });
+
+      // do an initial load using default criteria
+      
+      this.handleSearchClick();
    
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
-      // console.log("PROP UPDATE");
-      // console.debug(this.props.editNewEntity);
+      // //console.log("PROP UPDATE");
+      // //console.debug(this.props.editNewEntity);
       this.setState({
         editingEntity: this.props.editNewEntity,
         editForm: true,
@@ -121,7 +126,23 @@ class SearchComponent extends Component {
     }
   }
 
-  //editNewEntity
+  handleInputChange = e => {
+    const { name, value } = e.target;
+    //console.debug('handleInputChange', name)
+    switch (name) {
+      case "group":
+        this.setState({ group: value });
+        break;
+      case "sampleType":
+        this.setState({ sampleType: value });
+        break;
+      case "keywords":
+        this.setState({ keywords: value });
+        break;
+      default:
+        break;
+    }
+  };
   
   /*
   set filter fo the Types dropdown, which depends on the propos.filter_type, if avaliable
@@ -130,7 +151,7 @@ class SearchComponent extends Component {
 
     var new_filter_list = [];
 
-    //console.debug('FILTER TYPES', SAMPLE_TYPES)
+    ////console.debug('FILTER TYPES', SAMPLE_TYPES)
     if (this.props.filter_type) {
       if (this.props.filter_type === 'Dataset') {
         SAMPLE_TYPES.forEach((type)=>{
@@ -164,9 +185,14 @@ class SearchComponent extends Component {
   handleSearchClick = () => {
     this.setState({ loading: true, filtered: true });
 
-    const group = this.group.current.value;
-    const sample_type = this.sampleType.current.value;
-    const keywords = this.keywords.current.value;
+    const group = this.state.group;
+    const sample_type = this.state.sampleType;
+    const keywords = this.state.keywords;
+  
+    // const group = this.group.current.value;
+    // const sample_type = this.sampleType.current.value;
+    // const keywords = this.keywords.current.value;
+
     let params = {};
     let which_cols_def = COLUMN_DEF_SAMPLE;  //default
 
@@ -176,7 +202,7 @@ class SearchComponent extends Component {
     }
 
     if (sample_type) {
-      console.debug(sample_type);
+      //console.debug(sample_type);
       if (sample_type === 'donor') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
@@ -186,24 +212,27 @@ class SearchComponent extends Component {
         } else if (sample_type === 'uploads') {
             params["entity_type"] = "Upload";
             which_cols_def = COLUMN_DEF_UPLOADS;
-        } else {
-          params["specimen_type"] = sample_type;
+        } 
+        else {
+          if (sample_type !== '----') {
+            params["specimen_type"] = sample_type;
+          }
       } 
     } 
     if (keywords) {
       params["search_term"] = keywords;
     }
 
-    //console.debug('search page size: ', this.state.pageSize);
+    //console.debug('params ', params);
 
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
-      console.debug("Serch Res", response.results);
+      //console.debug("Serch Res", response.results);
       if (response.status === 200) {
-      //console.debug('SEARCH RESULTS', response);
+      ////console.debug('SEARCH RESULTS', response);
         if (response.total === 1) {  // for single returned items, customize the columns to match
           which_cols_def = this.columnDefType(response.results[0].entity_type);
-          console.debug("which_cols_def: ", which_cols_def);
+          ////console.debug("which_cols_def: ", which_cols_def);
         }
       this.setState(
           {
@@ -220,7 +249,7 @@ class SearchComponent extends Component {
   };
 
   columnDefType = (et) => {
-    console.debug("ET ", et);
+    //console.debug("ET ", et);
     if (et === 'Donor') {
         return COLUMN_DEF_DONOR;
     } 
@@ -234,7 +263,7 @@ class SearchComponent extends Component {
   }
 
   handlePageChange = (params) => {
-    //console.debug('Page changed', params)
+    ////console.debug('Page changed', params)
     this.setState({
           page: params.page,
           pageSize: params.pageSize
@@ -245,7 +274,7 @@ class SearchComponent extends Component {
   }
 
   handleTableSelection = (row) => {
-    //console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
+    ////console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
     // if (row.length > 0) {
     //   alert(row)
     // }
@@ -262,7 +291,7 @@ class SearchComponent extends Component {
 
   onUpdated = data => {
     //this.filterEntity();
-    console.debug(this.props)
+    //console.debug(this.props)
     this.setState({
       updateSuccess: true,
       editingEntity: null,
@@ -287,8 +316,8 @@ class SearchComponent extends Component {
     if(params.field === 'uuid') return; // skip this field
 
     if (params.row) {
-    // //console.debug('CELL CLICK: entity', params.row.entity_type);
-    console.debug('Local CELL CLICK: uuid', params.row.uuid);
+    // ////console.debug('CELL CLICK: entity', params.row.entity_type);
+    ////console.debug('Local CELL CLICK: uuid', params.row.uuid);
 
     entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
@@ -298,7 +327,7 @@ class SearchComponent extends Component {
         if(entity_data.read_only_state){
           ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
             .then((resp) => {
-              console.debug('ingest_api_allowable_edit_states done', resp)
+              //console.debug('ingest_api_allowable_edit_states done', resp)
             if (resp.status === 200) {
               let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
               this.setState({
@@ -338,12 +367,13 @@ class SearchComponent extends Component {
     this.setState(
       {
         filtered: false,
-        datarows: []
-      }
-    );
-    //this.group.current.value = "All Components";
-    this.sampleType.current.value = "----";
-    this.keywords.current.value = "";
+        datarows: [],
+        sampleType: "----",
+        group: "All Components",
+        keywords: ""
+      }, () => {
+        this.handleSearchClick();
+    });
   };
 
  onChangeGlobusLink(newLink, newDataset) {
@@ -489,10 +519,10 @@ renderInfoPanel() {
                     const result = newSelectionModel.filter(
                       (s) => !selectionSet.has(s)
                      );
-                    //console.log('length>1', result)
+                    ////console.log('length>1', result)
                    this.handleTableSelection(result);
                 } else {
-                  //console.log('length < 1',newSelectionModel )
+                  ////console.log('length < 1',newSelectionModel )
                     this.handleTableSelection(newSelectionModel);
                 }
               }}*/
@@ -519,20 +549,21 @@ renderInfoPanel() {
               <span className="portal-jss116 text-center">
               Use the filter controls to search for Donors, Samples, Datasets or Data Uploads.
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
-        </span>
+              </span>
               <div className="card-body search-filter">
       
-                
-        
+                <form>
+                  <div className="row">
+                    <div className="col">
                     <div className="form-group">
                       <label htmlFor="group" className="portal-jss116">Group</label>
-                       <div className="col-sm-12">
                         <select
                           name="group"
                           id="group"
                           className="select-css"
-                          ref={this.group}
-                          //value={this.state.group}
+                          onChange={this.handleInputChange}
+                          //ref={this.group}
+                          value={this.state.group}
                           >
           
                          {search_api_search_group_list().map((group, index) => {
@@ -543,20 +574,19 @@ renderInfoPanel() {
                                   ); 
                           })}
                         </select>
-                      </div>
                     </div>
-        
+                    </div>
                   
-                 
+                  <div className="col">
                     <div className="form-group">
-                      <label htmlFor="specimen_type" className="portal-jss116">Type</label>
-                      <div className="col-sm-12">
+                      <label htmlFor="sampleType" className="portal-jss116">Type</label>
                         <select
-                          name="specimen_type"
-                          id="specimen_type"
+                          name="sampleType"
+                          id="sampleType"
                           className="select-css"
                           onChange={this.handleInputChange}
-                          ref={this.sampleType}
+                          //ref={this.sampleType}
+                          value={this.state.sampleType}
                         >
                           <option value="">----</option>
                           {this.state.entity_type_list.map((optgs, index) => {
@@ -576,29 +606,26 @@ renderInfoPanel() {
                             );
                           })}
                         </select>
-                      </div>
-                      
+                    </div>
                     </div>
  
-                
-                <div className="form-group">
-                  <label htmlFor="keywords" className="portal-jss116">Keyword</label>
-                  <div className="col-sm-12">
-                    <input
+                  </div>
+                  <div className="row">
+                      <div className="col-sm-12">
+                       <input
                         type="text"
                         className="form-control"
                         name="keywords"
                         id="keywords"
                         placeholder="Enter a keyword or HuBMAP/Submission/Lab ID"
-                        ref={this.keywords}
+                        onChange={this.handleInputChange}
+                        //ref={this.keywords}
+                        value={this.state.keywords}
                       />
+                     </div>
+                  
                   </div>
-                  </div>
-             
-          
-                
-
-                <div className="row mb-5">
+                <div className="row mb-5 pads">
                   <div className="col-sm-4 offset-sm-2">
                     <button
                       className="btn btn-primary btn-block"
@@ -624,9 +651,10 @@ renderInfoPanel() {
                   !this.state.loading && (
                     <div className="text-center">No record found.</div>
                   )}
-            
+             </form>
               </div>
             </div>
+
           //</div>
        // </div>
       //</Modal>

@@ -99,6 +99,7 @@ class TissueForm extends Component {
     setOpen: false,
     show_snack: false,
     show_dirty_warning: false,
+    submitting: false,
     GroupSelectShow: false,
     snackmessage: "", 
     isDirty: false,
@@ -1134,9 +1135,9 @@ handleAddImage = () => {
                     // if they are NOT editing a multiples just do normal update and closed the page,
                     // if will just show an Save snackmessage so they can edit other samples
                     if (this.state.related_group_ids.length < 2) {  
-                      
                       this.props.onUpdated(response.results);
                     }
+                    this.setState({ submit_error: false, submitting: false, isDirty: false });
                   } else {
                     this.setState({ submit_error: true, submitting: false, isDirty: false });
                     this.setDirty(false);
@@ -1161,7 +1162,7 @@ handleAddImage = () => {
                         //////console.debug(response.results);
 
                         this.props.onCreated({new_samples: [], entity: response.results});
-                        this.setState({ submit_error: true, submitting: false});
+                        this.setState({ submit_error: false, submitting: false});
                         
                       } else if (response.status === 400) {
                          this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(response.results) });
@@ -1176,7 +1177,7 @@ handleAddImage = () => {
                           //console.debug('MULTIPLES DATA', data)
                                  //this.props.onCreated({new_samples: resp.results, entity: response.results});
                           this.props.onCreated({new_samples: resp.results, entity: data});   // fro multiples send the 'starter' data used to create the multiples
-                          this.setState({ submit_error: true, submitting: false});
+                          this.setState({ submit_error: false, submitting: false});
                         } else if (resp.status === 400) {
                             this.setState({ submit_error: true, submitting: false, error_message_detail: parseErrorMessage(resp.results) });
                             } 
