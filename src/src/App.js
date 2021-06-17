@@ -3,6 +3,8 @@ import './App.css';
 //import Navigation from './components/Navbar.js';
 import Routes from './Routes';
 import Login from './components/uuid/login';
+import IdleTimer from "react-idle-timer";
+import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 import axios from 'axios';
@@ -14,14 +16,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Button,
-  Typography,
-  Menu,
-  MenuItem
+  Typography
 } from "@material-ui/core";
-import IdleTimer from "react-idle-timer";
 import Modal from "./components/uuid/modal";
-import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
 //import { BrowserRouter as Router } from 'react-router-dom';
+
+
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import UploadsForm from "./components/uploads/createUploads";
 
 class App extends Component {
   state = {
@@ -29,7 +32,9 @@ class App extends Component {
     show_menu_popup: false,
     creatingNewEntity: false,
     formType: "",
-    open_edit_dialog: false
+    open_edit_dialog: false.valueOf,
+    creatingNewUpload: false,
+    editNewEntity: null,
   }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
@@ -79,11 +84,12 @@ class App extends Component {
       email: app_info.email || "",
       globus_id: app_info.globus_id || "",
       creatingNewEntity: false,
+      creatingNewUpload: false,
       system: "",
       registered: true
     };
 
-    console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
+    //console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
 
     // Binding event handler methods to an instance
     this.handleLogout = this.handleLogout.bind(this);
@@ -145,7 +151,7 @@ handleLogout = e => {
 };
 
 handleMenuSelection = (event) => {
-console.debug('HI', event.currentTarget.innerText)
+
   var formtype = event.currentTarget.innerText.trim();
 
   this.setState({
@@ -156,10 +162,16 @@ console.debug('HI', event.currentTarget.innerText)
       open_edit_dialog: true
     })
   }
+  
+
+  handleUploadsDialog = (event) => {
+    this.setState({
+      creatingNewUpload: true,
+    })
+  }
 
   handleClick = (event) => {
-
-    console.debug('clicked', event.currentTarget);
+    //console.debug('clicked', event.currentTarget);
     this.setState({
       anchorEl: event.currentTarget,
       show_menu_popup: true
@@ -167,12 +179,28 @@ console.debug('HI', event.currentTarget.innerText)
   };
 
   handleClose = () => {
+    //console.log("App.js handleClose");
     this.setState({
+      creatingNewUpload: false,
       anchorEl: null,
       show_menu_popup: false,
       open_edit_dialog: false, 
       creatingNewEntity: false
     })
+  };
+
+  onCreated = data => {
+    //console.debug(data);
+    //console.debug(data.entity_type);
+    this.setState({
+      show_menu_popup: false,
+      createSuccess: true,
+      creatingNewEntity: false,
+      creatingNewUpload: false,
+      editNewEntity: data,
+      formType: data.entity_type.toLowerCase(),
+      preSearch: "uploads"
+    });
   };
 
   showDropDwn = () => {
@@ -187,19 +215,17 @@ console.debug('HI', event.currentTarget.innerText)
       
       <Button
         href={logout_url}
-        className=""
+        className="nav-link"
         onClick={this.handleLogout}
-        ref={a => (this.logoutButton = a)}
-      >
-        Logout
-      </Button>
+        //ref={a => (this.logoutButton = a)}
+      >Logout</Button>
     ) : (
         ""
       );
 
     // Must wrap the componments in an enclosing tag
     return (
-         <header id="header" className="navbar navbar-light">
+        <header id="header" className="navbar navbar-light">
         <nav className="container menu-bar" id="navMenu">
           <div id="MenuLeft">
             <a className="navbar-brand" href="/">
@@ -213,19 +239,9 @@ console.debug('HI', event.currentTarget.innerText)
                 alt="HuBMAP logo"
               />
             </a>
-            {/*<Hidden mdUp>
-                <IconButton
-                  className={"IconBTN"}
-                  onClick={console.log("open Nav")}
-                  aria-label="Open Navigation"
-                >
-                  <MenuIcon color="primary" />
-                </IconButton>
-              </Hidden>
-            */}
+      
               {this.state.isAuthenticated && (
-                <div className="d-inline">
-                
+                <div className="d-inline">                
                 <span className="menu-bar-static-label">REGISTER NEW:</span>
                 
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Donor</Button>
@@ -234,8 +250,7 @@ console.debug('HI', event.currentTarget.innerText)
                 </div>
               )}
             </div>
-            <div id="MenuRight">
-
+        <div id="MenuRight">
           {this.state.isAuthenticated && (
             <div className="float-right">
               <span className="username">
@@ -244,7 +259,7 @@ console.debug('HI', event.currentTarget.innerText)
                 </Typography>
                 <Button
                 href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
-                className="" >
+                className="nav-link" >
                   Edit Profile
                 </Button>
               </span>
@@ -436,22 +451,47 @@ console.debug('HI', event.currentTarget.innerText)
           </div>
 
         </div>
-
+            
         
-         {this.state.isAuthenticated && !this.state.creatingNewEntity && (
+        {this.state.isAuthenticated && !this.state.creatingNewEntity && (
           <div className="col-sm-12">
-            <SearchComponent />
+            <SearchComponent editNewEntity={this.state.editNewEntity} />
           </div>
           )}
-
-          
           <div className="col-sm-12">
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              
-                <Forms formType={this.state.formType} onCancel={this.handleClose} />
-
-            )}
+              <Forms formType={this.state.formType} onCancel={this.handleClose} />
+              )}
           </div>
+          
+          {this.state.isAuthenticated && this.state.creatingNewUpload && (
+          <div className="col-sm-12">
+            <Dialog 
+              open={this.state.creatingNewUpload}
+              fullWidth={true} 
+              maxWidth="lg" 
+              aria-labelledby="source-lookup-dialog" 
+              // onClose={this.handleClose} 
+              onClose={(event, reason) => {
+                if (reason !== 'backdropClick') {
+                  this.handleClose()
+                }
+              }}
+            >
+            <DialogContent>
+              <UploadsForm
+                testVal="ERIS"
+                onCreated={this.onCreated}
+                cancelEdit={this.handleClose}
+              />
+            </DialogContent>
+            </Dialog>
+          </div>
+          )}
+          
+
+          
+          
       </div>
     );
   }
