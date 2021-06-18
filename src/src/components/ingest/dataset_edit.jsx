@@ -101,7 +101,7 @@ class DatasetEdit extends Component {
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside);
 
-    ////console.log('props', this.props)
+    console.log('props', this.props)
 
     if (this.props.editingDataset) {
       if (this.props.editingDataset.uuid)
@@ -848,7 +848,8 @@ class DatasetEdit extends Component {
                     this.setState({
                       globus_path: res.data,
                     }, () => {
-                      this.props.onCreated({entity: response.results}); // set as an entity for the Results
+                      console.debug('globus_path', res.data)
+                      this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
                       this.onChangeGlobusURL();
                     });
                   })

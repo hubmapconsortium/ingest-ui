@@ -1,5 +1,10 @@
 import React, { Component } from "react";
 import MultipleListModal from "./tissue_form_components/multipleListModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFolder, 
+  faExternalLinkAlt
+} from "@fortawesome/free-solid-svg-icons";
 
 class Result extends Component {
   state = { results: [] };
@@ -70,6 +75,15 @@ class Result extends Component {
                     {this.props.result.entity.entity_type && (
                       <div className="portal-jss116 col-sm-12 ml-2">
                           Type: {this.props.result.entity.entity_type}
+                      </div>
+                    )}
+                     {this.props.result.globus_path && (
+                      <div className="portal-jss116 col-sm-12 ml-2">
+                          <a
+                            href={this.props.result.globus_path}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                          ><FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> Click here to go to the Globus data repository</a>
                       </div>
                     )}
               </div>
