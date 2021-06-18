@@ -79,15 +79,11 @@ class Result extends Component {
                     )}
                      {this.props.result.globus_path && (
                       <div className="portal-jss116 col-sm-12 ml-2">
-                           <a
-                            href={this.state.globus_path}
+                          <a
+                            href={this.props.result.globus_path}
                             target='_blank'
                             rel='noopener noreferrer'
-                          >
-                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
-                            <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </a>
-                        )}
+                          ><FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> Click here to go to the Globus data repository</a>
                       </div>
                     )}
               </div>

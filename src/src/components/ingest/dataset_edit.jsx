@@ -848,6 +848,7 @@ class DatasetEdit extends Component {
                     this.setState({
                       globus_path: res.data,
                     }, () => {
+                      console.debug('globus_path', res.data)
                       this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
                       this.onChangeGlobusURL();
                     });
