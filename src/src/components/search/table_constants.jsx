@@ -131,7 +131,7 @@ function getLabId(params: ValueGetterParams) {
 
  // console.debug('params:', params.row)
   try {
-    return params.row['lab_donor_id'] || params.row['lab_tissue_sample_id']
+    return params.row['lab_donor_id'] || params.row['lab_tissue_sample_id'] || params.row['lab_dataset_id']
   } catch { }
 return ""
 
