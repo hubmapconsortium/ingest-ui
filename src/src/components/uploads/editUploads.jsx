@@ -13,6 +13,8 @@ import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";
 import { tsToDate } from "../../utils/string_helper";
 import { Alert, AlertTitle } from '@material-ui/lab';
+import { DataGrid } from '@material-ui/data-grid';
+import {COLUMN_DEF_DATASET} from '../search/table_constants';
 
 // import GroupModal from "../../groupModal";
 import { ingest_api_get_globus_url, 
@@ -36,7 +38,8 @@ class EditUploads extends Component {
     status:"status",
     creatingNewUploadFolder: true,
     confirmModal: false,
-    writeable: false
+    writeable: false,
+    pageSize:10
   }
 
   
@@ -351,6 +354,7 @@ class EditUploads extends Component {
     console.log("componentDidUpdate");
     console.log(prevProps);
     // Typical usage (don't forget to compare props):
+    // console.debug(this.props.editingUpload.datasets);
     if (this.props.targetUUID !== prevProps.targetUUID) {
       // this.getUpload(this.props.targetUUID);
     }
@@ -451,6 +455,27 @@ class EditUploads extends Component {
           <FontAwesomeIcon icon={faSpinner} spin size='6x' />
         </div>
       );
+  }
+
+
+  renderDatasets = (datasetCollection) => {
+    console.debug(datasetCollection);
+    var compiledCollection = "";
+
+    for (var i in datasetCollection){
+      console.debug(datasetCollection[i].title)
+      compiledCollection+= "<span>"+datasetCollection[i].title+"</span>";
+    }
+    return compiledCollection;
+    // datasetCollection((i) =>{
+    //   console.debug(i);
+    //   return ( <h1>{i.title}</h1> )
+    // });
+    // datasets((i) =>{
+    //   console.debug(i);
+    //   return ( <h1>{i.title}</h1> )
+    // });
+
   }
 
 
@@ -580,7 +605,14 @@ class EditUploads extends Component {
             
           </div>
 
-          
+          <div className='col-sm-9 col-form-label'>
+
+
+          {"Dataset test " +this.state.datasets} <br /><br /><br />
+          {this.renderDatasets(
+            this.state.datasets
+          )}
+              </div>  
           <div className='form-group'>
             <label
               htmlFor='description'>
@@ -624,28 +656,18 @@ class EditUploads extends Component {
               </div>
             )}
             
-            {/* {this.state.datasets.length > 0 (
-
-                <DataGrid rows={this.props.editingUpload.datasets}
-                    columns={COLUMN_DEF_DATASET}
-                    disableColumnMenu={true}
-                    pageSize={this.state.pageSize} 
-                    pagination
-                    hideFooterSelectedRowCount
-                    rowCount={this.state.results_total}
-                    paginationMode="server"
-                    onPageChange={this.handlePageChange}
-                    onPageSizeChange={this.handlePageChange}
-                    loading={this.state.loading}
-                />
-            )} */}
+            <div>
             
+            </div>
         
+
           {this.state.submit_error && (
             <div className='alert alert-danger col-sm-12' role='alert'>
               Oops! Something went wrong. Please contact administrator for help.
             </div>
           )}
+
+
           </div>
           </div>
 
