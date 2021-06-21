@@ -13,8 +13,14 @@ import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";
 import { tsToDate } from "../../utils/string_helper";
 import { Alert, AlertTitle } from '@material-ui/lab';
-import { DataGrid } from '@material-ui/data-grid';
-import {COLUMN_DEF_DATASET} from '../search/table_constants';
+
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TablePagination from '@material-ui/core/TablePagination';
 
 // import GroupModal from "../../groupModal";
 import { ingest_api_get_globus_url, 
@@ -459,22 +465,48 @@ class EditUploads extends Component {
 
 
   renderDatasets = (datasetCollection) => {
-    console.debug(datasetCollection);
-    var compiledCollection = "";
-
+    var compiledCollection = [];
     for (var i in datasetCollection){
       console.debug(datasetCollection[i].title)
-      compiledCollection+= "<span>"+datasetCollection[i].title+"</span>";
+      compiledCollection.push({
+        hubmap_id: datasetCollection[i].hubmap_id,
+        title: datasetCollection[i].title,
+        status: datasetCollection[i].status,
+        entity_type: datasetCollection[i].entity_type,
+        last_modified_timestamp: datasetCollection[i].last_modified_timestamp,
+
+      });
     }
-    return compiledCollection;
-    // datasetCollection((i) =>{
-    //   console.debug(i);
-    //   return ( <h1>{i.title}</h1> )
-    // });
-    // datasets((i) =>{
-    //   console.debug(i);
-    //   return ( <h1>{i.title}</h1> )
-    // });
+    return (
+      <TableContainer component={Paper}>
+      <Table aria-label="Associated Datasets" size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Title</TableCell>
+            <TableCell align="left">Type</TableCell>
+            <TableCell align="left">Modified</TableCell>
+            <TableCell align="left">Status</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {compiledCollection.map((row) => (
+            <TableRow key={row.hubmap_id}>
+              <TableCell align="left" component="th" scope="row">{row.title}</TableCell>
+              <TableCell align="left" component="" scope="row">{row.entity_type}</TableCell>
+              <TableCell align="left" component="" scope="row">{row.last_modified_timestamp}</TableCell>
+              <TableCell align="rigleftht">{row.status}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          colSpan={3}
+          count={compiledCollection.length}>
+        </TablePagination>
+    </TableContainer>
+
+    );
 
   }
 
@@ -605,14 +637,6 @@ class EditUploads extends Component {
             
           </div>
 
-          <div className='col-sm-9 col-form-label'>
-
-
-          {"Dataset test " +this.state.datasets} <br /><br /><br />
-          {this.renderDatasets(
-            this.state.datasets
-          )}
-              </div>  
           <div className='form-group'>
             <label
               htmlFor='description'>
@@ -657,7 +681,12 @@ class EditUploads extends Component {
             )}
             
             <div>
-            
+          <label>
+            Datsets 
+          </label>
+          <div className='col-sm-9 col-form-label'>
+            {this.renderDatasets(this.state.datasets)}
+          </div>  
             </div>
         
 
