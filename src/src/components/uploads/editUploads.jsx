@@ -477,35 +477,32 @@ class EditUploads extends Component {
 
       });
     }
+
     return (
-      <TableContainer component={Paper}>
-      <Table aria-label="Associated Datasets" size="small">
+      <div>
+      <TableContainer component={Paper} style={{ maxHeight: 150 }}>
+      <Table aria-label="Associated Datasets" size="small" stickyHeader>
         <TableHead>
           <TableRow>
             <TableCell>Title</TableCell>
-            <TableCell align="left">Type</TableCell>
-            <TableCell align="left">Modified</TableCell>
-            <TableCell align="left">Status</TableCell>
+            <TableCell align="left" style={{ width: 160 }} >Status</TableCell>
+            <TableCell align="right">Type</TableCell>
+            <TableCell align="right">Modified</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {compiledCollection.map((row) => (
             <TableRow key={row.hubmap_id}>
               <TableCell align="left" component="th" scope="row">{row.title}</TableCell>
-              <TableCell align="left" component="" scope="row">{row.entity_type}</TableCell>
-              <TableCell align="left" component="" scope="row">{row.last_modified_timestamp}</TableCell>
-              <TableCell align="rigleftht">{row.status}</TableCell>
+              <TableCell align="left" style={{ width: 160 }} >{row.status}</TableCell>
+              <TableCell align="right" component="" scope="row">{row.entity_type}</TableCell>
+              <TableCell align="right" component="" scope="row">{row.last_modified_timestamp}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          colSpan={3}
-          count={compiledCollection.length}>
-        </TablePagination>
     </TableContainer>
-
+    </div>
     );
 
   }
