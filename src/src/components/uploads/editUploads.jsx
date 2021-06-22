@@ -467,10 +467,10 @@ class EditUploads extends Component {
   renderDatasets = (datasetCollection) => {
     var compiledCollection = [];
     for (var i in datasetCollection){
-      console.debug(datasetCollection[i].title)
+      console.debug(datasetCollection[i].lab_dataset_id)
       compiledCollection.push({
         hubmap_id: datasetCollection[i].hubmap_id,
-        title: datasetCollection[i].title,
+        lab_dataset_id: datasetCollection[i].lab_dataset_id,
         status: datasetCollection[i].status,
         entity_type: datasetCollection[i].entity_type,
         last_modified_timestamp: datasetCollection[i].last_modified_timestamp,
@@ -484,7 +484,7 @@ class EditUploads extends Component {
       <Table aria-label="Associated Datasets" size="small" stickyHeader>
         <TableHead>
           <TableRow>
-            <TableCell>Title</TableCell>
+            <TableCell>Lab Name</TableCell>
             <TableCell align="left" style={{ width: 160 }} >Status</TableCell>
             <TableCell align="right">Type</TableCell>
             <TableCell align="right">Modified</TableCell>
