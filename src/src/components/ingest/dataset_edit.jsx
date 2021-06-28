@@ -1,17 +1,19 @@
 import React, { Component } from "react";
 import Paper from '@material-ui/core/Paper';
 import Divider from '@material-ui/core/Divider';
-
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
-import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
-import CreateCollectionModal from "./createCollectionModal";
+//import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
+//import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 import { truncateString } from "../../utils/string_helper";
-import { SAMPLE_TYPES, ORGAN_TYPES} from "../../constants";
-import { flattenSampleType } from "../../utils/constants_helper";
+import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
@@ -21,8 +23,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
+import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
-import { entity_api_create_entity, entity_api_update_entity } from '../../service/entity_api';
+import { entity_api_update_entity } from '../../service/entity_api';
 
 class DatasetEdit extends Component {
   state = {
@@ -35,7 +38,7 @@ class DatasetEdit extends Component {
     //   label: "",
     //   description: "",
     // },
-    source_uuid: "",
+    source_uuid: undefined,
     source_uuid_list: [],
     contains_human_genetic_sequences: undefined,
     description: "",
@@ -44,6 +47,9 @@ class DatasetEdit extends Component {
     writeable: true,
     has_submit_privs: false,
     has_submit: false,
+    lookUpCancelled: false,
+    LookUpShow: false,
+    GroupSelectShow: false,
   //  is_curator: null,
     source_uuid_type: "",
     data_types: new Set(),
@@ -70,15 +76,15 @@ class DatasetEdit extends Component {
     if (this.props.hasOwnProperty('editingDataset')
 	       && this.props.editingDataset
 	       && this.props.editingDataset.data_types) {
-      //console.log('editingDataset.data_types', this.props.editingDataset.data_types)
+      //////console.log('editingDataset.data_types', this.props.editingDataset.data_types)
       // data_types = JSON.parse(
       //   this.props.editingDataset.data_types
       //     .replace(/'/g, '"')
       //     .replace(/\\"/g, "'")
       // );
-      //console.log('this.state.data_type_dicts', this.state.data_type_dicts)
+      //////console.log('this.state.data_type_dicts', this.state.data_type_dicts)
       const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
-      //console.log('data_type_options: ', data_type_options);
+      //////console.log('data_type_options: ', data_type_options);
       other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
       data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
       if (other_dt) {
@@ -103,7 +109,7 @@ class DatasetEdit extends Component {
        ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((resp) => {
         if (resp.status === 200) {
-          console.log('edit states...', resp.results);
+          ////console.log('edit states...', resp.results);
     
           this.setState({
             writeable: resp.results.has_write_priv,
@@ -131,11 +137,11 @@ class DatasetEdit extends Component {
            var dt_dict = data.result.map((value, index) => { return value });
 
 	         this.setState({data_type_dicts: dt_dict});
-           //console.log('set the data_type_dicts from service', dt_dict)
+           //////console.log('set the data_type_dicts from service', dt_dict)
 	         this.updateStateDataTypeInfo();
       })
       .catch(error => {
-	console.log(error);
+	////console.log(error);
 	return Promise.reject(error);
       });
 
@@ -170,7 +176,7 @@ class DatasetEdit extends Component {
 
       if (this.props.editingDataset) {
 	  
-      let source_uuids;
+      //let source_uuids;
       try {
         // use only the first direct ancestor
          this.setState({
@@ -209,7 +215,7 @@ class DatasetEdit extends Component {
           status: this.props.editingDataset.status.toUpperCase(),
           display_doi: this.props.editingDataset.hubmap_id,
           //doi: this.props.editingDataset.entity_doi,
-          name: this.props.editingDataset.title,
+          lab_dataset_id: this.props.editingDataset.lab_dataset_id,
           globus_path: "", //this.props.editingDataset.properties.globus_directory_url_path,
           // collection: this.props.editingDataset.properties.collection
           //   ? this.props.editingDataset.properties.collection
@@ -333,15 +339,36 @@ class DatasetEdit extends Component {
     this.setState({ errorMsgShow: false });
   };
 
-  handleLookUpClick = () => {
+  hideGroupSelectModal = () => {
     this.setState({
-      LookUpShow: true,
+      GroupSelectShow: false
     });
   };
 
+  handleLookUpClick = () => {
+    //////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
+    if (!this.state.lookUpCancelled) {
+      this.setState({
+        LookUpShow: true
+      });
+    }
+     this.setState({
+        lookUpCancelled: false
+      });
+  };
+
   hideLookUpModal = () => {
+    //////console.debug('IM HERE TRYING TO HIDE THE DIALOG')
+    this.setState({
+      LookUpShow: false
+    });
+  };
+
+  cancelLookUpModal = () => {
+    //////console.debug('IM HERE TRYING TO HIDE THE DIALOG')
     this.setState({
       LookUpShow: false,
+      lookUpCancelled: true
     });
   };
 
@@ -359,34 +386,24 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
+    //console.debug('**name', name)
     switch (name) {
-      case "name":
+      case "lab_dataset_id":
         this.setState({
-          name: value,
+          lab_dataset_id: value,
         });
+        //console.debug('*** lab_dataset_id', value)
         break;
-      // case "collection":
-      //   let ret = this.state.collections.filter((c) => {
-      //     if(c.label){
-      //       return c.label.toLowerCase().includes(value.toLowerCase());
-      //     }
-      //   });
+      // case "source_uuid":
       //   this.setState({
-      //     collection: value,
-      //     showCollectionsDropDown: value !== "",
-      //     collection_candidates: ret,
+      //     source_uuid: value,
       //   });
       //   break;
-      case "source_uuid":
-        this.setState({
-          source_uuid: value,
-        });
-        break;
       case "contains_human_genetic_sequences":  
         let gene_seq = undefined; 
-        if (value == 'yes') {
+        if (value === 'yes') {
           gene_seq = true;
-        } else if(value == 'no'){
+        } else if(value === 'no'){
           gene_seq = false;
         }
         this.setState({
@@ -420,7 +437,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-      //console.log('ping!', id);
+      //////console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -440,7 +457,7 @@ class DatasetEdit extends Component {
             });
         }
       } else {
-        //console.log(id, e.target.checked)
+        //////console.log(id, e.target.checked)
         if (e.target.checked) {
           const data_types = this.state.data_types;
           data_types.add(name);
@@ -456,7 +473,7 @@ class DatasetEdit extends Component {
         }
       
       }
-      //console.log('data_types', this.state.data_types)
+      //////console.log('data_types', this.state.data_types)
     }
   };
 
@@ -499,29 +516,41 @@ class DatasetEdit extends Component {
   };
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
-  handleSelectClick = (ids) => {
-    // console.log('handleSelectClick', ids)
-    let id = this.getSourceAncestor(ids);
-    console.log('ive selected', ids)
+  handleSelectClick = (selection) => {
+    // ////console.log('handleSelectClick', ids)
+    //let id = this.getSourceAncestor(ids);
+    //////console.log('Dataset selected', selection.row.uuid)
+    var slist = [];
+    slist.push({uuid: selection.row.uuid});
+    ////console.debug('SLIST', slist)
     this.setState(
       {
-        source_uuid: id, 
-        source_uuid_list: ids,
-        source_entity: ids[0].entity,  // save the entire entity to use for information
+        source_uuid: selection.row.hubmap_id, 
+        source_uuid_list: slist,
+        source_entity: selection.row,  // save the entire entity to use for information
         LookUpShow: false,
       }
-      // old code here: not sure why it needs to be revalidated esp user has selected from a valid list
-      // ,
-      // () => {
-      //   console.log('ive just been clicked', ids)
-      //   this.validateUUID();
-      // }
     );
+      this.cancelLookUpModal();
   };
+
+  // handleSelectClick = (ids) => {
+  //   // ////console.log('handleSelectClick', ids)
+  //   let id = this.getSourceAncestor(ids);
+  //   ////console.log('ive selected', ids)
+  //   this.setState(
+  //     {
+  //       source_uuid: id, 
+  //       source_uuid_list: ids,
+  //       source_entity: ids[0].entity,  // save the entire entity to use for information
+  //       LookUpShow: false,
+  //     }
+  //   );
+  // };
 
   getUuidList = (new_uuid_list) => {
     //this.setState({uuid_list: new_uuid_list});
-    //console.log('**getUuidList', new_uuid_list)
+    //////console.log('**getUuidList', new_uuid_list)
     this.setState(
       {
         source_uuid: this.getSourceAncestor(new_uuid_list),
@@ -679,7 +708,7 @@ class DatasetEdit extends Component {
   };
 
   handleSubmit = (i) => {
-    //console.log('SUBMIT!!');
+    //////console.log('SUBMIT!!');
     const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
@@ -687,14 +716,14 @@ class DatasetEdit extends Component {
     )[0];
     data_types.delete(other_dt);
 
-    //console.log('submit: data_types',data_types)
+    //////console.log('submit: data_types',data_types)
     if (this.state.other_dt) {
       const data_types = this.state.data_types;
       data_types.add(this.state.other_dt);
       this.setState({ data_types: data_types });
     }
 
-    //console.log('submit: moving to validateForm')
+    //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
     
       if (isValid) {
@@ -722,7 +751,7 @@ class DatasetEdit extends Component {
 
           // package the data up
           let data = {
-            title: this.state.name,
+            lab_dataset_id: this.state.lab_dataset_id,
             //collection_uuid: this.state.collection.uuid,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
             data_types: data_types,
@@ -731,7 +760,7 @@ class DatasetEdit extends Component {
             //is_protected: this.state.is_protected,
           };
   
-          console.log('SOURCE UUIDS', this.state.source_uuid_list)
+          ////console.log('SOURCE UUIDS', this.state.source_uuid_list)
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
             let direct_ancestor_uuid = this.state.source_uuid_list.map((su) => {
@@ -750,7 +779,7 @@ class DatasetEdit extends Component {
                 JSON.parse(localStorage.getItem("info")).nexus_token
             },
           };
-          console.log('submit', this.props.c)
+         
           if (this.props.editingDataset) {
             // if user selected Publish
             if (i === "published") {
@@ -764,11 +793,11 @@ class DatasetEdit extends Component {
                   this.setState({ submit_error: true, submitting: false });
                 });
             } else if (i === "processing") {
-               console.log('Submit Dataset...');
+               ////console.log('Submit Dataset...');
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                   .then((response) => {
-                    if (response.status == 200) {
-                      console.log(response.results);
+                    if (response.status === 200) {
+                      ////console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
                       this.setState({ submit_error: true, submitting: false });
@@ -777,9 +806,9 @@ class DatasetEdit extends Component {
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((response) => {
-                          if (response.status == 200) {
-                            console.log('Update Dataset...');
-                             console.log(response.results);
+                          if (response.status === 200) {
+                            ////console.log('Update Dataset...');
+                             ////console.log(response.results);
                             this.props.onUpdated(response.results);
                           } else {
                             this.setState({ submit_error: true, submitting: false });
@@ -788,6 +817,9 @@ class DatasetEdit extends Component {
               }
           } else {  // new creations
 
+            if (this.state.lab_dataset_id) {
+              data["lab_dataset_id"] = this.state.lab_dataset_id;
+            }
 
             // the group info on a create, check for the defaults
               if (this.state.selected_group && this.state.selected_group.length > 0) {
@@ -796,12 +828,12 @@ class DatasetEdit extends Component {
                 data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
               }
 
-              //console.log('DATASET TO SAVE', JSON.stringify(data))
+              //////console.log('DATASET TO SAVE', JSON.stringify(data))
               // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
-                  if (response.status == 200) {
-                    //console.log('create Dataset...', response.results);
+                  if (response.status === 200) {
+                    //////console.log('create Dataset...', response.results);
                      this.setState({
                         //globus_path: res.data.globus_directory_url_path,
                         display_doi: response.results.display_doi,
@@ -816,12 +848,13 @@ class DatasetEdit extends Component {
                     this.setState({
                       globus_path: res.data,
                     }, () => {
-                      this.props.onCreated(response.results);
+                      console.debug('globus_path', res.data)
+                      this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
                       this.onChangeGlobusURL();
                     });
                   })
                   .catch((err) => {
-                    console.log('ERROR', err)
+                    ////console.log('ERROR', err)
                     this.setState({
                       globus_path: "",
                       globus_path_tips: "Globus URL Unavailable",
@@ -844,31 +877,6 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-
-      if (!validateRequired(this.state.name)) {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, name: "required" },
-        }));
-        isValid = false;
-      } else {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, name: "" },
-        }));
-      }
-      // if (
-      //   this.state.collection !== "" &&
-      //   this.state.collection.label === undefined
-      // ) {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, collection: "required" },
-      //   }));
-      //   isValid = false;
-      //   resolve(isValid);
-      // } else {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, collection: "" },
-      //   }));
-      // }
 
       if (!validateRequired(this.state.source_uuid)) {
         this.setState((prevState) => ({
@@ -918,7 +926,7 @@ class DatasetEdit extends Component {
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
         }));
       } else {
-        console.log("VALID gene is not filled in")
+        ////console.log("VALID gene is not filled in")
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "required" },
         }));
@@ -930,7 +938,6 @@ class DatasetEdit extends Component {
 
   // only handles one selection at this time
   getSourceAncestor(source_uuids){
-    let id = ""; 
     try {
       return source_uuids[0].hubmap_id;  // just get the first one
     } catch {
@@ -940,7 +947,6 @@ class DatasetEdit extends Component {
 
     // only handles one selection at this time
   getSourceAncestorEntity(source_uuids){
-    let id = ""; 
     try {
       return source_uuids[0];  // just get the first one
     } catch {
@@ -1037,8 +1043,8 @@ class DatasetEdit extends Component {
 
   renderButtons() {
     if (this.props.editingDataset) {
-      if (this.state.writeable == false) {
-        console.log("editing but not writeable",  this.state.writeable)
+      if (this.state.writeable === false) {
+        ////console.log("editing but not writeable",  this.state.writeable)
         return (
           <div className='row'>
             <div className='col-sm-2 offset-sm-10'>
@@ -1053,7 +1059,7 @@ class DatasetEdit extends Component {
           </div>
         );
       } else {
-        console.log("checking Has submit rights",  this.state.has_submit_privs)
+        ////console.log("checking Has submit rights",  this.state.has_submit_privs)
         if (this.state.has_submit_privs) {
             
           if (this.state.status.toUpperCase() === "QA") {
@@ -1255,7 +1261,7 @@ class DatasetEdit extends Component {
                 <div className='col-sm-3 offset-sm-2 text-center'>
                   <button
                     type='button'
-                    className='btn btn-info btn-block'
+                    className='btn btn-info btn-block mr-1'
                     disabled={this.state.submitting}
                     onClick={() =>
                       this.handleButtonClick(this.state.status.toLowerCase())
@@ -1283,7 +1289,7 @@ class DatasetEdit extends Component {
                     >
                       {this.state.submitting && (
                         <FontAwesomeIcon
-                          className='inline-icon'
+                          className='inline-icon mr-1'
                           icon={faSpinner}
                           spin
                         />
@@ -1328,11 +1334,10 @@ class DatasetEdit extends Component {
           <div className="col-sm-12">
           <Divider />
           </div>
-          <div className='col-sm-3 offset-sm-2 text-center pads'>
-            <Divider />
+          <div className='col-md-12 text-right pads'>
             <button
               type='button'
-              className='btn btn-info btn-block'
+              className='btn btn-primary mr-1'
               disabled={this.state.submitting}
               onClick={() => this.handleButtonClick("new")}
               data-status='new'
@@ -1346,14 +1351,12 @@ class DatasetEdit extends Component {
               )}
               {!this.state.submitting && "Create"}
             </button>
-          </div>
-          <div className='col-sm-4 text-right pads'>
-            <button
+             <button
               type='button'
-              className='btn btn-secondary btn-block'
+              className='btn btn-secondary'
               onClick={() => this.props.handleCancel()}
             >
-              Back To Search
+              Cancel
             </button>
           </div>
         </div>
@@ -1368,7 +1371,7 @@ class DatasetEdit extends Component {
 
   onChangeGlobusURL() {
     this.props.changeLink(this.state.globus_path, {
-      name: this.state.name,
+      name: this.state.lab_dataset_id,
       display_doi: this.state.display_doi,
       doi: this.state.doi,
     });
@@ -1376,8 +1379,8 @@ class DatasetEdit extends Component {
 
  renderOneAssay(val, idx) {
   var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
-  return (<div className='form-group form-check'>
-    <input type='checkbox' className='form-check-input' name={val.name} id={idstr}
+  return (<div className='form-group form-check' key={idstr}>
+    <input type='checkbox' className='form-check-input' name={val.name} key={idstr} id={idstr}
     onChange={this.handleInputChange} checked={this.state.data_types.has(val.name)}
     />
     <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
@@ -1398,7 +1401,7 @@ class DatasetEdit extends Component {
   //   }
 
   isAssayCheckSet(assay) {
-    console.log('isAssayCheckSet',assay)
+    ////console.log('isAssayCheckSet',assay)
     try {    
       if (this.props.editingDataset.data_types) {
         return this.props.editingDataset.data_types.includes(assay);
@@ -1417,7 +1420,7 @@ class DatasetEdit extends Component {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
 	    var entries_per_col = Math.ceil(len / 3);
-	    var num_cols = Math.ceil(len / entries_per_col);
+	    //var num_cols = Math.ceil(len / entries_per_col);
 	    return (<>
 		    <div className='col-sm-4'> {this.renderAssayColumn(0, entries_per_col)} </div>
 		    <div className='col-sm-4'> {this.renderAssayColumn(entries_per_col, 2*entries_per_col)} </div>
@@ -1526,23 +1529,23 @@ class DatasetEdit extends Component {
               </div>
             </div>
             <div className='form-group'>
-              <label htmlFor='name'>
-                Dataset Name <span className='text-danger'>*</span>
+              <label htmlFor='lab_dataset_id'>
+               Lab Name or ID
               </label>
            
                 <span className="px-2">
                   <FontAwesomeIcon
                     icon={faQuestionCircle}
                     data-tip
-                    data-for='name_tooltip'
+                    data-for='lab_dataset_id_tooltip'
                   />
                   <ReactTooltip
-                    id='name_tooltip'
+                    id='lab_dataset_id_tooltip'
                     place='top'
                     type='info'
                     effect='solid'
                   >
-                    <p>Dataset Name Tips</p>
+                    <p>Lab Name or ID</p>
                   </ReactTooltip>
                   </span>
                
@@ -1551,114 +1554,27 @@ class DatasetEdit extends Component {
                
                   <input
                     type='text'
-                    name='name'
-                    id='name'
+                    name='lab_dataset_id'
+                    id='lab_dataset_id'
                     className={
                       "form-control " +
                       this.errorClass(this.state.formErrors.name)
                     }
-                    placeholder='Dataset name'
+                    placeholder='Lab Name or ID'
                     onChange={this.handleInputChange}
-                    value={this.state.name}
+                    value={this.state.lab_dataset_id}
                   />
                 
               )}
               {!this.state.writeable && (
                 <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.name}</p>
+                  <p>{this.state.lab_dataset_id}</p>
                 </div>
               )}
               
             </div>
 
-           {/*} <div className='form-group row'>
-              <label
-                htmlFor='name'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Collection
-              </label>
-              {!this.props.readOnly && (
-                <React.Fragment>
-                  <div className='col-sm-7'>
-                    <input
-                      type='text'
-                      name='collection'
-                      id='collection'
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.collection)
-                      }
-                      placeholder='Collection'
-                      onChange={this.handleInputChange}
-                      onKeyDown={this.handler}
-                      value={this.state.collection.label}
-                      autoComplete='off'
-                    />
-                    {this.state.showCollectionsDropDown && (
-                      <div
-                        className='dropdown-menu display-block ml-2'
-                        aria-labelledby='dropdownMenuButton'
-                      >
-                        {this.state.collection_candidates.map((collection) => {
-                          return (
-                            <div
-                              key={collection.uuid}
-                              className='card-body'
-                              onClick={() =>
-                                this.handleCollectionClick(collection)
-                              }
-                            >
-                              <h5 className='card-title'>{collection.label}</h5>
-                              <p className='card-text'>
-                                {truncateString(collection.description, 230)}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                  <div className='col-sm-2 my-auto text-right'>
-                    {this.state.groups && (
-                      <button
-                        className='btn btn-primary'
-                        type='button'
-                        onClick={this.handleAddNewCollection}
-                      >
-                        Add New
-                      </button>
-                    )}
-                  </div>
-                  <CreateCollectionModal
-                    show={this.state.AddCollectionShow}
-                    hide={this.hideAddCollectionModal}
-                  />
-                </React.Fragment>
-              )}
-              {this.props.readOnly && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.collection}</p>
-                </div>
-              )}
-              <div className='col-sm-1 my-auto text-center'>
-                <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for='collection_tooltip'
-                  />
-                  <ReactTooltip
-                    id='collection_tooltip'
-                    place='top'
-                    type='info'
-                    effect='solid'
-                  >
-                    <p>Collection Tips</p>
-                  </ReactTooltip>
-                </span>
-              </div>
-            </div> */}
+          
             <div className='form-group'>
               <label
                 htmlFor='source_uuid'>
@@ -1709,14 +1625,29 @@ class DatasetEdit extends Component {
                       />
                     </button>
                   </div>
-                  <IDSearchModal
-                    show={this.state.LookUpShow}
-                    hide={this.hideLookUpModal}
-                    select={this.handleSelectClick}
-                    parent='dataset'
-                    parentCallback={this.getUuidList}
-                    currentSourceIds={this.state.source_uuid_list}
-                  />
+                  {/*
+                   <Modal show={this.state.LookUpShow} handleClose={this.hideLookUpModal} scrollable={true}>
+                    <SearchComponent
+                      select={this.handleSelectClick}
+                      custom_title="Search for a Source ID for your Dataset"
+                      filter_type="Dataset"
+                    />
+                   </Modal>
+                    */}
+                    <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
+                     <DialogContent>
+                    <SearchComponent
+                      select={this.handleSelectClick}
+                      custom_title="Search for a Source ID for your Dataset"
+                      filter_type="Dataset"
+                    />
+                    </DialogContent>
+                     <DialogActions>
+                      <Button onClick={this.cancelLookUpModal} color="primary">
+                        Close
+                     </Button>
+                    </DialogActions>
+                   </Dialog>
                 </React.Fragment>
               )}
               {!this.state.writeable && (
@@ -1861,7 +1792,7 @@ class DatasetEdit extends Component {
                       id='contains_human_genetic_sequences_no'
                       value='no'
                       // defaultChecked={true}
-                      checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
+                      checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
@@ -1876,7 +1807,7 @@ class DatasetEdit extends Component {
                       name='contains_human_genetic_sequences'
                       id='contains_human_genetic_sequences_yes'
                       value='yes'
-                      checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
+                      checked={this.state.contains_human_genetic_sequences  === true && this.props.editingDataset}
                       onChange={this.handleInputChange}
                       disabled={this.props.editingDataset}
                     />
@@ -1892,7 +1823,7 @@ class DatasetEdit extends Component {
               {!this.props.editingDataset && (
                 <div className="col-sm-9 ">
                   <div className='form-check form-check-inline'>
-                    <input className="form-check-input"
+                    <input 
                       className={
                         "form-check-input " +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
@@ -1912,7 +1843,7 @@ class DatasetEdit extends Component {
                     </label>
                   </div>
                   <div className='form-check form-check-inline'>
-                    <input className="form-check-input"
+                    <input 
                       className={
                         "form-check-input " +
                         this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
@@ -1949,43 +1880,6 @@ class DatasetEdit extends Component {
               )*/}
             
             </div>
-
-            {/* <div className='form-group row'>
-              <label
-                htmlFor='is_protected'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Protected Access
-              </label>
-              {!this.props.readOnly && (
-                <div className='col-sm-9'>
-                  <div className='form-check form-check-inline'>
-                    <input
-                      className='form-check-input'
-                      type='checkbox'
-                      name='is_protected'
-                      id='is_protected'
-                      checked={this.state.is_protected}
-                      onChange={this.handleInputChange}
-                    />
-                    <label className='form-check-label' htmlFor='is_protected'>
-                      This dataset is currently granted{" "}
-                      <strong>protected</strong> status. <br />
-                      In order to access the data in this dataset you must
-                      contact:{" "}
-                      <a href='mailto:[placeholder]@hubmapconsortium.org'>
-                        [placeholder]@hubmapconsortium.org
-                      </a>
-                    </label>
-                  </div>
-                </div>
-              )}
-              {this.props.readOnly && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.is_protected}</p>
-                </div>
-              )}
-			</div> */}
           </div>
           <div className='form-group row'>
             <label
@@ -2035,53 +1929,7 @@ class DatasetEdit extends Component {
             )}
             
           </div>
-          {/*<div className='form-group row'>
-            <label
-              htmlFor='description'
-              className='col-sm-2 col-form-label text-right'
-            >
-              Description
-            </label>
-            {!this.props.readOnly && (
-              <React.Fragment>
-                <div className='col-sm-9'>
-                  <textarea
-                    type='text'
-                    name='description'
-                    id='description'
-                    cols='30'
-                    rows='5'
-                    className='form-control'
-                    placeholder='Description'
-                    onChange={this.handleInputChange}
-                    value={this.state.description}
-                  />
-                </div>
-              </React.Fragment>
-            )}
-            {this.props.readOnly && (
-              <div className='col-sm-9 col-form-label'>
-                <p>{this.state.description}</p>
-              </div>
-            )}
-            <div className='col-sm-1 my-auto text-center'>
-              <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='description_tooltip'
-                />
-                <ReactTooltip
-                  id='description_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>Description Tips</p>
-                </ReactTooltip>
-              </span>
-            </div>
-          </div> */}
+ 
           {this.state.assay_metadata_status !== undefined && (
             <div className='form-group row'>
               <label

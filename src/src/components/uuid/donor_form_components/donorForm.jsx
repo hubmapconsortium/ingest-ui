@@ -28,6 +28,7 @@ import HIPPA from "../HIPPA";
 import GroupModal from "../groupModal";
 import { ingest_api_users_groups } from '../../../service/ingest_api';
 import { entity_api_update_entity, entity_api_create_entity } from '../../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
 
 class DonorForm extends Component {
   state = {
@@ -40,7 +41,9 @@ class DonorForm extends Component {
     protocol_file: "",
     description: "",
     metadata_file: "",
-
+    show: false,
+    readOnly: false,
+    GroupSelectShow: false,
     images: [],
     //metadatas: [],
     // new_metadatas: [],
@@ -66,8 +69,6 @@ class DonorForm extends Component {
      // metadatas: "",
       images: "",
     },
-
-    show: false
   };
 
   constructor(props) {
@@ -82,11 +83,11 @@ class DonorForm extends Component {
    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
       if (results.status === 200) { 
-      const groups = results.results.filter(
-          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-        );
+      // const groups = results.results.filter(
+      //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+      //   );
         this.setState({
-          groups: groups
+          groups: results.results
         });
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -135,6 +136,35 @@ class DonorForm extends Component {
       // this.setState({ images: image_list, metadatas: metadata_list });
       this.setState({ images: image_list});
     }
+
+    try {
+          const param_uuid = this.props.editingEntity.uuid;
+          // check to see if user can edit
+          ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+              .then((resp) => {
+                  if (resp.status === 200) {
+                    console.debug('api_allowable_edit_states...', resp.results);
+                    ////////console.debug(resp.results);
+                    const read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+                    console.debug('HAS has_write_priv', read_only_state)
+                    this.setState({
+                      readOnly: read_only_state,   // used for hidding UI components
+                    }
+                    // , () => {
+                    //   this.checkForRelatedGroupIds(entity_data);
+                    //   this.initialize();
+                   
+                    //   //console.debug('readOnly', this.state.readOnly);
+                    // }
+
+                    );
+                   
+                  }         
+          });
+        } catch {
+        }
+
+
   }
 
   handleInputChange = e => {
@@ -233,7 +263,7 @@ class DonorForm extends Component {
     const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
     let deleted_images = [...this.state.deleted_images];
 
-    console.debug('deleted image', deleted_image)
+    //console.debug('deleted image', deleted_image)
     if (new_images.length === this.state.new_images.length){
       //deleted_images.push(deleted_image.file_name);
       deleted_images.push(deleted_image.file_uuid);
@@ -250,11 +280,11 @@ class DonorForm extends Component {
     switch (type) {
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
-        console.debug('image', id)
+        //console.debug('image', id)
         let images = [...this.state.images];
-        console.debug('images', images)
+        //console.debug('images', images)
         images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
-        console.debug('images file data', images[i].ref.current.image_file.current.files)
+        //console.debug('images file data', images[i].ref.current.image_file.current.files)
         let new_images = [...this.state.new_images];
         new_images.push(images[i].file_name);
         return new Promise((resolve, reject) => {
@@ -326,7 +356,7 @@ class DonorForm extends Component {
         if (this.state.images.length > 0) {
           let image_files_to_add = [];
           let existing_image_files_to_update = [];
-        //console.debug('submit images', this.state.images)
+        ////console.debug('submit images', this.state.images)
         this.state.images.forEach(i => {
 
             // if a file has a non-blank temp_file_id then assume it a new image 
@@ -366,17 +396,17 @@ class DonorForm extends Component {
         // "image_files_to_add": [{"temp_file_id":"5hcg4ksj6cxkw2cgpmp5", "description":"this is a test file"}]}
         //formData.append("data", JSON.stringify(data));
 
-        console.debug("SUBMMITED data")
-        console.debug(data)
+        //console.debug("SUBMMITED data")
+        //console.debug(data)
       
 
         if (this.props.editingEntity) {
-          console.debug("Updating Entity....")
+          //console.debug("Updating Entity....")
           entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    console.debug('Update Entity...');
-                    console.debug(response.results);
+                    //console.debug('Update Entity...');
+                    //console.debug(response.results);
                     this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false });
@@ -390,12 +420,12 @@ class DonorForm extends Component {
               data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
             }
 
-            console.debug("Create a new Entity....")
+            //console.debug("Create a new Entity....group uuid", data["group_uuid"])
             entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                  .then((response) => {
                   if (response.status === 200) {
-                    console.debug('create Entity...');
-                    console.debug(response.results);
+                    //console.debug('create Entity...');
+                    //console.debug(response.results);
                     this.props.onCreated({new_samples: [], entity: response.results});
                   } else {
                     this.setState({ submit_error: true, submitting: false });
@@ -412,7 +442,7 @@ class DonorForm extends Component {
 
   renderButtons() {
     if (this.props.editingEntity) {
-      if (this.props.readOnly) {
+      if (this.state.readOnly) {
         return (
           <div className="row">
            <div className="col-sm-12">
@@ -422,10 +452,10 @@ class DonorForm extends Component {
             <div className="col-sm-12 text-right pads">
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-secondary"
                 onClick={() => this.props.handleCancel()}
               >
-                Back to Search
+                Cancel
               </button>
             </div>
           </div>
@@ -439,7 +469,7 @@ class DonorForm extends Component {
             <div className="col-md-12 text-right pads">
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
               >
                  {this.state.submitting && (
@@ -454,10 +484,10 @@ class DonorForm extends Component {
             
               <button
                 type="button"
-                className="btn btn-link"
+                className="btn btn-secondary"
                 onClick={() => this.props.handleCancel()}
               >
-                 Back to Search
+                 Cancel
               </button>
           </div>
           </div>
@@ -472,7 +502,7 @@ class DonorForm extends Component {
             <div className="col-md-12 text-right pads">
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary mr-1"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (
@@ -487,10 +517,10 @@ class DonorForm extends Component {
          
             <button
               type="button"
-              className="btn btn-link"
+              className="btn btn-secondary"
               onClick={() => this.props.handleCancel()}
             >
-              Back to Search
+              Cancel
             </button>
           </div>
         </div>
@@ -538,12 +568,12 @@ class DonorForm extends Component {
 
     this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-        console.debug('image invalid', image.file_name)
+        //console.debug('image invalid', image.file_name)
         isValid = false;
         image.ref.current.validate();
       }
       if (!validateRequired(image.ref.current.image_file_description.current.value)) {
-         console.debug('descr missing')
+         //console.debug('descr missing')
         isValid = false;
         image.ref.current.validate();
       }
@@ -560,7 +590,7 @@ class DonorForm extends Component {
     // const usedFileName = new Set();
     // this.state.images.forEach((image, index) => {
     //   usedFileName.add(image.file_name);
-    //   console.debug('image check for dups', image)
+    //   //console.debug('image check for dups', image)
     //   if (image.ref.current.image_file.current.files[0]) {
     //     if (usedFileName.has(image.ref.current.image_file.current.files[0].name)) {
     //       image["error"] = "Duplicated file name is not allowed.";
@@ -701,7 +731,7 @@ class DonorForm extends Component {
                       </p>
                     </ReactTooltip>
                   </span>     
-                {!this.props.readOnly && (
+                {!this.state.readOnly && (
                   <div>
                     <input
                       type="text"
@@ -717,7 +747,7 @@ class DonorForm extends Component {
                     />
                   </div>
                 )}
-                {this.props.readOnly && (
+                {this.state.readOnly && (
                   <div>
                    <input type="text" readonly class="form-control" id="static_lab_donor_id" value={this.state.lab_donor_id}></input>
                    
@@ -753,7 +783,7 @@ class DonorForm extends Component {
                     </ReactTooltip>
                   </span>
                
-                {!this.props.readOnly && (
+                {!this.state.readOnly && (
                   <div>
                     <input
                       type="text"
@@ -769,7 +799,7 @@ class DonorForm extends Component {
                     />
                   </div>
                 )}
-                {this.props.readOnly && (
+                {this.state.readOnly && (
                   <div>
                     <input type="text" readonly class="form-control" id="static_identifying_name" value={this.state.identifying_name}></input>
                   </div>
@@ -804,7 +834,7 @@ class DonorForm extends Component {
                     </ReactTooltip>
                   </span>
                 
-                {!this.props.readOnly && (
+                {!this.state.readOnly && (
                   <div>
                     <input
                       ref={this.protocol_url}
@@ -827,7 +857,7 @@ class DonorForm extends Component {
                       )}
                   </div>
                 )}
-                {this.props.readOnly && (
+                {this.state.readOnly && (
                   <div>
                     <input type="text" readonly class="form-control" id="static_protocol" value={this.state.protocol_url}></input>
 
@@ -835,7 +865,7 @@ class DonorForm extends Component {
                 )}
                
               </div>
-              {(!this.props.readOnly ||
+              {(!this.state.readOnly ||
                 this.state.description !== undefined) && (
                 <div className="form-group">
                   <label
@@ -862,7 +892,7 @@ class DonorForm extends Component {
                       </ReactTooltip>
                     </span>
                   </label>
-                  {!this.props.readOnly && (
+                  {!this.state.readOnly && (
                     <div>
                       <textarea
                         type="text"
@@ -874,7 +904,7 @@ class DonorForm extends Component {
                       />
                     </div>
                   )}
-                  {this.props.readOnly && (
+                  {this.state.readOnly && (
                     <div>
                       {/*<p>{truncateString(this.state.description, 400)}</p>*/}
                        <input type="text" readonly class="form-control" id="static_description" value={this.state.description}></input>
@@ -906,7 +936,7 @@ class DonorForm extends Component {
                     )}
                   </div>
               </div>
-              {/*(!this.props.readOnly || this.state.metadatas.length > 0) && (
+              {/*(!this.state.readOnly || this.state.metadatas.length > 0) && (
                 <div className="form-group row">
                   <label
                     htmlFor="metadata"
@@ -915,7 +945,7 @@ class DonorForm extends Component {
                     Metadata
                   </label>
                   <div className="col-sm-8">
-                    {!this.props.readOnly && (
+                    {!this.state.readOnly && (
                       <div className="row">
                         <div className="col-sm-5">
                           <button
@@ -940,7 +970,7 @@ class DonorForm extends Component {
                         file_name={metadata.file_name}
                         ref={metadata.ref}
                         error={metadata.error}
-                        readOnly={this.props.readOnly}
+                        readOnly={this.state.readOnly}
                         formId={this.state.form_id}
                         onFileChange={this.onFileChange}
                         validate={this.validateMetadataFiles}
@@ -974,7 +1004,7 @@ class DonorForm extends Component {
                   </div>
                 </div>
               )*/}
-              {(!this.props.readOnly || this.state.images.length > 0) && (
+              {(!this.state.readOnly || this.state.images.length > 0) && (
                 <div className="form-group">
                   {/*<label
                     htmlFor="image">
@@ -982,7 +1012,7 @@ class DonorForm extends Component {
                   </label>
                 */}
                   <div>
-                    {!this.props.readOnly && (
+                    {!this.state.readOnly && (
                       <div>
                        
                           <button
@@ -1028,7 +1058,7 @@ class DonorForm extends Component {
                         description={image.description}
                         ref={image.ref}
                         error={image.error}
-                        readOnly={this.props.readOnly}
+                        readOnly={this.state.readOnly}
                         formId={this.state.form_id}
                         onFileChange={this.onFileChange}
                         validate={this.validateImagesFiles}

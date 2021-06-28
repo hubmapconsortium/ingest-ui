@@ -424,7 +424,7 @@ export default class Collection extends Component {
 						     {this.state.creators.map(creator => {
                                  return (
 									<React.Fragment>
-	                                  <span className="col-sm-2"><a className="ttip" data-tip={creator.orcid_id} data-for='name'>{creator.name}</a>,&nbsp;&nbsp;{creator.affiliation}</span><br />
+	                 <span className="col-sm-2"><a className="ttip" href="/" data-tip={creator.orcid_id} data-for='name'>{creator.name}</a>,&nbsp;&nbsp;{creator.affiliation}</span><br />
 										<ReactTooltip
 						                  id="name"
 						                  place="top"
