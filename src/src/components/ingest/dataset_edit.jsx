@@ -101,7 +101,7 @@ class DatasetEdit extends Component {
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside);
 
-    ////console.log('props', this.props)
+    console.log('props', this.props)
 
     if (this.props.editingDataset) {
       if (this.props.editingDataset.uuid)
@@ -347,7 +347,7 @@ class DatasetEdit extends Component {
 
   handleLookUpClick = () => {
     //////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
-    if (this.state.source_uuid === undefined && !this.state.lookUpCancelled) {
+    if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
       });
@@ -386,19 +386,19 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    console.debug('**name', name)
+    //console.debug('**name', name)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
           lab_dataset_id: value,
         });
-        console.debug('*** lab_dataset_id', value)
+        //console.debug('*** lab_dataset_id', value)
         break;
-      case "source_uuid":
-        this.setState({
-          source_uuid: value,
-        });
-        break;
+      // case "source_uuid":
+      //   this.setState({
+      //     source_uuid: value,
+      //   });
+      //   break;
       case "contains_human_genetic_sequences":  
         let gene_seq = undefined; 
         if (value === 'yes') {
@@ -531,6 +531,7 @@ class DatasetEdit extends Component {
         LookUpShow: false,
       }
     );
+      this.cancelLookUpModal();
   };
 
   // handleSelectClick = (ids) => {
@@ -847,7 +848,8 @@ class DatasetEdit extends Component {
                     this.setState({
                       globus_path: res.data,
                     }, () => {
-                      this.props.onCreated({entity: response.results}); // set as an entity for the Results
+                      console.debug('globus_path', res.data)
+                      this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
                       this.onChangeGlobusURL();
                     });
                   })
