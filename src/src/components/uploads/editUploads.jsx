@@ -14,7 +14,6 @@ import ReactTooltip from "react-tooltip";
 import { tsToDate } from "../../utils/string_helper";
 import { Alert, AlertTitle } from '@material-ui/lab';
 
-
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -22,12 +21,8 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
-
-
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload } from '../../service/ingest_api';
-
-
 
 class EditUploads extends Component {
 
@@ -45,7 +40,8 @@ class EditUploads extends Component {
     status:"status",
     creatingNewUploadFolder: true,
     confirmModal: false,
-    writeable: false
+    writeable: false,
+    pageSize:10
   }
 
   
@@ -360,6 +356,7 @@ class EditUploads extends Component {
     console.log("componentDidUpdate");
     console.log(prevProps);
     // Typical usage (don't forget to compare props):
+    // console.debug(this.props.editingUpload.datasets);
     if (this.props.targetUUID !== prevProps.targetUUID) {
       // this.getUpload(this.props.targetUUID);
     }
@@ -464,46 +461,54 @@ class EditUploads extends Component {
 
 
   renderDatasets = (datasetCollection) => {
-    var compiledCollection = [];
-    for (var i in datasetCollection){
-      console.debug(datasetCollection[i].lab_dataset_id)
-      var timestamp = datasetCollection[i].last_modified_timestamp
-      compiledCollection.push({
-        hubmap_id: datasetCollection[i].hubmap_id,
-        lab_dataset_id:  datasetCollection[i].lab_dataset_id,
-        status: datasetCollection[i].status,
-        entity_type: datasetCollection[i].entity_type,
-        last_modified_timestamp: tsToDate(timestamp)
 
-      });
+    if(this.state.datasets && this.state.datasets.length > 0 ){
+
+
+      var compiledCollection = [];
+      for (var i in datasetCollection){
+        console.debug(datasetCollection[i].lab_dataset_id)
+        var timestamp = datasetCollection[i].last_modified_timestamp
+        compiledCollection.push({
+          hubmap_id: datasetCollection[i].hubmap_id,
+          lab_dataset_id:  datasetCollection[i].lab_dataset_id,
+          status: datasetCollection[i].status,
+          entity_type: datasetCollection[i].entity_type,
+          last_modified_timestamp: tsToDate(timestamp)
+        });
+      }
+      return (
+        <div>
+           <label>
+            Datsets 
+          </label>
+        <TableContainer component={Paper} style={{ maxHeight: 150 }}>
+        <Table aria-label="Associated Datasets" size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Lab Name</TableCell>
+              <TableCell align="left" style={{ width: 160 }} >Status</TableCell>
+              <TableCell align="right">Type</TableCell>
+              <TableCell align="right">Modified</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {compiledCollection.map((row) => (
+              <TableRow key={row.hubmap_id}>
+                <TableCell align="left" component="th" scope="row">{row.lab_dataset_id}</TableCell>
+                <TableCell align="left" style={{ width: 160 }} >{row.status}</TableCell>
+                <TableCell align="right" component="" scope="row">{row.entity_type}</TableCell>
+                <TableCell align="right" component="" scope="row">{row.last_modified_timestamp}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      </div>
+      );
     }
 
-    return (
-      <div>
-      <TableContainer component={Paper} style={{ maxHeight: 150 }}>
-      <Table aria-label="Associated Datasets" size="small" stickyHeader>
-        <TableHead>
-          <TableRow>
-            <TableCell>Lab Name</TableCell>
-            <TableCell align="left" style={{ width: 160 }} >Status</TableCell>
-            <TableCell align="right">Type</TableCell>
-            <TableCell align="right">Modified</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {compiledCollection.map((row) => (
-            <TableRow key={row.hubmap_id}>
-              <TableCell align="left" component="th" scope="row">{row.lab_dataset_id}</TableCell>
-              <TableCell align="left" style={{ width: 160 }} >{row.status}</TableCell>
-              <TableCell align="right" component="" scope="row">{row.entity_type}</TableCell>
-              <TableCell align="right" component="" scope="row">{row.last_modified_timestamp}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    </div>
-    );
+    
 
   }
 
@@ -678,9 +683,7 @@ class EditUploads extends Component {
             )}
             
             <div>
-          <label>
-            Datsets 
-          </label>
+         
           <div className='col-sm-9 col-form-label'>
             {this.renderDatasets(this.state.datasets)}
           </div>  

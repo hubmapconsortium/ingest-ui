@@ -247,6 +247,7 @@ handleMenuSelection = (event) => {
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Donor</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
+                <Button className="nav-link" onClick={this.handleUploadsDialog}>Uploads</Button>
                 </div>
               )}
             </div>
