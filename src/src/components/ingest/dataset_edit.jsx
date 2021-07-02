@@ -1545,7 +1545,7 @@ class DatasetEdit extends Component {
                     type='info'
                     effect='solid'
                   >
-                    <p>Lab Name or ID</p>
+                    <p>An identifier used locally by the data provider.</p>
                   </ReactTooltip>
                   </span>
                

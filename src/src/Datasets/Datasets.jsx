@@ -403,10 +403,6 @@ class Datasets extends Component {
                         case "PROCESSING":
                           badge_class = "badge-secondary";
                           break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          btn_text = "View";
-                          break;
                         case "PUBLISHED":
                           badge_class = "badge-success";
                           break;
@@ -415,13 +411,10 @@ class Datasets extends Component {
                           break;
                         case "DEPRECATED":
                           break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          btn_text = "View";
-                          break;
                         case "ERROR":
                           badge_class = "badge-danger";
                           btn_text = "View";
+                          break
                         case "HOLD":
                           badge_class = "badge-dark";
                           btn_text = this.state.is_curator ? "View" : "View";
@@ -435,7 +428,7 @@ class Datasets extends Component {
                       return (
                         <tr key={dataset.uuid}>
                           <td>{dataset.entity_display_doi}</td>
-                          <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.title}</div></td>
+                          <td><div style={{ wordBreak: "break-all", width: "20em"}}>{dataset.lab_dataset_id}</div></td>
                           <td>{dataset.properties.provenance_group_name}</td>
                           <td>
                             <button
@@ -463,7 +456,7 @@ class Datasets extends Component {
                               className={"badge " + badge_class}
                               data-tip
                               data-for={"status_tooltip_" + dataset.uuid}
-                              onClick={status == 'ERROR' ? () =>
+                              onClick={status === 'ERROR' ? () =>
                                 this.showErrorMsgModal(
                                   dataset.properties.message
                                 ) : null
