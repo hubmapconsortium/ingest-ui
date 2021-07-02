@@ -11,25 +11,47 @@ import SearchComponent from './components/search/SearchComponent';
 // import IngestEntrance from './components/ingest/ingest_entrance';
 //import DataList from './components/ingest/datalist';
 
+
+
+import DonorForm from "./components/uuid/donor_form_components/donorForm";
+
 export default class Routes extends Component {
     render() {
         return (
             <Router history={history}>
                 <Switch>
-                   <Route path="/Home" exact component={Home} /> 
-                   {/**  <Route path="/Samples" component={EntityList} />
-                    <Route path="/Donor" component={DonorForm} />
-                    <Route path="/Sample" component={TissueForm} />
-                    <Route path="/Datasets" component={DataList} />
-                    <Route path="/Dataset" component={DatasetEdit} /> 
-                    <Route path="/" component={SearchComponent} /> */}
+                    {/* Home Search page */}
+                    <Route path="/Home" exact component={Home} /> 
+                    <Route path="/search" component={SearchComponent} />
+                    <Route path="/" component={SearchComponent} />
+
+                    {/* Samples */}
                     <Route path="/sample/:uuid" component={TissueForm} />
+
+                    {/* Collections */}
                     <Route path="/collections/:uuid" component={Collection} />
                     <Route path="/collections" component={Collections} />
+
+                    {/* Specifici Entities */}
+                    <Route path="/entity/:uuid" component={SearchComponent} />
+
+                    {/* Donors, Samples, Datasets, and Uploads pre-filtered */}
+                    <Route path="/donors" component={SearchComponent} filter="donors" />
+                    <Route path="/samples" component={SearchComponent} filter="samples" />
+                    <Route path="/datasets" component={SearchComponent} filter="datasets" />
+                    <Route path="/uploads" component={SearchComponent} filter="uploads" />
+                    
+                    {/* Creation forms */}
+                    <Route path="/new/donors" component={DonorForm} />
+                    <Route path="/new/samples" component={SearchComponent} />
+                    <Route path="/new/datasets" component={SearchComponent} />
+                    <Route path="/new/uploads" component={SearchComponent} />
+
+
+                    {/* System */}
                     <Route path="/err-response" component={ErrorPage} />
-                    <Route path="/search" component={SearchComponent} />
-                   {/*} <Route path="/donors-samples" exact component={UUIDEntrance} />
-                    <Route path="/datasets" exact component={IngestEntrance} />*/}
+
+
                 </Switch>
             </Router>
         )

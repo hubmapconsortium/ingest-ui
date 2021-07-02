@@ -1,21 +1,28 @@
 import React, { Component } from "react";
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
-
 import axios from "axios";
-import DonorForm from "../uuid/donor_form_components/donorForm";
-import TissueForm from "../uuid/tissue_form_components/tissueForm";
-import UploadsEdit from "../uploads/editUploads";
-import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES } from "../../constants";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
+// API
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+
+// New Forms
+import DonorForm from "../uuid/donor_form_components/donorForm";
+import TissueForm from "../uuid/tissue_form_components/tissueForm";
+import UploadsEdit from "../uploads/editUploads";
+import DatasetEdit from "../ingest/dataset_edit";
+
+// // Entity Views
+// import DonorForm from "../uuid/donor_form_components/donorForm";
+// import TissueForm from "../uuid/tissue_form_components/tissueForm";
+// import UploadsEdit from "../uploads/editUploads";
+// import DatasetEdit from "../ingest/dataset_edit";
 
 class SearchComponent extends Component {
   state = {

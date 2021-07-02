@@ -271,7 +271,7 @@ handleMenuSelection = (event) => {
           </div>
         </nav>
       </header>
-   );
+    );
   }
 
   handleEnterUUID = () => {
