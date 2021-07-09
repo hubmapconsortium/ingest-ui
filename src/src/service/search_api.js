@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { GROUPS } from "./groups";
-import { ES_SEARCHABLE_FIELDS } from "../constants";
+import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
 
 export const esb = require('elastic-builder');
 
@@ -96,50 +96,61 @@ export function search_api_filter_es_query_builder(fields, from, size) {
  ////console.debug("here in the filter es builder")
  ////console.debug(fields);
 
-  let boolQuery = esb.boolQuery();
 
-  // if no field criteria is sent just default to a 
-  if (Object.keys(fields).length === 0 && fields.constructor === Object) {
-    boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset'));  
+let boolQuery = "";
+
+  if (fields["search_term"] && fields["search_term"].indexOf("*") > -1) {  // if keywords contain a wildcard
+    boolQuery = esb.queryStringQuery(fields["search_term"])
+      .fields(ES_SEARCHABLE_WILDCARDS)
+
   } else {
-   
-    // was a group name selected
-    if (fields["group_name"]) {
-      boolQuery.must(esb.matchQuery("group_name.keyword", fields["group_name"]));
-    } else if (fields["group_uuid"]) {
-      boolQuery.must(esb.matchQuery("group_uuid.keyword", fields["group_uuid"]));
-    } 
 
-    // was specimen types selected
-    if (fields["specimen_type"]) {
-      if (fields["specimen_type"] !== 'donor') {
-        boolQuery.must(esb.matchQuery("specimen_type.keyword", fields["specimen_type"]));
+      boolQuery = esb.boolQuery();
+
+      // if no field criteria is sent just default to a 
+      if (Object.keys(fields).length === 0 && fields.constructor === Object) {
+          console.debug("full search")
+            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset')); 
       } else {
-        boolQuery.must(esb.matchQuery("entity_type.keyword", 'Donor'));
-      }
-    } else {
-        // was entity types select
-        if (fields["entity_type"]) {
-          if (fields["entity_type"] === 'DonorSample') {  // hack to deal with no type selected from the UI, this clues from the donor/sample filer
-            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
+       
+        // was a group name selected
+        if (fields["group_name"]) {
+          boolQuery.must(esb.matchQuery("group_name.keyword", fields["group_name"]));
+        } else if (fields["group_uuid"]) {
+          boolQuery.must(esb.matchQuery("group_uuid.keyword", fields["group_uuid"]));
+        } 
+
+        // was specimen types selected
+        if (fields["specimen_type"]) {
+          if (fields["specimen_type"] !== 'donor') {
+            boolQuery.must(esb.matchQuery("specimen_type.keyword", fields["specimen_type"]));
           } else {
-            boolQuery.must(esb.matchQuery("entity_type.keyword", fields["entity_type"]));
+            boolQuery.must(esb.matchQuery("entity_type.keyword", 'Donor'));
           }
         } else {
-           boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset'));  // default everything ; this maybe temp
+            // was entity types select
+            if (fields["entity_type"]) {
+              if (fields["entity_type"] === 'DonorSample') {  // hack to deal with no type selected from the UI, this clues from the donor/sample filer
+                boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
+              } else {
+                boolQuery.must(esb.matchQuery("entity_type.keyword", fields["entity_type"]));
+              }
+            } else {
+               boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset'));  // default everything ; this maybe temp
+            }
         }
-    }
 
-    if (fields["search_term"]) {
-      //let scrubbed = fixKeywordText(fields["search_term"]);
-      boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["search_term"]));
+        if (fields["search_term"]) {
+          //let scrubbed = fixKeywordText(fields["search_term"]);
+            boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["search_term"]));
+        }
+      
+      }
     }
-  
-  }
   requestBody.query(boolQuery).from(from).size(size).sort(esb.sort('last_modified_timestamp', 'desc'));
   //requestBody.query(boolQuery).size(100);
 
-  ////console.debug(requestBody.toJSON());
+  console.debug(requestBody.toJSON());
   return requestBody.toJSON();
 }
 
