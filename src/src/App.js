@@ -210,15 +210,17 @@ handleMenuSelection = (event) => {
   };
 
   renderHeader() {
-    const logout_url = `${process.env.REACT_APP_BACKEND_URL}/logout`;
+  const logout_url = `${process.env.REACT_APP_BACKEND_URL}/logout`;
     let logout = this.state.isAuthenticated ? (
       
       <Button
         href={logout_url}
-        className="nav-link"
+        className=""
         onClick={this.handleLogout}
-        //ref={a => (this.logoutButton = a)}
-      >Logout</Button>
+        ref={a => (this.logoutButton = a)}
+      >
+        Logout
+      </Button>
     ) : (
         ""
       );

@@ -617,7 +617,7 @@ renderInfoPanel() {
                         className="form-control"
                         name="keywords"
                         id="keywords"
-                        placeholder="Enter a keyword or HuBMAP/Submission/Lab ID"
+                        placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
                         onChange={this.handleInputChange}
                         //ref={this.keywords}
                         value={this.state.keywords}
@@ -625,6 +625,7 @@ renderInfoPanel() {
                      </div>
                   
                   </div>
+          
                 <div className="row mb-5 pads">
                   <div className="col-sm-4 offset-sm-2">
                     <button

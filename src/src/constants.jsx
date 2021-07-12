@@ -150,3 +150,13 @@ export const ES_SEARCHABLE_FIELDS = [
   "created_by_user_displayname", 
   "created_by_user_email"
   ];
+
+// this list is for wildcard searchable fields
+export const ES_SEARCHABLE_WILDCARDS = [
+  "submission_id", 
+  "hubmap_display_id",
+  "lab_donor_id", 
+  "lab_name",
+  "lab_tissue_sample_id",
+  "lab_dataset_id"
+  ];
