@@ -37,7 +37,8 @@ class SearchComponent extends Component {
     isAuthenticated: false,
     group: "All Components",
     sampleType: "----",
-    keywords: ""
+    keywords: "",
+    last_keyword: ""
   };
 
   // constructor(props) {
@@ -183,12 +184,23 @@ class SearchComponent extends Component {
   } 
 
   handleSearchClick = () => {
-    this.setState({ loading: true, filtered: true });
+    this.setState({ loading: true, filtered: true, page: 0 });
 
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
+
+
+    // reset the page to zero, to deal with slight bug regarding
+    // if you do searches and change pages then search for a new keyword
+    if (this.state.last_keyword !== keywords) {
+      this.setState({ page: 0 });  
+    }
   
+    this.setState({
+      last_keyword: keywords
+    })
+
     // const group = this.group.current.value;
     // const sample_type = this.sampleType.current.value;
     // const keywords = this.keywords.current.value;
@@ -223,13 +235,13 @@ class SearchComponent extends Component {
       params["search_term"] = keywords;
     }
 
-    //console.debug('params ', params);
+    console.debug('params ', params);
 
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
-      //console.debug("Serch Res", response.results);
+      console.debug("Serch Res", response.results);
       if (response.status === 200) {
-      ////console.debug('SEARCH RESULTS', response);
+      console.debug('SEARCH RESULTS', response);
         if (response.total === 1) {  // for single returned items, customize the columns to match
           which_cols_def = this.columnDefType(response.results[0].entity_type);
           ////console.debug("which_cols_def: ", which_cols_def);
@@ -370,7 +382,9 @@ class SearchComponent extends Component {
         datarows: [],
         sampleType: "----",
         group: "All Components",
-        keywords: ""
+        keywords: "",
+        page: 0,
+        pageSize: 25
       }, () => {
         this.handleSearchClick();
     });
@@ -498,6 +512,7 @@ renderInfoPanel() {
               //    ...column,
               //    disableClickEventBubbling: true
               //}))}
+              page={this.state.page}
               disableColumnMenu={true}
               pageSize={this.state.pageSize} 
               pagination
@@ -617,7 +632,7 @@ renderInfoPanel() {
                         className="form-control"
                         name="keywords"
                         id="keywords"
-                        placeholder="Enter a keyword or HuBMAP/Submission/Lab ID"
+                        placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
                         onChange={this.handleInputChange}
                         //ref={this.keywords}
                         value={this.state.keywords}
@@ -625,6 +640,7 @@ renderInfoPanel() {
                      </div>
                   
                   </div>
+          
                 <div className="row mb-5 pads">
                   <div className="col-sm-4 offset-sm-2">
                     <button
