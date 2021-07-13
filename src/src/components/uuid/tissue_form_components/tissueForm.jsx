@@ -194,8 +194,13 @@ class TissueForm extends Component {
       //console.debug('PARAM', this.props)
     
       try {
-          //const param_uuid = this.props.match.params.uuid;
-          const param_uuid = this.props.editingEntity.uuid;
+          let param_uuid = ""
+          try {
+            param_uuid = this.props.match.params.uuid
+          } catch {
+            param_uuid = this.props.editingEntity.uuid;
+          }
+        
           //console.debug('UUID', param_uuid)
           entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
             .then((response) => {
