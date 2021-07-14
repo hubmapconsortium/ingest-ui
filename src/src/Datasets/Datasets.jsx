@@ -403,10 +403,6 @@ class Datasets extends Component {
                         case "PROCESSING":
                           badge_class = "badge-secondary";
                           break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          btn_text = "View";
-                          break;
                         case "PUBLISHED":
                           badge_class = "badge-success";
                           break;
@@ -415,13 +411,10 @@ class Datasets extends Component {
                           break;
                         case "DEPRECATED":
                           break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          btn_text = "View";
-                          break;
                         case "ERROR":
                           badge_class = "badge-danger";
                           btn_text = "View";
+                          break;
                         case "HOLD":
                           badge_class = "badge-dark";
                           btn_text = this.state.is_curator ? "View" : "View";

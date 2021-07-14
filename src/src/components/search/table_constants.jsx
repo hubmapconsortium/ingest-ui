@@ -159,8 +159,14 @@ function getPublishStatusColor(status) {
         case "REOPENED":
           badge_class = "badge-purple";
           break;
+        case "REORGANIZED":
+          badge_class = "badge-info";
+          break;
+        case "VALID":
+          badge_class = "badge-success";
+          break;
         case "INVALID":
-          badge_class = "badge-warning";
+          badge_class = "badge-danger";
           break;
         case "QA":
           badge_class = "badge-info";
