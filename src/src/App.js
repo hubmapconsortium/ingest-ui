@@ -380,16 +380,16 @@ handleMenuSelection = (event) => {
             this.setState(
               {
                 logout_in: this.state.logout_in - 1
-              // },
-              // () => {
-              //   if (this.state.logout_in > 0) {
-              //     this.setState({
-              //       timer: setTimeout(countDown.bind(this), 1000)
-              //     });
-              //   }
-              //   if (this.state.logout_in === 0) {
-              //     this.logoutButton.click();
-              //   }
+              },
+              () => {
+                if (this.state.logout_in > 0) {
+                  this.setState({
+                    timer: setTimeout(countDown.bind(this), 1000)
+                  });
+                }
+                if (this.state.logout_in === 0) {
+                  this.logoutButton.click();
+                }
               }
             );
           }
