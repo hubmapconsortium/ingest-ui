@@ -33,7 +33,7 @@ class Result extends Component {
   };
 
   render() {
-    //console.debug('RESULTS!!!!', this.props.result)
+    console.debug('RESULTS!!!!', this.props.result)
     return (
       <React.Fragment>
               <div className="row">
