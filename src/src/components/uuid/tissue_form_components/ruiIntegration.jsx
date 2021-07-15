@@ -49,26 +49,10 @@ class RUIIntegration extends Component {
 
   componentDidMount() {
     console.log('RUI...', this.props)
-    const runtime_script = document.createElement("script");
-    runtime_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/runtime.js`;
-    runtime_script.async = true;
-    document.body.appendChild(runtime_script);
-    const polyfills_script = document.createElement("script");
-    polyfills_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/polyfills.js`;
-    polyfills_script.async = true;
-    document.body.appendChild(polyfills_script);
-    const main_script = document.createElement("script");
-    main_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/main.js`;
-    main_script.async = true;
-    document.body.appendChild(main_script);
-
-
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      window.dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-    gtag('config', 'UA-136932895-2');
+    const webcomponent_script = document.createElement("script");
+    webcomponent_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/wc.js`;
+    webcomponent_script.async = true;
+    document.body.appendChild(webcomponent_script);
 
     const organ_info = ORGAN_TYPES[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
@@ -140,7 +124,7 @@ class RUIIntegration extends Component {
                   style={{ width: this.state.width, height: this.state.height, marginLeft: this.state.margin_left}}
 
                 >
-                  <ccf-root></ccf-root>
+                  <ccf-rui></ccf-rui>
                 </div>
                 <div className='footer'>
                   <React.Fragment>
