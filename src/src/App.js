@@ -22,10 +22,17 @@ import Modal from "./components/uuid/modal";
 //import { BrowserRouter as Router } from 'react-router-dom';
 
 
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+import Paper from '@material-ui/core/Paper';
+
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 class App extends Component {
   state = {
     anchorEl: null,
@@ -39,6 +46,7 @@ class App extends Component {
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
   // Any place else in our component, you should rely on setState() instead.
+  
   constructor(props) {
     super(props);
 
@@ -86,20 +94,26 @@ class App extends Component {
       creatingNewEntity: false,
       creatingNewUpload: false,
       system: "",
-      registered: true
+      registered: true,
+      devMode: false,
+      openSnack:false,
+      dml:"Inactive",
+      snackPriotity:"info"
     };
 
     //console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
 
     // Binding event handler methods to an instance
     this.handleLogout = this.handleLogout.bind(this);
+    
+
   }
 
+  
+
   componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown);
     if (localStorage.getItem("info") !== null) {
-
-
-
       const config = {
         headers: {
           Authorization:
@@ -145,22 +159,23 @@ class App extends Component {
     }
   }
 
-handleLogout = e => {
-  localStorage.setItem("isAuthenticated", false);
-  localStorage.removeItem("info");
-};
 
-handleMenuSelection = (event) => {
+  handleLogout = e => {
+    localStorage.setItem("isAuthenticated", false);
+    localStorage.removeItem("info");
+  };
 
-  var formtype = event.currentTarget.innerText.trim();
+  handleMenuSelection = (event) => {
 
-  this.setState({
-      anchorEl: null,
-      show_menu_popup: false,
-      creatingNewEntity: true,
-      formType: formtype.toLowerCase(),
-      open_edit_dialog: true
-    })
+    var formtype = event.currentTarget.innerText.trim();
+
+    this.setState({
+        anchorEl: null,
+        show_menu_popup: false,
+        creatingNewEntity: true,
+        formType: formtype.toLowerCase(),
+        open_edit_dialog: true
+      })
   }
   
 
@@ -225,6 +240,9 @@ handleMenuSelection = (event) => {
         ""
       );
 
+
+   
+
     // Must wrap the componments in an enclosing tag
     return (
         <header id="header" className="navbar navbar-light">
@@ -249,6 +267,9 @@ handleMenuSelection = (event) => {
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Donor</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
+                {this.state.devMode && (
+                <Button className="nav-link" onClick={this.handleUploadsDialog}>Uploads</Button>
+                )}
                 </div>
               )}
             </div>
@@ -271,6 +292,7 @@ handleMenuSelection = (event) => {
           )}
           </div>
         </nav>
+       
       </header>
    );
   }
@@ -292,9 +314,53 @@ handleMenuSelection = (event) => {
       system: "collection"
     });
   };
+  
+  handleKeyDown = (event) => {
+    // console.debug(event);
+    // console.debug(this.state.devMode);
+    if( event.ctrlKey && event.shiftKey && event.altKey && event.code==="KeyE" ) {
+        console.debug("devMode "+this.state.devMode);
+        this.setState(prevState => ({
+          devMode: !prevState.devMode,
+          openSnack: true
+        }));
+    }
+    this.devModeSnack();
+  };
+
+  devModeSnack(){
+    switch (this.state.devMode) {
+      case true:
+        this.setState({
+          dml: "Active",
+          snackPriotity: "warning"
+        });
+        break;
+      default:
+        this.setState({
+          dml: "Inactive",
+          snackPriotity: "info"
+        });
+        break;
+    }
+  };
+
+  snackSeverity (){
+    var stateUsed="";
+    switch (this.state.devMode) {
+      case true:
+        stateUsed= "warning";
+        break;
+      default:
+        break;
+    }
+    return stateUsed;
+  };
+
 
   renderContent() {
     let html = <Login />;
+    
 
     // fire http call to verify if user registerd.
     //axio.get("")
@@ -406,11 +472,19 @@ handleMenuSelection = (event) => {
   };
   getSystem = (system) => {
     // This is the system data from Navigation
-    this.setState(
-      {
-        system: system
-      })
+    this.setState({
+      system: system
+    })
   }
+
+  handleCloseSnack = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState({
+      openSnack: false
+    })
+  };
 
 
   // Display the final output
@@ -482,7 +556,6 @@ handleMenuSelection = (event) => {
             >
             <DialogContent>
               <UploadsForm
-                testVal="ERIS"
                 onCreated={this.onCreated}
                 cancelEdit={this.handleClose}
               />
@@ -493,7 +566,20 @@ handleMenuSelection = (event) => {
           
 
           
-          
+          <Snackbar open={this.state.openSnack} autoHideDuration={6000} onClose={this.handleCloseSnack}>
+            
+            <Alert onClose={this.handleCloseSnack} severity={this.state.snackPriotity}>
+              DevMode is Currently: {this.state.dml}
+            </Alert>
+          </Snackbar>
+
+          <Paper position="fixed" hidden={!this.state.devMode} className={"fixed-bottom bg-"+this.state.snackPriotity} >
+            DevMode is Currently: {this.state.dml}
+          </Paper>
+
+     
+
+
       </div>
     );
   }
