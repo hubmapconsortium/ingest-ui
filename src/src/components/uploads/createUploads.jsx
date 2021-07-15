@@ -4,6 +4,7 @@ import Divider from '@material-ui/core/Divider';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
+import { validateRequired } from "../../utils/validators";
 import ReactTooltip from "react-tooltip";
 import { ingest_api_users_groups } from '../../service/ingest_api';
 // function Alert(props: AlertProps) {
@@ -20,6 +21,7 @@ class CreateUploads extends Component {
       processingUpload:false,
       successfulUploadCreation:false,
       errorMessage:" ",
+      disableCreate: true,
       showNewUpload:true,
       formErrors: {
           title: "",
@@ -122,6 +124,54 @@ class CreateUploads extends Component {
   };
 
 
+
+  validateForm() {
+    return new Promise((resolve, reject) => {
+      let isValid = false;
+      console.debug(validateRequired(this.state.inputValue_title), validateRequired(this.state.inputValue_desc));
+
+      if (!validateRequired(this.state.title)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "" },
+        }));
+      }
+
+      if (!validateRequired(this.state.inputValue_desc)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "" },
+        }));
+      }
+
+      
+      console.debug(isValid);
+      resolve(isValid);
+    });
+  }
+
+
+  enableCreateButton() {
+    if(validateRequired(this.state.inputValue_title) === true && validateRequired(this.state.inputValue_desc) === true){
+      this.setState({ 
+        disableCreate: false
+      });
+    }else{
+      this.setState({ 
+        disableCreate:true
+      });
+    }
+    console.debug(this.state.disableCreate);
+  }
+
   updateInputValue = (evt) => {
     // console.log(evt.target.id);
     if(evt.target.id==="Submission_Name"){
@@ -140,6 +190,8 @@ class CreateUploads extends Component {
         inputValue_group_uuid: evt.target.value
       });
     }
+    this.enableCreateButton();
+    this.validateForm();
     //console.log(this.state);
   }
 
@@ -175,6 +227,7 @@ class CreateUploads extends Component {
         </div>
       );
   }
+
 
   getUserGroups(){
     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
@@ -227,8 +280,9 @@ class CreateUploads extends Component {
           </div>
           <div className="col-md-12 text-right pads">
               <button
-              className="btn btn-primary mr-1"
+              className="btn btn-primary mr-1 "
               onClick={() => this.handleCreateUploadFolder()}
+              disabled={this.state.disableCreate}
               >
                   {this.state.submitting && (
                   <FontAwesomeIcon
@@ -242,6 +296,7 @@ class CreateUploads extends Component {
               <button
               type="button"
               className="btn btn-secondary"
+              disabled={this.state.disableCreate}
               onClick={this.props.cancelEdit}
               >
                   Cancel
@@ -305,7 +360,7 @@ class CreateUploads extends Component {
                           id='Submission_Name'
                           className={
                             "form-control " +
-                            this.errorClass(this.state.formErrors.name)
+                            this.errorClass(this.state.formErrors.title)
                           }
                           placeholder='Upload Title'
                           onChange={this.updateInputValue}
@@ -341,8 +396,10 @@ class CreateUploads extends Component {
                             id='Submission_Desc'
                             cols='30'
                             rows='5'
-                            className='form-control'
-                            placeholder='Description'
+                            className={
+                              "form-control " +
+                              this.errorClass(this.state.formErrors.descripton)
+                            }                            placeholder='Description'
                             onChange={this.updateInputValue}
                             value={this.state.e_desc}
                           />
