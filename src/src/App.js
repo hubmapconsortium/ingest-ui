@@ -26,6 +26,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
 
+
 class App extends Component {
   state = {
     anchorEl: null,
@@ -39,6 +40,7 @@ class App extends Component {
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
   // Any place else in our component, you should rely on setState() instead.
+  
   constructor(props) {
     super(props);
 
@@ -86,20 +88,22 @@ class App extends Component {
       creatingNewEntity: false,
       creatingNewUpload: false,
       system: "",
-      registered: true
+      registered: true,
+      devMode: false
     };
 
     //console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
 
     // Binding event handler methods to an instance
     this.handleLogout = this.handleLogout.bind(this);
+
   }
 
+  
+
   componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown);
     if (localStorage.getItem("info") !== null) {
-
-
-
       const config = {
         headers: {
           Authorization:
@@ -145,22 +149,23 @@ class App extends Component {
     }
   }
 
-handleLogout = e => {
-  localStorage.setItem("isAuthenticated", false);
-  localStorage.removeItem("info");
-};
 
-handleMenuSelection = (event) => {
+  handleLogout = e => {
+    localStorage.setItem("isAuthenticated", false);
+    localStorage.removeItem("info");
+  };
 
-  var formtype = event.currentTarget.innerText.trim();
+  handleMenuSelection = (event) => {
 
-  this.setState({
-      anchorEl: null,
-      show_menu_popup: false,
-      creatingNewEntity: true,
-      formType: formtype.toLowerCase(),
-      open_edit_dialog: true
-    })
+    var formtype = event.currentTarget.innerText.trim();
+
+    this.setState({
+        anchorEl: null,
+        show_menu_popup: false,
+        creatingNewEntity: true,
+        formType: formtype.toLowerCase(),
+        open_edit_dialog: true
+      })
   }
   
 
@@ -223,6 +228,9 @@ handleMenuSelection = (event) => {
         ""
       );
 
+
+   
+
     // Must wrap the componments in an enclosing tag
     return (
         <header id="header" className="navbar navbar-light">
@@ -247,7 +255,9 @@ handleMenuSelection = (event) => {
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Donor</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
+                {this.state.devMode && (
                 <Button className="nav-link" onClick={this.handleUploadsDialog}>Uploads</Button>
+                )}
                 </div>
               )}
             </div>
@@ -291,9 +301,20 @@ handleMenuSelection = (event) => {
       system: "collection"
     });
   };
+  
+  handleKeyDown = (event) => {
+    if( event.ctrlKey && event.shiftKey && event.code==="KeyD" ) {
+        console.debug("devMode "+this.state.devMode);
+        this.setState(prevState => ({
+          devMode: !prevState.devMode
+        }));
+    }
+  };
+
 
   renderContent() {
     let html = <Login />;
+    
 
     // fire http call to verify if user registerd.
     //axio.get("")
