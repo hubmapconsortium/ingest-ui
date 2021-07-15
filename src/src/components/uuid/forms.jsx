@@ -91,7 +91,7 @@ class Forms extends Component {
           result={this.state.result}
           onReturn={this.props.onCancel}
           onCreateNext={this.onCreateNext}
-          //entity={this.state.entity}
+          entity={this.state.entity}
         />
         </DialogContent>
         </Dialog>

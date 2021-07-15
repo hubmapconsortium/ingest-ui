@@ -191,7 +191,7 @@ class TissueForm extends Component {
       });
 
 
-      //console.debug('PARAM', this.props)
+      console.debug('PROPS', this.props)
     
       try {
           let param_uuid = ""
@@ -231,7 +231,24 @@ class TissueForm extends Component {
                   });
                 }
           });
-      } catch {}
+      } catch {
+        console.debug('check for PROPS')
+
+        if (this.props) {
+        // run load props from  createnext previous call
+          this.setState(
+            {
+              specimen_type: this.props.specimenType,
+              source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
+              source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
+              source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
+              ancestor_organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+              organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
+              source_uuid_list: this.props.uuid  // true uuid
+            });
+        }
+      }
+
     }
 
     initialize() {
@@ -302,6 +319,8 @@ class TissueForm extends Component {
 
 
       } else {
+        console.debug('NOT EDITING', this.props.entity)
+
           this.setState(
             {
               specimen_type: this.props.specimenType,
@@ -1329,28 +1348,53 @@ handleAddImage = () => {
         }));
       }
 
-      if (!validateRequired(this.state.protocol_url)) {
-        this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_url: "required"
-            }
-          }));
-          isValid = false;
-      } else if (!validateProtocolIODOI(this.state.protocol_url)) {
+     if (!validateProtocolIODOI(this.state.protocol_url)) {
+              this.setState(prevState => ({
+                formErrors: {
+                  ...prevState.formErrors,
+                  protocol_url: "Please enter a valid protocols.io DOI"
+                }
+              }));
+              isValid = false;
+        } else {
           this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_url: "Please enter a valid protocols.io DOI"
-            }
+            formErrors: { ...prevState.formErrors, protocol_url: "" }
+          }));
+        }
+
+      if (!validateRequired(this.state.protocol_url)) {
+          this.setState(prevState => ({
+            formErrors: { ...prevState.formErrors, protocol_url: "required" }
           }));
           isValid = false;
+        } else {
+          this.setState(prevState => ({
+            formErrors: { ...prevState.formErrors, protocol_url: "" }
+          }));
+        }
 
-      } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, protocol_url: "" }
-        }));
-      }
+      // if (!validateRequired(this.state.protocol_url)) {
+      //   this.setState(prevState => ({
+      //       formErrors: {
+      //         ...prevState.formErrors,
+      //         protocol_url: "required"
+      //       }
+      //     }));
+      //     isValid = false;
+      // } else if (!validateProtocolIODOI(this.state.protocol_url)) {
+      //     this.setState(prevState => ({
+      //       formErrors: {
+      //         ...prevState.formErrors,
+      //         protocol_url: "Please enter a valid protocols.io DOI"
+      //       }
+      //     }));
+      //     isValid = false;
+
+      // } else {
+      //   this.setState(prevState => ({
+      //     formErrors: { ...prevState.formErrors, protocol_url: "" }
+      //   }));
+      // }
       
       if (this.state.sample_count < 1) { // only validate if we are not doing multiples
       // validate the images
@@ -1585,6 +1629,7 @@ handleAddImage = () => {
                 />
                 <ReactTooltip
                   id="source_uuid_tooltip"
+                  className={"tooltip"}
                   place="top"
                   type="info"
                   effect="solid"
@@ -1725,6 +1770,7 @@ handleAddImage = () => {
                 />
                 <ReactTooltip
                   id="specimen_type_tooltip"
+                  className={"tooltip"}
                   place="top"
                   type="info"
                   effect="solid"
@@ -1903,7 +1949,25 @@ handleAddImage = () => {
                   <label
                     htmlFor="visit"
                   >
-                    Visit
+                    Visit <span className="text-danger inline-icon"><FontAwesomeIcon icon={faUserShield} /></span>
+                    <span>
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="visit_tooltip"
+                  />
+                  <ReactTooltip
+                    id="visit_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>
+                      Associated visit in which sample was acquired (Non-PHI number). e.g., baseline
+                      </p>
+                  </ReactTooltip>
+                </span>
                   </label>
                   {!this.state.readOnly && (
                    
@@ -1931,7 +1995,7 @@ handleAddImage = () => {
             <div className="form-group">
               <label
                 htmlFor="protocol_url">
-                Case Selection Protocol <span className="text-danger">*</span> <span className="text-danger inline-icon">
+                Preparation Protocol <span className="text-danger">*</span> <span className="text-danger inline-icon">
                   <FontAwesomeIcon icon={faUserShield} />
                 </span>
                 <span>
@@ -1942,13 +2006,17 @@ handleAddImage = () => {
                   />
                   <ReactTooltip
                     id="protocol_tooltip"
+                    className={"tooltip"}
                     place="top"
                     type="info"
                     effect="solid"
                   >
                     <p>
-                      The protocol used when procuring or preparing the tissue.
-                      This must be provided as a protocols.io DOI URL
+                      The protocol used when procuring or 
+                      preparing the tissue.
+                      This must be provided as a 
+                      protocols.io DOI URL
+                      see https://www.protocols.io/
                       </p>
                   </ReactTooltip>
                 </span>
@@ -2055,6 +2123,7 @@ handleAddImage = () => {
                     />
                     <ReactTooltip
                       id="lab_tissue_id_tooltip"
+                      className={"tooltip"}
                       place="top"
                       type="info"
                       effect="solid"
@@ -2107,6 +2176,7 @@ handleAddImage = () => {
                       />
                       <ReactTooltip
                         id="rui_tooltip"
+                        className={"tooltip"}
                         place="top"
                         type="info"
                         effect="solid"
@@ -2188,6 +2258,7 @@ handleAddImage = () => {
                       />
                       <ReactTooltip
                         id="rui_tooltip"
+                        className={"tooltip"}
                         place="top"
                         type="info"
                         effect="solid"
@@ -2299,6 +2370,7 @@ handleAddImage = () => {
                   />
                   <ReactTooltip
                     id="description_tooltip"
+                    className={"tooltip"}
                     place="top"
                     type="info"
                     effect="solid"
@@ -2414,6 +2486,7 @@ handleAddImage = () => {
                           </button>
                            <ReactTooltip
                               id="add_meta_tooltip"
+                              className={"tooltip"}
                               place="top"
                               type="info"
                               effect="solid"
@@ -2471,6 +2544,7 @@ handleAddImage = () => {
                           </span> Upload de-identified images only</small>
                            <ReactTooltip
                               id="add_image_tooltip"
+                              className={"tooltip"}
                               place="top"
                               type="info"
                               effect="solid"

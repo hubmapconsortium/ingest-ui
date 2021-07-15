@@ -13,6 +13,12 @@
   background-color: #f4f4f4;
 }
 
+.tooltip 
+{
+  width: 250px;
+  white-space : normal;
+}
+
 #navMenu{
   
   display: flex; /* or inline-flex */
