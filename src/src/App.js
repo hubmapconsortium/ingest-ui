@@ -22,11 +22,17 @@ import Modal from "./components/uuid/modal";
 //import { BrowserRouter as Router } from 'react-router-dom';
 
 
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+import Paper from '@material-ui/core/Paper';
+
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
 
-
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 class App extends Component {
   state = {
     anchorEl: null,
@@ -89,13 +95,17 @@ class App extends Component {
       creatingNewUpload: false,
       system: "",
       registered: true,
-      devMode: false
+      devMode: false,
+      openSnack:false,
+      dml:"Inactive",
+      snackPriotity:"info"
     };
 
     //console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
 
     // Binding event handler methods to an instance
     this.handleLogout = this.handleLogout.bind(this);
+    
 
   }
 
@@ -282,6 +292,7 @@ class App extends Component {
           )}
           </div>
         </nav>
+       
       </header>
    );
   }
@@ -305,12 +316,45 @@ class App extends Component {
   };
   
   handleKeyDown = (event) => {
-    if( event.ctrlKey && event.shiftKey && event.code==="KeyD" ) {
+    // console.debug(event);
+    // console.debug(this.state.devMode);
+    if( event.ctrlKey && event.shiftKey && event.altKey && event.code==="KeyE" ) {
         console.debug("devMode "+this.state.devMode);
         this.setState(prevState => ({
-          devMode: !prevState.devMode
+          devMode: !prevState.devMode,
+          openSnack: true
         }));
     }
+    this.devModeSnack();
+  };
+
+  devModeSnack(){
+    switch (this.state.devMode) {
+      case true:
+        this.setState({
+          dml: "Active",
+          snackPriotity: "warning"
+        });
+        break;
+      default:
+        this.setState({
+          dml: "Inactive",
+          snackPriotity: "info"
+        });
+        break;
+    }
+  };
+
+  snackSeverity (){
+    var stateUsed="";
+    switch (this.state.devMode) {
+      case true:
+        stateUsed= "warning";
+        break;
+      default:
+        break;
+    }
+    return stateUsed;
   };
 
 
@@ -428,11 +472,19 @@ class App extends Component {
   };
   getSystem = (system) => {
     // This is the system data from Navigation
-    this.setState(
-      {
-        system: system
-      })
+    this.setState({
+      system: system
+    })
   }
+
+  handleCloseSnack = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState({
+      openSnack: false
+    })
+  };
 
 
   // Display the final output
@@ -514,7 +566,20 @@ class App extends Component {
           
 
           
-          
+          <Snackbar open={this.state.openSnack} autoHideDuration={6000} onClose={this.handleCloseSnack}>
+            
+            <Alert onClose={this.handleCloseSnack} severity={this.state.snackPriotity}>
+              DevMode is Currently: {this.state.dml}
+            </Alert>
+          </Snackbar>
+
+          <Paper position="fixed" hidden={!this.state.devMode} className={"fixed-bottom bg-"+this.state.snackPriotity} >
+            DevMode is Currently: {this.state.dml}
+          </Paper>
+
+     
+
+
       </div>
     );
   }
