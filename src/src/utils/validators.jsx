@@ -14,8 +14,9 @@ export function validateProtocolIOURL(value) {
 
 export function validateProtocolIODOI(value) {
   if (value === undefined || value === "") return true;
-  const patt = /^(http(s)?:\/\/)?dx.doi.org\/10\.17504\/protocols\.io\..+/;
-  return patt.test(value);
+  const patt1= /^(http(s)?:\/\/)?dx.doi.org\/10\.17504\/protocols\.io\..+/;
+  const patt2 = /^(http(s)?:\/\/)?doi.org\/10\.17504\/protocols\.io\..+/;
+  return patt1.test(value) || patt2.test(value);
 }
 
 export function validateFileType(file_type, allow_types) {

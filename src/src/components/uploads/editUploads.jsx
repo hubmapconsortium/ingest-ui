@@ -21,12 +21,8 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
-
-// import GroupModal from "../../groupModal";
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload } from '../../service/ingest_api';
-
-
 
 class EditUploads extends Component {
 
@@ -112,7 +108,7 @@ class EditUploads extends Component {
             console.debug("WRITEABLE");
             this.setState({
               validation_message_style:"warning",
-              badge_class: "badge-warning",
+              badge_class: "badge-danger",
               writeable: true
             });
           break;
@@ -120,7 +116,7 @@ class EditUploads extends Component {
             console.debug("NOT WRITEABLE");
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-info",
+              badge_class: "badge-success",
               writeable: false
             });
           break;
@@ -128,7 +124,7 @@ class EditUploads extends Component {
             console.debug("NOT WRITEABLE");
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-info",
+              badge_class: "badge-secondary",
               writeable: false
             });
             break;
@@ -136,7 +132,7 @@ class EditUploads extends Component {
             console.debug("NOT WRITEABLE");
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-success",
+              badge_class: "badge-info",
               globusLinkText: "Open data repository ",
               writeable: false
             });
@@ -323,7 +319,7 @@ class EditUploads extends Component {
           spin
         />
       )}
-      {!this.state.submitting && "Validate"}
+      {!this.state.submitting && "Validate & Save"}
     </button>
     );
   } else if (["VALID"].includes(this.state.status.toUpperCase())){
@@ -465,45 +461,52 @@ class EditUploads extends Component {
 
 
   renderDatasets = (datasetCollection) => {
-    var compiledCollection = [];
-    for (var i in datasetCollection){
-      console.debug(datasetCollection[i].lab_dataset_id)
-      compiledCollection.push({
-        hubmap_id: datasetCollection[i].hubmap_id,
-        lab_dataset_id: datasetCollection[i].lab_dataset_id,
-        status: datasetCollection[i].status,
-        entity_type: datasetCollection[i].entity_type,
-        last_modified_timestamp: datasetCollection[i].last_modified_timestamp,
 
-      });
+    if(this.state.datasets && this.state.datasets.length > 0 ){
+
+
+      var compiledCollection = [];
+      for (var i in datasetCollection){
+        console.debug(datasetCollection[i].lab_dataset_id)
+        compiledCollection.push({
+          hubmap_id: datasetCollection[i].hubmap_id,
+          lab_dataset_id:  datasetCollection[i].lab_dataset_id,
+          group_name: datasetCollection[i].group_name,
+          status: datasetCollection[i].status
+        });
+      }
+      return (
+        <div>
+           <label>
+            Datsets 
+          </label>
+        <TableContainer component={Paper} style={{ maxHeight: 150 }}>
+        <Table aria-label="Associated Datasets" size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>HuBMAP ID</TableCell>
+              <TableCell component="th" align="left">Lab Name/ID</TableCell>
+              <TableCell component="th" align="left">Group name</TableCell>
+              <TableCell component="th" align="left">Submission Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {compiledCollection.map((row) => (
+              <TableRow key={row.hubmap_id}>
+                <TableCell align="left" scope="row">{row.hubmap_id}</TableCell>
+                <TableCell align="left" scope="row">{row.lab_dataset_id}</TableCell>
+                <TableCell align="left" scope="row">{row.group_name}</TableCell>
+                <TableCell align="left" scope="row">{row.status}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      </div>
+      );
     }
 
-    return (
-      <div>
-      <TableContainer component={Paper} style={{ maxHeight: 150 }}>
-      <Table aria-label="Associated Datasets" size="small" stickyHeader>
-        <TableHead>
-          <TableRow>
-            <TableCell>Lab Name</TableCell>
-            <TableCell align="left" style={{ width: 160 }} >Status</TableCell>
-            <TableCell align="right">Type</TableCell>
-            <TableCell align="right">Modified</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {compiledCollection.map((row) => (
-            <TableRow key={row.hubmap_id}>
-              <TableCell align="left" component="th" scope="row">{row.title}</TableCell>
-              <TableCell align="left" style={{ width: 160 }} >{row.status}</TableCell>
-              <TableCell align="right" component="" scope="row">{row.entity_type}</TableCell>
-              <TableCell align="right" component="" scope="row">{row.last_modified_timestamp}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    </div>
-    );
+    
 
   }
 
@@ -547,7 +550,7 @@ class EditUploads extends Component {
                     </span> 
                     {this.props.editingUpload &&
                       "HuBMAP Upload ID " +
-                      this.props.editingUpload.uuid}
+                      this.props.editingUpload.hubmap_id}
                   </h3>
                 </div>
               </div>
@@ -678,9 +681,7 @@ class EditUploads extends Component {
             )}
             
             <div>
-          <label>
-            Datsets 
-          </label>
+         
           <div className='col-sm-9 col-form-label'>
             {this.renderDatasets(this.state.datasets)}
           </div>  

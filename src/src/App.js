@@ -215,15 +215,17 @@ class App extends Component {
   };
 
   renderHeader() {
-    const logout_url = `${process.env.REACT_APP_BACKEND_URL}/logout`;
+  const logout_url = `${process.env.REACT_APP_BACKEND_URL}/logout`;
     let logout = this.state.isAuthenticated ? (
       
       <Button
         href={logout_url}
-        className="nav-link"
+        className=""
         onClick={this.handleLogout}
-        //ref={a => (this.logoutButton = a)}
-      >Logout</Button>
+        ref={a => (this.logoutButton = a)}
+      >
+        Logout
+      </Button>
     ) : (
         ""
       );
@@ -399,16 +401,16 @@ class App extends Component {
             this.setState(
               {
                 logout_in: this.state.logout_in - 1
-              // },
-              // () => {
-              //   if (this.state.logout_in > 0) {
-              //     this.setState({
-              //       timer: setTimeout(countDown.bind(this), 1000)
-              //     });
-              //   }
-              //   if (this.state.logout_in === 0) {
-              //     this.logoutButton.click();
-              //   }
+              },
+              () => {
+                if (this.state.logout_in > 0) {
+                  this.setState({
+                    timer: setTimeout(countDown.bind(this), 1000)
+                  });
+                }
+                if (this.state.logout_in === 0) {
+                  this.logoutButton.click();
+                }
               }
             );
           }

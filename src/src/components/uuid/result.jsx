@@ -2,8 +2,7 @@ import React, { Component } from "react";
 import MultipleListModal from "./tissue_form_components/multipleListModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faFolder, 
-  faExternalLinkAlt
+  faFolder
 } from "@fortawesome/free-solid-svg-icons";
 
 class Result extends Component {
@@ -34,7 +33,7 @@ class Result extends Component {
   };
 
   render() {
-    //console.debug('RESULTS!!!!', this.props.result)
+    console.debug('RESULTS!!!!', this.props.result)
     return (
       <React.Fragment>
               <div className="row">
