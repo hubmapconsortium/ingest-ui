@@ -17,17 +17,25 @@ export default class Routes extends Component {
             <Router history={history}>
                 <Switch>
                    <Route path="/Home" exact component={Home} /> 
-                   {/**  <Route path="/Samples" component={EntityList} />
-                    <Route path="/Donor" component={DonorForm} />
-                    <Route path="/Sample" component={TissueForm} />
-                    <Route path="/Datasets" component={DataList} />
-                    <Route path="/Dataset" component={DatasetEdit} /> 
-                    <Route path="/" component={SearchComponent} /> */}
-                    <Route path="/sample/:uuid" component={TissueForm} />
-                    <Route path="/collections/:uuid" component={Collection} />
-                    <Route path="/collections" component={Collections} />
-                    <Route path="/err-response" component={ErrorPage} />
+                    {/* Main pages */}
+                    <Route path="/" component={SearchComponent} />
                     <Route path="/search" component={SearchComponent} />
+                    <Route path="/err-response" component={ErrorPage} />
+
+                    {/* pre-filtered search results by type */}
+                    <Route path="/samples"  render={() => <SearchComponent test="FNORD" />} />
+                    <Route path="/datasets" component={SearchComponent} />
+                    <Route path="/donors" component={SearchComponent} />
+                    <Route path="/uploads" component={SearchComponent} />
+                    <Route path="/collections" component={Collections} />
+
+                    {/* Individual Entity VIews */}
+                    <Route path="/sample/:uuid" component={SearchComponent} />
+                    <Route path="/dataset/:uuid" component={SearchComponent} /> 
+                    <Route path="/donor/:uuid" component={SearchComponent} />
+                    <Route path="/upload/:uuid" component={SearchComponent} /> 
+                    <Route path="/collection/:uuid" component={Collection} />
+
                    {/*} <Route path="/donors-samples" exact component={UUIDEntrance} />
                     <Route path="/datasets" exact component={IngestEntrance} />*/}
                 </Switch>

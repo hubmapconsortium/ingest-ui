@@ -547,6 +547,8 @@ renderInfoPanel() {
                 <span className="portal-label text-center">Search</span>
               )}
               <span className="portal-jss116 text-center">
+
+              <h1>{this.props.test}</h1>
               Use the filter controls to search for Donors, Samples, Datasets or Data Uploads.
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
               </span>
