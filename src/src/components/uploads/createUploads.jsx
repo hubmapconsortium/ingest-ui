@@ -4,6 +4,7 @@ import Divider from '@material-ui/core/Divider';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
+import { validateRequired } from "../../utils/validators";
 import ReactTooltip from "react-tooltip";
 import { ingest_api_users_groups } from '../../service/ingest_api';
 // function Alert(props: AlertProps) {
@@ -16,10 +17,13 @@ class CreateUploads extends Component {
     this.state = {
       creatingNewUploadFolder: true,
       currentDateTime: Date().toLocaleString(),
+      inputValue_desc:"",
+      inputValue_title:"",
       groups:[],
       processingUpload:false,
       successfulUploadCreation:false,
       errorMessage:" ",
+      disableCreate: true,
       showNewUpload:true,
       formErrors: {
           title: "",
@@ -121,9 +125,80 @@ class CreateUploads extends Component {
     });
   };
 
+  handleBlanks = (e) => {
+    // console.debug(e.target)
+    // console.debug(this.state.inputValue_title, this.state.inputValue_title.length)
+    // console.debug("handleBlanks", e.target.value, e.target.value.length)
+    if(this.state.inputValue_title.length<=0 ||
+      this.state.inputValue_desc.length<=0){
+      // console.debug("handleBlanks True Disable")
+      this.disableCreateButton(true);
+    }else{
+      this.disableCreateButton(false);
+      // console.debug("handleBlanks False Disable")
+    }
+  }
+
+
+
+  validateForm() {
+    return new Promise((resolve, reject) => {
+      let isValid = false;
+      // console.debug(validateRequired(this.state.inputValue_title), validateRequired(this.state.inputValue_desc));
+
+      if (!validateRequired(this.inputValue_title)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "" },
+        }));
+      }
+
+      if (!validateRequired(this.state.inputValue_desc)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "" },
+        }));
+      }
+      if(
+        validateRequired(this.state.inputValue_title) === true && 
+        validateRequired(this.state.inputValue_desc) === true &&
+        this.state.inputValue_title.length>0 &&
+        this.state.inputValue_desc.length>0 &&
+        this.state.inputValue_group_uuid.length>0){
+          isValid = true;
+          this.disableCreateButton(false);
+        }else{
+          this.disableCreateButton(true);
+        }
+      resolve(isValid);
+    });
+  }
+
+
+  disableCreateButton(status) {
+    if (status === false) {
+      this.setState({ 
+        disableCreate:false
+      });
+    } else {
+      this.setState({ 
+        disableCreate:true
+      });
+    }     
+  }
+
+
 
   updateInputValue = (evt) => {
-    // console.log(evt.target.id);
+    // console.log(evt.target.id+": "+evt.target.value+" | "+evt.target.value.length);
     if(evt.target.id==="Submission_Name"){
       // console.log('evt.target.id==="Submission_Name"');
       this.setState({
@@ -139,6 +214,14 @@ class CreateUploads extends Component {
       this.setState({
         inputValue_group_uuid: evt.target.value
       });
+    }
+    
+    // this.enableCreateButton();
+    this.validateForm();
+
+    if(evt.target.value.length<=0){
+      // console.log("evt.target.value.length<=0");
+      this.disableCreateButton(true);
     }
     //console.log(this.state);
   }
@@ -175,6 +258,7 @@ class CreateUploads extends Component {
         </div>
       );
   }
+
 
   getUserGroups(){
     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
@@ -227,8 +311,9 @@ class CreateUploads extends Component {
           </div>
           <div className="col-md-12 text-right pads">
               <button
-              className="btn btn-primary mr-1"
+              className="btn btn-primary mr-1 "
               onClick={() => this.handleCreateUploadFolder()}
+              disabled={this.state.disableCreate}
               >
                   {this.state.submitting && (
                   <FontAwesomeIcon
@@ -242,6 +327,7 @@ class CreateUploads extends Component {
               <button
               type="button"
               className="btn btn-secondary"
+              disabled={this.state.disableCreate}
               onClick={this.props.cancelEdit}
               >
                   Cancel
@@ -305,10 +391,12 @@ class CreateUploads extends Component {
                           id='Submission_Name'
                           className={
                             "form-control " +
-                            this.errorClass(this.state.formErrors.name)
+                            this.errorClass(this.state.formErrors.title)
                           }
                           placeholder='Upload Title'
                           onChange={this.updateInputValue}
+                          onBlur={this.handleBlur}
+                          onFocus={this.handleFocus}
                           value={this.state.e_title}
                         />
                   </div>
@@ -341,9 +429,13 @@ class CreateUploads extends Component {
                             id='Submission_Desc'
                             cols='30'
                             rows='5'
-                            className='form-control'
-                            placeholder='Description'
+                            className={
+                              "form-control " +
+                              this.errorClass(this.state.formErrors.descripton)
+                            }                            placeholder='Description'
                             onChange={this.updateInputValue}
+                            onBlur={this.handleBlanks}
+                            onFocus={this.handleBlanks}
                             value={this.state.e_desc}
                           />
                         </div>
