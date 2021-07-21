@@ -17,6 +17,8 @@ class CreateUploads extends Component {
     this.state = {
       creatingNewUploadFolder: true,
       currentDateTime: Date().toLocaleString(),
+      inputValue_desc:"",
+      inputValue_title:"",
       groups:[],
       processingUpload:false,
       successfulUploadCreation:false,
@@ -123,14 +125,28 @@ class CreateUploads extends Component {
     });
   };
 
+  handleBlanks = (e) => {
+    // console.debug(e.target)
+    // console.debug(this.state.inputValue_title, this.state.inputValue_title.length)
+    // console.debug("handleBlanks", e.target.value, e.target.value.length)
+    if(this.state.inputValue_title.length<=0 ||
+      this.state.inputValue_desc.length<=0){
+      // console.debug("handleBlanks True Disable")
+      this.disableCreateButton(true);
+    }else{
+      this.disableCreateButton(false);
+      // console.debug("handleBlanks False Disable")
+    }
+  }
+
 
 
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = false;
-      console.debug(validateRequired(this.state.inputValue_title), validateRequired(this.state.inputValue_desc));
+      // console.debug(validateRequired(this.state.inputValue_title), validateRequired(this.state.inputValue_desc));
 
-      if (!validateRequired(this.state.title)) {
+      if (!validateRequired(this.inputValue_title)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, title: "required" },
         }));
@@ -151,29 +167,38 @@ class CreateUploads extends Component {
           formErrors: { ...prevState.formErrors, description: "" },
         }));
       }
-
-      
-      console.debug(isValid);
+      if(
+        validateRequired(this.state.inputValue_title) === true && 
+        validateRequired(this.state.inputValue_desc) === true &&
+        this.state.inputValue_title.length>0 &&
+        this.state.inputValue_desc.length>0 &&
+        this.state.inputValue_group_uuid.length>0){
+          isValid = true;
+          this.disableCreateButton(false);
+        }else{
+          this.disableCreateButton(true);
+        }
       resolve(isValid);
     });
   }
 
 
-  enableCreateButton() {
-    if(validateRequired(this.state.inputValue_title) === true && validateRequired(this.state.inputValue_desc) === true){
+  disableCreateButton(status) {
+    if (status === false) {
       this.setState({ 
-        disableCreate: false
+        disableCreate:false
       });
-    }else{
+    } else {
       this.setState({ 
         disableCreate:true
       });
-    }
-    console.debug(this.state.disableCreate);
+    }     
   }
 
+
+
   updateInputValue = (evt) => {
-    // console.log(evt.target.id);
+    // console.log(evt.target.id+": "+evt.target.value+" | "+evt.target.value.length);
     if(evt.target.id==="Submission_Name"){
       // console.log('evt.target.id==="Submission_Name"');
       this.setState({
@@ -190,8 +215,14 @@ class CreateUploads extends Component {
         inputValue_group_uuid: evt.target.value
       });
     }
-    this.enableCreateButton();
+    
+    // this.enableCreateButton();
     this.validateForm();
+
+    if(evt.target.value.length<=0){
+      // console.log("evt.target.value.length<=0");
+      this.disableCreateButton(true);
+    }
     //console.log(this.state);
   }
 
@@ -364,6 +395,8 @@ class CreateUploads extends Component {
                           }
                           placeholder='Upload Title'
                           onChange={this.updateInputValue}
+                          onBlur={this.handleBlur}
+                          onFocus={this.handleFocus}
                           value={this.state.e_title}
                         />
                   </div>
@@ -401,6 +434,8 @@ class CreateUploads extends Component {
                               this.errorClass(this.state.formErrors.descripton)
                             }                            placeholder='Description'
                             onChange={this.updateInputValue}
+                            onBlur={this.handleBlanks}
+                            onFocus={this.handleBlanks}
                             value={this.state.e_desc}
                           />
                         </div>
