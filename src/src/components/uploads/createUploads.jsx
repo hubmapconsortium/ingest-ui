@@ -4,6 +4,7 @@ import Divider from '@material-ui/core/Divider';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
+import { validateRequired } from "../../utils/validators";
 import ReactTooltip from "react-tooltip";
 import { ingest_api_users_groups } from '../../service/ingest_api';
 // function Alert(props: AlertProps) {
@@ -16,6 +17,8 @@ class CreateUploads extends Component {
     this.state = {
       creatingNewUploadFolder: true,
       currentDateTime: Date().toLocaleString(),
+      inputValue_desc:"",
+      inputValue_title:"",
       groups:[],
       processingUpload:false,
       successfulUploadCreation:false,
@@ -23,7 +26,7 @@ class CreateUploads extends Component {
       showNewUpload:true,
       formErrors: {
           title: "",
-          description: ""
+          group: ""
         },
     };
 
@@ -40,17 +43,19 @@ class CreateUploads extends Component {
   
 
 
-  handleCreateUploadFolder(){  
+  handleSubmit = e => {
+    e.preventDefault();
+    console.log(this.validateForm());
+    if (this.validateForm()) {
+      console.log("IS VALID")
       this.setState({
         processingUpload: true
       });
-
       let data = {
         title: this.state.inputValue_title,
         description: this.state.inputValue_desc, // Just till I can solve unexpected key error
         group_uuid:this.state.inputValue_group_uuid 
       };
-
       const config = {
         headers: {
           Authorization:
@@ -59,7 +64,6 @@ class CreateUploads extends Component {
           "Content-Type": "application/json"
         }
       }
-
       axios
         .post(
           `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`,
@@ -101,12 +105,15 @@ class CreateUploads extends Component {
           });
           
         });
+      }else{
+        console.log("IS INVALID")
+      };
   };
 
 
   errorClass(error) {
-    // if (error === "valid") return "is-valid";
-    // return error.length === 0 ? "" : "is-invalid";
+    if (error === "valid") return "is-valid";
+    return error.length === 0 ? "" : "is-invalid";
   }
 
 
@@ -122,8 +129,54 @@ class CreateUploads extends Component {
   };
 
 
+  // validateInput(input,label){
+  //   if (!validateRequired(input)) {
+  //     this.setState((prevState) => ({
+  //       formErrors: { ...prevState.formErrors, label: "invalid" },
+  //     }));
+  //     isValid = false;
+  //   } else {
+  //     this.setState((prevState) => ({
+  //       formErrors: { ...prevState.formErrors, label: "valid" },
+  //     }));
+  //   }
+
+  // }
+
+
+  validateForm() {
+      let isValid = true;
+      if (!validateRequired(this.state.inputValue_title)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "invalid" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, title: "valid" },
+        }));
+      }
+
+      if (!validateRequired(this.state.inputValue_group_uuid)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, group: "invalid" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, group: "valid" },
+        }));
+      }
+      console.log(this.state.formErrors);
+      return isValid;
+  }
+
+
+
+
+
   updateInputValue = (evt) => {
-    // console.log(evt.target.id);
+    // console.log(evt.target.id+": "+evt.target.value+" | "+evt.target.value.length);
     if(evt.target.id==="Submission_Name"){
       // console.log('evt.target.id==="Submission_Name"');
       this.setState({
@@ -140,7 +193,8 @@ class CreateUploads extends Component {
         inputValue_group_uuid: evt.target.value
       });
     }
-    //console.log(this.state);
+    this.validateForm();
+
   }
 
 
@@ -176,6 +230,7 @@ class CreateUploads extends Component {
       );
   }
 
+
   getUserGroups(){
     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
       if (results.status === 200) { 
@@ -205,7 +260,9 @@ class CreateUploads extends Component {
             name="Submission_Group"
             id="Submission_Group"
             label="Group"
-            className="form-control mt-3"
+            className={"form-control mt-3" +
+              this.errorClass(this.state.formErrors.group)
+            }
             onChange={this.updateInputValue}
             size="small"
             margin="dense"
@@ -227,8 +284,8 @@ class CreateUploads extends Component {
           </div>
           <div className="col-md-12 text-right pads">
               <button
-              className="btn btn-primary mr-1"
-              onClick={() => this.handleCreateUploadFolder()}
+              type="submit"
+              className="btn btn-primary mr-1 "
               >
                   {this.state.submitting && (
                   <FontAwesomeIcon
@@ -278,7 +335,7 @@ class CreateUploads extends Component {
           )}
           {(!this.state.processingUpload) && (
             <div>
-              <form>
+              <form onSubmit={this.handleSubmit}>
 
                 <div className='form-group'>
                     <label htmlFor='title'>
@@ -305,7 +362,7 @@ class CreateUploads extends Component {
                           id='Submission_Name'
                           className={
                             "form-control " +
-                            this.errorClass(this.state.formErrors.name)
+                            this.errorClass(this.state.formErrors.title)
                           }
                           placeholder='Upload Title'
                           onChange={this.updateInputValue}
@@ -341,7 +398,9 @@ class CreateUploads extends Component {
                             id='Submission_Desc'
                             cols='30'
                             rows='5'
-                            className='form-control'
+                            className={
+                              "form-control "
+                            }
                             placeholder='Description'
                             onChange={this.updateInputValue}
                             value={this.state.e_desc}
