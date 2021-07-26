@@ -23,11 +23,10 @@ class CreateUploads extends Component {
       processingUpload:false,
       successfulUploadCreation:false,
       errorMessage:" ",
-      disableCreate: true,
       showNewUpload:true,
       formErrors: {
           title: "",
-          description: ""
+          group: ""
         },
     };
 
@@ -44,17 +43,19 @@ class CreateUploads extends Component {
   
 
 
-  handleCreateUploadFolder(){  
+  handleSubmit = e => {
+    e.preventDefault();
+    console.log(this.validateForm());
+    if (this.validateForm()) {
+      console.log("IS VALID")
       this.setState({
         processingUpload: true
       });
-
       let data = {
         title: this.state.inputValue_title,
         description: this.state.inputValue_desc, // Just till I can solve unexpected key error
         group_uuid:this.state.inputValue_group_uuid 
       };
-
       const config = {
         headers: {
           Authorization:
@@ -63,7 +64,6 @@ class CreateUploads extends Component {
           "Content-Type": "application/json"
         }
       }
-
       axios
         .post(
           `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`,
@@ -105,12 +105,15 @@ class CreateUploads extends Component {
           });
           
         });
+      }else{
+        console.log("IS INVALID")
+      };
   };
 
 
   errorClass(error) {
-    // if (error === "valid") return "is-valid";
-    // return error.length === 0 ? "" : "is-invalid";
+    if (error === "valid") return "is-valid";
+    return error.length === 0 ? "" : "is-invalid";
   }
 
 
@@ -125,75 +128,50 @@ class CreateUploads extends Component {
     });
   };
 
-  handleBlanks = (e) => {
-    // console.debug(e.target)
-    // console.debug(this.state.inputValue_title, this.state.inputValue_title.length)
-    // console.debug("handleBlanks", e.target.value, e.target.value.length)
-    if(this.state.inputValue_title.length<=0 ||
-      this.state.inputValue_desc.length<=0){
-      // console.debug("handleBlanks True Disable")
-      this.disableCreateButton(true);
-    }else{
-      this.disableCreateButton(false);
-      // console.debug("handleBlanks False Disable")
-    }
-  }
 
+  // validateInput(input,label){
+  //   if (!validateRequired(input)) {
+  //     this.setState((prevState) => ({
+  //       formErrors: { ...prevState.formErrors, label: "invalid" },
+  //     }));
+  //     isValid = false;
+  //   } else {
+  //     this.setState((prevState) => ({
+  //       formErrors: { ...prevState.formErrors, label: "valid" },
+  //     }));
+  //   }
+
+  // }
 
 
   validateForm() {
-    return new Promise((resolve, reject) => {
-      let isValid = false;
-      // console.debug(validateRequired(this.state.inputValue_title), validateRequired(this.state.inputValue_desc));
-
-      if (!validateRequired(this.inputValue_title)) {
+      let isValid = true;
+      if (!validateRequired(this.state.inputValue_title)) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, title: "required" },
+          formErrors: { ...prevState.formErrors, title: "invalid" },
         }));
         isValid = false;
       } else {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, title: "" },
+          formErrors: { ...prevState.formErrors, title: "valid" },
         }));
       }
 
-      if (!validateRequired(this.state.inputValue_desc)) {
+      if (!validateRequired(this.state.inputValue_group_uuid)) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, description: "required" },
+          formErrors: { ...prevState.formErrors, group: "invalid" },
         }));
         isValid = false;
       } else {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, description: "" },
+          formErrors: { ...prevState.formErrors, group: "valid" },
         }));
       }
-      if(
-        validateRequired(this.state.inputValue_title) === true && 
-        validateRequired(this.state.inputValue_desc) === true &&
-        this.state.inputValue_title.length>0 &&
-        this.state.inputValue_desc.length>0 &&
-        this.state.inputValue_group_uuid.length>0){
-          isValid = true;
-          this.disableCreateButton(false);
-        }else{
-          this.disableCreateButton(true);
-        }
-      resolve(isValid);
-    });
+      console.log(this.state.formErrors);
+      return isValid;
   }
 
 
-  disableCreateButton(status) {
-    if (status === false) {
-      this.setState({ 
-        disableCreate:false
-      });
-    } else {
-      this.setState({ 
-        disableCreate:true
-      });
-    }     
-  }
 
 
 
@@ -215,15 +193,8 @@ class CreateUploads extends Component {
         inputValue_group_uuid: evt.target.value
       });
     }
-    
-    // this.enableCreateButton();
     this.validateForm();
 
-    if(evt.target.value.length<=0){
-      // console.log("evt.target.value.length<=0");
-      this.disableCreateButton(true);
-    }
-    //console.log(this.state);
   }
 
 
@@ -289,7 +260,9 @@ class CreateUploads extends Component {
             name="Submission_Group"
             id="Submission_Group"
             label="Group"
-            className="form-control mt-3"
+            className={"form-control mt-3" +
+              this.errorClass(this.state.formErrors.group)
+            }
             onChange={this.updateInputValue}
             size="small"
             margin="dense"
@@ -311,9 +284,8 @@ class CreateUploads extends Component {
           </div>
           <div className="col-md-12 text-right pads">
               <button
+              type="submit"
               className="btn btn-primary mr-1 "
-              onClick={() => this.handleCreateUploadFolder()}
-              disabled={this.state.disableCreate}
               >
                   {this.state.submitting && (
                   <FontAwesomeIcon
@@ -327,7 +299,6 @@ class CreateUploads extends Component {
               <button
               type="button"
               className="btn btn-secondary"
-              disabled={this.state.disableCreate}
               onClick={this.props.cancelEdit}
               >
                   Cancel
@@ -364,7 +335,7 @@ class CreateUploads extends Component {
           )}
           {(!this.state.processingUpload) && (
             <div>
-              <form>
+              <form onSubmit={this.handleSubmit}>
 
                 <div className='form-group'>
                     <label htmlFor='title'>
@@ -395,8 +366,6 @@ class CreateUploads extends Component {
                           }
                           placeholder='Upload Title'
                           onChange={this.updateInputValue}
-                          onBlur={this.handleBlur}
-                          onFocus={this.handleFocus}
                           value={this.state.e_title}
                         />
                   </div>
@@ -430,12 +399,10 @@ class CreateUploads extends Component {
                             cols='30'
                             rows='5'
                             className={
-                              "form-control " +
-                              this.errorClass(this.state.formErrors.descripton)
-                            }                            placeholder='Description'
+                              "form-control "
+                            }
+                            placeholder='Description'
                             onChange={this.updateInputValue}
-                            onBlur={this.handleBlanks}
-                            onFocus={this.handleBlanks}
                             value={this.state.e_desc}
                           />
                         </div>
