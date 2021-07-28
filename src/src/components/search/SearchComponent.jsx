@@ -55,16 +55,25 @@ class SearchComponent extends Component {
     if (this.props.match){
       console.debug(this.props.match);
       var type = this.props.match.params.type;
-      var uuid = this.props.match.params.uuid;
-      console.log(type+" | "+uuid);
+      var euuid = this.props.match.params.uuid;
+      console.log(type+" | "+euuid);
       this.setState({
         sampleType: type,
         preset: {
             entityType: type,
-            entityUuid: uuid
+            entityUuid: euuid
           }
       },function(){ 
         this.handleSearchClick();
+        if(euuid){
+          console.log("UUID PROVIDED: "+euuid);
+          var params = {
+            row:{
+              uuid:euuid
+            }
+          }
+          this.handleTableCellClick(params);
+        }
       });
       // console.log("PRESET:", this.state.preset);
       // console.debug(type,uuid);
@@ -346,7 +355,8 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
-
+    console.debug("handleTableCellClick");
+    console.debug(params);
     if(params.field === 'uuid') return; // skip this field
 
     if (params.row) {

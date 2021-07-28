@@ -16,24 +16,10 @@ export default class Routes extends Component {
         return (
             <Router history={history}>
                 <Switch>
-                   <Route path="/" exact component={SearchComponent} /> 
-                   {/* <Route path="/Home" exact component={Home} />  */}
-                   <Route path="/:type" component={SearchComponent} />
-                   <Route path="/:type/:uuid" component={SearchComponent} />
-                   {/* <Route path="/Dataset/:uuid" component={SearchComponent} /> */}
-                   {/**  <Route path="/Samples" component={EntityList} />
-                    <Route path="/Donor" component={DonorForm} />
-                    <Route path="/Sample" component={TissueForm} />
-                    <Route path="/Datasets" component={DataList} />
-                    <Route path="/Dataset" component={DatasetEdit} /> 
-                    <Route path="/" component={SearchComponent} /> */}
-                    {/* <Route path="/sample/:uuid" component={TissueForm} /> */}
-                    {/* <Route path="/collections/:uuid" component={Collection} />
-                    <Route path="/collections" component={Collections} /> */}
+                    <Route path="/" exact component={SearchComponent} /> 
+                    <Route path="/:type" exact component={SearchComponent} />
+                    <Route path="/:type/:uuid" component={SearchComponent} />
                     <Route path="/err-response" component={ErrorPage} />
-                    {/* <Route path="/search" component={SearchComponent} /> */}
-                   {/*} <Route path="/donors-samples" exact component={UUIDEntrance} />
-                    <Route path="/datasets" exact component={IngestEntrance} />*/}
                 </Switch>
             </Router>
         )
