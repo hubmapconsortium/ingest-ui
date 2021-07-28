@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import React, { Component  } from "react";
+import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 
@@ -38,25 +39,48 @@ class SearchComponent extends Component {
     group: "All Components",
     sampleType: "----",
     keywords: "",
-    last_keyword: ""
+    last_keyword: "",
+    preset: {}
   };
 
-  // constructor(props) {
-  //   super(props);
-  //   // this.group = React.createRef();
-  //   // this.sampleType = React.createRef();
-  //   // this.keywords = React.createRef();
-  // }
+  constructor(props) {
+    super(props);
+    console.debug("props",props)
+  }
 
   componentDidMount() {     
+
+    // const { match: { params } } = this.props;
+    // console.log(this.props);
+    if (this.props.match){
+      console.debug(this.props.match);
+      var type = this.props.match.params.type;
+      var uuid = this.props.match.params.uuid;
+      console.log(type+" | "+uuid);
+      this.setState({
+        sampleType: type,
+        preset: {
+            entityType: type,
+            entityUuid: uuid
+          }
+      },function(){ 
+        this.handleSearchClick();
+      });
+      // console.log("PRESET:", this.state.preset);
+      // console.debug(type,uuid);
+    }
+
+    console.log(this.state);
+    
+
     try {
-     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
       if (results.status === 200) { 
         this.setState({
           isAuthenticated: true
         }, () => {
-           this.setFilterType();
+          this.setFilterType();
         });
       } else if (results.status === 401) {
           this.setState({
@@ -64,20 +88,20 @@ class SearchComponent extends Component {
           });
         }
     });
-   } catch {
-     this.setState({
+  } catch {
+    this.setState({
         isAuthenticated: false
       });
-   }
+  }
 
-   const config = {
+  const config = {
     headers: {
       Authorization:
         "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
       "Content-Type": "application/json"
     }
   };
-   axios
+  axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
         config
@@ -107,11 +131,8 @@ class SearchComponent extends Component {
           window.location.reload();
         }
       });
-
-      // do an initial load using default criteria
-      
-      this.handleSearchClick();
-   
+     
+  
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -125,11 +146,12 @@ class SearchComponent extends Component {
         show_search: false
         });
     }
+    
   }
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    //console.debug('handleInputChange', name)
+    console.debug('handleInputChange', name)
     switch (name) {
       case "group":
         this.setState({ group: value });
@@ -189,7 +211,9 @@ class SearchComponent extends Component {
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
-
+    console.debug("handleSearchClick")
+    console.debug(group,sample_type,keywords)
+    console.debug(this.state)
 
     // reset the page to zero, to deal with slight bug regarding
     // if you do searches and change pages then search for a new keyword
@@ -323,8 +347,6 @@ class SearchComponent extends Component {
 
   handleTableCellClick = (params) => {
 
-    //onsole.debug('handleTableCellClick', params)
-    //if(params.field !== 'hubmap_id') {
     if(params.field === 'uuid') return; // skip this field
 
     if (params.row) {
@@ -365,10 +387,6 @@ class SearchComponent extends Component {
             show_search: false,
             });
         }
-
-
-        // check to see if user can edit
-        
       }
     });
     }
@@ -405,6 +423,7 @@ class SearchComponent extends Component {
     return  (
         
         <div style={{ width: '100%' }}>
+          
           {/*
           this.state.show_search && this.state.show_info_panel &&
            !this.props.custom_title && (
@@ -413,7 +432,7 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
-
+          {this.renderProps()}
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
@@ -426,6 +445,19 @@ class SearchComponent extends Component {
     }
     return null;
   }
+
+  renderProps() {
+    // console.debug("INITIALSTATE",this.initialState);
+    console.debug("renderProps",this.state.preset);
+    return (
+      <div>
+      {/* <span className="portal-jss116 text-center">
+      Found Props: {this.state.preset.entityType} {this.state.preset.entityUuid}
+      </span> <br /><br /> */}
+      </div>
+      );
+}
+
 
 
   renderEditForm() {

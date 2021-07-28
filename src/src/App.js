@@ -517,53 +517,52 @@ class App extends Component {
           </div>
         </Modal>
         {this.renderHeader()}
-        <div id="content" className="container">
+        <div id="content" className="">
           {!collections && (
             this.renderContent()
           )}
           <div className="App">
-            {/**  <Navigation /> */}
-            <Routes />
+            
+          <div className="col-sm-12">
+
+        
+            {this.state.isAuthenticated &&(
+
+              <Routes />
+              
+              
+            )}
+            {this.state.isAuthenticated && this.state.creatingNewEntity && (
+              <Forms formType={this.state.formType} onCancel={this.handleClose} />
+            )}
+                  
+            {this.state.isAuthenticated && this.state.creatingNewUpload && (
+                <Dialog 
+                  open={this.state.creatingNewUpload}
+                  fullWidth={true} 
+                  maxWidth="lg" 
+                  aria-labelledby="source-lookup-dialog" 
+                  // onClose={this.handleClose} 
+                  onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                      this.handleClose()
+                    }
+                  }}
+                >
+                <DialogContent>
+                  <UploadsForm
+                    onCreated={this.onCreated}
+                    cancelEdit={this.handleClose}
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
+
+          
+</div>
           </div>
 
         </div>
-            
-        
-        {this.state.isAuthenticated && !this.state.creatingNewEntity && (
-          <div className="col-sm-12">
-            <SearchComponent editNewEntity={this.state.editNewEntity} />
-          </div>
-          )}
-          <div className="col-sm-12">
-            {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              <Forms formType={this.state.formType} onCancel={this.handleClose} />
-              )}
-          </div>
-          
-          {this.state.isAuthenticated && this.state.creatingNewUpload && (
-          <div className="col-sm-12">
-            <Dialog 
-              open={this.state.creatingNewUpload}
-              fullWidth={true} 
-              maxWidth="lg" 
-              aria-labelledby="source-lookup-dialog" 
-              // onClose={this.handleClose} 
-              onClose={(event, reason) => {
-                if (reason !== 'backdropClick') {
-                  this.handleClose()
-                }
-              }}
-            >
-            <DialogContent>
-              <UploadsForm
-                onCreated={this.onCreated}
-                cancelEdit={this.handleClose}
-              />
-            </DialogContent>
-            </Dialog>
-          </div>
-          )}
-          
 
           
           <Snackbar open={this.state.openSnack} autoHideDuration={6000} onClose={this.handleCloseSnack}>
