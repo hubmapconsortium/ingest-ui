@@ -17,6 +17,7 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+// import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
   state = {
@@ -64,22 +65,23 @@ class SearchComponent extends Component {
             entityUuid: euuid
           }
       },function(){ 
-        this.handleSearchClick();
         if(euuid){
-          console.log("UUID PROVIDED: "+euuid);
+          // console.log("UUID PROVIDED: "+euuid);
           var params = {
             row:{
               uuid:euuid
             }
           }
+          // this.handleSearchClick();
           this.handleTableCellClick(params);
+        }else{
+          console.log("No UUID in URL");
+          this.handleSearchClick();
         }
       });
-      // console.log("PRESET:", this.state.preset);
-      // console.debug(type,uuid);
     }
 
-    console.log(this.state);
+    // console.log(this.state);
     
 
     try {
@@ -220,9 +222,9 @@ class SearchComponent extends Component {
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
-    console.debug("handleSearchClick")
-    console.debug(group,sample_type,keywords)
-    console.debug(this.state)
+    // console.debug("handleSearchClick")
+    // console.debug(group,sample_type,keywords)
+    // console.debug(this.state)
 
     // reset the page to zero, to deal with slight bug regarding
     // if you do searches and change pages then search for a new keyword
@@ -248,6 +250,12 @@ class SearchComponent extends Component {
 
     if (sample_type) {
       //console.debug(sample_type);
+      console.debug(this.props);
+      if(!this.state.uuid){
+        this.handleUrlChange(sample_type);
+      }
+      
+
       if (sample_type === 'donor') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
@@ -289,7 +297,7 @@ class SearchComponent extends Component {
         
         
       }
-       this.setState({ loading: false });
+      this.setState({ loading: false });
     });
   };
 
@@ -305,6 +313,14 @@ class SearchComponent extends Component {
         return COLUMN_DEF_UPLOADS;
     } 
     return COLUMN_DEF_SAMPLE;
+  }
+
+  handleUrlChange = (targetPath) =>{
+    console.debug("handleUrlChange "+targetPath)
+      window.history.replaceState(
+        null,
+        "", 
+        "/"+targetPath);
   }
 
   handlePageChange = (params) => {
@@ -330,6 +346,11 @@ class SearchComponent extends Component {
       show_modal: false,  
       show_search: true
     });
+    // console.debug("cancelEdit")
+    // console.debug(this.props.match)
+    // console.debug(this.props.match.params.type)
+    this.handleUrlChange();
+    this.handleSearchClick();
     //this.filterEntity();
     //this.props.onCancel();
   };
@@ -357,6 +378,7 @@ class SearchComponent extends Component {
   handleTableCellClick = (params) => {
     console.debug("handleTableCellClick");
     console.debug(params);
+    
     if(params.field === 'uuid') return; // skip this field
 
     if (params.row) {

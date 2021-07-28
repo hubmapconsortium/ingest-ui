@@ -24,6 +24,7 @@
     "react-bootstrap": "^1.5.0",
     "react-dom": "^16.14.0",
     "react-idle-timer": "^4.5.5",
+    "react-router": "^5.2.0",
     "react-router-dom": "^5.1.2",
     "react-tooltip": "^3.11.1"
   },
