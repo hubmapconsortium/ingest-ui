@@ -49,10 +49,6 @@ class RUIIntegration extends Component {
 
   componentDidMount() {
     console.log('RUI...', this.props)
-    const webcomponent_script = document.createElement("script");
-    webcomponent_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/wc.js`;
-    webcomponent_script.async = true;
-    document.body.appendChild(webcomponent_script);
 
     const organ_info = ORGAN_TYPES[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
@@ -63,7 +59,7 @@ class RUIIntegration extends Component {
     var self = this;
     window.ruiConfig = {
       // Custom configuration
-      baseHref: `${process.env.REACT_APP_RUI_BASE_URL}/`,
+      baseHref: process.env.REACT_APP_RUI_BASE_URL,
       embedded: true,
       tutorialMode: false,
       homeUrl: '/search',
@@ -72,6 +68,7 @@ class RUIIntegration extends Component {
         lastName: user_name.split(" ")[1]
       },
       organ: {
+        //ontologyId: xxx, // IEC TODO
         name: organ_name,
         sex: sex || "female",
         side: organ_side
@@ -83,7 +80,11 @@ class RUIIntegration extends Component {
         self.handleCloseScreenClick();
       },
       fetchPreviousRegistrations: function () {
-
+        // IEC TODO: Fetch previous registrations for this user/organization to the same organ
+        return [];
+      },
+      cancelRegistration: function () {
+        self.handleCloseScreenClick();
       },
       editRegistration: location,
       useDownload: false,
