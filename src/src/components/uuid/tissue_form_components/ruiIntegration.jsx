@@ -50,13 +50,32 @@ class RUIIntegration extends Component {
   componentDidMount() {
     console.log('RUI...', this.props)
 
+    this.updateDimensions();
+    window.addEventListener("resize", this.updateDimensions.bind(this));
+
+    this.setState({
+      mounted: true,
+    });
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateDimensions.bind(this));
+  }
+
+
+  handleCloseScreenClick = (e) => {
+    this.setState({ close_rui: true });
+  }
+
+  updateRUIConfig() {
     const organ_info = ORGAN_TYPES[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
     const sex = this.props.sex;
     const user_name = this.props.user;
-    const location = this.props.location === "" ? null : JSON.parse(this.props.location)
-    var self = this;
+    const location = this.props.location === "" ? null : JSON.parse(this.props.location);
+    const self = this;
+
     window.ruiConfig = {
       // Custom configuration
       baseHref: process.env.REACT_APP_RUI_BASE_URL,
@@ -89,31 +108,11 @@ class RUIIntegration extends Component {
       editRegistration: location,
       useDownload: false,
     };
-
-    this.updateDimensions();
-    window.addEventListener("resize", this.updateDimensions.bind(this));
-
-    this.setState({
-      mounted: true,
-    });
   }
-
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.updateDimensions.bind(this));
-  }
-
-
-  handleCloseScreenClick = (e) => {
-
-    this.setState({
-      close_rui: true,
-
-    });
-    // this.state.unityInstance.Quit();
-  };
 
 
   render() {
+    this.updateRUIConfig();
     return (
       <React.Fragment>
         <div className='webgl-content rui mat-typography' >
