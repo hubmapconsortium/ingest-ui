@@ -184,7 +184,9 @@ class SearchComponent extends Component {
   } 
 
   handleSearchClick = () => {
-    this.setState({ loading: true, filtered: true, page: 0 });
+    //this.setState({ loading: true, filtered: true, page: 0 });
+    this.setState({ loading: true, filtered: true});
+
 
     const group = this.state.group;
     const sample_type = this.state.sampleType;
@@ -275,7 +277,7 @@ class SearchComponent extends Component {
   }
 
   handlePageChange = (params) => {
-    ////console.debug('Page changed', params)
+    console.debug('Page changed', params)
     this.setState({
           page: params.page,
           pageSize: params.pageSize
