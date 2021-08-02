@@ -49,61 +49,6 @@ class RUIIntegration extends Component {
 
   componentDidMount() {
     console.log('RUI...', this.props)
-    const runtime_script = document.createElement("script");
-    runtime_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/runtime.js`;
-    runtime_script.async = true;
-    document.body.appendChild(runtime_script);
-    const polyfills_script = document.createElement("script");
-    polyfills_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/polyfills.js`;
-    polyfills_script.async = true;
-    document.body.appendChild(polyfills_script);
-    const main_script = document.createElement("script");
-    main_script.src = `${process.env.REACT_APP_RUI_BASE_URL}/main.js`;
-    main_script.async = true;
-    document.body.appendChild(main_script);
-
-
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      window.dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-    gtag('config', 'UA-136932895-2');
-
-    const organ_info = ORGAN_TYPES[this.props.organ].split("(");
-    const organ_name = organ_info[0].toLowerCase().trim();
-    const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
-    const sex = this.props.sex;
-    const user_name = this.props.user;
-    const location = this.props.location === "" ? null : JSON.parse(this.props.location)
-    var self = this;
-    window.ruiConfig = {
-      // Custom configuration
-      baseHref: `${process.env.REACT_APP_RUI_BASE_URL}/`,
-      embedded: true,
-      tutorialMode: false,
-      homeUrl: '/search',
-      user: {
-        firstName: user_name.split(" ")[0],
-        lastName: user_name.split(" ")[1]
-      },
-      organ: {
-        name: organ_name,
-        sex: sex || "female",
-        side: organ_side
-      },
-      register: function (str) {
-        console.log(str);
-        self.setState({ jsonRUI: str });
-        self.props.handleJsonRUI(str);
-        self.handleCloseScreenClick();
-      },
-      fetchPreviousRegistrations: function () {
-
-      },
-      editRegistration: location,
-      useDownload: false,
-    };
 
     this.updateDimensions();
     window.addEventListener("resize", this.updateDimensions.bind(this));
@@ -119,16 +64,55 @@ class RUIIntegration extends Component {
 
 
   handleCloseScreenClick = (e) => {
+    this.setState({ close_rui: true });
+  }
 
-    this.setState({
-      close_rui: true,
+  updateRUIConfig() {
+    const organ_info = ORGAN_TYPES[this.props.organ].split("(");
+    const organ_name = organ_info[0].toLowerCase().trim();
+    const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
+    const sex = this.props.sex;
+    const user_name = this.props.user;
+    const location = this.props.location === "" ? null : JSON.parse(this.props.location);
+    const self = this;
 
-    });
-    // this.state.unityInstance.Quit();
-  };
+    window.ruiConfig = {
+      // Custom configuration
+      baseHref: process.env.REACT_APP_RUI_BASE_URL,
+      embedded: true,
+      tutorialMode: false,
+      homeUrl: '/search',
+      user: {
+        firstName: user_name.split(" ")[0],
+        lastName: user_name.split(" ")[1]
+      },
+      organ: {
+        //ontologyId: xxx, // IEC TODO
+        name: organ_name,
+        sex: sex || "female",
+        side: organ_side
+      },
+      register: function (str) {
+        console.log(str);
+        self.setState({ jsonRUI: str });
+        self.props.handleJsonRUI(str);
+        self.handleCloseScreenClick();
+      },
+      fetchPreviousRegistrations: function () {
+        // IEC TODO: Fetch previous registrations for this user/organization to the same organ
+        return [];
+      },
+      cancelRegistration: function () {
+        self.handleCloseScreenClick();
+      },
+      editRegistration: location,
+      useDownload: false,
+    };
+  }
 
 
   render() {
+    this.updateRUIConfig();
     return (
       <React.Fragment>
         <div className='webgl-content rui mat-typography' >
@@ -140,7 +124,7 @@ class RUIIntegration extends Component {
                   style={{ width: this.state.width, height: this.state.height, marginLeft: this.state.margin_left}}
 
                 >
-                  <ccf-root></ccf-root>
+                  <ccf-rui></ccf-rui>
                 </div>
                 <div className='footer'>
                   <React.Fragment>

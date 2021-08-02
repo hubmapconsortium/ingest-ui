@@ -74,6 +74,7 @@ class TissueForm extends Component {
     LookUpShow: false,
     lookUpCancelled: false,
     multiple_id: false,
+    RUI_ACTIVE: false,   // this controls whether the RUI buttons will be active (true) or not overall
     rui_check: false,
     rui_view: false,
     rui_hide: true,
@@ -2163,7 +2164,7 @@ handleAddImage = () => {
             {!this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              this.isSpecialOrganType(this.state.ancestor_organ) &&
+              this.isSpecialOrganType(this.state.ancestor_organ) && this.state.RUI_ACTIVE && 
               (
                 <div className="form-group">
                   <label
@@ -2198,7 +2199,7 @@ handleAddImage = () => {
                       Register Location
           </button>
                   </div>
-                  { this.state.rui_click && (
+                  { this.state.rui_click && this.state.RUI_ACTIVE && (
                   <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organ={this.state.organ}
@@ -2244,7 +2245,7 @@ handleAddImage = () => {
             {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              this.isSpecialOrganType(this.state.ancestor_organ) &&    //source_entity.organ
+              this.isSpecialOrganType(this.state.ancestor_organ) && this.state.RUI_ACTIVE &&  //source_entity.organ
               (
                 <div className="form-group">
                   <label
@@ -2272,7 +2273,7 @@ handleAddImage = () => {
                   </label>
                  
                   { !this.state.readOnly &&
-                    this.state.rui_check && (
+                    this.state.rui_check && this.state.RUI_ACTIVE &&(
                       <React.Fragment>
                        
                         <div className="col-sm-3 text-center">
@@ -2296,7 +2297,7 @@ handleAddImage = () => {
                         )}
                       </React.Fragment>
                     )}
-                     {this.state.rui_check && (
+                     {this.state.rui_check (
 
                       <React.Fragment>
                     <div className="col-sm-3">
@@ -2321,7 +2322,7 @@ handleAddImage = () => {
 
                   { !this.state.readOnly &&
                     !this.state.multiple_id &&
-                    !this.state.rui_check && (
+                    !this.state.rui_check && this.state.RUI_ACTIVE && (
                       <React.Fragment>
                         <div className="col-sm-4 text-center">
                           <button

@@ -184,7 +184,9 @@ class SearchComponent extends Component {
   } 
 
   handleSearchClick = () => {
-    this.setState({ loading: true, filtered: true, page: 0 });
+    //this.setState({ loading: true, filtered: true, page: 0 });
+    this.setState({ loading: true, filtered: true});
+
 
     const group = this.state.group;
     const sample_type = this.state.sampleType;
@@ -275,7 +277,7 @@ class SearchComponent extends Component {
   }
 
   handlePageChange = (params) => {
-    ////console.debug('Page changed', params)
+    console.debug('Page changed', params)
     this.setState({
           page: params.page,
           pageSize: params.pageSize
@@ -562,6 +564,8 @@ renderInfoPanel() {
                 <span className="portal-label text-center">Search</span>
               )}
               <span className="portal-jss116 text-center">
+
+              <h1>{this.props.test}</h1>
               Use the filter controls to search for Donors, Samples, Datasets or Data Uploads.
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
               </span>
