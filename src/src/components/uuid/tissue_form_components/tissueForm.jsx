@@ -2297,7 +2297,7 @@ handleAddImage = () => {
                         )}
                       </React.Fragment>
                     )}
-                     {this.state.rui_check (
+                     {this.state.rui_check && (
 
                       <React.Fragment>
                     <div className="col-sm-3">
