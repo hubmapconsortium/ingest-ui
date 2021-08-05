@@ -5,7 +5,6 @@ import Routes from './Routes';
 import Login from './components/uuid/login';
 import IdleTimer from "react-idle-timer";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -42,6 +41,7 @@ class App extends Component {
     open_edit_dialog: false.valueOf,
     creatingNewUpload: false,
     editNewEntity: null,
+    showSearch: true
   }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
@@ -62,6 +62,14 @@ class App extends Component {
       this.setState({
         system: "collection"
       });
+    }
+    // If the url contains 'new', we'll wanna prepare for the new entity form
+    if (window.location.href.includes("/new/")) {
+      console.log("WINDOW URL INCLUDES NEW");
+    }
+    if (window.location.href.includes("/new/uploads")) {
+      console.log("WINDOW URL INCLUDES NEW UPLOADS");
+      this.handleUploadsDialog();
     }
 
 
@@ -113,6 +121,24 @@ class App extends Component {
 
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeyDown);
+
+    
+    if (this.props.match){
+      console.debug("APP this.props.match");
+      var type = this.props.match.params.type;
+      console.log(type);
+      if(type === "new"){
+        console.log("NEW PAGE");
+        var fauxEvent = {
+          currentTarget:{
+            innerText:type
+          } 
+        }
+        this.handleMenuSelection(fauxEvent);
+      }
+        
+    }
+
     if (localStorage.getItem("info") !== null) {
       const config = {
         headers: {
@@ -157,6 +183,9 @@ class App extends Component {
           }
         });
     }
+
+    
+
   }
 
 
@@ -165,8 +194,17 @@ class App extends Component {
     localStorage.removeItem("info");
   };
 
-  handleMenuSelection = (event) => {
+  handleUrlChange = (targetPath) =>{
+    console.debug("handleUrlChange "+targetPath)
+    console.debug(this.state.creatingNewEntity)
+      window.history.replaceState(
+        null,
+        "", 
+        "/"+targetPath.toLowerCase());
+  }
 
+  handleMenuSelection = (event) => {
+    console.debug("handleMenuSelection")
     var formtype = event.currentTarget.innerText.trim();
 
     this.setState({
@@ -174,15 +212,21 @@ class App extends Component {
         show_menu_popup: false,
         creatingNewEntity: true,
         formType: formtype.toLowerCase(),
-        open_edit_dialog: true
+        open_edit_dialog: true,
+        show_search: false
       })
+    
+    this.handleUrlChange("new/"+formtype);
+
+      
   }
   
 
   handleUploadsDialog = (event) => {
     this.setState({
       creatingNewUpload: true,
-    })
+    });
+    this.handleUrlChange("new/uploads");
   }
 
   handleClick = (event) => {
@@ -200,8 +244,10 @@ class App extends Component {
       anchorEl: null,
       show_menu_popup: false,
       open_edit_dialog: false, 
-      creatingNewEntity: false
-    })
+      creatingNewEntity: false,
+      showSearch: false
+    });
+    this.handleUrlChange("");
   };
 
   onCreated = data => {
@@ -526,9 +572,11 @@ class App extends Component {
           <div className="col-sm-12">
 
         
-            {this.state.isAuthenticated &&(
+            {this.state.isAuthenticated && (
 
-              <Routes />
+              <Routes 
+                fromApp={this.state.showSearch} 
+              />
               
               
             )}

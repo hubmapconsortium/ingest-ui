@@ -17,6 +17,10 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+
+// Creation donor_form_components
+import Forms from "../uuid/forms";
+
 // import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
@@ -41,44 +45,48 @@ class SearchComponent extends Component {
     sampleType: "----",
     keywords: "",
     last_keyword: "",
-    preset: {}
   };
 
   constructor(props) {
     super(props);
-    console.debug("props",props)
+    console.debug("SearchCompprops",props)
   }
 
   componentDidMount() {     
 
-    // const { match: { params } } = this.props;
-    // console.log(this.props);
     if (this.props.match){
       console.debug(this.props.match);
       var type = this.props.match.params.type;
       var euuid = this.props.match.params.uuid;
-      console.log(type+" | "+euuid);
-      this.setState({
-        sampleType: type,
-        preset: {
-            entityType: type,
-            entityUuid: euuid
-          }
-      },function(){ 
-        if(euuid){
-          // console.log("UUID PROVIDED: "+euuid);
-          var params = {
-            row:{
-              uuid:euuid
+      if(type !== "new"){
+
+        console.log("NOT NEW PAGE");
+        console.log(type+" | "+euuid);
+        this.setState({
+          sampleType: type,
+        },function(){ 
+          if(euuid){
+            // console.log("UUID PROVIDED: "+euuid);
+            var params = {
+              row:{
+                uuid:euuid
+              }
             }
+            // this.handleSearchClick();
+            this.handleTableCellClick(params);
+          }else{
+            console.log("No UUID in URL");
+            this.handleSearchClick();
           }
-          // this.handleSearchClick();
-          this.handleTableCellClick(params);
-        }else{
-          console.log("No UUID in URL");
-          this.handleSearchClick();
-        }
-      });
+        });
+      }else{
+        this.setState({
+          formType: euuid,
+          show_search:false,
+          creatingNewEntity:true
+        });
+      }
+      
     }
 
     // console.log(this.state);
@@ -147,14 +155,24 @@ class SearchComponent extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    // console.debug("componentDidUpdate");
+    // // console.debug(prevProps, this.props);
+    // console.debug(this.props.show_search);
+    // console.debug(this.state.show_search);
+    // console.debug(prevState, this.state);
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
-      // //console.log("PROP UPDATE");
-      // //console.debug(this.props.editNewEntity);
       this.setState({
         editingEntity: this.props.editNewEntity,
         editForm: true,
         show_modal: true,
         show_search: false
+        });
+    }
+    
+    if (prevProps.showSearch !== this.props.showSearch) {
+      console.log("UPDATE this.props.showSearch");
+      this.setState({
+        show_search: this.props.showSearch
         });
     }
     
@@ -336,9 +354,9 @@ class SearchComponent extends Component {
 
   handleTableSelection = (row) => {
     ////console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
-    // if (row.length > 0) {
-    //   alert(row)
-    // }
+    if (row.length > 0) {
+      alert(row)
+    }
   }
 
  cancelEdit = () => {
@@ -455,6 +473,10 @@ class SearchComponent extends Component {
     return  (
         
         <div style={{ width: '100%' }}>
+          {!this.state.show_search && (
+             <Forms formType={this.state.formType} onCancel={this.handleClose} />
+          )}
+       
           
           {/*
           this.state.show_search && this.state.show_info_panel &&
@@ -464,7 +486,6 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
-          {this.renderProps()}
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
@@ -480,7 +501,6 @@ class SearchComponent extends Component {
 
   renderProps() {
     // console.debug("INITIALSTATE",this.initialState);
-    console.debug("renderProps",this.state.preset);
     return (
       <div>
       {/* <span className="portal-jss116 text-center">

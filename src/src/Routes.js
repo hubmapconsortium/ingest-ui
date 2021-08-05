@@ -12,12 +12,26 @@ import SearchComponent from './components/search/SearchComponent';
 //import DataList from './components/ingest/datalist';
 
 export default class Routes extends Component {
+    constructor(props) {
+        super(props);
+        console.debug("Routes props",props)
+    }
+
+    componentDidMount() {    
+        console.debug("Router componentDidMount ",this.props);
+
+    }
     render() {
         return (
             <Router history={history}>
                 <Switch>
                     <Route path="/" exact component={SearchComponent} /> 
-                    <Route path="/:type" exact component={SearchComponent} />
+                    <Route path="/new/:test" >
+                        <SearchComponent 
+                            fromRoute={this.props.toArray} 
+                        />
+                    </Route> 
+                    <Route path="/:type" component={SearchComponent} />
                     <Route path="/:type/:uuid" component={SearchComponent} />
                     <Route path="/err-response" component={ErrorPage} />
                 </Switch>
