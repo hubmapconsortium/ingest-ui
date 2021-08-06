@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import './App.css';
 //import Navigation from './components/Navbar.js';
-import Routes from './Routes';
+import ErrorPage from './utils/error_page';
+import { Router, Switch, Route } from "react-router-dom";
+import history from './history';
 import Login from './components/uuid/login';
 import IdleTimer from "react-idle-timer";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
 import Forms from "./components/uuid/forms";
+import SearchComponent from './components/search/SearchComponent';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -216,9 +219,7 @@ class App extends Component {
         show_search: false
       })
     
-    this.handleUrlChange("new/"+formtype);
-
-      
+    this.handleUrlChange("new/"+formtype); 
   }
   
 
@@ -574,9 +575,27 @@ class App extends Component {
         
             {this.state.isAuthenticated && (
 
-              <Routes 
-                fromApp={this.state.showSearch} 
-              />
+              <Router history={history}>
+              <Switch>
+                    <Route path="/new/:test" exact >
+                        <SearchComponent fromRoute="MEW" />
+                    </Route> 
+                    <Route path="/:type/:uuid" exact >
+                        <SearchComponent fromRoute="typeuuid" />
+                    </Route> 
+                    <Route path="/:type" exact >
+                        <SearchComponent fromRoute="type" />
+                    </Route> 
+                    <Route path="/err-response" exact >
+                        <SearchComponent fromRoute="err" />
+                    </Route> 
+                    <Route path="/" exacct >
+                    {!this.state.creatingNewEntity && (
+                        <SearchComponent fromRoute="OORIG" />
+                    )}
+                    </Route> 
+              </Switch>
+              </Router>
               
               
             )}

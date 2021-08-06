@@ -25,15 +25,21 @@ export default class Routes extends Component {
         return (
             <Router history={history}>
                 <Switch>
-                    <Route path="/" exact component={SearchComponent} /> 
-                    <Route path="/new/:test" >
+                    <Route path="/new/:test" exact>
                         <SearchComponent 
-                            fromRoute={this.props.toArray} 
+                            fromRoute="nmew" 
                         />
                     </Route> 
-                    <Route path="/:type" component={SearchComponent} />
                     <Route path="/:type/:uuid" component={SearchComponent} />
+                    <Route
+                        path='/:type'
+                        render={(props) => (
+                            <SearchComponent {...props} />
+                            )}
+                    />
+                    {/* <Route path="/:type" component={SearchComponent} /> */}
                     <Route path="/err-response" component={ErrorPage} />
+                            <Route path="/" exact component={SearchComponent} /> 
                 </Switch>
             </Router>
         )

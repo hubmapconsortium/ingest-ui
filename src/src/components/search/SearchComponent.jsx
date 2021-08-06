@@ -49,11 +49,46 @@ class SearchComponent extends Component {
 
   constructor(props) {
     super(props);
-    console.debug("SearchCompprops",props)
+    console.debug("SearchCompprops",props);
   }
 
   componentDidMount() {     
-
+    console.debug("SEARCH componentDidMount")
+    
+    if(!this.props.match){
+      var url = window.location.href;
+      var urlsplit = url.split("/");
+      var lastSegment = (urlsplit[3]);
+      var euuid = urlsplit[4];
+      if (window.location.href.includes("/donor") ||
+            window.location.href.includes("/sample") ||
+            window.location.href.includes("/dataset") ||
+            window.location.href.includes("/uploads") 
+      ) {
+          console.log("WE'RE LOADIN A SEARCH VIEW");
+          this.setState({
+            sampleType: lastSegment,
+          },function(){ 
+            if(euuid){
+              // console.log("UUID PROVIDED: "+euuid);
+              var params = {
+                row:{
+                  uuid:euuid
+                }
+              }
+              // this.handleSearchClick();
+              this.handleTableCellClick(params);
+            }else{
+              console.log("No UUID in URL");
+              this.handleSearchClick();
+            }
+          });
+      }else{
+        // We're running without filter props passed or URL routing 
+        console.log("No Props Or URL, Clear Filter")
+        this.handleClearFilter();
+      }
+    }
     if (this.props.match){
       console.debug(this.props.match);
       var type = this.props.match.params.type;
@@ -236,7 +271,7 @@ class SearchComponent extends Component {
 
   handleSearchClick = () => {
     this.setState({ loading: true, filtered: true, page: 0 });
-
+    console.debug("STATE: ",this.state);
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
@@ -335,10 +370,13 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
+    if(targetPath!=="----"){
       window.history.replaceState(
         null,
         "", 
         "/"+targetPath);
+    }
+      
   }
 
   handlePageChange = (params) => {
@@ -472,7 +510,9 @@ class SearchComponent extends Component {
     if (this.state.isAuthenticated) {
     return  (
         
-        <div style={{ width: '100%' }}>
+        <div className={"searchWrapper"+this.state.show_search} style={{ width: '100%' }}>
+
+          FNORD: {this.props.fromRoute}
           {!this.state.show_search && (
              <Forms formType={this.state.formType} onCancel={this.handleClose} />
           )}
