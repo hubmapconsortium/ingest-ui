@@ -287,6 +287,15 @@ class SearchComponent extends Component {
   
   }
 
+  handleSearchButtonClick = () => {
+    this.setState({
+          page: 0    // reset the page
+        }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
+            this.handleSearchClick();
+        });
+  
+  }
+
   handleTableSelection = (row) => {
     ////console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
     // if (row.length > 0) {
@@ -650,7 +659,7 @@ renderInfoPanel() {
                     <button
                       className="btn btn-primary btn-block"
                       type="button"
-                      onClick={this.handleSearchClick}
+                      onClick={this.handleSearchButtonClick}
                     >
                       Search
                     </button>
