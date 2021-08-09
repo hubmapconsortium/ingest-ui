@@ -287,9 +287,6 @@ class App extends Component {
         ""
       );
 
-
-   
-
     // Must wrap the componments in an enclosing tag
     return (
         <header id="header" className="navbar navbar-light">
@@ -625,9 +622,9 @@ class App extends Component {
               </Dialog>
             )}
 
-          
-</div>
-          </div>
+                  
+        </div>
+                  </div>
 
         </div>
 
