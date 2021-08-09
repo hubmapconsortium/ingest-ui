@@ -270,8 +270,9 @@ class SearchComponent extends Component {
   } 
 
   handleSearchClick = () => {
-    this.setState({ loading: true, filtered: true, page: 0 });
-    console.debug("STATE: ",this.state);
+    //this.setState({ loading: true, filtered: true, page: 0 });
+    this.setState({ loading: true, filtered: true});
+
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
@@ -380,10 +381,19 @@ class SearchComponent extends Component {
   }
 
   handlePageChange = (params) => {
-    ////console.debug('Page changed', params)
+    console.debug('Page changed', params)
     this.setState({
           page: params.page,
           pageSize: params.pageSize
+        }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
+            this.handleSearchClick();
+        });
+  
+  }
+
+  handleSearchButtonClick = () => {
+    this.setState({
+          page: 0    // reset the page
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
         });
@@ -772,7 +782,7 @@ renderInfoPanel() {
                     <button
                       className="btn btn-primary btn-block"
                       type="button"
-                      onClick={this.handleSearchClick}
+                      onClick={this.handleSearchButtonClick}
                     >
                       Search
                     </button>
