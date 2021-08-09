@@ -60,17 +60,20 @@ class SearchComponent extends Component {
       var urlsplit = url.split("/");
       var lastSegment = (urlsplit[3]);
       var euuid = urlsplit[4];
-      if (window.location.href.includes("/donor") ||
-            window.location.href.includes("/sample") ||
-            window.location.href.includes("/dataset") ||
-            window.location.href.includes("/uploads") 
-      ) {
+
+      if(window.location.href.includes("/new")){
+        console.debug("NEW FROM R")
+
+      }else if(window.location.href.includes("/donor") || 
+            window.location.href.includes("/sample") || 
+            window.location.href.includes("/dataset") || 
+            window.location.href.includes("/upload")){
           console.log("WE'RE LOADIN A SEARCH VIEW");
           this.setState({
             sampleType: lastSegment,
           },function(){ 
             if(euuid){
-              // console.log("UUID PROVIDED: "+euuid);
+              console.log("UUID PROVIDED: "+euuid);
               var params = {
                 row:{
                   uuid:euuid
@@ -213,6 +216,23 @@ class SearchComponent extends Component {
     
   }
 
+  handleSingularty  = (target, size) => {
+    if(size === "plural"){
+      console.debug(target.slice(-1));
+      if(target.slice(-1) === "s"){
+        return target.toLowerCase();
+      }else{
+        return (target+"s").toLowerCase();
+      }
+    }else{ // we wanna singularize
+      if(target.slice(-1) === "s"){
+        return (target.slice(0, -1)).toLowerCase()
+      }else{
+        return target.toLowerCase();
+      }
+    } 
+  }
+
   handleInputChange = e => {
     const { name, value } = e.target;
     console.debug('handleInputChange', name)
@@ -305,18 +325,18 @@ class SearchComponent extends Component {
     if (sample_type) {
       //console.debug(sample_type);
       console.debug(this.props);
-      if(!this.state.uuid){
-        this.handleUrlChange(sample_type);
+      if(!this.state.uuid && sample_type !=="----"){
+        this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
       
 
-      if (sample_type === 'donor') {
+      if (sample_type === 'donor' || sample_type === 'donors') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
-      } else if (sample_type === 'dataset') {
+      } else if (sample_type === 'dataset' || sample_type === 'datasets') {
             params["entity_type"] = "Dataset";
             which_cols_def = COLUMN_DEF_DATASET;
-        } else if (sample_type === 'uploads') {
+        } else if (sample_type === 'upload' || sample_type === 'uploads') {
             params["entity_type"] = "Upload";
             which_cols_def = COLUMN_DEF_UPLOADS;
         } 
@@ -485,6 +505,7 @@ class SearchComponent extends Component {
             show_search: false,
             });
         }
+      this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "singular")+"/"+entity_data.uuid);
       }
     });
     }
@@ -522,7 +543,6 @@ class SearchComponent extends Component {
         
         <div className={"searchWrapper"+this.state.show_search} style={{ width: '100%' }}>
 
-          FNORD: {this.props.fromRoute}
           {!this.state.show_search && (
              <Forms formType={this.state.formType} onCancel={this.handleClose} />
           )}

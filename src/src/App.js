@@ -140,6 +140,21 @@ class App extends Component {
         this.handleMenuSelection(fauxEvent);
       }
         
+    }else if(!this.props.match){
+      if(window.location.href.includes("/new")){
+        var url = window.location.href;
+        var urlsplit = url.split("/");
+        var firstSegment = (urlsplit[3]);
+        var type = (urlsplit[4]);
+        console.log("NEW PAGE");
+        console.log(firstSegment, type);
+        var fauxEvent = {
+          currentTarget:{
+            innerText:type
+          } 
+        }
+        this.handleMenuSelection(fauxEvent);
+      }
     }
 
     if (localStorage.getItem("info") !== null) {
@@ -197,7 +212,7 @@ class App extends Component {
     localStorage.removeItem("info");
   };
 
-  handleUrlChange = (targetPath) =>{
+  handleUrlChange = (targetPath) =>{  
     console.debug("handleUrlChange "+targetPath)
     console.debug(this.state.creatingNewEntity)
       window.history.replaceState(
@@ -219,7 +234,7 @@ class App extends Component {
         show_search: false
       })
     
-    this.handleUrlChange("new/"+formtype); 
+    this.handleUrlChange("new/"+formtype); // The URL should reffer to multiple, UI to singular 
   }
   
 
@@ -227,7 +242,7 @@ class App extends Component {
     this.setState({
       creatingNewUpload: true,
     });
-    this.handleUrlChange("new/uploads");
+    this.handleUrlChange("new/upload");
   }
 
   handleClick = (event) => {
