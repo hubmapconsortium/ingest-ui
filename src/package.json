@@ -1,6 +1,6 @@
 {
   "name": "ingest-ui",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -12,10 +12,11 @@
     "@fortawesome/free-regular-svg-icons": "^5.15.2",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
-    "@material-ui/core": "^4.11.3",
+    "@material-ui/core": "^4.12.3",
     "@material-ui/data-grid": "^4.0.0-alpha.20",
     "@material-ui/icons": "^4.11.2",
-    "@material-ui/lab": "^4.0.0-alpha.58",
+    "@material-ui/lab": "^4.0.0-alpha.60",
+    "@material-ui/x-license": "^4.0.0-alpha.36",
     "axios": "^0.21.1",
     "axios-hooks": "^2.3.0",
     "bootstrap": "^4.6.0",
@@ -24,6 +25,7 @@
     "react-bootstrap": "^1.5.0",
     "react-dom": "^16.14.0",
     "react-idle-timer": "^4.5.5",
+    "react-router": "^5.2.0",
     "react-router-dom": "^5.1.2",
     "react-tooltip": "^3.11.1"
   },

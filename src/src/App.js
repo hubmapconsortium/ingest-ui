@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import './App.css';
 //import Navigation from './components/Navbar.js';
-import Routes from './Routes';
+import ErrorPage from './utils/error_page';
+import { Router, Switch, Route } from "react-router-dom";
+import history from './history';
 import Login from './components/uuid/login';
 import IdleTimer from "react-idle-timer";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
+import SearchComponent from './components/search/SearchComponent';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -42,6 +44,7 @@ class App extends Component {
     open_edit_dialog: false.valueOf,
     creatingNewUpload: false,
     editNewEntity: null,
+    showSearch: true
   }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
@@ -62,6 +65,14 @@ class App extends Component {
       this.setState({
         system: "collection"
       });
+    }
+    // If the url contains 'new', we'll wanna prepare for the new entity form
+    if (window.location.href.includes("/new/")) {
+      console.log("WINDOW URL INCLUDES NEW");
+    }
+    if (window.location.href.includes("/new/uploads")) {
+      console.log("WINDOW URL INCLUDES NEW UPLOADS");
+      this.handleUploadsDialog();
     }
 
 
@@ -109,10 +120,60 @@ class App extends Component {
 
   }
 
+  handleSingularty  = (target, size) => {
+    if(size === "plural"){
+      console.debug(target.slice(-1));
+      if(target.slice(-1) === "s"){
+        return target.toLowerCase();
+      }else{
+        return (target+"s").toLowerCase();
+      }
+    }else{ // we wanna singularize
+      if(target.slice(-1) === "s"){
+        return (target.slice(0, -1)).toLowerCase()
+      }else{
+        return target.toLowerCase();
+      }
+    } 
+  }
+
   
 
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeyDown);
+
+    
+    if (this.props.match){
+      console.debug("APP this.props.match");
+      var type = this.props.match.params.type;
+      console.log(type);
+      if(type === "new"){
+        console.log("NEW PAGE");
+        var fauxEvent = {
+          currentTarget:{
+            innerText:type
+          } 
+        }
+        this.handleMenuSelection(fauxEvent);
+      }
+        
+    }else if(!this.props.match){
+      if(window.location.href.includes("/new")){
+        var url = window.location.href;
+        var urlsplit = url.split("/");
+        var firstSegment = (urlsplit[3]);
+        var type = (urlsplit[4]);
+        console.log("NEW PAGE");
+        console.log(firstSegment, type);
+        var fauxEvent = {
+          currentTarget:{
+            innerText:type
+          } 
+        }
+        this.handleMenuSelection(fauxEvent);
+      }
+    }
+
     if (localStorage.getItem("info") !== null) {
       const config = {
         headers: {
@@ -157,6 +218,9 @@ class App extends Component {
           }
         });
     }
+
+    
+
   }
 
 
@@ -165,8 +229,17 @@ class App extends Component {
     localStorage.removeItem("info");
   };
 
-  handleMenuSelection = (event) => {
+  handleUrlChange = (targetPath) =>{  
+    console.debug("handleUrlChange "+targetPath)
+    console.debug(this.state.creatingNewEntity)
+      window.history.replaceState(
+        null,
+        "", 
+        "/"+targetPath.toLowerCase());
+  }
 
+  handleMenuSelection = (event) => {
+    console.debug("handleMenuSelection")
     var formtype = event.currentTarget.innerText.trim();
 
     this.setState({
@@ -174,15 +247,19 @@ class App extends Component {
         show_menu_popup: false,
         creatingNewEntity: true,
         formType: formtype.toLowerCase(),
-        open_edit_dialog: true
+        open_edit_dialog: true,
+        show_search: false
       })
+    
+    this.handleUrlChange("new/"+this.handleSingularty(formtype, "plural")); 
   }
   
 
   handleUploadsDialog = (event) => {
     this.setState({
       creatingNewUpload: true,
-    })
+    });
+    this.handleUrlChange("new/upload");
   }
 
   handleClick = (event) => {
@@ -200,8 +277,10 @@ class App extends Component {
       anchorEl: null,
       show_menu_popup: false,
       open_edit_dialog: false, 
-      creatingNewEntity: false
-    })
+      creatingNewEntity: false,
+      showSearch: false
+    });
+    this.handleUrlChange("");
   };
 
   onCreated = data => {
@@ -239,9 +318,6 @@ class App extends Component {
     ) : (
         ""
       );
-
-
-   
 
     // Must wrap the componments in an enclosing tag
     return (
@@ -517,53 +593,72 @@ class App extends Component {
           </div>
         </Modal>
         {this.renderHeader()}
-        <div id="content" className="container">
+        <div id="content" className="">
           {!collections && (
             this.renderContent()
           )}
           <div className="App">
-            {/**  <Navigation /> */}
-            <Routes />
-          </div>
-
-        </div>
             
+          <div className="col-sm-12">
+
         
-        {this.state.isAuthenticated && !this.state.creatingNewEntity && (
-          <div className="col-sm-12">
-            <SearchComponent editNewEntity={this.state.editNewEntity} />
-          </div>
-          )}
-          <div className="col-sm-12">
+            {this.state.isAuthenticated && (
+
+              <Router history={history}>
+              <Switch>
+                    <Route path="/new/:test" exact >
+                        <SearchComponent fromRoute="MEW" />
+                    </Route> 
+                    <Route path="/:type/:uuid" exact >
+                        <SearchComponent fromRoute="typeuuid" />
+                    </Route> 
+                    <Route path="/:type" exact >
+                        <SearchComponent fromRoute="type" />
+                    </Route> 
+                    <Route path="/err-response" exact >
+                        <SearchComponent fromRoute="err" />
+                    </Route> 
+                    <Route path="/" exacct >
+                    {!this.state.creatingNewEntity && (
+                        <SearchComponent fromRoute="OORIG" />
+                    )}
+                    </Route> 
+              </Switch>
+              </Router>
+              
+              
+            )}
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
               <Forms formType={this.state.formType} onCancel={this.handleClose} />
-              )}
-          </div>
-          
-          {this.state.isAuthenticated && this.state.creatingNewUpload && (
-          <div className="col-sm-12">
-            <Dialog 
-              open={this.state.creatingNewUpload}
-              fullWidth={true} 
-              maxWidth="lg" 
-              aria-labelledby="source-lookup-dialog" 
-              // onClose={this.handleClose} 
-              onClose={(event, reason) => {
-                if (reason !== 'backdropClick') {
-                  this.handleClose()
-                }
-              }}
-            >
-            <DialogContent>
-              <UploadsForm
-                onCreated={this.onCreated}
-                cancelEdit={this.handleClose}
-              />
-            </DialogContent>
-            </Dialog>
-          </div>
-          )}
-          
+            )}
+                  
+            {this.state.isAuthenticated && this.state.creatingNewUpload && (
+                <Dialog 
+                  open={this.state.creatingNewUpload}
+                  fullWidth={true} 
+                  maxWidth="lg" 
+                  aria-labelledby="source-lookup-dialog" 
+                  // onClose={this.handleClose} 
+                  onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                      this.handleClose()
+                    }
+                  }}
+                >
+                <DialogContent>
+                  <UploadsForm
+                    onCreated={this.onCreated}
+                    cancelEdit={this.handleClose}
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
+
+                  
+        </div>
+                  </div>
+
+        </div>
 
           
           <Snackbar open={this.state.openSnack} autoHideDuration={6000} onClose={this.handleCloseSnack}>

@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import React, { Component  } from "react";
+import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 
@@ -16,6 +17,11 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+
+// Creation donor_form_components
+import Forms from "../uuid/forms";
+
+// import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
   state = {
@@ -38,25 +44,100 @@ class SearchComponent extends Component {
     group: "All Components",
     sampleType: "----",
     keywords: "",
-    last_keyword: ""
+    last_keyword: "",
   };
 
-  // constructor(props) {
-  //   super(props);
-  //   // this.group = React.createRef();
-  //   // this.sampleType = React.createRef();
-  //   // this.keywords = React.createRef();
-  // }
+  constructor(props) {
+    super(props);
+    console.debug("SearchCompprops",props);
+  }
 
   componentDidMount() {     
+    console.debug("SEARCH componentDidMount")
+    
+    if(!this.props.match){
+      var url = window.location.href;
+      var urlsplit = url.split("/");
+      var lastSegment = (urlsplit[3]);
+      var euuid = urlsplit[4];
+
+      if(window.location.href.includes("/new")){
+        console.debug("NEW FROM R")
+
+      }else if(window.location.href.includes("/donor") || 
+            window.location.href.includes("/sample") || 
+            window.location.href.includes("/dataset") || 
+            window.location.href.includes("/upload")){
+          console.log("WE'RE LOADIN A SEARCH VIEW");
+          this.setState({
+            sampleType: lastSegment,
+          },function(){ 
+            if(euuid){
+              console.log("UUID PROVIDED: "+euuid);
+              var params = {
+                row:{
+                  uuid:euuid
+                }
+              }
+              // this.handleSearchClick();
+              this.handleTableCellClick(params);
+            }else{
+              console.log("No UUID in URL");
+              this.handleSearchClick();
+            }
+          });
+      }else{
+        // We're running without filter props passed or URL routing 
+        console.log("No Props Or URL, Clear Filter")
+        this.handleClearFilter();
+      }
+    }
+    if (this.props.match){
+      console.debug(this.props.match);
+      var type = this.props.match.params.type;
+      var euuid = this.props.match.params.uuid;
+      if(type !== "new"){
+
+        console.log("NOT NEW PAGE");
+        console.log(type+" | "+euuid);
+        this.setState({
+          sampleType: type,
+        },function(){ 
+          if(euuid){
+            // console.log("UUID PROVIDED: "+euuid);
+            var params = {
+              row:{
+                uuid:euuid
+              }
+            }
+            // this.handleSearchClick();
+            this.handleTableCellClick(params);
+          }else{
+            console.log("No UUID in URL");
+            this.handleSearchClick();
+          }
+        });
+      }else{
+        this.setState({
+          formType: euuid,
+          show_search:false,
+          creatingNewEntity:true
+        });
+      }
+      
+    }
+
+    // console.log(this.state);
+    
+
     try {
-     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
       if (results.status === 200) { 
         this.setState({
           isAuthenticated: true
         }, () => {
-           this.setFilterType();
+          this.setFilterType();
         });
       } else if (results.status === 401) {
           this.setState({
@@ -64,20 +145,20 @@ class SearchComponent extends Component {
           });
         }
     });
-   } catch {
-     this.setState({
+  } catch {
+    this.setState({
         isAuthenticated: false
       });
-   }
+  }
 
-   const config = {
+  const config = {
     headers: {
       Authorization:
         "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
       "Content-Type": "application/json"
     }
   };
-   axios
+  axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
         config
@@ -107,17 +188,17 @@ class SearchComponent extends Component {
           window.location.reload();
         }
       });
-
-      // do an initial load using default criteria
-      
-      this.handleSearchClick();
-   
+     
+  
   }
 
   componentDidUpdate(prevProps, prevState) {
+    // console.debug("componentDidUpdate");
+    // // console.debug(prevProps, this.props);
+    // console.debug(this.props.show_search);
+    // console.debug(this.state.show_search);
+    // console.debug(prevState, this.state);
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
-      // //console.log("PROP UPDATE");
-      // //console.debug(this.props.editNewEntity);
       this.setState({
         editingEntity: this.props.editNewEntity,
         editForm: true,
@@ -125,11 +206,36 @@ class SearchComponent extends Component {
         show_search: false
         });
     }
+    
+    if (prevProps.showSearch !== this.props.showSearch) {
+      console.log("UPDATE this.props.showSearch");
+      this.setState({
+        show_search: this.props.showSearch
+        });
+    }
+    
+  }
+
+  handleSingularty  = (target, size) => {
+    if(size === "plural"){
+      console.debug(target.slice(-1));
+      if(target.slice(-1) === "s"){
+        return target.toLowerCase();
+      }else{
+        return (target+"s").toLowerCase();
+      }
+    }else{ // we wanna singularize
+      if(target.slice(-1) === "s"){
+        return (target.slice(0, -1)).toLowerCase()
+      }else{
+        return target.toLowerCase();
+      }
+    } 
   }
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    //console.debug('handleInputChange', name)
+    console.debug('handleInputChange', name)
     switch (name) {
       case "group":
         this.setState({ group: value });
@@ -184,12 +290,15 @@ class SearchComponent extends Component {
   } 
 
   handleSearchClick = () => {
-    this.setState({ loading: true, filtered: true, page: 0 });
+    //this.setState({ loading: true, filtered: true, page: 0 });
+    this.setState({ loading: true, filtered: true});
 
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
-
+    // console.debug("handleSearchClick")
+    // console.debug(group,sample_type,keywords)
+    // console.debug(this.state)
 
     // reset the page to zero, to deal with slight bug regarding
     // if you do searches and change pages then search for a new keyword
@@ -215,13 +324,19 @@ class SearchComponent extends Component {
 
     if (sample_type) {
       //console.debug(sample_type);
-      if (sample_type === 'donor') {
+      console.debug(this.props);
+      if(!this.state.uuid && sample_type !=="----"){
+        this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
+      }
+      
+
+      if (sample_type === 'donor' || sample_type === 'donors') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
-      } else if (sample_type === 'dataset') {
+      } else if (sample_type === 'dataset' || sample_type === 'datasets') {
             params["entity_type"] = "Dataset";
             which_cols_def = COLUMN_DEF_DATASET;
-        } else if (sample_type === 'uploads') {
+        } else if (sample_type === 'upload' || sample_type === 'uploads') {
             params["entity_type"] = "Upload";
             which_cols_def = COLUMN_DEF_UPLOADS;
         } 
@@ -256,7 +371,7 @@ class SearchComponent extends Component {
         
         
       }
-       this.setState({ loading: false });
+      this.setState({ loading: false });
     });
   };
 
@@ -274,8 +389,19 @@ class SearchComponent extends Component {
     return COLUMN_DEF_SAMPLE;
   }
 
+  handleUrlChange = (targetPath) =>{
+    console.debug("handleUrlChange "+targetPath)
+    if(targetPath!=="----"){
+      window.history.replaceState(
+        null,
+        "", 
+        "/"+targetPath);
+    }
+      
+  }
+
   handlePageChange = (params) => {
-    ////console.debug('Page changed', params)
+    console.debug('Page changed', params)
     this.setState({
           page: params.page,
           pageSize: params.pageSize
@@ -285,11 +411,20 @@ class SearchComponent extends Component {
   
   }
 
+  handleSearchButtonClick = () => {
+    this.setState({
+          page: 0    // reset the page
+        }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
+            this.handleSearchClick();
+        });
+  
+  }
+
   handleTableSelection = (row) => {
     ////console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
-    // if (row.length > 0) {
-    //   alert(row)
-    // }
+    if (row.length > 0) {
+      alert(row)
+    }
   }
 
  cancelEdit = () => {
@@ -297,6 +432,11 @@ class SearchComponent extends Component {
       show_modal: false,  
       show_search: true
     });
+    // console.debug("cancelEdit")
+    // console.debug(this.props.match)
+    // console.debug(this.props.match.params.type)
+    this.handleUrlChange();
+    this.handleSearchClick();
     //this.filterEntity();
     //this.props.onCancel();
   };
@@ -322,9 +462,9 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
-
-    //onsole.debug('handleTableCellClick', params)
-    //if(params.field !== 'hubmap_id') {
+    console.debug("handleTableCellClick");
+    console.debug(params);
+    
     if(params.field === 'uuid') return; // skip this field
 
     if (params.row) {
@@ -365,10 +505,7 @@ class SearchComponent extends Component {
             show_search: false,
             });
         }
-
-
-        // check to see if user can edit
-        
+      this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "singular")+"/"+entity_data.uuid);
       }
     });
     }
@@ -404,7 +541,13 @@ class SearchComponent extends Component {
     if (this.state.isAuthenticated) {
     return  (
         
-        <div style={{ width: '100%' }}>
+        <div className={"searchWrapper"+this.state.show_search} style={{ width: '100%' }}>
+
+          {!this.state.show_search && (
+             <Forms formType={this.state.formType} onCancel={this.handleClose} />
+          )}
+       
+          
           {/*
           this.state.show_search && this.state.show_info_panel &&
            !this.props.custom_title && (
@@ -413,7 +556,6 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
-
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
@@ -426,6 +568,18 @@ class SearchComponent extends Component {
     }
     return null;
   }
+
+  renderProps() {
+    // console.debug("INITIALSTATE",this.initialState);
+    return (
+      <div>
+      {/* <span className="portal-jss116 text-center">
+      Found Props: {this.state.preset.entityType} {this.state.preset.entityUuid}
+      </span> <br /><br /> */}
+      </div>
+      );
+}
+
 
 
   renderEditForm() {
@@ -648,7 +802,7 @@ renderInfoPanel() {
                     <button
                       className="btn btn-primary btn-block"
                       type="button"
-                      onClick={this.handleSearchClick}
+                      onClick={this.handleSearchButtonClick}
                     >
                       Search
                     </button>
