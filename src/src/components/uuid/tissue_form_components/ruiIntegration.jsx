@@ -51,6 +51,12 @@ class RUIIntegration extends Component {
     });
   }
 
+  componentDidUpdate() {
+    if (this.ruiRef.current) {
+      this.updateRUIConfig();
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener("resize", this.updateDimensions.bind(this));
   }
@@ -101,9 +107,6 @@ class RUIIntegration extends Component {
   }
 
   render() {
-    if (this.ruiRef.current) {
-      this.updateRUIConfig();
-    }
     return (
       <React.Fragment>
         <div className='webgl-content rui mat-typography'>
