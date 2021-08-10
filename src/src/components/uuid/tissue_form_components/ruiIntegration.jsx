@@ -101,6 +101,9 @@ class RUIIntegration extends Component {
   }
 
   render() {
+    if (this.ruiRef.current) {
+      this.updateRUIConfig();
+    }
     return (
       <React.Fragment>
         <div className='webgl-content rui mat-typography'>
