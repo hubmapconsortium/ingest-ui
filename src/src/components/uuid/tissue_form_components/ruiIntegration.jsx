@@ -92,7 +92,7 @@ class RUIIntegration extends Component {
       return [];
     };
     rui.cancelRegistration = function () {
-      self.handleCloseScreenClick();
+      rui.register(self.props.location);
     };
     if (location) {
       rui.editRegistration = location;
