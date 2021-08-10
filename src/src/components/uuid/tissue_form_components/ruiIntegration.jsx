@@ -51,6 +51,12 @@ class RUIIntegration extends Component {
     });
   }
 
+  componentDidUpdate() {
+    if (this.ruiRef.current) {
+      this.updateRUIConfig();
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener("resize", this.updateDimensions.bind(this));
   }
