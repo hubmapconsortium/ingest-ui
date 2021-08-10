@@ -120,6 +120,23 @@ class App extends Component {
 
   }
 
+  handleSingularty  = (target, size) => {
+    if(size === "plural"){
+      console.debug(target.slice(-1));
+      if(target.slice(-1) === "s"){
+        return target.toLowerCase();
+      }else{
+        return (target+"s").toLowerCase();
+      }
+    }else{ // we wanna singularize
+      if(target.slice(-1) === "s"){
+        return (target.slice(0, -1)).toLowerCase()
+      }else{
+        return target.toLowerCase();
+      }
+    } 
+  }
+
   
 
   componentDidMount() {
@@ -234,7 +251,7 @@ class App extends Component {
         show_search: false
       })
     
-    this.handleUrlChange("new/"+formtype); // The URL should reffer to multiple, UI to singular 
+    this.handleUrlChange("new/"+this.handleSingularty(formtype, "plural")); 
   }
   
 
