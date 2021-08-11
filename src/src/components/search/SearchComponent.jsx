@@ -60,7 +60,7 @@ class SearchComponent extends Component {
       var urlsplit = url.split("/");
       var lastSegment = (urlsplit[3]);
       var euuid = urlsplit[4];
-
+  console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         console.debug("NEW FROM R")
 
@@ -71,7 +71,10 @@ class SearchComponent extends Component {
           console.log("WE'RE LOADIN A SEARCH VIEW");
           this.setState({
             sampleType: lastSegment,
+            sample_type: lastSegment,
           },function(){ 
+            this.setFilterType();
+            console.debug("SAMPELTYPER",this.state.sample_type,this.state.sampleType, );
             if(euuid){
               console.log("UUID PROVIDED: "+euuid);
               var params = {
@@ -258,7 +261,8 @@ class SearchComponent extends Component {
 
     var new_filter_list = [];
 
-    ////console.debug('FILTER TYPES', SAMPLE_TYPES)
+    //console.debug('FILTER TYPES', SAMPLE_TYPES)
+    //console.debug('FILTER TYPES', this.props.filter_type)
     if (this.props.filter_type) {
       if (this.props.filter_type === 'Dataset') {
         SAMPLE_TYPES.forEach((type)=>{
@@ -505,7 +509,7 @@ class SearchComponent extends Component {
             show_search: false,
             });
         }
-      this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "singular")+"/"+entity_data.uuid);
+      this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "plural")+"/"+entity_data.uuid);
       }
     });
     }
@@ -757,7 +761,7 @@ renderInfoPanel() {
                           className="select-css"
                           onChange={this.handleInputChange}
                           //ref={this.sampleType}
-                          value={this.state.sampleType}
+                          value={this.handleSingularty(this.state.sampleType, "singular")}
                         >
                           <option value="">----</option>
                           {this.state.entity_type_list.map((optgs, index) => {
