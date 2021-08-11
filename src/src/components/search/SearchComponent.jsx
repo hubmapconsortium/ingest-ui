@@ -241,9 +241,9 @@ class SearchComponent extends Component {
 
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
-      console.debug("Serch Res", response.results);
+      console.debug("Search Res", response.results);
       if (response.status === 200) {
-      console.debug('SEARCH RESULTS', response);
+      //console.debug('SEARCH RESULTS', response);
         if (response.total === 1) {  // for single returned items, customize the columns to match
           which_cols_def = this.columnDefType(response.results[0].entity_type);
           ////console.debug("which_cols_def: ", which_cols_def);
@@ -280,7 +280,7 @@ class SearchComponent extends Component {
     console.debug('Page changed', params)
     this.setState({
           page: params.page,
-          pageSize: params.pageSize
+//          pageSize: params.pageSize
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
         });
@@ -289,6 +289,7 @@ class SearchComponent extends Component {
 
   handleSearchButtonClick = () => {
     this.setState({
+          datarows: [],
           page: 0    // reset the page
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
@@ -394,8 +395,8 @@ class SearchComponent extends Component {
         sampleType: "----",
         group: "All Components",
         keywords: "",
-        page: 0,
-        pageSize: 25
+        page: 0
+        //pageSize: PAGE_SIZE
       }, () => {
         this.handleSearchClick();
     });
@@ -517,42 +518,20 @@ renderInfoPanel() {
   return ( 
       <Paper className="paper-container">
       <div style={{ height: 590, width: '100%' }}>
-        <DataGrid rows={this.state.datarows}
+        <DataGrid 
+              rows={this.state.datarows}
               columns={this.state.column_def}
-              //columns={this.state.column_def.map((column) => ({
-              //    ...column,
-              //    disableClickEventBubbling: true
-              //}))}
-              page={this.state.page}
               disableColumnMenu={true}
-              pageSize={this.state.pageSize} 
+              pageSize={50} 
               pagination
-              hideFooterSelectedRowCount
+              //hideFooterSelectedRowCount
               rowCount={this.state.results_total}
               paginationMode="server"
-              onPageChange={this.handlePageChange}
-              onPageSizeChange={this.handlePageChange}
-              loading={this.state.loading}
-              //checkboxSelection
-              //components={{
-              //  Toolbar: GridToolbar,
-              //}}
-              /*onSelectionModelChange={(selection) => {
-    
-                  const newSelectionModel = selection.selectionModel;
-                  if (newSelectionModel.length > 1) {
-                    const selectionSet = new Set(this.state.selectionModel);
-                    const result = newSelectionModel.filter(
-                      (s) => !selectionSet.has(s)
-                     );
-                    ////console.log('length>1', result)
-                   this.handleTableSelection(result);
-                } else {
-                  ////console.log('length < 1',newSelectionModel )
-                    this.handleTableSelection(newSelectionModel);
-                }
-              }}*/
-              //selectionModel={this.state.selectionModel}
+              onPageChange={(params) => 
+                this.handlePageChange(params)
+              }
+              //onPageSizeChange={this.handlePageChange}
+              //loading={this.state.loading}
               onCellClick={this.props.select ? this.props.select : this.handleTableCellClick}  // this allows a props handler to override the local handler
         />
       </div>
