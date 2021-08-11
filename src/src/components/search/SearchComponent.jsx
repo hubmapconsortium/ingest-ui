@@ -220,6 +220,10 @@ class SearchComponent extends Component {
   }
 
   handleSingularty  = (target, size) => {
+    console.debug("handleSingularty target: ",target);
+    if(target === 'uploads'){
+      return "uploads" // Is always plural in our system
+    }
     if(size === "plural"){
       console.debug(target.slice(-1));
       if(target.slice(-1) === "s"){
