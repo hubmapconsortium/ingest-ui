@@ -28,7 +28,7 @@ class SearchComponent extends Component {
     show_search: true,
     results_total: 0,
     page: 0,
-    pageSize: 25,
+    pageSize: 100,
     editForm: false,
     show_modal: false,
     hide_modal: true, 
@@ -238,6 +238,7 @@ class SearchComponent extends Component {
     }
 
     console.debug('From Page ', this.state.page);
+    console.debug('From Page size', this.state.pageSize);
 
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
@@ -285,6 +286,12 @@ class SearchComponent extends Component {
             this.handleSearchClick();
         });
   
+  }
+
+  handlePageSizeSelection = (pagesize) => {
+    this.setState({
+      pageSize: pagesize
+    })
   }
 
   handleSearchButtonClick = () => {
@@ -522,16 +529,17 @@ renderInfoPanel() {
               rows={this.state.datarows}
               columns={this.state.column_def}
               disableColumnMenu={true}
-              pageSize={50} 
               pagination
-              //hideFooterSelectedRowCount
+              hideFooterSelectedRowCount
               rowCount={this.state.results_total}
               paginationMode="server"
               onPageChange={(params) => 
                 this.handlePageChange(params)
               }
-              //onPageSizeChange={this.handlePageChange}
-              //loading={this.state.loading}
+              onPageSizeChange={(page) =>
+                this.handlePageSizeSelection(page)
+              }
+              loading={this.state.loading}
               onCellClick={this.props.select ? this.props.select : this.handleTableCellClick}  // this allows a props handler to override the local handler
         />
       </div>
