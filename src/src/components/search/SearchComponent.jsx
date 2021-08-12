@@ -195,9 +195,9 @@ class SearchComponent extends Component {
 
     // reset the page to zero, to deal with slight bug regarding
     // if you do searches and change pages then search for a new keyword
-    if (this.state.last_keyword !== keywords) {
-      this.setState({ page: 0 });  
-    }
+    //if (this.state.last_keyword !== keywords) {
+    //  this.setState({ page: 0 });  
+    //}
   
     this.setState({
       last_keyword: keywords
@@ -237,7 +237,7 @@ class SearchComponent extends Component {
       params["search_term"] = keywords;
     }
 
-    console.debug('params ', params);
+    console.debug('From Page ', this.state.page);
 
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
@@ -276,10 +276,10 @@ class SearchComponent extends Component {
     return COLUMN_DEF_SAMPLE;
   }
 
-  handlePageChange = (params) => {
-    console.debug('Page changed', params)
+  handlePageChange = (page) => {
+    console.debug('Page changed', page)
     this.setState({
-          page: params.page,
+          page: page,
 //          pageSize: params.pageSize
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
