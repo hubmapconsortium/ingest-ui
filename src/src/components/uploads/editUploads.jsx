@@ -2,7 +2,9 @@ import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import axios from "axios";
+import { DataGrid } from '@material-ui/data-grid';  
 import { validateRequired } from "../../utils/validators";
+import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -23,6 +25,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload } from '../../service/ingest_api';
+import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {
 
@@ -167,6 +170,10 @@ class EditUploads extends Component {
           });
       });
 
+      this.setState({
+          datarows: this.state.datasets, // Object.values(response.results)
+          results_total:  this.state.datasets.length,
+          column_def: COLUMN_DEF_DATASET})
 
     
     console.debug(this.state);
@@ -263,6 +270,7 @@ class EditUploads extends Component {
     
   };
 
+  
 
 
   highlightInvalidDatasets(){
@@ -474,7 +482,7 @@ class EditUploads extends Component {
 
     if(this.state.datasets && this.state.datasets.length > 0 ){
 
-
+      // @TODO: use the Datatables used elsewhere across the site 
       var compiledCollection = [];
       for (var i in datasetCollection){
         console.debug(datasetCollection[i].lab_dataset_id)
@@ -510,7 +518,12 @@ class EditUploads extends Component {
                 <TableCell align="left" scope="row">{row.hubmap_id}</TableCell>
                 <TableCell align="left" scope="row">{row.lab_dataset_id}</TableCell>
                 <TableCell align="left" scope="row">{row.group_name}</TableCell>
-                <TableCell align="left" scope="row">{row.status}</TableCell>
+                <TableCell align="left" scope="row">
+                  <span
+                    className={"w-100 badge " + getPublishStatusColor(row.status)}>
+                      {row.status}
+                  </span>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
