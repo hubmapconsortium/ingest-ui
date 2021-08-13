@@ -672,7 +672,7 @@ renderInfoPanel() {
 
   renderTable() {
   return ( 
-      <Paper className="paper-container">
+      <Paper className="paper-container pt-2 ">
       <div style={{ height: 590, width: '100%' }}>
         <DataGrid 
               rows={this.state.datarows}
@@ -701,7 +701,7 @@ renderInfoPanel() {
 //      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
        // <div className="row">
        //   <div className="col-sm-6">
-            <div className="card">
+            <div className="card pt-2 ">
               {this.props.custom_title && (
                 <span className="portal-label text-center">{this.props.custom_title}</span>
               )}
