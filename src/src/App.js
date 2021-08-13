@@ -248,10 +248,11 @@ class App extends Component {
         creatingNewEntity: true,
         formType: formtype.toLowerCase(),
         open_edit_dialog: true,
-        show_search: false
+        show_search: false,
+        showSearch: false,
       })
     
-    this.handleUrlChange("new/"+this.handleSingularty(formtype, "plural")); 
+    this.handleUrlChange("new/"+formtype); 
   }
   
 
