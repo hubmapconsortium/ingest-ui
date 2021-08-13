@@ -51,6 +51,12 @@ class RUIIntegration extends Component {
     });
   }
 
+  componentDidUpdate() {
+    if (this.ruiRef.current) {
+      this.updateRUIConfig();
+    }
+  }
+
   componentWillUnmount() {
     window.removeEventListener("resize", this.updateDimensions.bind(this));
   }
@@ -92,7 +98,7 @@ class RUIIntegration extends Component {
       return [];
     };
     rui.cancelRegistration = function () {
-      self.handleCloseScreenClick();
+      rui.register(self.props.location);
     };
     if (location) {
       rui.editRegistration = location;
