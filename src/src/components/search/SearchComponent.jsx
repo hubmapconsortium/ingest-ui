@@ -574,7 +574,7 @@ class SearchComponent extends Component {
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          {this.renderLoadingSpinner()}
+          {/* {this.renderLoadingSpinner()} */}
           {this.renderEditForm()}
 
         </div>
