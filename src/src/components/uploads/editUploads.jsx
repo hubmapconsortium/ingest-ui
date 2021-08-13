@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+import { Link } from 'react-router-dom';
 import axios from "axios";
 import { DataGrid } from '@material-ui/data-grid';  
 import { validateRequired } from "../../utils/validators";
@@ -515,7 +516,13 @@ class EditUploads extends Component {
                 key={row.hubmap_id}
                 onClick={this.handleDatasetCellSelection(row)}
                 >
-                <TableCell align="left" scope="row">{row.hubmap_id}</TableCell>
+                <TableCell align="left" scope="row">
+
+                <Link className="btn btn-primary"
+                to='/datasets/{row.uuid}' onClick={this.handleEnterIngest}>  
+                  {row.hubmap_id}
+                </Link>
+                </TableCell>
                 <TableCell align="left" scope="row">{row.lab_dataset_id}</TableCell>
                 <TableCell align="left" scope="row">{row.group_name}</TableCell>
                 <TableCell align="left" scope="row">
