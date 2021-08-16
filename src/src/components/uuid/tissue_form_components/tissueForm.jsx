@@ -74,7 +74,7 @@ class TissueForm extends Component {
     LookUpShow: false,
     lookUpCancelled: false,
     multiple_id: false,
-    RUI_ACTIVE: false,   // this controls whether the RUI buttons will be active (true) or not overall
+    RUI_ACTIVE: true,   // this controls whether the RUI buttons will be active (true) or not overall
     rui_check: false,
     rui_view: false,
     rui_hide: true,
@@ -2297,7 +2297,7 @@ handleAddImage = () => {
                         )}
                       </React.Fragment>
                     )}
-                     {this.state.rui_check (
+                     {this.state.rui_check && (
 
                       <React.Fragment>
                     <div className="col-sm-3">
