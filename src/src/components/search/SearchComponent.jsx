@@ -400,7 +400,7 @@ class SearchComponent extends Component {
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
     if(targetPath!=="----"){
-      window.history.replaceState(
+      window.history.pushState(
         null,
         "", 
         "/"+targetPath);

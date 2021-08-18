@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
@@ -209,7 +209,7 @@ class EditUploads extends Component {
           !this.props.editingUpload &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
-        ) {
+        ){
           this.setState({ GroupSelectShow: true });
         } else {
           this.setState({
@@ -442,10 +442,17 @@ class EditUploads extends Component {
             this.handleSearchClick();
         });
   }
-
-  handleDatasetCellSelection (row,column,event) {
+  handleDatasetCellSelection = (row,column,event) =>{ 
     console.log("handleDatasetCellSelection");
     console.debug(row,column,event);
+    console.debug("/datasets/"+row.uuid);
+
+      window.history.pushState(
+        null,
+        "", 
+        "/datasets/"+row.uuid);
+      window.location.reload()
+  
 }
 
 
@@ -487,12 +494,13 @@ class EditUploads extends Component {
       var compiledCollection = [];
       for (var i in datasetCollection){
         console.debug(datasetCollection[i].lab_dataset_id)
-        console.debug("/uploads/"+datasetCollection[i].uuid)
+        console.debug("/datasets/"+datasetCollection[i].uuid)
         compiledCollection.push({
           hubmap_id: datasetCollection[i].hubmap_id,
           lab_dataset_id:  datasetCollection[i].lab_dataset_id,
           group_name: datasetCollection[i].group_name,
-          status: datasetCollection[i].status
+          status: datasetCollection[i].status,
+          uuid: datasetCollection[i].uuid
         });
       }
       return (
@@ -514,7 +522,7 @@ class EditUploads extends Component {
             {compiledCollection.map((row) => (
               <TableRow 
                 key={row.hubmap_id}
-                onClick={this.handleDatasetCellSelection(row)}
+                onClick={() => this.handleDatasetCellSelection(row)}
                 >
                 <TableCell align="left" scope="row">
 
