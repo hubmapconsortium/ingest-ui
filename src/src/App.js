@@ -143,13 +143,15 @@ class App extends Component {
     document.addEventListener("keydown", this.handleKeyDown);
 
     
+    var type;
+    var fauxEvent;
     if (this.props.match){
       console.debug("APP this.props.match");
-      var type = this.props.match.params.type;
+      type = this.props.match.params.type;
       console.log(type);
       if(type === "new"){
         console.log("NEW PAGE");
-        var fauxEvent = {
+        fauxEvent = {
           currentTarget:{
             innerText:type
           } 
@@ -162,10 +164,10 @@ class App extends Component {
         var url = window.location.href;
         var urlsplit = url.split("/");
         var firstSegment = (urlsplit[3]);
-        var type = (urlsplit[4]);
+        type = (urlsplit[4]);
         console.log("NEW PAGE");
         console.log(firstSegment, type);
-        var fauxEvent = {
+        fauxEvent = {
           currentTarget:{
             innerText:type
           } 
@@ -232,7 +234,7 @@ class App extends Component {
   handleUrlChange = (targetPath) =>{  
     console.debug("handleUrlChange "+targetPath)
     console.debug(this.state.creatingNewEntity)
-      window.history.replaceState(
+      window.history.pushState(
         null,
         "", 
         "/"+targetPath.toLowerCase());
