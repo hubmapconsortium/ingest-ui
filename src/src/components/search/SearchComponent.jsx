@@ -11,7 +11,7 @@ import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES } from "../../constants";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
@@ -45,6 +45,7 @@ class SearchComponent extends Component {
     sampleType: "----",
     keywords: "",
     last_keyword: "",
+    loading: true
   };
 
   constructor(props) {
@@ -54,29 +55,29 @@ class SearchComponent extends Component {
 
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
-    
+    var euuid;
     if(!this.props.match){
       var url = window.location.href;
       var urlsplit = url.split("/");
       var lastSegment = (urlsplit[3]);
-      var euuid = urlsplit[4];
-  console.debug(lastSegment, euuid)
+      euuid = urlsplit[4];
+      // console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
-        console.debug("NEW FROM R")
+        // console.debug("NEW FROM R")
 
       }else if(window.location.href.includes("/donor") || 
             window.location.href.includes("/sample") || 
             window.location.href.includes("/dataset") || 
             window.location.href.includes("/upload")){
-          console.log("WE'RE LOADIN A SEARCH VIEW");
+          // console.log("WE'RE LOADIN A SEARCH VIEW");
           this.setState({
             sampleType: lastSegment,
             sample_type: lastSegment,
           },function(){ 
             this.setFilterType();
-            console.debug("SAMPELTYPER",this.state.sample_type,this.state.sampleType, );
+            // console.debug("SAMPELTYPER",this.state.sample_type,this.state.sampleType, );
             if(euuid){
-              console.log("UUID PROVIDED: "+euuid);
+              // console.log("UUID PROVIDED: "+euuid);
               var params = {
                 row:{
                   uuid:euuid
@@ -98,7 +99,7 @@ class SearchComponent extends Component {
     if (this.props.match){
       console.debug(this.props.match);
       var type = this.props.match.params.type;
-      var euuid = this.props.match.params.uuid;
+      euuid = this.props.match.params.uuid;
       if(type !== "new"){
 
         console.log("NOT NEW PAGE");
@@ -570,11 +571,12 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
+          {this.renderLoadingBar()}
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          {this.renderLoadingSpinner()}
+          
           {this.renderEditForm()}
 
         </div>
@@ -660,12 +662,11 @@ renderInfoPanel() {
         );
   }
 
-  renderLoadingSpinner() {
+  renderLoadingBar() {
     if (this.state.loading) {
-      return (
-        <div className="text-center">
-          <FontAwesomeIcon icon={faSpinner} spin size="3x" />
-        </div>
+      return (<div>
+        <LinearProgress />
+      </div>
       );
     }
   }
@@ -701,7 +702,7 @@ renderInfoPanel() {
 //      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
        // <div className="row">
        //   <div className="col-sm-6">
-            <div className="card">
+            <div className="card pt-2">
               {this.props.custom_title && (
                 <span className="portal-label text-center">{this.props.custom_title}</span>
               )}

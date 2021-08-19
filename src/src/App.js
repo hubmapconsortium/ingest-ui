@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
 //import Navigation from './components/Navbar.js';
-import ErrorPage from './utils/error_page';
 import { Router, Switch, Route } from "react-router-dom";
 import history from './history';
 import Login from './components/uuid/login';
@@ -21,7 +20,6 @@ import {
   Typography
 } from "@material-ui/core";
 import Modal from "./components/uuid/modal";
-//import { BrowserRouter as Router } from 'react-router-dom';
 
 
 import Snackbar from '@material-ui/core/Snackbar';
@@ -141,15 +139,16 @@ class App extends Component {
 
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeyDown);
-
+    var type;
+    var fauxEvent;
     
     if (this.props.match){
       console.debug("APP this.props.match");
-      var type = this.props.match.params.type;
+      type = this.props.match.params.type;
       console.log(type);
       if(type === "new"){
         console.log("NEW PAGE");
-        var fauxEvent = {
+        fauxEvent = {
           currentTarget:{
             innerText:type
           } 
@@ -162,10 +161,10 @@ class App extends Component {
         var url = window.location.href;
         var urlsplit = url.split("/");
         var firstSegment = (urlsplit[3]);
-        var type = (urlsplit[4]);
+        type = (urlsplit[4]);
         console.log("NEW PAGE");
         console.log(firstSegment, type);
-        var fauxEvent = {
+        fauxEvent = {
           currentTarget:{
             innerText:type
           } 
@@ -569,7 +568,7 @@ class App extends Component {
     const collections = window.location.href.includes("/collections") ? true : false;
     //const system = this.state.system;
     return (
-      <div>
+      <div className="">
         <IdleTimer
           ref={ref => {
             this.idleTimer = ref;
@@ -594,7 +593,7 @@ class App extends Component {
           </div>
         </Modal>
         {this.renderHeader()}
-        <div id="content" className="">
+        <div id="content" className="container">
           {!collections && (
             this.renderContent()
           )}
