@@ -2594,6 +2594,14 @@ handleAddImage = () => {
               </div>
             )}
             {this.renderButtons()}
+            {this.state.editingEntity && 
+            this.state.editingEntity.data_access_level === 'public' && (
+
+            <React.Fragment>
+              <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
+              accessible when data associated with it was published.</div>
+            </React.Fragment>
+          )}
           </form>
           
         </div>
