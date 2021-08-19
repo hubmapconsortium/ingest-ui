@@ -142,6 +142,8 @@ class App extends Component {
     var type;
     var fauxEvent;
     
+    var type;
+    var fauxEvent;
     if (this.props.match){
       console.debug("APP this.props.match");
       type = this.props.match.params.type;
@@ -231,7 +233,7 @@ class App extends Component {
   handleUrlChange = (targetPath) =>{  
     console.debug("handleUrlChange "+targetPath)
     console.debug(this.state.creatingNewEntity)
-      window.history.replaceState(
+      window.history.pushState(
         null,
         "", 
         "/"+targetPath.toLowerCase());

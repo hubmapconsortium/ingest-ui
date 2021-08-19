@@ -402,7 +402,7 @@ class SearchComponent extends Component {
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
     if(targetPath!=="----"){
-      window.history.replaceState(
+      window.history.pushState(
         null,
         "", 
         "/"+targetPath);
@@ -576,7 +576,6 @@ class SearchComponent extends Component {
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          
           {this.renderEditForm()}
 
         </div>
@@ -673,7 +672,7 @@ renderInfoPanel() {
 
   renderTable() {
   return ( 
-      <Paper className="paper-container">
+      <Paper className="paper-container pt-2 ">
       <div style={{ height: 590, width: '100%' }}>
         <DataGrid 
               rows={this.state.datarows}
@@ -702,6 +701,7 @@ renderInfoPanel() {
 //      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
        // <div className="row">
        //   <div className="col-sm-6">
+
             <div className="card pt-2">
               {this.props.custom_title && (
                 <span className="portal-label text-center">{this.props.custom_title}</span>

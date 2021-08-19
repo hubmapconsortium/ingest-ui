@@ -1,8 +1,11 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+import { Link } from 'react-router-dom';
 import axios from "axios";
+import { DataGrid } from '@material-ui/data-grid';  
 import { validateRequired } from "../../utils/validators";
+import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -23,6 +26,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload } from '../../service/ingest_api';
+import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {
 
@@ -167,6 +171,10 @@ class EditUploads extends Component {
           });
       });
 
+      this.setState({
+          datarows: this.state.datasets, // Object.values(response.results)
+          results_total:  this.state.datasets.length,
+          column_def: COLUMN_DEF_DATASET})
 
     
     console.debug(this.state);
@@ -201,7 +209,7 @@ class EditUploads extends Component {
           !this.props.editingUpload &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
-        ) {
+        ){
           this.setState({ GroupSelectShow: true });
         } else {
           this.setState({
@@ -263,6 +271,7 @@ class EditUploads extends Component {
     
   };
 
+  
 
 
   highlightInvalidDatasets(){
@@ -433,10 +442,17 @@ class EditUploads extends Component {
             this.handleSearchClick();
         });
   }
-
-  handleDatasetCellSelection (row,column,event) {
+  handleDatasetCellSelection = (row,column,event) =>{ 
     console.log("handleDatasetCellSelection");
     console.debug(row,column,event);
+    console.debug("/datasets/"+row.uuid);
+
+      window.history.pushState(
+        null,
+        "", 
+        "/datasets/"+row.uuid);
+      window.location.reload()
+  
 }
 
 
@@ -474,16 +490,17 @@ class EditUploads extends Component {
 
     if(this.state.datasets && this.state.datasets.length > 0 ){
 
-
+      // @TODO: use the Datatables used elsewhere across the site 
       var compiledCollection = [];
       for (var i in datasetCollection){
         console.debug(datasetCollection[i].lab_dataset_id)
-        console.debug("/uploads/"+datasetCollection[i].uuid)
+        console.debug("/datasets/"+datasetCollection[i].uuid)
         compiledCollection.push({
           hubmap_id: datasetCollection[i].hubmap_id,
           lab_dataset_id:  datasetCollection[i].lab_dataset_id,
           group_name: datasetCollection[i].group_name,
-          status: datasetCollection[i].status
+          status: datasetCollection[i].status,
+          uuid: datasetCollection[i].uuid
         });
       }
       return (
@@ -505,12 +522,23 @@ class EditUploads extends Component {
             {compiledCollection.map((row) => (
               <TableRow 
                 key={row.hubmap_id}
-                onClick={this.handleDatasetCellSelection(row)}
+                onClick={() => this.handleDatasetCellSelection(row)}
                 >
-                <TableCell align="left" scope="row">{row.hubmap_id}</TableCell>
+                <TableCell align="left" scope="row">
+
+                <Link className="btn btn-primary"
+                to='/datasets/{row.uuid}' onClick={this.handleEnterIngest}>  
+                  {row.hubmap_id}
+                </Link>
+                </TableCell>
                 <TableCell align="left" scope="row">{row.lab_dataset_id}</TableCell>
                 <TableCell align="left" scope="row">{row.group_name}</TableCell>
-                <TableCell align="left" scope="row">{row.status}</TableCell>
+                <TableCell align="left" scope="row">
+                  <span
+                    className={"w-100 badge " + getPublishStatusColor(row.status)}>
+                      {row.status}
+                  </span>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
