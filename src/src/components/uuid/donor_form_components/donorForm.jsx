@@ -646,7 +646,14 @@ class DonorForm extends Component {
   render() {
     return (
       <React.Fragment>
-      
+       {this.props.editingEntity && 
+            this.props.editingEntity.data_access_level === 'public' && (
+
+            <React.Fragment>
+              <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
+              accessible when data associated with it was published.</div>
+            </React.Fragment>
+          )}
         {!this.props.editingEntity && (
           <div className="row">
             <div className="col-sm-12 text-center">

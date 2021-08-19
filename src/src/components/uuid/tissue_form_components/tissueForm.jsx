@@ -192,7 +192,7 @@ class TissueForm extends Component {
       });
 
 
-      console.debug('PROPS', this.props)
+      //console.debug('PROPS', this.props)
     
       try {
           let param_uuid = ""
@@ -233,7 +233,7 @@ class TissueForm extends Component {
                 }
           });
       } catch {
-        console.debug('check for PROPS')
+        //console.debug('check for PROPS', this.props)
 
         if (this.props) {
         // run load props from  createnext previous call
@@ -320,7 +320,7 @@ class TissueForm extends Component {
 
 
       } else {
-        console.debug('NOT EDITING', this.props.entity)
+        //console.debug('NOT EDITING', this.props.entity)
 
           this.setState(
             {
@@ -1124,8 +1124,8 @@ handleAddImage = () => {
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    console.debug('Update Entity...', this.state.related_group_ids.length );
-                    console.debug(response.results);
+                    //console.debug('Update Entity...', this.state.related_group_ids.length );
+                    //console.debug(response.results);
                     this.setState({ submit_error: false, 
                       submitting: false, 
                       show_snack: true,
@@ -1439,7 +1439,7 @@ handleAddImage = () => {
 
   handleLookUpClick = () => {
 //    console.debug('source_uuid', this.state.source_uuid)
-    console.debug('lookUpCancelled', this.state.lookUpCancelled)
+    //console.debug('lookUpCancelled', this.state.lookUpCancelled)
 
     if (!this.state.lookUpCancelled) {
       this.setState({
@@ -1480,7 +1480,7 @@ handleAddImage = () => {
   handleSelectClick = selection => {
     let ancestor_organ = ""
 
-    console.debug('tissueForm Selection', selection);
+    //console.debug('tissueForm Selection', selection);
 
     if (selection) {
       // check to see if we have an "top-level" ancestor 
@@ -1488,7 +1488,7 @@ handleAddImage = () => {
       entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
-              console.debug('Entity ancestors...', response.results);
+              //console.debug('Entity ancestors...', response.results);
               // //////console.debug(response.results);
               if (response.results.length > 0) {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
@@ -1496,7 +1496,7 @@ handleAddImage = () => {
           } else {
               ancestor_organ = selection.row.organ;  // use the direct ancestor
           }
-          console.debug('here setting state vars', ancestor_organ)
+          //console.debug('here setting state vars', ancestor_organ)
           this.setState({
             source_uuid: selection.row.hubmap_id,
             source_entity: selection.row,
@@ -1586,6 +1586,14 @@ handleAddImage = () => {
           </div>   
         )}
         <div className="col-sm-12 pads">
+          {this.state.editingEntity && 
+            this.state.editingEntity.data_access_level === 'public' && (
+
+            <React.Fragment>
+              <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
+              accessible when data associated with it was published.</div>
+            </React.Fragment>
+          )}
           <div className="col-sm-12 text-center"><h4>Sample Information</h4></div>
           <div
             className="alert alert-danger col-sm-10 offset-sm-1"
