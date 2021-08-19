@@ -11,7 +11,7 @@ import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES } from "../../constants";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
@@ -45,6 +45,7 @@ class SearchComponent extends Component {
     sampleType: "----",
     keywords: "",
     last_keyword: "",
+    loading: true
   };
 
   constructor(props) {
@@ -570,11 +571,12 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
+          {this.renderLoadingBar()}
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          {this.renderLoadingSpinner()}
+          
           {this.renderEditForm()}
 
         </div>
@@ -660,12 +662,11 @@ renderInfoPanel() {
         );
   }
 
-  renderLoadingSpinner() {
+  renderLoadingBar() {
     if (this.state.loading) {
-      return (
-        <div className="text-center">
-          <FontAwesomeIcon icon={faSpinner} spin size="3x" />
-        </div>
+      return (<div>
+        <LinearProgress />
+      </div>
       );
     }
   }
@@ -701,7 +702,7 @@ renderInfoPanel() {
 //      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
        // <div className="row">
        //   <div className="col-sm-6">
-            <div className="card">
+            <div className="card pt-2">
               {this.props.custom_title && (
                 <span className="portal-label text-center">{this.props.custom_title}</span>
               )}
