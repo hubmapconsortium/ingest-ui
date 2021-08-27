@@ -1640,6 +1640,7 @@ class DatasetEdit extends Component {
                       select={this.handleSelectClick}
                       custom_title="Search for a Source ID for your Dataset"
                       filter_type="Dataset"
+                      modcheck="Source"
                     />
                     </DialogContent>
                      <DialogActions>

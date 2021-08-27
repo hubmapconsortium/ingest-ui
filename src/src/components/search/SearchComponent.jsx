@@ -45,7 +45,8 @@ class SearchComponent extends Component {
     sampleType: "----",
     keywords: "",
     last_keyword: "",
-    loading: true
+    loading: true,
+    modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
   };
 
   constructor(props) {
@@ -56,19 +57,23 @@ class SearchComponent extends Component {
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
     var euuid;
+    console.debug("MODCHECK ",this.props.modcheck);
     if(!this.props.match){
       var url = window.location.href;
       var urlsplit = url.split("/");
       var lastSegment = (urlsplit[3]);
       euuid = urlsplit[4];
+
       // console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         // console.debug("NEW FROM R")
 
-      }else if(window.location.href.includes("/donor") || 
+      }else if(
+            !this.props.modcheck && 
+            (window.location.href.includes("/donor") || 
             window.location.href.includes("/sample") || 
             window.location.href.includes("/dataset") || 
-            window.location.href.includes("/upload")){
+            window.location.href.includes("/upload"))){
           // console.log("WE'RE LOADIN A SEARCH VIEW");
           this.setState({
             sampleType: lastSegment,
@@ -96,7 +101,7 @@ class SearchComponent extends Component {
         this.handleClearFilter();
       }
     }
-    if (this.props.match){
+    if (this.props.match && !this.props.modcheck){
       console.debug(this.props.match);
       var type = this.props.match.params.type;
       euuid = this.props.match.params.uuid;
