@@ -79,33 +79,29 @@ class SearchComponent extends Component {
           });
         }
        
-      }else if(
-            !this.props.modecheck && 
-            (window.location.href.includes("/donor") || 
-            window.location.href.includes("/sample") || 
-            window.location.href.includes("/dataset") || 
-            window.location.href.includes("/upload"))){
-          // console.log("WE'RE LOADIN A SEARCH VIEW");
-          this.setState({
-            sampleType: lastSegment,
-            sample_type: lastSegment,
-          },function(){ 
-            this.setFilterType();
-            // console.debug("SAMPELTYPER",this.state.sample_type,this.state.sampleType, );
-            if(euuid){
-              // console.log("UUID PROVIDED: "+euuid);
-              var params = {
-                row:{
-                  uuid:euuid
-                }
+      }else if( !this.props.modecheck && 
+              (window.location.href.includes("/donor") || 
+              window.location.href.includes("/sample") || 
+              window.location.href.includes("/dataset") || 
+              window.location.href.includes("/upload"))){
+        this.setState({
+          sampleType: lastSegment,
+          sample_type: lastSegment,
+        },function(){ 
+          this.setFilterType();
+          if(euuid && euuid !== "new"){
+            var params = {
+              row:{
+                uuid:euuid
               }
-              // this.handleSearchClick();
-              this.handleTableCellClick(params);
-            }else{
-              console.log("No UUID in URL");
-              this.handleSearchClick();
             }
-          });
+            // this.handleSearchClick();
+            this.handleTableCellClick(params);
+          }else{
+            console.log("No UUID in URL");
+            this.handleSearchClick();
+          }
+        });
       }else{
         // We're running without filter props passed or URL routing 
         console.log("No Props Or URL, Clear Filter")
@@ -118,8 +114,8 @@ class SearchComponent extends Component {
       euuid = this.props.match.params.uuid;
       if(type !== "new"){
 
-        console.log("NOT NEW PAGE");
-        console.log(type+" | "+euuid);
+        // console.log("NOT NEW PAGE");
+        // console.log(type+" | "+euuid);
         this.setState({
           sampleType: type,
         },function(){ 
@@ -133,7 +129,7 @@ class SearchComponent extends Component {
             // this.handleSearchClick();
             this.handleTableCellClick(params);
           }else{
-            console.log("No UUID in URL");
+            // console.log("No UUID in URL");
             this.handleSearchClick();
           }
         });
@@ -237,12 +233,12 @@ class SearchComponent extends Component {
   }
 
   handleSingularty  = (target, size) => {
-    console.debug("handleSingularty target: ",target);
+    // console.debug("handleSingularty target: ",target);
     if(target === 'uploads'){
       return "uploads" // Is always plural in our system
     }
     if(size === "plural"){
-      console.debug(target.slice(-1));
+      // console.debug(target.slice(-1));
       if(target.slice(-1) === "s"){
         return target.toLowerCase();
       }else{
@@ -259,7 +255,7 @@ class SearchComponent extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    console.debug('handleInputChange', name)
+    // console.debug('handleInputChange', name)
     switch (name) {
       case "group":
         this.setState({ group: value });
