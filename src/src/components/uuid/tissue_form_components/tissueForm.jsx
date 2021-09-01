@@ -1682,7 +1682,7 @@ handleAddImage = () => {
                       select={this.handleSelectClick}
                       custom_title="Search for a Source ID for your Sample"
                       filter_type="Sample"
-                      modcheck="Source"
+                      modecheck="Source"
                     />
                     </DialogContent>
                      <DialogActions>

@@ -57,7 +57,7 @@ class SearchComponent extends Component {
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
     var euuid;
-    console.debug("MODCHECK ",this.props.modcheck);
+    console.debug("modecheck ",this.props.modecheck);
     if(!this.props.match){
       var url = window.location.href;
       var urlsplit = url.split("/");
@@ -66,10 +66,21 @@ class SearchComponent extends Component {
 
       // console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
-        // console.debug("NEW FROM R")
-
+        console.debug("NEW FROM R ", this.props.modecheck)
+        if(this.props.modecheck === "Source"){
+          this.setState({
+            loading:false,
+            show_search:true
+          });
+        }else{
+          this.setState({
+            loading:false,
+            show_search:false
+          });
+        }
+       
       }else if(
-            !this.props.modcheck && 
+            !this.props.modecheck && 
             (window.location.href.includes("/donor") || 
             window.location.href.includes("/sample") || 
             window.location.href.includes("/dataset") || 
@@ -101,7 +112,7 @@ class SearchComponent extends Component {
         this.handleClearFilter();
       }
     }
-    if (this.props.match && !this.props.modcheck){
+    if (this.props.match && !this.props.modecheck){
       console.debug(this.props.match);
       var type = this.props.match.params.type;
       euuid = this.props.match.params.uuid;
@@ -668,6 +679,7 @@ renderInfoPanel() {
   }
 
   renderLoadingBar() {
+    console.debug("renderLoadingBar", this.state.loading);
     if (this.state.loading) {
       return (<div>
         <LinearProgress />
