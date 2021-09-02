@@ -12,24 +12,34 @@ import SearchComponent from './components/search/SearchComponent';
 //import DataList from './components/ingest/datalist';
 
 export default class Routes extends Component {
+    constructor(props) {
+        super(props);
+        console.debug("Routes props",props)
+    }
+
+    componentDidMount() {    
+        console.debug("Router componentDidMount ",this.props);
+
+    }
     render() {
         return (
             <Router history={history}>
                 <Switch>
-                   <Route path="/Home" exact component={Home} /> 
-                   {/**  <Route path="/Samples" component={EntityList} />
-                    <Route path="/Donor" component={DonorForm} />
-                    <Route path="/Sample" component={TissueForm} />
-                    <Route path="/Datasets" component={DataList} />
-                    <Route path="/Dataset" component={DatasetEdit} /> 
-                    <Route path="/" component={SearchComponent} /> */}
-                    <Route path="/sample/:uuid" component={TissueForm} />
-                    <Route path="/collections/:uuid" component={Collection} />
-                    <Route path="/collections" component={Collections} />
+                    <Route path="/new/:test" exact>
+                        <SearchComponent 
+                            fromRoute="nmew" 
+                        />
+                    </Route> 
+                    <Route path="/:type/:uuid" component={SearchComponent} />
+                    <Route
+                        path='/:type'
+                        render={(props) => (
+                            <SearchComponent {...props} />
+                            )}
+                    />
+                    {/* <Route path="/:type" component={SearchComponent} /> */}
                     <Route path="/err-response" component={ErrorPage} />
-                    <Route path="/search" component={SearchComponent} />
-                   {/*} <Route path="/donors-samples" exact component={UUIDEntrance} />
-                    <Route path="/datasets" exact component={IngestEntrance} />*/}
+                            <Route path="/" exact component={SearchComponent} /> 
                 </Switch>
             </Router>
         )

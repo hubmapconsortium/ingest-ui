@@ -353,13 +353,21 @@ class EditUploads extends Component {
     
   
   componentDidUpdate(prevProps) { 
-    console.log("componentDidUpdate");
-    console.log(prevProps);
+    // console.log("componentDidUpdate");
+    // console.log(prevProps);
     // Typical usage (don't forget to compare props):
     // console.debug(this.props.editingUpload.datasets);
     if (this.props.targetUUID !== prevProps.targetUUID) {
       // this.getUpload(this.props.targetUUID);
     }
+  }
+
+  handleUrlChange = (targetPath) =>{
+    console.debug("handleUrlChange "+targetPath)
+      window.history.replaceState(
+        null,
+        "", 
+        "/"+targetPath);
   }
 
   handleButtonClick = (i) => {
@@ -426,9 +434,11 @@ class EditUploads extends Component {
         });
   }
 
-  handleTableSelection = (row) => {
-    console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
-  }
+  handleDatasetCellSelection (row,column,event) {
+    console.log("handleDatasetCellSelection");
+    console.debug(row,column,event);
+}
+
 
   errorClass(error) {
     if (error === "valid") return "is-valid";
@@ -468,6 +478,7 @@ class EditUploads extends Component {
       var compiledCollection = [];
       for (var i in datasetCollection){
         console.debug(datasetCollection[i].lab_dataset_id)
+        console.debug("/uploads/"+datasetCollection[i].uuid)
         compiledCollection.push({
           hubmap_id: datasetCollection[i].hubmap_id,
           lab_dataset_id:  datasetCollection[i].lab_dataset_id,
@@ -492,7 +503,10 @@ class EditUploads extends Component {
           </TableHead>
           <TableBody>
             {compiledCollection.map((row) => (
-              <TableRow key={row.hubmap_id}>
+              <TableRow 
+                key={row.hubmap_id}
+                onClick={this.handleDatasetCellSelection(row)}
+                >
                 <TableCell align="left" scope="row">{row.hubmap_id}</TableCell>
                 <TableCell align="left" scope="row">{row.lab_dataset_id}</TableCell>
                 <TableCell align="left" scope="row">{row.group_name}</TableCell>

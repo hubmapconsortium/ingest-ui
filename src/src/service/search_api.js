@@ -74,7 +74,7 @@ export function api_search2(params, auth, from, size) {
           let entities = [];
           hits.forEach(s => {
             let data = s['_source']
-            data['id'] = s['_source']['hubmap_id']
+            data['id'] = s['_source']['uuid']
             entities.push(data);
             
           });

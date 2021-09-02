@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import React, { Component  } from "react";
+import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 
@@ -10,12 +11,17 @@ import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES } from "../../constants";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+
+// Creation donor_form_components
+import Forms from "../uuid/forms";
+
+// import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
   state = {
@@ -38,25 +44,116 @@ class SearchComponent extends Component {
     group: "All Components",
     sampleType: "----",
     keywords: "",
-    last_keyword: ""
+    last_keyword: "",
+    loading: true,
+    modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
   };
 
-  // constructor(props) {
-  //   super(props);
-  //   // this.group = React.createRef();
-  //   // this.sampleType = React.createRef();
-  //   // this.keywords = React.createRef();
-  // }
+  constructor(props) {
+    super(props);
+    console.debug("SearchCompprops",props);
+  }
 
   componentDidMount() {     
+    console.debug("SEARCH componentDidMount")
+    var euuid;
+    console.debug("modecheck ",this.props.modecheck);
+    if(!this.props.match){
+      var url = window.location.href;
+      var urlsplit = url.split("/");
+      var lastSegment = (urlsplit[3]);
+      euuid = urlsplit[4];
+
+      // console.debug(lastSegment, euuid)
+      if(window.location.href.includes("/new")){
+        console.debug("NEW FROM R ", this.props.modecheck)
+        if(this.props.modecheck === "Source"){
+          this.setState({
+            loading:false,
+            show_search:true
+          });
+        }else{
+          this.setState({
+            loading:false,
+            show_search:false
+          });
+        }
+       
+      }else if( !this.props.modecheck && 
+              (window.location.href.includes("/donor") || 
+              window.location.href.includes("/sample") || 
+              window.location.href.includes("/dataset") || 
+              window.location.href.includes("/upload"))){
+        this.setState({
+          sampleType: lastSegment,
+          sample_type: lastSegment,
+        },function(){ 
+          this.setFilterType();
+          if(euuid && euuid !== "new"){
+            var params = {
+              row:{
+                uuid:euuid
+              }
+            }
+            // this.handleSearchClick();
+            this.handleTableCellClick(params);
+          }else{
+            console.log("No UUID in URL");
+            this.handleSearchClick();
+          }
+        });
+      }else{
+        // We're running without filter props passed or URL routing 
+        console.log("No Props Or URL, Clear Filter")
+        this.handleClearFilter();
+      }
+    }
+    if (this.props.match && !this.props.modecheck){
+      console.debug(this.props.match);
+      var type = this.props.match.params.type;
+      euuid = this.props.match.params.uuid;
+      if(type !== "new"){
+
+        // console.log("NOT NEW PAGE");
+        // console.log(type+" | "+euuid);
+        this.setState({
+          sampleType: type,
+        },function(){ 
+          if(euuid){
+            // console.log("UUID PROVIDED: "+euuid);
+            var params = {
+              row:{
+                uuid:euuid
+              }
+            }
+            // this.handleSearchClick();
+            this.handleTableCellClick(params);
+          }else{
+            // console.log("No UUID in URL");
+            this.handleSearchClick();
+          }
+        });
+      }else{
+        this.setState({
+          formType: euuid,
+          show_search:false,
+          creatingNewEntity:true
+        });
+      }
+      
+    }
+
+    // console.log(this.state);
+    
+
     try {
-     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
 
       if (results.status === 200) { 
         this.setState({
           isAuthenticated: true
         }, () => {
-           this.setFilterType();
+          this.setFilterType();
         });
       } else if (results.status === 401) {
           this.setState({
@@ -64,20 +161,20 @@ class SearchComponent extends Component {
           });
         }
     });
-   } catch {
-     this.setState({
+  } catch {
+    this.setState({
         isAuthenticated: false
       });
-   }
+  }
 
-   const config = {
+  const config = {
     headers: {
       Authorization:
         "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
       "Content-Type": "application/json"
     }
   };
-   axios
+  axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
         config
@@ -107,17 +204,17 @@ class SearchComponent extends Component {
           window.location.reload();
         }
       });
-
-      // do an initial load using default criteria
-      
-      this.handleSearchClick();
-   
+     
+  
   }
 
   componentDidUpdate(prevProps, prevState) {
+    // console.debug("componentDidUpdate");
+    // // console.debug(prevProps, this.props);
+    // console.debug(this.props.show_search);
+    // console.debug(this.state.show_search);
+    // console.debug(prevState, this.state);
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
-      // //console.log("PROP UPDATE");
-      // //console.debug(this.props.editNewEntity);
       this.setState({
         editingEntity: this.props.editNewEntity,
         editForm: true,
@@ -125,11 +222,40 @@ class SearchComponent extends Component {
         show_search: false
         });
     }
+    
+    if (prevProps.showSearch !== this.props.showSearch) {
+      console.log("UPDATE this.props.showSearch");
+      this.setState({
+        show_search: this.props.showSearch
+        });
+    }
+    
+  }
+
+  handleSingularty  = (target, size) => {
+    // console.debug("handleSingularty target: ",target);
+    if(target === 'uploads'){
+      return "uploads" // Is always plural in our system
+    }
+    if(size === "plural"){
+      // console.debug(target.slice(-1));
+      if(target.slice(-1) === "s"){
+        return target.toLowerCase();
+      }else{
+        return (target+"s").toLowerCase();
+      }
+    }else{ // we wanna singularize
+      if(target.slice(-1) === "s"){
+        return (target.slice(0, -1)).toLowerCase()
+      }else{
+        return target.toLowerCase();
+      }
+    } 
   }
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    //console.debug('handleInputChange', name)
+    // console.debug('handleInputChange', name)
     switch (name) {
       case "group":
         this.setState({ group: value });
@@ -152,7 +278,8 @@ class SearchComponent extends Component {
 
     var new_filter_list = [];
 
-    ////console.debug('FILTER TYPES', SAMPLE_TYPES)
+    //console.debug('FILTER TYPES', SAMPLE_TYPES)
+    //console.debug('FILTER TYPES', this.props.filter_type)
     if (this.props.filter_type) {
       if (this.props.filter_type === 'Dataset') {
         SAMPLE_TYPES.forEach((type)=>{
@@ -187,11 +314,12 @@ class SearchComponent extends Component {
     //this.setState({ loading: true, filtered: true, page: 0 });
     this.setState({ loading: true, filtered: true});
 
-
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
-
+    // console.debug("handleSearchClick")
+    // console.debug(group,sample_type,keywords)
+    // console.debug(this.state)
 
     // reset the page to zero, to deal with slight bug regarding
     // if you do searches and change pages then search for a new keyword
@@ -217,13 +345,19 @@ class SearchComponent extends Component {
 
     if (sample_type) {
       //console.debug(sample_type);
-      if (sample_type === 'donor') {
+      console.debug(this.props);
+      if(!this.state.uuid && sample_type !=="----"){
+        this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
+      }
+      
+
+      if (sample_type === 'donor' || sample_type === 'donors') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
-      } else if (sample_type === 'dataset') {
+      } else if (sample_type === 'dataset' || sample_type === 'datasets') {
             params["entity_type"] = "Dataset";
             which_cols_def = COLUMN_DEF_DATASET;
-        } else if (sample_type === 'uploads') {
+        } else if (sample_type === 'upload' || sample_type === 'uploads') {
             params["entity_type"] = "Upload";
             which_cols_def = COLUMN_DEF_UPLOADS;
         } 
@@ -259,7 +393,7 @@ class SearchComponent extends Component {
         
         
       }
-       this.setState({ loading: false });
+      this.setState({ loading: false });
     });
   };
 
@@ -277,6 +411,16 @@ class SearchComponent extends Component {
     return COLUMN_DEF_SAMPLE;
   }
 
+  handleUrlChange = (targetPath) =>{
+    console.debug("handleUrlChange "+targetPath)
+    if(targetPath!=="----"){
+      window.history.replaceState(
+        null,
+        "", 
+        "/"+targetPath);
+    }
+  }
+
   handlePageChange = (page) => {
     console.debug('Page changed', page)
     this.setState({
@@ -285,7 +429,6 @@ class SearchComponent extends Component {
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
         });
-  
   }
 
   handlePageSizeSelection = (pagesize) => {
@@ -306,9 +449,9 @@ class SearchComponent extends Component {
 
   handleTableSelection = (row) => {
     ////console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
-    // if (row.length > 0) {
-    //   alert(row)
-    // }
+    if (row.length > 0) {
+      alert(row)
+    }
   }
 
  cancelEdit = () => {
@@ -316,6 +459,11 @@ class SearchComponent extends Component {
       show_modal: false,  
       show_search: true
     });
+    // console.debug("cancelEdit")
+    // console.debug(this.props.match)
+    // console.debug(this.props.match.params.type)
+    this.handleUrlChange();
+    this.handleSearchClick();
     //this.filterEntity();
     //this.props.onCancel();
   };
@@ -341,9 +489,9 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
-
-    //onsole.debug('handleTableCellClick', params)
-    //if(params.field !== 'hubmap_id') {
+    console.debug("handleTableCellClick");
+    console.debug(params);
+    
     if(params.field === 'uuid') return; // skip this field
 
     if (params.row) {
@@ -384,10 +532,7 @@ class SearchComponent extends Component {
             show_search: false,
             });
         }
-
-
-        // check to see if user can edit
-        
+      this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "plural")+"/"+entity_data.uuid);
       }
     });
     }
@@ -423,7 +568,13 @@ class SearchComponent extends Component {
     if (this.state.isAuthenticated) {
     return  (
         
-        <div style={{ width: '100%' }}>
+        <div className={"searchWrapper"+this.state.show_search} style={{ width: '100%' }}>
+
+          {!this.state.show_search && (
+             <Forms formType={this.state.formType} onCancel={this.handleClose} />
+          )}
+       
+          
           {/*
           this.state.show_search && this.state.show_info_panel &&
            !this.props.custom_title && (
@@ -432,12 +583,12 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
-
+          {this.renderLoadingBar()}
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          {this.renderLoadingSpinner()}
+          
           {this.renderEditForm()}
 
         </div>
@@ -445,6 +596,18 @@ class SearchComponent extends Component {
     }
     return null;
   }
+
+  renderProps() {
+    // console.debug("INITIALSTATE",this.initialState);
+    return (
+      <div>
+      {/* <span className="portal-jss116 text-center">
+      Found Props: {this.state.preset.entityType} {this.state.preset.entityUuid}
+      </span> <br /><br /> */}
+      </div>
+      );
+}
+
 
 
   renderEditForm() {
@@ -511,12 +674,12 @@ renderInfoPanel() {
         );
   }
 
-  renderLoadingSpinner() {
+  renderLoadingBar() {
+    console.debug("renderLoadingBar", this.state.loading);
     if (this.state.loading) {
-      return (
-        <div className="text-center">
-          <FontAwesomeIcon icon={faSpinner} spin size="3x" />
-        </div>
+      return (<div>
+        <LinearProgress />
+      </div>
       );
     }
   }
@@ -552,7 +715,7 @@ renderInfoPanel() {
 //      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
        // <div className="row">
        //   <div className="col-sm-6">
-            <div className="card">
+            <div className="card pt-2">
               {this.props.custom_title && (
                 <span className="portal-label text-center">{this.props.custom_title}</span>
               )}
@@ -601,7 +764,7 @@ renderInfoPanel() {
                           className="select-css"
                           onChange={this.handleInputChange}
                           //ref={this.sampleType}
-                          value={this.state.sampleType}
+                          value={this.handleSingularty(this.state.sampleType, "singular")}
                         >
                           <option value="">----</option>
                           {this.state.entity_type_list.map((optgs, index) => {
