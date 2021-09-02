@@ -607,7 +607,7 @@ class App extends Component {
               <Router history={history}>
               <Switch>
                     <Route path="/new/:test" exact >
-                        <SearchComponent fromRoute="MEW" />
+                        <SearchComponent fromRoute="MEW"  />
                     </Route> 
                     <Route path="/:type/:uuid" exact >
                         <SearchComponent fromRoute="typeuuid" />
