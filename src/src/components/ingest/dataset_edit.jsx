@@ -1485,6 +1485,8 @@ class DatasetEdit extends Component {
                   </span>
                 </h3>
               </div>
+              <div className="col-sm-12 text-center"><h4>Dataset Information</h4></div>
+
                  <div className='alert alert-danger' role='alert'>
                     <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
                     data containing any of the{" "}
