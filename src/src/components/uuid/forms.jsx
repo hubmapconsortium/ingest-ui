@@ -24,6 +24,7 @@ class Forms extends Component {
       formType: e.target.value.toLowerCase(),
       createSuccess: false
     });
+    console.debug("handleFormTypeChange ",this.state);
   };
 
  handleDirty = (isDirty) => {
@@ -40,6 +41,27 @@ class Forms extends Component {
     });
     console.debug('FORMS', this.props.formType);
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.debug("FORMS componentDidUpdate");
+    if (prevProps.formType !== this.props.formType) {
+      this.setState({
+        editForm: true,      
+        createSuccess: false,
+        show_search: false,
+        showSearch: false,
+        anchorEl: null,
+        formType: this.props.formType,
+      });
+      console.debug("forms handleFormTypeChange ",this.props.formType,this.state);
+      // this.handleUrlChange("new/"+target);
+    }
+
+
+  };
+    
+  
+
   onCreated = data => {
     console.debug('FORMS onCreated:', data);
     if (data["new_samples"]) {  // means that we need to show a larger screen
