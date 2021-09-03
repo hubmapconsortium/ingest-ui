@@ -488,6 +488,20 @@ class SearchComponent extends Component {
     //this.props.onCancel();
   };
 
+  handleClose = () => {
+    //console.log("App.js handleClose");
+    this.setState({
+      creatingNewUpload: false,
+      anchorEl: null,
+      show_menu_popup: false,
+      open_edit_dialog: false, 
+      creatingNewEntity: false,
+      showSearch: true,
+      show_search:true
+    });
+    //this.handleUrlChange("");
+  };
+
   handleTableCellClick = (params) => {
     console.debug("handleTableCellClick");
     console.debug(params);
