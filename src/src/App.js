@@ -217,11 +217,30 @@ class App extends Component {
           }
         });
     }
-
-    
-
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    console.debug("componentDidUpdate");
+    // // console.debug(prevProps, this.props);
+    // console.debug(this.props.show_search);
+    // console.debug(this.state.show_search);
+    // console.debug(prevState, this.state);
+    if (prevState.formType !== this.state.formType) {
+      this.setState({
+        editForm: true,
+        show_modal: true,
+        show_search: false
+        });
+    }
+    
+    if (prevProps.showSearch !== this.props.showSearch) {
+      console.log("UPDATE this.props.showSearch");
+      this.setState({
+        show_search: this.props.showSearch
+        });
+    }
+    
+  }
 
   handleLogout = e => {
     localStorage.setItem("isAuthenticated", false);
@@ -231,11 +250,28 @@ class App extends Component {
   handleUrlChange = (targetPath) =>{  
     console.debug("handleUrlChange "+targetPath)
     console.debug(this.state.creatingNewEntity)
-      window.history.replaceState(
+      window.history.pushState(
         null,
         "", 
         "/"+targetPath.toLowerCase());
   }
+
+
+  // handleFormTypeChange = (event) => {
+  handleFormTypeChange(target){
+    this.setState({
+      anchorEl: null,
+      show_menu_popup: false,
+      creatingNewEntity: true,
+      formType: target.toLowerCase(),
+      createSuccess: false,
+      show_search: false,
+      showSearch: false,
+      anchorEl: null
+    });
+    console.debug("handleFormTypeChange ",target,this.state);
+    this.handleUrlChange("new/"+target);
+  };
 
   handleMenuSelection = (event) => {
     console.debug("handleMenuSelection")
@@ -250,8 +286,9 @@ class App extends Component {
         show_search: false,
         showSearch: false,
       })
-    
-    this.handleUrlChange("new/"+formtype); 
+      // this.handleFormTypeChange(formtype);
+      this.handleUrlChange("new/"+formtype);
+
   }
   
 
