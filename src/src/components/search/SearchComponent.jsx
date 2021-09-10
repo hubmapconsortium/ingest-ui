@@ -518,8 +518,6 @@ class SearchComponent extends Component {
       editingEntity: null,
       show_search: true,
       loading: false
-      // editingEntity: null,
-      // show_search: true,
     });
     setTimeout(() => {
       this.setState({ updateSuccess: null });

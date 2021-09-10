@@ -620,20 +620,10 @@ class DatasetEdit extends Component {
   //   );
   // };
 
-<<<<<<< HEAD
-=======
-
-  sourcePop(){
-    return(
-      "hi"
-      // this.state.editingSource.filter(item => item.uuid !== this.state.editingSource.uuid)
-    )
-  }
->>>>>>> fc97a47... Nix the SourceDuplicator used in testing
   sourceRemover = () => {
     console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
-      var slist=this.state.source_uuid_list;
-      slist =  slist.filter(source => source.uuid !== this.state.editingSource.uuid)
+    var slist=this.state.source_uuid_list;
+    slist =  slist.filter(source => source.uuid !== this.state.editingSource.uuid)
       this.setState( {
         source_uuid_list: slist
       } ,
@@ -760,7 +750,6 @@ class DatasetEdit extends Component {
         <DialogTitle className="bg-error title-error text-white" id="alert-dialog-title">{"Removing Source"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-
          Are you sure you want to unlink Source {this.state.editingSource.hubmap_id}? <br/>
          <small>Source remains in the database. To delete the entity itself, please use the  Entity page </small>
           </DialogContentText>
@@ -902,11 +891,14 @@ class DatasetEdit extends Component {
           }
         })
         .catch((err) => {
+          console.debug("Err Caught in validateUUID catch for then Catch")
           this.setState((prevState) => ({
+            submitErrorResponse:err,
             source_entity: null,
             formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
           }));
           isValid = false;
+          
           alert("The Source UUID does not exist.");
           return isValid;
         })
@@ -917,6 +909,7 @@ class DatasetEdit extends Component {
           return isValid;
         });
     } else {
+      console.debug("Err Caught in validateUUID Return")
       this.setState((prevState) => ({
         formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
       }));
@@ -1030,11 +1023,7 @@ class DatasetEdit extends Component {
                 })
                 .catch((error) => {
                   console.debug("ERROR ", error)
-<<<<<<< HEAD
                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
-=======
-                  this.setState({ submit_error: true, submitting: false });
->>>>>>> 814f0ff... After submission, remains on the entity view with a success message
                 });
             } else if (i === "processing") {
                console.log('Submit Dataset...');
@@ -1044,14 +1033,9 @@ class DatasetEdit extends Component {
                       console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
-<<<<<<< HEAD
                       console.log("ERR response");
                       console.log(response);
                       this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
-=======
-                      console.log(response);
-                      this.setState({ submit_error: true, submitting: false });
->>>>>>> 814f0ff... After submission, remains on the entity view with a success message
                     }
                 });
               } else { // just update
@@ -1065,11 +1049,7 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                             console.debug("ERROR ",response)
-<<<<<<< HEAD
                             this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
-=======
-                            this.setState({ submit_error: true, submitting: false });
->>>>>>> 814f0ff... After submission, remains on the entity view with a success message
                           }
                 });
               }
@@ -1207,6 +1187,7 @@ class DatasetEdit extends Component {
     try {
       return source_uuids[0].hubmap_id;  // just get the first one
     } catch {
+      console.debug("getSourceAncestory Not Found?! ",source_uuids)
     }
     return ""
   }
@@ -1216,6 +1197,7 @@ class DatasetEdit extends Component {
     try {
       return source_uuids[0];  // just get the first one
     } catch {
+      console.debug("getSourceAncestorEntity Not Found?! ",source_uuids)
     }
     return ""
   }
@@ -1224,6 +1206,7 @@ class DatasetEdit extends Component {
   generateDisplaySourceId(source_uuids) {
     //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
+      console.debug("source_uuids.length > 1")
       //is_subset is a flag indicating if the source_uuid list is
       //a consecutive set of values (ex: 1-5) or a subset of values (ex: 1,3,5)
       var is_subset = "";

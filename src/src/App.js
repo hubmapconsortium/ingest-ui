@@ -231,14 +231,16 @@ class App extends Component {
       this.setState({
         editForm: true,
         show_modal: true,
-        show_search: false
+        show_search: false,
+        showSearch: false
         });
     }
     
     if (prevProps.showSearch !== this.props.showSearch) {
       console.log("UPDATE this.props.showSearch");
       this.setState({
-        show_search: this.props.showSearch
+        show_search: this.props.show_search,
+        showSearch: this.props.showSearch
         });
     }
     
