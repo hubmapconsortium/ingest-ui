@@ -51,6 +51,7 @@ class DatasetEdit extends Component {
     // },
     source_uuid: undefined,
     editingSource:[],
+    editingSourceIndex:0,
     source_uuid_list: [],
     contains_human_genetic_sequences: undefined,
     description: "",
@@ -358,11 +359,15 @@ class DatasetEdit extends Component {
     });
   };
 
-  showConfirmDialog(row) {
+  showConfirmDialog(row,index) {
     console.debug("ShowConfDia")
+
+    console.debug("row", row)
+    console.debug("row index", index)
     this.setState({ 
         confirmDialog: true,
-        editingSource: row
+        editingSource: row,
+        editingSourceIndex: index
     });
 };
 
@@ -636,10 +641,20 @@ hideConfirmDialog = () => {
   }
   sourceRemover = () => {
     // For the testing of the multi-source Interface
-    console.debug("Removing Source ",this.state.editingSource)
+    console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
       var slist=this.state.source_uuid_list;
+      //slist = slist.pop(this.state.editingSourceIndex)
+      // slist.splice(this.state.editingSource,this.state.editingSourceIndex, 1);
+
+      slist =  slist.filter(source => source.uuid !== this.state.editingSource.uuid)
+
+
       this.setState( {
         source_uuid_list: slist
+      } ,
+      () => {
+        console.log("NEW LIST ",this.state.source_uuid_list);
+        this.hideConfirmDialog();
       });
       
     
@@ -707,7 +722,7 @@ hideConfirmDialog = () => {
                     <FontAwesomeIcon
                       className='inline-icon interaction-icon'
                       icon={faUnlink}
-                      onClick={() => this.showConfirmDialog(row)}
+                      onClick={() => this.showConfirmDialog(row,index)}
                     />
                   </React.Fragment>
                   )}
@@ -753,12 +768,12 @@ hideConfirmDialog = () => {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
 
-         <p>Are you sure you want to unlink Source {this.state.editingSource.hubmap_id}? </p>
+         Are you sure you want to unlink Source {this.state.editingSource.hubmap_id}? 
          <small>Source remains in the database. To delete the entity itself, please use the  Entity page </small>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.sourceRemover()} color="secondary">
+          <Button onClick={this.sourceRemover} color="secondary">
             Yes
           </Button>
           <Button onClick={this.hideConfirmDialog} color="primary">
