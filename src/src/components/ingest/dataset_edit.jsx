@@ -620,23 +620,10 @@ class DatasetEdit extends Component {
   //   );
   // };
 
-
-  sourcePop(){
-    return(
-      "hi"
-      // this.state.editingSource.filter(item => item.uuid !== this.state.editingSource.uuid)
-    )
-  }
   sourceRemover = () => {
-    // For the testing of the multi-source Interface
     console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
       var slist=this.state.source_uuid_list;
-      //slist = slist.pop(this.state.editingSourceIndex)
-      // slist.splice(this.state.editingSource,this.state.editingSourceIndex, 1);
-
       slist =  slist.filter(source => source.uuid !== this.state.editingSource.uuid)
-
-
       this.setState( {
         source_uuid_list: slist
       } ,
@@ -644,9 +631,6 @@ class DatasetEdit extends Component {
         console.log("NEW LIST ",this.state.source_uuid_list);
         this.hideConfirmDialog();
       });
-      
-    
-    
   }
   renderSources = () => {
     if(this.state.source_uuid_list && this.state.source_uuid_list.length > 0 ){
