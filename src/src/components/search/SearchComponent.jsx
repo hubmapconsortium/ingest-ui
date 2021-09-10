@@ -45,7 +45,7 @@ class SearchComponent extends Component {
     sampleType: "----",
     keywords: "",
     last_keyword: "",
-    loading: true,
+    loading: false,
     modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
   };
 
