@@ -51,6 +51,7 @@ class SearchComponent extends Component {
       keywords: "",
       last_keyword: "",
       loading: false,
+      table_loading:false,
       modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
     };
   }
@@ -324,7 +325,7 @@ class SearchComponent extends Component {
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
     this.setState({ 
-      loading: false, 
+      loading: false,
       filtered: true
     });
 
@@ -390,9 +391,15 @@ class SearchComponent extends Component {
     console.debug('From Page size', this.state.pageSize);
     if(this.state.results_total === 0 ){
       this.setState({
-        loading: true
+        loading: true,
       });
     }
+    // console.debug("this.state.page", this.state.page);
+    // if(this.state.page != 0 ){
+    //   this.setState({
+    //     table_loading:true, 
+    //   });
+    // }
     
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
@@ -408,7 +415,8 @@ class SearchComponent extends Component {
         datarows: response.results, // Object.values(response.results)
         results_total: response.total,
         column_def: which_cols_def,
-        loading: false
+        loading: false,
+        table_loading:false, 
       });
       }
   })
@@ -449,6 +457,7 @@ class SearchComponent extends Component {
     console.debug('Page changed', page)
     this.setState({
           page: page,
+          table_loading:true, 
 //          pageSize: params.pageSize
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
@@ -747,7 +756,7 @@ renderInfoPanel() {
               onPageSizeChange={(page) =>
                 this.handlePageSizeSelection(page)
               }
-              loading={this.state.loading}
+              loading={this.state.table_loading}
               onCellClick={this.props.select ? this.props.select : this.handleTableCellClick}  // this allows a props handler to override the local handler
         />
       </div>
