@@ -385,12 +385,15 @@ class SearchComponent extends Component {
       params["search_term"] = keywords;
     }
 
+    console.debug('results_total  ', this.state.results_total);
     console.debug('From Page ', this.state.page);
     console.debug('From Page size', this.state.pageSize);
-
-    this.setState({
-      loading: true
-    }, () => {
+    if(this.state.results_total === 0 ){
+      this.setState({
+        loading: true
+      });
+    }
+    
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
       console.debug("Search Res", response.results);
@@ -408,7 +411,6 @@ class SearchComponent extends Component {
         loading: false
       });
       }
-    });
   })
   
   };
@@ -486,7 +488,7 @@ class SearchComponent extends Component {
     // console.debug("cancelEdit")
     // console.debug(this.props.match)
     // console.debug(this.props.match.params.type)
-    this.handleClearFilter();
+    // this.handleClearFilter();
     this.handleUrlChange();
     this.handleSearchClick();
     //this.filterEntity();
