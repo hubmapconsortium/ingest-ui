@@ -620,6 +620,16 @@ class DatasetEdit extends Component {
   //   );
   // };
 
+<<<<<<< HEAD
+=======
+
+  sourcePop(){
+    return(
+      "hi"
+      // this.state.editingSource.filter(item => item.uuid !== this.state.editingSource.uuid)
+    )
+  }
+>>>>>>> fc97a47... Nix the SourceDuplicator used in testing
   sourceRemover = () => {
     console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
       var slist=this.state.source_uuid_list;
