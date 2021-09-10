@@ -247,7 +247,7 @@ class DatasetEdit extends Component {
           //       description: "",
           //     },
           source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
-          source_uuid_list: this.sourceDuplicator(this.props.editingDataset.direct_ancestors),
+          source_uuid_list: this.props.editingDataset.direct_ancestors,
           source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           // source_uuid_type: this.props.editingDataset.properties.specimen_type,
           //contains_human_genetic_sequences: this.props.editingDataset.contains_human_genetic_sequences,
@@ -579,7 +579,7 @@ class DatasetEdit extends Component {
     this.setState(
       {
         source_uuid: selection.row.hubmap_id, 
-        source_uuid_list: this.sourceDuplicator(slist),
+        source_uuid_list: slist,
         source_entity: selection.row,  // save the entire entity to use for information
         LookUpShow: false,
       }
@@ -597,7 +597,7 @@ class DatasetEdit extends Component {
     this.setState(
       {
         source_uuid: selection.row.hubmap_id, 
-        source_uuid_list: this.sourceDuplicator(sdlist),
+        source_uuid_list: sdlist,
         source_entity: selection.row,  // save the entire entity to use for information
         LookUpShow: false,
       }
@@ -619,37 +619,6 @@ class DatasetEdit extends Component {
   //     }
   //   );
   // };
-
-  sourceDuplicator = (sources) => { 
-    // For the testing of the multi-source Interface
-    console.debug("Sources ",sources)
-    console.debug("Sources ",sources)
-    if(sources){
-      console.debug("sourceDuplicator: ", sources);
-      if(sources && sources.length===1){
-  
-        var ns1 = sources[0];
-        ns1.ID = sources.length+1
-        
-        var ns2 = sources[0];
-        ns2.ID = sources.length+2
-  
-        console.debug("One Source")
-        sources.push(ns1, ns2);
-        return sources;
-      }else if(sources.length>1){
-        sources[0].ID = 0;
-        console.debug("Already Multi Source")
-        return sources
-      }else{
-        console.debug("Sourse Dupli Error")
-        return "err"
-      }
-    }else{
-      return {err: "err"}
-    }
-    
-  }
 
 
   sourcePop(){
