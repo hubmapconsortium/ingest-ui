@@ -1,4 +1,4 @@
-import React, { Component  } from "react";
+import React, { Component, useState  } from "react";
 import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
@@ -24,34 +24,35 @@ import Forms from "../uuid/forms";
 // import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
-  state = {
-    selectionModel: "",
-    filtered_keywords: "",
-    filtered: false,
-    entity_type_list: SAMPLE_TYPES,
-    column_def: COLUMN_DEF_DONOR,
-    show_info_panel: true,
-    show_search: true,
-    results_total: 0,
-    page: 0,
-    pageSize: 100,
-    editForm: false,
-    show_modal: false,
-    hide_modal: true, 
-    updateSuccess: false,
-    globus_url: "",
-    isAuthenticated: false,
-    group: "All Components",
-    sampleType: "----",
-    keywords: "",
-    last_keyword: "",
-    loading: true,
-    modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
-  };
+  
 
   constructor(props) {
     super(props);
     console.debug("SearchCompprops",props);
+    this.state = {
+      selectionModel: "",
+      filtered_keywords: "",
+      filtered: false,
+      entity_type_list: SAMPLE_TYPES,
+      column_def: COLUMN_DEF_DONOR,
+      show_info_panel: true,
+      show_search: true,
+      results_total: 0,
+      page: 0,
+      pageSize: 100,
+      editForm: false,
+      show_modal: false,
+      hide_modal: true, 
+      updateSuccess: false,
+      globus_url: "",
+      isAuthenticated: false,
+      group: "All Components",
+      sampleType: "----",
+      keywords: "",
+      last_keyword: "",
+      loading: false,
+      modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
+    };
   }
 
   componentDidMount() {     
@@ -70,7 +71,7 @@ class SearchComponent extends Component {
         if(this.props.modecheck === "Source"){
           this.setState({
             loading:false,
-            show_search:true
+            show_search:true,
           });
         }else{
           this.setState({
@@ -87,6 +88,7 @@ class SearchComponent extends Component {
         this.setState({
           sampleType: lastSegment,
           sample_type: lastSegment,
+          loading: false
         },function(){ 
           this.setFilterType();
           if(euuid && euuid !== "new"){
@@ -102,6 +104,13 @@ class SearchComponent extends Component {
             this.handleSearchClick();
           }
         });
+      }else if(window.location.href.includes("/undefined")){
+        // We're running without filter props passed or URL routing 
+        console.log("Undefined?!")
+        
+        this.handleClearFilter();
+        this.handleUrlChange("");
+       
       }else{
         // We're running without filter props passed or URL routing 
         console.log("No Props Or URL, Clear Filter")
@@ -118,6 +127,7 @@ class SearchComponent extends Component {
         // console.log(type+" | "+euuid);
         this.setState({
           sampleType: type,
+          loading: false
         },function(){ 
           if(euuid){
             // console.log("UUID PROVIDED: "+euuid);
@@ -219,7 +229,8 @@ class SearchComponent extends Component {
         editingEntity: this.props.editNewEntity,
         editForm: true,
         show_modal: true,
-        show_search: false
+        show_search: false,
+        loading: false
         });
     }
     
@@ -312,7 +323,10 @@ class SearchComponent extends Component {
 
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
-    this.setState({ loading: true, filtered: true});
+    this.setState({ 
+      loading: false, 
+      filtered: true
+    });
 
     const group = this.state.group;
     const sample_type = this.state.sampleType;
@@ -344,9 +358,9 @@ class SearchComponent extends Component {
     }
 
     if (sample_type) {
-      //console.debug(sample_type);
+      console.debug("sample_type", sample_type);
       console.debug(this.props);
-      if(!this.state.uuid && sample_type !=="----"){
+      if(!this.state.uuid && sample_type !=="----"){ 
         this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
       
@@ -374,27 +388,29 @@ class SearchComponent extends Component {
     console.debug('From Page ', this.state.page);
     console.debug('From Page size', this.state.pageSize);
 
+    this.setState({
+      loading: true
+    }, () => {
     api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
     .then((response) => {
       console.debug("Search Res", response.results);
+      this.setState({ loading: false });
       if (response.status === 200) {
       //console.debug('SEARCH RESULTS', response);
         if (response.total === 1) {  // for single returned items, customize the columns to match
           which_cols_def = this.columnDefType(response.results[0].entity_type);
           ////console.debug("which_cols_def: ", which_cols_def);
         }
-      this.setState(
-          {
-          datarows: response.results, // Object.values(response.results)
-          results_total: response.total,
-          column_def: which_cols_def
-          }
-        );
-        
-        
+      this.setState({
+        datarows: response.results, // Object.values(response.results)
+        results_total: response.total,
+        column_def: which_cols_def,
+        loading: false
+      });
       }
-      this.setState({ loading: false });
     });
+  })
+  
   };
 
   columnDefType = (et) => {
@@ -413,7 +429,13 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
-    if(targetPath!=="----"){
+    if(!targetPath || targetPath === undefined){
+      var targetPath = ""
+    }
+    this.setState({
+      loading: false
+    })
+    if(targetPath!=="----" && targetPath!=="undefined"){
       window.history.pushState(
         null,
         "", 
@@ -455,13 +477,16 @@ class SearchComponent extends Component {
   }
 
  cancelEdit = () => {
-    this.setState({ editingEntity: null, 
+    this.setState({ 
+      editingEntity: null, 
       show_modal: false,  
-      show_search: true
+      show_search: true,
+      loading: false
     });
     // console.debug("cancelEdit")
     // console.debug(this.props.match)
     // console.debug(this.props.match.params.type)
+    this.handleClearFilter();
     this.handleUrlChange();
     this.handleSearchClick();
     //this.filterEntity();
@@ -475,6 +500,7 @@ class SearchComponent extends Component {
       updateSuccess: true,
       editingEntity: null,
       show_search: true,
+      loading: false
     });
     setTimeout(() => {
       this.setState({ updateSuccess: null });
@@ -497,7 +523,8 @@ class SearchComponent extends Component {
       open_edit_dialog: false, 
       creatingNewEntity: false,
       showSearch: true,
-      show_search:true
+      show_search:true,
+      loading: false
     });
     //this.handleUrlChange("");
   };
@@ -531,6 +558,7 @@ class SearchComponent extends Component {
                 editForm: true,
                 show_modal: true,
                 show_search: false,
+                loading: false
                 });
           //this.props.onEdit();
             }
@@ -544,6 +572,7 @@ class SearchComponent extends Component {
             editForm: true,
             show_modal: true,
             show_search: false,
+            loading: false
             });
         }
       this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "plural")+"/"+entity_data.uuid);
@@ -561,7 +590,7 @@ class SearchComponent extends Component {
         sampleType: "----",
         group: "All Components",
         keywords: "",
-        page: 0
+        page: 0,
         //pageSize: PAGE_SIZE
       }, () => {
         this.handleSearchClick();
@@ -597,7 +626,9 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
-          {this.renderLoadingBar()}
+          {this.state.loading && this.state.page === 0 &&(
+             this.renderLoadingBar()
+          )}
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
@@ -688,14 +719,12 @@ renderInfoPanel() {
         );
   }
 
-  renderLoadingBar() {
-    console.debug("renderLoadingBar", this.state.loading);
-    if (this.state.loading) {
-      return (<div>
+  renderLoadingBar = () => {
+      return (
+      <div>
         <LinearProgress />
       </div>
-      );
-    }
+    )
   }
 
   renderTable() {
