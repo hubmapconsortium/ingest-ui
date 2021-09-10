@@ -1030,7 +1030,11 @@ class DatasetEdit extends Component {
                 })
                 .catch((error) => {
                   console.debug("ERROR ", error)
+<<<<<<< HEAD
                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
+=======
+                  this.setState({ submit_error: true, submitting: false });
+>>>>>>> 814f0ff... After submission, remains on the entity view with a success message
                 });
             } else if (i === "processing") {
                console.log('Submit Dataset...');
@@ -1040,9 +1044,14 @@ class DatasetEdit extends Component {
                       console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
+<<<<<<< HEAD
                       console.log("ERR response");
                       console.log(response);
                       this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+=======
+                      console.log(response);
+                      this.setState({ submit_error: true, submitting: false });
+>>>>>>> 814f0ff... After submission, remains on the entity view with a success message
                     }
                 });
               } else { // just update
@@ -1056,7 +1065,11 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                             console.debug("ERROR ",response)
+<<<<<<< HEAD
                             this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+=======
+                            this.setState({ submit_error: true, submitting: false });
+>>>>>>> 814f0ff... After submission, remains on the entity view with a success message
                           }
                 });
               }
