@@ -29,7 +29,9 @@ import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
 
-
+import Snackbar from '@material-ui/core/Snackbar';
+import CloseIcon from '@material-ui/icons/Close';
+import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -37,6 +39,10 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
+
+function Alert(props: AlertProps) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 class DatasetEdit extends Component {
   state = {
@@ -64,6 +70,8 @@ class DatasetEdit extends Component {
     LookUpShow: false,
     GroupSelectShow: false,
     confirmDialog: false,
+    snackPriotity:'error',
+    openSnack: false,
   //  is_curator: null,
     source_uuid_type: "",
     data_types: new Set(),
@@ -337,6 +345,8 @@ class DatasetEdit extends Component {
     document.removeEventListener("click", this.handleClickOutside, true);
   }
 
+
+
   showModal = () => {
     this.setState({ show: true });
   };
@@ -369,14 +379,23 @@ class DatasetEdit extends Component {
         editingSource: row,
         editingSourceIndex: index
     });
-};
+  };
 
-hideConfirmDialog = () => {
+  hideConfirmDialog = () => {
     this.setState({ 
         confirmDialog: false ,
         editingSource: []
     });
-};
+  };
+
+  handleCloseSnack = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState({
+      openSnack: false
+    })
+  };
 
 
   handleLookUpClick = () => {
@@ -943,6 +962,15 @@ hideConfirmDialog = () => {
     })
   };
 
+  savedUpdate = (i) => {
+    console.log("savedUpdate");
+    this.setState({
+      openSnack: true,
+      snackPriotity: 'success',
+      submitting: false
+    })
+  };
+
   handleSubmit = (i) => {
     //////console.log('SUBMIT!!');
     const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
@@ -1023,30 +1051,36 @@ hideConfirmDialog = () => {
               axios
                 .put(uri, JSON.stringify(data), config)
                 .then((res) => {
+                  this.savedUpdate();
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
+                  console.debug("ERROR ", error)
                   this.setState({ submit_error: true, submitting: false });
                 });
             } else if (i === "processing") {
-               ////console.log('Submit Dataset...');
+               console.log('Submit Dataset...');
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                   .then((response) => {
                     if (response.status === 200) {
-                      ////console.log(response.results);
+                      console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
+                      console.log(response);
                       this.setState({ submit_error: true, submitting: false });
                     }
                 });
               } else { // just update
+              
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((response) => {
                           if (response.status === 200) {
-                            ////console.log('Update Dataset...');
-                             ////console.log(response.results);
+                            console.log('Update Dataset...');
+                            console.log(response.results);
+                            this.savedUpdate();
                             this.props.onUpdated(response.results);
                           } else {
+                            console.debug("ERROR ",response)
                             this.setState({ submit_error: true, submitting: false });
                           }
                 });
@@ -2172,6 +2206,14 @@ hideConfirmDialog = () => {
           </div>
         </Modal>
         </Paper>
+
+
+        <Snackbar open={this.state.openSnack} autoHideDuration={6000} onClose={this.handleCloseSnack}>
+            <Alert onClose={this.handleCloseSnack} severity={this.state.snackPriotity}>
+              Entity Details Saved!
+            </Alert>
+        </Snackbar>
+
       </React.Fragment>
     );
   }

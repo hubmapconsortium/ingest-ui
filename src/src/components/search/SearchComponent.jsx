@@ -473,8 +473,8 @@ class SearchComponent extends Component {
     //console.debug(this.props)
     this.setState({
       updateSuccess: true,
-      editingEntity: null,
-      show_search: true,
+      // editingEntity: null,
+      // show_search: true,
     });
     setTimeout(() => {
       this.setState({ updateSuccess: null });
