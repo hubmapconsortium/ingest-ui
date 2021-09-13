@@ -24,6 +24,7 @@ import Forms from "../uuid/forms";
 // import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
+  
 
   constructor(props) {
     super(props);
@@ -323,7 +324,11 @@ class SearchComponent extends Component {
 
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
-    console.debug("handleSearchClick")
+    this.setState({ 
+      loading: false,
+      filtered: true
+    });
+
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
@@ -384,47 +389,38 @@ class SearchComponent extends Component {
     console.debug('results_total  ', this.state.results_total);
     console.debug('From Page ', this.state.page);
     console.debug('From Page size', this.state.pageSize);
-    
-
-    console.debug("this.state.page", this.state.page);
-    if(this.state.page != 0 ){
+    if(this.state.results_total === 0 ){
       this.setState({
-        table_loading:true, 
+        loading: true,
       });
     }
-
-    this.setState({ 
-      loading: true,
-      filtered: true
-    },() => {
-      api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
-      .then((response) => {
-        console.debug("Search Res", response.results);
-
-        if (response.status === 200) {
-          if (response.total === 1) {  // for single returned items, customize the columns to match
-            which_cols_def = this.columnDefType(response.results[0].entity_type);
-            ////console.debug("which_cols_def: ", which_cols_def);
-          }else if(response.total <= 0 ){
-            
-              console.log("0 results not mid-load");
-            }
-          
-        this.setState({
-          datarows: response.results, // Object.values(response.results)
-          results_total: response.total,
-          column_def: which_cols_def,
-          loading: false,
-          table_loading:false, 
-        });
-      }else{
-        console.debug("Error on Search ", response)
-      }
-    })
-  
-    });
-      
+    // console.debug("this.state.page", this.state.page);
+    // if(this.state.page != 0 ){
+    //   this.setState({
+    //     table_loading:true, 
+    //   });
+    // }
     
+    api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
+    .then((response) => {
+      console.debug("Search Res", response.results);
+      this.setState({ loading: false });
+      if (response.status === 200) {
+      //console.debug('SEARCH RESULTS', response);
+        if (response.total === 1) {  // for single returned items, customize the columns to match
+          which_cols_def = this.columnDefType(response.results[0].entity_type);
+          ////console.debug("which_cols_def: ", which_cols_def);
+        }
+      this.setState({
+        datarows: response.results, // Object.values(response.results)
+        results_total: response.total,
+        column_def: which_cols_def,
+        loading: false,
+        table_loading:false, 
+      });
+      }
+  })
+  
   };
 
   columnDefType = (et) => {
@@ -475,10 +471,8 @@ class SearchComponent extends Component {
   }
 
   handleSearchButtonClick = () => {
-    console.debug("handleSearchButtonClick")
     this.setState({
           datarows: [],
-          loading: true,
           page: 0    // reset the page
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
@@ -643,7 +637,7 @@ class SearchComponent extends Component {
           {this.state.show_search && (
             this.renderFilterControls()
             )}
-          {this.state.loading &&(
+          {this.state.loading && this.state.page === 0 &&(
              this.renderLoadingBar()
           )}
           {this.state.show_search && this.state.datarows &&
@@ -736,15 +730,11 @@ renderInfoPanel() {
   }
 
   renderLoadingBar = () => {
-
-    if( this.state.loading && !this.state.page > 0 ){
       return (
-        <div>
-          <LinearProgress />
-        </div>
-      )
-    }
-      
+      <div>
+        <LinearProgress />
+      </div>
+    )
   }
 
   renderTable() {
