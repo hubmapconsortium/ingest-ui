@@ -30,7 +30,8 @@ import { get_assay_type } from '../../service/search_api';
 
 class DatasetEdit extends Component {
   state = {
-    status: "",
+    status: "NEW",
+    badge_class: "badge-purple",
     display_doi: "",
   //  doi: "",
     name: "",
@@ -220,7 +221,7 @@ class DatasetEdit extends Component {
 
       this.setState(
         {
-          status: this.props.editingDataset.status.toUpperCase(),
+          status: this.props.editingDataset.hasOwnProperty('status') ? this.props.editingDataset.status.toUpperCase() : "NEW",
           display_doi: this.props.editingDataset.hubmap_id,
           //doi: this.props.editingDataset.entity_doi,
           lab_dataset_id: this.props.editingDataset.lab_dataset_id,
