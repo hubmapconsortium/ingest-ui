@@ -46,8 +46,8 @@ class DatasetEdit extends Component {
     source_uuids: [],
     globus_path: "",
     writeable: true,
-    has_submit_privs: false,
-    has_submit: false,
+    has_submit_priv: false,
+    has_publish_priv: false,
     has_admin_priv: false,
     lookUpCancelled: false,
     LookUpShow: false,
@@ -132,7 +132,8 @@ class DatasetEdit extends Component {
     
           this.setState({
             writeable: resp.results.has_write_priv,
-            has_submit: resp.results.has_submit_priv,
+            has_submit_priv: resp.results.has_submit_priv,
+            has_publish_priv: resp.results.has_publish_priv,
             has_admin_priv: resp.results.has_admin_priv
             });
         }
@@ -1055,7 +1056,8 @@ class DatasetEdit extends Component {
 
   renderButtons() {
 
-    if (this.state.has_admin_priv === true && this.state.assay_type_primary == false) {
+    if (this.state.has_admin_priv === true && this.state.assay_type_primary == false
+            && this.state.previous_revision_uuid === undefined) {
          return (
            <div className="row">
                 {this.reprocessButton()}
@@ -1078,12 +1080,14 @@ class DatasetEdit extends Component {
         return (
             <div className="row">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.aButton("processing", "Submit")}
+                {this.state.has_submit_priv && (
+                  this.aButton("processing", "Submit"))
+                }
                 {this.cancelButton()}
             </div>
           )
       }
-      if (this.state.status.toUpperCase() === 'UNPUBLISHED') {
+      if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
         return (
             <div className="row">
                 {this.aButton("published", "Publish")}
@@ -1105,7 +1109,7 @@ class DatasetEdit extends Component {
             <div className="row">
                 {this.aButton("hold", "Hold")}
                 {this.aButton("reopened", "Reopen")}
-                {this.aButton("published", "Publish")}
+                {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
             </div>
