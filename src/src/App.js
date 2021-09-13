@@ -142,6 +142,8 @@ class App extends Component {
     var type;
     var fauxEvent;
     
+    var type;
+    var fauxEvent;
     if (this.props.match){
       console.debug("APP this.props.match");
       type = this.props.match.params.type;
