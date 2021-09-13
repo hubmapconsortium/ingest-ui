@@ -382,11 +382,6 @@ caption {
 .App .bg-primary, .App .button-primary {
     background-color: #444a65 !important;
 }
-.title-error.bg-error{
-  color: #fff;
-  font-weight: 500;
-  background-color: #f44336;
- }
 
  .container {
     width:100% !important;
@@ -678,8 +673,4 @@ a.disabled {
     border-bottom: 1px solid rgba(224, 224, 224, 1);
     text-overflow: ellipsis;
     cursor: pointer;
-}
-
-.interaction-icon{
-  cursor: pointer;
 }
