@@ -646,7 +646,7 @@ class App extends Component {
               <Router history={history}>
               <Switch>
                     <Route path="/new/:test" exact >
-                        <SearchComponent fromRoute="MEW"  />
+                        <SearchComponent fromRoute="New" newForm={this.state.creatingNewEntity}  />
                     </Route> 
                     <Route path="/:type/:uuid" exact >
                         <SearchComponent fromRoute="typeuuid" />

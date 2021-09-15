@@ -705,6 +705,7 @@ class SearchComponent extends Component {
               handleCancel={this.cancelEdit}
               editingDataset={this.state.editingEntity}
               onUpdated={this.onUpdated}
+              newForm={true}
               //onCreated={this.handleDatasetCreated}
               changeLink={this.onChangeGlobusLink.bind(this)}
             />

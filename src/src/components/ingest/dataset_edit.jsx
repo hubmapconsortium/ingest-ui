@@ -59,6 +59,7 @@ class DatasetEdit extends Component {
     source_uuid: undefined,
     editingSource:[],
     editingSourceIndex:0,
+    submitErrorResponse:"",
     source_uuid_list: [],
     contains_human_genetic_sequences: undefined,
     description: "",
@@ -140,6 +141,8 @@ class DatasetEdit extends Component {
             });
         }
       });
+    }else{
+      console.debug("No editingDataset Prop, Must be a New Form")
     }
 
 
@@ -205,12 +208,8 @@ class DatasetEdit extends Component {
          this.setState({
           source_uuids: this.props.editingDataset.direct_ancestors
         });
-        
-        //JSON.parse(
-        //  this.props.editingDataset.properties.source_uuid.replace(/'/g, '"')
-        //);
       } catch {
-       // source_uuids = [this.props.editingDataset.properties.source_uuid];
+        console.debug("editingDataset Prop Not Found")
       }
       // this.setState({
       //   is_protected: false,
@@ -634,16 +633,18 @@ class DatasetEdit extends Component {
       });
   }
   renderSources = () => {
-    if(this.state.source_uuid_list && this.state.source_uuid_list.length > 0 ){
+    if(this.state.source_uuid_list && this.state.source_uuid_list.length > 0 ||
+      this.props.newForm===false){
       return (
         <div className="w-100">
         <TableContainer component={Paper} style={{ maxHeight: 450 }}>
-        <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0" stickyHeader>
-          <TableHead className="thead-dark">
-            <TableRow >
+        <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
+          <TableHead className="thead-dark font-size-sm">
+            <TableRow className="   " >
               <TableCell>
                 <label
-                  htmlFor='source_uuid'>
+                  htmlFor='source_uuid'
+                  className="m-0 p-0">
                   Source ID <span className='text-danger px-2'>*</span>
                 </label>
                <FontAwesomeIcon
@@ -688,7 +689,7 @@ class DatasetEdit extends Component {
                 <TableCell align="right" className="clicky-cell" scope="row">{row.group_name}</TableCell>
                 <TableCell align="right" className="clicky-cell" scope="row">{row.lab_tissue_sample_id}</TableCell>
                 <TableCell align="right" className="clicky-cell" scope="row">{row.description}</TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row"> 
+                <TableCell align="right" className="clicky-cell " scope="row"> 
                   <span
                     className={"w-100 badge " + getPublishStatusColor(row.status)}>
                       {row.status}
@@ -718,7 +719,9 @@ class DatasetEdit extends Component {
               className='btn btn-secondary float-right'
               onClick={() => this.handleLookUpClick()} 
               >
-              Add Another Source 
+              Add {this.props.newForm === true && (
+                "Another"
+                )} Source 
               <FontAwesomeIcon
                 className='fa button-icon ml-2'
                 icon={faPlus}
@@ -730,7 +733,9 @@ class DatasetEdit extends Component {
              
      
       </div>
-    )}
+    )}else if(this.state.writeable && this.state.editingDataset){
+
+    }
     
   }
 
@@ -1015,7 +1020,7 @@ class DatasetEdit extends Component {
                 })
                 .catch((error) => {
                   console.debug("ERROR ", error)
-                  this.setState({ submit_error: true, submitting: false });
+                  this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
                 });
             } else if (i === "processing") {
                console.log('Submit Dataset...');
@@ -1025,8 +1030,9 @@ class DatasetEdit extends Component {
                       console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
+                      console.log("ERR response");
                       console.log(response);
-                      this.setState({ submit_error: true, submitting: false });
+                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
                     }
                 });
               } else { // just update
@@ -1040,7 +1046,7 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                             console.debug("ERROR ",response)
-                            this.setState({ submit_error: true, submitting: false });
+                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
                           }
                 });
               }
@@ -1057,45 +1063,53 @@ class DatasetEdit extends Component {
                 data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
               }
 
-              //////console.log('DATASET TO SAVE', JSON.stringify(data))
+              console.log('DATASET TO SAVE', JSON.stringify(data))
               // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    //////console.log('create Dataset...', response.results);
+                    console.log('create Dataset...', response.results);
                      this.setState({
                         //globus_path: res.data.globus_directory_url_path,
                         display_doi: response.results.display_doi,
                         //doi: res.data.doi,
                       });
-                     axios
-                  .get(
-                    `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${response.results.uuid}`,
-                    config
-                  )
-                  .then((res) => {
-                    this.setState({
-                      globus_path: res.data,
-                    }, () => {
-                      console.debug('globus_path', res.data)
-                      this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
-                      this.onChangeGlobusURL();
+                     axios.get(
+                      `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${response.results.uuid}`,
+                      config
+                    )
+                    .then((res) => {
+                      this.setState({
+                        globus_path: res.data,
+                      }, () => {
+                        console.debug('globus_path', res.data)
+                        this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
+                        this.onChangeGlobusURL();
+                      });
+                    })
+                    .catch((err) => {
+                     console.log('ERROR catch', err)
+                      if (err.response && err.response.status === 401) {
+                        localStorage.setItem("isAuthenticated", false);
+                        window.location.reload();
+                      }
                     });
-                  })
-                  .catch((err) => {
-                    ////console.log('ERROR', err)
-                    this.setState({
-                      globus_path: "",
-                      globus_path_tips: "Globus URL Unavailable",
-                    });
-                    if (err.response && err.response.status === 401) {
-                      localStorage.setItem("isAuthenticated", false);
-                      window.location.reload();
-                    }
-                  });
                   } else {
-                    this.setState({ submit_error: true, submitting: false });
+                    console.debug("Error response", response) 
+                    this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.data.error} ,
+                      () => {
+                        console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
+                      });
+                   
                   }
+                
+              })
+              .catch((err) => {
+                console.debug("err", err)
+                this.setState({ submit_error: true, submitting: false, submitErrorResponse:err } ,
+                  () => {
+                    console.debug("CATCH ", err) 
+                  });
               });
           }  //else
         }
@@ -1698,9 +1712,8 @@ class DatasetEdit extends Component {
         <Paper className="paper-container">
         <form>
           <div>
-            <div className='row mt-3 mb-3'>
-              <div className='col-sm-2'>
-                <h3 className='float-right'>
+            <div className='row m-0'>
+                <h3 className='float-left'>
                   <span
                     className={"badge " + this.state.badge_class}
                     style={{ cursor: "pointer" }}
@@ -1713,21 +1726,22 @@ class DatasetEdit extends Component {
                     {this.state.status}
                   </span>
                 </h3>
-              </div>
-              <div className="col-sm-12 text-center"><h4>Dataset Information</h4></div>
 
+              <h4 className="mx-2">Dataset Information</h4>
+
+            </div>
                  
-              <div className='col-sm-10'>
+            <div className='row m-0'>
                 <h3>
                   {this.props.editingDataset &&
                     "HuBMAP Dataset ID " +
                       this.state.display_doi}
                 </h3>
-                <div>
+            </div>
+            <div className='row m-0'>
                   <p>
                     <strong>
                       <big>
-                       
                         {this.state.globus_path && (
 
                           <a
@@ -1743,10 +1757,6 @@ class DatasetEdit extends Component {
                       </big>
                     </strong>
                   </p>
-
-               
-                </div>
-              </div>
             </div>
 
 
@@ -2130,7 +2140,10 @@ class DatasetEdit extends Component {
           )}
           {this.state.submit_error && (
             <div className='alert alert-danger col-sm-12' role='alert'>
-              Oops! Something went wrong. Please contact administrator for help.
+              Oops! Something went wrong. Please contact administrator for help. <br />
+              {this.state.submitErrorResponse &&(
+                <small><strong>Details:</strong> {this.state.submitErrorResponse}</small>
+              )}
             </div>
           )}
           {this.renderButtons()}

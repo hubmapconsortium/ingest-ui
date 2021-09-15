@@ -144,6 +144,7 @@ class Forms extends Component {
             onCreated={this.onCreated}
             handleCancel={this.props.onCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}
+            newForm={false}
           />
         )
     } else if (this.state.formType === "dataset") {
