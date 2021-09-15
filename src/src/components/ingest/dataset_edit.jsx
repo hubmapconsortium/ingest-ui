@@ -28,6 +28,7 @@ import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
+import { getPublishStatusColor } from "../../utils/badgeClasses";
 
 import Snackbar from '@material-ui/core/Snackbar';
 import CloseIcon from '@material-ui/icons/Close';
@@ -687,7 +688,12 @@ class DatasetEdit extends Component {
                 <TableCell align="right" className="clicky-cell" scope="row">{row.group_name}</TableCell>
                 <TableCell align="right" className="clicky-cell" scope="row">{row.lab_tissue_sample_id}</TableCell>
                 <TableCell align="right" className="clicky-cell" scope="row">{row.description}</TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row">{row.status}</TableCell>
+                <TableCell align="right" className="clicky-cell" scope="row"> 
+                  <span
+                    className={"w-100 badge " + getPublishStatusColor(row.status)}>
+                      {row.status}
+                  </span>               
+                </TableCell>
                 <TableCell align="right" className="clicky-cell" scope="row"> 
                 {this.state.writeable && (
                   <React.Fragment>
@@ -740,7 +746,7 @@ class DatasetEdit extends Component {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
 
-         Are you sure you want to unlink Source {this.state.editingSource.hubmap_id}? 
+         Are you sure you want to unlink Source {this.state.editingSource.hubmap_id}? <br/>
          <small>Source remains in the database. To delete the entity itself, please use the  Entity page </small>
           </DialogContentText>
         </DialogContent>
