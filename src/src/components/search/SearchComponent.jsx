@@ -552,9 +552,9 @@ class SearchComponent extends Component {
     
     if(params.field === 'uuid') return; // skip this field
 
-    if (params.row) {
+    if (params.hasOwnProperty('row')) {
     // ////console.debug('CELL CLICK: entity', params.row.entity_type);
-    ////console.debug('Local CELL CLICK: uuid', params.row.uuid);
+    console.debug('Local CELL CLICK: uuid', params.row.uuid);
 
     entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
@@ -565,8 +565,11 @@ class SearchComponent extends Component {
           ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
             .then((resp) => {
               //console.debug('ingest_api_allowable_edit_states done', resp)
+            let read_only_state = false
             if (resp.status === 200) {
-              let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+              read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+            }
+
               this.setState({
                 updateSuccess: null,
                 editingEntity: entity_data,
@@ -578,7 +581,6 @@ class SearchComponent extends Component {
                 loading: false
                 });
           //this.props.onEdit();
-            }
           });
         }else{
           this.setState({
