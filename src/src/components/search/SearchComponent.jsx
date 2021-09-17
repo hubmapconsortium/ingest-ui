@@ -1,5 +1,4 @@
-import React, { Component, useState  } from "react";
-import { withRouter } from 'react-router-dom';
+import React, { Component  } from "react";
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 
@@ -10,7 +9,6 @@ import UploadsEdit from "../uploads/editUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES } from "../../constants";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
@@ -19,21 +17,21 @@ import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
 
 // Creation donor_form_components
-import Forms from "../uuid/forms";
+import Forms from "../uuid/forms"; 
 
 // import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
 
   constructor(props) {
-    super(props);
+    super(props); 
     console.debug("SearchCompprops",props);
     this.state = {
       selectionModel: "",
       filtered_keywords: "",
       filtered: false,
       entity_type_list: SAMPLE_TYPES,
-      column_def: COLUMN_DEF_DONOR,
+      column_def: COLUMN_DEF_DONOR, 
       show_info_panel: true,
       show_search: true,
       results_total: 0,
@@ -387,7 +385,7 @@ class SearchComponent extends Component {
     
 
     console.debug("this.state.page", this.state.page);
-    if(this.state.page != 0 ){
+    if(this.state.page !== 0 ){
       this.setState({
         table_loading:true, 
       });
@@ -443,8 +441,8 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
-    if(!targetPath || targetPath === undefined){
-      var targetPath = ""
+    if(!targetPath || targetPath === undefined || targetPath === ""){
+      targetPath = ""
     }
     this.setState({
       loading: false

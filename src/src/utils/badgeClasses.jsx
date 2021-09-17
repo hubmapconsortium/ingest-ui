@@ -1,7 +1,11 @@
 
-export function getPublishStatusColor(status) {
+export function getPublishStatusColor(status, itemID) {
 	var badge_class = "";
-	//console.log('status', status)
+	//console.log('status', status)\
+  if(status=== undefined || !status){
+    badge_class = "badge-danger";
+    console.log("No Status Value for ID "+itemID)
+  }else{
 	switch (status.toUpperCase()) {
         case "NEW":
           badge_class = "badge-purple";
@@ -45,4 +49,5 @@ export function getPublishStatusColor(status) {
           break;
       }
       return badge_class;
+    }
 }

@@ -59,7 +59,7 @@ export const COLUMN_DEF_DATASET = [
               style={{
                 width: "100px"
               }}
-              className={"badge " + getPublishStatusColor(params.value)}>
+              className={"badge " + getPublishStatusColor(params.value,"Unknown! Passed from Dataset table_constants.jsx")}>
               {params.value}
             </span>
 			)
@@ -97,7 +97,7 @@ export const COLUMN_DEF_UPLOADS = [
               style={{
                 width: "100px"
               }}
-              className={"badge " + getPublishStatusColor(params.value)}>
+              className={"badge " + getPublishStatusColor(params.value,"Unknown! Passed from Uploads table_constants.jsx")}>
               {params.value}
             </span>
       )

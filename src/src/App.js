@@ -141,9 +141,7 @@ class App extends Component {
     document.addEventListener("keydown", this.handleKeyDown);
     var type;
     var fauxEvent;
-    
-    var type;
-    var fauxEvent;
+
     if (this.props.match){
       console.debug("APP this.props.match");
       type = this.props.match.params.type;
@@ -271,7 +269,6 @@ class App extends Component {
       createSuccess: false,
       show_search: false,
       showSearch: false,
-      anchorEl: null
     });
     console.debug("handleFormTypeChange ",target,this.state);
     this.handleUrlChange("new/"+target);

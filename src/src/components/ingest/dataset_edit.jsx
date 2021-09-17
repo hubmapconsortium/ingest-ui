@@ -9,19 +9,16 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faEye, faUnlink, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faUnlink, faPlus } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
-import { truncateString } from "../../utils/string_helper";
-import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
-  faUserShield,
   faExternalLinkAlt,
-  faSearch, faFolder
+  faFolder
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
@@ -31,8 +28,7 @@ import { entity_api_update_entity } from '../../service/entity_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 
 import Snackbar from '@material-ui/core/Snackbar';
-import CloseIcon from '@material-ui/icons/Close';
-import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
+import MuiAlert from '@material-ui/lab/Alert';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -40,10 +36,10 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
-
-function Alert(props: AlertProps) {
+function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
+
 
 class DatasetEdit extends Component {
   state = {
@@ -587,7 +583,7 @@ class DatasetEdit extends Component {
       this.cancelLookUpModal();
   };
 
-  handleUnlinkClick = (selection) => { 
+  handleUnlinkClick = (selection) => {
     // ////console.log('handleSelectClick', ids)
     //let id = this.getSourceAncestor(ids);
     //////console.log('Dataset selected', selection.row.uuid)
@@ -633,8 +629,8 @@ class DatasetEdit extends Component {
       });
   }
   renderSources = () => {
-    if(this.state.source_uuid_list && this.state.source_uuid_list.length > 0 ||
-      this.props.newForm===false){
+    if(this.state.source_uuid_list && (this.state.source_uuid_list.length > 0 ||
+      this.props.newForm===false)){
       return (
         <div className="w-100">
         <TableContainer component={Paper} style={{ maxHeight: 450 }}>
@@ -691,7 +687,7 @@ class DatasetEdit extends Component {
                 <TableCell align="right" className="clicky-cell" scope="row">{row.description}</TableCell>
                 <TableCell align="right" className="clicky-cell " scope="row"> 
                   <span
-                    className={"w-100 badge " + getPublishStatusColor(row.status)}>
+                    className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}>
                       {row.status}
                   </span>               
                 </TableCell>
