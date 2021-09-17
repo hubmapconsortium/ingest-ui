@@ -127,6 +127,8 @@ let boolQuery = "";
           } else {
             boolQuery.must(esb.matchQuery("entity_type.keyword", 'Donor'));
           }
+        } else if (fields["organ"]) {
+            boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
         } else {
             // was entity types select
             if (fields["entity_type"]) {
