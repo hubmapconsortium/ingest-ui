@@ -185,3 +185,24 @@ export function search_api_search_group_list() {
 
   return groups;
 }
+
+export function get_assay_type(assay) { 
+  return axios 
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`)
+      .then(res => {
+        let data = res.data;
+        //var dt_dict = data.result.map((value, index) => { return value });
+        var found_dt = undefined
+        data.result.forEach(s => {
+          if (s['name'] === assay) {
+            found_dt = s;
+          }
+        });
+
+        console.debug(found_dt);
+        return {status: res.status, results: found_dt}
+      })
+      .catch(err => {
+         return {status: 500, results: err.response}
+      });
+};
