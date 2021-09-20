@@ -355,7 +355,7 @@ class SearchComponent extends Component {
     // insert organs in between
     var organs = {}
     for (let k in ORGAN_TYPES) {
-       organs[k] = " - " + ORGAN_TYPES[k]
+       organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + ORGAN_TYPES[k]
     }
     combinedList.push(organs)
     combinedList.push(SAMPLE_TYPES[5])
