@@ -198,8 +198,10 @@ class TissueForm extends Component {
           let param_uuid = ""
           try {
             param_uuid = this.props.match.params.uuid
+            console.debug('Param match', param_uuid)
           } catch {
             param_uuid = this.props.editingEntity.uuid;
+            console.debug('editingEntity', param_uuid)
           }
         
           //console.debug('UUID', param_uuid)
@@ -210,29 +212,27 @@ class TissueForm extends Component {
                   // check to see if user can edit
                   ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((resp) => {
+                          let read_only_state = false
                           if (resp.status === 200) {
-                            //console.debug('api_allowable_edit_states...', resp.results);
-                            ////////console.debug(resp.results);
-                            let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-  
+                            console.debug('api_allowable_edit_states...', resp.results);
+                            read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+                          }
                             // THIS IS A TEMPORARY HACK TO ALWAYS ENABLE PUBLIC LEVEL ACCESS FOR EDITING
-                            if (entity_data['data_access_level'] === "public") {
-                              read_only_state = false
-                            }
-                            this.setState({
-                              editingEntity: entity_data,
-                              readOnly: read_only_state,   // used for hidding UI components
-                              param_uuid: param_uuid 
-                            }, () => {
-                              this.checkForRelatedGroupIds(entity_data);
-                              this.initialize();
-                           
-                              //console.debug('readOnly', this.state.readOnly);
-                            }
+                          if (entity_data['data_access_level'] === "public") {
+                            read_only_state = false
+                          }
+                          this.setState({
+                            editingEntity: entity_data,
+                            readOnly: read_only_state,   // used for hidding UI components
+                            param_uuid: param_uuid 
+                          }, () => {
+                            this.checkForRelatedGroupIds(entity_data);
+                            this.initialize();
+                         
+                            //console.debug('readOnly', this.state.readOnly);
+                          }
 
-                            );
-                           
-                          }         
+                          );
                   });
                 }
           });
