@@ -365,7 +365,7 @@ class EditUploads extends Component {
     // console.log("componentDidUpdate");
     // console.log(prevProps);
     // Typical usage (don't forget to compare props):
-    // console.debug(this.props.editingUplo`ad.datasets);
+    // console.debug(this.props.editingUpload.datasets);
     if (this.props.targetUUID !== prevProps.targetUUID) {
       // this.getUpload(this.props.targetUUID);
     }
