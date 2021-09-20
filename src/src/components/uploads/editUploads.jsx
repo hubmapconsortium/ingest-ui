@@ -365,7 +365,7 @@ class EditUploads extends Component {
     // console.log("componentDidUpdate");
     // console.log(prevProps);
     // Typical usage (don't forget to compare props):
-    // console.debug(this.props.editingUpload.datasets);
+    // console.debug(this.props.editingUplo`ad.datasets);
     if (this.props.targetUUID !== prevProps.targetUUID) {
       // this.getUpload(this.props.targetUUID);
     }
@@ -487,6 +487,8 @@ class EditUploads extends Component {
 
 
   renderDatasets = (datasetCollection) => {
+    console.log(datasetCollection)
+    console.log(this.state.datasets)
 
     if(this.state.datasets && this.state.datasets.length > 0 ){
 
@@ -508,7 +510,7 @@ class EditUploads extends Component {
            <label>
             Datsets 
           </label>
-        <TableContainer component={Paper} style={{ maxHeight: 150 }}>
+        <TableContainer component={Paper} style={{ maxHeight: 350 }}>
         <Table aria-label="Associated Datasets" size="small" stickyHeader>
           <TableHead>
             <TableRow>
