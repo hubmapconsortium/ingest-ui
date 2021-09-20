@@ -382,9 +382,7 @@ class App extends Component {
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Donor</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
-                {this.state.devMode && (
                 <Button className="nav-link" onClick={this.handleUploadsDialog}>Uploads</Button>
-                )}
                 </div>
               )}
             </div>
