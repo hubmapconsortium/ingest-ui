@@ -217,7 +217,7 @@ class TissueForm extends Component {
                             console.debug('api_allowable_edit_states...', resp.results);
                             read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
                           }
-                            // THIS IS A TEMPORARY HACK TO ALWAYS ENABLE PUBLIC LEVEL ACCESS FOR EDITING
+                          // THIS IS A TEMPORARY HACK TO ALWAYS ENABLE PUBLIC LEVEL ACCESS FOR EDITING
                           if (entity_data['data_access_level'] === "public") {
                             read_only_state = false
                           }

@@ -8,7 +8,7 @@ import DonorForm from "../uuid/donor_form_components/donorForm";
 import TissueForm from "../uuid/tissue_form_components/tissueForm";
 import UploadsEdit from "../uploads/editUploads";
 import DatasetEdit from "../ingest/dataset_edit";
-import { SAMPLE_TYPES } from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -244,7 +244,7 @@ class SearchComponent extends Component {
   }
 
   handleSingularty  = (target, size) => {
-    // console.debug("handleSingularty target: ",target);
+     console.debug("handleSingularty target: ",target);
     if(target === 'uploads'){
       return "uploads" // Is always plural in our system
     }
@@ -257,9 +257,11 @@ class SearchComponent extends Component {
       }
     }else{ // we wanna singularize
       if(target.slice(-1) === "s"){
-        return (target.slice(0, -1)).toLowerCase()
+        console.debug('here 1', target.slice(0, -1))
+        return (target.slice(0, -1))  //.toLowerCase()
       }else{
-        return target.toLowerCase();
+        console.debug('here 2', target)
+        return target;
       }
     } 
   }
@@ -312,15 +314,57 @@ class SearchComponent extends Component {
             })
       }
     } else {
-
       this.setState({
-        entity_type_list: SAMPLE_TYPES
+        entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
       })
     }
 
 
   } 
 
+  // combine the organ types with the other samples type listing
+  // combinedTypeOptions = () => {
+  //   var combinedList = [];
+
+  //   SAMPLE_TYPES.forEach((x)=>{
+  //     combinedList.push(x)
+  //   });
+
+  //   combinedList.push(ORGAN_TYPES) 
+
+  //   // var organs = {}
+  //   // for (let k in ORGAN_TYPES) {
+  //   //   organs[k] = " - " + ORGAN_TYPES[k]
+  //   // }
+  //   // combinedList.push(organs)
+
+  //   //console.debug('combinedList', combinedList)
+  //   return combinedList
+  // }
+
+  combinedTypeOptions = () => {
+    var combinedList = [];
+
+    // this is NOT the best way to do this.
+    // the index numbers match the elements in SAMPLE_TYPES
+    combinedList.push(SAMPLE_TYPES[0])
+    combinedList.push(SAMPLE_TYPES[1])
+    combinedList.push(SAMPLE_TYPES[2])
+    combinedList.push(SAMPLE_TYPES[3])
+    combinedList.push(SAMPLE_TYPES[4])
+    // insert organs in between
+    var organs = {}
+    for (let k in ORGAN_TYPES) {
+       organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + ORGAN_TYPES[k]
+    }
+    combinedList.push(organs)
+    combinedList.push(SAMPLE_TYPES[5])
+    combinedList.push(SAMPLE_TYPES[6])
+    combinedList.push(SAMPLE_TYPES[7])
+    combinedList.push(SAMPLE_TYPES[8])
+
+    return combinedList
+  }
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
     console.debug("handleSearchClick")
@@ -354,8 +398,8 @@ class SearchComponent extends Component {
     }
 
     if (sample_type) {
-      console.debug("sample_type", sample_type);
-      console.debug(this.props);
+      // console.debug("sample_type", sample_type);
+      // console.debug(this.props);
       if(!this.state.uuid && sample_type !=="----"){ 
         this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
@@ -364,29 +408,38 @@ class SearchComponent extends Component {
       if (sample_type === 'donor' || sample_type === 'donors') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
-      } else if (sample_type === 'dataset' || sample_type === 'datasets') {
+      } 
+      else if (sample_type === 'sample' || sample_type === 'samples') {
+            params["entity_type"] = "Sample";
+            which_cols_def = COLUMN_DEF_SAMPLE;
+      }
+      else if (sample_type === 'dataset' || sample_type === 'datasets') {
             params["entity_type"] = "Dataset";
             which_cols_def = COLUMN_DEF_DATASET;
-        } else if (sample_type === 'upload' || sample_type === 'uploads') {
+      } else if (sample_type === 'upload' || sample_type === 'uploads') {
             params["entity_type"] = "Upload";
             which_cols_def = COLUMN_DEF_UPLOADS;
-        } 
-        else {
+      } 
+      else {
           if (sample_type !== '----') {
-            params["specimen_type"] = sample_type;
-          }
+            //console.debug('sample_type', sample_type)
+            // check to see if this is an actual organ
+            if (ORGAN_TYPES.hasOwnProperty(sample_type)) {
+              params["organ"] = sample_type;
+            } else { 
+              params["specimen_type"] = sample_type;
+            }
+        }
       } 
     } 
     if (keywords) {
       params["search_term"] = keywords;
     }
 
-    console.debug('results_total  ', this.state.results_total);
-    console.debug('From Page ', this.state.page);
-    console.debug('From Page size', this.state.pageSize);
-    
-
-    console.debug("this.state.page", this.state.page);
+    // console.debug('results_total  ', this.state.results_total);
+    // console.debug('From Page ', this.state.page);
+    // console.debug('From Page size', this.state.pageSize);
+    // console.debug("this.state.page", this.state.page);
     if(this.state.page != 0 ){
       this.setState({
         table_loading:true, 
@@ -399,7 +452,7 @@ class SearchComponent extends Component {
     },() => {
       api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
       .then((response) => {
-        console.debug("Search Res", response.results);
+        // console.debug("Search Res", response.results);
 
         if (response.status === 200) {
           if (response.total === 1) {  // for single returned items, customize the columns to match
