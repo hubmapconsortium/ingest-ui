@@ -3,9 +3,10 @@
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SAMPLE_TYPES = [
   { donor: "Donor" },
-  { organ: "Organ"},
+  { sample: "Sample"},
   { dataset: "Dataset"}, 
   { uploads: "Data Upload"},
+  { organ: "Organ"},
   {
     biopsy: "Biopsy",
     cell_lysate: "Cell lysate",
