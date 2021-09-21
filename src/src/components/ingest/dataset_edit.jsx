@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import Paper from '@material-ui/core/Paper';
-import Divider from '@material-ui/core/Divider';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -9,11 +8,13 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faUnlink, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faUnlink, faPlus, faSearch, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
+import { truncateString } from "../../utils/string_helper";
+import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
@@ -25,6 +26,7 @@ import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
+import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 
 import Snackbar from '@material-ui/core/Snackbar';
@@ -43,7 +45,8 @@ function Alert(props) {
 
 class DatasetEdit extends Component {
   state = {
-    status: "",
+    status: "NEW",
+    badge_class: "badge-purple",
     display_doi: "",
   //  doi: "",
     name: "",
@@ -62,23 +65,25 @@ class DatasetEdit extends Component {
     source_uuids: [],
     globus_path: "",
     writeable: true,
-    has_submit_privs: false,
-    has_submit: false,
+    has_submit_priv: false,
+    has_publish_priv: false,
+    has_admin_priv: false,
     lookUpCancelled: false,
     LookUpShow: false,
     GroupSelectShow: false,
-    confirmDialog: false,
-    snackPriotity:'error',
-    openSnack: false,
-  //  is_curator: null,
+    //  is_curator: null,
     source_uuid_type: "",
+    previous_revision_uuid: undefined,
+    assay_type_primary: true,
     data_types: new Set(),
     has_other_datatype: false,
     other_dt: "",
+    slist:[],
    // is_protected: false,
 
     groups: [],
     data_type_dicts: [],
+    data_type_false_dicts: [],
 
     formErrors: {
       name: "",
@@ -110,6 +115,20 @@ class DatasetEdit extends Component {
       if (other_dt) {
         data_types.push(other_dt);
       }
+
+      get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).nexus_token)
+        .then((resp) => {
+        if (resp.status === 200) {
+          console.log('Assay Type info...', resp.results);
+    
+          if (resp.results) {
+            this.setState({
+              assay_type_primary: resp.results.primary
+            });
+          }
+        }
+      });
+
     }
     this.setState({
       data_types: new Set(data_types),
@@ -129,11 +148,13 @@ class DatasetEdit extends Component {
        ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((resp) => {
         if (resp.status === 200) {
-          ////console.log('edit states...', resp.results);
+          console.log('edit states...', resp.results);
     
           this.setState({
             writeable: resp.results.has_write_priv,
-            has_submit: resp.results.has_submit_priv
+            has_submit_priv: resp.results.has_submit_priv,
+            has_publish_priv: resp.results.has_publish_priv,
+            has_admin_priv: resp.results.has_admin_priv
             });
         }
       });
@@ -159,14 +180,12 @@ class DatasetEdit extends Component {
            var dt_dict = data.result.map((value, index) => { return value });
 
 	         this.setState({data_type_dicts: dt_dict});
-           //////console.log('set the data_type_dicts from service', dt_dict)
+           console.log('set the data_type_dicts from service', dt_dict)
 	         this.updateStateDataTypeInfo();
       })
       .catch(error => {
-	////console.log(error);
-	return Promise.reject(error);
+	         return Promise.reject(error);
       });
-
 
     axios
       .get(
@@ -207,18 +226,6 @@ class DatasetEdit extends Component {
       } catch {
         console.debug("editingDataset Prop Not Found")
       }
-      // this.setState({
-      //   is_protected: false,
-      // });
-      // if (this.props.editingDataset.properties.is_protected) {
-      //   this.setState({
-      //     is_protected:
-      //       this.props.editingDataset.properties.is_protected.toLowerCase() ===
-      //       "true"
-      //         ? true
-      //         : false,
-      //   });
-      // }
 
    
       this.updateStateDataTypeInfo();
@@ -228,9 +235,10 @@ class DatasetEdit extends Component {
       }else{
         savedGeneticsStatus = this.props.editingDataset.contains_human_genetic_sequences;
       }
-        this.setState(
+
+      this.setState(
         {
-          status: this.props.editingDataset.status.toUpperCase(),
+          status: this.props.editingDataset.hasOwnProperty('status') ? this.props.editingDataset.status.toUpperCase() : "NEW",
           display_doi: this.props.editingDataset.hubmap_id,
           //doi: this.props.editingDataset.entity_doi,
           lab_dataset_id: this.props.editingDataset.lab_dataset_id,
@@ -244,11 +252,13 @@ class DatasetEdit extends Component {
           //     },
           source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
           source_uuid_list: this.props.editingDataset.direct_ancestors,
-          source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
+          source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
+          slist: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           // source_uuid_type: this.props.editingDataset.properties.specimen_type,
           //contains_human_genetic_sequences: this.props.editingDataset.contains_human_genetic_sequences,
           contains_human_genetic_sequences: savedGeneticsStatus,
           description: this.props.editingDataset.description,
+          previous_revision_uuid: this.props.editingDataset.hasOwnProperty('previous_revision_uuid') ? this.props.editingDataset.previous_revision_uuid : undefined,
           // assay_metadata_status: this.props.editingDataset.properties
           //   .assay_metadata_status,
           // data_metric_availability: this.props.editingDataset.properties
@@ -341,8 +351,6 @@ class DatasetEdit extends Component {
     document.removeEventListener("click", this.handleClickOutside, true);
   }
 
-
-
   showModal = () => {
     this.setState({ show: true });
   };
@@ -357,12 +365,6 @@ class DatasetEdit extends Component {
 
   hideErrorMsgModal = () => {
     this.setState({ errorMsgShow: false });
-  };
-
-  hideGroupSelectModal = () => {
-    this.setState({
-      GroupSelectShow: false
-    });
   };
 
   showConfirmDialog(row,index) {
@@ -384,15 +386,11 @@ class DatasetEdit extends Component {
     });
   };
 
-  handleCloseSnack = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  hideGroupSelectModal = () => {
     this.setState({
-      openSnack: false
-    })
+      GroupSelectShow: false
+    });
   };
-
 
   handleLookUpClick = () => {
     //////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
@@ -566,68 +564,60 @@ class DatasetEdit extends Component {
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
-    // ////console.log('handleSelectClick', ids)
+    console.log('handleSelectClick', selection)
     //let id = this.getSourceAncestor(ids);
     //////console.log('Dataset selected', selection.row.uuid)
-    var slist = this.state.source_uuid_list;
+    // var slist = [];
+    var slist=this.state.source_uuid_list;
+    // slist.push({uuid: selection.row.uuid});
     slist.push(selection.row);
-    ////console.debug('SLIST', slist)
+    console.debug('SLIST', slist)
     this.setState(
       {
         source_uuid: selection.row.hubmap_id, 
         source_uuid_list: slist,
-        source_entity: selection.row,  // save the entire entity to use for information
+        slist: slist,
+        // source_entity:this.state.source_entity,  
+        source_entity:selection.row,  // save the entire entity to use for information
         LookUpShow: false,
       }
     );
-      this.cancelLookUpModal();
+    this.cancelLookUpModal();
   };
 
-  handleUnlinkClick = (selection) => {
-    // ////console.log('handleSelectClick', ids)
-    //let id = this.getSourceAncestor(ids);
-    //////console.log('Dataset selected', selection.row.uuid)
-    var sdlist = this.state.source_uuid_list;
-    sdlist.push(selection.row);
-    ////console.debug('SLIST', slist)
-    this.setState(
-      {
-        source_uuid: selection.row.hubmap_id, 
-        source_uuid_list: sdlist,
-        source_entity: selection.row,  // save the entire entity to use for information
-        LookUpShow: false,
-      }
-    );
-      this.cancelLookUpModal();
-  };
-
-
-  // handleSelectClick = (ids) => {
+  // handleUnlinkClick = (selection) => {
   //   // ////console.log('handleSelectClick', ids)
-  //   let id = this.getSourceAncestor(ids);
-  //   ////console.log('ive selected', ids)
+  //   //let id = this.getSourceAncestor(ids);
+  //   //////console.log('Dataset selected', selection.row.uuid)
+  //   var sdlist = this.state.source_uuid_list;
+  //   sdlist.push(selection.row);
+  //   ////console.debug('SLIST', slist)
   //   this.setState(
   //     {
-  //       source_uuid: id, 
-  //       source_uuid_list: ids,
-  //       source_entity: ids[0].entity,  // save the entire entity to use for information
+  //       source_uuid: selection.row.hubmap_id, 
+  //       source_uuid_list: sdlist,
+  //       source_entity: selection.row,  // save the entire entity to use for information
   //       LookUpShow: false,
   //     }
   //   );
+  //     this.cancelLookUpModal();
   // };
+
 
   sourceRemover = () => {
     console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
     var slist=this.state.source_uuid_list;
     slist =  slist.filter(source => source.uuid !== this.state.editingSource.uuid)
       this.setState( {
-        source_uuid_list: slist
+        source_uuid_list: slist,
+        slist: slist,
       } ,
       () => {
-        console.log("NEW LIST ",this.state.source_uuid_list);
+        console.log("NEW LIST ",this.state.slist);
         this.hideConfirmDialog();
       });
   }
+
   renderSources = () => {
     if(this.state.source_uuid_list && (this.state.source_uuid_list.length > 0 ||
       this.props.newForm===false)){
@@ -662,9 +652,9 @@ class DatasetEdit extends Component {
                   </p>
                 </ReactTooltip>
               </TableCell>
-              <TableCell component="th" align="right">Source Type</TableCell>
-              <TableCell component="th" align="right">Organ Type</TableCell> 
-              {/* make the above rename 'Organ' to whatever type's aprops for the Source type  */}
+              <TableCell component="th" align="right">Organ</TableCell> 
+              <TableCell component="th" align="right">Specimen</TableCell> 
+              <TableCell component="th" align="right">Data</TableCell> 
               <TableCell component="th" align="right">Group Name</TableCell>
               <TableCell component="th" align="right">Submission ID</TableCell>
               <TableCell component="th" align="right">Description</TableCell>
@@ -675,21 +665,59 @@ class DatasetEdit extends Component {
           <TableBody>
             {this.state.source_uuid_list.map((row, index) => (
               <TableRow 
-                key={(row.hubmap_id+""+index)} // Tweaked the key to avoid Errors RE uniqueness
+                key={(row.hubmap_id+""+index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
                 // onClick={() => this.handleSourceCellSelection(row)}
                 className="row-selection"
                 >
                 <TableCell align="left" className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row">{row.entity_type}</TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row">{row.data_type}</TableCell>
+
+                {/* For Organs  */}
+                {row.organ &&(
+                  <TableCell align="right" className="clicky-cell" scope="row">{ORGAN_TYPES[this.state.source_entity.organ]}</TableCell>
+                )}
+                {!row.organ &&(
+                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
+                )}
+
+                {/* For Specimen  */}
+                {row.specimen_type &&(
+                  <TableCell align="right" className="clicky-cell" scope="row">{row.specimen_type}</TableCell>
+                )}
+                {!row.specimen_type &&(
+                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
+                )}
+
+                {/* For Data  */}
+                {row.data_type &&(
+                  <TableCell align="right" className="clicky-cell" scope="row">{row.data_type}</TableCell>
+                )}
+                {!row.data_type &&(
+                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
+                )} 
+
+
                 <TableCell align="right" className="clicky-cell" scope="row">{row.group_name}</TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row">{row.lab_tissue_sample_id}</TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row">{row.description}</TableCell>
+
+                <TableCell align="right" className="clicky-cell" scope="row">
+                  {row.lab_tissue_sample_id ? (
+                    row.lab_tissue_sample_id
+                  ) : (
+                    <small className="text-muted">N/A</small>
+                  )}
+                </TableCell>
+                <TableCell align="right" className="clicky-cell" scope="row">
+                {row.description ? (
+                    row.description
+                  ) : (
+                    <small className="text-muted">N/A</small>
+                  )}
+                </TableCell>
                 <TableCell align="right" className="clicky-cell " scope="row"> 
-                  <span
-                    className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}>
-                      {row.status}
-                  </span>               
+                {row.status ? (
+                    <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
+                  ) : (
+                    <small className="text-muted">N/A</small>
+                  )}
                 </TableCell>
                 <TableCell align="right" className="clicky-cell" scope="row"> 
                 {this.state.writeable && (
@@ -700,6 +728,9 @@ class DatasetEdit extends Component {
                       onClick={() => this.showConfirmDialog(row,index)}
                     />
                   </React.Fragment>
+                  )}
+                  {!this.state.writeable && (
+                  <small className="text-muted">N/A</small>
                   )}
                 </TableCell>
               </TableRow>
@@ -726,8 +757,6 @@ class DatasetEdit extends Component {
           </div>
         </React.Fragment>
         )}
-             
-     
       </div>
     )}else if(this.state.writeable && this.state.editingDataset){
 
@@ -762,21 +791,20 @@ class DatasetEdit extends Component {
     )
   }
 
-
-  // getUuidList = (new_uuid_list) => {
-  //   //this.setState({uuid_list: new_uuid_list});
-  //   //////console.log('**getUuidList', new_uuid_list)
-  //   this.setState(
-  //     {
-  //       source_uuid:  this.sourceDuplicator(this.getSourceAncestor(new_uuid_list)) ,
-  //       source_uuid_list: new_uuid_list,
-  //       LookUpShow: false,
-  //     },
-  //     () => {
-  //       this.validateUUID();
-  //     }
-  //   );
-  // };
+  getUuidList = (new_uuid_list) => {
+    //this.setState({uuid_list: new_uuid_list});
+    //////console.log('**getUuidList', new_uuid_list)
+    this.setState(
+      {
+        source_uuid: this.getSourceAncestor(new_uuid_list),
+        source_uuid_list: new_uuid_list,
+        LookUpShow: false,
+      },
+      () => {
+        this.validateUUID();
+      }
+    );
+  };
 
   handleAddNewCollection = () => {
     this.setState({
@@ -882,7 +910,7 @@ class DatasetEdit extends Component {
               formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
             }));
             isValid = false;
-            alert("The Source UUID does not exist.");
+            Alert("The Source UUID does not exist.");
             return isValid;
           }
         })
@@ -895,7 +923,7 @@ class DatasetEdit extends Component {
           }));
           isValid = false;
           
-          alert("The Source UUID does not exist.");
+          Alert("The Source UUID does not exist.");
           return isValid;
         })
         .then(() => {
@@ -910,27 +938,22 @@ class DatasetEdit extends Component {
         formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
       }));
       isValid = false;
-      alert("The Source UUID is invalid.");
+      Alert("The Source UUID is invalid.");
       return new Promise((resolve, reject) => {
         resolve(false);
       });
     }
   };
 
+  handleReprocess = () => {
+    Alert("Reprocessing feature not implemented")
+  }
+
   handleButtonClick = (i) => {
     this.setState({
       new_status: i
     }, () => {
       this.handleSubmit(i);
-    })
-  };
-
-  savedUpdate = (i) => {
-    console.log("savedUpdate");
-    this.setState({
-      openSnack: true,
-      snackPriotity: 'success',
-      submitting: false
     })
   };
 
@@ -1014,7 +1037,6 @@ class DatasetEdit extends Component {
               axios
                 .put(uri, JSON.stringify(data), config)
                 .then((res) => {
-                  this.savedUpdate();
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
@@ -1022,11 +1044,11 @@ class DatasetEdit extends Component {
                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
                 });
             } else if (i === "processing") {
-               console.log('Submit Dataset...');
+               ////console.log('Submit Dataset...');
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                   .then((response) => {
                     if (response.status === 200) {
-                      console.log(response.results);
+                      ////console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
                       console.log("ERR response");
@@ -1035,13 +1057,15 @@ class DatasetEdit extends Component {
                     }
                 });
               } else { // just update
-              
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((response) => {
                           if (response.status === 200) {
-                            console.log('Update Dataset...');
-                            console.log(response.results);
-                            this.savedUpdate();
+                            this.setState({ 
+                              submit_error: false, 
+                              submitting: false, 
+                              });
+                            ////console.log('Update Dataset...');
+                             ////console.log(response.results);
                             this.props.onUpdated(response.results);
                           } else {
                             console.debug("ERROR ",response)
@@ -1287,327 +1311,138 @@ class DatasetEdit extends Component {
   }
 
   renderButtons() {
-    if (this.props.editingDataset) {
-      if (this.state.writeable === false) {
-        ////console.log("editing but not writeable",  this.state.writeable)
-        return (
-          <div className='row'>
-            <div className='col-sm-2 offset-sm-10'>
-              <button
-                type='button'
-                className='btn btn-secondary'
-                onClick={() => this.props.handleCancel()}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        );
-      } else {
-        ////console.log("checking Has submit rights",  this.state.has_submit_privs)
-        if (this.state.has_submit_privs) {
-            
-          if (this.state.status.toUpperCase() === "QA") {
-            return (
-              <div className='row'>
-                <div className='col-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-info btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() =>
-                      this.handleButtonClick(this.state.status.toLowerCase())
-                    }
-                    data-status={this.state.status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Save"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("published")}
-                    data-status='published'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Publish"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("reopened")}
-                    data-status={this.state.status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Reopen"}
-                  </button>
-                </div>
-                <div className='col-sm-3 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-dark btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("hold")}
-                    data-status='invalid'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Hold"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-            } else if (this.state.status.toUpperCase() === "PUBLISHED") {  // not QA if statement
-            return (
-              <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("reopened")}
-                    data-status='reopened'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Reopen"}
-                  </button>
-                </div>
-                <div className='col-sm-4 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-danger btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("unpublished")}
-                    data-status='unpublished'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Unpublish"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-            } else if (this.state.status.toUpperCase() === "UNPUBLISHED") {  // not PUBLISHED if stmt
-            return (
-              <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'></div>
-                <div className='col-sm-4 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-primary btn-block'
-                    disabled={this.state.submitting}
-                    onClick={() => this.handleButtonClick("published")}
-                    data-status='published'
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Publish"}
-                  </button>
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-            } else {  // not UNPUBLISHED
-            return (
-              <div className='row'>
-                <div className='col-sm-2 offset-sm-10'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            );
-          }
-        } else {
-          
-          if (
-            ["NEW", "INVALID", "REOPENED", "ERROR"].includes(
-              this.state.status.toUpperCase()
-            )
-          ) {
-          
-            return (
-              <div className='row'>
-                <div className='col-sm-3 offset-sm-2 text-center'>
-                  <button
-                    type='button'
-                    className='btn btn-info btn-block mr-1'
-                    disabled={this.state.submitting}
-                    onClick={() =>
-                      this.handleButtonClick(this.state.status.toLowerCase())
-                    }
-                    data-status={this.state.status.toLowerCase()}
-                  >
-                    {this.state.submitting && (
-                      <FontAwesomeIcon
-                        className='inline-icon'
-                        icon={faSpinner}
-                        spin
-                      />
-                    )}
-                    {!this.state.submitting && "Save"}
-                  </button>
-                </div>
-                <div className='col-sm-4 text-center'>
-                  {this.state.has_submit && (
-                    <button
-                      type='button'
-                      className='btn btn-primary btn-block'
-                      disabled={this.state.submitting}
-                      onClick={() => this.handleButtonClick("processing")}
-                      data-status={this.state.status.toLowerCase()}
-                    >
-                      {this.state.submitting && (
-                        <FontAwesomeIcon
-                          className='inline-icon mr-1'
-                          icon={faSpinner}
-                          spin
-                        />
-                      )}
-                      {!this.state.submitting && "Submit"}
-                    </button>
-                  )}
-                </div>
-                <div className='col-sm-2 text-right'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            );
-          } else {
-            return (
-              <div className='row'>
-                <div className='col-sm-2 offset-sm-10'>
-                  <button
-                    type='button'
-                    className='btn btn-secondary'
-                    onClick={() => this.props.handleCancel()}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            );
-          }
-        }
-      }
-    } else {  // buttons for a new record
-    
-      return (
 
-        <div className='row'>
-          <div className="col-sm-12">
-          <Divider />
-          </div>
-          <div className='col-md-12 text-right pads'>
-            <button
-              type='button'
-              className='btn btn-primary mr-1'
-              disabled={this.state.submitting}
-              onClick={() => this.handleButtonClick("new")}
-              data-status='new'
-            >
-              {this.state.submitting && (
-                <FontAwesomeIcon
-                  className='inline-icon'
-                  icon={faSpinner}
-                  spin
-                />
-              )}
-              {!this.state.submitting && "Create"}
-            </button>
-             <button
-              type='button'
-              className='btn btn-secondary'
-              onClick={() => this.props.handleCancel()}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      );
+    if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
+            && this.state.previous_revision_uuid === undefined) {
+         return (
+           <div className="row">
+                {this.reprocessButton()}
+                {this.aButton(this.state.status.toLowerCase(), "Save")}
+                {this.cancelButton()}
+            </div>
+          )
+    }
+            
+    if (this.state.writeable === false) {            
+      return (
+            <div className="row">
+                {this.cancelButton()}
+            </div>
+          )
+    } else {
+
+      if (["NEW", "INVALID", "REOPENED", "ERROR"].includes(
+              this.state.status.toUpperCase())) {
+        return (
+            <div className="row">
+                {this.aButton(this.state.status.toLowerCase(), "Save")}
+                {this.state.has_submit_priv && (
+                  this.aButton("processing", "Submit"))
+                }
+                {this.cancelButton()}
+            </div>
+          )
+      }
+      if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
+        return (
+            <div className="row">
+                {this.aButton("published", "Publish")}
+                {this.cancelButton()}
+            </div>
+          )
+      }   
+      if (this.state.status.toUpperCase() === 'PUBLISHED') {
+        return (
+            <div className="row">
+                {this.aButton("reopened", "Reopen")}
+                {this.aButton("unpublished", "UnPublish")}
+                {this.cancelButton()}
+            </div>
+          )
+      } 
+      if (this.state.status.toUpperCase() === 'QA') {
+        return (
+            <div className="row">
+                {this.aButton("hold", "Hold")}
+                {this.aButton("reopened", "Reopen")}
+                {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
+                {this.aButton(this.state.status.toLowerCase(), "Save")}
+                {this.cancelButton()}
+            </div>
+          )
+      }      
     }
   }
+
+  // Cancel button
+  cancelButton() {
+    return(<React.Fragment>
+        <div className="col-sm">
+          <button
+              type='button'
+              className='btn btn-secondary btn-block'
+              onClick={() => this.props.handleCancel()}>
+              Cancel
+          </button>
+      </div>
+       </React.Fragment>
+      )
+  }
+
+  // General button
+  aButton(state, which_button) {
+    return (<React.Fragment>
+      <div className="col-sm">
+        <button
+          type='button'
+          className='btn btn-info btn-block'
+          disabled={this.state.submitting}
+          onClick={() =>
+            this.handleButtonClick(state)
+          }
+          data-status={this.state.status.toLowerCase()}
+        >
+          {this.state.submitting && (
+            <FontAwesomeIcon
+              className='inline-icon'
+              icon={faSpinner}
+              spin
+            />
+          )}
+          {!this.state.submitting && which_button}
+        </button>
+        </div>
+        </React.Fragment>
+      )
+  }
+
+  reprocessButton() {
+    return (<React.Fragment>
+      <div className="col-sm">
+        <button
+          type='button'
+          className='btn btn-warning btn-block'
+          disabled={this.state.submitting}
+          onClick={() =>
+            this.handleReprocess()
+          }
+          data-status={this.state.status.toLowerCase()}
+        >
+          {this.state.submitting && (
+            <FontAwesomeIcon
+              className='inline-icon'
+              icon={faSpinner}
+              spin
+            />
+          )}
+          {!this.state.submitting && "Reprocess"}
+        </button>
+        </div>
+        </React.Fragment>
+      )
+  }
+
+
 
   errorClass(error) {
     if (error === "valid") return "is-valid";
@@ -1713,9 +1548,8 @@ class DatasetEdit extends Component {
       <React.Fragment>
         <Paper className="paper-container">
         <form>
-          <div>
-            <div className='row m-0'>
-                <h3 className='float-left'>
+          <div className='row m-0'>
+                <h3 className='float-left mr-1'>
                   <span
                     className={"badge " + this.state.badge_class}
                     style={{ cursor: "pointer" }}
@@ -1729,18 +1563,28 @@ class DatasetEdit extends Component {
                   </span>
                 </h3>
 
-              <h4 className="mx-2">Dataset Information</h4>
+            <div className='alert alert-danger' role='alert'>
+              <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
+              data containing any of the{" "}
+              <span
+                style={{ cursor: "pointer" }}
+                className='text-primary'
+                onClick={this.showModal}
+              >
+                18 identifiers specified by HIPAA
+              </span>
+              .
+            </div>
+            <div className='col-sm-10'>
+              <h3>
+                {this.props.editingDataset &&
+                  "HuBMAP Dataset ID " +
+                    this.state.display_doi}
+              </h3>
+            </div>
+          </div>
 
-            </div>
-                 
-            <div className='row m-0'>
-                <h3>
-                  {this.props.editingDataset &&
-                    "HuBMAP Dataset ID " +
-                      this.state.display_doi}
-                </h3>
-            </div>
-            <div className='row m-0'>
+          <div className='row m-0'>
                   <p>
                     <strong>
                       <big>
@@ -1759,7 +1603,7 @@ class DatasetEdit extends Component {
                       </big>
                     </strong>
                   </p>
-            </div>
+          </div>
 
 
             <div className='form-group'>
@@ -1807,10 +1651,7 @@ class DatasetEdit extends Component {
               )}
               
             </div>
-
-          
             <div className='form-group'>
-              
               <div className="input-group">
                 {this.renderSources()}
               </div>
@@ -1824,7 +1665,7 @@ class DatasetEdit extends Component {
                     filter_type="Dataset"
                     modecheck="Source"
                   />
-                </DialogContent>
+                </DialogContent>  
                 <DialogActions>
                   <Button onClick={this.cancelLookUpModal} color="primary">
                     Close
@@ -1834,11 +1675,11 @@ class DatasetEdit extends Component {
               
             </div>
             <div className='form-group'>
-            <label
-              htmlFor='description'>
-              Description 
-            </label>
-            <span className="px-2">
+              <label
+                htmlFor='description'>
+                Description 
+              </label>
+              <span className="px-2">
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
@@ -1997,7 +1838,7 @@ class DatasetEdit extends Component {
               )*/}
             
             </div>
-          </div>
+          
           <div className='form-group row'>
             <label
               htmlFor='description'
@@ -2005,27 +1846,27 @@ class DatasetEdit extends Component {
             >
               Data Type <span className='text-danger'>*</span>
             </label>
-             <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='datatype_tooltip'
-                />
-                <ReactTooltip
-                  id='datatype_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>Data Type Tips</p>
-                </ReactTooltip>
-              </span>
-        {this.state.writeable&& (
-		        <React.Fragment>
+            <span>
+              <FontAwesomeIcon
+                icon={faQuestionCircle}
+                data-tip
+                data-for='datatype_tooltip'
+              />
+              <ReactTooltip
+                id='datatype_tooltip'
+                place='top'
+                type='info'
+                effect='solid'
+              >
+                <p>Data Type Tips</p>
+              </ReactTooltip>
+            </span>
+            {this.state.writeable&& (
+		          <React.Fragment>
                 <div className='col-sm-9'>
-                <div className='row'>
-		                {true && this.renderAssayArray()}
-                </div>
+                  <div className='row'>
+                      {true && this.renderAssayArray()}
+                  </div>
                 </div>
 		
                 <div className='col-sm-12'>
@@ -2039,9 +1880,9 @@ class DatasetEdit extends Component {
             )}
             {!this.state.writeable && (
                 <div className='col-sm-9'>
-                <div className='row'>
-                    {true && this.renderAssayArray()}
-                </div>
+                  <div className='row'>
+                      {true && this.renderAssayArray()}
+                  </div>
                 </div>
             )}
             
@@ -2149,11 +1990,7 @@ class DatasetEdit extends Component {
             </div>
           )}
           {this.renderButtons()}
-       </form>
-
-
-
-
+        </form>
         <GroupModal
           show={this.state.GroupSelectShow}
           hide={this.hideGroupSelectModal}
@@ -2180,14 +2017,6 @@ class DatasetEdit extends Component {
           </div>
         </Modal>
         </Paper>
-
-
-        <Snackbar open={this.state.openSnack} autoHideDuration={6000} onClose={this.handleCloseSnack}>
-            <Alert onClose={this.handleCloseSnack} severity={this.state.snackPriotity}>
-              Entity Details Saved!
-            </Alert>
-        </Snackbar>
-
       </React.Fragment>
     );
   }

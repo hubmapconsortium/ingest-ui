@@ -7,7 +7,7 @@ import DonorForm from "../uuid/donor_form_components/donorForm";
 import TissueForm from "../uuid/tissue_form_components/tissueForm";
 import UploadsEdit from "../uploads/editUploads";
 import DatasetEdit from "../ingest/dataset_edit";
-import { SAMPLE_TYPES } from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
@@ -66,10 +66,12 @@ class SearchComponent extends Component {
       // console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         console.debug("NEW FROM R ", this.props.modecheck)
+        // Um isnt this inside a no-props check?
         if(this.props.modecheck === "Source"){
           this.setState({
             loading:false,
             show_search:true,
+            modecheck:"Source"
           });
         }else{
           this.setState({
@@ -107,6 +109,7 @@ class SearchComponent extends Component {
         console.log("Undefined?!")
         
         this.handleClearFilter();
+
         this.handleUrlChange("");
        
       }else{
@@ -242,7 +245,7 @@ class SearchComponent extends Component {
   }
 
   handleSingularty  = (target, size) => {
-    // console.debug("handleSingularty target: ",target);
+     console.debug("handleSingularty target: ",target);
     if(target === 'uploads'){
       return "uploads" // Is always plural in our system
     }
@@ -255,9 +258,11 @@ class SearchComponent extends Component {
       }
     }else{ // we wanna singularize
       if(target.slice(-1) === "s"){
-        return (target.slice(0, -1)).toLowerCase()
+        console.debug('here 1', target.slice(0, -1))
+        return (target.slice(0, -1))  //.toLowerCase()
       }else{
-        return target.toLowerCase();
+        console.debug('here 2', target)
+        return target;
       }
     } 
   }
@@ -310,15 +315,57 @@ class SearchComponent extends Component {
             })
       }
     } else {
-
       this.setState({
-        entity_type_list: SAMPLE_TYPES
+        entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
       })
     }
 
 
   } 
 
+  // combine the organ types with the other samples type listing
+  // combinedTypeOptions = () => {
+  //   var combinedList = [];
+
+  //   SAMPLE_TYPES.forEach((x)=>{
+  //     combinedList.push(x)
+  //   });
+
+  //   combinedList.push(ORGAN_TYPES) 
+
+  //   // var organs = {}
+  //   // for (let k in ORGAN_TYPES) {
+  //   //   organs[k] = " - " + ORGAN_TYPES[k]
+  //   // }
+  //   // combinedList.push(organs)
+
+  //   //console.debug('combinedList', combinedList)
+  //   return combinedList
+  // }
+
+  combinedTypeOptions = () => {
+    var combinedList = [];
+
+    // this is NOT the best way to do this.
+    // the index numbers match the elements in SAMPLE_TYPES
+    combinedList.push(SAMPLE_TYPES[0])
+    combinedList.push(SAMPLE_TYPES[1])
+    combinedList.push(SAMPLE_TYPES[2])
+    combinedList.push(SAMPLE_TYPES[3])
+    combinedList.push(SAMPLE_TYPES[4])
+    // insert organs in between
+    var organs = {}
+    for (let k in ORGAN_TYPES) {
+       organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + ORGAN_TYPES[k]
+    }
+    combinedList.push(organs)
+    combinedList.push(SAMPLE_TYPES[5])
+    combinedList.push(SAMPLE_TYPES[6])
+    combinedList.push(SAMPLE_TYPES[7])
+    combinedList.push(SAMPLE_TYPES[8])
+
+    return combinedList
+  }
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
     console.debug("handleSearchClick")
@@ -352,9 +399,9 @@ class SearchComponent extends Component {
     }
 
     if (sample_type) {
-      console.debug("sample_type", sample_type);
-      console.debug(this.props);
-      if(!this.state.uuid && sample_type !=="----"){ 
+      // console.debug("sample_type", sample_type);
+      // console.debug(this.props);
+      if(!this.state.uuid && sample_type !=="----" && (this.props.modecheck && this.props.modecheck!=="Source")){ 
         this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
       
@@ -362,29 +409,34 @@ class SearchComponent extends Component {
       if (sample_type === 'donor' || sample_type === 'donors') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
-      } else if (sample_type === 'dataset' || sample_type === 'datasets') {
+      } 
+      else if (sample_type === 'sample' || sample_type === 'samples') {
+            params["entity_type"] = "Sample";
+            which_cols_def = COLUMN_DEF_SAMPLE;
+      }
+      else if (sample_type === 'dataset' || sample_type === 'datasets') {
             params["entity_type"] = "Dataset";
             which_cols_def = COLUMN_DEF_DATASET;
-        } else if (sample_type === 'upload' || sample_type === 'uploads') {
+      } else if (sample_type === 'upload' || sample_type === 'uploads') {
             params["entity_type"] = "Upload";
             which_cols_def = COLUMN_DEF_UPLOADS;
-        } 
-        else {
+      } 
+      else {
           if (sample_type !== '----') {
-            params["specimen_type"] = sample_type;
-          }
+            //console.debug('sample_type', sample_type)
+            // check to see if this is an actual organ
+            if (ORGAN_TYPES.hasOwnProperty(sample_type)) {
+              params["organ"] = sample_type;
+            } else { 
+              params["specimen_type"] = sample_type;
+            }
+        }
       } 
     } 
     if (keywords) {
       params["search_term"] = keywords;
     }
 
-    console.debug('results_total  ', this.state.results_total);
-    console.debug('From Page ', this.state.page);
-    console.debug('From Page size', this.state.pageSize);
-    
-
-    console.debug("this.state.page", this.state.page);
     if(this.state.page !== 0 ){
       this.setState({
         table_loading:true, 
@@ -397,7 +449,7 @@ class SearchComponent extends Component {
     },() => {
       api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
       .then((response) => {
-        console.debug("Search Res", response.results);
+        // console.debug("Search Res", response.results);
 
         if (response.status === 200) {
           if (response.total === 1) {  // for single returned items, customize the columns to match
@@ -441,7 +493,7 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
-    if(!targetPath || targetPath === undefined || targetPath === ""){
+    if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
       targetPath = ""
     }
     this.setState({
@@ -510,13 +562,16 @@ class SearchComponent extends Component {
 
   onUpdated = data => {
     //this.filterEntity();
-    //console.debug(this.props)
+    console.debug("Onupdated",data)
     this.setState({
       updateSuccess: true,
-      editingEntity: null,
-      show_search: true,
+      editingEntity: data,
+      show_search: false,
       loading: false
+    },function(){ 
+      this.handleTableCellClick(data);
     });
+    
     setTimeout(() => {
       this.setState({ updateSuccess: null });
     }, 5000);
@@ -550,9 +605,9 @@ class SearchComponent extends Component {
     
     if(params.field === 'uuid') return; // skip this field
 
-    if (params.row) {
+    if (params.hasOwnProperty('row')) {
     // ////console.debug('CELL CLICK: entity', params.row.entity_type);
-    ////console.debug('Local CELL CLICK: uuid', params.row.uuid);
+    console.debug('Local CELL CLICK: uuid', params.row.uuid);
 
     entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
@@ -563,8 +618,11 @@ class SearchComponent extends Component {
           ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
             .then((resp) => {
               //console.debug('ingest_api_allowable_edit_states done', resp)
+            let read_only_state = false
             if (resp.status === 200) {
-              let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+              read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+            }
+
               this.setState({
                 updateSuccess: null,
                 editingEntity: entity_data,
@@ -576,7 +634,6 @@ class SearchComponent extends Component {
                 loading: false
                 });
           //this.props.onEdit();
-            }
           });
         }else{
           this.setState({
@@ -648,7 +705,6 @@ class SearchComponent extends Component {
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          
           {this.renderEditForm()}
 
         </div>
@@ -749,7 +805,7 @@ renderInfoPanel() {
 
   renderTable() {
   return ( 
-      <Paper className="paper-container">
+      <Paper className="paper-container pt-2 ">
       <div style={{ height: 590, width: '100%' }}>
         <DataGrid 
               rows={this.state.datarows}
@@ -778,6 +834,7 @@ renderInfoPanel() {
 //      <Modal show={this.props.show} handleClose={this.props.hide} scrollable={true}>
        // <div className="row">
        //   <div className="col-sm-6">
+
             <div className="card pt-2">
               {this.props.custom_title && (
                 <span className="portal-label text-center">{this.props.custom_title}</span>
