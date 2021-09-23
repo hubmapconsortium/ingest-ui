@@ -121,7 +121,7 @@ class DatasetEdit extends Component {
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside);
 
-    console.log('props', this.props)
+    //console.log('props', this.props)
 
     if (this.props.editingDataset) {
       if (this.props.editingDataset.uuid)
@@ -159,7 +159,7 @@ class DatasetEdit extends Component {
            var dt_dict = data.result.map((value, index) => { return value });
 
 	         this.setState({data_type_dicts: dt_dict});
-           console.log('set the data_type_dicts from service', dt_dict)
+           //console.log('set the data_type_dicts from service', dt_dict)
 	         this.updateStateDataTypeInfo();
       })
       .catch(error => {
@@ -862,7 +862,7 @@ class DatasetEdit extends Component {
                     this.setState({
                       globus_path: res.data,
                     }, () => {
-                      console.debug('globus_path', res.data)
+                      //console.debug('globus_path', res.data)
                       this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
                       this.onChangeGlobusURL();
                     });
