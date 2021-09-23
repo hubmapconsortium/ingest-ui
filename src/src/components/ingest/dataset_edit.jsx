@@ -1058,7 +1058,8 @@ class DatasetEdit extends Component {
   renderButtons() {
 
     if (this.state.has_admin_priv === true && this.state.assay_type_primary == false
-            && this.state.previous_revision_uuid === undefined) {
+            && this.state.previous_revision_uuid === undefined 
+            && this.state.status.toUpperCase() === "PUBLISHED") {
          return (
            <div className="row">
                 {this.reprocessButton()}
