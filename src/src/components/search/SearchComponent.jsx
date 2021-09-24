@@ -1,5 +1,5 @@
 import React, { Component, useState  } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 
@@ -59,6 +59,12 @@ class SearchComponent extends Component {
     console.debug("SEARCH componentDidMount")
     var euuid;
     console.debug("modecheck ",this.props.modecheck);
+    if(this.props.editNewEntity){
+        this.setState({
+          loading:false,
+          show_search:false
+        });
+    }
     if(!this.props.match){
       var url = window.location.href;
       var urlsplit = url.split("/");
@@ -225,6 +231,7 @@ class SearchComponent extends Component {
     // console.debug(this.state.show_search);
     // console.debug(prevState, this.state);
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
+      console.debug("prevProps.editNewEntity !== this.props.editNewEntity", this.props.editNewEntity)
       this.setState({
         editingEntity: this.props.editNewEntity,
         editForm: true,
@@ -515,7 +522,7 @@ class SearchComponent extends Component {
     //console.debug(this.props)
     this.setState({
       updateSuccess: true,
-      editingEntity: null,
+      editingEntity: data,
       show_search: true,
       loading: false
     });
@@ -828,7 +835,7 @@ renderInfoPanel() {
                           className="select-css"
                           onChange={this.handleInputChange}
                           //ref={this.sampleType}
-                          value={this.handleSingularty(this.state.sampleType, "singular")}
+                          value={this.state.sampleType}
                         >
                           <option value="">----</option>
                           {this.state.entity_type_list.map((optgs, index) => {
@@ -905,4 +912,4 @@ renderInfoPanel() {
   }
 }
 
-export default SearchComponent;
+export default withRouter(SearchComponent);

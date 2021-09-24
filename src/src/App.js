@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 //import Navigation from './components/Navbar.js';
-import { Router, Switch, Route } from "react-router-dom";
+import { Router, Switch, Route, withRouter, useHistory  } from "react-router-dom";
+import { Redirect } from 'react-router'
 import history from './history';
 import Login from './components/uuid/login';
 import IdleTimer from "react-idle-timer";
@@ -141,9 +142,8 @@ class App extends Component {
     document.addEventListener("keydown", this.handleKeyDown);
     var type;
     var fauxEvent;
+
     
-    var type;
-    var fauxEvent;
     if (this.props.match){
       console.debug("APP this.props.match");
       type = this.props.match.params.type;
@@ -234,15 +234,29 @@ class App extends Component {
         show_search: false
         });
     }
-    
-    if (prevProps.showSearch !== this.props.showSearch) {
-      console.log("UPDATE this.props.showSearch");
+    if (prevState.editNewEntity !== this.state.editNewEntity) {
+      console.debug("DIDUPDATE new entity", this.state.editNewEntity)
       this.setState({
-        show_search: this.props.showSearch
-        });
+        editForm: true,
+        show_modal: true,
+        show_search: false,
+        showSearch: false,
+       }, () => {   
+          //  ONLY WORKS IN FUNCTIONAL COMPONENTS
+          // AND ALL OF OURS ARE CLASS COMPONENTS
+          // this.props.history.push("/"+this.state.formType+"/"+this.state.editNewEntity.uuid)
+      });
     }
     
+    // if (prevProps.showSearch !== this.props.showSearch) {
+    //   console.log("UPDATE this.props.showSearch");
+    //   this.setState({
+    //     show_search: this.props.showSearch
+    //     });
+    // }
+    
   }
+
 
   handleLogout = e => {
     localStorage.setItem("isAuthenticated", false);
@@ -323,7 +337,7 @@ class App extends Component {
   };
 
   onCreated = data => {
-    //console.debug(data);
+    console.debug("onCreated ",data);
     //console.debug(data.entity_type);
     this.setState({
       show_menu_popup: false,
@@ -332,8 +346,17 @@ class App extends Component {
       creatingNewUpload: false,
       editNewEntity: data,
       formType: data.entity_type.toLowerCase(),
-      preSearch: "uploads"
+      preSearch: "uploads",
+      showSearch: false
+     }, () => {   
+       console.debug("onCreated state", this.state)
+       // ONLY works for functional components and all oura are class components
+        // this.props.history.push("/"+this.state.formType+"/"+this.state.editNewEntity.uuid)
+        this.setState({ redirect: true })
     });
+
+
+    
   };
 
   showDropDwn = () => {
@@ -473,7 +496,7 @@ class App extends Component {
 
   renderContent() {
     let html = <Login />;
-    
+    const { redirect } = this.state;
 
     // fire http call to verify if user registerd.
     //axio.get("")
@@ -642,25 +665,11 @@ class App extends Component {
             {this.state.isAuthenticated && (
 
               <Router history={history}>
-              <Switch>
-                    <Route path="/new/:test" exact >
-                        <SearchComponent fromRoute="MEW"  />
-                    </Route> 
-                    <Route path="/:type/:uuid" exact >
-                        <SearchComponent fromRoute="typeuuid" />
-                    </Route> 
-                    <Route path="/:type" exact >
-                        <SearchComponent fromRoute="type" />
-                    </Route> 
-                    <Route path="/err-response" exact >
-                        <SearchComponent fromRoute="err" />
-                    </Route> 
                     <Route path="/" exacct >
                     {!this.state.creatingNewEntity && (
-                        <SearchComponent fromRoute="OORIG" />
+                        <SearchComponent fromRoute="OORIG" editNewEntity={this.state.editNewEntity} />
                     )}
                     </Route> 
-              </Switch>
               </Router>
               
               
@@ -717,4 +726,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withRouter(App);
