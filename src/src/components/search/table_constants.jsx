@@ -103,17 +103,6 @@ export const COLUMN_DEF_UPLOADS = [
       )
   },
   
-  { field: 'uuid', headerName: 'Directory', width: 100,
-  renderCell: (params: ValueFormatterParams) => (
-     <React.Fragment>
-      <button
-              className='btn btn-link'
-              onClick={() => handleDataClick(params.value)}>
-              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
-      </button>                         
-      </React.Fragment>
-    )
-  }
  ];
 
 
