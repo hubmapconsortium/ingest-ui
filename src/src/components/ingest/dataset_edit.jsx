@@ -26,6 +26,7 @@ import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
+import { withRouter, useHistory } from 'react-router-dom';
 
 class DatasetEdit extends Component {
   state = {
@@ -2064,4 +2065,4 @@ class DatasetEdit extends Component {
   }
 }
 
-export default DatasetEdit;
+export default withRouter(DatasetEdit);

@@ -141,6 +141,7 @@ class Forms extends Component {
     } else if (this.state.formType === "dataset") {
         return (
          <DatasetEdit
+            testProp="HAIL"
             onCreated={this.onCreated}
             handleCancel={this.props.onCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}

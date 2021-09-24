@@ -240,7 +240,7 @@ class App extends Component {
         editForm: true,
         show_modal: true,
         show_search: false,
-        showSearch: false,
+        showSearch: false
        }, () => {   
           //  ONLY WORKS IN FUNCTIONAL COMPONENTS
           // AND ALL OF OURS ARE CLASS COMPONENTS
@@ -675,6 +675,7 @@ class App extends Component {
               
             )}
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
+              // Loads in for new things, not editing things
               <Forms formType={this.state.formType} onCancel={this.handleClose} />
             )}
                   

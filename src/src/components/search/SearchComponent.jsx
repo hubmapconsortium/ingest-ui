@@ -58,6 +58,22 @@ class SearchComponent extends Component {
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
     var euuid;
+    // If we can switch to Query string for url, would be nice
+    // let url = new URL(window.location.href);
+    // let uuid = url.searchParams.get("uuid");
+    // console.debug("UUID", uuid)
+    // if(uuid){
+    //   this.handleLoadEntity(uuid)
+    // }
+    var url = window.location.href;
+    var urlsplit = url.split("/");
+    var lastSegment = (urlsplit[3]);
+    euuid = urlsplit[4];
+    if(euuid){
+      this.handleLoadEntity(euuid)
+    }
+
+
     console.debug("modecheck ",this.props.modecheck);
     if(this.props.editNewEntity){
         this.setState({
@@ -66,8 +82,8 @@ class SearchComponent extends Component {
         });
     }
     if(!this.props.match){
-      var url = window.location.href;
-      var urlsplit = url.split("/");
+      var urlProp = window.location.href;
+      var urlsplit = urlProp.split("/");
       var lastSegment = (urlsplit[3]);
       euuid = urlsplit[4];
 
@@ -113,7 +129,6 @@ class SearchComponent extends Component {
       }else if(window.location.href.includes("/undefined")){
         // We're running without filter props passed or URL routing 
         console.log("Undefined?!")
-        
         this.handleClearFilter();
         this.handleUrlChange("");
        
@@ -122,13 +137,11 @@ class SearchComponent extends Component {
         console.log("No Props Or URL, Clear Filter")
         this.handleClearFilter();
       }
-    }
-    if (this.props.match && !this.props.modecheck){
-      console.debug(this.props.match);
+    }else if (this.props.match ){
+      console.debug("this.props.match",this.props.match);
       var type = this.props.match.params.type;
       euuid = this.props.match.params.uuid;
       if(type !== "new"){
-
         // console.log("NOT NEW PAGE");
         // console.log(type+" | "+euuid);
         this.setState({
@@ -136,7 +149,7 @@ class SearchComponent extends Component {
           loading: false
         },function(){ 
           if(euuid){
-            // console.log("UUID PROVIDED: "+euuid);
+            console.log("UUID PROVIDED: "+euuid);
             var params = {
               row:{
                 uuid:euuid
@@ -223,6 +236,20 @@ class SearchComponent extends Component {
      
   
   }
+
+
+  handleLoadEntity(euuid){
+    this.setFilterType();
+    if(euuid && euuid !== "new"){
+      var params = {
+        row:{
+          uuid:euuid
+        }
+      }
+      // this.handleSearchClick();
+      this.handleTableCellClick(params);
+  }
+}
 
   componentDidUpdate(prevProps, prevState) {
     // console.debug("componentDidUpdate");
@@ -682,7 +709,7 @@ class SearchComponent extends Component {
   renderEditForm() {
     if (this.state.editingEntity) {
 
-     
+       // Loads in for editing things, not new things
       const dataType = this.state.editingEntity.entity_type;
       if (dataType === "Donor") {
         return (
