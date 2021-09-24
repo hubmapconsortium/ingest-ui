@@ -66,9 +66,8 @@ class SearchComponent extends Component {
     //   this.handleLoadEntity(uuid)
     // }
     var url = window.location.href;
-    var urlsplit = url.split("/");
-    var lastSegment = (urlsplit[3]);
-    euuid = urlsplit[4];
+    var urlPart = url.split("/");
+    euuid = urlPart[4];
     if(euuid){
       this.handleLoadEntity(euuid)
     }
