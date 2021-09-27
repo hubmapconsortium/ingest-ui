@@ -282,6 +282,8 @@ class EditUploads extends Component {
 
   //@TODO: DRY this out 
   handleValidateUploadSubmission = (i) => {
+    this.setState({ submitting_submission: true });
+    console.debug("handleValidateUploadSubmission")
     this.validateForm().then((isValid) => {
       if (isValid) {
         if (
@@ -295,7 +297,7 @@ class EditUploads extends Component {
             GroupSelectShow: false,
             submitting_submission: true,
           });
-          this.setState({ submitting_submission: true });
+         
 
 
           // package the data up
@@ -310,7 +312,7 @@ class EditUploads extends Component {
             console.debug(JSON.stringify(data));
             console.debug(JSON.parse(localStorage.getItem("info")));
             // if user selected Publish
-            ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+            ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
               .then((response) => {
                 console.debug("ingest_api_validate_upload",response.results);
                 if (response.status === 200) {
@@ -498,8 +500,10 @@ class EditUploads extends Component {
       console.debug("handleButtonClick ",i, action)
       if(action){
         if(action === "save" || action === "create"){
+          console.debug("SAVE")
           this.handleValidateUpload(i);
         }else if(action==="submit"){
+          console.debug("SUB")
         this.handleValidateUploadSubmission(i);
         }
       }
