@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import axios from "axios";
 import { DataGrid } from '@material-ui/data-grid';  
 import { validateRequired } from "../../utils/validators";
-import { getPublishStatusColor } from "../../utils/badgeClasses";
+import { getStatusBadge } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -91,6 +91,8 @@ class EditUploads extends Component {
           name: ""        },
       },
       () => {
+        //@TODO: Decouple Badge class from this switch that sets writeable state & Validation Messge Style
+        // Unless these are a different Badge not RE status but another state? 
         switch (this.state.status.toUpperCase()) {
           case "NEW":
             console.debug("WRITEABLE");
@@ -314,22 +316,41 @@ class EditUploads extends Component {
       this.state.status.toUpperCase()
     )){
     return ( 
+
+      <React.Fragment>
+        <button
+          type='button'
+          className='btn btn-info mr-1'
+          disabled={this.state.submitting}
+          onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+          data-status={this.state.status.toLowerCase()}
+        >
+          {this.state.submitting && (
+          <FontAwesomeIcon
+            className='inline-icon'
+            icon={faSpinner}
+            spin
+          />
+        )}
+        {!this.state.submitting && "Submit"}
+      </button>
       <button
-        type='button'
-        className='btn btn-info mr-1'
-        disabled={this.state.submitting}
-        onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
-        data-status={this.state.status.toLowerCase()}
-      >
-        {this.state.submitting && (
-        <FontAwesomeIcon
-          className='inline-icon'
-          icon={faSpinner}
-          spin
-        />
-      )}
-      {!this.state.submitting && "Validate & Save"}
-    </button>
+          type='button'
+          className='btn btn-primary mr-1'
+          disabled={this.state.submitting}
+          onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+          data-status={this.state.status.toLowerCase()}
+        >
+          {this.state.submitting && (
+          <FontAwesomeIcon
+            className='inline-icon'
+            icon={faSpinner}
+            spin
+          />
+        )}
+        {!this.state.submitting && "Save"}
+      </button>
+    </React.Fragment>
     );
   } else if (["VALID"].includes(this.state.status.toUpperCase())){
     return (
@@ -537,7 +558,7 @@ class EditUploads extends Component {
                 <TableCell align="left" scope="row">{row.group_name}</TableCell>
                 <TableCell align="left" scope="row">
                   <span
-                    className={"w-100 badge " + getPublishStatusColor(row.status)}>
+                    className={"w-100 badge " + getStatusBadge(row.status)}>
                       {row.status}
                   </span>
                 </TableCell>

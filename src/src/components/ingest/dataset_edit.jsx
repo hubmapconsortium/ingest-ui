@@ -12,6 +12,7 @@ import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
+import { getStatusBadge } from "../../utils/badgeClasses";
 import { truncateString } from "../../utils/string_helper";
 import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
@@ -258,53 +259,9 @@ class DatasetEdit extends Component {
           statusErrorMsg: this.props.editingDataset.message,
         },
         () => {
-          switch (this.state.status.toUpperCase()) {
-            case "NEW":
-              this.setState({
-                badge_class: "badge-purple",
-              });
-              break;
-            case "REOPENED":
-              this.setState({
-                badge_class: "badge-purple",
-              });
-              break;
-            case "INVALID":
-              this.setState({
-                badge_class: "badge-warning",
-              });
-              break;
-            case "QA":
-              this.setState({
-                badge_class: "badge-info",
-              });
-              break;
-            case "LOCKED":
-              this.setState({
-                badge_class: "badge-secondary",
-              });
-              break;
-            case "ERROR":
-              this.setState({
-                badge_class: "badge-danger",
-              });
-              break;
-            case "PUBLISHED":
-              this.setState({
-                badge_class: "badge-success",
-              });
-              break;
-            case "UNPUBLISHED":
-              this.setState({
-                badge_class: "badge-light",
-              });
-              break;
-            case "DEPRECATED":
-              break;
-            default:
-              break;
-          }
-
+          this.setState({
+            badge_class: getStatusBadge(this.state.status.toUpperCase()),
+          });
           axios
             .get(
               `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingDataset.uuid}`,
