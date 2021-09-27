@@ -141,6 +141,15 @@ class EditUploads extends Component {
               writeable: false
             });
             break;
+          case "SUBMITTED":
+            console.debug("NOT WRITEABLE");
+            this.setState({
+              validation_message_style:null,
+              badge_class: "badge-info",
+              globusLinkText: "Open data repository ",
+              writeable: false
+            });
+            break;
           case "DEPRECATED":
             break;
           default:
@@ -754,6 +763,12 @@ class EditUploads extends Component {
           {this.state.submit_error && (
             <div className='alert alert-danger col-sm-12' role='alert'>
               Oops! Something went wrong. Please contact administrator for help.
+            </div>
+          )}
+
+          {this.state.submit_success && (
+            <div className='alert alert-success col-sm-12' role='alert'>
+              Changes saved Successfully.
             </div>
           )}
 
