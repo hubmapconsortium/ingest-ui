@@ -23,7 +23,8 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { ingest_api_get_globus_url, 
-  ingest_api_validate_upload } from '../../service/ingest_api';
+  ingest_api_validate_upload,
+  ingest_api_submit_upload } from '../../service/ingest_api';
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {
@@ -210,6 +211,25 @@ class EditUploads extends Component {
   hideConfirmModal = () => {
     this.setState({ confirmModal: false });
   };
+
+  handleSubmitUpload = (data) =>{
+    ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+      .then((response) => {
+        console.debug(response.results);
+        if (response.status === 200) {
+          this.props.onUpdated(response.results);
+        } else {
+          this.setState({ submit_error: true, submitting: false });
+        }
+      })
+      .catch((error) => {
+        this.setState({ submit_error: true, submitting: false });
+        console.debug("SUBMIT error", error)
+      });
+      
+  }
+    
+  
 
   handleValidateUpload = (i) => {
     this.validateForm().then((isValid) => {
