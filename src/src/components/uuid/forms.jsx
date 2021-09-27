@@ -107,8 +107,9 @@ class Forms extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
-    if(!targetPath || targetPath === undefined){
-      var targetPath = ""
+    var targetPathString = ""
+    if(targetPath && targetPath !== undefined){
+      targetPathString = targetPath
     }
     this.setState({
       loading: false
@@ -117,7 +118,7 @@ class Forms extends Component {
       window.history.pushState(
         null,
         "", 
-        "/"+targetPath);
+        "/"+targetPathString);
     }
   }
 

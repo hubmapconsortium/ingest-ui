@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { Button } from 'react-bootstrap';
-import history from './../history';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
 //import ViewCollectionModal from "../components/ingest/viewCollectionModal";
@@ -421,7 +419,7 @@ class Datasets extends Component {
                               className={"badge " + badge_class}
                               data-tip
                               data-for={"status_tooltip_" + dataset.uuid}
-                              onClick={status == 'ERROR' ? () =>
+                              onClick={status === 'ERROR' ? () =>
                                 this.showErrorMsgModal(
                                   dataset.properties.message
                                 ) : null

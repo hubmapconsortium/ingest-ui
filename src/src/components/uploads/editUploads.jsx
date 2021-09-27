@@ -1,9 +1,8 @@
-import React, { Component, useEffect } from "react";
+import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import axios from "axios";
-import { DataGrid } from '@material-ui/data-grid';  
 import { validateRequired } from "../../utils/validators";
 import { getStatusBadge } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,7 +22,6 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import TablePagination from '@material-ui/core/TablePagination';
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload } from '../../service/ingest_api';
 import { COLUMN_DEF_DATASET} from '../search/table_constants';

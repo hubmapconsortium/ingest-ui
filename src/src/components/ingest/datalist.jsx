@@ -187,7 +187,7 @@ handleChangePage = (event, newPage) => {
     api_search(params, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
 
-      if (response.status == 200) {
+      if (response.status === 200) {
       //console.log('Dataset Search results...');
       //console.log(response.results);
       this.setState(
