@@ -103,10 +103,10 @@ class SearchComponent extends Component {
         }
        
       }else if( !this.props.modecheck && 
-              (window.location.href.includes("/donor") || 
-              window.location.href.includes("/sample") || 
-              window.location.href.includes("/dataset") || 
-              window.location.href.includes("/upload"))){
+              (window.location.href.includes("/donors") || 
+              window.location.href.includes("/samples") || 
+              window.location.href.includes("/datasets") || 
+              window.location.href.includes("/uploads"))){
         this.setState({
           sampleType: lastSegment,
           sample_type: lastSegment,

@@ -41,6 +41,7 @@ class DatasetEdit extends Component {
     //   label: "",
     //   description: "",
     // },
+    submit_success: null,
     source_uuid: undefined,
     source_uuid_list: [],
     contains_human_genetic_sequences: undefined,
@@ -672,7 +673,8 @@ class DatasetEdit extends Component {
 
   handleButtonClick = (i) => {
     this.setState({
-      new_status: i
+      new_status: i,
+      submitting: true
     }, () => {
       this.handleSubmit(i);
     })
@@ -761,28 +763,30 @@ class DatasetEdit extends Component {
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
-                  this.setState({ submit_error: true, submitting: false });
+                  this.setState({ submit_error: true, submitting: false,  submit_success:false });
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                   .then((response) => {
                     if (response.status === 200) {
+                      this.setState({ submit_error: false, submitting: false, submit_success:true });
                       ////console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
-                      this.setState({ submit_error: true, submitting: false });
+                      this.setState({ submit_error: true, submitting: false, submit_success:false });
                     }
                 });
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((response) => {
                           if (response.status === 200) {
+                            this.setState({ submit_error: false, submitting: false, submit_success:true });
                             ////console.log('Update Dataset...');
                              ////console.log(response.results);
                             this.props.onUpdated(response.results);
                           } else {
-                            this.setState({ submit_error: true, submitting: false });
+                            this.setState({ submit_error: true, submitting: false, submit_success:false});
                           }
                 });
               }
@@ -808,6 +812,7 @@ class DatasetEdit extends Component {
                      this.setState({
                         //globus_path: res.data.globus_directory_url_path,
                         display_doi: response.results.display_doi,
+                        submit_success:true,
                         //doi: res.data.doi,
                       });
                      axios
@@ -836,7 +841,7 @@ class DatasetEdit extends Component {
                     }
                   });
                   } else {
-                    this.setState({ submit_error: true, submitting: false });
+                    this.setState({ submit_error: true, submitting: false, submit_success:false });
                   }
               });
           }  //else
@@ -1812,6 +1817,12 @@ class DatasetEdit extends Component {
           {this.state.submit_error && (
             <div className='alert alert-danger col-sm-12' role='alert'>
               Oops! Something went wrong. Please contact administrator for help.
+            </div>
+          )}
+
+          {this.state.submit_success && (
+            <div className='alert alert-success col-sm-12' role='alert'>
+              Changes saved Successfully.
             </div>
           )}
           {this.renderButtons()}
