@@ -315,9 +315,10 @@ class EditUploads extends Component {
                 console.debug("ingest_api_validate_upload",response.results);
                 if (response.status === 200) {
                   this.props.onUpdated(this.props.editingUpload);
+                  //@TODO: Maybe control this in different stat functions we can call, that'll turn off the buttons and generate the right respinse alert perhaps in a switch ?
                   this.setState({ submit_error: false, submit_success:true, submitting_submission:false,  submitting: false });
                 } else {
-                  this.setState({ submit_error: true, submitting_submission:false, submitting: false });
+                  this.setState({ submit_error: true, submit_success:false, submitting_submission:false, submitting: false });
                 }
             });
           } 
@@ -374,6 +375,8 @@ class EditUploads extends Component {
           <div className="col-sm-12">
           <Divider />
           </div>
+
+          {this.renderHelperText()}
           <div className='col-md-12 text-right pads'>
             {this.renderActionButton()}
               <button
@@ -459,6 +462,16 @@ class EditUploads extends Component {
   }
   };
     
+  renderHelperText = () => {
+    if(this.state.writeable){
+      return(
+        <div className="helper-text p-2 m-2 align-right w-100 text-right">
+          <p className="text-small text-end p-0 m-0">Use the <strong>Submit</strong> button when all data has been uploaded and is ready for HIVE review.</p>
+          <p className="text-small text-end p-0 m-0">Use the <strong>Save</strong> button to save any updates to the Title or Description.</p>
+        </div>
+      )
+    }
+  }
   
   componentDidUpdate(prevProps) { 
     // console.log("componentDidUpdate");
