@@ -1,7 +1,9 @@
-import React, { Component, useState  } from "react";
-import { withRouter, useHistory } from 'react-router-dom';
+import React, { Component  } from "react";
+import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
+
+import { Redirect } from 'react-router'
 
 import axios from "axios";
 import DonorForm from "../uuid/donor_form_components/donorForm";
@@ -10,7 +12,6 @@ import UploadsEdit from "../uploads/editUploads";
 import DatasetEdit from "../ingest/dataset_edit";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
@@ -473,7 +474,7 @@ class SearchComponent extends Component {
     // console.debug('From Page ', this.state.page);
     // console.debug('From Page size', this.state.pageSize);
     // console.debug("this.state.page", this.state.page);
-    if(this.state.page != 0 ){
+    if(this.state.page !== 0 ){
       this.setState({
         table_loading:true, 
       });
@@ -598,13 +599,18 @@ class SearchComponent extends Component {
 
   onUpdated = data => {
     //this.filterEntity();
-    //console.debug(this.props)
+    console.debug("onUpdated SC", data)
     this.setState({
       updateSuccess: true,
       editingEntity: data,
-      show_search: true,
+      show_search: false,
       loading: false
-    });
+    }, () => {   
+      console.debug("onUpdated state", this.state)
+      // ONLY works for functional components and all oura are class components
+       // this.props.history.push("/"+this.state.formType+"/"+this.state.editNewEntity.uuid)
+       this.setState({ redirect: true })
+   });
     setTimeout(() => {
       this.setState({ updateSuccess: null });
     }, 5000);
@@ -613,7 +619,9 @@ class SearchComponent extends Component {
       this.setState({ 
         editingEntity: this.props.editNewEntity
       });
+      console.debug("EditNewEntity")
     }
+    
     //this.props.onCancel();
   };
 
@@ -713,14 +721,16 @@ class SearchComponent extends Component {
   **/
 
   render() {
+    const { redirect } = this.state;
     if (this.state.isAuthenticated) {
     return  (
         
         <div className={"searchWrapper"+this.state.show_search} style={{ width: '100%' }}>
 
-          {!this.state.show_search && (
-             <Forms formType={this.state.formType} onCancel={this.handleClose} />
-          )}
+          {/* {!this.state.show_search && (
+            // Being brought in via the renderEditForm call below though
+            //  <Forms formType={this.state.formType} onCancel={this.handleClose} />
+          )} */}
        
           
           {/*
@@ -759,9 +769,10 @@ class SearchComponent extends Component {
 
 
 
-  renderEditForm() {
+  renderEditForm  = () => {
+    console.debug("START rendereditForm",this.state)
     if (this.state.editingEntity) {
-
+      console.debug("editingEntity: ", this.state.editingEntity)
        // Loads in for editing things, not new things
       const dataType = this.state.editingEntity.entity_type;
       if (dataType === "Donor") {

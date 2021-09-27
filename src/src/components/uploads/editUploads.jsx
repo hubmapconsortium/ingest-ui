@@ -213,17 +213,21 @@ class EditUploads extends Component {
   };
 
   handleSubmitUpload = (data) =>{
+    this.setState({
+      submitting_submission:true,
+      submitting: false,
+    })
     ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
       .then((response) => {
         console.debug(response.results);
         if (response.status === 200) {
           this.props.onUpdated(response.results);
         } else {
-          this.setState({ submit_error: true, submitting: false });
+          this.setState({ submit_error: true, submitting: false, submitting_submission:false });
         }
       })
       .catch((error) => {
-        this.setState({ submit_error: true, submitting: false });
+        this.setState({ submit_error: true, submitting: false, submitting_submission:false });
         console.debug("SUBMIT error", error)
       });
       
@@ -262,12 +266,59 @@ class EditUploads extends Component {
             // if user selected Publish
             ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
               .then((response) => {
-                console.debug(response.results);
-                  if (response.status === 200) {
-                    this.props.onUpdated(response.results);
-                  } else {
-                    this.setState({ submit_error: true, submitting: false });
-                  }
+                console.debug("ingest_api_validate_upload",response.results);
+                if (response.status === 200) {
+                  this.props.onUpdated(this.props.editingUpload);
+                  this.setState({ submit_error: false, submit_success:true, submitting: false });
+                } else {
+                  this.setState({ submit_error: true, submitting: false });
+                }
+            });
+          } 
+        }
+      }
+    });
+  };
+
+  //@TODO: DRY this out 
+  handleValidateUploadSubmission = (i) => {
+    this.validateForm().then((isValid) => {
+      if (isValid) {
+        if (
+          !this.props.editingUpload &&
+          this.state.groups.length > 1 &&
+          !this.state.GroupSelectShow
+        ){
+          this.setState({ GroupSelectShow: true });
+        } else {
+          this.setState({
+            GroupSelectShow: false,
+            submitting_submission: true,
+          });
+          this.setState({ submitting_submission: true });
+
+
+          // package the data up
+          let data = {
+            title: this.state.title,
+            description: this.state.description
+          };
+  
+
+          if (this.props.editingUpload) {
+
+            console.debug(JSON.stringify(data));
+            console.debug(JSON.parse(localStorage.getItem("info")));
+            // if user selected Publish
+            ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              .then((response) => {
+                console.debug("ingest_api_validate_upload",response.results);
+                if (response.status === 200) {
+                  this.props.onUpdated(this.props.editingUpload);
+                  this.setState({ submit_error: false, submit_success:true, submitting_submission:false,  submitting: false });
+                } else {
+                  this.setState({ submit_error: true, submitting_submission:false, submitting: false });
+                }
             });
           } 
         }
@@ -348,24 +399,24 @@ class EditUploads extends Component {
         <button
           type='button'
           className='btn btn-info mr-1'
-          disabled={this.state.submitting}
-          onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+          disabled={this.state.submitting_submission}
+          onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"submit") }
           data-status={this.state.status.toLowerCase()}
         >
-          {this.state.submitting && (
+          {this.state.submitting_submission && (
           <FontAwesomeIcon
             className='inline-icon'
             icon={faSpinner}
             spin
           />
         )}
-        {!this.state.submitting && "Submit"}
+        {!this.state.submitting_submission && "Submit"}
       </button>
       <button
           type='button'
           className='btn btn-primary mr-1'
           disabled={this.state.submitting}
-          onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+          onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"save") }
           data-status={this.state.status.toLowerCase()}
         >
           {this.state.submitting && (
@@ -385,7 +436,7 @@ class EditUploads extends Component {
         type='button'
         className='btn btn-info mr-1'
         disabled={this.state.submitting}
-        onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+        onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"create") }
         data-status={this.state.status.toLowerCase()}
       >
         {this.state.submitting && (
@@ -427,11 +478,20 @@ class EditUploads extends Component {
         "/"+targetPath);
   }
 
-  handleButtonClick = (i) => {
+  handleButtonClick = (i,action) => {
     this.setState({
       new_status: i
     }, () => {
-      this.handleValidateUpload(i);
+      console.debug("handleButtonClick ",i, action)
+      if(action){
+        if(action === "save" || action === "create"){
+          this.handleValidateUpload(i);
+        }else if(action==="submit"){
+        this.handleValidateUploadSubmission(i);
+        }
+      }
+     
+
     })
   };
 
