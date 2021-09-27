@@ -75,8 +75,52 @@ class Forms extends Component {
       formType: "----",
       createSuccess: true,
       showSuccessDialog: true
-    });
+    }, () => {
+      console.debug("entity", data.entity.entity_type);
+      this.props.onCreated(data.entity); 
+      this.handleUrlChange(this.handleSingularty(data.entity.entity_type, "plural")+"/"+data.entity.uuid);
+   });
+
   };
+
+  handleSingularty  = (target, size) => {
+    // console.debug("handleSingularty target: ",target);
+    if(target === 'uploads'){
+      return "uploads" // Is always plural in our system
+    }
+    if(size === "plural"){
+      // console.debug(target.slice(-1));
+      if(target.slice(-1) === "s"){
+        return target.toLowerCase();
+      }else{
+        return (target+"s").toLowerCase();
+      }
+    }else{ // we wanna singularize
+      if(target.slice(-1) === "s"){
+        return (target.slice(0, -1)).toLowerCase()
+      }else{
+        return target.toLowerCase();
+      }
+    } 
+  }
+
+
+  handleUrlChange = (targetPath) =>{
+    console.debug("handleUrlChange "+targetPath)
+    var targetPathString = ""
+    if(targetPath && targetPath !== undefined){
+      targetPathString = targetPath
+    }
+    this.setState({
+      loading: false
+    })
+    if(targetPath!=="----" && targetPath!=="undefined"){
+      window.history.pushState(
+        null,
+        "", 
+        "/"+targetPathString);
+    }
+  }
 
   onCreateNext = e => {
     console.log('onCreateNext', e)
@@ -141,6 +185,7 @@ class Forms extends Component {
     } else if (this.state.formType === "dataset") {
         return (
          <DatasetEdit
+            testProp="HAIL"
             onCreated={this.onCreated}
             handleCancel={this.props.onCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}

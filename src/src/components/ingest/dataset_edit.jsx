@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import Paper from '@material-ui/core/Paper';
-import Divider from '@material-ui/core/Divider';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -12,6 +11,7 @@ import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
+import { getStatusBadge } from "../../utils/badgeClasses";
 import { truncateString } from "../../utils/string_helper";
 import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
@@ -26,6 +26,7 @@ import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
+import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../../service/search_api';
 
 class DatasetEdit extends Component {
@@ -257,53 +258,9 @@ class DatasetEdit extends Component {
           statusErrorMsg: this.props.editingDataset.message,
         },
         () => {
-          switch (this.state.status.toUpperCase()) {
-            case "NEW":
-              this.setState({
-                badge_class: "badge-purple",
-              });
-              break;
-            case "REOPENED":
-              this.setState({
-                badge_class: "badge-purple",
-              });
-              break;
-            case "INVALID":
-              this.setState({
-                badge_class: "badge-warning",
-              });
-              break;
-            case "QA":
-              this.setState({
-                badge_class: "badge-info",
-              });
-              break;
-            case "LOCKED":
-              this.setState({
-                badge_class: "badge-secondary",
-              });
-              break;
-            case "ERROR":
-              this.setState({
-                badge_class: "badge-danger",
-              });
-              break;
-            case "PUBLISHED":
-              this.setState({
-                badge_class: "badge-success",
-              });
-              break;
-            case "UNPUBLISHED":
-              this.setState({
-                badge_class: "badge-light",
-              });
-              break;
-            case "DEPRECATED":
-              break;
-            default:
-              break;
-          }
-
+          this.setState({
+            badge_class: getStatusBadge(this.state.status.toUpperCase()),
+          });
           axios
             .get(
               `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingDataset.uuid}`,
@@ -1057,7 +1014,7 @@ class DatasetEdit extends Component {
 
   renderButtons() {
 
-    if (this.state.has_admin_priv === true && this.state.assay_type_primary == false
+    if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
             && this.state.previous_revision_uuid === undefined 
             && this.state.status.toUpperCase() === "PUBLISHED") {
          return (
@@ -1890,4 +1847,4 @@ class DatasetEdit extends Component {
   }
 }
 
-export default DatasetEdit;
+export default withRouter(DatasetEdit);

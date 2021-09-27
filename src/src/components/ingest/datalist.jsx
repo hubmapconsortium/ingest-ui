@@ -16,6 +16,7 @@ import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
 import { api_search } from '../../service/search_api';
 import { entity_api_get_entity } from '../../service/entity_api';
+import { getStatusBadge } from "../../utils/badgeClasses";
 
 class DataList extends Component {
   state = {
@@ -186,7 +187,7 @@ handleChangePage = (event, newPage) => {
     api_search(params, JSON.parse(localStorage.getItem("info")).nexus_token)
     .then((response) => {
 
-      if (response.status == 200) {
+      if (response.status === 200) {
       //console.log('Dataset Search results...');
       //console.log(response.results);
       this.setState(
@@ -434,45 +435,8 @@ handleChangePage = (event, newPage) => {
                         : "";
                       let badge_class = "";
                       let btn_text = dataset.writeable ? "Edit" : "View";
-                      switch (status) {
-                        case "NEW":
-                          badge_class = "badge-purple";
-                          break;
-                        case "REOPENED":
-                          badge_class = "badge-purple";
-                          break;
-                        case "INVALID":
-                          badge_class = "badge-warning";
-                          break;
-                        case "QA":
-                          badge_class = "badge-info";
-                          break;
-                        case "LOCKED":
-                          badge_class = "badge-secondary";
-                          break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          btn_text = "View";
-                          break;
-                        case "PUBLISHED":
-                          badge_class = "badge-success";
-                          break;
-                        case "UNPUBLISHED":
-                          badge_class = "badge-light";
-                          break;
-                        case "DEPRECATED":
-                          break;
-                        case "ERROR":
-                          badge_class = "badge-danger";
-                          btn_text = "View";
-                          break;
-                        case "HOLD":
-                          badge_class = "badge-dark";
-                          btn_text = this.state.is_curator ? "View" : "View";
-                          break;
-                        default:
-                          break;
-                      }
+                      badge_class = getStatusBadge(status);
+                          
                       if (!this.state.group) {
                         btn_text = "View";
                       }
