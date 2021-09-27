@@ -674,10 +674,10 @@ class App extends Component {
               
               
             )}
-            {/* {this.state.isAuthenticated && this.state.creatingNewEntity && (
+            {this.state.isAuthenticated && this.state.creatingNewEntity && (
               // Loads in for new things, not editing things
-              // <Forms formType={this.state.formType} onCancel={this.handleClose} onCreated={this.onCreated}/>
-            )} */}
+              <Forms formType={this.state.formType} onCancel={this.handleClose} onCreated={this.onCreated}/>
+            )}
                   
             {this.state.isAuthenticated && this.state.creatingNewUpload && (
                 <Dialog 
