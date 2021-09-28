@@ -75,10 +75,6 @@ class Forms extends Component {
       formType: "----",
       createSuccess: true,
       showSuccessDialog: true
-    }, () => {
-      console.debug("entity", data.entity.entity_type);
-      this.props.onCreated(data.entity); 
-      this.handleUrlChange(this.handleSingularty(data.entity.entity_type, "plural")+"/"+data.entity.uuid);
    });
 
   };
