@@ -435,7 +435,7 @@ class SearchComponent extends Component {
       // console.debug("sample_type", sample_type);
       // console.debug(this.props);
       if(!this.state.uuid && sample_type !=="----"){ 
-        this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
+        //this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
       
 
@@ -602,8 +602,8 @@ class SearchComponent extends Component {
     console.debug("onUpdated SC", data)
     this.setState({
       updateSuccess: true,
-      editingEntity: data,
-      show_search: false,
+      editingEntity: null,
+      show_search: true,
       loading: false
     }, () => {   
       console.debug("onUpdated state", this.state)

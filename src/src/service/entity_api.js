@@ -53,7 +53,13 @@ export function entity_api_update_entity(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: err.response.status, results: err.response.data}
+        var response = "";
+        if(err.response){
+          response =  {status: err.response.status, results: err.response.data}
+        }else{
+          response = err
+        }
+        return response
       });
 };
 
