@@ -266,13 +266,12 @@ class EditUploads extends Component {
             // if user selected Publish
             ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
               .then((response) => {
-                console.debug("ingest_api_validate_upload",response.results);
-                if (response.status === 200) {
-                  this.props.onUpdated(this.props.editingUpload);
-                  this.setState({ submit_error: false, submit_success:true, submitting: false });
-                } else {
-                  this.setState({ submit_error: true, submitting: false });
-                }
+                console.debug(response.results);
+                  if (response.status === 200) {
+                    this.props.onUpdated(response.results);
+                  } else {
+                    this.setState({ submit_error: true, submitting: false });
+                  }
             });
           } 
         }
@@ -282,6 +281,8 @@ class EditUploads extends Component {
 
   //@TODO: DRY this out 
   handleValidateUploadSubmission = (i) => {
+    this.setState({ submitting_submission: true });
+    console.debug("handleValidateUploadSubmission")
     this.validateForm().then((isValid) => {
       if (isValid) {
         if (
@@ -295,7 +296,7 @@ class EditUploads extends Component {
             GroupSelectShow: false,
             submitting_submission: true,
           });
-          this.setState({ submitting_submission: true });
+         
 
 
           // package the data up
@@ -310,16 +311,14 @@ class EditUploads extends Component {
             console.debug(JSON.stringify(data));
             console.debug(JSON.parse(localStorage.getItem("info")));
             // if user selected Publish
-            ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+            ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
               .then((response) => {
-                console.debug("ingest_api_validate_upload",response.results);
-                if (response.status === 200) {
-                  this.props.onUpdated(this.props.editingUpload);
-                  //@TODO: Maybe control this in different stat functions we can call, that'll turn off the buttons and generate the right respinse alert perhaps in a switch ?
-                  this.setState({ submit_error: false, submit_success:true, submitting_submission:false,  submitting: false });
-                } else {
-                  this.setState({ submit_error: true, submit_success:false, submitting_submission:false, submitting: false });
-                }
+                console.debug(response.results);
+                  if (response.status === 200) {
+                    this.props.onUpdated(response.results);
+                  } else {
+                    this.setState({ submit_error: true, submitting: false, submitting_submission:false  });
+                  }
             });
           } 
         }
@@ -498,8 +497,10 @@ class EditUploads extends Component {
       console.debug("handleButtonClick ",i, action)
       if(action){
         if(action === "save" || action === "create"){
+          console.debug("SAVE")
           this.handleValidateUpload(i);
         }else if(action==="submit"){
+          console.debug("SUB")
         this.handleValidateUploadSubmission(i);
         }
       }
@@ -859,11 +860,13 @@ class EditUploads extends Component {
             </div>
           )}
 
-          {this.state.submit_success && (
+
+            {/*  this shouldnt happen! Success redirects to home */}
+          {/* {this.state.submit_success && (
             <div className='alert alert-success col-sm-12' role='alert'>
               Changes saved Successfully.
             </div>
-          )}
+          )} */}
 
 
           </div>

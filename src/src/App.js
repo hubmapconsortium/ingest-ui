@@ -242,11 +242,11 @@ class App extends Component {
         show_search: false,
         showSearch: false
        }, () => {   
-          //  ONLY WORKS IN FUNCTIONAL COMPONENTS
-          // AND ALL OF OURS ARE CLASS COMPONENTS
-          // this.props.history.push("/"+this.state.formType+"/"+this.state.editNewEntity.uuid)
+        // console.debug("NewEntryStateUpdated")
       });
     }
+    
+    
     
     // if (prevProps.showSearch !== this.props.showSearch) {
     //   console.log("UPDATE this.props.showSearch");

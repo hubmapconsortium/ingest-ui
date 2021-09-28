@@ -274,6 +274,19 @@ class SearchComponent extends Component {
         show_search: this.props.showSearch
         });
     }
+
+    console.debug("San Check",prevState.editEntity !== this.state.editEntity, this.state.editEntity)
+    if (prevState.editEntity !== this.state.editEntity && (!this.state.editEntity || this.state.editEntity === null)) {
+      console.debug("Saved, Time to Reload Search", this.state.editNewEntity)
+      this.setState({
+        editForm: false,
+        show_modal: false,
+        show_search: true,
+        showSearch: true
+        }, () => {   
+          console.debug("Saved State set state settled")
+      });
+    }
     
   }
 
@@ -435,7 +448,7 @@ class SearchComponent extends Component {
       // console.debug("sample_type", sample_type);
       // console.debug(this.props);
       if(!this.state.uuid && sample_type !=="----"){ 
-        this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
+        //this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
       
 
@@ -602,11 +615,13 @@ class SearchComponent extends Component {
     console.debug("onUpdated SC", data)
     this.setState({
       updateSuccess: true,
-      editingEntity: data,
-      show_search: false,
+      editingEntity: null,
+      show_search: true,
       loading: false
     }, () => {   
       console.debug("onUpdated state", this.state)
+      // this.handleSearchClick();
+      this.cancelEdit();
       // ONLY works for functional components and all oura are class components
        // this.props.history.push("/"+this.state.formType+"/"+this.state.editNewEntity.uuid)
        this.setState({ redirect: true })
@@ -748,7 +763,9 @@ class SearchComponent extends Component {
                     this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          {this.renderEditForm()}
+          {!this.state.show_search && (
+            this.renderEditForm()
+          )}
 
         </div>
       );

@@ -467,6 +467,8 @@ class TissueForm extends Component {
                        
                       }         
               });
+            }else{
+              console.debug("ERR response, ", response)
             }
       });
     }
@@ -1146,6 +1148,8 @@ handleAddImage = () => {
                   } else {
                     this.setState({ submit_error: true, submitting: false, isDirty: false });
                     this.setDirty(false);
+          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    console.debug("update Entity Fail", response)
 
                   }
       
@@ -1190,6 +1194,8 @@ handleAddImage = () => {
                 }
           }
         }
+      }else{
+        console.debug("NotValid!", this.state.formErrors)
       }
     });
   };
@@ -1500,7 +1506,8 @@ handleAddImage = () => {
           } else {
               ancestor_organ = selection.row.organ;  // use the direct ancestor
           }
-          //console.debug('here setting state vars', ancestor_organ)
+          console.debug('here setting state vars', ancestor_organ)
+          console.debug(selection.row)
           this.setState({
             source_uuid: selection.row.hubmap_id,
             source_entity: selection.row,
