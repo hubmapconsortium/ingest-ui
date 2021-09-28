@@ -173,7 +173,7 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
   return axios 
     .get(url,options)
       .then(res => {
-        //console.debug(res);
+        console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
