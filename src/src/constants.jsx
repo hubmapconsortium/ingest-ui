@@ -156,7 +156,7 @@ export const ES_SEARCHABLE_FIELDS = [
 // this list is for wildcard searchable fields
 export const ES_SEARCHABLE_WILDCARDS = [
   "submission_id", 
-  "hubmap_display_id",
+  "hubmap_id",
   "lab_donor_id", 
   "lab_name",
   "lab_tissue_sample_id",

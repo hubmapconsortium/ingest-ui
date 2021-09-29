@@ -110,7 +110,7 @@ let boolQuery = "";
       // if no field criteria is sent just default to a 
       if (Object.keys(fields).length === 0 && fields.constructor === Object) {
           console.debug("full search")
-            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset')); 
+            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset OR Upload')); 
       } else {
        
         // was a group name selected
@@ -138,7 +138,7 @@ let boolQuery = "";
                 boolQuery.must(esb.matchQuery("entity_type.keyword", fields["entity_type"]));
               }
             } else {
-               boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset'));  // default everything ; this maybe temp
+               boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset OR Upload'));  // default everything ; this maybe temp
             }
         }
 
