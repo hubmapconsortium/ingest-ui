@@ -277,7 +277,7 @@ class SearchComponent extends Component {
 
     console.debug("San Check",prevState.editEntity !== this.state.editEntity, this.state.editEntity)
     if (prevState.editEntity !== this.state.editEntity && (!this.state.editEntity || this.state.editEntity === null)) {
-      console.debug("Saved, Time to Reload Search", this.state.editNewEntity)
+      // console.debug("Saved, Time to Reload Search", this.state.editNewEntity)
       this.setState({
         editForm: false,
         show_modal: false,
