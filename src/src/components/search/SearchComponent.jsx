@@ -69,7 +69,8 @@ class SearchComponent extends Component {
     var url = window.location.href;
     var urlPart = url.split("/");
     euuid = urlPart[4];
-    if(euuid){
+    if(euuid && this.props.modeset!=="Source"){
+      console.debug("Loadingfrom URL");
       this.handleLoadEntity(euuid)
     }
 
@@ -90,16 +91,12 @@ class SearchComponent extends Component {
       // console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         console.debug("NEW FROM R ", this.props.modecheck)
-        if(this.props.modecheck === "Source"){
-          this.setState({
-            loading:false,
-            show_search:true,
-          });
+        if(this.props.modecheck === "Source" ){
+          console.debug("modecheck Source");
+          this.handleShowSearch(true);
         }else{
-          this.setState({
-            loading:false,
-            show_search:false
-          });
+          console.debug("modecheck NOT");
+          this.handleShowSearch(false);
         }
        
       }else if( !this.props.modecheck && 
@@ -238,9 +235,25 @@ class SearchComponent extends Component {
   }
 
 
+  handleShowSearch  = (show) => {
+    if ( show === true ){
+      this.setState({
+        loading:false,
+        show_search:true,
+      });
+    }else{
+      this.setState({
+        loading:false,
+        show_search:false
+      });
+    }
+   
+  }
+
+
   handleLoadEntity(euuid){
     this.setFilterType();
-    if(euuid && euuid !== "new"){
+    if(euuid && euuid !== "new" && this.props.modecheck!=="Source"){
       var params = {
         row:{
           uuid:euuid
@@ -788,7 +801,8 @@ class SearchComponent extends Component {
 
   renderEditForm  = () => {
     console.debug("START rendereditForm",this.state)
-    if (this.state.editingEntity) {
+    console.debug("Render Modecheck",this.props, this.props.modecheck)
+    if (this.state.editingEntity && !this.props.modeCheck) {
       console.debug("editingEntity: ", this.state.editingEntity)
        // Loads in for editing things, not new things
       const dataType = this.state.editingEntity.entity_type;
