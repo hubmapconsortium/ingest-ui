@@ -192,14 +192,16 @@ class TissueForm extends Component {
       });
 
 
-      console.debug('PROPS', this.props)
+      //console.debug('PROPS', this.props)
     
       try {
           let param_uuid = ""
           try {
             param_uuid = this.props.match.params.uuid
+            console.debug('Param match', param_uuid)
           } catch {
             param_uuid = this.props.editingEntity.uuid;
+            console.debug('editingEntity', param_uuid)
           }
         
           //console.debug('UUID', param_uuid)
@@ -210,34 +212,32 @@ class TissueForm extends Component {
                   // check to see if user can edit
                   ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((resp) => {
+                          let read_only_state = false
                           if (resp.status === 200) {
-                            //console.debug('api_allowable_edit_states...', resp.results);
-                            ////////console.debug(resp.results);
-                            let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-  
-                            // THIS IS A TEMPORARY HACK TO ALWAYS ENABLE PUBLIC LEVEL ACCESS FOR EDITING
-                            if (entity_data['data_access_level'] === "public") {
-                              read_only_state = false
-                            }
-                            this.setState({
-                              editingEntity: entity_data,
-                              readOnly: read_only_state,   // used for hidding UI components
-                              param_uuid: param_uuid 
-                            }, () => {
-                              this.checkForRelatedGroupIds(entity_data);
-                              this.initialize();
-                           
-                              //console.debug('readOnly', this.state.readOnly);
-                            }
+                            console.debug('api_allowable_edit_states...', resp.results);
+                            read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+                          }
+                          // THIS IS A TEMPORARY HACK TO ALWAYS ENABLE PUBLIC LEVEL ACCESS FOR EDITING
+                          if (entity_data['data_access_level'] === "public") {
+                            read_only_state = false
+                          }
+                          this.setState({
+                            editingEntity: entity_data,
+                            readOnly: read_only_state,   // used for hidding UI components
+                            param_uuid: param_uuid 
+                          }, () => {
+                            this.checkForRelatedGroupIds(entity_data);
+                            this.initialize();
+                         
+                            //console.debug('readOnly', this.state.readOnly);
+                          }
 
-                            );
-                           
-                          }         
+                          );
                   });
                 }
           });
       } catch {
-        console.debug('check for PROPS')
+        //console.debug('check for PROPS', this.props)
 
         if (this.props) {
         // run load props from  createnext previous call
@@ -324,7 +324,7 @@ class TissueForm extends Component {
 
 
       } else {
-        console.debug('NOT EDITING', this.props.entity)
+        //console.debug('NOT EDITING', this.props.entity)
 
           this.setState(
             {
@@ -467,6 +467,8 @@ class TissueForm extends Component {
                        
                       }         
               });
+            }else{
+              console.debug("ERR response, ", response)
             }
       });
     }
@@ -1128,8 +1130,8 @@ handleAddImage = () => {
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    console.debug('Update Entity...', this.state.related_group_ids.length );
-                    console.debug(response.results);
+                    //console.debug('Update Entity...', this.state.related_group_ids.length );
+                    //console.debug(response.results);
                     this.setState({ submit_error: false, 
                       submitting: false, 
                       show_snack: true,
@@ -1146,6 +1148,8 @@ handleAddImage = () => {
                   } else {
                     this.setState({ submit_error: true, submitting: false, isDirty: false });
                     this.setDirty(false);
+          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    console.debug("update Entity Fail", response)
 
                   }
       
@@ -1190,6 +1194,8 @@ handleAddImage = () => {
                 }
           }
         }
+      }else{
+        console.debug("NotValid!", this.state.formErrors)
       }
     });
   };
@@ -1443,7 +1449,7 @@ handleAddImage = () => {
 
   handleLookUpClick = () => {
 //    console.debug('source_uuid', this.state.source_uuid)
-    console.debug('lookUpCancelled', this.state.lookUpCancelled)
+    //console.debug('lookUpCancelled', this.state.lookUpCancelled)
 
     if (!this.state.lookUpCancelled) {
       this.setState({
@@ -1484,7 +1490,7 @@ handleAddImage = () => {
   handleSelectClick = selection => {
     let ancestor_organ = ""
 
-    console.debug('tissueForm Selection', selection);
+    //console.debug('tissueForm Selection', selection);
 
     if (selection) {
       // check to see if we have an "top-level" ancestor 
@@ -1492,7 +1498,7 @@ handleAddImage = () => {
       entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((response) => {
           if (response.status === 200) {
-              console.debug('Entity ancestors...', response.results);
+              //console.debug('Entity ancestors...', response.results);
               // //////console.debug(response.results);
               if (response.results.length > 0) {
                   ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
@@ -1501,6 +1507,7 @@ handleAddImage = () => {
               ancestor_organ = selection.row.organ;  // use the direct ancestor
           }
           console.debug('here setting state vars', ancestor_organ)
+          console.debug(selection.row)
           this.setState({
             source_uuid: selection.row.hubmap_id,
             source_entity: selection.row,
@@ -1590,6 +1597,14 @@ handleAddImage = () => {
           </div>   
         )}
         <div className="col-sm-12 pads">
+          {this.state.editingEntity && 
+            this.state.editingEntity.data_access_level === 'public' && (
+
+            <React.Fragment>
+              <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
+              accessible when data associated with it was published.</div>
+            </React.Fragment>
+          )}
           <div className="col-sm-12 text-center"><h4>Sample Information</h4></div>
           <div
             className="alert alert-danger col-sm-10 offset-sm-1"
@@ -2591,6 +2606,14 @@ handleAddImage = () => {
               </div>
             )}
             {this.renderButtons()}
+            {this.state.editingEntity && 
+            this.state.editingEntity.data_access_level === 'public' && (
+
+            <React.Fragment>
+              <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
+              accessible when data associated with it was published.</div>
+            </React.Fragment>
+          )}
           </form>
           
         </div>

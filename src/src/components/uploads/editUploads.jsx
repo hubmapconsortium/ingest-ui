@@ -1,11 +1,10 @@
-import React, { Component, useEffect } from "react";
+import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import axios from "axios";
-import { DataGrid } from '@material-ui/data-grid';  
 import { validateRequired } from "../../utils/validators";
-import { getPublishStatusColor } from "../../utils/badgeClasses";
+import { getStatusBadge } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -23,9 +22,9 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import TablePagination from '@material-ui/core/TablePagination';
 import { ingest_api_get_globus_url, 
-  ingest_api_validate_upload } from '../../service/ingest_api';
+  ingest_api_validate_upload,
+  ingest_api_submit_upload } from '../../service/ingest_api';
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {
@@ -91,6 +90,8 @@ class EditUploads extends Component {
           name: ""        },
       },
       () => {
+        //@TODO: Decouple Badge class from this switch that sets writeable state & Validation Messge Style
+        // Unless these are a different Badge not RE status but another state? 
         switch (this.state.status.toUpperCase()) {
           case "NEW":
             console.debug("WRITEABLE");
@@ -133,6 +134,15 @@ class EditUploads extends Component {
             });
             break;
           case "REORGANIZED":
+            console.debug("NOT WRITEABLE");
+            this.setState({
+              validation_message_style:null,
+              badge_class: "badge-info",
+              globusLinkText: "Open data repository ",
+              writeable: false
+            });
+            break;
+          case "SUBMITTED":
             console.debug("NOT WRITEABLE");
             this.setState({
               validation_message_style:null,
@@ -202,6 +212,29 @@ class EditUploads extends Component {
     this.setState({ confirmModal: false });
   };
 
+  handleSubmitUpload = (data) =>{
+    this.setState({
+      submitting_submission:true,
+      submitting: false,
+    })
+    ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+      .then((response) => {
+        console.debug(response.results);
+        if (response.status === 200) {
+          this.props.onUpdated(response.results);
+        } else {
+          this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+        }
+      })
+      .catch((error) => {
+        this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+        console.debug("SUBMIT error", error)
+      });
+      
+  }
+    
+  
+
   handleValidateUpload = (i) => {
     this.validateForm().then((isValid) => {
       if (isValid) {
@@ -238,6 +271,53 @@ class EditUploads extends Component {
                     this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false });
+                  }
+            });
+          } 
+        }
+      }
+    });
+  };
+
+  //@TODO: DRY this out 
+  handleValidateUploadSubmission = (i) => {
+    this.setState({ submitting_submission: true });
+    console.debug("handleValidateUploadSubmission")
+    this.validateForm().then((isValid) => {
+      if (isValid) {
+        if (
+          !this.props.editingUpload &&
+          this.state.groups.length > 1 &&
+          !this.state.GroupSelectShow
+        ){
+          this.setState({ GroupSelectShow: true });
+        } else {
+          this.setState({
+            GroupSelectShow: false,
+            submitting_submission: true,
+          });
+         
+
+
+          // package the data up
+          let data = {
+            title: this.state.title,
+            description: this.state.description
+          };
+  
+
+          if (this.props.editingUpload) {
+
+            console.debug(JSON.stringify(data));
+            console.debug(JSON.parse(localStorage.getItem("info")));
+            // if user selected Publish
+            ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              .then((response) => {
+                console.debug(response.results);
+                  if (response.status === 200) {
+                    this.props.onUpdated(response.results);
+                  } else {
+                    this.setState({ submit_error: true, submitting: false, submitting_submission:false  });
                   }
             });
           } 
@@ -294,6 +374,8 @@ class EditUploads extends Component {
           <div className="col-sm-12">
           <Divider />
           </div>
+
+          {this.renderHelperText()}
           <div className='col-md-12 text-right pads'>
             {this.renderActionButton()}
               <button
@@ -314,22 +396,41 @@ class EditUploads extends Component {
       this.state.status.toUpperCase()
     )){
     return ( 
+
+      <React.Fragment>
+        <button
+          type='button'
+          className='btn btn-info mr-1'
+          disabled={this.state.submitting_submission}
+          onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"submit") }
+          data-status={this.state.status.toLowerCase()}
+        >
+          {this.state.submitting_submission && (
+          <FontAwesomeIcon
+            className='inline-icon'
+            icon={faSpinner}
+            spin
+          />
+        )}
+        {!this.state.submitting_submission && "Submit"}
+      </button>
       <button
-        type='button'
-        className='btn btn-info mr-1'
-        disabled={this.state.submitting}
-        onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
-        data-status={this.state.status.toLowerCase()}
-      >
-        {this.state.submitting && (
-        <FontAwesomeIcon
-          className='inline-icon'
-          icon={faSpinner}
-          spin
-        />
-      )}
-      {!this.state.submitting && "Validate & Save"}
-    </button>
+          type='button'
+          className='btn btn-primary mr-1'
+          disabled={this.state.submitting}
+          onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"save") }
+          data-status={this.state.status.toLowerCase()}
+        >
+          {this.state.submitting && (
+          <FontAwesomeIcon
+            className='inline-icon'
+            icon={faSpinner}
+            spin
+          />
+        )}
+        {!this.state.submitting && "Save"}
+      </button>
+    </React.Fragment>
     );
   } else if (["VALID"].includes(this.state.status.toUpperCase())){
     return (
@@ -337,7 +438,7 @@ class EditUploads extends Component {
         type='button'
         className='btn btn-info mr-1'
         disabled={this.state.submitting}
-        onClick={() => this.handleButtonClick(this.state.status.toLowerCase()) }
+        onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"create") }
         data-status={this.state.status.toLowerCase()}
       >
         {this.state.submitting && (
@@ -360,6 +461,16 @@ class EditUploads extends Component {
   }
   };
     
+  renderHelperText = () => {
+    if(this.state.writeable){
+      return(
+        <div className="helper-text p-2 m-2 align-right w-100 text-right">
+          <p className="text-small text-end p-0 m-0">Use the <strong>Submit</strong> button when all data has been uploaded and is ready for HIVE review.</p>
+          <p className="text-small text-end p-0 m-0">Use the <strong>Save</strong> button to save any updates to the Title or Description.</p>
+        </div>
+      )
+    }
+  }
   
   componentDidUpdate(prevProps) { 
     // console.log("componentDidUpdate");
@@ -379,11 +490,22 @@ class EditUploads extends Component {
         "/"+targetPath);
   }
 
-  handleButtonClick = (i) => {
+  handleButtonClick = (i,action) => {
     this.setState({
       new_status: i
     }, () => {
-      this.handleValidateUpload(i);
+      console.debug("handleButtonClick ",i, action)
+      if(action){
+        if(action === "save" || action === "create"){
+          console.debug("SAVE")
+          this.handleValidateUpload(i);
+        }else if(action==="submit"){
+          console.debug("SUB")
+        this.handleValidateUploadSubmission(i);
+        }
+      }
+     
+
     })
   };
 
@@ -487,6 +609,8 @@ class EditUploads extends Component {
 
 
   renderDatasets = (datasetCollection) => {
+    console.log(datasetCollection)
+    console.log(this.state.datasets)
 
     if(this.state.datasets && this.state.datasets.length > 0 ){
 
@@ -508,7 +632,7 @@ class EditUploads extends Component {
            <label>
             Datsets 
           </label>
-        <TableContainer component={Paper} style={{ maxHeight: 150 }}>
+        <TableContainer component={Paper} style={{ maxHeight: 350 }}>
         <Table aria-label="Associated Datasets" size="small" stickyHeader>
           <TableHead>
             <TableRow>
@@ -535,7 +659,7 @@ class EditUploads extends Component {
                 <TableCell align="left" scope="row">{row.group_name}</TableCell>
                 <TableCell align="left" scope="row">
                   <span
-                    className={"w-100 badge " + getPublishStatusColor(row.status)}>
+                    className={"w-100 badge " + getStatusBadge(row.status)}>
                       {row.status}
                   </span>
                 </TableCell>
@@ -735,6 +859,14 @@ class EditUploads extends Component {
               Oops! Something went wrong. Please contact administrator for help.
             </div>
           )}
+
+
+            {/*  this shouldnt happen! Success redirects to home */}
+          {/* {this.state.submit_success && (
+            <div className='alert alert-success col-sm-12' role='alert'>
+              Changes saved Successfully.
+            </div>
+          )} */}
 
 
           </div>

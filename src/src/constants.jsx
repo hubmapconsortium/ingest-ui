@@ -3,9 +3,10 @@
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SAMPLE_TYPES = [
   { donor: "Donor" },
-  { organ: "Organ"},
+  { sample: "Sample"},
   { dataset: "Dataset"}, 
   { uploads: "Data Upload"},
+  { organ: "Organ"},
   {
     biopsy: "Biopsy",
     cell_lysate: "Cell lysate",
@@ -139,7 +140,8 @@ export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "577
 // this is a list of fields for the keyword search.  note: must ID fields need to use .keyword
 export const ES_SEARCHABLE_FIELDS = [
   "description.keyword", 
-  "hubmap_display_id.keyword", 
+  "hubmap_id.keyword", 
+  "submission_id.keyword",
   "display_doi.keyword", 
   "lab_donor_id.keyword", 
   "display_subtype.keyword",
