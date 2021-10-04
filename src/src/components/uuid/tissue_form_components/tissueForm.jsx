@@ -214,6 +214,7 @@ class TissueForm extends Component {
                       .then((resp) => {
                           let read_only_state = false
                           if (resp.status === 200) {
+<<<<<<< HEAD
                             console.debug('api_allowable_edit_states...', resp.results);
                             read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
                           }
@@ -233,6 +234,26 @@ class TissueForm extends Component {
                           }
 
                           );
+=======
+                            //console.debug('api_allowable_edit_states...', resp.results);
+                            ////////console.debug(resp.results);
+                            let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+  
+                            this.setState({
+                              editingEntity: entity_data,
+                              readOnly: read_only_state,   // used for hidding UI components
+                              param_uuid: param_uuid 
+                            }, () => {
+                              this.checkForRelatedGroupIds(entity_data);
+                              this.initialize();
+                           
+                              //console.debug('readOnly', this.state.readOnly);
+                            }
+
+                            );
+                           
+                          }         
+>>>>>>> 3ed0a681e4f7c11fe56f38301066c46a27911bd9
                   });
                 }
           });
