@@ -2,8 +2,6 @@ import React, { Component  } from "react";
 import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
-
-
 import axios from "axios";
 import DonorForm from "../uuid/donor_form_components/donorForm";
 import TissueForm from "../uuid/tissue_form_components/tissueForm";
@@ -17,6 +15,7 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+import 'url-search-params-polyfill';
 
 // Creation donor_form_components
 
@@ -159,7 +158,7 @@ class SearchComponent extends Component {
             // console.log("No UUID in URL");
             this.handleSearchClick();
           }
-        });
+        }); 
       }else if(this.props.search){
         console.log("Props Search",this.props.search);
       }
@@ -171,15 +170,24 @@ class SearchComponent extends Component {
         });
       }
 
-
       if(this.props.location.search){
-        console.log("Props Search",this.props.location.search);
+        //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
+        //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
+        // Hooks into search_api.js :O 
+        var searchProp = this.props.location.search
+        let searchParams = new URLSearchParams(searchProp);
+        var searchQueryType = searchParams.has('sampleType')
+        console.debug("searchQueryType", searchQueryType);
+        if(searchQueryType){
+          var searchType = searchParams.get('sampleType');
+          console.debug("searchType", searchType);
+          this.setState({
+            sampleType: searchType
+          });
+        }
       }
-      
     }
 
-    // console.log(this.state);
-    
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
@@ -239,10 +247,23 @@ class SearchComponent extends Component {
           window.location.reload();
         }
       });
-     
-  
   }
 
+  handleExtractQuery= () =>{
+    //@TODO: Using a polyfill to solve IE woes instead 
+    var queryObject = window.location.search
+    .slice(1)
+    .split('&')
+    .map(p => p.split('='))
+    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+    console.debug("queryObject", queryObject);
+    return queryObject;
+
+  }
+
+  handleAddQuery = (key,value) =>{
+    // searchParams.append('topic', 'webdev');
+  }
 
   handleShowSearch  = (show) => {
     if ( show === true ){
@@ -343,7 +364,7 @@ class SearchComponent extends Component {
         this.setState({ group: value });
         break;
       case "sampleType":
-        this.setState({ sampleType: value });
+        this.setState({ sampleType: value });        
         break;
       case "keywords":
         this.setState({ keywords: value });
@@ -515,6 +536,11 @@ class SearchComponent extends Component {
       });
     }
 
+    var search = new URLSearchParams();
+    search.set('sampleType', sample_type);
+    window.history.pushState({}, '', search);
+    // window.location.search = window.location.search.replace(/file=[^&$]*/i, 'file=filename');
+
     this.setState({ 
       loading: true,
       filtered: true
@@ -522,7 +548,7 @@ class SearchComponent extends Component {
       api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
       .then((response) => {
         // console.debug("Search Res", response.results);
-
+        
         if (response.status === 200) {
           if (response.total === 1) {  // for single returned items, customize the columns to match
             which_cols_def = this.columnDefType(response.results[0].entity_type);

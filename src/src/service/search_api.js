@@ -93,8 +93,8 @@ export function api_search2(params, auth, from, size) {
 export function search_api_filter_es_query_builder(fields, from, size) {
 
   let requestBody =  esb.requestBodySearch();
- ////console.debug("here in the filter es builder")
- ////console.debug(fields);
+ console.debug("here in the filter es builder")
+ console.debug(fields);
 
 
 let boolQuery = "";
