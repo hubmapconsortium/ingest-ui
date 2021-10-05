@@ -64,6 +64,7 @@ class SearchComponent extends Component {
     // if(uuid){
     //   this.handleLoadEntity(uuid)
     // }
+    //@TODO: Look into using the query/search functionality the search-api uses instead of all..... this
     var url = window.location.href;
     var urlPart = url.split("/");
     type = urlPart[3];
@@ -176,6 +177,8 @@ class SearchComponent extends Component {
         // Hooks into search_api.js :O 
         var searchProp = this.props.location.search
         let searchParams = new URLSearchParams(searchProp);
+
+
         var searchQueryType = searchParams.has('sampleType')
         console.debug("searchQueryType", searchQueryType);
         if(searchQueryType){
@@ -183,6 +186,16 @@ class SearchComponent extends Component {
           console.debug("searchType", searchType);
           this.setState({
             sampleType: searchType
+          });
+        }
+        
+        var searchQueryKeyword = searchParams.has('keywords')
+        console.debug("searchQueryKeyword", searchQueryKeyword);
+        if(searchQueryKeyword){
+          var searchKeyword = searchParams.get('keywords');
+          console.debug("searchKeyword", searchKeyword);
+          this.setState({
+            keywords: searchKeyword
           });
         }
       }
@@ -461,6 +474,10 @@ class SearchComponent extends Component {
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
+
+
+    var url = new URL(window.location);
+
     // console.debug("handleSearchClick")
     // console.debug(group,sample_type,keywords)
     // console.debug(this.state)
@@ -488,9 +505,11 @@ class SearchComponent extends Component {
     }
 
     if (sample_type) {
+
       // console.debug("sample_type", sample_type);
       // console.debug(this.props);
       if(!this.state.uuid && sample_type !=="----"){ 
+        url.searchParams.set('sampleType',sample_type);
         //this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
       
@@ -523,7 +542,8 @@ class SearchComponent extends Component {
       } 
     } 
     if (keywords) {
-      params["search_term"] = keywords;
+      params["keywords"] = keywords;
+      url.searchParams.set('keywords',keywords);
     }
 
     // console.debug('results_total  ', this.state.results_total);
@@ -535,10 +555,8 @@ class SearchComponent extends Component {
         table_loading:true, 
       });
     }
-
-    var search = new URLSearchParams();
-    search.set('sampleType', sample_type);
-    window.history.pushState({}, '', search);
+    window.history.pushState({}, '', url);
+    //window.history.pushState({}, '', search);
     // window.location.search = window.location.search.replace(/file=[^&$]*/i, 'file=filename');
 
     this.setState({ 
