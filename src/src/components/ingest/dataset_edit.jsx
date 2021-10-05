@@ -45,6 +45,7 @@ class DatasetEdit extends Component {
     source_uuid_list: [],
     contains_human_genetic_sequences: undefined,
     description: "",
+    dataset_info: "",
     source_uuids: [],
     globus_path: "",
     writeable: true,
@@ -241,6 +242,7 @@ class DatasetEdit extends Component {
           //contains_human_genetic_sequences: this.props.editingDataset.contains_human_genetic_sequences,
           contains_human_genetic_sequences: savedGeneticsStatus,
           description: this.props.editingDataset.description,
+          dataset_info: this.props.editingDataset.dataset_info,
           previous_revision_uuid: this.props.editingDataset.hasOwnProperty('previous_revision_uuid') ? this.props.editingDataset.previous_revision_uuid : undefined,
           // assay_metadata_status: this.props.editingDataset.properties
           //   .assay_metadata_status,
@@ -382,6 +384,10 @@ class DatasetEdit extends Component {
           description: value,
         });
         break;
+      case "dataset_info":
+        this.setState({
+          dataset_info: value,
+        });
       case "status":
         this.setState({
           new_status: value,
@@ -727,6 +733,7 @@ class DatasetEdit extends Component {
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
             data_types: data_types,
             description: this.state.description,
+            dataset_info: this.state.dataset_info,
             //status: this.state.new_status,
             //is_protected: this.state.is_protected,
           };
@@ -1292,6 +1299,15 @@ class DatasetEdit extends Component {
                   <p>
                     <strong>
                       <big>
+                        {this.props.editingDataset.title}
+                      </big>
+                    </strong>
+                  </p>
+                </div>
+                <div>
+                  <p>
+                    <strong>
+                      <big>
                        
                         {this.state.globus_path && (
 
@@ -1316,6 +1332,7 @@ class DatasetEdit extends Component {
             <div className='form-group'>
               <label htmlFor='lab_dataset_id'>
                Lab Name or ID
+
               </label>
            
                 <span className="px-2">
@@ -1379,7 +1396,7 @@ class DatasetEdit extends Component {
                   <p>
                     The HuBMAP Unique identifier of the direct origin entity,
                     <br />
-                    other sample or doner, where this sample came from.
+                    other sample or donor, where this sample came from.
                   </p>
                 </ReactTooltip>
               {this.state.writeable && (
@@ -1545,6 +1562,50 @@ class DatasetEdit extends Component {
               </div>
             )}
            
+          </div>
+          <div className="form-group">
+            <label
+              htmlFor='additional-info'>
+              Additional Information
+            </label>
+            <span className="px-2">
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='description_tooltip'
+                />
+                <ReactTooltip
+                  id='description_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Add information here which can be used to find this data, 
+                  including lab specific (non-PHI) identifiers.</p>
+                </ReactTooltip>
+              </span>
+              {this.state.writeable && (
+                <React.Fragment>
+                  <div>
+                    <textarea
+                      type='text'
+                      name='dataset_info'
+                      id='dataset_info'
+                      cols='30'
+                      rows='5'
+                      className='form-control'
+                      placeholder='Additional Info'
+                      onChange={this.handleInputChange}
+                      value={this.state.dataset_info}
+                    />
+                  </div>
+                </React.Fragment>
+              )}
+              {!this.state.writeable && (
+              <div className='col-sm-9 col-form-label'>
+                <p>{this.state.dataset_info}</p>
+              </div>
+            )}
           </div>
             <div className='form-group row'>
               <label
