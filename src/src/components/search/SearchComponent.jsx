@@ -57,6 +57,7 @@ class SearchComponent extends Component {
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
     var euuid;
+    var type
     // If we can switch to Query string for url, would be nice
     // let url = new URL(window.location.href);
     // let uuid = url.searchParams.get("uuid");
@@ -66,6 +67,7 @@ class SearchComponent extends Component {
     // }
     var url = window.location.href;
     var urlPart = url.split("/");
+    type = urlPart[3];
     euuid = urlPart[4];
     if(euuid && this.props.modeset!=="Source"){
       console.debug("Loadingfrom URL");
@@ -86,7 +88,7 @@ class SearchComponent extends Component {
       var lastSegment = (urlsplit[3]);
       euuid = urlsplit[4];
 
-      // console.debug(lastSegment, euuid)
+     console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         console.debug("NEW FROM R ", this.props.modecheck)
         if(this.props.modecheck === "Source" ){
@@ -98,10 +100,10 @@ class SearchComponent extends Component {
         }
        
       }else if( !this.props.modecheck && 
-              (window.location.href.includes("/donor") || 
-              window.location.href.includes("/sample") || 
-              window.location.href.includes("/dataset") || 
-              window.location.href.includes("/upload"))){
+              (window.location.href.includes("donors") || 
+              window.location.href.includes("samples") || 
+              window.location.href.includes("datasets") || 
+              window.location.href.includes("uploads"))){
         this.setState({
           sampleType: lastSegment,
           sample_type: lastSegment,
@@ -133,9 +135,9 @@ class SearchComponent extends Component {
         console.log("No Props Or URL, Clear Filter")
         this.handleClearFilter();
       }
-    }else if (this.props.match ){
+    }else if (this.props.match ){ // Ok so we're getting props match eveen w/o, lets switch to search? 
       console.debug("this.props.match",this.props.match);
-      var type = this.props.match.params.type;
+      type = this.props.match.params.type;
       euuid = this.props.match.params.uuid;
       if(type !== "new"){
         // console.log("NOT NEW PAGE");
@@ -158,12 +160,20 @@ class SearchComponent extends Component {
             this.handleSearchClick();
           }
         });
-      }else{
+      }else if(this.props.search){
+        console.log("Props Search",this.props.search);
+      }
+      else{
         this.setState({
           formType: euuid,
           show_search:false,
           creatingNewEntity:true
         });
+      }
+
+
+      if(this.props.location.search){
+        console.log("Props Search",this.props.location.search);
       }
       
     }

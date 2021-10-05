@@ -77,6 +77,9 @@ class App extends Component {
     // IE doesn't support the URL api
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
+    const search = props.location.search; // could be '?foo=bar'
+    const params = new URLSearchParams(search);
+    console.debug("params", params);
 
 
     if (info !== null) {
@@ -117,6 +120,13 @@ class App extends Component {
     
 
   }
+
+  getQuery = () => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search);
+    }
+    return new URLSearchParams();
+  };
 
   handleSingularty  = (target, size) => {
     if(size === "plural"){
