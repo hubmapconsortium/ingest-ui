@@ -3,7 +3,6 @@ import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 
-import { Redirect } from 'react-router'
 
 import axios from "axios";
 import DonorForm from "../uuid/donor_form_components/donorForm";
@@ -20,21 +19,20 @@ import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
 
 // Creation donor_form_components
-import Forms from "../uuid/forms";
 
 // import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
 
   constructor(props) {
-    super(props);
+    super(props); 
     console.debug("SearchCompprops",props);
     this.state = {
       selectionModel: "",
       filtered_keywords: "",
       filtered: false,
       entity_type_list: SAMPLE_TYPES,
-      column_def: COLUMN_DEF_DONOR,
+      column_def: COLUMN_DEF_DONOR, 
       show_info_panel: true,
       show_search: true,
       results_total: 0,
@@ -127,6 +125,7 @@ class SearchComponent extends Component {
         // We're running without filter props passed or URL routing 
         console.log("Undefined?!")
         this.handleClearFilter();
+
         this.handleUrlChange("");
        
       }else{
@@ -556,8 +555,8 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
-    if(!targetPath || targetPath === undefined){
-      var targetPath = ""
+    if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
+      targetPath = ""
     }
     this.setState({
       loading: false
@@ -628,8 +627,8 @@ class SearchComponent extends Component {
     console.debug("onUpdated SC", data)
     this.setState({
       updateSuccess: true,
-      editingEntity: null,
-      show_search: true,
+      editingEntity: data,
+      show_search: false,
       loading: false
     }, () => {   
       console.debug("onUpdated state", this.state)
@@ -749,7 +748,7 @@ class SearchComponent extends Component {
   **/
 
   render() {
-    const { redirect } = this.state;
+    // const { redirect } = this.state;
     if (this.state.isAuthenticated) {
     return  (
         
@@ -834,6 +833,7 @@ class SearchComponent extends Component {
               handleCancel={this.cancelEdit}
               editingDataset={this.state.editingEntity}
               onUpdated={this.onUpdated}
+              newForm={true}
               //onCreated={this.handleDatasetCreated}
               changeLink={this.onChangeGlobusLink.bind(this)}
             />
