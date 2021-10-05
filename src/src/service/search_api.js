@@ -110,7 +110,7 @@ let boolQuery = "";
       // if no field criteria is sent just default to a 
       if (Object.keys(fields).length === 0 && fields.constructor === Object) {
           console.debug("full search")
-            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset')); 
+            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset OR Upload')); 
       } else {
        
         // was a group name selected
@@ -127,6 +127,8 @@ let boolQuery = "";
           } else {
             boolQuery.must(esb.matchQuery("entity_type.keyword", 'Donor'));
           }
+        } else if (fields["organ"]) {
+            boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
         } else {
             // was entity types select
             if (fields["entity_type"]) {
@@ -136,7 +138,7 @@ let boolQuery = "";
                 boolQuery.must(esb.matchQuery("entity_type.keyword", fields["entity_type"]));
               }
             } else {
-               boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset'));  // default everything ; this maybe temp
+               boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset OR Upload'));  // default everything ; this maybe temp
             }
         }
 
@@ -183,3 +185,24 @@ export function search_api_search_group_list() {
 
   return groups;
 }
+
+export function get_assay_type(assay) { 
+  return axios 
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`)
+      .then(res => {
+        let data = res.data;
+        //var dt_dict = data.result.map((value, index) => { return value });
+        var found_dt = undefined
+        data.result.forEach(s => {
+          if (s['name'] === assay) {
+            found_dt = s;
+          }
+        });
+
+        console.debug(found_dt);
+        return {status: res.status, results: found_dt}
+      })
+      .catch(err => {
+         return {status: 500, results: err.response}
+      });
+};

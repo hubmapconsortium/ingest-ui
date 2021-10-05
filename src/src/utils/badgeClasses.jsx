@@ -1,5 +1,5 @@
 
-export function getPublishStatusColor(status) {
+export function getStatusBadge(status) {
 	var badge_class = "";
 	//console.log('status', status)
 	switch (status.toUpperCase()) {
@@ -40,6 +40,9 @@ export function getPublishStatusColor(status) {
           break;
         case "HOLD":
           badge_class = "badge-dark";
+          break;
+        case "SUBMITTED":
+          badge_class = "badge-info";
           break;
         default:
           break;

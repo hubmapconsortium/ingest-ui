@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import { Button } from 'react-bootstrap';
-import history from './../history';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faFilter, faBan } from "@fortawesome/free-solid-svg-icons";
 //import ViewCollectionModal from "../components/ingest/viewCollectionModal";
 import axios from "axios";
 import ReactTooltip from "react-tooltip";
 import { truncateString } from "../utils/string_helper";
+import { getStatusBadge } from "../../utils/badgeClasses";
 import Modal from "../components/uuid/modal";
 
 
@@ -384,44 +383,8 @@ class Datasets extends Component {
                         : "";
                       let badge_class = "";
                       let btn_text = dataset.writeable ? "Edit" : "View";
-                      switch (status) {
-                        case "NEW":
-                          badge_class = "badge-purple";
-                          break;
-                        case "REOPENED":
-                          badge_class = "badge-purple";
-                          break;
-                        case "INVALID":
-                          badge_class = "badge-warning";
-                          break;
-                        case "QA":
-                          badge_class = "badge-info";
-                          break;
-                        case "LOCKED":
-                          badge_class = "badge-secondary";
-                          break;
-                        case "PROCESSING":
-                          badge_class = "badge-secondary";
-                          break;
-                        case "PUBLISHED":
-                          badge_class = "badge-success";
-                          break;
-                        case "UNPUBLISHED":
-                          badge_class = "badge-light";
-                          break;
-                        case "DEPRECATED":
-                          break;
-                        case "ERROR":
-                          badge_class = "badge-danger";
-                          btn_text = "View";
-                          break;
-                        case "HOLD":
-                          badge_class = "badge-dark";
-                          btn_text = this.state.is_curator ? "View" : "View";
-                          break;
-                        default:
-                          break;
-                      }
+                      badge_class = getStatusBadge(status);
+
                       if (!this.state.group) {
                         btn_text = "View";
                       }
@@ -456,7 +419,7 @@ class Datasets extends Component {
                               className={"badge " + badge_class}
                               data-tip
                               data-for={"status_tooltip_" + dataset.uuid}
-                              onClick={status == 'ERROR' ? () =>
+                              onClick={status === 'ERROR' ? () =>
                                 this.showErrorMsgModal(
                                   dataset.properties.message
                                 ) : null

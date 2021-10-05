@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
+import { getStatusBadge } from "../../utils/badgeClasses";
 
 
 // table column definitions
@@ -59,7 +60,7 @@ export const COLUMN_DEF_DATASET = [
               style={{
                 width: "100px"
               }}
-              className={"badge " + getPublishStatusColor(params.value)}>
+              className={"badge " + getStatusBadge(params.value)}>
               {params.value}
             </span>
 			)
@@ -97,23 +98,12 @@ export const COLUMN_DEF_UPLOADS = [
               style={{
                 width: "100px"
               }}
-              className={"badge " + getPublishStatusColor(params.value)}>
+              className={"badge " + getStatusBadge(params.value)}>
               {params.value}
             </span>
       )
   },
   
-  { field: 'uuid', headerName: 'Directory', width: 100,
-  renderCell: (params: ValueFormatterParams) => (
-     <React.Fragment>
-      <button
-              className='btn btn-link'
-              onClick={() => handleDataClick(params.value)}>
-              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
-      </button>                         
-      </React.Fragment>
-    )
-  }
  ];
 
 
@@ -149,50 +139,4 @@ function handleDataClick(dataset_uuid) {
   });
 }
 
-function getPublishStatusColor(status) {
-	var badge_class = "";
-	//console.log('status', status)
-	switch (status.toUpperCase()) {
-        case "NEW":
-          badge_class = "badge-purple";
-          break;
-        case "REOPENED":
-          badge_class = "badge-purple";
-          break;
-        case "REORGANIZED":
-          badge_class = "badge-info";
-          break;
-        case "VALID":
-          badge_class = "badge-success";
-          break;
-        case "INVALID":
-          badge_class = "badge-danger";
-          break;
-        case "QA":
-          badge_class = "badge-info";
-          break;
-        case "LOCKED":
-          badge_class = "badge-secondary";
-          break;
-        case "PROCESSING":
-          badge_class = "badge-secondary";
-          break;
-        case "PUBLISHED":
-          badge_class = "badge-success";
-          break;
-        case "UNPUBLISHED":
-          badge_class = "badge-light";
-          break;
-        case "DEPRECATED":
-          break;
-        case "ERROR":
-          badge_class = "badge-danger";
-          break;
-        case "HOLD":
-          badge_class = "badge-dark";
-          break;
-        default:
-          break;
-      }
-      return badge_class;
-}
+
