@@ -1299,7 +1299,8 @@ class DatasetEdit extends Component {
                   <p>
                     <strong>
                       <big>
-                        {this.props.editingDataset.title}
+                        {this.props.editingDataset &&
+                          this.props.editingDataset.title}
                       </big>
                     </strong>
                   </p>
