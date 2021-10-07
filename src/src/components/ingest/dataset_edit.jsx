@@ -8,7 +8,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faUnlink, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSearch, faSpinner, faUnlink, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
@@ -28,6 +28,8 @@ import { entity_api_update_entity } from '../../service/entity_api';
 import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
+import { truncateString } from "../../utils/string_helper";
+
 
 import MuiAlert from '@material-ui/lab/Alert';
 import Table from '@material-ui/core/Table';
@@ -61,6 +63,7 @@ class DatasetEdit extends Component {
     source_uuid_list: [],
     contains_human_genetic_sequences: undefined,
     description: "",
+    dataset_info: "",
     source_uuids: [],
     globus_path: "",
     writeable: true,
@@ -257,6 +260,7 @@ class DatasetEdit extends Component {
           //contains_human_genetic_sequences: this.props.editingDataset.contains_human_genetic_sequences,
           contains_human_genetic_sequences: savedGeneticsStatus,
           description: this.props.editingDataset.description,
+          dataset_info: this.props.editingDataset.dataset_info,
           previous_revision_uuid: this.props.editingDataset.hasOwnProperty('previous_revision_uuid') ? this.props.editingDataset.previous_revision_uuid : undefined,
           // assay_metadata_status: this.props.editingDataset.properties
           //   .assay_metadata_status,
@@ -417,6 +421,11 @@ class DatasetEdit extends Component {
           description: value,
         });
         break;
+      case "dataset_info":
+        this.setState({
+          dataset_info: value,
+        });
+      break;
       case "status":
         this.setState({
           new_status: value,
@@ -961,6 +970,7 @@ class DatasetEdit extends Component {
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
             data_types: data_types,
             description: this.state.description,
+            dataset_info: this.state.dataset_info,
             //status: this.state.new_status,
             //is_protected: this.state.is_protected,
           };
@@ -1545,6 +1555,18 @@ class DatasetEdit extends Component {
                   <p>
                     <strong>
                       <big>
+
+                        {this.props.editingDataset &&
+                          this.props.editingDataset.title}
+                      </big>
+                    </strong>
+                  </p>
+                </div>
+                <div>
+                  <p>
+                    <strong>
+                      <big>
+                       
                         {this.state.globus_path && (
 
                           <a
@@ -1566,6 +1588,7 @@ class DatasetEdit extends Component {
             <div className='form-group'>
               <label htmlFor='lab_dataset_id'>
                Lab Name or ID
+
               </label>
            
                 <span className="px-2">
@@ -1637,6 +1660,149 @@ class DatasetEdit extends Component {
                 Description 
               </label>
               <span className="px-2">
+               <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='source_uuid_tooltip'
+                />
+                <ReactTooltip
+                  id='source_uuid_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>
+                    The HuBMAP Unique identifier of the direct origin entity,
+                    <br />
+                    other sample or donor, where this sample came from.
+                  </p>
+                </ReactTooltip>
+              {this.state.writeable && (
+                <React.Fragment>
+                   <div className="input-group">
+                    <input
+                      type='text'
+                      name='source_uuid'
+                      id='source_uuid'
+                      className={
+                        "form-control " +
+                        this.errorClass(this.state.formErrors.source_uuid)
+                      }
+                      value={this.state.source_uuid}
+                      onChange={this.handleInputChange}
+                      onFocus={this.handleLookUpClick}
+                      autoComplete='off'
+                    />      
+                    <button
+                      className='btn btn-outline-secondary'
+                      type='button'
+                      onClick={this.handleLookUpClick}
+                    >
+                       <FontAwesomeIcon
+                          icon={faSearch}
+                          data-tip
+                          data-for="source_uuid_tooltip"
+                      />
+                    </button>
+                  </div>
+                  {/*
+                   <Modal show={this.state.LookUpShow} handleClose={this.hideLookUpModal} scrollable={true}>
+                    <SearchComponent
+                      select={this.handleSelectClick}
+                      custom_title="Search for a Source ID for your Dataset"
+                      filter_type="Dataset"
+                    />
+                   </Modal>
+                    */}
+                    <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
+                     <DialogContent>
+                    <SearchComponent
+                      select={this.handleSelectClick}
+                      custom_title="Search for a Source ID for your Dataset"
+                      filter_type="Dataset"
+                      modecheck="Source"
+                    />
+                    </DialogContent>
+                     <DialogActions>
+                      <Button onClick={this.cancelLookUpModal} color="primary">
+                        Close
+                     </Button>
+                    </DialogActions>
+                   </Dialog>
+                </React.Fragment>
+              )}
+              {!this.state.writeable && (
+                <React.Fragment>
+                  <div className='col-sm-9 col-form-label'>
+                    <p>{this.state.source_uuid}</p>
+                  </div>{" "}
+                </React.Fragment>
+              )}
+             </span>
+            </div>
+            {this.state.source_entity && (   // this is the description box for source info
+              <div className='form-group row'>
+                <div className='col-sm-7 offset-sm-2'>
+                  <div className='card'>
+                    <div className='card-body'>
+                      
+                      <div className='row'>
+                        <div className='col-sm-6'>
+                          <b>Source Type:</b>{" "}
+                          {this.state.source_entity.entity_type}
+                        </div>
+            
+                        {this.state.source_entity.specimen &&
+                          this.state.source_entity.specimen.specimen_type ===
+                            "organ" && (
+                            <div className='col-sm-12'>
+                              <b>Organ Type:</b>{" "}
+                              {this.state.source_entity.specimen &&
+                                ORGAN_TYPES[
+                                  this.state.source_entity.organ
+                                ]}
+                            </div>
+                          )}
+                      
+                        {this.state.source_entity.submission_id && (
+                            <div className="col-sm-12">
+                              <b>Submission ID:</b>{" "}{this.state.source_entity.submission_id}
+                            </div>
+                        )}
+                        {this.state.source_entity.lab_tissue_sample_id && (
+                            <div className="col-sm-12">
+                                <b>Lab Sample ID: </b>{" "}
+                                {this.state.source_entity.lab_tissue_sample_id}     
+                            </div>
+                          )}
+                        
+                            {this.state.source_entity.group_name && (
+                            <div className="col-sm-12">
+                                <b>Group Name: </b>{" "}
+                                {this.state.source_entity.group_name}
+                            </div>
+                          )}
+                          {this.state.source_entity.description && (
+                            <div className="col-sm-12">
+                              <p>
+                                <b>Description: </b>{" "}
+                                {truncateString(this.state.source_entity.description, 230)}
+                              </p>
+                            </div>
+                          )}
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className='form-group'>
+            <label
+              htmlFor='description'>
+              Description 
+            </label>
+            <span className="px-2">
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
@@ -1674,6 +1840,50 @@ class DatasetEdit extends Component {
               </div>
             )}
            
+          </div>
+          <div className="form-group">
+            <label
+              htmlFor='additional-info'>
+              Additional Information
+            </label>
+            <span className="px-2">
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='description_tooltip'
+                />
+                <ReactTooltip
+                  id='description_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Add information here which can be used to find this data, 
+                  including lab specific (non-PHI) identifiers.</p>
+                </ReactTooltip>
+              </span>
+              {this.state.writeable && (
+                <React.Fragment>
+                  <div>
+                    <textarea
+                      type='text'
+                      name='dataset_info'
+                      id='dataset_info'
+                      cols='30'
+                      rows='5'
+                      className='form-control'
+                      placeholder='Additional Info'
+                      onChange={this.handleInputChange}
+                      value={this.state.dataset_info}
+                    />
+                  </div>
+                </React.Fragment>
+              )}
+              {!this.state.writeable && (
+              <div className='col-sm-9 col-form-label'>
+                <p>{this.state.dataset_info}</p>
+              </div>
+            )}
           </div>
             <div className='form-group row'>
               <label
