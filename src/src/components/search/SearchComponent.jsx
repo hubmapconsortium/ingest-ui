@@ -2,9 +2,6 @@ import React, { Component  } from "react";
 import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
-
-import { Redirect } from 'react-router'
-
 import axios from "axios";
 import DonorForm from "../uuid/donor_form_components/donorForm";
 import TissueForm from "../uuid/tissue_form_components/tissueForm";
@@ -18,23 +15,23 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+import 'url-search-params-polyfill';
 
 // Creation donor_form_components
-import Forms from "../uuid/forms";
 
 // import { browserHistory } from 'react-router'
 
 class SearchComponent extends Component {
 
   constructor(props) {
-    super(props);
+    super(props); 
     console.debug("SearchCompprops",props);
     this.state = {
       selectionModel: "",
       filtered_keywords: "",
       filtered: false,
       entity_type_list: SAMPLE_TYPES,
-      column_def: COLUMN_DEF_DONOR,
+      column_def: COLUMN_DEF_DONOR, 
       show_info_panel: true,
       show_search: true,
       results_total: 0,
@@ -59,6 +56,7 @@ class SearchComponent extends Component {
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
     var euuid;
+    var type
     // If we can switch to Query string for url, would be nice
     // let url = new URL(window.location.href);
     // let uuid = url.searchParams.get("uuid");
@@ -66,8 +64,10 @@ class SearchComponent extends Component {
     // if(uuid){
     //   this.handleLoadEntity(uuid)
     // }
+    //@TODO: Look into using the query/search functionality the search-api uses instead of all..... this
     var url = window.location.href;
     var urlPart = url.split("/");
+    type = urlPart[3];
     euuid = urlPart[4];
     if(euuid && this.props.modeset!=="Source"){
       console.debug("Loadingfrom URL");
@@ -88,7 +88,7 @@ class SearchComponent extends Component {
       var lastSegment = (urlsplit[3]);
       euuid = urlsplit[4];
 
-      // console.debug(lastSegment, euuid)
+     console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         console.debug("NEW FROM R ", this.props.modecheck)
         if(this.props.modecheck === "Source" ){
@@ -100,10 +100,10 @@ class SearchComponent extends Component {
         }
        
       }else if( !this.props.modecheck && 
-              (window.location.href.includes("/donor") || 
-              window.location.href.includes("/sample") || 
-              window.location.href.includes("/dataset") || 
-              window.location.href.includes("/upload"))){
+              (window.location.href.includes("donors") || 
+              window.location.href.includes("samples") || 
+              window.location.href.includes("datasets") || 
+              window.location.href.includes("uploads"))){
         this.setState({
           sampleType: lastSegment,
           sample_type: lastSegment,
@@ -127,6 +127,7 @@ class SearchComponent extends Component {
         // We're running without filter props passed or URL routing 
         console.log("Undefined?!")
         this.handleClearFilter();
+
         this.handleUrlChange("");
        
       }else{
@@ -134,9 +135,9 @@ class SearchComponent extends Component {
         console.log("No Props Or URL, Clear Filter")
         this.handleClearFilter();
       }
-    }else if (this.props.match ){
+    }else if (this.props.match ){ // Ok so we're getting props match eveen w/o, lets switch to search? 
       console.debug("this.props.match",this.props.match);
-      var type = this.props.match.params.type;
+      type = this.props.match.params.type;
       euuid = this.props.match.params.uuid;
       if(type !== "new"){
         // console.log("NOT NEW PAGE");
@@ -158,19 +159,48 @@ class SearchComponent extends Component {
             // console.log("No UUID in URL");
             this.handleSearchClick();
           }
-        });
-      }else{
+        }); 
+      }else if(this.props.search){
+        console.log("Props Search",this.props.search);
+      }
+      else{
         this.setState({
           formType: euuid,
           show_search:false,
           creatingNewEntity:true
         });
       }
-      
+
+      if(this.props.location.search){
+        //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
+        //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
+        // Hooks into search_api.js :O 
+        var searchProp = this.props.location.search
+        let searchParams = new URLSearchParams(searchProp);
+
+
+        var searchQueryType = searchParams.has('sampleType')
+        console.debug("searchQueryType", searchQueryType);
+        if(searchQueryType){
+          var searchType = searchParams.get('sampleType');
+          console.debug("searchType", searchType);
+          this.setState({
+            sampleType: searchType
+          });
+        }
+        
+        var searchQueryKeyword = searchParams.has('keywords')
+        console.debug("searchQueryKeyword", searchQueryKeyword);
+        if(searchQueryKeyword){
+          var searchKeyword = searchParams.get('keywords');
+          console.debug("searchKeyword", searchKeyword);
+          this.setState({
+            keywords: searchKeyword
+          });
+        }
+      }
     }
 
-    // console.log(this.state);
-    
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
@@ -230,10 +260,23 @@ class SearchComponent extends Component {
           window.location.reload();
         }
       });
-     
-  
   }
 
+  handleExtractQuery= () =>{
+    //@TODO: Using a polyfill to solve IE woes instead 
+    var queryObject = window.location.search
+    .slice(1)
+    .split('&')
+    .map(p => p.split('='))
+    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+    console.debug("queryObject", queryObject);
+    return queryObject;
+
+  }
+
+  handleAddQuery = (key,value) =>{
+    // searchParams.append('topic', 'webdev');
+  }
 
   handleShowSearch  = (show) => {
     if ( show === true ){
@@ -334,7 +377,7 @@ class SearchComponent extends Component {
         this.setState({ group: value });
         break;
       case "sampleType":
-        this.setState({ sampleType: value });
+        this.setState({ sampleType: value });        
         break;
       case "keywords":
         this.setState({ keywords: value });
@@ -431,6 +474,10 @@ class SearchComponent extends Component {
     const group = this.state.group;
     const sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
+
+
+    var url = new URL(window.location);
+
     // console.debug("handleSearchClick")
     // console.debug(group,sample_type,keywords)
     // console.debug(this.state)
@@ -458,9 +505,11 @@ class SearchComponent extends Component {
     }
 
     if (sample_type) {
+
       // console.debug("sample_type", sample_type);
       // console.debug(this.props);
       if(!this.state.uuid && sample_type !=="----"){ 
+        url.searchParams.set('sampleType',sample_type);
         //this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
       }
       
@@ -493,7 +542,8 @@ class SearchComponent extends Component {
       } 
     } 
     if (keywords) {
-      params["search_term"] = keywords;
+      params["keywords"] = keywords;
+      url.searchParams.set('keywords',keywords);
     }
 
     // console.debug('results_total  ', this.state.results_total);
@@ -505,6 +555,9 @@ class SearchComponent extends Component {
         table_loading:true, 
       });
     }
+    window.history.pushState({}, '', url);
+    //window.history.pushState({}, '', search);
+    // window.location.search = window.location.search.replace(/file=[^&$]*/i, 'file=filename');
 
     this.setState({ 
       loading: true,
@@ -513,7 +566,7 @@ class SearchComponent extends Component {
       api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
       .then((response) => {
         // console.debug("Search Res", response.results);
-
+        
         if (response.status === 200) {
           if (response.total === 1) {  // for single returned items, customize the columns to match
             which_cols_def = this.columnDefType(response.results[0].entity_type);
@@ -556,8 +609,8 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("handleUrlChange "+targetPath)
-    if(!targetPath || targetPath === undefined){
-      var targetPath = ""
+    if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
+      targetPath = ""
     }
     this.setState({
       loading: false
@@ -628,8 +681,8 @@ class SearchComponent extends Component {
     console.debug("onUpdated SC", data)
     this.setState({
       updateSuccess: true,
-      editingEntity: null,
-      show_search: true,
+      editingEntity: data,
+      show_search: false,
       loading: false
     }, () => {   
       console.debug("onUpdated state", this.state)
@@ -749,7 +802,7 @@ class SearchComponent extends Component {
   **/
 
   render() {
-    const { redirect } = this.state;
+    // const { redirect } = this.state;
     if (this.state.isAuthenticated) {
     return  (
         
@@ -834,6 +887,7 @@ class SearchComponent extends Component {
               handleCancel={this.cancelEdit}
               editingDataset={this.state.editingEntity}
               onUpdated={this.onUpdated}
+              newForm={true}
               //onCreated={this.handleDatasetCreated}
               changeLink={this.onChangeGlobusLink.bind(this)}
             />

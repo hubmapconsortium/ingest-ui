@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 //import Navigation from './components/Navbar.js';
-import { Router, Switch, Route, withRouter, useHistory  } from "react-router-dom";
-import { Redirect } from 'react-router'
+import { Router, Route, withRouter  } from "react-router-dom";
 import history from './history';
 import Login from './components/uuid/login';
 import IdleTimer from "react-idle-timer";
@@ -78,6 +77,9 @@ class App extends Component {
     // IE doesn't support the URL api
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
+    const search = props.location.search; // could be '?foo=bar'
+    const params = new URLSearchParams(search);
+    console.debug("params", params);
 
 
     if (info !== null) {
@@ -119,6 +121,13 @@ class App extends Component {
 
   }
 
+  getQuery = () => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search);
+    }
+    return new URLSearchParams();
+  };
+
   handleSingularty  = (target, size) => {
     if(size === "plural"){
       console.debug(target.slice(-1));
@@ -143,7 +152,6 @@ class App extends Component {
     var type;
     var fauxEvent;
 
-    
     if (this.props.match){
       console.debug("APP this.props.match");
       type = this.props.match.params.type;
@@ -231,7 +239,8 @@ class App extends Component {
       this.setState({
         editForm: true,
         show_modal: true,
-        show_search: false
+        show_search: false,
+        showSearch: false
         });
     }
     if (prevState.editNewEntity !== this.state.editNewEntity) {
@@ -283,7 +292,6 @@ class App extends Component {
       createSuccess: false,
       show_search: false,
       showSearch: false,
-      anchorEl: null
     });
     console.debug("handleFormTypeChange ",target,this.state);
     this.handleUrlChange("new/"+target);
@@ -496,7 +504,7 @@ class App extends Component {
 
   renderContent() {
     let html = <Login />;
-    const { redirect } = this.state;
+    // const { redirect } = this.state;
 
     // fire http call to verify if user registerd.
     //axio.get("")
