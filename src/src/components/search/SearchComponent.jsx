@@ -109,6 +109,7 @@ class SearchComponent extends Component {
           sample_type: lastSegment,
           loading: false
         },function(){ 
+          console.debug("euuid",euuid);
           this.setFilterType();
           if(euuid && euuid !== "new"){
             var params = {
