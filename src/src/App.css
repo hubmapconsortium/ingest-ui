@@ -674,3 +674,13 @@ a.disabled {
     text-overflow: ellipsis;
     cursor: pointer;
 }
+
+.title-error.bg-error{
+  color: #fff;
+  font-weight: 500;
+  background-color: #f44336;
+ }
+
+.interaction-icon{
+  cursor: pointer;
+}

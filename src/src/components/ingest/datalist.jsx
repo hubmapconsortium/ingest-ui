@@ -16,7 +16,7 @@ import { truncateString } from "../../utils/string_helper";
 import Modal from "../uuid/modal";
 import { api_search } from '../../service/search_api';
 import { entity_api_get_entity } from '../../service/entity_api';
-import { getStatusBadge } from "../../utils/badgeClasses";
+import { getPublishStatusColor } from "../../utils/badgeClasses";
 
 class DataList extends Component {
   state = {
@@ -435,7 +435,7 @@ handleChangePage = (event, newPage) => {
                         : "";
                       let badge_class = "";
                       let btn_text = dataset.writeable ? "Edit" : "View";
-                      badge_class = getStatusBadge(status);
+                      badge_class = getPublishStatusColor(status);
                           
                       if (!this.state.group) {
                         btn_text = "View";
