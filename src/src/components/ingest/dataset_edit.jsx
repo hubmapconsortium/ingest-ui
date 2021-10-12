@@ -8,7 +8,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSearch, faSpinner, faUnlink, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSearch, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
@@ -599,13 +599,10 @@ class DatasetEdit extends Component {
           <TableHead className="thead-dark font-size-sm">
             <TableRow className="   " >
               <TableCell> Source ID</TableCell>
-              <TableCell component="th" align="right">Organ</TableCell> 
-              <TableCell component="th" align="right">Specimen</TableCell> 
-              <TableCell component="th" align="right">Data</TableCell> 
-              <TableCell component="th" align="right">Group Name</TableCell>
-              <TableCell component="th" align="right">Submission ID</TableCell>
-              <TableCell component="th" align="right">Description</TableCell>
-              <TableCell component="th" align="right">Status</TableCell>
+              <TableCell component="th">Submission ID</TableCell>
+              <TableCell component="th">Subtype</TableCell>
+              <TableCell component="th">Group Name</TableCell>
+              <TableCell component="th">Status</TableCell>
               <TableCell component="th" align="right">Action</TableCell>
             </TableRow>
           </TableHead>
@@ -616,62 +613,30 @@ class DatasetEdit extends Component {
                 // onClick={() => this.handleSourceCellSelection(row)}
                 className="row-selection"
                 >
-                <TableCell align="left" className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-
-                {/* For Organs  */}
-                {row.organ &&(
-                  <TableCell align="right" className="clicky-cell" scope="row">{ORGAN_TYPES[this.state.source_entity.organ]}</TableCell>
-                )}
-                {!row.organ &&(
-                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
-                )}
-
-                {/* For Specimen  */}
-                {row.specimen_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row">{row.specimen_type}</TableCell>
-                )}
-                {!row.specimen_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
-                )}
-
-                {/* For Data  */}
-                {row.data_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row">{row.data_type}</TableCell>
-                )}
-                {!row.data_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
-                )} 
-
-
-                <TableCell align="right" className="clicky-cell" scope="row">{row.group_name}</TableCell>
-
-                <TableCell align="right" className="clicky-cell" scope="row">
-                  {row.lab_tissue_sample_id ? (
-                    row.lab_tissue_sample_id
+                <TableCell  className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
+                <TableCell  className="clicky-cell" scope="row">
+                {row.submission_id ? (
+                    row.submission_id
                   ) : (
                     <small className="text-muted">N/A</small>
                   )}
                 </TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row">
-                {row.description ? (
-                    row.description
-                  ) : (
-                    <small className="text-muted">N/A</small>
-                  )}
-                </TableCell>
-                <TableCell align="right" className="clicky-cell " scope="row"> 
+                <TableCell  className="clicky-cell" scope="row">Subtype</TableCell>
+                <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
+                <TableCell  className="clicky-cell" scope="row"> 
                 {row.status ? (
                     <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
                   ) : (
-                    <small className="text-muted">N/A</small>
+                    <small className="text-muted">N/A</small>    
                   )}
                 </TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row"> 
+                <TableCell  className="clicky-cell" align="right" scope="row"> 
                 {this.state.writeable && (
                   <React.Fragment>
                     <FontAwesomeIcon
-                      className='inline-icon interaction-icon'
-                      icon={faUnlink}
+                      className='inline-icon interaction-icon '
+                      icon={faTrash}
+                      color="red"  
                       onClick={() => this.showConfirmDialog(row,index)}
                     />
                   </React.Fragment>
@@ -679,6 +644,7 @@ class DatasetEdit extends Component {
                   {!this.state.writeable && (
                   <small className="text-muted">N/A</small>
                   )}
+                
                 </TableCell>
               </TableRow>
             ))}
