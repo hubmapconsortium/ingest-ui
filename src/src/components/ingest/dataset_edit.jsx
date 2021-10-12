@@ -549,24 +549,6 @@ class DatasetEdit extends Component {
     this.cancelLookUpModal();
   };
 
-  // handleUnlinkClick = (selection) => {
-  //   // ////console.log('handleSelectClick', ids)
-  //   //let id = this.getSourceAncestor(ids);
-  //   //////console.log('Dataset selected', selection.row.uuid)
-  //   var sdlist = this.state.source_uuid_list;
-  //   sdlist.push(selection.row);
-  //   ////console.debug('SLIST', slist)
-  //   this.setState(
-  //     {
-  //       source_uuid: selection.row.hubmap_id, 
-  //       source_uuid_list: sdlist,
-  //       source_entity: selection.row,  // save the entire entity to use for information
-  //       LookUpShow: false,
-  //     }
-  //   );
-  //     this.cancelLookUpModal();
-  // };
-
 
   sourceRemover = () => {
     console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
@@ -587,35 +569,36 @@ class DatasetEdit extends Component {
       this.props.newForm===false)){
       return (
         <div className="w-100">
+          <label htmlFor='lab_dataset_id'>
+            Source <span className='text-danger px-2'>*</span>
+          </label>
+          <FontAwesomeIcon
+            icon={faQuestionCircle}
+            data-tip
+            data-for='source_uuid_tooltip'
+          />
+          <ReactTooltip
+            id='source_uuid_tooltip'
+            className='zindex-tooltip'
+            place='right'
+            type='info'
+            effect='solid'
+          >
+            <p>
+              The HuBMAP Unique identifier of the direct origin entity,
+              <br />
+              other sample or doner, where this sample came from.
+              <br />
+              Multiple sources are allowed. However, you must assign
+              <br />
+             <strong>at least one source.</strong>
+            </p>
+          </ReactTooltip>
         <TableContainer component={Paper} style={{ maxHeight: 450 }}>
         <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
           <TableHead className="thead-dark font-size-sm">
             <TableRow className="   " >
-              <TableCell>
-                <label
-                  htmlFor='source_uuid'
-                  className="m-0 p-0">
-                  Source ID <span className='text-danger px-2'>*</span>
-                </label>
-               <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='source_uuid_tooltip'
-                />
-                <ReactTooltip
-                  id='source_uuid_tooltip'
-                  className='zindex-tooltip'
-                  place='right'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>
-                    The HuBMAP Unique identifier of the direct origin entity,
-                    <br />
-                    other sample or doner, where this sample came from.
-                  </p>
-                </ReactTooltip>
-              </TableCell>
+              <TableCell> Source ID</TableCell>
               <TableCell component="th" align="right">Organ</TableCell> 
               <TableCell component="th" align="right">Specimen</TableCell> 
               <TableCell component="th" align="right">Data</TableCell> 
@@ -731,7 +714,7 @@ class DatasetEdit extends Component {
   renderConfirmDialog = () => {
     return (
       <Dialog
-        open={this.state.confirmDialog}
+        open={this.state.confirmDialog ? this.state.confirmDialog : false}
         onClose={this.handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
@@ -1584,60 +1567,13 @@ class DatasetEdit extends Component {
                   </p>
           </div>
 
-
-            <div className='form-group'>
-              <label htmlFor='lab_dataset_id'>
-               Lab Name or ID
-
-              </label>
-           
-                <span className="px-2">
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for='lab_dataset_id_tooltip'
-                  />
-                  <ReactTooltip
-                    id='lab_dataset_id_tooltip'
-                    place='top'
-                    type='info'
-                    effect='solid'
-                  >
-                    <p>Lab Name or ID</p>
-                  </ReactTooltip>
-                  </span>
-               
-
-              {this.state.writeable && (
-               
-                  <input
-                    type='text'
-                    name='lab_dataset_id'
-                    id='lab_dataset_id'
-                    className={
-                      "form-control " +
-                      this.errorClass(this.state.formErrors.name)
-                    }
-                    placeholder='Lab Name or ID'
-                    onChange={this.handleInputChange}
-                    value={this.state.lab_dataset_id}
-                  />
-                
-              )}
-              {!this.state.writeable && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.lab_dataset_id}</p>
-                </div>
-              )}
-              
-            </div>
-            <div className='form-group'>
-              <div className="input-group">
-                {this.renderSources()}
-              </div>
-
+          
+          <div className='form-group'>
+              {this.renderSources()}
               {this.renderConfirmDialog()}
-              <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
+
+              
+              <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
                 <DialogContent>
                   <SearchComponent
                     select={this.handleSelectClick}
@@ -1652,10 +1588,49 @@ class DatasetEdit extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
-              
             </div>
-          
-          
+
+          <div className='form-group'>
+            <label htmlFor='lab_dataset_id'>
+              Lab Name or ID
+            </label>
+              <span className="px-2">
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='lab_dataset_id_tooltip'
+                />
+                <ReactTooltip
+                  id='lab_dataset_id_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Lab Name or ID</p>
+                </ReactTooltip>
+                </span>
+            {this.state.writeable && (
+                <input
+                  type='text'
+                  name='lab_dataset_id'
+                  id='lab_dataset_id'
+                  className={
+                    "form-control " +
+                    this.errorClass(this.state.formErrors.name)
+                  }
+                  placeholder='Lab Name or ID'
+                  onChange={this.handleInputChange}
+                  value={this.state.lab_dataset_id}
+                />
+            )}
+            {!this.state.writeable && (
+              <div className='col-sm-9 col-form-label'>
+                <p>{this.state.lab_dataset_id}</p>
+              </div>
+            )}
+          </div>
+
+
             <div className='form-group'>
             <label
               htmlFor='description'>
