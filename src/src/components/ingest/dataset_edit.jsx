@@ -29,6 +29,7 @@ import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { truncateString } from "../../utils/string_helper";
+import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
 
 import MuiAlert from '@material-ui/lab/Alert';
@@ -253,7 +254,7 @@ class DatasetEdit extends Component {
           //       description: "",
           //     },
           source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
-          source_uuid_list: this.props.editingDataset.direct_ancestors,
+          source_uuid_list:this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors),
           source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
           slist: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           // source_uuid_type: this.props.editingDataset.properties.specimen_type,
@@ -621,7 +622,7 @@ class DatasetEdit extends Component {
                     <small className="text-muted">N/A</small>
                   )}
                 </TableCell>
-                <TableCell  className="clicky-cell" scope="row">Subtype</TableCell>
+                <TableCell  className="clicky-cell" scope="row">{row.display_subtype}</TableCell>
                 <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
                 <TableCell  className="clicky-cell" scope="row"> 
                 {row.status ? (
@@ -706,7 +707,7 @@ class DatasetEdit extends Component {
 
   getUuidList = (new_uuid_list) => {
     //this.setState({uuid_list: new_uuid_list});
-    //////console.log('**getUuidList', new_uuid_list)
+   console.log('**getUuidList', new_uuid_list)
     this.setState(
       {
         source_uuid: this.getSourceAncestor(new_uuid_list),
@@ -1117,6 +1118,23 @@ class DatasetEdit extends Component {
     });
   }
 
+  assembleSourceAncestorData(source_uuids){
+    console.debug("assembleSourceAncestorData",source_uuids);
+    console.debug("this.props.editingDataset.direct_ancestors",this.props.editingDataset.direct_ancestors);
+    for (var i = 0; i < source_uuids.length; i++) {
+      console.debug("LOOPUING ASAD");
+      var dst = generateDisplaySubtype(source_uuids[i]);
+      source_uuids[i].display_subtype=dst;
+      console.debug("VVVVVVVV assembleSourceAncestorData", source_uuids[i]);
+    }
+  try {
+    return source_uuids
+  } catch {
+    console.debug("getSourceAncestory Not Found?! ",source_uuids)
+  }
+ 
+}
+
   // only handles one selection at this time
   getSourceAncestor(source_uuids){
     try {
@@ -1139,6 +1157,7 @@ class DatasetEdit extends Component {
 
   //note: this code assumes that source_uuids is a sorted list or a single value
   generateDisplaySourceId(source_uuids) {
+    console.debug("~~~~~~~~~~` generateDisplaySourceId", source_uuids);
     //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
       console.debug("source_uuids.length > 1")
