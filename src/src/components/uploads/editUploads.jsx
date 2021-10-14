@@ -24,7 +24,9 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload,
-  ingest_api_submit_upload } from '../../service/ingest_api';
+  ingest_api_submit_upload,
+  ingest_api_users_groups } from '../../service/ingest_api';
+import { GROUPS } from '../../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {
@@ -370,13 +372,20 @@ class EditUploads extends Component {
 
   renderButtonBar(){
       return (
-        <div className='row'>
+        <div className='row justify-content-end'>
           <div className="col-sm-12">
           <Divider />
           </div>
 
           {this.renderHelperText()}
-          <div className='col-md-12 text-right pads'>
+
+          <div className='col-md-2 pads'>
+          {this.renderValidateButton()}
+          </div>
+
+
+          <div className='col-md-1 pads'>
+          
             {this.renderActionButton()}
               <button
               type='button'
@@ -390,8 +399,46 @@ class EditUploads extends Component {
       );
   } 
 
+  renderValidateButton() {
+    var local = JSON.parse(localStorage.getItem("info"));
+    var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4"];
+    console.log(group_uuids.length);
+    ingest_api_users_groups(local.nexus_token).then((results) => {
+      console.log(results.results);
+    });
+    if (["SUBMITTED", "INVALID", "ERROR"].includes(
+      this.state.status.toUpperCase()
+      )){
+      ingest_api_users_groups(local.nexus_token).then((results) => {
+        if (results.status == 200) {
+          results.results.forEach(function(result) {
+            if (group_uuids.includes(result.uuid)) {
+              return (
+                <React.Fragment>
+                  <button 
+                    type='button'
+                    className = 'btn btn-info mr-1'
+                  >
+                  Validate
+                  </button>
+                </React.Fragment>
+                )
+            }
+          }
+        )
+      }
+    });
+    }
+    
+    
+    
+
+  }
+
 
   renderActionButton() {
+    var local = JSON.parse(localStorage.getItem("info"));
+    console.debug(local);
     if (["NEW", "INVALID", "ERROR"].includes(
       this.state.status.toUpperCase()
     )){

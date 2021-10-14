@@ -102,7 +102,7 @@ class DatasetEdit extends Component {
       get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((resp) => {
         if (resp.status === 200) {
-          console.log('Assay Type info...', resp.results);
+          //console.log('Assay Type info...', resp.results);
     
           if (resp.results) {
             this.setState({
@@ -131,7 +131,7 @@ class DatasetEdit extends Component {
        ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
         .then((resp) => {
         if (resp.status === 200) {
-          console.log('edit states...', resp.results);
+          //console.log('edit states...', resp.results);
     
           this.setState({
             writeable: resp.results.has_write_priv,
@@ -410,7 +410,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-      //////console.log('ping!', id);
+      console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -431,7 +431,14 @@ class DatasetEdit extends Component {
         }
       } else {
         //////console.log(id, e.target.checked)
-        if (e.target.checked) {
+
+        const data_types = this.state.data_types;
+        data_types.add(value);
+        this.setState({
+          data_types: data_types,
+        });
+        console.log("data types is ", data_types);
+        /*if (e.target.checked) {
           const data_types = this.state.data_types;
           data_types.add(name);
           this.setState({
@@ -443,7 +450,7 @@ class DatasetEdit extends Component {
           this.setState({
             data_types: data_types,
           });
-        }
+        }*/
       
       }
       //////console.log('data_types', this.state.data_types)
@@ -1170,7 +1177,7 @@ class DatasetEdit extends Component {
  renderOneAssay(val, idx) {
   var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
   return (<div className='form-group form-check' key={idstr}>
-    <input type='checkbox' className='form-check-input' name={val.name} key={idstr} id={idstr}
+    <input type='radio' className='form-check-input' name={val.name} key={idstr} id={idstr}
     onChange={this.handleInputChange} checked={this.state.data_types.has(val.name)}
     />
     <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
@@ -1200,11 +1207,18 @@ class DatasetEdit extends Component {
    }
 
   renderAssayColumn(min, max) {
-	 return (<div>
-		{this.state.data_type_dicts.slice(min, max).map((val, idx) =>
-								{return this.renderOneAssay(val, idx)})}</div>
+	 return (
+		this.state.data_type_dicts.slice(min, max).map((val, idx) =>
+								{return this.renderAssay(val, idx)})
 	       )
     }
+
+  renderAssay(val, idx) {
+    var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+    return (
+      <option value={val.name} id={idstr}>{val.description}</option>
+      )
+  }
     
   renderAssayArray() {
 	 if (this.state.data_type_dicts.length) {
@@ -1212,22 +1226,9 @@ class DatasetEdit extends Component {
 	    var entries_per_col = Math.ceil(len / 3);
 	    //var num_cols = Math.ceil(len / entries_per_col);
 	    return (<>
-		    <div className='col-sm-4'> {this.renderAssayColumn(0, entries_per_col)} </div>
-		    <div className='col-sm-4'> {this.renderAssayColumn(entries_per_col, 2*entries_per_col)} </div>
-		    <div className='col-sm-4'> {this.renderAssayColumn(2*entries_per_col, len+1)}
-		    <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input'
-                          name='dt_other'
-                          id='dt_other'
-                          onChange={this.handleInputChange}
-                          checked={this.state.has_other_datatype}
-                        />
-                        <label className='form-check-label' htmlFor='dt_other'>
-                          Other
-                        </label>
-                      </div>
+		    <select value={this.state.data_types[-1]} onChange={this.handleInputChange}>
+          {this.renderAssayColumn(0, len)}
+        </select>
 		    {this.state.has_other_datatype && (
                   <div className='form-group'>
                     <input type='text' name='other_dt' id='other_dt'
@@ -1240,8 +1241,7 @@ class DatasetEdit extends Component {
 	                   />
                   </div>
 		      )}
-		  </div>
-		    </>
+        </>
 		   )
 	}
 	else {
