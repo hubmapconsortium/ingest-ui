@@ -65,6 +65,7 @@ class DatasetEdit extends Component {
     source_uuids: [],
     globus_path: "",
     writeable: true,
+    handleSelectionLoading:false,
     has_submit_priv: false,
     has_publish_priv: false,
     has_admin_priv: false,
@@ -351,7 +352,7 @@ class DatasetEdit extends Component {
   };
 
   handleLookUpClick = () => {
-    //////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
+    console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.lookUpCancelled, this.state.LookUpShow)
     if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
@@ -527,27 +528,28 @@ class DatasetEdit extends Component {
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
-    console.log('handleSelectClick', selection)
-    //let id = this.getSourceAncestor(ids);
-    //////console.log('Dataset selected', selection.row.uuid)
-    // var slist = [];
-    var slist=this.state.source_uuid_list;
-    // slist.push({uuid: selection.row.uuid});
-    slist.push(selection.row);
-    console.debug('SLIST', slist)
-    this.setState(
-      {
-        source_uuid: selection.row.hubmap_id, 
-        source_uuid_list: slist,
-        slist: slist,
-        // source_entity:this.state.source_entity,  
-        source_entity:selection.row,  // save the entire entity to use for information
-        LookUpShow: false,
-      }
-    );
-    this.cancelLookUpModal();
+    
+    console.debug("handleSelectClick",this.state.selectedSource,  selection.uuid, this.state.selectedSource !== selection.uuid, selection);
+      if(this.state.selectedSource !== selection.row.uuid){
+        this.setState({
+          selectedSource: selection.row.uuid
+        } ,() => {    
+        var slist=this.state.source_uuid_list;
+        slist.push(selection.row);
+        this.setState({
+          source_uuid: selection.row.hubmap_id, 
+          source_uuid_list: slist,
+          slist: slist,
+          source_entity:selection.row,  // save the entire entity to use for information
+          LookUpShow: false
+        });
+        this.hideLookUpModal();
+        // this.cancelLookUpModal();
+      });
+    }else{
+      console.debug("Not adding to slist; already added");
+    }
   };
-
 
   sourceRemover = (row) => {
     console.debug("Removing Source ",row.uuid)
@@ -556,8 +558,7 @@ class DatasetEdit extends Component {
       this.setState( {
         source_uuid_list: slist,
         slist: slist,
-      } ,
-      () => {
+      } ,() => {
         console.log("NEW LIST ",this.state.source_uuid_list);
         // this.hideConfirmDialog();
         
