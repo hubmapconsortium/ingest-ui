@@ -4,7 +4,7 @@ import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
-import { getStatusBadge } from "../../utils/badgeClasses";
+import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -706,7 +706,7 @@ class EditUploads extends Component {
                 <TableCell align="left" scope="row">{row.group_name}</TableCell>
                 <TableCell align="left" scope="row">
                   <span
-                    className={"w-100 badge " + getStatusBadge(row.status)}>
+                    className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}>
                       {row.status}
                   </span>
                 </TableCell>
