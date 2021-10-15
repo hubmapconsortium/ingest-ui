@@ -93,14 +93,14 @@ export function api_search2(params, auth, from, size) {
 export function search_api_filter_es_query_builder(fields, from, size) {
 
   let requestBody =  esb.requestBodySearch();
- ////console.debug("here in the filter es builder")
- ////console.debug(fields);
+ console.debug("here in the filter es builder")
+ console.debug(fields);
 
 
 let boolQuery = "";
 
-  if (fields["search_term"] && fields["search_term"].indexOf("*") > -1) {  // if keywords contain a wildcard
-    boolQuery = esb.queryStringQuery(fields["search_term"])
+  if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
+    boolQuery = esb.queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS)
 
   } else {
@@ -142,9 +142,9 @@ let boolQuery = "";
             }
         }
 
-        if (fields["search_term"]) {
-          //let scrubbed = fixKeywordText(fields["search_term"]);
-            boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["search_term"]));
+        if (fields["keywords"]) {
+          //let scrubbed = fixKeywordText(fields["keywords"]);
+            boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"]));
         }
       
       }

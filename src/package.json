@@ -1,6 +1,6 @@
 {
   "name": "ingest-ui",
-  "version": "2.0.17",
+  "version": "2.1.1",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -26,7 +26,8 @@
     "react-idle-timer": "^4.5.5",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.1.2",
-    "react-tooltip": "^3.11.1"
+    "react-tooltip": "^3.11.1",
+    "url-search-params-polyfill": "^8.1.1"
   },
   "devDependencies": {
     "react-scripts": "^3.4.4"
