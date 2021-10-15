@@ -3,17 +3,14 @@ import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSearch, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
-import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
@@ -28,7 +25,6 @@ import { entity_api_update_entity } from '../../service/entity_api';
 import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
-import { truncateString } from "../../utils/string_helper";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
 
@@ -48,6 +44,7 @@ function Alert(props) {
 class DatasetEdit extends Component {
   state = {
     status: "NEW",
+    collection_candidates:"",
     badge_class: "badge-purple",
     display_doi: "",
   //  doi: "",
@@ -89,11 +86,12 @@ class DatasetEdit extends Component {
     data_type_false_dicts: [],
 
     formErrors: {
-      name: "",
+      lab_dataset_id: "",
 //      collection: "",
       source_uuid: "",
       data_types: "",
       other_dt: "",
+      source_uuid_list:"",
       contains_human_genetic_sequences:""
     },
   };
@@ -551,26 +549,27 @@ class DatasetEdit extends Component {
   };
 
 
-  sourceRemover = () => {
-    console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
+  sourceRemover = (row) => {
+    console.debug("Removing Source ",row.uuid)
     var slist=this.state.source_uuid_list;
-    slist =  slist.filter(source => source.uuid !== this.state.editingSource.uuid)
+    slist =  slist.filter(source => source.uuid !== row.uuid)
       this.setState( {
         source_uuid_list: slist,
         slist: slist,
       } ,
       () => {
-        console.log("NEW LIST ",this.state.slist);
-        this.hideConfirmDialog();
+        console.log("NEW LIST ",this.state.source_uuid_list);
+        // this.hideConfirmDialog();
+        
       });
   }
 
   renderSources = () => {
-    if(this.state.source_uuid_list && (this.state.source_uuid_list.length > 0 ||
-      this.props.newForm===false)){
+    if(this.state.source_uuid_list ||  this.props.newForm===false){
       return (
         <div className="w-100">
-          <label htmlFor='lab_dataset_id'>
+          
+          <label htmlFor='source_uuid_list'>
             Source <span className='text-danger px-2'>*</span>
           </label>
           <FontAwesomeIcon
@@ -595,7 +594,17 @@ class DatasetEdit extends Component {
              <strong>at least one source.</strong>
             </p>
           </ReactTooltip>
-        <TableContainer component={Paper} style={{ maxHeight: 450 }}>
+          {this.errorClass(this.state.formErrors.source_uuid_list) && (
+            <div className='alert alert-danger'>
+            At least one source is Required
+          </div>
+          )}
+        <TableContainer 
+          component={Paper} 
+          style={{ maxHeight: 450 }}
+          className={
+            this.errorClass(this.state.formErrors.source_uuid_list)
+          }>
         <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
           <TableHead className="thead-dark font-size-sm">
             <TableRow className="   " >
@@ -615,22 +624,12 @@ class DatasetEdit extends Component {
                 className="row-selection"
                 >
                 <TableCell  className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                <TableCell  className="clicky-cell" scope="row">
-                {row.submission_id ? (
-                    row.submission_id
-                  ) : (
-                    <small className="text-muted">N/A</small>
-                  )}
-                </TableCell>
+                <TableCell  className="clicky-cell" scope="row"> {row.submission_id && ( row.submission_id)} </TableCell>
                 <TableCell  className="clicky-cell" scope="row">{row.display_subtype}</TableCell>
                 <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
-                <TableCell  className="clicky-cell" scope="row"> 
-                {row.status ? (
+                <TableCell  className="clicky-cell" scope="row">{row.status && (
                     <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
-                  ) : (
-                    <small className="text-muted">N/A</small>    
-                  )}
-                </TableCell>
+                )}</TableCell>
                 <TableCell  className="clicky-cell" align="right" scope="row"> 
                 {this.state.writeable && (
                   <React.Fragment>
@@ -638,7 +637,7 @@ class DatasetEdit extends Component {
                       className='inline-icon interaction-icon '
                       icon={faTrash}
                       color="red"  
-                      onClick={() => this.showConfirmDialog(row,index)}
+                      onClick={() => this.sourceRemover(row,index)}
                     />
                   </React.Fragment>
                   )}
@@ -652,12 +651,14 @@ class DatasetEdit extends Component {
           </TableBody>
         </Table>
         </TableContainer>
+        
+                 
         {this.state.writeable && (
-          <React.Fragment>
-            <div className="mt-2 align-right">
+        <React.Fragment>
+          <div className="mt-2 text-right">
             <button
               type='button'
-              className='btn btn-secondary float-right'
+              className='btn btn-secondary'
               onClick={() => this.handleLookUpClick()} 
               >
               Add {this.props.newForm === true && (
@@ -676,33 +677,6 @@ class DatasetEdit extends Component {
 
     }
     
-  }
-
-  renderConfirmDialog = () => {
-    return (
-      <Dialog
-        open={this.state.confirmDialog ? this.state.confirmDialog : false}
-        onClose={this.handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle className="bg-error title-error text-white" id="alert-dialog-title">{"Removing Source"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-         Are you sure you want to unlink Source {this.state.editingSource.hubmap_id}? <br/>
-         <small>Source remains in the database. To delete the entity itself, please use the  Entity page </small>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.sourceRemover} color="secondary">
-            Yes
-          </Button>
-          <Button onClick={this.hideConfirmDialog} color="primary">
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
-    )
   }
 
   getUuidList = (new_uuid_list) => {
@@ -872,7 +846,8 @@ class DatasetEdit extends Component {
   };
 
   handleSubmit = (i) => {
-    //////console.log('SUBMIT!!');
+    console.log('SUBMIT STATE', this.state)
+    console.log('SOURCE UUIDS', this.state.source_uuid_list)
     const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
@@ -925,7 +900,6 @@ class DatasetEdit extends Component {
             //is_protected: this.state.is_protected,
           };
   
-          ////console.log('SOURCE UUIDS', this.state.source_uuid_list)
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
             let direct_ancestor_uuid = this.state.source_uuid_list.map((su) => {
@@ -1059,23 +1033,38 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-
-      if (!validateRequired(this.state.source_uuid)) {
+      console.debug("data_types", this.state.data_types);
+      // if (!validateRequired(this.state.lab_dataset_id)) {
+      //   this.setState((prevState) => ({
+      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "required" },
+      //   }));
+      //   isValid = false;
+      //   resolve(isValid);
+      // } else {
+      //   this.setState((prevState) => ({
+      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "" },
+      //   }));
+      //   // this.validateUUID().then((res) => {
+      //   //   resolve(isValid && res);
+      //   // });
+      // }
+      
+      if (!validateRequired(this.state.source_uuid_list)) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "required" },
+          formErrors: { ...prevState.formErrors, source_uuid_list: "required" },
         }));
         isValid = false;
         resolve(isValid);
       } else {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "" },
+          formErrors: { ...prevState.formErrors, source_uuid_list: "" },
         }));
         // this.validateUUID().then((res) => {
         //   resolve(isValid && res);
         // });
       }
       
-      if (this.state.data_types.size === 0 && this.state.other_dt === "") {
+      if (this.state.data_types.size === 0 || this.state.data_types === "") {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
@@ -1119,13 +1108,10 @@ class DatasetEdit extends Component {
   }
 
   assembleSourceAncestorData(source_uuids){
-    console.debug("assembleSourceAncestorData",source_uuids);
-    console.debug("this.props.editingDataset.direct_ancestors",this.props.editingDataset.direct_ancestors);
     for (var i = 0; i < source_uuids.length; i++) {
       console.debug("LOOPUING ASAD");
       var dst = generateDisplaySubtype(source_uuids[i]);
       source_uuids[i].display_subtype=dst;
-      console.debug("VVVVVVVV assembleSourceAncestorData", source_uuids[i]);
     }
   try {
     return source_uuids
@@ -1157,7 +1143,7 @@ class DatasetEdit extends Component {
 
   //note: this code assumes that source_uuids is a sorted list or a single value
   generateDisplaySourceId(source_uuids) {
-    console.debug("~~~~~~~~~~` generateDisplaySourceId", source_uuids);
+    // console.debug("~~~~~~~~~~` generateDisplaySourceId", source_uuids);
     //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
       console.debug("source_uuids.length > 1")
@@ -1394,8 +1380,8 @@ class DatasetEdit extends Component {
 
  renderOneAssay(val, idx) {
   var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
-  return (<div className='form-group form-check' key={idstr}>
-    <input type='checkbox' className='form-check-input' name={val.name} key={idstr} id={idstr}
+  return (<div className='form-group form-check ' key={idstr}>
+    <input type='checkbox' className={'form-check-input '+ this.errorClass(this.state.formErrors.data_types)} name={val.name} key={idstr} id={idstr}
     onChange={this.handleInputChange} checked={this.state.data_types.has(val.name)}
     />
     <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
@@ -1443,7 +1429,7 @@ class DatasetEdit extends Component {
 		    <div className='form-group form-check'>
                         <input
                           type='checkbox'
-                          className='form-check-input'
+                          className='form-check-input '
                           name='dt_other'
                           id='dt_other'
                           onChange={this.handleInputChange}
@@ -1555,8 +1541,6 @@ class DatasetEdit extends Component {
           
           <div className='form-group'>
               {this.renderSources()}
-              {this.renderConfirmDialog()}
-
               
               <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
                 <DialogContent>
@@ -1601,13 +1585,18 @@ class DatasetEdit extends Component {
                   id='lab_dataset_id'
                   className={
                     "form-control " +
-                    this.errorClass(this.state.formErrors.name)
+                    this.errorClass(this.state.formErrors.lab_dataset_id)
                   }
                   placeholder='Lab Name or ID'
                   onChange={this.handleInputChange}
                   value={this.state.lab_dataset_id}
                 />
             )}
+            {/* {this.errorClass(this.state.formErrors.source_uuid_list) && (
+              <div className='alert alert-danger'>
+              Lab Name or ID is Required
+            </div>
+            )} */}
             {!this.state.writeable && (
               <div className='col-sm-9 col-form-label'>
                 <p>{this.state.lab_dataset_id}</p>
@@ -1857,9 +1846,9 @@ class DatasetEdit extends Component {
 		
                 <div className='col-sm-12'>
                 {this.state.formErrors.data_types && (
-			             <p className='text-danger'>
-                        At least select one data type
-                  </p>
+                  <div className='alert alert-danger'>
+                    At least one Dataa Type is Required.
+                  </div>
                 )}
                 </div>
 	             </React.Fragment>

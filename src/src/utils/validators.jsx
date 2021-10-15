@@ -1,10 +1,24 @@
 export function validateRequired(value) {
+  console.debug(typeof value);
+  console.debug("VALUE",value);
   if (typeof value === "string") {
     return value.trim() !== "";
   } else if (typeof value === "object") {
-    return value.name.trim() !== "";
+    console.debug("value length: ",value.length);
+    if(value.name === undefined){
+        console.debug("value.name === undefined");
+      if(value.length<=0){
+        return false;
+      }else{
+        return true;
+      }
+    }else if(value.name){
+      console.debug(value.name);
+      return value.name.trim() !== "";
+    }
   }
 }
+
 
 export function validateProtocolIOURL(value) {
   if (value === undefined || value === "") return true;
