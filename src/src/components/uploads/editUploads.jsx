@@ -418,6 +418,7 @@ class EditUploads extends Component {
                   <button 
                     type='button'
                     className = 'btn btn-info mr-1'
+                    onClick = this.tempAlert()
                   >
                   Validate
                   </button>
@@ -429,12 +430,11 @@ class EditUploads extends Component {
       }
     });
     }
-    
-    
-    
-
   }
 
+  tempAlert() {
+    window.alert("This function has not yet been implemented.");
+  }
 
   renderActionButton() {
     var local = JSON.parse(localStorage.getItem("info"));

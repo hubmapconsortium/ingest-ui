@@ -1244,12 +1244,15 @@ class DatasetEdit extends Component {
       <option value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
       )
   }
+
+
     
   renderAssayArray() {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
 	    //var entries_per_col = Math.ceil(len / 3);
 	    //var num_cols = Math.ceil(len / entries_per_col);
+
 	    return (<>
 		    <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
           {this.renderAssayColumn(0, len)}
@@ -1270,6 +1273,7 @@ class DatasetEdit extends Component {
 		      )}
         </>
 		   )
+
 	}
 	else {
 	    return <h3>Loading assay types...</h3>;
