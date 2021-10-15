@@ -388,6 +388,7 @@ class DatasetEdit extends Component {
         this.setState({
           dataset_info: value,
         });
+        break;
       case "status":
         this.setState({
           new_status: value,
@@ -431,14 +432,38 @@ class DatasetEdit extends Component {
         }
       } else {
         //////console.log(id, e.target.checked)
-
-        const data_types = this.state.data_types;
-        data_types.add(value);
-        this.setState({
-          data_types: data_types,
-        });
-        console.log("data types is ", data_types);
-        /*if (e.target.checked) {
+        if (value == "other") {
+          const data_types = this.state.data_types;
+          data_types.clear();
+          data_types.add(value);
+          this.setState({
+            data_types: data_types,
+            has_other_datatype: value == "other",
+          });
+          console.log("other", this.state.has_other_datatype);
+          if (value != "other") {
+            const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
+            const data_types = this.state.data_types;
+            const other_dt = Array.from(data_types).filter(
+              (dt) => !data_type_options.has(dt)
+              )[0];
+            data_types.delete(other_dt);
+            this.setState({
+              data_types: data_types,
+              other_dt: "",
+            });
+          }
+          
+        } else {
+          const data_types = this.state.data_types;
+          data_types.clear();
+          data_types.add(value);
+          this.setState({
+            has_other_datatype: false,
+            data_types: data_types,
+          });
+          console.log("data types is ", data_types);
+        }/*if (e.target.checked) {
           const data_types = this.state.data_types;
           data_types.add(name);
           this.setState({
@@ -1216,20 +1241,22 @@ class DatasetEdit extends Component {
   renderAssay(val, idx) {
     var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
     return (
-      <option value={val.name} id={idstr}>{val.description}</option>
+      <option value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
       )
   }
     
   renderAssayArray() {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
-	    var entries_per_col = Math.ceil(len / 3);
+	    //var entries_per_col = Math.ceil(len / 3);
 	    //var num_cols = Math.ceil(len / entries_per_col);
 	    return (<>
-		    <select value={this.state.data_types[-1]} onChange={this.handleInputChange}>
+		    <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
           {this.renderAssayColumn(0, len)}
+          <option value="other">Other</option>
         </select>
 		    {this.state.has_other_datatype && (
+
                   <div className='form-group'>
                     <input type='text' name='other_dt' id='other_dt'
 			                   className={"form-control " +

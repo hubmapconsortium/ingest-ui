@@ -26,7 +26,7 @@ import { ingest_api_get_globus_url,
   ingest_api_validate_upload,
   ingest_api_submit_upload,
   ingest_api_users_groups } from '../../service/ingest_api';
-import { GROUPS } from '../../service/groups'
+//import { GROUPS } from '../../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {
@@ -410,7 +410,7 @@ class EditUploads extends Component {
       this.state.status.toUpperCase()
       )){
       ingest_api_users_groups(local.nexus_token).then((results) => {
-        if (results.status == 200) {
+        if (results.status === 200) {
           results.results.forEach(function(result) {
             if (group_uuids.includes(result.uuid)) {
               return (
