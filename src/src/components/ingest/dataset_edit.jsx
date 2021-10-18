@@ -3,17 +3,14 @@ import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSearch, faSpinner, faUnlink, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
-import { ORGAN_TYPES} from "../../constants";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
@@ -28,7 +25,7 @@ import { entity_api_update_entity } from '../../service/entity_api';
 import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
-import { truncateString } from "../../utils/string_helper";
+import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
 
 import MuiAlert from '@material-ui/lab/Alert';
@@ -47,6 +44,7 @@ function Alert(props) {
 class DatasetEdit extends Component {
   state = {
     status: "NEW",
+    collection_candidates:"",
     badge_class: "badge-purple",
     display_doi: "",
   //  doi: "",
@@ -67,6 +65,7 @@ class DatasetEdit extends Component {
     source_uuids: [],
     globus_path: "",
     writeable: true,
+    handleSelectionLoading:false,
     has_submit_priv: false,
     has_publish_priv: false,
     has_admin_priv: false,
@@ -88,11 +87,12 @@ class DatasetEdit extends Component {
     data_type_false_dicts: [],
 
     formErrors: {
-      name: "",
+      lab_dataset_id: "",
 //      collection: "",
       source_uuid: "",
       data_types: "",
       other_dt: "",
+      source_uuid_list:"",
       contains_human_genetic_sequences:""
     },
   };
@@ -253,7 +253,7 @@ class DatasetEdit extends Component {
           //       description: "",
           //     },
           source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
-          source_uuid_list: this.props.editingDataset.direct_ancestors,
+          source_uuid_list:this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors),
           source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
           slist: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           // source_uuid_type: this.props.editingDataset.properties.specimen_type,
@@ -352,7 +352,7 @@ class DatasetEdit extends Component {
   };
 
   handleLookUpClick = () => {
-    //////console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.source_uuid)
+    console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.lookUpCancelled, this.state.LookUpShow)
     if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
@@ -559,101 +559,92 @@ class DatasetEdit extends Component {
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
-    console.log('handleSelectClick', selection)
-    //let id = this.getSourceAncestor(ids);
-    //////console.log('Dataset selected', selection.row.uuid)
-    // var slist = [];
-    var slist=this.state.source_uuid_list;
-    // slist.push({uuid: selection.row.uuid});
-    slist.push(selection.row);
-    console.debug('SLIST', slist)
-    this.setState(
-      {
-        source_uuid: selection.row.hubmap_id, 
-        source_uuid_list: slist,
-        slist: slist,
-        // source_entity:this.state.source_entity,  
-        source_entity:selection.row,  // save the entire entity to use for information
-        LookUpShow: false,
-      }
-    );
-    this.cancelLookUpModal();
+    
+    console.debug("handleSelectClick",this.state.selectedSource,  selection.uuid, this.state.selectedSource !== selection.uuid, selection);
+      if(this.state.selectedSource !== selection.row.uuid){
+        this.setState({
+          selectedSource: selection.row.uuid
+        } ,() => {    
+        var slist=this.state.source_uuid_list;
+        slist.push(selection.row);
+        this.setState({
+          source_uuid: selection.row.hubmap_id, 
+          source_uuid_list: slist,
+          slist: slist,
+          source_entity:selection.row,  // save the entire entity to use for information
+          LookUpShow: false
+        });
+        this.hideLookUpModal();
+        // this.cancelLookUpModal();
+      });
+    }else{
+      console.debug("Not adding to slist; already added");
+    }
   };
 
-  // handleUnlinkClick = (selection) => {
-  //   // ////console.log('handleSelectClick', ids)
-  //   //let id = this.getSourceAncestor(ids);
-  //   //////console.log('Dataset selected', selection.row.uuid)
-  //   var sdlist = this.state.source_uuid_list;
-  //   sdlist.push(selection.row);
-  //   ////console.debug('SLIST', slist)
-  //   this.setState(
-  //     {
-  //       source_uuid: selection.row.hubmap_id, 
-  //       source_uuid_list: sdlist,
-  //       source_entity: selection.row,  // save the entire entity to use for information
-  //       LookUpShow: false,
-  //     }
-  //   );
-  //     this.cancelLookUpModal();
-  // };
-
-
-  sourceRemover = () => {
-    console.debug("Removing Source ",this.state.editingSource,this.state.editingSourceIndex)
+  sourceRemover = (row) => {
+    console.debug("Removing Source ",row.uuid)
     var slist=this.state.source_uuid_list;
-    slist =  slist.filter(source => source.uuid !== this.state.editingSource.uuid)
+    slist =  slist.filter(source => source.uuid !== row.uuid)
       this.setState( {
         source_uuid_list: slist,
         slist: slist,
-      } ,
-      () => {
-        console.log("NEW LIST ",this.state.slist);
-        this.hideConfirmDialog();
+      } ,() => {
+        console.log("NEW LIST ",this.state.source_uuid_list);
+        // this.hideConfirmDialog();
+        
       });
   }
 
   renderSources = () => {
-    if(this.state.source_uuid_list && (this.state.source_uuid_list.length > 0 ||
-      this.props.newForm===false)){
+    if(this.state.source_uuid_list ||  this.props.newForm===false){
       return (
         <div className="w-100">
-        <TableContainer component={Paper} style={{ maxHeight: 450 }}>
+          
+          <label htmlFor='source_uuid_list'>
+            Source <span className='text-danger px-2'>*</span>
+          </label>
+          <FontAwesomeIcon
+            icon={faQuestionCircle}
+            data-tip
+            data-for='source_uuid_tooltip'
+          />
+          <ReactTooltip
+            id='source_uuid_tooltip'
+            className='zindex-tooltip'
+            place='right'
+            type='info'
+            effect='solid'
+          >
+            <p>
+              The HuBMAP Unique identifier of the direct origin entity,
+              <br />
+              other sample or doner, where this sample came from.
+              <br />
+              Multiple sources are allowed. However, you must assign
+              <br />
+             <strong>at least one source.</strong>
+            </p>
+          </ReactTooltip>
+          {this.errorClass(this.state.formErrors.source_uuid_list) && (
+            <div className='alert alert-danger'>
+            At least one source is Required
+          </div>
+          )}
+        <TableContainer 
+          component={Paper} 
+          style={{ maxHeight: 450 }}
+          className={
+            this.errorClass(this.state.formErrors.source_uuid_list)
+          }>
         <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
           <TableHead className="thead-dark font-size-sm">
             <TableRow className="   " >
-              <TableCell>
-                <label
-                  htmlFor='source_uuid'
-                  className="m-0 p-0">
-                  Source ID <span className='text-danger px-2'>*</span>
-                </label>
-               <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='source_uuid_tooltip'
-                />
-                <ReactTooltip
-                  id='source_uuid_tooltip'
-                  className='zindex-tooltip'
-                  place='right'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>
-                    The HuBMAP Unique identifier of the direct origin entity,
-                    <br />
-                    other sample or doner, where this sample came from.
-                  </p>
-                </ReactTooltip>
-              </TableCell>
-              <TableCell component="th" align="right">Organ</TableCell> 
-              <TableCell component="th" align="right">Specimen</TableCell> 
-              <TableCell component="th" align="right">Data</TableCell> 
-              <TableCell component="th" align="right">Group Name</TableCell>
-              <TableCell component="th" align="right">Submission ID</TableCell>
-              <TableCell component="th" align="right">Description</TableCell>
-              <TableCell component="th" align="right">Status</TableCell>
+              <TableCell> Source ID</TableCell>
+              <TableCell component="th">Submission ID</TableCell>
+              <TableCell component="th">Subtype</TableCell>
+              <TableCell component="th">Group Name</TableCell>
+              <TableCell component="th">Status</TableCell>
               <TableCell component="th" align="right">Action</TableCell>
             </TableRow>
           </TableHead>
@@ -664,81 +655,42 @@ class DatasetEdit extends Component {
                 // onClick={() => this.handleSourceCellSelection(row)}
                 className="row-selection"
                 >
-                <TableCell align="left" className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-
-                {/* For Organs  */}
-                {row.organ &&(
-                  <TableCell align="right" className="clicky-cell" scope="row">{ORGAN_TYPES[this.state.source_entity.organ]}</TableCell>
-                )}
-                {!row.organ &&(
-                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
-                )}
-
-                {/* For Specimen  */}
-                {row.specimen_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row">{row.specimen_type}</TableCell>
-                )}
-                {!row.specimen_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
-                )}
-
-                {/* For Data  */}
-                {row.data_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row">{row.data_type}</TableCell>
-                )}
-                {!row.data_type &&(
-                  <TableCell align="right" className="clicky-cell" scope="row"><small className="text-muted">N/A</small></TableCell>
-                )} 
-
-
-                <TableCell align="right" className="clicky-cell" scope="row">{row.group_name}</TableCell>
-
-                <TableCell align="right" className="clicky-cell" scope="row">
-                  {row.lab_tissue_sample_id ? (
-                    row.lab_tissue_sample_id
-                  ) : (
-                    <small className="text-muted">N/A</small>
-                  )}
-                </TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row">
-                {row.description ? (
-                    row.description
-                  ) : (
-                    <small className="text-muted">N/A</small>
-                  )}
-                </TableCell>
-                <TableCell align="right" className="clicky-cell " scope="row"> 
-                {row.status ? (
+                <TableCell  className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
+                <TableCell  className="clicky-cell" scope="row"> {row.submission_id && ( row.submission_id)} </TableCell>
+                <TableCell  className="clicky-cell" scope="row">{row.display_subtype}</TableCell>
+                <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
+                <TableCell  className="clicky-cell" scope="row">{row.status && (
                     <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
-                  ) : (
-                    <small className="text-muted">N/A</small>
-                  )}
-                </TableCell>
-                <TableCell align="right" className="clicky-cell" scope="row"> 
+                )}</TableCell>
+                <TableCell  className="clicky-cell" align="right" scope="row"> 
                 {this.state.writeable && (
                   <React.Fragment>
                     <FontAwesomeIcon
-                      className='inline-icon interaction-icon'
-                      icon={faUnlink}
-                      onClick={() => this.showConfirmDialog(row,index)}
+                      className='inline-icon interaction-icon '
+                      icon={faTrash}
+                      color="red"  
+                      onClick={() => this.sourceRemover(row,index)}
                     />
                   </React.Fragment>
                   )}
                   {!this.state.writeable && (
                   <small className="text-muted">N/A</small>
                   )}
+                
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         </TableContainer>
+        
+                 
         {this.state.writeable && (
-          <React.Fragment>
-            <div className="mt-2 align-right">
+        <React.Fragment>
+          <div className="mt-2 text-right">
             <button
               type='button'
-              className='btn btn-secondary float-right'
+              className='btn btn-secondary'
               onClick={() => this.handleLookUpClick()} 
               >
               Add {this.props.newForm === true && (
@@ -759,36 +711,9 @@ class DatasetEdit extends Component {
     
   }
 
-  renderConfirmDialog = () => {
-    return (
-      <Dialog
-        open={this.state.confirmDialog}
-        onClose={this.handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle className="bg-error title-error text-white" id="alert-dialog-title">{"Removing Source"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-         Are you sure you want to unlink Source {this.state.editingSource.hubmap_id}? <br/>
-         <small>Source remains in the database. To delete the entity itself, please use the  Entity page </small>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.sourceRemover} color="secondary">
-            Yes
-          </Button>
-          <Button onClick={this.hideConfirmDialog} color="primary">
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
-    )
-  }
-
   getUuidList = (new_uuid_list) => {
     //this.setState({uuid_list: new_uuid_list});
-    //////console.log('**getUuidList', new_uuid_list)
+   console.log('**getUuidList', new_uuid_list)
     this.setState(
       {
         source_uuid: this.getSourceAncestor(new_uuid_list),
@@ -953,7 +878,8 @@ class DatasetEdit extends Component {
   };
 
   handleSubmit = (i) => {
-    //////console.log('SUBMIT!!');
+    console.log('SUBMIT STATE', this.state)
+    console.log('SOURCE UUIDS', this.state.source_uuid_list)
     const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
@@ -1006,7 +932,6 @@ class DatasetEdit extends Component {
             //is_protected: this.state.is_protected,
           };
   
-          ////console.log('SOURCE UUIDS', this.state.source_uuid_list)
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
             let direct_ancestor_uuid = this.state.source_uuid_list.map((su) => {
@@ -1140,23 +1065,38 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-
-      if (!validateRequired(this.state.source_uuid)) {
+      console.debug("data_types", this.state.data_types);
+      // if (!validateRequired(this.state.lab_dataset_id)) {
+      //   this.setState((prevState) => ({
+      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "required" },
+      //   }));
+      //   isValid = false;
+      //   resolve(isValid);
+      // } else {
+      //   this.setState((prevState) => ({
+      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "" },
+      //   }));
+      //   // this.validateUUID().then((res) => {
+      //   //   resolve(isValid && res);
+      //   // });
+      // }
+      
+      if (!validateRequired(this.state.source_uuid_list)) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "required" },
+          formErrors: { ...prevState.formErrors, source_uuid_list: "required" },
         }));
         isValid = false;
         resolve(isValid);
       } else {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "" },
+          formErrors: { ...prevState.formErrors, source_uuid_list: "" },
         }));
         // this.validateUUID().then((res) => {
         //   resolve(isValid && res);
         // });
       }
       
-      if (this.state.data_types.size === 0 && this.state.other_dt === "") {
+      if (this.state.data_types.size === 0 || this.state.data_types === "") {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
@@ -1199,6 +1139,20 @@ class DatasetEdit extends Component {
     });
   }
 
+  assembleSourceAncestorData(source_uuids){
+    for (var i = 0; i < source_uuids.length; i++) {
+      console.debug("LOOPUING ASAD");
+      var dst = generateDisplaySubtype(source_uuids[i]);
+      source_uuids[i].display_subtype=dst;
+    }
+  try {
+    return source_uuids
+  } catch {
+    console.debug("getSourceAncestory Not Found?! ",source_uuids)
+  }
+ 
+}
+
   // only handles one selection at this time
   getSourceAncestor(source_uuids){
     try {
@@ -1221,6 +1175,7 @@ class DatasetEdit extends Component {
 
   //note: this code assumes that source_uuids is a sorted list or a single value
   generateDisplaySourceId(source_uuids) {
+    // console.debug("~~~~~~~~~~` generateDisplaySourceId", source_uuids);
     //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
       console.debug("source_uuids.length > 1")
@@ -1457,8 +1412,10 @@ class DatasetEdit extends Component {
 
  renderOneAssay(val, idx) {
   var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+
   return (<div className='form-group form-check' key={idstr}>
     <input type='radio' className='form-check-input' name={val.name} key={idstr} id={idstr}
+
     onChange={this.handleInputChange} checked={this.state.data_types.has(val.name)}
     />
     <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
@@ -1510,10 +1467,12 @@ class DatasetEdit extends Component {
 	    //var num_cols = Math.ceil(len / entries_per_col);
 
 	    return (<>
+
 		    <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
           {this.renderAssayColumn(0, len)}
           <option value="other">Other</option>
         </select>
+
 		    {this.state.has_other_datatype && (
 
                   <div className='form-group'>
@@ -1614,60 +1573,11 @@ class DatasetEdit extends Component {
                   </p>
           </div>
 
-
-            <div className='form-group'>
-              <label htmlFor='lab_dataset_id'>
-               Lab Name or ID
-
-              </label>
-           
-                <span className="px-2">
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for='lab_dataset_id_tooltip'
-                  />
-                  <ReactTooltip
-                    id='lab_dataset_id_tooltip'
-                    place='top'
-                    type='info'
-                    effect='solid'
-                  >
-                    <p>Lab Name or ID</p>
-                  </ReactTooltip>
-                  </span>
-               
-
-              {this.state.writeable && (
-               
-                  <input
-                    type='text'
-                    name='lab_dataset_id'
-                    id='lab_dataset_id'
-                    className={
-                      "form-control " +
-                      this.errorClass(this.state.formErrors.name)
-                    }
-                    placeholder='Lab Name or ID'
-                    onChange={this.handleInputChange}
-                    value={this.state.lab_dataset_id}
-                  />
-                
-              )}
-              {!this.state.writeable && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.lab_dataset_id}</p>
-                </div>
-              )}
+          
+          <div className='form-group'>
+              {this.renderSources()}
               
-            </div>
-            <div className='form-group'>
-              <div className="input-group">
-                {this.renderSources()}
-              </div>
-
-              {this.renderConfirmDialog()}
-              <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
+              <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
                 <DialogContent>
                   <SearchComponent
                     select={this.handleSelectClick}
@@ -1682,10 +1592,54 @@ class DatasetEdit extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
-              
             </div>
-          
-          
+
+          <div className='form-group'>
+            <label htmlFor='lab_dataset_id'>
+              Lab Name or ID
+            </label>
+              <span className="px-2">
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='lab_dataset_id_tooltip'
+                />
+                <ReactTooltip
+                  id='lab_dataset_id_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Lab Name or ID</p>
+                </ReactTooltip>
+                </span>
+            {this.state.writeable && (
+                <input
+                  type='text'
+                  name='lab_dataset_id'
+                  id='lab_dataset_id'
+                  className={
+                    "form-control " +
+                    this.errorClass(this.state.formErrors.lab_dataset_id)
+                  }
+                  placeholder='Lab Name or ID'
+                  onChange={this.handleInputChange}
+                  value={this.state.lab_dataset_id}
+                />
+            )}
+            {/* {this.errorClass(this.state.formErrors.source_uuid_list) && (
+              <div className='alert alert-danger'>
+              Lab Name or ID is Required
+            </div>
+            )} */}
+            {!this.state.writeable && (
+              <div className='col-sm-9 col-form-label'>
+                <p>{this.state.lab_dataset_id}</p>
+              </div>
+            )}
+          </div>
+
+
             <div className='form-group'>
             <label
               htmlFor='description'>
@@ -1927,9 +1881,9 @@ class DatasetEdit extends Component {
 		
                 <div className='col-sm-12'>
                 {this.state.formErrors.data_types && (
-			             <p className='text-danger'>
-                        At least select one data type
-                  </p>
+                  <div className='alert alert-danger'>
+                    At least one Dataa Type is Required.
+                  </div>
                 )}
                 </div>
 	             </React.Fragment>
