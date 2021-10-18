@@ -418,7 +418,7 @@ class EditUploads extends Component {
                   <button 
                     type='button'
                     className = 'btn btn-info mr-1'
-                    onClick = this.tempAlert()
+                    onClick = {() => this.tempAlert()}
                   >
                   Validate
                   </button>

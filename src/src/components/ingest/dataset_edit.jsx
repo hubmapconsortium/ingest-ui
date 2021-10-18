@@ -469,16 +469,16 @@ class DatasetEdit extends Component {
         }
       } else {
         //////console.log(id, e.target.checked)
-        if (value == "other") {
+        if (value === "other") {
           const data_types = this.state.data_types;
           data_types.clear();
           data_types.add(value);
           this.setState({
             data_types: data_types,
-            has_other_datatype: value == "other",
+            has_other_datatype: value === "other",
           });
           console.log("other", this.state.has_other_datatype);
-          if (value != "other") {
+          if (value !== "other") {
             const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
             const data_types = this.state.data_types;
             const other_dt = Array.from(data_types).filter(

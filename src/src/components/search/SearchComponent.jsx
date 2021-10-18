@@ -15,7 +15,7 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
-import 'url-search-params-polyfill';
+// import 'url-search-params-polyfill';
 
 // Creation donor_form_components
 
