@@ -1599,7 +1599,8 @@ handleAddImage = () => {
         )}
         <div className="col-sm-12 pads">
           {this.state.editingEntity && 
-            this.state.editingEntity.data_access_level === 'public' && (
+            this.state.editingEntity.data_access_level === 'public' && 
+              this.state.read_only_state && (
 
             <React.Fragment>
               <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
@@ -2608,7 +2609,8 @@ handleAddImage = () => {
             )}
             {this.renderButtons()}
             {this.state.editingEntity && 
-            this.state.editingEntity.data_access_level === 'public' && (
+            this.state.editingEntity.data_access_level === 'public' &&
+            this.state.read_only_state && (
 
             <React.Fragment>
               <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
