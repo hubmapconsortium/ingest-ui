@@ -571,7 +571,7 @@ class DatasetEdit extends Component {
         <div className="w-100">
           
           <label htmlFor='source_uuid_list'>
-            Source <span className='text-danger px-2'>*</span>
+            Source(s) <span className='text-danger px-2'>*</span>
           </label>
           <FontAwesomeIcon
             icon={faQuestionCircle}
@@ -586,13 +586,8 @@ class DatasetEdit extends Component {
             effect='solid'
           >
             <p>
-              The HuBMAP Unique identifier of the direct origin entity,
-              <br />
-              other sample or doner, where this sample came from.
-              <br />
-              Multiple sources are allowed. However, you must assign
-              <br />
-             <strong>at least one source.</strong>
+              The source tissue samples or data from which this data was derived.  <br />
+              At least <strong>one source </strong>is required, but multiple may be specified.
             </p>
           </ReactTooltip>
           {this.errorClass(this.state.formErrors.source_uuid_list) && (
