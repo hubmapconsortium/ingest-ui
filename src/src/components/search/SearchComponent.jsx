@@ -332,7 +332,7 @@ class SearchComponent extends Component {
         });
     }
 
-    console.debug("San Check",prevState.editEntity !== this.state.editEntity, this.state.editEntity)
+//    console.debug("San Check",prevState.editEntity !== this.state.editEntity, this.state.editEntity)
     if (prevState.editEntity !== this.state.editEntity && (!this.state.editEntity || this.state.editEntity === null)) {
       // console.debug("Saved, Time to Reload Search", this.state.editNewEntity)
       this.setState({
@@ -564,7 +564,8 @@ class SearchComponent extends Component {
       loading: true,
       filtered: true
     },() => {
-      api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, this.state.page, this.state.pageSize)
+      api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, 
+          (this.state.page*this.state.pageSize), this.state.pageSize)
       .then((response) => {
         // console.debug("Search Res", response.results);
         
@@ -646,7 +647,7 @@ class SearchComponent extends Component {
     this.setState({
           datarows: [],
           loading: true,
-          page: 0    // reset the page
+//          page: 0    // reset the page
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
         });
@@ -786,7 +787,6 @@ class SearchComponent extends Component {
         group: "All Components",
         keywords: "",
         page: 0,
-        //pageSize: PAGE_SIZE
       }, () => {
         this.handleSearchClick();
     });
