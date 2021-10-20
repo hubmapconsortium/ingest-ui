@@ -212,7 +212,7 @@ class TissueForm extends Component {
                   // check to see if user can edit
                   ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
                       .then((resp) => {
-                          let read_only_state = false
+                          // let read_only_state = false
                           if (resp.status === 200) {
                             //console.debug('api_allowable_edit_states...', resp.results);
                             ////////console.debug(resp.results);
