@@ -684,3 +684,17 @@ a.disabled {
 .interaction-icon{
   cursor: pointer;
 }
+
+
+tr.row-invalid{
+  background: #ff00004d!important;
+}
+tr.row-invalid:hover{
+  border:1px solid red;
+}
+tr.row-invalid td{
+  border:1px solid red;
+}
+table.uploadedStuff-valid{
+  background: ##68ba99;
+}

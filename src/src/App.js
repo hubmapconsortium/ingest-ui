@@ -22,6 +22,10 @@ import {
 import Modal from "./components/uuid/modal";
 
 
+import MenuItem from '@material-ui/core/MenuItem';
+import MenuList from '@material-ui/core/MenuList';
+import Menu from '@material-ui/core/Menu';
+
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import Paper from '@material-ui/core/Paper';
@@ -29,6 +33,8 @@ import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
+import BulkSamples from "./components/bulk/samples";
+import BulkDonors from "./components/bulk/donors";
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -41,8 +47,10 @@ class App extends Component {
     formType: "",
     open_edit_dialog: false.valueOf,
     creatingNewUpload: false,
-    editNewEntity: null,
-    showSearch: true
+    editNewEntity: false,
+    showSearch: false,
+    creatingBulkEntries: true,
+    bulkType: 'samples',
   }
   // The constructor is primarily used in React to set initial state or to bind methods
   // The constructor is the only place that you should assign the local state directly like that.
@@ -255,14 +263,17 @@ class App extends Component {
       });
     }
     
-    
-    
-    // if (prevProps.showSearch !== this.props.showSearch) {
-    //   console.log("UPDATE this.props.showSearch");
-    //   this.setState({
-    //     show_search: this.props.showSearch
-    //     });
-    // }
+    if (prevState.creatingBulkEntries !== this.state.creatingBulkEntries) {
+      console.debug("creatingBulkEntries toggle", this.state.creatingBulkEntries)
+      this.setState({
+        editForm: false,
+        show_modal: false,
+        show_search: false,
+        showSearch: false
+       }, () => {   
+        // console.debug("NewEntryStateUpdated")
+      });
+    }
     
   }
 
@@ -300,7 +311,6 @@ class App extends Component {
   handleMenuSelection = (event) => {
     console.debug("handleMenuSelection")
     var formtype = event.currentTarget.innerText.trim();
-
     this.setState({
         anchorEl: null,
         show_menu_popup: false,
@@ -312,8 +322,13 @@ class App extends Component {
       })
       // this.handleFormTypeChange(formtype);
       this.handleUrlChange("new/"+formtype);
-
   }
+
+  handleMenuDropdown = (event) => {
+    this.setState(prevState => ({
+      showDropDown: !prevState.showDropDown
+    }))
+  };
   
 
   handleUploadsDialog = (event) => {
@@ -343,6 +358,29 @@ class App extends Component {
     });
     this.handleUrlChange("");
   };
+
+
+  handleBulkSelection = (event) => {
+    console.debug("handleBulkSelection")
+    console.debug(event);
+    this.handleMenuDropdown();
+    // this.handleBulkClick(event);
+    var bulkType = event.currentTarget.innerText.trim();
+    console.debug("bulkType",bulkType);
+    this.setState({
+        anchorEl: null,
+        show_menu_popup: false,
+        creatingBulkEntries: true,
+        bulkType:"bulkType",
+        open_edit_dialog: true,
+        show_search: false,
+        showSearch: false,
+      })
+      // this.handleFormTypeChange(formtype);
+      console.debug("bulk/"+bulkType);
+      this.handleUrlChange("bulk/"+bulkType);
+  }
+  
 
   onCreated = data => {
     console.debug("onCreated ",data);
@@ -414,6 +452,24 @@ class App extends Component {
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
                 <Button className="nav-link" onClick={this.handleUploadsDialog}>Uploads</Button>
+                  {this.state.devMode && (
+
+                  <div>
+                    <Button aria-controls="simple-menu" aria-haspopup="true" onClick={this.handleMenuDropdown}>
+                    Bulk Register
+                    </Button>
+                    <Menu
+                      id="simple-menu"
+                      keepMounted
+                      open={this.state.showDropDown ? true : false}
+                      onClose={this.handleClose}
+                    >
+                      <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
+                      <MenuItem onClick={this.handleBulkSelection}>Donors</MenuItem>
+                    </Menu>
+                  </div>
+
+                )}
                 </div>
               )}
             </div>
@@ -669,19 +725,27 @@ class App extends Component {
             
           <div className="col-sm-12">
 
+          {/* {this.state.creatingBulkEntries && ( */}
+              <BulkSamples onCancel={this.handleClose} />
+          {/* )} */}
+
         
-            {this.state.isAuthenticated && (
+            {/* {this.state.isAuthenticated && (
+
+                    
+              
 
               <Router history={history}>
-                    <Route path="/" exacct >
-                    {!this.state.creatingNewEntity && (
+                    <Route path="/"  >
+                    {!this.state.creatingNewEntity && !this.state.creatingBulkEntries && (
                         <SearchComponent fromRoute="OORIG" editNewEntity={this.state.editNewEntity} />
                     )}
                     </Route> 
+                
               </Router>
               
               
-            )}
+            )} */}
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
               // Loads in for new things, not editing things
               <Forms formType={this.state.formType} onCancel={this.handleClose} />
