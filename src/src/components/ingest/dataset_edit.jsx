@@ -1453,18 +1453,21 @@ class DatasetEdit extends Component {
       )
   }
 
-  renderMultipleAssays(min, max) {
+  renderListAssay(val) {
     return (
-      this.state.data_type_dicts.slice(min, max).map((val, idx) =>
-                {return this.renderListAssay(val,idx)})
-        )
-  }
-
-  renderListAssay(val, idx) {
-    return (
-      <li value={val.name}>{val.description}</li>
+      <li>{val}</li>
       )
   }
+
+  renderMultipleAssays() {
+    var arr = Array.from(this.state.data_types)
+    return (
+      arr.map((val) =>
+          {return this.renderListAssay(val)})
+         )
+    }
+
+  
 
 
     
@@ -1501,7 +1504,7 @@ class DatasetEdit extends Component {
           )}
         </>
        )
-      } else if (this.state.data_types.size === 1) {
+      } else if (this.state.data_types.size === 1 || this.state.data_types.size === 0) {
 
   	    return (<>
 
@@ -1526,11 +1529,11 @@ class DatasetEdit extends Component {
   		      )}
           </>
   		   )
-      } else {
+      } else if (this.state.data_types.size > 1) {
         return (<>
 
           <ul>
-            {this.renderMultipleAssays(0, len)}
+            {this.renderMultipleAssays()}
           </ul>
 
           </>)
