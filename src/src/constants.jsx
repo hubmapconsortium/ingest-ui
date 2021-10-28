@@ -150,7 +150,8 @@ export const ES_SEARCHABLE_FIELDS = [
   "lab_donor_id.keyword",
   "lab_dataset_id.keyword",
   "created_by_user_displayname", 
-  "created_by_user_email"
+  "created_by_user_email",
+  "dataset_info"
   ];
 
 // this list is for wildcard searchable fields
