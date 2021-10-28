@@ -1453,6 +1453,19 @@ class DatasetEdit extends Component {
       )
   }
 
+  renderMultipleAssays(min, max) {
+    return (
+      this.state.data_type_dicts.slice(min, max).map((val, idx) =>
+                {return this.renderListAssay(val,idx)})
+        )
+  }
+
+  renderListAssay(val, idx) {
+    return (
+      <li value={val.name}>{val.description}</li>
+      )
+  }
+
 
     
   renderAssayArray() {
@@ -1460,29 +1473,68 @@ class DatasetEdit extends Component {
 	    var len = this.state.data_type_dicts.length;
 	    //var entries_per_col = Math.ceil(len / 3);
 	    //var num_cols = Math.ceil(len / entries_per_col);
+      console.log("length is ", this.state.data_types.size)
+      console.log("other ", this.state.has_other_datatype)
 
-	    return (<>
+      if (this.state.data_types.size === 1 && this.state.has_other_datatype) {
+        console.log("runs")
+        return (<>
 
-		    <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+        <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+          <option></option>
           {this.renderAssayColumn(0, len)}
           <option value="other">Other</option>
         </select>
 
-		    {this.state.has_other_datatype && (
+        {this.state.has_other_datatype && (
 
                   <div className='form-group'>
                     <input type='text' name='other_dt' id='other_dt'
-			                   className={"form-control " +
-				                  this.errorClass(this.state.formErrors.other_dt)
-				                  }
-			                   placeholder='Other Data Type'
-			                   value={this.state.other_dt}
-			                   onChange={this.handleInputChange}
-	                   />
+                         className={"form-control " +
+                          this.errorClass(this.state.formErrors.other_dt)
+                          }
+                         placeholder='Other Data Type'
+                         value={this.state.other_dt}
+                         onChange={this.handleInputChange}
+                     />
                   </div>
-		      )}
+          )}
         </>
-		   )
+       )
+      } else if (this.state.data_types.size === 1) {
+
+  	    return (<>
+
+  		    <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+            <option></option>
+            {this.renderAssayColumn(0, len)}
+            <option value="other">Other</option>
+          </select>
+
+  		    {this.state.has_other_datatype && (
+
+                    <div className='form-group'>
+                      <input type='text' name='other_dt' id='other_dt'
+  			                   className={"form-control " +
+  				                  this.errorClass(this.state.formErrors.other_dt)
+  				                  }
+  			                   placeholder='Other Data Type'
+  			                   value={this.state.other_dt}
+  			                   onChange={this.handleInputChange}
+  	                   />
+                    </div>
+  		      )}
+          </>
+  		   )
+      } else {
+        return (<>
+
+          <ul>
+            {this.renderMultipleAssays(0, len)}
+          </ul>
+
+          </>)
+      }
 
 	}
 	else {
@@ -1877,7 +1929,7 @@ class DatasetEdit extends Component {
                 <div className='col-sm-12'>
                 {this.state.formErrors.data_types && (
                   <div className='alert alert-danger'>
-                    At least one Dataa Type is Required.
+                    At least one Data Type is Required.
                   </div>
                 )}
                 </div>
