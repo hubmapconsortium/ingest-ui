@@ -149,6 +149,50 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
       });
 };
 
+
+/* 
+ * entity_api_bulk_entities - create bulk entries on .TSF file upload
+ *
+ */
+export function ingest_api_bulk_entities(type, data, auth) { 
+  console.debug("Starting Data: ",data);
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "multipart/form-data"
+      }
+    };
+  let url = ""
+  if(type === "samples"){
+    url = `${process.env.REACT_APP_INGEST_API_URL}samples/bulk-upload`;
+  }else if(type === "donors"){
+    url = `${process.env.REACT_APP_INGEST_API_URL}donors/bulk-upload`;
+  }else{
+    // return {status: 401, results: "Bulk Upload: Missing Bulk Type"} //@TODO: what status SHOULD we send? 
+  }
+  console.debug("options",options);
+  console.debug("url",url);
+  console.debug("data",data);
+  return axios 
+     .post(url, data, options)
+      .then(res => {
+        console.debug("entity_api_bulk_entities",res);
+          let results = res.data;
+          let fin = [];
+           results.forEach( element => {
+              element.checked = false; // add a checked attribute for later UI usage
+              fin.push(element);
+            });
+        return {status: res.status, results: fin}
+      })
+      .catch(err => {
+        console.debug(err);
+        return {status: err.response.status, results: err.response.data}
+      });
+};
+
+
 /* gets a list of associated IDS if the entity has multiple records. 
    these are multi-labs records
 */
