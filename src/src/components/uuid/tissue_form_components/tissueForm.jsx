@@ -319,7 +319,7 @@ class TissueForm extends Component {
             
           } );
 
-        this.getSourceAncestorOrgan(this.state.editingEntity);
+        //this.getSourceAncestorOrgan(this.state.editingEntity);
 
 
       } else {
@@ -503,7 +503,7 @@ class TissueForm extends Component {
                //////console.debug('Entity ancestors...', response.results);
               if (response.results.length > 0) {
                   
-                  ////////console.debug('Entity ancestors...ORGAN', ancestor_organ);
+                  console.debug('Entity ancestors...', response.results);
                   this.setState({
                     source_entity: response.results[0],
                     ancestor_organ: response.results[0].organ   // use "top" ancestor organ
