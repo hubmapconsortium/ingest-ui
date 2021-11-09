@@ -58,7 +58,7 @@ class EditUploads extends Component {
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "application/json",
       },
     };
@@ -219,7 +219,7 @@ class EditUploads extends Component {
       submitting_submission:true,
       submitting: false,
     })
-    ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+    ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
         console.debug(response.results);
         if (response.status === 200) {
@@ -266,7 +266,7 @@ class EditUploads extends Component {
             console.debug(JSON.stringify(data));
             console.debug(JSON.parse(localStorage.getItem("info")));
             // if user selected Publish
-            ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+            ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
                 console.debug(response.results);
                   if (response.status === 200) {
@@ -313,7 +313,7 @@ class EditUploads extends Component {
             console.debug(JSON.stringify(data));
             console.debug(JSON.parse(localStorage.getItem("info")));
             // if user selected Publish
-            ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+            ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
                 console.debug(response.results);
                   if (response.status === 200) {
@@ -403,13 +403,13 @@ class EditUploads extends Component {
     var local = JSON.parse(localStorage.getItem("info"));
     var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4"];
     console.log(group_uuids.length);
-    ingest_api_users_groups(local.nexus_token).then((results) => {
+    ingest_api_users_groups(local.groups_token).then((results) => {
       console.log(results.results);
     });
     if (["SUBMITTED", "INVALID", "ERROR"].includes(
       this.state.status.toUpperCase()
       )){
-      ingest_api_users_groups(local.nexus_token).then((results) => {
+      ingest_api_users_groups(local.groups_token).then((results) => {
         if (results.status === 200) {
           results.results.forEach(function(result) {
             if (group_uuids.includes(result.uuid)) {
@@ -559,7 +559,7 @@ class EditUploads extends Component {
   fetchGlobusURL = (uploads_uuid) => {  
 
 
-    ingest_api_get_globus_url(uploads_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    ingest_api_get_globus_url(uploads_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
         console.debug('ingest_api_get_globus_url', resp)
       if (resp.status === 200) {

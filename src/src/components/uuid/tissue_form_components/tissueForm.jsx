@@ -163,7 +163,7 @@ class TissueForm extends Component {
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "application/json"
       }
     };
@@ -205,12 +205,12 @@ class TissueForm extends Component {
           }
         
           //console.debug('UUID', param_uuid)
-          entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
                 if (response.status === 200) {
                   let entity_data = response.results;
                   // check to see if user can edit
-                  ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+                  ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((resp) => {
                           // let read_only_state = false
                           if (resp.status === 200) {
@@ -353,7 +353,7 @@ class TissueForm extends Component {
          const config = {
           headers: {
             Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+              "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
             "Content-Type": "application/json"
           }
       };
@@ -437,7 +437,7 @@ class TissueForm extends Component {
         });
    
     } else {
-      entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((response) => {
             if (response.status === 200) {
               let entity_data = response.results;
@@ -445,7 +445,7 @@ class TissueForm extends Component {
                   editingEntity: entity_data
               });
               // check to see if user can edit
-              ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+              ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((resp) => {
                       if (resp.status === 200) {
                         ////////console.debug('api_allowable_edit_states...');
@@ -474,13 +474,13 @@ class TissueForm extends Component {
   }
   // getEntity = (uuid) => {
       
-  //     entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+  //     entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
   //     .then((response) => {
   //       if (response.status === 200) {
   //         let entity_data = response.results;
 
   //         // check to see if user can edit
-  //         ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+  //         ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
   //           .then((resp) => {
   //           if (resp.status === 200) {
   //             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
@@ -497,7 +497,7 @@ class TissueForm extends Component {
   getSourceAncestorOrgan(entity) {
     //var ancestor_organ = ""
     // check to see if we have an "top-level" ancestor 
-      entity_api_get_entity_ancestor( entity.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      entity_api_get_entity_ancestor( entity.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((response) => {
           if (response.status === 200) {
                //////console.debug('Entity ancestors...', response.results);
@@ -1126,7 +1126,7 @@ handleAddImage = () => {
 
         if (this.state.editingEntity && !this.state.LocationSaved) {
           //////console.debug("Updating Entity....")
-          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
                     //console.debug('Update Entity...', this.state.related_group_ids.length );
@@ -1147,7 +1147,7 @@ handleAddImage = () => {
                   } else {
                     this.setState({ submit_error: true, submitting: false, isDirty: false });
                     this.setDirty(false);
-          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                     console.debug("update Entity Fail", response)
 
                   }
@@ -1163,7 +1163,7 @@ handleAddImage = () => {
             }
             if (this.state.sample_count < 1) {
                 //console.debug("Create a new Entity....", this.state.sample_count)
-                entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                     .then((response) => {
                       if (response.status === 200) {
                         //////console.debug('create Entity...');
@@ -1179,7 +1179,7 @@ handleAddImage = () => {
                 } else if (this.state.sample_count > 0) {
                     //console.debug("Create a MULTIPLES Entity....", this.state.sample_count)
                     // now generate some multiples
-                    entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((resp) => {
                         if (resp.status === 200) {
                           //console.debug('MULTIPLES DATA', data)
@@ -1493,8 +1493,8 @@ handleAddImage = () => {
 
     if (selection) {
       // check to see if we have an "top-level" ancestor 
-      //entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
-      entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+      //entity_api_get_entity_ancestor( ids[0].source_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+      entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((response) => {
           if (response.status === 200) {
               //console.debug('Entity ancestors...', response.results);

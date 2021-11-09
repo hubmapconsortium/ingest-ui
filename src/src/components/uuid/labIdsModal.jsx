@@ -39,7 +39,7 @@ class LabIDsModal extends Component {
     // const config = {
     //   headers: {
     //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
     //     "Content-Type": "multipart/form-data"
     //   }
     // };
@@ -260,7 +260,7 @@ class LabIDsModal extends Component {
         // const config = {
         //   headers: {
         //     Authorization:
-        //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        //       "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         //     MAuthorization: "MBearer " + localStorage.getItem("info"),
         //     "Content-Type": "application/json"
         //   }
@@ -293,7 +293,7 @@ class LabIDsModal extends Component {
           let data = this.createSampleList();
           console.log('LabIDsModal', data);
             // now update multiple lab id entities
-              entity_api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              entity_api_update_multiple_entities(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((resp) => {
                     if (resp.status == 200) {
                         this.setState(

@@ -157,7 +157,7 @@ class MultipleListModal extends Component {
   editForm = (uuid) => {
     //console.debug('in the editForm')
     
-    entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
     .then((response) => {
       if (response.status === 200) {
         this.setState({
@@ -165,7 +165,7 @@ class MultipleListModal extends Component {
               editingEntity: response.results,
               });
         // check to see if user can edit
-        ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+        ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
           if (resp.status === 200) {
 

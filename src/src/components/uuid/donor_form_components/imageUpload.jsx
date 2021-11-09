@@ -49,7 +49,7 @@ class ImageUpload extends Component {
               const options = {
                 headers: {
                   Authorization:
-                    "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+                    "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
                   //MAuthorization: "MBearer " + localStorage.getItem("info"),
                   "Content-Type": "multipart/form-data"
                 },

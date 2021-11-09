@@ -118,7 +118,7 @@ class DatasetEdit extends Component {
         data_types.push(other_dt);
       }
 
-      get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).nexus_token)
+      get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((resp) => {
         if (resp.status === 200) {
           //console.log('Assay Type info...', resp.results);
@@ -147,7 +147,7 @@ class DatasetEdit extends Component {
     if (this.props.editingDataset) {
       if (this.props.editingDataset.uuid)
       // check to see which buttons to enable
-       ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+       ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((resp) => {
         if (resp.status === 200) {
           //console.log('edit states...', resp.results);
@@ -164,11 +164,11 @@ class DatasetEdit extends Component {
       console.debug("No editingDataset Prop, Must be a New Form")
     }
 
-
+    console.log("info is ", localStorage.getItem("info"));
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "application/json",
       },
     };
@@ -736,7 +736,7 @@ class DatasetEdit extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "application/json",
         },
       };
@@ -798,7 +798,7 @@ class DatasetEdit extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "multipart/form-data",
         },
       };
@@ -942,7 +942,7 @@ class DatasetEdit extends Component {
             headers: {
               Authorization:
                 "Bearer " +
-                JSON.parse(localStorage.getItem("info")).nexus_token
+                JSON.parse(localStorage.getItem("info")).groups_token
             },
           };
          
@@ -961,7 +961,7 @@ class DatasetEdit extends Component {
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
-                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status === 200) {
                       ////console.log(response.results);
@@ -973,7 +973,7 @@ class DatasetEdit extends Component {
                     }
                 });
               } else { // just update
-                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status === 200) {
                             this.setState({ 
@@ -1003,8 +1003,8 @@ class DatasetEdit extends Component {
               }
 
               console.log('DATASET TO SAVE', JSON.stringify(data))
-              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
                     console.log('create Dataset...', response.results);
