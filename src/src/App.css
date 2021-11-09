@@ -723,3 +723,13 @@ svg.valid{
 svg.invalid{
   color:#ff0000;
 }
+
+
+#stepContainer input{
+  /* background:red; */
+  display:inline!important;
+}
+
+/* #stepContainer button{
+  display:none;
+} */
