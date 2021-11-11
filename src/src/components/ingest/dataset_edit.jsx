@@ -961,6 +961,7 @@ class DatasetEdit extends Component {
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
+               console.log("data is ", data)
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status === 200) {
@@ -969,7 +970,7 @@ class DatasetEdit extends Component {
                     } else {
                       console.log("ERR response");
                       console.log(response);
-                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                     }
                 });
               } else { // just update
@@ -985,7 +986,7 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                             console.debug("ERROR ",response)
-                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                           }
                 });
               }
@@ -1474,13 +1475,8 @@ class DatasetEdit extends Component {
   renderAssayArray() {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
-	    //var entries_per_col = Math.ceil(len / 3);
-	    //var num_cols = Math.ceil(len / entries_per_col);
-      console.log("length is ", this.state.data_types.size)
-      console.log("other ", this.state.has_other_datatype)
 
       if (this.state.data_types.size === 1 && this.state.has_other_datatype) {
-        console.log("runs")
         return (<>
 
         <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>

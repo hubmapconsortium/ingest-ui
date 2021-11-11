@@ -372,28 +372,25 @@ class EditUploads extends Component {
 
   renderButtonBar(){
       return (
-        <div className='row justify-content-end'>
+        <div>
           <div className="col-sm-12">
           <Divider />
           </div>
 
           {this.renderHelperText()}
 
-          <div className='col-md-2 pads'>
-          {this.renderValidateButton()}
-          </div>
-
-
-          <div className='col-md-1 pads'>
-          
-            {this.renderActionButton()}
+          <div class="text-right">
+            <div class="btn-group" role="group">
+              {this.renderValidateButton()}
+              {this.renderActionButton()}
               <button
-              type='button'
-              className='btn btn-secondary'
-              onClick={() => this.props.handleCancel()}
-            >
-              Cancel
-            </button>
+                type='button'
+                className='btn btn-secondary float-right'
+                onClick={() => this.props.handleCancel()}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       );
