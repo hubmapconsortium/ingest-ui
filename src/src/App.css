@@ -733,3 +733,8 @@ svg.invalid{
 /* #stepContainer button{
   display:none;
 } */
+
+#BulkMenu div ul{
+  width: auto!important;
+  height: auto;
+}

@@ -34,30 +34,50 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
 import BulkSamples from "./components/ingest/bulk";
-import BulkDonors from "./components/bulk/donors";
-
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 class App extends Component {
-  state = {
-    anchorEl: null,
-    show_menu_popup: false,
-    creatingNewEntity: false,
-    formType: "",
-    open_edit_dialog: false.valueOf,
-    creatingNewUpload: false,
-    editNewEntity: false,
-    showSearch: false,
-    creatingBulkEntries: true,
-    bulkType: 'samples',
-  }
-  // The constructor is primarily used in React to set initial state or to bind methods
-  // The constructor is the only place that you should assign the local state directly like that.
-  // Any place else in our component, you should rely on setState() instead.
-  
+
+
   constructor(props) {
     super(props);
+    const app_info = localStorage.getItem("info")
+      ? JSON.parse(localStorage.getItem("info"))
+      : {
+        name: "",
+        email: "",
+        globus_id: ""
+      };
+    //@TODO: one state was being compiled outside the class, and again after a bunch of checks 
+    // ignoring all of the externally set items
+    // Ive got the two starter sets mashed together here, but 
+    // we're gonna wanna go through and trim whatever's not needed anymore
+    this.state = {
+      // Using JSON.parse() to get the boolean value
+      isAuthenticated: JSON.parse(localStorage.getItem("isAuthenticated")),
+      username: app_info.name || "",
+      email: app_info.email || "",
+      globus_id: app_info.globus_id || "",
+      system: "",
+      registered: true,
+      devMode: false,
+      openSnack:false,
+      dml:"Inactive",
+      snackPriotity:"info",
+      anchorEl: null,
+      show_menu_popup: false,
+      creatingNewEntity: false,
+      formType: "",
+      open_edit_dialog: false.valueOf,
+      creatingNewUpload: false,
+      editNewEntity: false,
+      showSearch: false,
+      creatingBulkEntity: false,
+      bulkType: 'samples',
+      anchorEl:null,
+      setAnchorEl: null
+    };
 
     this.idleTimer = null;
     // Testing, set local storage flag
@@ -65,6 +85,34 @@ class App extends Component {
     if (localStorage.getItem("isAuthenticated") === null) {
       localStorage.setItem("isAuthenticated", false);
     }
+
+
+    // IE doesn't support the URL api
+    let url = new URL(window.location.href);
+    let info = url.searchParams.get("info");
+    const search = props.location.search; // could be '?foo=bar'
+    const params = new URLSearchParams(search);
+    console.debug("params", params);
+
+
+    if (info !== null) {
+      localStorage.setItem("info", info);
+      localStorage.setItem("isAuthenticated", true);
+      // Redirect to home page without query string
+      console.debug("REDIRWCTING HOME");
+      // window.location.replace(`${process.env.REACT_APP_URL}`);
+    }
+
+
+    // Binding event handler methods to an instance
+    this.handleLogout = this.handleLogout.bind(this);
+  }
+
+
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown);
+    var type;
+    var fauxEvent;
 
     //set the system state if the URL includes 'collections'
     if (window.location.href.includes("/collections/")) {
@@ -80,87 +128,23 @@ class App extends Component {
       console.log("WINDOW URL INCLUDES NEW UPLOADS");
       this.handleUploadsDialog();
     }
-
-
-    // IE doesn't support the URL api
-    let url = new URL(window.location.href);
-    let info = url.searchParams.get("info");
-    const search = props.location.search; // could be '?foo=bar'
-    const params = new URLSearchParams(search);
-    console.debug("params", params);
-
-
-    if (info !== null) {
-      localStorage.setItem("info", info);
-      localStorage.setItem("isAuthenticated", true);
-
-      // Redirect to home page without query string
-      window.location.replace(`${process.env.REACT_APP_URL}`);
+    if (window.location.href.includes("/bulk")) {
+      console.log("BULK UPLOAD");
+      // We cant depend on the BulkType to come from the menu selection & props
+      // Since we could get here through URL only
+      var urlState = window.location.href;
+      var urlsplit = urlState.split("/");
+      console.debug("URLsplut", urlsplit, urlsplit[4]);
+      this.setState({
+        creatingBulkEntity: true,
+        bulkType:urlsplit[4]
+      }, () => {   
+        console.debug("!!!!!Set the Bulk State!")
+     });
     }
 
-    const app_info = localStorage.getItem("info")
-      ? JSON.parse(localStorage.getItem("info"))
-      : {
-        name: "",
-        email: "",
-        globus_id: ""
-      };
-    this.state = {
-      // Using JSON.parse() to get the boolean value
-      isAuthenticated: JSON.parse(localStorage.getItem("isAuthenticated")),
-      username: app_info.name || "",
-      email: app_info.email || "",
-      globus_id: app_info.globus_id || "",
-      creatingNewEntity: false,
-      creatingNewUpload: false,
-      system: "",
-      registered: true,
-      devMode: false,
-      openSnack:false,
-      dml:"Inactive",
-      snackPriotity:"info"
-    };
 
-    //console.debug('isAuthenticated', JSON.parse(localStorage.getItem("isAuthenticated")))
-
-    // Binding event handler methods to an instance
-    this.handleLogout = this.handleLogout.bind(this);
-    
-
-  }
-
-  getQuery = () => {
-    if (typeof window !== 'undefined') {
-      return new URLSearchParams(window.location.search);
-    }
-    return new URLSearchParams();
-  };
-
-  handleSingularty  = (target, size) => {
-    if(size === "plural"){
-      console.debug(target.slice(-1));
-      if(target.slice(-1) === "s"){
-        return target.toLowerCase();
-      }else{
-        return (target+"s").toLowerCase();
-      }
-    }else{ // we wanna singularize
-      if(target.slice(-1) === "s"){
-        return (target.slice(0, -1)).toLowerCase()
-      }else{
-        return target.toLowerCase();
-      }
-    } 
-  }
-
-  
-
-  componentDidMount() {
-    document.addEventListener("keydown", this.handleKeyDown);
-    var type;
-    var fauxEvent;
-
-    if (this.props.match){
+    if (this.props.match && this.props.creatingBulkEntity === false){
       console.debug("APP this.props.match");
       type = this.props.match.params.type;
       console.log(type);
@@ -174,7 +158,7 @@ class App extends Component {
         this.handleMenuSelection(fauxEvent);
       }
         
-    }else if(!this.props.match){
+    }else if(!this.props.match && this.props.creatingBulkEntity === false){
       if(window.location.href.includes("/new")){
         var url = window.location.href;
         var urlsplit = url.split("/");
@@ -269,14 +253,39 @@ class App extends Component {
         editForm: false,
         show_modal: false,
         show_search: false,
-        showSearch: false
+        showSearch: false,
        }, () => {   
         // console.debug("NewEntryStateUpdated")
       });
     }
-    
   }
 
+
+  getQuery = () => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search);
+    }
+    return new URLSearchParams();
+  };
+
+  handleSingularty  = (target, size) => {
+    if(size === "plural"){
+      console.debug(target.slice(-1));
+      if(target.slice(-1) === "s"){
+        return target.toLowerCase();
+      }else{
+        return (target+"s").toLowerCase();
+      }
+    }else{ // we wanna singularize
+      if(target.slice(-1) === "s"){
+        return (target.slice(0, -1)).toLowerCase()
+      }else{
+        return target.toLowerCase();
+      }
+    } 
+  }
+
+  
 
   handleLogout = e => {
     localStorage.setItem("isAuthenticated", false);
@@ -339,7 +348,7 @@ class App extends Component {
   }
 
   handleClick = (event) => {
-    //console.debug('clicked', event.currentTarget);
+    console.debug('clicked', event.currentTarget);
     this.setState({
       anchorEl: event.currentTarget,
       show_menu_popup: true
@@ -351,12 +360,22 @@ class App extends Component {
     this.setState({
       creatingNewUpload: false,
       anchorEl: null,
+      setAnchorEl:null,
       show_menu_popup: false,
       open_edit_dialog: false, 
       creatingNewEntity: false,
       showSearch: false
     });
     this.handleUrlChange("");
+  };
+
+  handleBulkClick = (event) => {
+    console.debug('clicked', event.currentTarget);
+    this.setState({
+      anchorEl: event.currentTarget,
+      show_menu_popup: true,
+      creatingBulkEntity: true
+    });
   };
 
 
@@ -371,10 +390,11 @@ class App extends Component {
         anchorEl: null,
         show_menu_popup: false,
         creatingBulkEntries: true,
-        bulkType:"bulkType",
+        bulkType:bulkType,
         open_edit_dialog: true,
         show_search: false,
         showSearch: false,
+        creatingBulkEntity:true,
       })
       // this.handleFormTypeChange(formtype);
       console.debug("bulk/"+bulkType);
@@ -452,24 +472,22 @@ class App extends Component {
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
                 <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
                 <Button className="nav-link" onClick={this.handleUploadsDialog}>Uploads</Button>
-                  {this.state.devMode && (
+                <Button aria-controls="BulkMenu" aria-haspopup="true" onClick={this.handleBulkClick}> Bulk Register</Button>
+                  <Menu
+                    id="BulkMenu"
+                    menuStyle={{width: 'auto', backgroundColor: 'red'}}
+                    keepMounted
+                    anchorEl={this.state.anchorEl}
+                    open={Boolean(this.state.anchorEl)}
+                    onClose={this.handleClose}
+                    getContentAnchorEl={null}
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                    transformOrigin={{vertical: 'top', horizontal: 'center'}}
+                  >
+                    <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
+                    <MenuItem onClick={this.handleBulkSelection}>Donors</MenuItem>
+                  </Menu>
 
-                  <div>
-                    <Button aria-controls="simple-menu" aria-haspopup="true" onClick={this.handleMenuDropdown}>
-                    Bulk Register
-                    </Button>
-                    <Menu
-                      id="simple-menu"
-                      keepMounted
-                      open={this.state.showDropDown ? true : false}
-                      onClose={this.handleClose}
-                    >
-                      <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
-                      <MenuItem onClick={this.handleBulkSelection}>Donors</MenuItem>
-                    </Menu>
-                  </div>
-
-                )}
                 </div>
               )}
             </div>
@@ -726,31 +744,28 @@ class App extends Component {
           <div className="col-sm-12">
 
           {/* {this.state.creatingBulkEntries && ( */}
-              <BulkSamples onCancel={this.handleClose} />
-          {/* )} */}
-
-        
-            {/* {this.state.isAuthenticated && (
-
-                    
               
-
+          {/* )} */}
+        
+            {this.state.isAuthenticated && (
               <Router history={history}>
                     <Route path="/"  >
-                    {!this.state.creatingNewEntity && !this.state.creatingBulkEntries && (
+                    {!this.state.creatingNewEntity && this.state.creatingBulkEntity === false && (
                         <SearchComponent fromRoute="OORIG" editNewEntity={this.state.editNewEntity} />
                     )}
                     </Route> 
-                
               </Router>
-              
-              
-            )} */}
+            )}
+
             {this.state.isAuthenticated && this.state.creatingNewEntity && (
               // Loads in for new things, not editing things
               <Forms formType={this.state.formType} onCancel={this.handleClose} />
             )}
                   
+            {this.state.isAuthenticated && this.state.creatingBulkEntity === true && (
+              <BulkSamples bulkType={this.state.bulkType} onCancel={this.handleClose} />
+            )}
+
             {this.state.isAuthenticated && this.state.creatingNewUpload && (
                 <Dialog 
                   open={this.state.creatingNewUpload}

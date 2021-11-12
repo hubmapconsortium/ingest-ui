@@ -31,6 +31,8 @@ import {ingest_api_bulk_entities_upload,
 
 
 class bulkSamples extends Component<{},any> {
+
+
   constructor(props) {
     super(props);
     this.state = {
@@ -78,6 +80,9 @@ class bulkSamples extends Component<{},any> {
     //   groups: groupSet.groups,
     //   inputValue_group_uuid: groupSet.inputValue_group_uuid
     // });
+
+    console.debug("BULK MOUNTED");
+
     var userGroups = this.getUserGroups();
     console.debug("componentDidMount");
     console.debug("groups", userGroups); // Grabbing them on mount to populate in the state
@@ -775,7 +780,7 @@ renderFileGrabber = () =>{
     return (
       <Paper>
         <div className="col-sm-12 pads">
-          <div className="col-sm-12 text-left"><h4>Sample Information Upload</h4></div>
+          <div className="col-sm-12 text-left"><h4>{this.props.bulkType} Information Upload</h4></div>
           <div className="px-3 my-2">
           Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book
           {this.renderStepper()}
