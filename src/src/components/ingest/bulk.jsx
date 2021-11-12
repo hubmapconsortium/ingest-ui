@@ -62,7 +62,8 @@ class bulkSamples extends Component<{},any> {
       tsvFile:"",
       uploadTimer:"",
       uploadedSources:[],
-      finalTableReady:false
+      finalTableReady:false,
+      complete: false
     };
     
 
@@ -289,7 +290,8 @@ handleRegister = () =>{
             alertStatus:"success",
             success_message:"Samples Registered Successfully",
             loading:false,
-            uploadedBulkFile:resp.data
+            uploadedBulkFile:resp.data,
+            complete: true
             }, () => {   
               // this.handleNext();
             });
@@ -464,7 +466,7 @@ renderFileGrabber = () =>{
           )}
           {this.state.loading === true &&(
               <div>
-                {this.renderLoadingSpinner()}
+                {this.renderLoadingSpinner(true)}
                 <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
                 <Typography> <small><em> (Elapsed Time:{this.state.uploadTimer})</em></small> </Typography>
               </div>
@@ -495,9 +497,10 @@ renderFileGrabber = () =>{
         </div>
         <div className="col-4">
 
-          {!this.state.loading &&(
+          {!this.state.loading && this.state.complete === false && (
 
             <div>
+            {this.renderLoadingSpinner(false)}
 
               <Typography>File successfully Uploaded</Typography>
               <Button 
@@ -509,11 +512,27 @@ renderFileGrabber = () =>{
                 Register
               </Button>
             </div>
-
           )}
+
+          {!this.state.loading && this.state.complete === true &&(
+            <div>
+            {this.renderLoadingSpinner(false)}
+              <Typography>Data Submitted!</Typography>
+              <Button 
+                onClick={() => this.handleReset()}
+                className="btn-lg btn-block m-0 align-self-end"
+                style={{ padding: "12px" }} 
+                variant="contained" 
+                color="primary" >
+                Upload More
+              </Button>
+            </div>
+          )}
+
+
           {this.state.loading === true &&(
             <div>
-              {this.renderLoadingSpinner()}
+              {this.renderLoadingSpinner(true)}
               <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
               <Typography> <small><em> (Elapsed Time:{this.state.uploadTimer})</em></small> </Typography>
             </div>
