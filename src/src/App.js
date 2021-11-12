@@ -33,7 +33,7 @@ import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
-import BulkSamples from "./components/bulk/samples";
+import BulkSamples from "./components/ingest/bulk";
 import BulkDonors from "./components/bulk/donors";
 
 function Alert(props) {

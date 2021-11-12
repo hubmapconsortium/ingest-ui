@@ -51,8 +51,9 @@ class bulkSamples extends Component<{},any> {
       ],
       error_message_detail: "",
       response_status: "",
-      error_message: "Oops! Something went wrong. Please contact administrator for help.",
+      error_message: "",
       error_status:false,
+      errorSet:[],
       success_status:false,
       success_message:"",
       validation:true,
@@ -61,6 +62,7 @@ class bulkSamples extends Component<{},any> {
       tsvFile:"",
       uploadTimer:"",
       uploadedSources:[],
+      finalTableReady:false
     };
     
 
@@ -85,7 +87,7 @@ class bulkSamples extends Component<{},any> {
 
 
   getUserGroups(){
-    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token+"").then((results) => {
       if (results.status === 200) { 
       const groups = results.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
@@ -115,19 +117,25 @@ class bulkSamples extends Component<{},any> {
   }
 
   handleErrorCompiling = (data) =>{
-    // var errors = [];
+    var errors = [];
     // console.debug("handleErrorCompiling",data, data.length);
     for (const [key, value] of Object.entries(data)) {
       // console.log(`${key}: ${value}`);
+      var errRow = {};
       var cleanString = value.replace("Row Number: ", "");
-      // console.debug(cleanString);
       var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
-      // console.debug(cleanNum);
       var cleanErr = cleanString.substring(cleanString.indexOf('.') + 1);
       console.debug(cleanErr);
+      errRow.row = cleanNum;
+      errRow.message = cleanErr;
+      errors.push(errRow);
       // var cleanOth = cleanString.substr(2, cleanString.indexOf('.')); 
-      // console.debug(cleanNum,cleanErr);
+      console.debug("errRow",errRow);
     }
+    console.debug("errors",errors);
+    this.setState({
+      errorSet: errors
+    })    
   }
 
 
@@ -144,7 +152,9 @@ class bulkSamples extends Component<{},any> {
     console.debug("handleBack");
     var newStep = this.state.activeStep -1
     this.setState({
-      activeStep: newStep
+      activeStep: newStep,
+      error_status:false,
+      success_status:false
     })
   };
 
@@ -205,7 +215,7 @@ handleUpload= () =>{
             loading:false,
             bulkFileID:resp.results.temp_id
           });
-          this.parseUpload();
+          this.parseUpload(); // Table of file contents builds here
           this.handleNext();
         } else {
           console.debug("ERROR", resp);
@@ -219,18 +229,13 @@ handleUpload= () =>{
           }else{
             parsedError=resp;
           }
-          console.debug(parsedError);
-          // var parsedError = parseErrorMessage(resp);
-          var err = parsedError;
-          
           console.debug("parsedError",parsedError);
-          this.handleErrorCompiling(parsedError);
+          this.handleErrorCompiling(parsedError); // Error Array's set in that not here
           this.setState({ 
             error_status: true, 
             submit_error: true, 
-            submitting: false, 
-            response_status:err,
-            uploadedSources:parsedError });
+            submitting: false
+          });
           console.debug("DEBUG",this.state.error_message_detail);
           this.setState({
             loading:false,
@@ -277,6 +282,7 @@ handleRegister = () =>{
     }
     ingest_api_bulk_entities_register("samples", fileData, JSON.parse(localStorage.getItem("info")).nexus_token)
       .then((resp) => {
+        console.debug("handleRegister RESP", resp);
         if (resp.status === 201) {
           this.setState({
             success_status:true,
@@ -284,21 +290,22 @@ handleRegister = () =>{
             success_message:"Samples Registered Successfully",
             loading:false,
             uploadedBulkFile:resp.data
-          });
-          this.handleNext();
+            }, () => {   
+              // this.handleNext();
+            });
         } else {
           console.debug("ERROR", resp);
           this.setState({ 
             error_status: true, 
             submit_error: true, 
             submitting: false, 
+            loading:false,
             response_status:resp});
           console.debug("DEBUG",this.state.error_message_detail);
-          this.setState({
-            loading:false,
-          }, () => {   
-            // this.handleNext();
-          });
+          // this.setState({
+          // }, () => {   
+          //   // this.handleNext();
+          // });
         } 
       })
       .catch((error) => {
@@ -329,6 +336,7 @@ parseResults = (results) =>{
   console.debug("results",results.data);
   this.setState({
     uploadedSources:results.data,
+    finalTableReady:true
   });
 }
 
@@ -369,8 +377,6 @@ getStepContent = (step) =>{
       return this.renderUploadSlide();
     case 2:
         return this.renderRegisterSlide();
-    case 3:
-      return this.renderFinalTable();
     default:
       return 'Unknown step';
   }
@@ -388,7 +394,7 @@ showUploadedStuff(){
 
 renderFileGrabber = () =>{
     return (
-      <div>
+      <div> 
       <label>
         <input
           accept=".tsv"
@@ -398,9 +404,6 @@ renderFileGrabber = () =>{
           onChange={this.handleFileGrab}
         />
       </label>
-
-
-        
       </div>
     );
   }
@@ -413,30 +416,56 @@ renderFileGrabber = () =>{
 
   renderUploadSlide = () =>{
     return(
-      <div className="row">
-        <div className="col-6">
-          <h4> <DescriptionIcon style={{ fontSize: 40 }}  /> {this.state.tsvFile.name}</h4> 
-          <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small>
-          {this.renderGroupSelect()}
+      <div className="row"> 
+        <div className="col-8">
+          {this.state.error_status &&(
+            <div>
+              {this.renderInvalidTable()}
+            </div>
+          )}
+          {this.state.error_status === false&&(
+            <div>
+              <h4> <DescriptionIcon style={{ fontSize: 40 }}  /> {this.state.tsvFile.name}</h4> 
+              <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small>
+              {this.renderGroupSelect()}
+            </div>
+          )}
+
         </div>
-        <div className="col-6">
+        <div className="col-4">
+          {!this.state.loading &&(
+            <div>
+                {this.state.error_status === false &&(
+                  <Button 
+                    onClick={() => this.handleUpload()}
+                    className="btn-lg btn-block m-0 align-self-end"
+                    style={{ padding: "12px" }} 
+                    variant="contained" 
+                    color="primary" >
+                    Upload
+                  </Button>
+                )}
+                {this.state.error_status === true&&(
+                  <div>
+                    There were some problems validating your document. Please review &amp; resubmit.
+                    <Button 
+                      onClick={() => this.handleBack()}
+                      className="btn-lg btn-block m-0 align-self-end"
+                      style={{ padding: "12px" }} 
+                      variant="contained" 
+                      color="primary" >
+                      Back
+                    </Button>
+                  </div>
+                )}
+            </div>
+          )}
           {this.state.loading === true &&(
               <div>
+                {this.renderHeldSpaceSpinner()}
                 <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
                 <Typography> <small><em> (Elapsed Time:{this.state.uploadTimer})</em></small> </Typography>
               </div>
-          )}
-          {!this.state.loading &&(
-            <div>
-              <Button 
-                onClick={() => this.handleUpload()}
-                className="btn-lg btn-block m-0 align-self-end"
-                style={{ padding: "12px" }} 
-                variant="contained" 
-                color="primary" >
-                Upload
-              </Button>
-            </div>
           )}
         </div>
       </div>
@@ -446,20 +475,26 @@ renderFileGrabber = () =>{
 
   renderRegisterSlide = () =>{
     return(
-      <div className="row">
-        <div className="col-6">
-          <h4> <DescriptionIcon style={{ fontSize: 40 }}  /> {this.state.tsvFile.name}</h4> 
-          <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small>
-        </div>
-        <div className="col-6">
-          {this.state.loading === true &&(
+      <div className="row"> 
+        <div className="col-8">
+          {this.state.finalTableReady ===  true &&(
             <div>
-              {this.renderLoadingSpinner}
-              <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
-              <Typography> <small><em> (Elapsed Time:{this.state.uploadTimer})</em></small> </Typography>
+              {this.renderFinalTable()}
             </div>
           )}
+          {this.state.finalTableReady ===  false &&(
+            <div className='text-center'>
+              <FontAwesomeIcon icon={faSpinner} spin size='6x' />
+            </div>
+              
+          )}
+            
+
+        </div>
+        <div className="col-4">
+
           {!this.state.loading &&(
+
             <div>
               <Typography>File successfully Uploaded</Typography>
               <Button 
@@ -471,7 +506,15 @@ renderFileGrabber = () =>{
                 Register
               </Button>
             </div>
-        )}
+
+          )}
+          {this.state.loading === true &&(
+            <div>
+              {this.renderLoadingSpinner()}
+              <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
+              <Typography> <small><em> (Elapsed Time:{this.state.uploadTimer})</em></small> </Typography>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -479,14 +522,14 @@ renderFileGrabber = () =>{
 
   renderFinalStep = () =>{
     return(
-      <div className="row">
+      <div className="row"> final
         {!this.state.loading &&(  
           <div className="col-9">
             {this.renderFinalTable()} 
           </div>
         )}
         <div className="col-3">
-          {this.renderAlertSlide()}              
+          {this.renderResponsePane()}              
         </div>
       </div>
     ) 
@@ -545,7 +588,7 @@ renderFileGrabber = () =>{
                 <TableCell  className="" scope="row">
                   {row.lab_id}
                 </TableCell>
-                <TableCell  className="" scope="row">{row.validation === true ?  <CheckCircleIcon className="valid"  /> : this.renderInvalidMark(row.error)}</TableCell>
+                <TableCell  className="" scope="row">{row.validation === true ?  <CheckCircleIcon className="valid"  /> : <CheckCircleIcon className="valid"  />}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -555,6 +598,48 @@ renderFileGrabber = () =>{
   }
 
 
+
+
+  renderInvalidTable = () =>{
+    var headCells = [
+      { id: 'error_' },
+    ];
+    return(
+      <div className="row"> 
+        {!this.state.loading &&(  
+            <TableContainer 
+              component={Paper} 
+              style={{ maxHeight: 450 }}
+              >
+            <Table 
+              aria-label="Uploaded Errors Samples" 
+              size="small"
+              stickyHeader 
+              className="table table-striped table-hover mb-0 uploadedTable ">
+              <TableHead  className="thead-dark font-size-sm">
+                <TableRow >
+                  <TableCell  component="th" variant="head" width="7%">Row</TableCell>
+                  <TableCell  component="th" variant="head">Error</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {this.state.errorSet.map((item, index) => (
+                  <TableRow  key={("rowitem_"+index)} >
+                    <TableCell  className="" scope="row"> 
+                      {item.row}
+                    </TableCell>
+                    <TableCell  className="" scope="row"> 
+                      {item.message}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </div>
+    ) 
+  }
 
   renderInvalidMark = (err) =>{
     return(
@@ -582,11 +667,14 @@ renderFileGrabber = () =>{
   }
   
 
-  renderLoadingSpinner() {
+  renderLoadingSpinner(spin) {
+    //@TODO: Duped for the sake of getting it done, 
+    // Dryer & Easier if we just make the val passed Spin or Hide
+    // IF react/material UI can handle dynamically loading a one-word 
     if (this.state.loading) {
       return (
         <div className='text-center'>
-          <FontAwesomeIcon icon={faSpinner} spin size='6x' />
+          <FontAwesomeIcon icon={faSpinner} {spin} size='6x' />
         </div>
       );
     }
@@ -603,7 +691,7 @@ renderFileGrabber = () =>{
         )
     }
   }
-  renderAlertSlide = () =>{
+  renderResponsePane = () =>{
       return(
           <div className={"alert col-sm-12 text-left alert-"+this.state.alertStatus} role="alert" >
             {this.state.error_message &&(
@@ -612,7 +700,7 @@ renderFileGrabber = () =>{
                 {this.state.error_message_detail}
               </div>
             )}
-            {this.state.error_message &&(
+            {!this.state.error_message &&(
               <div>
                 <h6>{this.state.success_message}</h6>
                 <Button 
