@@ -1129,18 +1129,17 @@ class DatasetEdit extends Component {
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
         }));
       } else {
-  
-        let emsg = "Human Genetic Sequences is required"
-        if (this.state.contains_human_genetic_sequences === false && pii_check === true) {
-           emsg = "The selected data type contains PII, please select Yes"
-        } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
-          emsg = "The selected data type doesn't contain PII, please select No"
-        } 
-        this.setState((prevState) => ({
+          let emsg = "Human Genetic Sequences is required"
+          if (this.state.contains_human_genetic_sequences === false && pii_check === true) {
+            emsg = "The selected data type contains gene sequence information, please select Yes or change the data type."
+          } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
+            emsg = "The selected data type doesn’t contain gene sequence information, please select No or change the data type."
+          } 
+          this.setState((prevState) => ({
               formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },
-        }));
+          }));
      
-        isValid = false;       
+          isValid = false;       
       }
       resolve(isValid);
     });
