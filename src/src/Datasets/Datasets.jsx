@@ -226,7 +226,6 @@ class Datasets extends Component {
       headers: {
         Authorization:
           "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-        MAuthorization: "MBearer " + localStorage.getItem("info"),
         "Content-Type": "application/json"
       }
     };

@@ -46,7 +46,6 @@ class MetadataUpload extends Component {
                 headers: {
                   Authorization:
                     "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-                 // MAuthorization: "MBearer " + localStorage.getItem("info"),
                   "Content-Type": "multipart/form-data"
                 },
                 onUploadProgress: (progressEvent) => {
