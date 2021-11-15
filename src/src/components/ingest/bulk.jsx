@@ -19,7 +19,9 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Icon from '@material-ui/core/Icon';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import WarningIcon from '@material-ui/icons/Warning';
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import DescriptionIcon from '@material-ui/icons/Description';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
@@ -88,6 +90,7 @@ class bulkSamples extends Component<{},any> {
     console.debug("groups", userGroups); // Grabbing them on mount to populate in the state
     console.debug(this.state);
     console.debug(this.props);
+    console.debug(this.props.bulkType);
     // var fileUpload = React.findDOMNode('input');
   }
 
@@ -211,13 +214,13 @@ handleUpload= () =>{
     const formData = new FormData()
     formData.append("file", this.state.tsvFile)
     console.debug("Appended Form Data: ",formData, this.state.tsvFile);
-    ingest_api_bulk_entities_upload("samples", this.state.tsvFile, JSON.parse(localStorage.getItem("info")).nexus_token)
+    ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).nexus_token)
       .then((resp) => {
         console.debug("RESP", resp,resp.results.temp_id);
         if (resp.status === 201) {
           this.setState({
             success_status:true,
-            success_message:"Samples Uploaded Successfully",
+            success_message:this.props.bulkType+"Uploaded Successfully",
             loading:false,
             bulkFileID:resp.results.temp_id
           });
@@ -286,14 +289,14 @@ handleRegister = () =>{
       "temp_id":this.state.bulkFileID,
       "group_uuid":this.state.group_uuid
     }
-    ingest_api_bulk_entities_register("samples", fileData, JSON.parse(localStorage.getItem("info")).nexus_token)
+    ingest_api_bulk_entities_register(this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).nexus_token)
       .then((resp) => {
         console.debug("handleRegister RESP", resp);
         if (resp.status === 201) {
           this.setState({
             success_status:true,
             alertStatus:"success",
-            success_message:"Samples Registered Successfully",
+            success_message:this.props.bulkType+" Registered Successfully",
             loading:false,
             uploadedBulkFile:resp.data,
             complete: true
@@ -582,7 +585,7 @@ renderFileGrabber = () =>{
         style={{ maxHeight: 450 }}
         >
       <Table 
-        aria-label="Uploaded Samples" 
+        aria-label={"Uploaded "+this.props.bulkType }
         size="small"
         stickyHeader 
         className={"table table-striped table-hover mb-0 uploadedTable uploadedStuff-"+this.state.validation}>
@@ -639,7 +642,7 @@ renderFileGrabber = () =>{
               style={{ maxHeight: 450 }}
               >
             <Table 
-              aria-label="Uploaded Errors Samples" 
+              aria-label={"Uploaded Errors"+this.props.bulkType }
               size="small"
               stickyHeader 
               className="table table-striped table-hover mb-0 uploadedTable ">
@@ -705,13 +708,21 @@ renderFileGrabber = () =>{
         </div>
       );
     }
-
     if (!this.state.loading && !spin) {
-      return (
-        <div className='text-center'>
-          <FontAwesomeIcon icon={faSpinner} className="invisible" size='6x' />
-        </div>
-      );
+      if(this.state.error_status){
+        return(
+          <div className='text-center'>
+            <FontAwesomeIcon icon={faExclamationTriangle} size="6x" />
+          </div>
+        );
+      }else{
+        return (
+          <div className='text-center'>
+            <FontAwesomeIcon icon={faSpinner} className="invisible" size='6x' />
+          </div>
+        );
+      }
+      
     }
   }
 
