@@ -59,8 +59,7 @@ class CreateUploads extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-          MAuthorization: "MBearer " + localStorage.getItem("info"),
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "application/json"
         }
       }
@@ -232,7 +231,7 @@ class CreateUploads extends Component {
 
 
   getUserGroups(){
-    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
       if (results.status === 200) { 
       const groups = results.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID

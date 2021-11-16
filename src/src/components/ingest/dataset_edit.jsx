@@ -118,10 +118,10 @@ class DatasetEdit extends Component {
         data_types.push(other_dt);
       }
 
-      get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).nexus_token)
+      get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((resp) => {
         if (resp.status === 200) {
-          console.log('Assay Type info...', resp.results);
+          //console.log('Assay Type info...', resp.results);
     
           if (resp.results) {
             this.setState({
@@ -147,10 +147,10 @@ class DatasetEdit extends Component {
     if (this.props.editingDataset) {
       if (this.props.editingDataset.uuid)
       // check to see which buttons to enable
-       ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+       ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((resp) => {
         if (resp.status === 200) {
-          console.log('edit states...', resp.results);
+          //console.log('edit states...', resp.results);
     
           this.setState({
             writeable: resp.results.has_write_priv,
@@ -164,11 +164,11 @@ class DatasetEdit extends Component {
       console.debug("No editingDataset Prop, Must be a New Form")
     }
 
-
+    console.log("info is ", localStorage.getItem("info"));
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "application/json",
       },
     };
@@ -448,7 +448,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-      //////console.log('ping!', id);
+      console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -469,7 +469,38 @@ class DatasetEdit extends Component {
         }
       } else {
         //////console.log(id, e.target.checked)
-        if (e.target.checked) {
+        if (value === "other") {
+          const data_types = this.state.data_types;
+          data_types.clear();
+          data_types.add(value);
+          this.setState({
+            data_types: data_types,
+            has_other_datatype: value === "other",
+          });
+          console.log("other", this.state.has_other_datatype);
+          if (value !== "other") {
+            const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
+            const data_types = this.state.data_types;
+            const other_dt = Array.from(data_types).filter(
+              (dt) => !data_type_options.has(dt)
+              )[0];
+            data_types.delete(other_dt);
+            this.setState({
+              data_types: data_types,
+              other_dt: "",
+            });
+          }
+          
+        } else {
+          const data_types = this.state.data_types;
+          data_types.clear();
+          data_types.add(value);
+          this.setState({
+            has_other_datatype: false,
+            data_types: data_types,
+          });
+          console.log("data types is ", data_types);
+        }/*if (e.target.checked) {
           const data_types = this.state.data_types;
           data_types.add(name);
           this.setState({
@@ -481,7 +512,7 @@ class DatasetEdit extends Component {
           this.setState({
             data_types: data_types,
           });
-        }
+        }*/
       
       }
       //////console.log('data_types', this.state.data_types)
@@ -705,7 +736,7 @@ class DatasetEdit extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "application/json",
         },
       };
@@ -767,7 +798,7 @@ class DatasetEdit extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "multipart/form-data",
         },
       };
@@ -911,7 +942,7 @@ class DatasetEdit extends Component {
             headers: {
               Authorization:
                 "Bearer " +
-                JSON.parse(localStorage.getItem("info")).nexus_token
+                JSON.parse(localStorage.getItem("info")).groups_token
             },
           };
          
@@ -930,7 +961,8 @@ class DatasetEdit extends Component {
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
-                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+               console.log("data is ", data)
+                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status === 200) {
                       ////console.log(response.results);
@@ -938,11 +970,11 @@ class DatasetEdit extends Component {
                     } else {
                       console.log("ERR response");
                       console.log(response);
-                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                     }
                 });
               } else { // just update
-                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status === 200) {
                             this.setState({ 
@@ -954,7 +986,7 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                             console.debug("ERROR ",response)
-                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                           }
                 });
               }
@@ -972,8 +1004,8 @@ class DatasetEdit extends Component {
               }
 
               console.log('DATASET TO SAVE', JSON.stringify(data))
-              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
                     console.log('create Dataset...', response.results);
@@ -1376,8 +1408,10 @@ class DatasetEdit extends Component {
 
  renderOneAssay(val, idx) {
   var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
-  return (<div className='form-group form-check ' key={idstr}>
-    <input type='checkbox' className={'form-check-input '+ this.errorClass(this.state.formErrors.data_types)} name={val.name} key={idstr} id={idstr}
+
+  return (<div className='form-group form-check' key={idstr}>
+    <input type='radio' className='form-check-input' name={val.name} key={idstr} id={idstr}
+
     onChange={this.handleInputChange} checked={this.state.data_types.has(val.name)}
     />
     <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
@@ -1407,49 +1441,100 @@ class DatasetEdit extends Component {
    }
 
   renderAssayColumn(min, max) {
-	 return (<div>
-		{this.state.data_type_dicts.slice(min, max).map((val, idx) =>
-								{return this.renderOneAssay(val, idx)})}</div>
+	 return (
+		this.state.data_type_dicts.slice(min, max).map((val, idx) =>
+								{return this.renderAssay(val, idx)})
 	       )
     }
+
+  renderAssay(val, idx) {
+    var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+    return (
+      <option value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
+      )
+  }
+
+  renderListAssay(val) {
+    return (
+      <li>{val}</li>
+      )
+  }
+
+  renderMultipleAssays() {
+    var arr = Array.from(this.state.data_types)
+    return (
+      arr.map((val) =>
+          {return this.renderListAssay(val)})
+         )
+    }
+
+  
+
+
     
   renderAssayArray() {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
-	    var entries_per_col = Math.ceil(len / 3);
-	    //var num_cols = Math.ceil(len / entries_per_col);
-	    return (<>
-		    <div className='col-sm-4'> {this.renderAssayColumn(0, entries_per_col)} </div>
-		    <div className='col-sm-4'> {this.renderAssayColumn(entries_per_col, 2*entries_per_col)} </div>
-		    <div className='col-sm-4'> {this.renderAssayColumn(2*entries_per_col, len+1)}
-		    <div className='form-group form-check'>
-                        <input
-                          type='checkbox'
-                          className='form-check-input '
-                          name='dt_other'
-                          id='dt_other'
-                          onChange={this.handleInputChange}
-                          checked={this.state.has_other_datatype}
-                        />
-                        <label className='form-check-label' htmlFor='dt_other'>
-                          Other
-                        </label>
-                      </div>
-		    {this.state.has_other_datatype && (
+
+      if (this.state.data_types.size === 1 && this.state.has_other_datatype) {
+        return (<>
+
+        <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+          <option></option>
+          {this.renderAssayColumn(0, len)}
+          <option value="other">Other</option>
+        </select>
+
+        {this.state.has_other_datatype && (
+
                   <div className='form-group'>
                     <input type='text' name='other_dt' id='other_dt'
-			                   className={"form-control " +
-				                  this.errorClass(this.state.formErrors.other_dt)
-				                  }
-			                   placeholder='Other Data Type'
-			                   value={this.state.other_dt}
-			                   onChange={this.handleInputChange}
-	                   />
+                         className={"form-control " +
+                          this.errorClass(this.state.formErrors.other_dt)
+                          }
+                         placeholder='Other Data Type'
+                         value={this.state.other_dt}
+                         onChange={this.handleInputChange}
+                     />
                   </div>
-		      )}
-		  </div>
-		    </>
-		   )
+          )}
+        </>
+       )
+      } else if (this.state.data_types.size === 1 || this.state.data_types.size === 0) {
+
+  	    return (<>
+
+  		    <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+            <option></option>
+            {this.renderAssayColumn(0, len)}
+            <option value="other">Other</option>
+          </select>
+
+  		    {this.state.has_other_datatype && (
+
+                    <div className='form-group'>
+                      <input type='text' name='other_dt' id='other_dt'
+  			                   className={"form-control " +
+  				                  this.errorClass(this.state.formErrors.other_dt)
+  				                  }
+  			                   placeholder='Other Data Type'
+  			                   value={this.state.other_dt}
+  			                   onChange={this.handleInputChange}
+  	                   />
+                    </div>
+  		      )}
+          </>
+  		   )
+      } else if (this.state.data_types.size > 1) {
+        return (<>
+
+          <ul>
+            {this.renderMultipleAssays()}
+          </ul>
+
+          </>)
+      }
+
 	}
 	else {
 	    return <h3>Loading assay types...</h3>;
@@ -1843,7 +1928,7 @@ class DatasetEdit extends Component {
                 <div className='col-sm-12'>
                 {this.state.formErrors.data_types && (
                   <div className='alert alert-danger'>
-                    At least one Dataa Type is Required.
+                    At least one Data Type is Required.
                   </div>
                 )}
                 </div>

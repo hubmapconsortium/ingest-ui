@@ -15,7 +15,7 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { entity_api_get_entity } from '../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
-import 'url-search-params-polyfill';
+// import 'url-search-params-polyfill';
 
 // Creation donor_form_components
 
@@ -204,7 +204,7 @@ class SearchComponent extends Component {
 
 
     try {
-      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
 
       if (results.status === 200) { 
         this.setState({
@@ -227,7 +227,7 @@ class SearchComponent extends Component {
   const config = {
     headers: {
       Authorization:
-        "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+        "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
       "Content-Type": "application/json"
     }
   };
@@ -564,7 +564,7 @@ class SearchComponent extends Component {
       loading: true,
       filtered: true
     },() => {
-      api_search2(params, JSON.parse(localStorage.getItem("info")).nexus_token, 
+      api_search2(params, JSON.parse(localStorage.getItem("info")).groups_token, 
           (this.state.page*this.state.pageSize), this.state.pageSize)
       .then((response) => {
         // console.debug("Search Res", response.results);
@@ -733,13 +733,13 @@ class SearchComponent extends Component {
     // ////console.debug('CELL CLICK: entity', params.row.entity_type);
     console.debug('Local CELL CLICK: uuid', params.row.uuid);
 
-    entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
     .then((response) => {
       if (response.status === 200) {
         let entity_data = response.results;
 
         if(entity_data.read_only_state){
-          ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((resp) => {
               //console.debug('ingest_api_allowable_edit_states done', resp)
             let read_only_state = false
