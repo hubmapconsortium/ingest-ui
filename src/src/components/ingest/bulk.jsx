@@ -25,6 +25,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import DescriptionIcon from '@material-ui/icons/Description';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
+import _ from 'lodash';
 import { CSVReader, readString } from 'react-papaparse'
 import {  parseErrorMessage } from "../../utils/string_helper";
 import {ingest_api_bulk_entities_upload, 
@@ -293,16 +294,35 @@ handleRegister = () =>{
       .then((resp) => {
         console.debug("handleRegister RESP", resp);
         if (resp.status === 201) {
-          this.setState({
-            success_status:true,
-            alertStatus:"success",
-            success_message:this.props.bulkType+" Registered Successfully",
-            loading:false,
-            uploadedBulkFile:resp.data,
-            complete: true
-            }, () => {   
-              // this.handleNext();
+
+          //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
+          // We might back back a 201 with an array of errors encountered. Let's check for that!  
+          
+          console.debug("results",resp);
+          if(resp.results){
+            var respData = resp.results.data;
+            console.debug("respData",respData);
+            let respInfo = _.map(respData, (value, prop) => {
+              return { "prop": prop, "value": value };
             });
+            if( respInfo[1].value['error']){
+             console.debug("EERRRS DETECTED");
+            }else{
+              this.setState({
+                success_status:true,
+                alertStatus:"success",
+                success_message:this.props.bulkType+" Registered Successfully",
+                loading:false,
+                uploadedBulkFile:resp.data,
+                complete: true
+                }, () => {   
+                  // this.handleNext();
+                });
+            }
+           
+          }
+
+          
         } else {
           console.debug("ERROR", resp);
           this.setState({ 
@@ -428,15 +448,14 @@ renderFileGrabber = () =>{
     return(
       <div className="row"> 
         <div className="col-8">
-          {this.state.error_status &&(
+          {this.state.error_status && !this.state.loading &&(
             <div>
               {this.renderInvalidTable()}
             </div>
           )}
           {this.state.error_status === false&&(
-            <div>
-              <h4> <DescriptionIcon style={{ fontSize: 40 }}  /> {this.state.tsvFile.name}</h4> 
-              <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small>
+            <div className="text-left">
+              <h4> <DescriptionIcon style={{ fontSize: 40 }}  /> {this.state.tsvFile.name} <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small></h4>
               {this.renderGroupSelect()}
             </div>
           )}
@@ -458,7 +477,7 @@ renderFileGrabber = () =>{
                   </Button>
                 )}
                 {this.state.error_status === true&&(
-                  <div>
+                  <div className="text-left">
                     There were some problems validating your document. Please review &amp; resubmit.
                     <Button 
                       onClick={() => this.handleBack()}
@@ -635,8 +654,6 @@ renderFileGrabber = () =>{
       { id: 'error_' },
     ];
     return(
-      <div className="row"> 
-        {!this.state.loading &&(  
             <TableContainer 
               component={Paper} 
               style={{ maxHeight: 450 }}
@@ -666,8 +683,7 @@ renderFileGrabber = () =>{
               </TableBody>
             </Table>
           </TableContainer>
-        )}
-      </div>
+        
     ) 
   }
 
@@ -712,7 +728,7 @@ renderFileGrabber = () =>{
       if(this.state.error_status){
         return(
           <div className='text-center'>
-            <FontAwesomeIcon icon={faExclamationTriangle} size="6x" />
+            <FontAwesomeIcon  icon={faExclamationTriangle} size="6x" />
           </div>
         );
       }else{

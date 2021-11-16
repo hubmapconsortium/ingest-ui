@@ -158,6 +158,7 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
  */
 export function ingest_api_bulk_entities_upload(type, data, auth) { 
   console.debug("Starting Data: ",data);
+  console.debug("Going to : ",type);
   var dataForm = new FormData();
   // dataForm.append('file', fs.createReadStream(data));
   dataForm.append('file', data);
@@ -172,21 +173,41 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
         console.debug("prog", Math.round(progress));
       }
     };
-  let url = ""
-  if(type === "samples"){
-    url = `${process.env.REACT_APP_INGEST_API_URL}samples/bulk-upload`;
-  }else if(type === "donors"){
-    url = `${process.env.REACT_APP_INGEST_API_URL}donors/bulk-upload`;
-  }else{
-    // return {status: 401, results: "Bulk Upload: Missing Bulk Type"} //@TODO: what status SHOULD we send? 
-  }
-  console.debug("URL: ",url, "\n DATA",dataForm,"\n OPTS", options);
+  console.debug("URL: ",process.env.REACT_APP_INGEST_API_URL+""+type+"/bulk-upload", "\n DATA",dataForm,"\n OPTS", options);
   
+  // Somehow we're sending this along before the options actually set properly?
+  // transformRequest: [function (data, headers) {
+  //   // Do whatever you want to transform the data
+
+  //   return data;
+  // }],
+  // axios.interceptors.request.use(function (config) {
+  //   // Do something before request is sent
+  //   return config;
+  // }, function (error) {
+  //   // Do something with request error
+  //   return Promise.reject(error);
+  // }); 
+
   return axios 
-     .post(url, dataForm, options)
+     .post(
+        process.env.REACT_APP_INGEST_API_URL+""+type+"/bulk-upload", 
+        dataForm,
+      {headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "multipart/form-data"
+      }})
       .then(res => {
         console.debug("ingest_api_bulk_entities",res);
-          let results = res.data;
+
+        //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
+        // We might back back a 201 with an array of errors encountered. Let's check for that!  
+        let results = res.data;
+        console.debug("results",results);
+        if(results[0]){
+          console.debug("results DATA ",results[0]);
+        }
         return {status: res.status, results: results}
       })
       .catch(err => {

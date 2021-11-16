@@ -374,7 +374,7 @@ class App extends Component {
     this.setState({
       anchorEl: event.currentTarget,
       show_menu_popup: true,
-      creatingBulkEntity: true
+      // creatingBulkEntity: true
     });
   };
 
