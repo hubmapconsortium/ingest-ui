@@ -107,7 +107,6 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
         "Content-Type": "application/json"
       }
     };
-
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
         
   return axios 
@@ -160,7 +159,6 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
   console.debug("Starting Data: ",data);
   console.debug("Going to : ",type);
   var dataForm = new FormData();
-  // dataForm.append('file', fs.createReadStream(data));
   dataForm.append('file', data);
   const options = {
       headers: {
@@ -173,31 +171,10 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
         console.debug("prog", Math.round(progress));
       }
     };
-  console.debug("URL: ",process.env.REACT_APP_INGEST_API_URL+""+type+"/bulk-upload", "\n DATA",dataForm,"\n OPTS", options);
-  
-  // Somehow we're sending this along before the options actually set properly?
-  // transformRequest: [function (data, headers) {
-  //   // Do whatever you want to transform the data
-
-  //   return data;
-  // }],
-  // axios.interceptors.request.use(function (config) {
-  //   // Do something before request is sent
-  //   return config;
-  // }, function (error) {
-  //   // Do something with request error
-  //   return Promise.reject(error);
-  // }); 
+  let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
 
   return axios 
-     .post(
-        process.env.REACT_APP_INGEST_API_URL+""+type+"/bulk-upload", 
-        dataForm,
-      {headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "multipart/form-data"
-      }})
+    .post(url, dataForm, options)
       .then(res => {
         console.debug("ingest_api_bulk_entities",res);
 
@@ -234,14 +211,7 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
         console.debug("prog", Math.round(progress));
       }
     };
-  let url = ""
-  if(type === "samples"){
-    url = `${process.env.REACT_APP_INGEST_API_URL}samples/bulk`;
-  }else if(type === "donors"){
-    url = `${process.env.REACT_APP_INGEST_API_URL}donors/bulk`;
-  }else{
-    // return {status: 401, results: "Bulk Upload: Missing Bulk Type"} //@TODO: what status SHOULD we send? 
-  }
+  let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`;
   console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
   
   return axios 

@@ -20,14 +20,13 @@ import TableRow from '@material-ui/core/TableRow';
 import Icon from '@material-ui/core/Icon';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import WarningIcon from '@material-ui/icons/Warning';
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner, faExclamationTriangle, faFileDownload } from "@fortawesome/free-solid-svg-icons";
 import DescriptionIcon from '@material-ui/icons/Description';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
 import _ from 'lodash';
 import { CSVReader, readString } from 'react-papaparse'
-import {  parseErrorMessage } from "../../utils/string_helper";
+import {  parseErrorMessage, toTitleCase } from "../../utils/string_helper";
 import {ingest_api_bulk_entities_upload, 
         ingest_api_bulk_entities_register,
         ingest_api_users_groups} from '../../service/ingest_api';
@@ -65,6 +64,7 @@ class bulkSamples extends Component<{},any> {
       validated:[],
       showTable:false,
       tsvFile:"",
+      registeredStatus:false,
       uploadTimer:"",
       uploadedSources:[],
       finalTableReady:false,
@@ -97,7 +97,7 @@ class bulkSamples extends Component<{},any> {
 
 
   getUserGroups(){
-    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token+"").then((results) => {
+    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token+"").then((results) => {
       if (results.status === 200) { 
       const groups = results.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
@@ -215,7 +215,7 @@ handleUpload= () =>{
     const formData = new FormData()
     formData.append("file", this.state.tsvFile)
     console.debug("Appended Form Data: ",formData, this.state.tsvFile);
-    ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).nexus_token)
+    ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
         console.debug("RESP", resp,resp.results.temp_id);
         if (resp.status === 201) {
@@ -290,7 +290,7 @@ handleRegister = () =>{
       "temp_id":this.state.bulkFileID,
       "group_uuid":this.state.group_uuid
     }
-    ingest_api_bulk_entities_register(this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).nexus_token)
+    ingest_api_bulk_entities_register(this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
         console.debug("handleRegister RESP", resp);
         if (resp.status === 201) {
@@ -307,6 +307,15 @@ handleRegister = () =>{
             });
             if( respInfo[1].value['error']){
              console.debug("EERRRS DETECTED");
+             this.setState({ 
+              submit_error:"error",
+              error_status:true,
+              error_message_detail: "Errors were found. Please review &amp; and try again",
+              error_message:"Error" });
+             console.debug("SUBMIT error", "error")
+              this.setState({
+                loading:false,
+              });
             }else{
               this.setState({
                 success_status:true,
@@ -314,7 +323,8 @@ handleRegister = () =>{
                 success_message:this.props.bulkType+" Registered Successfully",
                 loading:false,
                 uploadedBulkFile:resp.data,
-                complete: true
+                complete: true,
+                registeredStatus:true
                 }, () => {   
                   // this.handleNext();
                 });
@@ -419,6 +429,19 @@ showUploadedStuff(){
   })
 }
 
+renderStatusButon = () =>{
+  if(!this.state.loading){
+    return("Upload");
+  }else{
+    return(
+      <FontAwesomeIcon
+        icon={faSpinner}
+        className="m-1"
+        spin
+      /> 
+    );
+  }
+}
 
 
 
@@ -446,58 +469,68 @@ renderFileGrabber = () =>{
 
   renderUploadSlide = () =>{
     return(
-      <div className="row"> 
-        <div className="col-8">
-          {this.state.error_status && !this.state.loading &&(
-            <div>
-              {this.renderInvalidTable()}
-            </div>
-          )}
-          {this.state.error_status === false&&(
+      <div className="d-flex flex-row justify-content-center"> 
+        
+        {this.state.error_status === false&&(
+          <div className="">
             <div className="text-left">
               <h4> <DescriptionIcon style={{ fontSize: 40 }}  /> {this.state.tsvFile.name} <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small></h4>
               {this.renderGroupSelect()}
             </div>
-          )}
-
-        </div>
-        <div className="col-4">
-          {!this.state.loading &&(
-            <div>
-
-              {this.renderLoadingSpinner(false)}
-                {this.state.error_status === false &&(
-                  <Button 
-                    onClick={() => this.handleUpload()}
-                    className="btn-lg btn-block m-0 align-self-end"
-                    style={{ padding: "12px" }} 
-                    variant="contained" 
-                    color="primary" >
-                    Upload
-                  </Button>
-                )}
-                {this.state.error_status === true&&(
-                  <div className="text-left">
-                    There were some problems validating your document. Please review &amp; resubmit.
-                    <Button 
-                      onClick={() => this.handleBack()}
-                      className="btn-lg btn-block m-0 align-self-end"
-                      style={{ padding: "12px" }} 
-                      variant="contained" 
-                      color="primary" >
-                      Back
-                    </Button>
-                  </div>
-                )}
+          </div>
+        )}
+        {/* text */}
+        {this.state.error_status && !this.state.loading &&(
+            <div className="col-7">
+              {this.renderInvalidTable()}
             </div>
           )}
-          {this.state.loading === true &&(
-              <div>
-                {this.renderLoadingSpinner(true)}
-                <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
-                <Typography> <small><em> (Elapsed Time:{this.state.uploadTimer})</em></small> </Typography>
-              </div>
+
+
+        <div className="col-3">
+          {/* Buttoons */}
+          {this.state.error_status === false &&(
+            <Button 
+              onClick={() => this.handleUpload()}
+              className="btn-lg btn-block"
+              style={{ padding: "12px" }} 
+              variant="contained" 
+              color="primary" >
+                {this.renderStatusButon()}
+            </Button>
           )}
+          {this.state.tsvFile.size > 0 && !this.state.error_status && !this.state.loading &&(
+            <Button 
+              onClick={() => this.handleBack()}
+              className="btn-lg btn-block"
+              style={{ padding: "12px" }} 
+              variant="text" 
+              color="primary" >
+              Replace
+            </Button>
+          )}
+          {this.state.loading === true && this.state.tsvFile.size > 0 &&(
+            <div className="mt-1">
+              <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
+            </div>
+          )}
+        {/* Err on its own Stepper pane?  */}
+          {this.state.error_status === true&&(
+            <div className="text-left">
+              There were some problems validating your document. Please review &amp; resubmit.
+              <Button 
+                onClick={() => this.handleBack()}
+                className="btn-lg btn-block m-0  align-self-end"
+                style={{ padding: "12px" }} 
+                variant="contained" 
+                color="primary" >
+                Back
+              </Button>
+            </div>
+          )}
+    
+          
+          
         </div>
       </div>
     )
@@ -506,97 +539,97 @@ renderFileGrabber = () =>{
 
   renderRegisterSlide = () =>{
     return(
-      <div className="row"> 
-        <div className="col-8">
-          {this.state.finalTableReady ===  true &&(
-            <div>
-              {this.renderFinalTable()}
-            </div>
+      <div>
+
+        <div className="d-flex flex-row">
+
+            {this.state.error_status && !this.state.loading &&(
+              <div>
+                {this.renderInvalidTable()}
+              </div>
+            )}
+
+            {!this.state.error_status &&(
+              <div className="text-left">
+                  <h4 className="">{this.state.tsvFile.name} <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small></h4>
+              </div>
+            )}
+        </div>
+
+        <div className="d-flex flex-row">
+          {this.renderPreviewTable()}
+        </div>
+        <div className="d-flex flex-row align-content-end align-items-end flex-row-reverse mt-2">
+
+          {/* Buttons */}
+            {!this.state.error_status && !this.state.complete &&(
+              <span> 
+                <Button 
+                  onClick={() => this.handleRegister()}
+                  className="btn-lg"
+                  style={{ padding: "12px" }} 
+                  variant="contained" 
+                  color="primary" >
+                  {this.renderStatusButon()}
+                </Button>
+              </span>
+            )}
+            {!this.state.error_status && !this.state.loading && this.state.complete === true &&(
+              <div>
+                <Button 
+                  onClick={() => this.handleReset()}
+                  className="btn-lg mt-2 align-self-end"
+                  style={{ padding: "12px" }} 
+                  variant="contained" 
+                  color="primary" >
+                  Close
+                </Button>
+              </div>
+            )}
+
+          {/* Text */}
+          {!this.state.complete && !this.state.loading &&(
+            <Typography className="text-right p-2" >File successfully Uploaded </Typography>  
           )}
-          {this.state.finalTableReady ===  false &&(
-            <div className='text-center'>
-              <FontAwesomeIcon icon={faSpinner} spin size='6x' />
-            </div>
-              
+          {/* Processing */}
+          {!this.state.complete && this.state.loading === true &&(
+            <Typography className="text-right p-2" > Process may take a few minutes. Do not leave or refresh this page. </Typography>
+            )}
+          {/* Complete */}
+          {this.state.complete === true && !this.state.loading &&(
+            <Typography className="text-right p-2">Data Submitted Successfully!</Typography>
           )}
-            
 
         </div>
-        <div className="col-4">
-
-          {!this.state.loading && this.state.complete === false && (
-
-            <div>
-            {this.renderLoadingSpinner(false)}
-
-              <Typography>File successfully Uploaded</Typography>
-              <Button 
-                onClick={() => this.handleRegister()}
-                className="btn-lg btn-block m-0 align-self-end"
-                style={{ padding: "12px" }} 
-                variant="contained" 
-                color="primary" >
-                Register
-              </Button>
-            </div>
-          )}
-
-          {!this.state.loading && this.state.complete === true &&(
-            <div>
-            {this.renderLoadingSpinner(false)}
-              <Typography>Data Submitted!</Typography>
-              <Button 
-                onClick={() => this.handleReset()}
-                className="btn-lg btn-block m-0 align-self-end"
-                style={{ padding: "12px" }} 
-                variant="contained" 
-                color="primary" >
-                Upload More
-              </Button>
-            </div>
-          )}
-
-
-          {this.state.loading === true &&(
-            <div>
-              {this.renderLoadingSpinner(true)}
-              <Typography> Process may take a few minutes. Do not leave or refresh this page. </Typography>
-              <Typography> <small><em> (Elapsed Time:{this.state.uploadTimer})</em></small> </Typography>
-            </div>
-          )}
-        </div>
+        
       </div>
     )
   }
 
-  renderFinalStep = () =>{
-    return(
-      <div className="row"> final
-        {!this.state.loading &&(  
-          <div className="col-9">
-            {this.renderFinalTable()} 
-          </div>
-        )}
-        <div className="col-3">
-          {this.renderResponsePane()}              
-        </div>
-      </div>
-    ) 
-  }
 
- 
-  renderFinalTable = () =>{
+
+  renderPreviewTable = () =>{
     var headCells = [];
-    if(this.state.uploadedSources.length >=0){
+    if(this.props.bulkType.toLowerCase() === "samples"){
       headCells = [
-        { id: 'source_id', disablePadding: true, label: 'Source Id ', width:"" },
-        { id: 'lab_id', disablePadding: false, label: 'Lab Id ', width:"%" },
-        { id: 'validation', disablePadding: false, label: 'Status ', width:"7%" },
+        { id: 'source_id',  label: 'Source Id ' },
+        { id: 'lab_id',  label: 'Lab Id ' },
+        { id: 'sample_type',  label: 'Type' },
+        { id: 'organ_type',  label: 'Organ ' },
+        { id: 'sample_protocol',  label: 'Protocol ' },
+        { id: 'description',  label: 'Description ' },
+
       ];
-    }else{
+    }else if(this.props.bulkType.toLowerCase() === "donors"){
       headCells = [
-        { id: 'error_', disablePadding: true, label: 'Error ', width:"" },
+        { id: 'lab_id',  label: 'Lab ID ' },
+        { id: 'lab_name',  label: 'Lab Name ' },
+        { id: 'selection_protocol',  label: 'Protocol ', width:"40%" },
+        { id: 'description',  label: 'Description ' },
       ];
+    }
+    if(this.state.registeredStatus === true){
+      headCells.unshift({ id: 'hubmap_id', disablePadding: true, label: 'Hubmap ID ', width:"" },)
     }
     return(
       <TableContainer 
@@ -606,47 +639,61 @@ renderFileGrabber = () =>{
       <Table 
         aria-label={"Uploaded "+this.props.bulkType }
         size="small"
+        padding="none"
         stickyHeader 
-        className={"table table-striped table-hover mb-0 uploadedTable uploadedStuff-"+this.state.validation}>
-        <TableHead 
-          className="thead-dark font-size-sm"
-        >
+        className={"table table-striped table-hover mb-0 uploadedTable uploadedStuff-"}>    
+        <TableHead className="thead-dark font-size-sm" >
           <TableRow >
-        {headCells.map((headCell, index) => (
-            <TableCell 
-            component="th"
-            variant="head"
-            width={headCell.width}
-            style={{ }}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            key={(headCell.id+""+index)}>
-              {headCell.label}
-            </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
+          {headCells.map((headCell, index) => (
+              <TableCell 
+                component="th"
+                variant="head"
+                width={headCell.width}
+                style={{ }}
+                padding={headCell.disablePadding ? 'none' : 'normal'}
+                key={(headCell.id+""+index)}>
+                {headCell.label}
+              </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          {this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources && (
+            <TableBody>
+              {this.state.uploadedSources.map((row, index) => (
+                <TableRow  key={(row.id+""+index)}>
+                  {this.state.registeredStatus === true && (
+                    <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
+                  )}
+                  <TableCell  className="" scope="row"> {row.source_id}</TableCell>
+                  <TableCell  className="" scope="row"> {row.lab_id}</TableCell>
+                  <TableCell  className="" scope="row"> {row.sample_type}</TableCell>
+                  <TableCell  className="" scope="row"> {row.organ_type}</TableCell>
+                  <TableCell  className="" scope="row"> {row.sample_protocol}</TableCell>
+                  <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
+         {this.props.bulkType.toLowerCase() === "donors" && this.state.uploadedSources && (
           <TableBody>
             {this.state.uploadedSources.map((row, index) => (
-              <TableRow 
-                key={(row.source_id+""+index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
-                className={"tsvData pl-0 valid-"+row.validation}
-                >
-                <TableCell  className="" scope="row"> 
-                  {row.source_id} 
-                </TableCell>
-                <TableCell  className="" scope="row">
-                  {row.lab_id}
-                </TableCell>
-                <TableCell  className="" scope="row">{row.validation === true ?  <CheckCircleIcon className="valid"  /> : <CheckCircleIcon className="valid"  />}</TableCell>
+              <TableRow>
+                {this.state.registeredStatus === true && (
+                  <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
+                )}
+                <TableCell  className="" scope="row"> {row.lab_id}</TableCell>
+                <TableCell  className="" scope="row"> {row.lab_name}</TableCell>
+                <TableCell  className="" width="40%" scope="row"> {row.selection_protocol}</TableCell>
+                <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
-        </Table>
-      </TableContainer>
-    ) 
-  }
+        )}
+      </Table>
+    </TableContainer>
+  )}
 
-
+  
 
 
   renderInvalidTable = () =>{
@@ -720,7 +767,7 @@ renderFileGrabber = () =>{
     if (this.state.loading) {
       return (
         <div className='text-center'>
-          <FontAwesomeIcon icon={faSpinner} spin size='6x' />
+          <FontAwesomeIcon icon={faSpinner} spin />
         </div>
       );
     }
@@ -728,13 +775,13 @@ renderFileGrabber = () =>{
       if(this.state.error_status){
         return(
           <div className='text-center'>
-            <FontAwesomeIcon  icon={faExclamationTriangle} size="6x" />
+            <FontAwesomeIcon  icon={faExclamationTriangle}  />
           </div>
         );
       }else{
         return (
           <div className='text-center'>
-            <FontAwesomeIcon icon={faSpinner} className="invisible" size='6x' />
+            <FontAwesomeIcon icon={faSpinner} className="invisible"  />
           </div>
         );
       }
@@ -807,9 +854,29 @@ renderFileGrabber = () =>{
     return (
       <Paper>
         <div className="col-sm-12 pads">
-          <div className="col-sm-12 text-left"><h4>{this.props.bulkType} Information Upload</h4></div>
-          <div className="px-3 my-2">
-          Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book
+          <div className="px-3 my-2"> 
+            <div className=" d-flex ">
+            <Typography className="mr-3 d-inline-block">
+              <Button 
+                onClick={() => this.handleBack()}
+                className="btn-lg btn-block"
+                style={{ padding: "12px" }} 
+                variant="contained" 
+                color="primary" >
+               {<FontAwesomeIcon
+                  icon={faFileDownload}
+                  className="m-1"
+                  style={{ fontSize: 50 }}  
+                />} 
+                Example.tsv
+              </Button>
+              </Typography>
+            <div className="col-sm-12 text-left p-0">
+              <h4>{toTitleCase(this.props.bulkType).slice(0, -1)} Information Upload</h4>
+              <Typography className="d-inline-block ">To bulk register multiple {this.props.bulkType.toLowerCase()} at one time, upload a tsv file here in the format specified by this example file. <br /> Include one line per {this.props.bulkType.toLowerCase().slice(0, -1)} to register. {toTitleCase(this.props.bulkType).slice(0, -1)} metadata must be provided separately.</Typography>
+              </div>
+            </div>
+            
           {this.renderStepper()}
           </div>
 
