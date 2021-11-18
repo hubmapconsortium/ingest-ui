@@ -82,6 +82,7 @@ class App extends Component {
     console.debug("params", params);
 
 
+
     if (info !== null) {
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
@@ -187,7 +188,7 @@ class App extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "application/json"
         }
       };

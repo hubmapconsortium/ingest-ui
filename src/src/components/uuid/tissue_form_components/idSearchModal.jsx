@@ -59,7 +59,7 @@ class IDSearchModal extends Component {
     }
 
 
-    api_search(params, JSON.parse(localStorage.getItem("info")).nexus_token)
+    api_search(params, JSON.parse(localStorage.getItem("info")).groups_token)
     .then((response) => {
 
       if (response.status === 200) {
@@ -77,7 +77,7 @@ class IDSearchModal extends Component {
     // const config = {
     //   headers: {
     //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
     //     "Content-Type": "multipart/form-data"
     //   },
     //   params: params

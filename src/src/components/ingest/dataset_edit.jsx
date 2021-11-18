@@ -118,7 +118,7 @@ class DatasetEdit extends Component {
         data_types.push(other_dt);
       }
 
-      get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).nexus_token)
+      get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((resp) => {
         if (resp.status === 200) {
           //console.log('Assay Type info...', resp.results);
@@ -147,7 +147,7 @@ class DatasetEdit extends Component {
     if (this.props.editingDataset) {
       if (this.props.editingDataset.uuid)
       // check to see which buttons to enable
-       ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+       ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((resp) => {
         if (resp.status === 200) {
           //console.log('edit states...', resp.results);
@@ -164,11 +164,11 @@ class DatasetEdit extends Component {
       console.debug("No editingDataset Prop, Must be a New Form")
     }
 
-
+    console.log("info is ", localStorage.getItem("info"));
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "application/json",
       },
     };
@@ -737,7 +737,7 @@ class DatasetEdit extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "application/json",
         },
       };
@@ -799,7 +799,7 @@ class DatasetEdit extends Component {
       const config = {
         headers: {
           Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
           "Content-Type": "multipart/form-data",
         },
       };
@@ -943,7 +943,7 @@ class DatasetEdit extends Component {
             headers: {
               Authorization:
                 "Bearer " +
-                JSON.parse(localStorage.getItem("info")).nexus_token
+                JSON.parse(localStorage.getItem("info")).groups_token
             },
           };
          
@@ -962,7 +962,8 @@ class DatasetEdit extends Component {
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
-                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+               console.log("data is ", data)
+                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status === 200) {
                       ////console.log(response.results);
@@ -970,11 +971,11 @@ class DatasetEdit extends Component {
                     } else {
                       console.log("ERR response");
                       console.log(response);
-                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                     }
                 });
               } else { // just update
-                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status === 200) {
                             this.setState({ 
@@ -986,7 +987,7 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                             console.debug("ERROR ",response)
-                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response });
+                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                           }
                 });
               }
@@ -1004,8 +1005,8 @@ class DatasetEdit extends Component {
               }
 
               console.log('DATASET TO SAVE', JSON.stringify(data))
-              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
-               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
                     console.log('create Dataset...', response.results);
@@ -1482,6 +1483,7 @@ class DatasetEdit extends Component {
   renderAssayArray() {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
+
 	    //var entries_per_col = Math.ceil(len / 3);
 	    //var num_cols = Math.ceil(len / entries_per_col);
       console.log("data_type_dicts", this.state.data_type_dicts)

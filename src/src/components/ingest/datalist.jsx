@@ -50,7 +50,7 @@ class DataList extends Component {
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "multipart/form-data",
       },
       params: params,
@@ -158,7 +158,7 @@ handleChangePage = (event, newPage) => {
     // const config = {
     //   headers: {
     //     Authorization:
-    //       "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
     //     "Content-Type": "multipart/form-data",
     //   },
     //   params: params,
@@ -184,7 +184,7 @@ handleChangePage = (event, newPage) => {
     //     }
     //   });
 
-    api_search(params, JSON.parse(localStorage.getItem("info")).nexus_token)
+    api_search(params, JSON.parse(localStorage.getItem("info")).groups_token)
     .then((response) => {
 
       if (response.status === 200) {
@@ -212,7 +212,7 @@ handleChangePage = (event, newPage) => {
         const config = {
           headers: {
             Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+              "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
             "Content-Type": "multipart/form-data",
           },
         };
@@ -263,7 +263,7 @@ handleChangePage = (event, newPage) => {
 
   handleActionClick = (e) => {
 
-    entity_api_get_entity(e.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+    entity_api_get_entity(e.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
     .then((response) => {
       if (response.status === 200) {
         let entity_data = response.results;
@@ -285,7 +285,7 @@ handleChangePage = (event, newPage) => {
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "multipart/form-data",
       },
     };

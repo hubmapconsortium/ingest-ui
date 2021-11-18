@@ -80,7 +80,7 @@ class DonorForm extends Component {
 
   UNSAFE_componentWillMount() {
 
-   ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).nexus_token).then((results) => {
+   ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
 
       if (results.status === 200) { 
       // const groups = results.results.filter(
@@ -140,7 +140,7 @@ class DonorForm extends Component {
     try {
           const param_uuid = this.props.editingEntity.uuid;
           // check to see if user can edit
-          ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+          ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
               .then((resp) => {
                   if (resp.status === 200) {
                     console.debug('api_allowable_edit_states...', resp.results);
@@ -402,7 +402,7 @@ class DonorForm extends Component {
 
         if (this.props.editingEntity) {
           //console.debug("Updating Entity....")
-          entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+          entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
                     //console.debug('Update Entity...');
@@ -421,7 +421,7 @@ class DonorForm extends Component {
             }
 
             //console.debug("Create a new Entity....group uuid", data["group_uuid"])
-            entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).nexus_token)
+            entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                  .then((response) => {
                   if (response.status === 200) {
                     //console.debug('create Entity...');
