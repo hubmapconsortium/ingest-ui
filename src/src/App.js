@@ -29,7 +29,7 @@ import Menu from '@material-ui/core/Menu';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import Paper from '@material-ui/core/Paper';
-
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
@@ -65,7 +65,8 @@ class App extends Component {
       openSnack:false,
       dml:"Inactive",
       snackPriotity:"info",
-      anchorEl: null,
+      anchorElB: null,
+      anchorElS:null,
       show_menu_popup: false,
       creatingNewEntity: false,
       formType: "",
@@ -75,7 +76,6 @@ class App extends Component {
       showSearch: false,
       creatingBulkEntity: false,
       bulkType: 'samples',
-      anchorEl:null,
       setAnchorEl: null
     };
 
@@ -306,7 +306,8 @@ class App extends Component {
   // handleFormTypeChange = (event) => {
   handleFormTypeChange(target){
     this.setState({
-      anchorEl: null,
+      anchorElB: null,
+      anchorElS: null,
       show_menu_popup: false,
       creatingNewEntity: true,
       formType: target.toLowerCase(),
@@ -322,7 +323,25 @@ class App extends Component {
     console.debug("handleMenuSelection")
     var formtype = event.currentTarget.innerText.trim();
     this.setState({
-        anchorEl: null,
+        anchorElB: null,
+        anchorElS: null,
+        show_menu_popup: false,
+        creatingNewEntity: true,
+        formType: formtype.toLowerCase(),
+        open_edit_dialog: true,
+        show_search: false,
+        showSearch: false,
+      })
+      // this.handleFormTypeChange(formtype);
+      this.handleUrlChange("new/"+formtype);
+  }
+
+  handleIndividualMenuSelection = (event) => {
+    var formtype = event.currentTarget.innerText.trim();
+    console.debug("handleIndividualMenuSelection "+formtype)
+    this.setState({
+        anchorElB: null,
+        anchorElS: null,
         show_menu_popup: false,
         creatingNewEntity: true,
         formType: formtype.toLowerCase(),
@@ -360,7 +379,8 @@ class App extends Component {
     //console.log("App.js handleClose");
     this.setState({
       creatingNewUpload: false,
-      anchorEl: null,
+      anchorElB: null,
+      anchorElS: null,
       setAnchorEl:null,
       show_menu_popup: false,
       open_edit_dialog: false, 
@@ -373,7 +393,17 @@ class App extends Component {
   handleBulkClick = (event) => {
     console.debug('clicked', event.currentTarget);
     this.setState({
-      anchorEl: event.currentTarget,
+      anchorElB: event.currentTarget,
+      anchorElS: null,
+      show_menu_popup: true,
+      // creatingBulkEntity: true
+    });
+  };
+  handleSingleClick = (event) => {
+    console.debug('clicked', event.currentTarget);
+    this.setState({
+      anchorElB: null,
+      anchorElS: event.currentTarget,
       show_menu_popup: true,
       // creatingBulkEntity: true
     });
@@ -388,9 +418,10 @@ class App extends Component {
     var bulkType = event.currentTarget.innerText.trim();
     console.debug("bulkType",bulkType);
     this.setState({
-        anchorEl: null,
+        anchorElB: null,
         show_menu_popup: false,
         creatingBulkEntries: true,
+        creatingNewEntity:false,
         bulkType:bulkType,
         open_edit_dialog: true,
         show_search: false,
@@ -467,26 +498,59 @@ class App extends Component {
       
               {this.state.isAuthenticated && (
                 <div className="d-inline">                
-                <span className="menu-bar-static-label">REGISTER NEW:</span>
+                <span className="menu-bar-static-label mr-3">REGISTER NEW:</span>
                 
-                <Button className="nav-link" onClick={this.handleMenuSelection}>Donor</Button>
-                <Button className="nav-link" onClick={this.handleMenuSelection}>Sample</Button>
-                <Button className="nav-link" onClick={this.handleMenuSelection}>Dataset</Button>
-                <Button className="nav-link" onClick={this.handleUploadsDialog}>Uploads</Button>
-                <Button aria-controls="BulkMenu" aria-haspopup="true" onClick={this.handleBulkClick}> Bulk Register</Button>
+
+
+
+                <Button 
+                  aria-controls="IndividualMenu" 
+                  className="btn mr-1" 
+                  aria-haspopup="true" 
+                  color="primary"
+                  endIcon={<ArrowDropDownIcon />}
+                  onClick={this.handleSingleClick}>
+                    Individual
+                </Button>
                   <Menu
-                    id="BulkMenu"
-                    menuStyle={{width: 'auto', backgroundColor: 'red'}}
+                    id="IndividualMenu"
+                    menuStyle={{width: 'auto'}}
                     keepMounted
-                    anchorEl={this.state.anchorEl}
-                    open={Boolean(this.state.anchorEl)}
+                    anchorEl={this.state.anchorElS}
+                    open={Boolean(this.state.anchorElS)}
                     onClose={this.handleClose}
                     getContentAnchorEl={null}
                     anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
                     transformOrigin={{vertical: 'top', horizontal: 'center'}}
                   >
-                    <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
+                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Donor</MenuItem>
+                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Sample</MenuItem>
+                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Dataset</MenuItem>
+                  </Menu>
+
+
+                <Button 
+                  aria-controls="BulkMenu" 
+                  aria-haspopup="true" 
+                  color="primary"
+                  endIcon={<ArrowDropDownIcon />}
+                  onClick={this.handleBulkClick}>
+                    Bulk
+                  </Button>
+                  <Menu
+                    id="BulkMenu"
+                    menuStyle={{width: 'auto', backgroundColor: 'red'}}
+                    keepMounted
+                    anchorEl={this.state.anchorElB}
+                    open={Boolean(this.state.anchorElB)}
+                    onClose={this.handleClose}
+                    getContentAnchorEl={null}
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                    transformOrigin={{vertical: 'top', horizontal: 'center'}}
+                  >
                     <MenuItem onClick={this.handleBulkSelection}>Donors</MenuItem>
+                    <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
+                    <MenuItem onClick={this.handleBulkSelection}>Data</MenuItem>
                   </Menu>
 
                 </div>

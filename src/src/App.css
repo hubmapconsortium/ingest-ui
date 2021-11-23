@@ -734,7 +734,8 @@ svg.invalid{
   display:none;
 } */
 
-#BulkMenu div ul{
+#BulkMenu div ul,
+#IndividualMenu div ul{
   width: auto!important;
   height: auto;
 }
