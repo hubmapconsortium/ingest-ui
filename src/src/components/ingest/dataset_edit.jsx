@@ -492,6 +492,7 @@ class DatasetEdit extends Component {
           }
           
         } else {
+
           const data_types = this.state.data_types;
           data_types.clear();
           data_types.add(value);
@@ -499,7 +500,7 @@ class DatasetEdit extends Component {
             has_other_datatype: false,
             data_types: data_types,
           });
-          console.log("data types is ", data_types);
+
         }/*if (e.target.checked) {
           const data_types = this.state.data_types;
           data_types.add(name);
@@ -1116,20 +1117,30 @@ class DatasetEdit extends Component {
         }));
       }
 
-      if (this.state.contains_human_genetic_sequences === true ) {
+      // do a check to on the data type to see what if it normally contains pii
+      let pii_check = this.assay_contains_pii(this.state.data_types);
+
+      console.debug('VALIDATE: pii_check', pii_check)
+      if (this.state.contains_human_genetic_sequences === true && pii_check === true) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
         }));
-      } else if(this.state.contains_human_genetic_sequences === false){
+      } else if(this.state.contains_human_genetic_sequences === false && pii_check === false){
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
         }));
       } else {
-        ////console.log("VALID gene is not filled in")
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "required" },
-        }));
-        isValid = false;       
+          let emsg = "Human Genetic Sequences is required"
+          if (this.state.contains_human_genetic_sequences === false && pii_check === true) {
+            emsg = "The selected data type contains gene sequence information, please select Yes or change the data type."
+          } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
+            emsg = "The selected data type doesn’t contain gene sequence information, please select No or change the data type."
+          } 
+          this.setState((prevState) => ({
+              formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },
+          }));
+     
+          isValid = false;       
       }
       resolve(isValid);
     });
@@ -1137,7 +1148,7 @@ class DatasetEdit extends Component {
 
   assembleSourceAncestorData(source_uuids){
     for (var i = 0; i < source_uuids.length; i++) {
-      console.debug("LOOPUING ASAD");
+      //console.debug("LOOPUING ASAD");
       var dst = generateDisplaySubtype(source_uuids[i]);
       source_uuids[i].display_subtype=dst;
     }
@@ -1468,18 +1479,19 @@ class DatasetEdit extends Component {
          )
     }
 
-  
-
-
-    
+   
   renderAssayArray() {
 	 if (this.state.data_type_dicts.length) {
 	    var len = this.state.data_type_dicts.length;
 
+	    //var entries_per_col = Math.ceil(len / 3);
+	    //var num_cols = Math.ceil(len / entries_per_col);
+      console.log("data_type_dicts", this.state.data_type_dicts)
+
       if (this.state.data_types.size === 1 && this.state.has_other_datatype) {
         return (<>
 
-        <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+        <select className="form-select" value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
           <option></option>
           {this.renderAssayColumn(0, len)}
           <option value="other">Other</option>
@@ -1504,7 +1516,7 @@ class DatasetEdit extends Component {
 
   	    return (<>
 
-  		    <select value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+  		    <select className="form-select" value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
             <option></option>
             {this.renderAssayColumn(0, len)}
             <option value="other">Other</option>
@@ -1539,13 +1551,23 @@ class DatasetEdit extends Component {
 	else {
 	    return <h3>Loading assay types...</h3>;
 	}
-    }    
-    
-  // renderCollection() {
-  //   if(this.state.collection)
-  // }
+  }    
+   
+  assay_contains_pii(assay) {
+    let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
+    console.debug('assay_contains_pii', assay_val)
+    for (let i in this.state.data_type_dicts) {
+      let e = this.state.data_type_dicts[i]
 
-    render() {
+      if (e['name'] === assay_val) {
+        console.debug('assay_contains_pii?', e['contains-pii'])
+          return e['contains-pii']
+      }
+    }
+    return false
+  }
+
+  render() {
     return (
       <React.Fragment>
         <Paper className="paper-container">
@@ -1880,7 +1902,8 @@ class DatasetEdit extends Component {
                   </small>
                    { this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
                       <div className='alert alert-danger'>
-                      Genomic Sequences indicator is Required
+                      
+                      {this.state.formErrors.contains_human_genetic_sequences}
                     </div>
                    )}
                  

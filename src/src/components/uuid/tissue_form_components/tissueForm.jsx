@@ -217,7 +217,9 @@ class TissueForm extends Component {
                             //console.debug('api_allowable_edit_states...', resp.results);
                             ////////console.debug(resp.results);
                             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-  
+                            // THIS WILL ALWAYS ALLOW THE SCREEN TO BE EDITED. TEMPORARY SOLUTION 
+                            read_only_state = false
+
                             this.setState({
                               editingEntity: entity_data,
                               readOnly: read_only_state,   // used for hidding UI components
@@ -1597,7 +1599,8 @@ handleAddImage = () => {
         )}
         <div className="col-sm-12 pads">
           {this.state.editingEntity && 
-            this.state.editingEntity.data_access_level === 'public' && (
+            this.state.editingEntity.data_access_level === 'public' && 
+              this.state.read_only_state && (
 
             <React.Fragment>
               <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
@@ -2606,7 +2609,8 @@ handleAddImage = () => {
             )}
             {this.renderButtons()}
             {this.state.editingEntity && 
-            this.state.editingEntity.data_access_level === 'public' && (
+            this.state.editingEntity.data_access_level === 'public' &&
+            this.state.read_only_state && (
 
             <React.Fragment>
               <div className="alert alert-warning text-center" role="alert">This entity is no longer editable. It was locked when it became publicly 
