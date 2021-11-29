@@ -32,7 +32,6 @@ export default class Collection extends Component {
   };
 
   componentDidMount() {
-    
     let uuid = "";
     if (this.props.match){
      //const { match: { params } } = this.props;
@@ -44,7 +43,7 @@ export default class Collection extends Component {
     let auth =  localStorage.length;
     if (auth > 1)
     {
-	   token = JSON.parse(localStorage.getItem("info")).nexus_token;
+	   token = JSON.parse(localStorage.getItem("info")).groups_token;
 
     
        console.log("Inside Collection:componentDidMount(): with token");
@@ -124,7 +123,7 @@ export default class Collection extends Component {
       params["keywords"] = keywords;
     }
 
-    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+    let token =  JSON.parse(localStorage.getItem("info")).groups_token;
     if ((token)|| token !== "")
     {
 	   console.log("Inside Collection:handleFilterClick(): with token");
@@ -183,7 +182,7 @@ export default class Collection extends Component {
         const config = {
           headers: {
             Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+              "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
               "Content-Type": "multipart/form-data"
           }
         };
@@ -215,7 +214,7 @@ export default class Collection extends Component {
 */
 
   handleClearClick = () => {
-      let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+      let token =  JSON.parse(localStorage.getItem("info")).groups_token;
       let config = {};
       this.setState(
       {
@@ -287,7 +286,7 @@ export default class Collection extends Component {
     //this.props.viewCollection(e);
     let uuid = e.uuid;
     let config = {};
-    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+    let token =  JSON.parse(localStorage.getItem("info")).groups_token;
     this.setState(
       {
         group: "",

@@ -36,7 +36,7 @@ class Datasets extends Component {
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "multipart/form-data"
       },
       params: params
@@ -144,7 +144,7 @@ class Datasets extends Component {
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "multipart/form-data"
       },
       params: params
@@ -181,7 +181,7 @@ class Datasets extends Component {
         const config = {
           headers: {
             Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+              "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
             "Content-Type": "multipart/form-data"
           }
         };
@@ -225,8 +225,7 @@ class Datasets extends Component {
     {/*const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
-        MAuthorization: "MBearer " + localStorage.getItem("info"),
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "application/json"
       }
     };

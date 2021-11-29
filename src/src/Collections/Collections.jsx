@@ -41,7 +41,7 @@ export default class Collections extends Component {
     let auth =  localStorage.length;
     if (auth > 1)
     {
-	   token = JSON.parse(localStorage.getItem("info")).nexus_token;
+	   token = JSON.parse(localStorage.getItem("info")).groups_token;
        console.log("Inside Collections:componentDidMount(): with token");
 	   config = {
 	      headers: {
@@ -120,7 +120,7 @@ export default class Collections extends Component {
 
     
     let config = {};
-    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+    let token =  JSON.parse(localStorage.getItem("info")).groups_token;
 
     if ((token)|| token !== "")
     {
@@ -172,7 +172,7 @@ export default class Collections extends Component {
 
   handleClearClick = () => {
          
-    let token =  JSON.parse(localStorage.getItem("info")).nexus_token;
+    let token =  JSON.parse(localStorage.getItem("info")).groups_token;
     let config = {};
     this.setState(
       {
@@ -247,7 +247,7 @@ export default class Collections extends Component {
         const config = {
           headers: {
             Authorization:
-              "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+              "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
             "Content-Type": "multipart/form-data"
           }
         };

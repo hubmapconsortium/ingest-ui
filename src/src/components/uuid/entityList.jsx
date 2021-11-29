@@ -44,7 +44,7 @@ class EntityList extends Component {
     setPage: 0,
     rowsPerPage: 25,
     setRowsPerPage: 25,
-    authToken: JSON.parse(localStorage.getItem("info")).nexus_token,
+    authToken: JSON.parse(localStorage.getItem("info")).groups_token,
     // showAsMultipleFormat: "",
     // multiples: []
   };
@@ -607,7 +607,7 @@ renderTable() {
 
   // checkForMultiples(entity) {
 
-  //   ingest_api_get_associated_ids(entity.uuid, JSON.parse(localStorage.getItem("info")).nexus_token)
+  //   ingest_api_get_associated_ids(entity.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
   //    .then((resp) => {
   //         if (resp.status === 200) {
   //           console.debug('checkForMultiples', resp.results);

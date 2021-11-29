@@ -16,7 +16,7 @@ class IngestEntrance extends Component {
     const config = {
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).nexus_token,
+          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
         "Content-Type": "multipart/form-data"
       }
     };
