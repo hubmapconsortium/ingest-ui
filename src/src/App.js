@@ -294,6 +294,7 @@ class App extends Component {
   };
 
   handleUrlChange = (targetPath) =>{  
+    
     console.debug("handleUrlChange "+targetPath)
     console.debug(this.state.creatingNewEntity)
       window.history.pushState(
@@ -354,15 +355,21 @@ class App extends Component {
   }
 
   handleMenuDropdown = (event) => {
-    this.setState(prevState => ({
-      showDropDown: !prevState.showDropDown
-    }))
+    console.debug("this.state.showDropDown",this.state.showDropDown);
+    this.setState({
+      anchorElB: null,
+      anchorElS: null,
+      showDropDown:false
+      })
   };
   
 
   handleUploadsDialog = (event) => {
+    console.debug("handleUploadsDialog");
+    this.handleMenuDropdown();
     this.setState({
       creatingNewUpload: true,
+      showDropDown: false
     });
     this.handleUrlChange("new/upload");
   }
@@ -550,7 +557,7 @@ class App extends Component {
                   >
                     <MenuItem onClick={this.handleBulkSelection}>Donors</MenuItem>
                     <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
-                    <MenuItem onClick={this.handleBulkSelection}>Data</MenuItem>
+                    <MenuItem onClick={this.handleUploadsDialog}>Data</MenuItem>
                   </Menu>
 
                 </div>
