@@ -430,9 +430,9 @@ showUploadedStuff(){
   })
 }
 
-renderStatusButon = () =>{
+renderStatusButon = (message) =>{
   if(!this.state.loading){
-    return("Upload");
+    return(message);
   }else{
     return(
       <FontAwesomeIcon
@@ -497,7 +497,7 @@ renderFileGrabber = () =>{
               style={{ padding: "12px" }} 
               variant="contained" 
               color="primary" >
-                {this.renderStatusButon()}
+                {this.renderStatusButon("Upload")}
             </Button>
           )}
           {this.state.tsvFile.size > 0 && !this.state.error_status && !this.state.loading &&(
@@ -571,7 +571,7 @@ renderFileGrabber = () =>{
                   style={{ padding: "12px" }} 
                   variant="contained" 
                   color="primary" >
-                  {this.renderStatusButon()}
+                  {this.renderStatusButon("Register")}
                 </Button>
               </span>
             )}
