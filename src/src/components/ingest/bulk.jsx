@@ -20,6 +20,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
 import _ from 'lodash';
 import {  parseErrorMessage, toTitleCase } from "../../utils/string_helper";
+import {  readString } from 'react-papaparse'
 import {ingest_api_bulk_entities_upload, 
         ingest_api_bulk_entities_register,
         ingest_api_users_groups} from '../../service/ingest_api';
@@ -359,12 +360,15 @@ handleRegister = () =>{
 
 parseUpload = () =>{
   console.debug("parseUpload FILE", this.state.tsvFile);
-  // var config = {
-  //   header: true,
-  //   skipEmptyLines: true,
-  //   complete: this.parseResults,
-  // }
-  // var parsedData = readString(this.state.tsvFile,config);
+  var config = {
+    header: true,
+    skipEmptyLines: true,
+    complete: this.parseResults,
+  }
+  var parsedData = readString(this.state.tsvFile,config);
+  this.setState({ 
+    parsedData:parsedData
+  });
 }
 parseResults = (results) =>{
   console.debug("results",results.data);
@@ -423,9 +427,9 @@ showUploadedStuff(){
   })
 }
 
-renderStatusButon = () =>{
+renderStatusButon = (message) =>{
   if(!this.state.loading){
-    return("Upload");
+    return(message);
   }else{
     return(
       <FontAwesomeIcon
@@ -490,7 +494,7 @@ renderFileGrabber = () =>{
               style={{ padding: "12px" }} 
               variant="contained" 
               color="primary" >
-                {this.renderStatusButon()}
+                {this.renderStatusButon("Upload")}
             </Button>
           )}
           {this.state.tsvFile.size > 0 && !this.state.error_status && !this.state.loading &&(
@@ -564,7 +568,7 @@ renderFileGrabber = () =>{
                   style={{ padding: "12px" }} 
                   variant="contained" 
                   color="primary" >
-                  {this.renderStatusButon()}
+                  {this.renderStatusButon("Register")}
                 </Button>
               </span>
             )}
