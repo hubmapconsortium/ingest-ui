@@ -1,39 +1,31 @@
 import React, { Component } from "react";
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
-import StepButton from '@material-ui/core/StepButton';
 import StepLabel from '@material-ui/core/StepLabel';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
-import Slide from '@material-ui/core/Slide';
-import Collapse from '@material-ui/core/Collapse';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import Icon from '@material-ui/core/Icon';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import WarningIcon from '@material-ui/icons/Warning';
 import { faSpinner, faExclamationTriangle, faFileDownload } from "@fortawesome/free-solid-svg-icons";
 import DescriptionIcon from '@material-ui/icons/Description';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
 import _ from 'lodash';
-import { CSVReader, readString } from 'react-papaparse'
 import {  parseErrorMessage, toTitleCase } from "../../utils/string_helper";
 import {ingest_api_bulk_entities_upload, 
         ingest_api_bulk_entities_register,
         ingest_api_users_groups} from '../../service/ingest_api';
 
 
-class bulkSamples extends Component<{},any> {
-
+class bulkSamples extends Component {
 
   constructor(props) {
     super(props);
@@ -130,7 +122,8 @@ class bulkSamples extends Component<{},any> {
     var errors = [];
     // console.debug("handleErrorCompiling",data, data.length);
     for (const [key, value] of Object.entries(data)) {
-      // console.log(`${key}: ${value}`);
+      console.log(`${key}: ${value}`);
+      
       var errRow = {};
       var cleanString = value.replace("Row Number: ", "");
       var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
@@ -366,12 +359,12 @@ handleRegister = () =>{
 
 parseUpload = () =>{
   console.debug("parseUpload FILE", this.state.tsvFile);
-  var config = {
-    header: true,
-    skipEmptyLines: true,
-    complete: this.parseResults,
-  }
-  var parsedData = readString(this.state.tsvFile,config);
+  // var config = {
+  //   header: true,
+  //   skipEmptyLines: true,
+  //   complete: this.parseResults,
+  // }
+  // var parsedData = readString(this.state.tsvFile,config);
 }
 parseResults = (results) =>{
   console.debug("results",results.data);
@@ -698,9 +691,9 @@ renderFileGrabber = () =>{
 
 
   renderInvalidTable = () =>{
-    var headCells = [
-      { id: 'error_' },
-    ];
+    // var headCells = [
+    //   { id: 'error_' },
+    // ];
     return(
             <TableContainer 
               component={Paper} 
