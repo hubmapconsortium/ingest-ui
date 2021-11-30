@@ -23,7 +23,6 @@ import Modal from "./components/uuid/modal";
 
 
 import MenuItem from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
 import Menu from '@material-ui/core/Menu';
 
 import Snackbar from '@material-ui/core/Snackbar';
@@ -100,8 +99,7 @@ class App extends Component {
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
       // Redirect to home page without query string
-      console.debug("REDIRWCTING HOME");
-      // window.location.replace(`${process.env.REACT_APP_URL}`);
+      window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
 
@@ -114,6 +112,8 @@ class App extends Component {
     document.addEventListener("keydown", this.handleKeyDown);
     var type;
     var fauxEvent;
+    var url = window.location.href;
+    var urlSplit = url.split("/");
 
     //set the system state if the URL includes 'collections'
     if (window.location.href.includes("/collections/")) {
@@ -133,12 +133,11 @@ class App extends Component {
       console.log("BULK UPLOAD");
       // We cant depend on the BulkType to come from the menu selection & props
       // Since we could get here through URL only
-      var urlState = window.location.href;
-      var urlsplit = urlState.split("/");
-      console.debug("URLsplut", urlsplit, urlsplit[4]);
+      // var urlState = window.location.href;
+      console.debug("URLsplut", urlSplit, urlSplit[4]);
       this.setState({
         creatingBulkEntity: true,
-        bulkType:urlsplit[4]
+        bulkType:urlSplit[4]
       }, () => {   
         console.debug("!!!!!Set the Bulk State!")
      });
@@ -161,10 +160,8 @@ class App extends Component {
         
     }else if(!this.props.match && this.props.creatingBulkEntity === false){
       if(window.location.href.includes("/new")){
-        var url = window.location.href;
-        var urlsplit = url.split("/");
-        var firstSegment = (urlsplit[3]);
-        type = (urlsplit[4]);
+        var firstSegment = (urlSplit[3]);
+        type = (urlSplit[4]);
         console.log("NEW PAGE");
         console.log(firstSegment, type);
         fauxEvent = {
@@ -514,7 +511,6 @@ class App extends Component {
                 </Button>
                   <Menu
                     id="IndividualMenu"
-                    menuStyle={{width: 'auto'}}
                     keepMounted
                     anchorEl={this.state.anchorElS}
                     open={Boolean(this.state.anchorElS)}
