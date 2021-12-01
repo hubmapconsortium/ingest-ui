@@ -307,22 +307,25 @@ handleRegister = () =>{
               error_status:true,
               error_message_detail: "Errors were found. Please review &amp; and try again",
               error_message:"Error" });
-             console.debug("SUBMIT error", "error")
-              this.setState({
-                loading:false,
+            console.debug("SUBMIT error", "error")
+            this.setState({
+              loading:false,
+            });
+          }else{
+            var respToArray = Object.values(respData)
+            this.setState({
+              success_status:true,
+              alertStatus:"success",
+              success_message:this.props.bulkType+" Registered Successfully",
+              loading:false,
+              uploadedBulkFile:respInfo,
+              uploadedSources:respToArray,
+              complete: true,
+              registeredStatus:true
+              }, () => {   
+                // this.handleNext();
+                // console.debug("uploadedBulkFile",this.state.uploadedBulkFile);
               });
-            }else{
-              this.setState({
-                success_status:true,
-                alertStatus:"success",
-                success_message:this.props.bulkType+" Registered Successfully",
-                loading:false,
-                uploadedBulkFile:resp.data,
-                complete: true,
-                registeredStatus:true
-                }, () => {   
-                  // this.handleNext();
-                });
             }
            
           }
@@ -605,6 +608,46 @@ renderFileGrabber = () =>{
   }
 
 
+  renderTableBody = () =>{
+    console.debug("this.state.uploadedSources",this.state.uploadedSources);
+    if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
+      console.debug("this.state.uploadedSources",this.state.uploadedSources);
+      return(
+        <TableBody>
+          {this.state.uploadedSources.map((row, index) => (
+            <TableRow  key={(row.id+""+index)}>
+              {this.state.registeredStatus === true && (
+                <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
+              )}
+              <TableCell  className="" scope="row"> {row.source_id ? row.source_id : row.direct_ancestor.hubmap_id}</TableCell>
+              <TableCell  className="" scope="row"> {row.lab_id ? row.lab_id : row.lab_tissue_sample_id}</TableCell>
+              <TableCell  className="" scope="row"> {row.sample_type ? row.sample_type : row.specimen_type}</TableCell>
+              <TableCell  className="" scope="row"> {row.organ_type ? row.organ_type : ""}</TableCell>
+              <TableCell  className="" scope="row"> {row.sample_protocol ? row.sample_protocol : row.protocol_url}</TableCell>
+              <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        );
+    }else if(this.props.bulkType.toLowerCase() === "donors" && this.state.uploadedSources){
+      return(
+      <TableBody>
+        {this.state.uploadedSources.map((row, index) => (
+          <TableRow>
+            {this.state.registeredStatus === true && (
+              <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
+            )}
+            <TableCell  className="" scope="row"> {row.lab_id ? row.lab_id : row.lab_donor_id}</TableCell>
+            <TableCell  className="" scope="row"> {row.lab_name ? row.lab_name : row.label}</TableCell>
+            <TableCell  className="" scope="row"> {row.selection_protocol ? row.selection_protocol : row.protocol_url}</TableCell>
+            <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>);
+    }
+    
+  }
+
 
   renderPreviewTable = () =>{
     var headCells = [];
@@ -655,38 +698,7 @@ renderFileGrabber = () =>{
               ))}
             </TableRow>
           </TableHead>
-          {this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources && (
-            <TableBody>
-              {this.state.uploadedSources.map((row, index) => (
-                <TableRow  key={(row.id+""+index)}>
-                  {this.state.registeredStatus === true && (
-                    <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
-                  )}
-                  <TableCell  className="" scope="row"> {row.source_id}</TableCell>
-                  <TableCell  className="" scope="row"> {row.lab_id}</TableCell>
-                  <TableCell  className="" scope="row"> {row.sample_type}</TableCell>
-                  <TableCell  className="" scope="row"> {row.organ_type}</TableCell>
-                  <TableCell  className="" scope="row"> {row.sample_protocol}</TableCell>
-                  <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          )}
-         {this.props.bulkType.toLowerCase() === "donors" && this.state.uploadedSources && (
-          <TableBody>
-            {this.state.uploadedSources.map((row, index) => (
-              <TableRow>
-                {this.state.registeredStatus === true && (
-                  <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
-                )}
-                <TableCell  className="" scope="row"> {row.lab_id}</TableCell>
-                <TableCell  className="" scope="row"> {row.lab_name}</TableCell>
-                <TableCell  className="" width="40%" scope="row"> {row.selection_protocol}</TableCell>
-                <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        )}
+         {this.renderTableBody()}
       </Table>
     </TableContainer>
   )}
