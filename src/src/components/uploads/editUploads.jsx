@@ -145,7 +145,7 @@ class EditUploads extends Component {
             });
             break;
           case "SUBMITTED":
-            console.debug("NOT WRITEABLE");
+            console.debug("WRITEABLE");
             this.setState({
               validation_message_style:null,
               badge_class: "badge-info",
@@ -457,7 +457,7 @@ class EditUploads extends Component {
               <button 
                   type='button'
                   className = 'btn btn-info mr-1'
-                  onClick = {() => this.tempAlert()}
+                  onClick = {() => this.handleButtonClick(this.state.status.toLowerCase(), "validate") }
                 >
                 {this.state.submitting && (
                 <FontAwesomeIcon
@@ -583,7 +583,7 @@ class EditUploads extends Component {
     }, () => {
       console.debug("handleButtonClick ",i, action)
       if(action){
-        if(action === "save" || action === "create"){
+        if(action === "save" || action === "create" || action == "validate"){
           console.debug("SAVE")
           this.handleValidateUpload(i);
         }else if(action==="submit"){
