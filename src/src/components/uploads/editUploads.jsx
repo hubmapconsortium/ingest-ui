@@ -150,7 +150,7 @@ class EditUploads extends Component {
               validation_message_style:null,
               badge_class: "badge-info",
               globusLinkText: "Open data repository ",
-              writeable: false
+              writeable: true
             });
             break;
           case "DEPRECATED":
@@ -395,31 +395,38 @@ class EditUploads extends Component {
         </div>
       );
   } 
-
+/*
   renderValidateButton() {
     var local = JSON.parse(localStorage.getItem("info"));
-    var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4"];
-    console.log(group_uuids.length);
+    var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4", "5bd084c8-edc2-11e8-802f-0e368f3075e8"];
+    console.log("group is ", this.state.group);
     ingest_api_users_groups(local.groups_token).then((results) => {
-      console.log(results.results);
+      console.log("results is ", results.results);
     });
     if (["SUBMITTED", "INVALID", "ERROR"].includes(
       this.state.status.toUpperCase()
       )){
+      console.log("this ran");
       ingest_api_users_groups(local.groups_token).then((results) => {
         if (results.status === 200) {
           results.results.forEach(function(result) {
+            console.log("uuid is ", result.uuid)
             if (group_uuids.includes(result.uuid)) {
               return (
-                <React.Fragment>
-                  <button 
+                <button 
                     type='button'
                     className = 'btn btn-info mr-1'
                     onClick = {() => this.tempAlert()}
                   >
-                  Validate
+                  {this.state.submitting && (
+                  <FontAwesomeIcon
+                    className='inline-icon'
+                    icon={faSpinner}
+                    spin
+                  />
+                )}
+                {!this.state.submitting && "Validate"}
                   </button>
-                </React.Fragment>
                 )
             }
           }
@@ -427,6 +434,42 @@ class EditUploads extends Component {
       }
     });
     }
+  }*/
+  renderValidateButton() {
+    var local = JSON.parse(localStorage.getItem("info"));
+    var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4", "5bd084c8-edc2-11e8-802f-0e368f3075e8"];
+    var valid_group = null
+    console.log("group is ", this.state.group);
+    ingest_api_users_groups(local.groups_token).then((results) => {
+      if (results.status == 200) {
+        results.results.forEach(function(result) {
+          if (group_uuids.includes(result.uuid)) {
+            var valid_group = true
+          }
+        })
+      }
+    })
+
+    if (["SUBMITTED", "INVALID", "ERROR"].includes(
+      this.state.status.toUpperCase()
+      )) {
+      return (
+              <button 
+                  type='button'
+                  className = 'btn btn-info mr-1'
+                  onClick = {() => this.tempAlert()}
+                >
+                {this.state.submitting && (
+                <FontAwesomeIcon
+                  className='inline-icon'
+                  icon={faSpinner}
+                  spin
+                />
+              )}
+              {!this.state.submitting && "Validate"}
+                </button>
+              )
+    }   
   }
 
   tempAlert() {
