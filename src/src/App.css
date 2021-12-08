@@ -684,3 +684,61 @@ a.disabled {
 .interaction-icon{
   cursor: pointer;
 }
+
+
+tr.row-invalid{
+  background: #ff00004d!important;
+}
+tr.row-invalid:hover{
+  border:1px solid red;
+}
+tr.row-invalid td{
+  border:1px solid red;
+}
+table.uploadedStuff-valid{
+  background: ##68ba99;
+}
+table tr.row-selection td{
+  border-right:1px solid #CBCBCB;
+  padding:8px;
+}
+table tr.row-selection td.error{
+  background: #ff00004d!important;
+}
+table tr.tsvData td.titleCase{
+  text-transform: capitalize;
+}
+table tr.tsvData td.wrapping{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 187px;
+}
+table tr.tsvData.valid-false{
+  background: #ff00004d!important;
+}
+svg.valid{
+  color:#BEFFB6;
+}
+svg.invalid{
+  color:#ff0000;
+}
+
+
+#stepContainer input{
+  /* background:red; */
+  display:inline!important;
+}
+
+/* #stepContainer button{
+  display:none;
+} */
+
+#BulkMenu div ul,
+#IndividualMenu div ul{
+  width: auto!important;
+  height: auto;
+}
+/* .bulk-statustext{
+  min-height:80px;
+} */

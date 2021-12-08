@@ -110,6 +110,7 @@ class TissueForm extends Component {
       // lab_tissue_id: "",
       // protocols: "",
       protocol_url: "",
+      protocol_url_DOI: "",
       specimen_type: "",
       specimen_type_other: "",
       organ: "",
@@ -1364,7 +1365,7 @@ handleAddImage = () => {
               this.setState(prevState => ({
                 formErrors: {
                   ...prevState.formErrors,
-                  protocol_url: "Please enter a valid protocols.io DOI"
+                  protocol_url_DOI: "Please enter a valid protocols.io DOI"
                 }
               }));
               isValid = false;
@@ -2053,7 +2054,8 @@ handleAddImage = () => {
                     id="protocol_url"
                     className={
                       "form-control " +
-                      this.errorClass(this.state.formErrors.protocol_url)
+                      this.errorClass(this.state.formErrors.protocol_url) +" "+
+                      this.errorClass(this.state.formErrors.protocol_url_DOI)
                     }
                     onChange={this.handleInputChange}
                     value={this.state.protocol_url}

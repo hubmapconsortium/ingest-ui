@@ -1,6 +1,7 @@
 // Ingest specific APIs
 
 import axios from "axios";
+import FormData from "form-data"
 
 /*
  * User Group API
@@ -105,7 +106,6 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
         "Content-Type": "application/json"
       }
     };
-
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
         
   return axios 
@@ -148,6 +148,84 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
         return {status: 500, results: err.response}
       });
 };
+
+
+/* 
+ * ingest_api_bulk_entities - create A file COntaining bulk entries on .TSF file upload
+ *
+ */
+export function ingest_api_bulk_entities_upload(type, data, auth) { 
+  console.debug("Starting Data: ",data);
+  console.debug("Going to : ",type);
+  var dataForm = new FormData();
+  dataForm.append('file', data);
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "multipart/form-data"
+      },
+      onUploadProgress: (ev: ProgressEvent) => {
+        const progress = ev.loaded / ev.total * 100;
+        console.debug("prog", Math.round(progress));
+      }
+    };
+  let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
+
+  return axios 
+    .post(url, dataForm, options)
+      .then(res => {
+        console.debug("ingest_api_bulk_entities",res);
+
+        //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
+        // We might back back a 201 with an array of errors encountered. Let's check for that!  
+        let results = res.data;
+        console.debug("results",results);
+        if(results[0]){
+          console.debug("results DATA ",results[0]);
+        }
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        console.debug(err);
+        return {status: err.response.status, results: err.response.data}
+      });
+};
+
+
+/* 
+ * ingest_api_bulk_entities - Registers / Inserts bulk entries based on ID of .TSV file upload
+ *
+ */
+export function ingest_api_bulk_entities_register(type, data, auth) { 
+  console.debug("Starting Data: ",data);
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+          "Content-Type": "application/json"
+      },
+      onUploadProgress: (ev: ProgressEvent) => {
+        const progress = ev.loaded / ev.total * 100;
+        console.debug("prog", Math.round(progress));
+      }
+    };
+  let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`;
+  console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
+  
+  return axios 
+     .post(url, data, options)
+      .then(res => {
+        console.debug("ingest_api_bulk_entities",res);
+          let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        console.debug(err);
+        return {status: err.response.status, results: err.response.data}
+      });
+};
+
 
 /* gets a list of associated IDS if the entity has multiple records. 
    these are multi-labs records
