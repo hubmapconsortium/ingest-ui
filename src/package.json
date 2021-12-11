@@ -1,6 +1,6 @@
 {
   "name": "ingest-ui",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -20,10 +20,13 @@
     "axios-hooks": "^2.3.0",
     "bootstrap": "^4.6.0",
     "elastic-builder": "^2.11.0",
+    "pretty-bytes": "^5.6.0",
     "react": "^16.14.0",
     "react-bootstrap": "^1.5.0",
     "react-dom": "^16.14.0",
+    "react-dsv-import": "^0.3.9",
     "react-idle-timer": "^4.5.5",
+    "react-papaparse": "^3.17.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.1.2",
     "react-tooltip": "^3.11.1",
