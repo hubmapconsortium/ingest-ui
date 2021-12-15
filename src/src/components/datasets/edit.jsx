@@ -22,7 +22,7 @@ import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../service/ingest_api';
 import { entity_api_update_entity } from '../service/entity_api';
-//import { withRouter } from 'react-router-dom';
+// import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
@@ -1296,7 +1296,7 @@ class DatasetEdit extends Component {
         return (
             <div className="row">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {!this.state.has_submit_priv && (
+                {this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
                 }
                 {this.cancelButton()}

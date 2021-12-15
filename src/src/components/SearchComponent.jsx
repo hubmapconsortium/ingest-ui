@@ -1,20 +1,15 @@
 import React, { Component  } from "react";
-import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 import axios from "axios";
-import DonorForm from "../uuid/donor_form_components/donorForm";
-import TissueForm from "../uuid/tissue_form_components/tissueForm";
-import UploadsEdit from "../uploads/editUploads";
-import DatasetEdit from "../ingest/dataset_edit";
-import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES } from "../utils/constants";
 
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { api_search2, search_api_search_group_list } from '../../service/search_api';
-import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
+import { api_search2, search_api_search_group_list } from '../service/search_api';
+import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './ui/table_constants';
 
-import { entity_api_get_entity } from '../../service/entity_api';
-import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../../service/ingest_api';
+import { entity_api_get_entity } from '../service/entity_api';
+import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../service/ingest_api';
 // import 'url-search-params-polyfill';
 
 // Creation donor_form_components
@@ -23,10 +18,7 @@ import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../..
 
 class SearchComponent extends Component {
 
-  constructor(props) {
-    super(props); 
-    console.debug("SearchCompprops",props);
-    this.state = {
+  state = {
       selectionModel: "",
       filtered_keywords: "",
       filtered: false,
@@ -51,7 +43,8 @@ class SearchComponent extends Component {
       table_loading:false,
       modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
     };
-  }
+
+  
 
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
@@ -237,15 +230,7 @@ class SearchComponent extends Component {
         config
       )
       .then((res) => {
-        //console.debug("groups RES: ", res);
-        // const display_names = res.data.groups
-        //   .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-        //   .map((g) => {
-        //     return g.displayname;
-        //   });
-        // this.setState({
-        //   groups: display_names,
-        // });
+       
         const groups = res.data.groups.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
@@ -862,46 +847,20 @@ class SearchComponent extends Component {
       const dataType = this.state.editingEntity.entity_type;
       if (dataType === "Donor") {
         return (
-          <DonorForm
-            //displayId={this.state.editingDisplayId}
-            editingEntity={this.state.editingEntity}
-            readOnly={this.state.readOnly}
-            handleCancel={this.cancelEdit}
-            onUpdated={this.onUpdated}
-          />
+          <div>test</div>
         );
       } else if (dataType === "Sample") {
         return (
-          <TissueForm
-            displayId={this.state.editingDisplayId}
-            editingEntity={this.state.editingEntity}
-            editingEntities={this.state.editingEntities}
-            readOnly={this.state.readOnly}
-            handleCancel={this.cancelEdit}
-            onUpdated={this.onUpdated}
-            handleDirty={this.handleDirty}
-          />
+          <div>test</div>
         );
       } else if (dataType === "Dataset") {
           return (
-            <DatasetEdit
-              handleCancel={this.cancelEdit}
-              editingDataset={this.state.editingEntity}
-              onUpdated={this.onUpdated}
-              newForm={true}
-              //onCreated={this.handleDatasetCreated}
-              changeLink={this.onChangeGlobusLink.bind(this)}
-            />
+            <div>test</div>
           );
       } else if (dataType === "Upload") {
           return (
-            <UploadsEdit
-            handleCancel={this.cancelEdit}
-            editingUpload={this.state.editingEntity}
-            onUpdated={this.onUpdated}
-            groups={this.state.groups}
-            changeLink={this.onChangeGlobusLink.bind(this)}
-          />
+            
+          <div>test</div>
           );
       } else {
         return <div />;
@@ -1090,4 +1049,4 @@ renderInfoPanel() {
   }
 }
 
-export default withRouter(SearchComponent);
+export default SearchComponent;

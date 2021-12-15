@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import Paper from '@material-ui/core/Paper';
 import Divider from '@material-ui/core/Divider';
-import '../../../App.css';
+import '../App.css';
 // import axios from "axios";
-import ImageUpload from "./imageUpload";
+import ImageUpload from "../utils/imageUpload";
 //import MetadataUpload from "../metadataUpload";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,19 +16,19 @@ import {
   faImages
   // faTimes
 } from "@fortawesome/free-solid-svg-icons";
-import { tsToDate } from "../../../utils/string_helper";
+import { tsToDate } from "../utils/string_helper";
 //import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import {
   validateRequired,
   validateProtocolIODOI,
 //  validateFileType
-} from "../../../utils/validators";
+} from "../utils/validators";
 import ReactTooltip from "react-tooltip";
-import HIPPA from "../HIPPA";
-import GroupModal from "../groupModal";
-import { ingest_api_users_groups } from '../../../service/ingest_api';
-import { entity_api_update_entity, entity_api_create_entity } from '../../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
+import HIPPA from "./ui/HIPPA";
+import GroupModal from "./ui/groupModal";
+import { ingest_api_users_groups } from '../service/ingest_api';
+import { entity_api_update_entity, entity_api_create_entity } from '../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../service/ingest_api';
 
 class DonorForm extends Component {
   state = {

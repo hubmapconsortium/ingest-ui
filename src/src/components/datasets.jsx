@@ -4,28 +4,28 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@material-ui/core/Button';
-import '../../App.css';
+import '../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
-import HIPPA from "../uuid/HIPPA.jsx";
+import HIPPA from "./ui/HIPPA.jsx";
 import axios from "axios";
-import { validateRequired } from "../../utils/validators";
+import { validateRequired } from "../utils/validators";
 import {
   faExternalLinkAlt,
   faFolder
 } from "@fortawesome/free-solid-svg-icons";
-import Modal from "../uuid/modal";
-import GroupModal from "../uuid/groupModal";
-import SearchComponent from "../search/SearchComponent";
+import Modal from "./ui/modal";
+import GroupModal from "./ui/groupModal";
+import SearchComponent from "./SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../service/ingest_api';
 import { entity_api_update_entity } from '../service/entity_api';
-//import { withRouter } from 'react-router-dom';
+// import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../service/search_api';
-import { getPublishStatusColor } from "../../utils/badgeClasses";
-import { generateDisplaySubtype } from "../../utils/display_subtypes";
+import { getPublishStatusColor } from "./ui/badgeClasses";
+import { generateDisplaySubtype } from "../utils/display_subtypes";
 
 
 import MuiAlert from '@material-ui/lab/Alert';
@@ -1296,7 +1296,7 @@ class DatasetEdit extends Component {
         return (
             <div className="row">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {!this.state.has_submit_priv && (
+                {this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
                 }
                 {this.cancelButton()}

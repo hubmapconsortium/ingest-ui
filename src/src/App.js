@@ -1,38 +1,53 @@
 import React, { Component } from 'react';
 import './App.css';
 //import Navigation from './components/Navbar.js';
-import { Router, Route, withRouter  } from "react-router-dom";
-import history from './history';
-import Login from './components/uuid/login';
+
+// Routing
+import { Router, Route  } from "react-router-dom";
+//import { Router, Route, withRouter  } from "react-router-dom";
+// import history from './history';
+
+// Login Management
+import axios from 'axios';
+import Login from './components/ui/login';
 import IdleTimer from "react-idle-timer";
 import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import Forms from "./components/uuid/forms";
-import SearchComponent from './components/search/SearchComponent';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faExclamationTriangle,
-  faAddressCard,
-  faWindowClose
-} from "@fortawesome/free-solid-svg-icons";
-import {
-  Button,
-  Typography
-} from "@material-ui/core";
-import Modal from "./components/uuid/modal";
 
+// UI Bases
+import Paper from '@material-ui/core/Paper';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import Modal from "./components/ui/modal";
 
+// UI Menu 
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 
+// UI Feedback
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
-import Paper from '@material-ui/core/Paper';
+
+// UI greebles
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faExclamationTriangle,faAddressCard, faWindowClose} from "@fortawesome/free-solid-svg-icons";
+import { Button,Typography} from "@material-ui/core";
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import UploadsForm from "./components/uploads/createUploads";
-import BulkSamples from "./components/ingest/bulk";
+
+
+
+// Site Content
+import SearchComponent from './components/SearchComponent';
+
+import DonorForm from "./components/donors";
+import TissueForm from "./components/samples";
+import DatasetForm from "./components/datasets";
+import UploadsForm from "./components/uploads";
+
+// Bulky
+import BulkUploads from "./components/bulk";
+
+
+
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
@@ -89,9 +104,16 @@ class App extends Component {
     // IE doesn't support the URL api
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
-    const search = props.location.search; // could be '?foo=bar'
-    const params = new URLSearchParams(search);
-    console.debug("params", params);
+
+    var search =""
+    var params =""
+
+    // if(props.location.search){
+    //   var search = props.location.search; // could be '?foo=bar'
+    //   var params = new URLSearchParams(search);  
+    // }
+    
+    // console.debug("params", params);
 
 
 
@@ -816,22 +838,22 @@ class App extends Component {
           {/* )} */}
         
             {this.state.isAuthenticated && (
-              <Router history={history}>
-                    <Route path="/"  >
-                    {!this.state.creatingNewEntity && this.state.creatingBulkEntity === false && (
+            // <Router >
+            //         <Route path="/"  >
+                    // {!this.state.creatingNewEntity && this.state.creatingBulkEntity === false && (
                         <SearchComponent fromRoute="OORIG" editNewEntity={this.state.editNewEntity} />
-                    )}
-                    </Route> 
-              </Router>
+                    // )}
+              //       </Route> 
+              // </Router>
             )}
 
-            {this.state.isAuthenticated && this.state.creatingNewEntity && (
+            {/* {this.state.isAuthenticated && this.state.creatingNewEntity && (
               // Loads in for new things, not editing things
               <Forms formType={this.state.formType} onCancel={this.handleClose} />
-            )}
+            )} */}
                   
             {this.state.isAuthenticated && this.state.creatingBulkEntity === true && (
-              <BulkSamples bulkType={this.state.bulkType} onCancel={this.handleClose} />
+              <BulkUploads bulkType={this.state.bulkType} onCancel={this.handleClose} />
             )}
 
             {this.state.isAuthenticated && this.state.creatingNewUpload && (
@@ -882,4 +904,4 @@ class App extends Component {
   }
 }
 
-export default withRouter(App);
+export default App;

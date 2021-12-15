@@ -13,8 +13,8 @@ import IconButton from '@material-ui/core/IconButton';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import TissueForm from './tissueForm';
-import { entity_api_get_entity } from '../../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
+import { entity_api_get_entity } from '../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { parseErrorMessage } from "../../../utils/string_helper";
 
 class MultipleListModal extends Component {

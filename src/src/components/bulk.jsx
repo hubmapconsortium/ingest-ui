@@ -19,11 +19,11 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
 import _ from 'lodash';
-import {  parseErrorMessage, toTitleCase } from "../../utils/string_helper";
+import {  parseErrorMessage, toTitleCase } from "../utils/string_helper";
 import {  readString } from 'react-papaparse'
 import {ingest_api_bulk_entities_upload, 
         ingest_api_bulk_entities_register,
-        ingest_api_users_groups} from '../../service/ingest_api';
+        ingest_api_users_groups} from '../service/ingest_api';
 
 
 class bulkSamples extends Component {

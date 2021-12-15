@@ -17,9 +17,9 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
-import { api_search } from '../../service/search_api';
-import { entity_api_get_entity } from '../../service/entity_api';
-import { ingest_api_allowable_edit_states, ingest_api_get_associated_ids } from '../../service/ingest_api';
+import { api_search } from '../service/search_api';
+import { entity_api_get_entity } from '../service/entity_api';
+import { ingest_api_allowable_edit_states, ingest_api_get_associated_ids } from '../service/ingest_api';
 //import MultipleListModal from "./tissue_form_components/multipleListModal";
 
 import {ReactComponent as DONOR_IMAGE} from "../../assets/img/donor.svg"

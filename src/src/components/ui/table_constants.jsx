@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
-import { getPublishStatusColor } from "../../utils/badgeClasses";
+import { getPublishStatusColor } from "./badgeClasses";
 
 
 // table column definitions

@@ -24,31 +24,30 @@ import {
   validateRequired,
   validateProtocolIODOI
 //  validateFileType
-} from "../../../utils/validators";
-import { tsToDate } from "../../../utils/string_helper";
-import check from './check25.jpg';
-//import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
-import { flattenSampleType } from "../../../utils/constants_helper";
-import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
+} from "../utils/validators";
+import check from '../assets/img/check25.jpg';
+//import { getFileNameOnPath, getFileMIMEType } from "../../utils/file_helper";
+import { flattenSampleType } from "../utils/constants_helper";
+import { tsToDate, truncateString, parseErrorMessage } from "../utils/string_helper";
 import ReactTooltip from "react-tooltip";
 //import Protocol from "./protocol";
 //import Modal from "../modal";
-import SearchComponent from "../../search/SearchComponent";
+import SearchComponent from "./SearchComponent";
 //import IDSearchModal from "./idSearchModal";
-import GroupModal from "../groupModal";
-import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
-import ImageUpload from "../donor_form_components/imageUpload";
-import MetadataUpload from "../metadataUpload";
+import GroupModal from "./ui/groupModal";
+import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES, RUI_ORGAN_TYPES } from "../utils/constants";
+import ImageUpload from "../utils/imageUpload";
+import MetadataUpload from "./ui/metadataUpload";
 //import LabIDsModa7l from "../labIdsModal";
-import RUIModal from "./ruiModal";
-import RUIIntegration from "./ruiIntegration";
+import RUIModal from "../utils/ruiModal";
+import RUIIntegration from "../utils/ruiIntegration";
 import { entity_api_get_entity, 
     entity_api_update_entity, 
     entity_api_create_entity,
     entity_api_create_multiple_entities, 
     entity_api_get_entity_ancestor 
-} from '../../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
+} from '../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../service/ingest_api';
 // import { useHistory } from "react-router-dom";
 
 class TissueForm extends Component {

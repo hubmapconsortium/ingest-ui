@@ -4,9 +4,9 @@ import Divider from '@material-ui/core/Divider';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
-import { validateRequired } from "../../utils/validators";
+import { validateRequired } from "../utils/validators";
 import ReactTooltip from "react-tooltip";
-import { ingest_api_users_groups } from '../../service/ingest_api';
+import { ingest_api_users_groups } from '../service/ingest_api';
 // function Alert(props: AlertProps) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }

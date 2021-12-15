@@ -25,8 +25,8 @@ import TableRow from '@material-ui/core/TableRow';
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload,
   ingest_api_submit_upload,
-  ingest_api_users_groups } from '../../service/ingest_api';
-//import { GROUPS } from '../../service/groups'
+  ingest_api_users_groups } from '../service/ingest_api';
+//import { GROUPS } from '../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {

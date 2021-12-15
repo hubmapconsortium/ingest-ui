@@ -6,7 +6,7 @@ import { flattenSampleType } from "../../../utils/constants_helper";
 import IDSearchModalMultiSelect from "./idSearchModalMultiSelect";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
-import { api_search } from '../../../service/search_api';
+import { api_search } from '../../service/search_api';
 
 class IDSearchModal extends Component {
   state = {};
