@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 import { validateRequired } from "../utils/validators";
-import ReactTooltip from "react-tooltip";
+// import ReactTooltip from "react-tooltip";
 import { ingest_api_users_groups } from '../service/ingest_api';
 // function Alert(props: AlertProps) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -126,21 +126,6 @@ class CreateUploads extends Component {
       creatingNewUpload:false
     });
   };
-
-
-  // validateInput(input,label){
-  //   if (!validateRequired(input)) {
-  //     this.setState((prevState) => ({
-  //       formErrors: { ...prevState.formErrors, label: "invalid" },
-  //     }));
-  //     isValid = false;
-  //   } else {
-  //     this.setState((prevState) => ({
-  //       formErrors: { ...prevState.formErrors, label: "valid" },
-  //     }));
-  //   }
-
-  // }
 
 
   validateForm() {
@@ -346,14 +331,14 @@ class CreateUploads extends Component {
                           data-tip
                           data-for='title_tooltip'
                         />
-                        <ReactTooltip
+                        {/* <ReactTooltip
                           id='title_tooltip'
                           place='top'
                           type='info'
                           effect='solid'
                         >
                           <p>A name for this upload. This will be used internally by Consortium members for the purposes of finding this Data Upload</p>
-                        </ReactTooltip>
+                        </ReactTooltip> */}
                       </span>
                         <input
                           type='text'
@@ -380,14 +365,14 @@ class CreateUploads extends Component {
                           data-tip
                           data-for='description_tooltip'
                         />
-                        <ReactTooltip
+                        {/* <ReactTooltip
                           id='description_tooltip'
                           place='top'
                           type='info'
                           effect='solid'
                         >
                           <p>A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload.</p>
-                        </ReactTooltip>
+                        </ReactTooltip> */}
                       </span>
                       <React.Fragment>
                         <div>
@@ -419,14 +404,14 @@ class CreateUploads extends Component {
                           data-tip
                           data-for='group_tooltip'
                         />
-                        <ReactTooltip
+                        {/* <ReactTooltip
                           id='group_tooltip'
                           place='top'
                           type='info'
                           effect='solid'
                         >
                           <p>Choose the Data Provider group which the data included in this Data Upload will be associated with/is being uploaded by.</p>
-                        </ReactTooltip>
+                        </ReactTooltip> */}
                       </span>
                       {this.renderGroupSelect()}
                 
