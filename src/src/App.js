@@ -52,13 +52,47 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    const app_info = localStorage.getItem("info")
-      ? JSON.parse(localStorage.getItem("info"))
-      : {
+    var infoJSON = ""
+    // WIll check if the JSON is there, and verifies it's proper JSON
+    if(localStorage.getItem("info")){
+      infoJSON = this.cleanJSON(localStorage.getItem("info"));
+      var JSONkeys = Object.keys(infoJSON);
+      // And if it's not, wipe it clean so we dont need to manually clear
+      if(JSONkeys[0]==="Error"){
+        // console.debug("Malformed Info stored. Clearing...");
+        localStorage.setItem("HAIL", "DISCORDIA");
+        localStorage.removeItem("info");
+        localStorage.removeItem("isAuthenticated");
+        window.location.replace(`${process.env.REACT_APP_URL}`);      
+      }else{
+        // console.debug("Info JSON forund in localStorage",infoJSON);
+        localStorage.setItem("isAuthenticated", true);
+        localStorage.setItem("HAIL", "ERIS");
+      }
+    // And if wevve got nothing  
+    }else{
+      infoJSON = {
         name: "",
         email: "",
         globus_id: ""
       };
+    }
+    const app_info = infoJSON;
+    // console.debug("infoJSON",infoJSON);
+
+     // IE doesn't support the URL api
+     let url = new URL(window.location.href);
+     let infoURL = url.searchParams.get("info");
+    //  console.debug("info from URL: ",infoURL);
+     if (infoURL !== null) {
+       localStorage.setItem("info", infoURL);
+       localStorage.setItem("isAuthenticated", true);
+       // Redirect to home page without query string
+       window.location.replace(`${process.env.REACT_APP_URL}`);
+     }
+
+    
+
 
  
     this.state = {
@@ -87,43 +121,39 @@ class App extends Component {
 
 
     this.idleTimer = null;
-    if (localStorage.getItem("isAuthenticated")) {
+    if (localStorage.getItem("isAuthenticated") === null) {
       localStorage.setItem("isAuthenticated", false);
     }
-
     // Binding event handler methods to an instance
     this.handleLogout = this.handleLogout.bind(this);
   }
 
 
+  cleanJSON(str) {
+    try {
+      // console.debug("cleanJSON", JSON.parse(str));
+       return JSON.parse(str);
+    }
+    catch (e) {
+       return {
+        "Error":true,
+        "String":str,
+      }
+    }
+ }
+
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeyDown);
 
 
-    // let [searchParams, setSearchParams] = useSearchParams();
-    // var info = searchParams.get("info");
-    var info ="";
-    if(this.props.location){
-      var info = new URLSearchParams(this.props.location.search).get("info")
-    }
-    if (this.props.match){
-      info = this.props.match.params.info
-      console.debug("info: ",info);
-    }
-    
-    if (info) {
-      localStorage.setItem("info", info);
-      localStorage.setItem("isAuthenticated", true);
-      window.location.replace(`${process.env.REACT_APP_URL}`);
-    }
-    
-    this.getUserInfo();
+
     // ALL AXIOS STUFF CAN BE HANDLED OUT HERE,
     // WE CAN PASS THE STATUS INTO THE COMPONENTS WITH PROPS vs
     // DO IT ALL AGAIN WITHIN
-   this.setState({
-     isAuthenticated: JSON.parse(localStorage.getItem("isAuthenticated"))
-   })
+    this.getUserInfo();
+    this.setState({
+      isAuthenticated: JSON.parse(localStorage.getItem("isAuthenticated"))
+    })
 
     if (localStorage.getItem("info") !== null) {
       const config = {
@@ -161,7 +191,9 @@ class App extends Component {
             });
           } else if (err.response.status === 401) {
             localStorage.setItem("isAuthenticated", false);
-            // window.location.reload();
+            localStorage.removeItem("info");
+            window.location.reload();
+
           } else if (err.response.status === 403) {
             this.setState({
               allowed: false
@@ -169,6 +201,7 @@ class App extends Component {
           }
         });
     }
+    console.debug("isAuthenticated",this.state.isAuthenticated);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -301,7 +334,6 @@ class App extends Component {
         </div>
       );
     }
-
     return html;
   }
 
@@ -390,49 +422,37 @@ class App extends Component {
           logout={this.handleLogout}
           userInfo={this.getUserInfo()}
         />
-
-
         
         <div id="content" className="container App">
-
-            
           <div className="col-sm-12">
-
-         
-        
             <div className="row">
-            
+              {this.renderContent()}
 
+              {this.state.isAuthenticated && (
                   <Routes>
-                    
+                    <Route index element={<SearchComponent />} />
 
-                    <Route path="/" exact element={<SearchComponent />}>
-                      <Route path="/donors" element={<SearchComponent type="donors" />} >
-                        <Route path=":uuid" element={<DonorForm status="view"/>} />
+                      <Route path="/donors" element={<SearchComponent sample_type="donors" />} >
+                        <Route path="/donors/:uuid" element={<DonorForm status="view"/>} />
                       </Route>
-                      <Route path="/samples" element={<SearchComponent type="samples" />} >
-                        <Route path=":uuid" element={<TissueForm status="view"/>} />
+                      <Route path="/samples" element={<SearchComponent sample_type="samples" />} >
+                        <Route path="/samples/:uuid" element={<TissueForm status="view"/>} />
                       </Route>
-                      <Route path="/datasets" element={<SearchComponent type="datasets" />} >
-                        <Route path=":uuid" element={<DatasetForm status="view"/>} />
+                      <Route path="/datasets" element={<SearchComponent sample_type="datasets" />} >
+                        <Route path="/datasets/:uuid" element={<DatasetForm status="view"/>} />
                       </Route>
-                      <Route path="/uploads" element={<SearchComponent type="datasets" />} >
-                        <Route path=":uuid" element={<UploadsForm status="view"/>} />
+                      <Route path="/uploads" element={<SearchComponent sample_type="datasets" />} >
+                        <Route path="/uploads/:uuid" element={<UploadsForm status="view"/>} />
                       </Route>
-                      <Route path="/new" element={<SearchComponent/>}> 
-                        <Route path="/donor" element={<DonorForm status="new" />} />
-                        <Route path="/sample" element={<DonorForm status="new" />} />
-                        <Route path="/dataset" element={<DonorForm status="new" />} />
-                        <Route path="/donors" element={<BulkProcess type="donors" />} />
-                        <Route path="/samples" element={<BulkProcess type="samples" />} />
-                        <Route path="/data" element={<SearchComponent modal="newUpload" />} />
-                      </Route>
-                    </Route>
+                      <Route path="/new/donor" element={<DonorForm status="new" />} />
+                      <Route path="/new/sample" element={<TissueForm status="new" />} />
+                      <Route path="/new/dataset" element={<DatasetForm status="new" />} />
+                      <Route path="/new/donors" exact element={<BulkProcess bulkType="donors" />} />
+                      <Route path="/new/samples" element={<BulkProcess bulkType="samples" />} />
+                      <Route path="/new/data" element={<SearchComponent modal="newUpload" />} />
 
                   </Routes>
-              
-            
-            )}
+              )}
 
             {this.state.isAuthenticated && this.state.creatingNewUpload && (
                 <Dialog 
@@ -476,6 +496,7 @@ class App extends Component {
 
 
       </div>
+    </div>
     );
   }
 }

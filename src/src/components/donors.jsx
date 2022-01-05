@@ -79,21 +79,24 @@ class DonorForm extends Component {
   }
 
   UNSAFE_componentWillMount() {
-
-   ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-
-      if (results.status === 200) { 
-      // const groups = results.results.filter(
-      //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-      //   );
-        this.setState({
-          groups: results.results
-        });
-      } else if (results.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-    });
+    if(JSON.parse(localStorage.getItem("info"))){
+      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
+        console.debug("ingest_api_users_groups results",results);
+        // Authentication failures are being moved to App.js
+        // if (results.status === 200) { 
+        // // const groups = results.results.filter(
+        // //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+        // //   );
+        //   this.setState({
+        //     groups: results.results
+        //   });
+        // } else if (results.status === 401) {
+        //     localStorage.setItem("isAuthenticated", false);
+        //     // window.location.reload();
+        //   }
+      });
+    }
+      
 
 
     if (this.props.editingEntity) {

@@ -36,7 +36,7 @@ class SearchComponent extends Component {
       globus_url: "",
       isAuthenticated: false,
       group: "All Components",
-      sampleType: "----",
+      sample_type: this.props.sample_type ? this.props.sample_type:"----",
       keywords: "",
       last_keyword: "",
       loading: false,
@@ -48,204 +48,22 @@ class SearchComponent extends Component {
 
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
-    var euuid;
-    var type
-    // If we can switch to Query string for url, would be nice
-    // let url = new URL(window.location.href);
-    // let uuid = url.searchParams.get("uuid");
-    // console.debug("UUID", uuid)
-    // if(uuid){
-    //   this.handleLoadEntity(uuid)
-    // }
-    //@TODO: Look into using the query/search functionality the search-api uses instead of all..... this
-    var url = window.location.href;
-    var urlPart = url.split("/");
-    type = urlPart[3];
-    euuid = urlPart[4];
-    if(euuid && this.props.modeset!=="Source"){
-      console.debug("Loadingfrom URL");
-      this.handleLoadEntity(euuid)
-    }
+    console.debug("SearchComponent Props: ",this.props);
 
 
-    console.debug("modecheck ",this.props.modecheck);
-    if(this.props.editNewEntity){
-        this.setState({
-          loading:false,
-          show_search:false
-        });
-    }
-    if(!this.props.match){
-      var urlProp = window.location.href;
-      var urlsplit = urlProp.split("/");
-      var lastSegment = (urlsplit[3]);
-      euuid = urlsplit[4];
-
-     console.debug(lastSegment, euuid)
-      if(window.location.href.includes("/new")){
-        console.debug("NEW FROM R ", this.props.modecheck)
-        if(this.props.modecheck === "Source" ){
-          console.debug("modecheck Source");
-          this.handleShowSearch(true);
-        }else{
-          console.debug("modecheck NOT");
-          this.handleShowSearch(false);
-        }
-       
-      }else if( !this.props.modecheck && 
-              (window.location.href.includes("donors") || 
-              window.location.href.includes("samples") || 
-              window.location.href.includes("datasets") || 
-              window.location.href.includes("uploads"))){
-        this.setState({
-          sampleType: lastSegment,
-          sample_type: lastSegment,
-          loading: false
-        },function(){ 
-          console.debug("euuid",euuid);
-          this.setFilterType();
-          if(euuid && euuid !== "new"){
-            var params = {
-              row:{
-                uuid:euuid
-              }
-            }
-            // this.handleSearchClick();
-            this.handleTableCellClick(params);
-          }else{
-            console.log("No UUID in URL");
-            this.handleSearchClick();
-          }
-        });
-      }else if(window.location.href.includes("/undefined")){
-        // We're running without filter props passed or URL routing 
-        console.log("Undefined?!")
-        this.handleClearFilter();
-
-        this.handleUrlChange("");
-       
-      }else{
-        // We're running without filter props passed or URL routing 
-        console.log("No Props Or URL, Clear Filter")
-        this.handleClearFilter();
-      }
-    }else if (this.props.match ){ // Ok so we're getting props match eveen w/o, lets switch to search? 
-      console.debug("this.props.match",this.props.match);
-      type = this.props.match.params.type;
-      euuid = this.props.match.params.uuid;
-      if(type !== "new"){
-        // console.log("NOT NEW PAGE");
-        // console.log(type+" | "+euuid);
-        this.setState({
-          sampleType: type,
-          loading: false
-        },function(){ 
-          if(euuid){
-            console.log("UUID PROVIDED: "+euuid);
-            var params = {
-              row:{
-                uuid:euuid
-              }
-            }
-            // this.handleSearchClick();
-            this.handleTableCellClick(params);
-          }else{
-            // console.log("No UUID in URL");
-            this.handleSearchClick();
-          }
-        }); 
-      }else if(this.props.search){
-        console.log("Props Search",this.props.search);
-      }
-      else{
-        this.setState({
-          formType: euuid,
-          show_search:false,
-          creatingNewEntity:true
-        });
-      }
-
-      if(this.props.location.search){
-        //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
-        //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
-        // Hooks into search_api.js :O 
-        var searchProp = this.props.location.search
-        let searchParams = new URLSearchParams(searchProp);
-
-
-        var searchQueryType = searchParams.has('sampleType')
-        console.debug("searchQueryType", searchQueryType);
-        if(searchQueryType){
-          var searchType = searchParams.get('sampleType');
-          console.debug("searchType", searchType);
-          this.setState({
-            sampleType: searchType
-          });
-        }
-        
-        var searchQueryKeyword = searchParams.has('keywords')
-        console.debug("searchQueryKeyword", searchQueryKeyword);
-        if(searchQueryKeyword){
-          var searchKeyword = searchParams.get('keywords');
-          console.debug("searchKeyword", searchKeyword);
-          this.setState({
-            keywords: searchKeyword
-          });
-        }
-      }
-    }
-
-
-    try {
-      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-
-      if (results.status === 200) { 
-        this.setState({
-          isAuthenticated: true
-        }, () => {
-          this.setFilterType();
-        });
-      } else if (results.status === 401) {
-          this.setState({
-            isAuthenticated: false
-          });
-        }
-    });
-  } catch {
-    this.setState({
-        isAuthenticated: false
+    if(this.props.sample_type){
+      console.debug("Sample Type from prop", this.props.sample_type);
+      this.setState({
+        sample_type: this.props.sample_type
+      },
+      () => {
+        console.debug("Sample Type Prop set to State");
+        this.handleSearchClick()
       });
-  }
 
-  const config = {
-    headers: {
-      Authorization:
-        "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-      "Content-Type": "application/json"
+      
     }
-  };
-  axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-        config
-      )
-      .then((res) => {
-       
-        const groups = res.data.groups.filter(
-          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-        );
 
-        //console.debug(groups);
-        this.setState({
-          groups: groups
-        });
-      })
-      .catch((err) => {
-        if (err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }
-      });
   }
 
   handleExtractQuery= () =>{
@@ -264,106 +82,21 @@ class SearchComponent extends Component {
     // searchParams.append('topic', 'webdev');
   }
 
-  handleShowSearch  = (show) => {
-    if ( show === true ){
-      this.setState({
-        loading:false,
-        show_search:true,
-      });
-    }else{
-      this.setState({
-        loading:false,
-        show_search:false
-      });
-    }
-   
-  }
-
-
-  handleLoadEntity(euuid){
-    this.setFilterType();
-    if(euuid && euuid !== "new" && this.props.modecheck!=="Source"){
-      var params = {
-        row:{
-          uuid:euuid
-        }
-      }
-      // this.handleSearchClick();
-      this.handleTableCellClick(params);
-  }
-}
 
   componentDidUpdate(prevProps, prevState) {
-    // console.debug("componentDidUpdate");
-    // // console.debug(prevProps, this.props);
-    // console.debug(this.props.show_search);
-    // console.debug(this.state.show_search);
-    // console.debug(prevState, this.state);
-    if (prevProps.editNewEntity !== this.props.editNewEntity) {
-      console.debug("prevProps.editNewEntity !== this.props.editNewEntity", this.props.editNewEntity)
-      this.setState({
-        editingEntity: this.props.editNewEntity,
-        editForm: true,
-        show_modal: true,
-        show_search: false,
-        loading: false
-        });
-    }
+    console.debug("componentDidUpdate");
     
-    if (prevProps.showSearch !== this.props.showSearch) {
-      console.log("UPDATE this.props.showSearch");
-      this.setState({
-        show_search: this.props.showSearch
-        });
-    }
-
-//    console.debug("San Check",prevState.editEntity !== this.state.editEntity, this.state.editEntity)
-    if (prevState.editEntity !== this.state.editEntity && (!this.state.editEntity || this.state.editEntity === null)) {
-      // console.debug("Saved, Time to Reload Search", this.state.editNewEntity)
-      this.setState({
-        editForm: false,
-        show_modal: false,
-        show_search: true,
-        showSearch: true
-        }, () => {   
-          console.debug("Saved State set state settled")
-      });
-    }
-    
-  }
-
-  handleSingularty  = (target, size) => {
-     console.debug("handleSingularty target: ",target);
-    if(target === 'uploads'){
-      return "uploads" // Is always plural in our system
-    }
-    if(size === "plural"){
-      // console.debug(target.slice(-1));
-      if(target.slice(-1) === "s"){
-        return target.toLowerCase();
-      }else{
-        return (target+"s").toLowerCase();
-      }
-    }else{ // we wanna singularize
-      if(target.slice(-1) === "s"){
-        console.debug('here 1', target.slice(0, -1))
-        return (target.slice(0, -1))  //.toLowerCase()
-      }else{
-        console.debug('here 2', target)
-        return target;
-      }
-    } 
   }
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    // console.debug('handleInputChange', name)
+    console.debug('handleInputChange', name)
     switch (name) {
       case "group":
         this.setState({ group: value });
         break;
-      case "sampleType":
-        this.setState({ sampleType: value });        
+      case "sample_type":
+        this.setState({ sample_type: value });        
         break;
       case "keywords":
         this.setState({ keywords: value });
@@ -411,25 +144,7 @@ class SearchComponent extends Component {
 
   } 
 
-  // combine the organ types with the other samples type listing
-  // combinedTypeOptions = () => {
-  //   var combinedList = [];
 
-  //   SAMPLE_TYPES.forEach((x)=>{
-  //     combinedList.push(x)
-  //   });
-
-  //   combinedList.push(ORGAN_TYPES) 
-
-  //   // var organs = {}
-  //   // for (let k in ORGAN_TYPES) {
-  //   //   organs[k] = " - " + ORGAN_TYPES[k]
-  //   // }
-  //   // combinedList.push(organs)
-
-  //   //console.debug('combinedList', combinedList)
-  //   return combinedList
-  // }
 
   combinedTypeOptions = () => {
     var combinedList = [];
@@ -456,68 +171,52 @@ class SearchComponent extends Component {
   }
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
-    console.debug("handleSearchClick")
+    
+    //@TODO #REFACTOR we have URL routes for the the search by type at least now~
     const group = this.state.group;
-    const sample_type = this.state.sampleType;
+    var sample_type= this.props.sample_type ? this.props.sample_type:this.state.sample_type
+    //var sample_type = this.state.sampleType;
     const keywords = this.state.keywords;
-
-
+    //@TODO #REFACTOR use improved url handling
     var url = new URL(window.location);
-
-    // console.debug("handleSearchClick")
-    // console.debug(group,sample_type,keywords)
-    // console.debug(this.state)
-
-    // reset the page to zero, to deal with slight bug regarding
-    // if you do searches and change pages then search for a new keyword
-    //if (this.state.last_keyword !== keywords) {
-    //  this.setState({ page: 0 });  
-    //}
-  
+    
+    console.debug("handleSearchClick", sample_type);
+    
     this.setState({
       last_keyword: keywords
     })
 
-    // const group = this.group.current.value;
-    // const sample_type = this.sampleType.current.value;
-    // const keywords = this.keywords.current.value;
-
     let params = {};
     let which_cols_def = COLUMN_DEF_SAMPLE;  //default
-
-
     if (group && group !== 'All Components') {
         params["group_uuid"] = group;
     }
 
+
     if (sample_type) {
-
-      // console.debug("sample_type", sample_type);
-      // console.debug(this.props);
-      if(!this.state.uuid && sample_type !=="----"){ 
-        url.searchParams.set('sampleType',sample_type);
-        //this.handleUrlChange(this.handleSingularty(sample_type, "plural"));
+      console.debug("Sample_type for URL Search ",sample_type);
+      //@TODO #REFACTOR we have URLS nowm see where sample_type is set;
+        url.searchParams.set('ample_type',sample_type);
       }
-      
 
-      if (sample_type === 'donor' || sample_type === 'donors') {
+      if (sample_type === 'donors') {
         params["entity_type"] = "Donor";
         which_cols_def = COLUMN_DEF_DONOR;
       } 
-      else if (sample_type === 'sample' || sample_type === 'samples') {
+      else if (sample_type === 'samples') {
             params["entity_type"] = "Sample";
             which_cols_def = COLUMN_DEF_SAMPLE;
       }
-      else if (sample_type === 'dataset' || sample_type === 'datasets') {
+      else if (sample_type === 'datasets') {
             params["entity_type"] = "Dataset";
             which_cols_def = COLUMN_DEF_DATASET;
-      } else if (sample_type === 'upload' || sample_type === 'uploads') {
+      } else if (sample_type === 'uploads') {
             params["entity_type"] = "Upload";
             which_cols_def = COLUMN_DEF_UPLOADS;
       } 
       else {
           if (sample_type !== '----') {
-            //console.debug('sample_type', sample_type)
+            console.debug('sample_type', sample_type)
             // check to see if this is an actual organ
             if (ORGAN_TYPES.hasOwnProperty(sample_type)) {
               params["organ"] = sample_type;
@@ -526,22 +225,19 @@ class SearchComponent extends Component {
             }
         }
       } 
-    } 
+     
     if (keywords) {
       params["keywords"] = keywords;
       url.searchParams.set('keywords',keywords);
     }
-
-    // console.debug('results_total  ', this.state.results_total);
-    // console.debug('From Page ', this.state.page);
-    // console.debug('From Page size', this.state.pageSize);
-    // console.debug("this.state.page", this.state.page);
     if(this.state.page !== 0 ){
       this.setState({
         table_loading:true, 
       });
     }
-    window.history.pushState({}, '', url);
+
+
+    // window.history.pushState({}, '', url);
     //window.history.pushState({}, '', search);
     // window.location.search = window.location.search.replace(/file=[^&$]*/i, 'file=filename');
 
@@ -552,7 +248,7 @@ class SearchComponent extends Component {
       api_search2(params, JSON.parse(localStorage.getItem("info")).groups_token, 
           (this.state.page*this.state.pageSize), this.state.pageSize)
       .then((response) => {
-        // console.debug("Search Res", response.results);
+        console.debug("Search Res", response.results);
         
         if (response.status === 200) {
           if (response.total === 1) {  // for single returned items, customize the columns to match
@@ -595,19 +291,7 @@ class SearchComponent extends Component {
   }
 
   handleUrlChange = (targetPath) =>{
-    console.debug("handleUrlChange "+targetPath)
-    if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
-      targetPath = ""
-    }
-    this.setState({
-      loading: false
-    })
-    if(targetPath!=="----" && targetPath!=="undefined"){
-      window.history.pushState(
-        null,
-        "", 
-        "/"+targetPath);
-    }
+    console.debug("Changes to URL Management! ps: ", targetPath);
   }
 
   handlePageChange = (page) => {
@@ -756,19 +440,19 @@ class SearchComponent extends Component {
             loading: false
             });
         }
-      this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "plural")+"/"+entity_data.uuid);
+      // this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "plural")+"/"+entity_data.uuid);
       }
     });
     }
   }
 
   handleClearFilter = () => {
-
+    console.debug("handleClearFilter");
     this.setState(
       {
         filtered: false,
         datarows: [],
-        sampleType: "----",
+        sample_type: "----",
         group: "All Components",
         keywords: "",
         page: 0,
@@ -789,85 +473,24 @@ class SearchComponent extends Component {
 
   render() {
     // const { redirect } = this.state;
-    if (this.state.isAuthenticated) {
+ 
     return  (
         
-        <div className={"searchWrapper"+this.state.show_search} style={{ width: '100%' }}>
-
-          {/* {!this.state.show_search && (
-            // Being brought in via the renderEditForm call below though
-            //  <Forms formType={this.state.formType} onCancel={this.handleClose} />
-          )} */}
-       
-          
-          {/*
-          this.state.show_search && this.state.show_info_panel &&
-           !this.props.custom_title && (
-            this.renderInfoPanel())
-            */}
-          {this.state.show_search && (
-            this.renderFilterControls()
-            )}
+        <div className={"searchWrapper"} style={{ width: '100%' }}>
+          {this.renderFilterControls()}
           {this.state.loading &&(
              this.renderLoadingBar()
           )}
-          {this.state.show_search && this.state.datarows &&
-                    this.state.datarows.length > 0 && (
+          {this.state.datarows &&
+            this.state.datarows.length > 0 && (
               this.renderTable())
           }
-          {!this.state.show_search && (
-            this.renderEditForm()
-          )}
+         
 
         </div>
       );
-    }
-    return null;
+    
   }
-
-  renderProps() {
-    // console.debug("INITIALSTATE",this.initialState);
-    return (
-      <div>
-      {/* <span className="portal-jss116 text-center">
-      Found Props: {this.state.preset.entityType} {this.state.preset.entityUuid}
-      </span> <br /><br /> */}
-      </div>
-      );
-}
-
-
-
-  renderEditForm  = () => {
-    console.debug("START rendereditForm",this.state)
-    console.debug("Render Modecheck",this.props, this.props.modecheck)
-    if (this.state.editingEntity && !this.props.modeCheck) {
-      console.debug("editingEntity: ", this.state.editingEntity)
-       // Loads in for editing things, not new things
-      const dataType = this.state.editingEntity.entity_type;
-      if (dataType === "Donor") {
-        return (
-          <div>test</div>
-        );
-      } else if (dataType === "Sample") {
-        return (
-          <div>test</div>
-        );
-      } else if (dataType === "Dataset") {
-          return (
-            <div>test</div>
-          );
-      } else if (dataType === "Upload") {
-          return (
-            
-          <div>test</div>
-          );
-      } else {
-        return <div />;
-      }
-    }
-  }
-
 
 renderInfoPanel() {
       return (
@@ -965,14 +588,14 @@ renderInfoPanel() {
                   
                   <div className="col">
                     <div className="form-group">
-                      <label htmlFor="sampleType" className="portal-jss116">Type</label>
+                      <label htmlFor="sample_type" className="portal-jss116">Type</label>
                         <select
-                          name="sampleType"
-                          id="sampleType"
+                          name="sample_type"
+                          id="sample_type"
                           className="select-css"
                           onChange={this.handleInputChange}
                           //ref={this.sampleType}
-                          value={this.state.sampleType}
+                          value={this.state.sample_type}
                         >
                           <option value="">----</option>
                           {this.state.entity_type_list.map((optgs, index) => {

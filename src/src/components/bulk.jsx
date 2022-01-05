@@ -103,7 +103,7 @@ class bulkSamples extends Component {
         
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
+          // window.location.reload();
         }else{
           this.setState({ groups: ["NA"] });
         }

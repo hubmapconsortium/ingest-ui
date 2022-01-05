@@ -126,7 +126,6 @@ export default class Navigation extends Component {
                   </Button>
                   <Menu
                     id="BulkMenu"
-                    menuStyle={{width: 'auto', backgroundColor: 'red'}}
                     keepMounted
                     anchorEl={this.state.anchorElB}
                     open={Boolean(this.state.anchorElB)}
