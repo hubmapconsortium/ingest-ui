@@ -440,6 +440,7 @@ class EditUploads extends Component {
     var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4", "5bd084c8-edc2-11e8-802f-0e368f3075e8"];
     var valid_group = null
     console.log("group is ", this.state.group);
+    group_uuids.push(this.state.group)
     ingest_api_users_groups(local.groups_token).then((results) => {
       if (results.status == 200) {
         results.results.forEach(function(result) {
@@ -450,7 +451,7 @@ class EditUploads extends Component {
       }
     })
 
-    if (["SUBMITTED", "INVALID", "ERROR"].includes(
+    if (["SUBMITTED", "INVALID", "ERROR", "NEW"].includes(
       this.state.status.toUpperCase()
       )) {
       return (

@@ -87,12 +87,15 @@ class TissueForm extends Component {
 
     metadatas: [],
     images: [],
+    thumbnail: [],
     related_group_ids: [],
 
     new_metadatas: [],
     deleted_metas: [],
     new_images: [],
     deleted_images: [],
+    new_thumbnail: [],
+    deleted_thumbnail: [],
     groups: [],
     selected_group: "",
     error_message_detail: "",
@@ -268,9 +271,11 @@ class TissueForm extends Component {
         //console.debug('editingEntity', this.state.editingEntity)
         let images = this.state.editingEntity.image_files;
         let metadatas = this.state.editingEntity.metadata_files;
+        let thumbnail = this.state.editingEntity.thumbnail_files;
     
         const image_list = [];
         const metadata_list = [];
+        const thumbnail_list = [];
 
         // get any images that exist
         try {
@@ -297,6 +302,18 @@ class TissueForm extends Component {
           });
         } catch {}
 
+        try {
+          thumbnail.forEach((thumbnail, index) => {
+            thumbnail_list.push({
+              id: index + 1,
+              ref: React.createRef(),
+              file_name: thumbnail.filename,
+              description: thumbnail.description,
+              file_uuid: thumbnail.file_uuid
+            });
+          });
+        } catch {}
+
         this.setState(
           {
             source_uuid: this.getID(),
@@ -318,8 +335,8 @@ class TissueForm extends Component {
             visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
             description: this.state.editingEntity.description ? this.state.editingEntity.description : "",
             images: image_list,
-            metadatas: metadata_list
-            
+            metadatas: metadata_list,
+            thumbnail: thumbnail_list
           } );
 
         //this.getSourceAncestorOrgan(this.state.editingEntity);
@@ -919,6 +936,21 @@ class TissueForm extends Component {
     return true;
   }
 
+  validateThumbnailFile = id => {
+    const file_name = this.state.thumbnail.map(m => {
+      return m.file_name;
+    })
+
+    if (file_name.length > new Set(file_name).size) {
+      const i = this.state.thumbnail.findIndex(i => i.id === id);
+      let thumbnail = [...this.state.thumbnail];
+      thumbnail[i].error = "Duplicate file name is not allowed."
+      this.setState({ thumbnail })
+
+      return true;
+    }
+  }
+
   handleAddImage = () => {
     let newId = 1;
     if (this.state.images.length > 0) {
@@ -942,6 +974,32 @@ class TissueForm extends Component {
     });
   };
 
+  handleAddThumbnail = () => {
+    let newId = 1;
+    this.setState({
+      thumbnail: [
+      ...this.state.thumbnail,
+      { id: 1, ref: React.createRef() }
+      ]
+    })
+  }
+
+  handleDeleteThumbnail = thumbnailId => {
+
+    const remove_thumb = this.state.thumbnail.find(i => i.id === thumbnailId);
+    const thumbnail = this.state.thumbnail.find(i => i.id !== thumbnailId);
+    const new_thumbnail = this.state.new_thumbnail.filter(dm => dm !== remove_thumb.uuid);
+    let deleted_thumbnail = [...this.state.deleted_thumbnail]
+
+    deleted_thumbnail.push(remove_thumb.file_uuid);
+
+    this.setState({
+      thumbnail,
+      new_thumbnail,
+      deleted_thumbnail
+    });
+
+  };
 
   handleDeleteMetadata = metadataId => {
 
@@ -2601,6 +2659,65 @@ handleAddImage = () => {
               
               </div>
             )}
+            {((!this.state.readOnly) && !this.state.multiple_id) && (
+
+              <div className="form-group">
+
+                <div>
+                  {!this.state.readOnly && (
+                    <div>
+                      <div>
+                        <button 
+                          type="button"
+                          onClick={this.handleAddThumbnail}
+                          className="btn btn-secondary btn-block"
+                          data-tip
+                          data-for="add_image_tooltip"
+                        >
+                          <FontAwesomeIcon
+                            className="inline-icon"
+                            icon={faPaperclip}
+                            title="Uploaded images (multiple allowed)."
+                          />
+                            Add a Thumbnail file
+                          </button> 
+                          <small id="emailHelp" className="form-text text-muted"> 
+                          <span className="text-danger inline-icon">
+                            <FontAwesomeIcon icon={faUserShield} />
+                          </span> Upload de-identified images only</small>
+                           <ReactTooltip
+                              id="add_image_tooltip"
+                              className={"tooltip"}
+                              place="top"
+                              type="info"
+                              effect="solid"
+                          >
+                            <p>
+                                Click here to attach a single image.
+                            </p>
+                            </ReactTooltip>
+                      </div>
+                    </div>
+                    )}
+                    {this.state.thumbnail.map(image => (
+                      <ImageUpload
+                        key={image.id}
+                        id={image.id}
+                        file_name={image.file_name}
+                        description={image.description}
+                        ref={image.ref}
+                        error={image.error}
+                        readOnly={this.state.readOnly}
+                        formId={this.state.form_id}
+                        onFileChange={this.onFileChange}
+                        validate={this.validateThumbnailFile}
+                        onDelete={this.handleDeleteThumbnail}
+                      />
+                    ))}
+                    </div>
+                    </div>
+
+              )}
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
                 <p>
