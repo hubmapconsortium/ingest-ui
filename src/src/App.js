@@ -5,7 +5,8 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  useSearchParams
+  useSearchParams,
+  Navigate
 } from "react-router-dom";
 //import Navigation from './components/Navbar.js';
 
@@ -34,7 +35,7 @@ import SearchComponent from './components/SearchComponent';
 
 import DonorForm from "./components/donors";
 import TissueForm from "./components/samples";
-import DatasetForm from "./components/datasets";
+import {DatasetForm, FetchDataset} from "./components/datasets";
 import UploadsForm from "./components/uploads";
 
 // Bulky
@@ -47,6 +48,7 @@ function Alert(props) {
 }
 
 
+	
 
 class App extends Component {
 
@@ -119,13 +121,6 @@ class App extends Component {
       setAnchorEl: null
     };
 
-
-    this.idleTimer = null;
-    if (localStorage.getItem("isAuthenticated") === null) {
-      localStorage.setItem("isAuthenticated", false);
-    }
-    // Binding event handler methods to an instance
-    this.handleLogout = this.handleLogout.bind(this);
   }
 
 
@@ -360,7 +355,8 @@ class App extends Component {
                   });
                 }
                 if (this.state.logout_in === 0) {
-                  this.logoutButton.click();
+                  this.handleLogout();
+                  // this.logoutButton.click();
                 }
               }
             );
@@ -430,20 +426,17 @@ class App extends Component {
 
               {this.state.isAuthenticated && (
                   <Routes>
-                    <Route index element={<SearchComponent />} />
+                      <Route path="/" element={<SearchComponent blank_search='true'/>} />
 
-                      <Route path="/donors" element={<SearchComponent sample_type="donors" />} >
+                      <Route path="/donors" index element={<SearchComponent sample_type="donors" filter_type="Donors"/>} ></Route>
                         <Route path="/donors/:uuid" element={<DonorForm status="view"/>} />
-                      </Route>
-                      <Route path="/samples" element={<SearchComponent sample_type="samples" />} >
+                      
+                      <Route path="/samples" element={<SearchComponent sample_type="samples" />} ></Route>
                         <Route path="/samples/:uuid" element={<TissueForm status="view"/>} />
-                      </Route>
-                      <Route path="/datasets" element={<SearchComponent sample_type="datasets" />} >
-                        <Route path="/datasets/:uuid" element={<DatasetForm status="view"/>} />
-                      </Route>
-                      <Route path="/uploads" element={<SearchComponent sample_type="datasets" />} >
+                      <Route path="/datasets" element={<SearchComponent sample_type="datasets" />} ></Route>
+                        <Route path="/datasets/:uuid" element={<FetchDataset status="view"/>} />
+                      <Route path="/uploads" element={<SearchComponent sample_type="datasets" />} ></Route>
                         <Route path="/uploads/:uuid" element={<UploadsForm status="view"/>} />
-                      </Route>
                       <Route path="/new/donor" element={<DonorForm status="new" />} />
                       <Route path="/new/sample" element={<TissueForm status="new" />} />
                       <Route path="/new/dataset" element={<DatasetForm status="new" />} />

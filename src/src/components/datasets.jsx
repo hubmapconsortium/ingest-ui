@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+
+import { Routes, Route, useParams } from "react-router-dom";
+
 import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -38,6 +41,13 @@ import TableRow from '@material-ui/core/TableRow';
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+
+
+function FetchDataset = () => {
+  let params = useParams();
+  return <h1>Invoice {params.uuid}</h1>;
 }
 
 
@@ -117,6 +127,7 @@ class DatasetEdit extends Component {
       if (other_dt) {
         data_types.push(other_dt);
       }
+      
 
       get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((resp) => {
@@ -138,7 +149,7 @@ class DatasetEdit extends Component {
       other_dt: other_dt,
     });
   }
-  
+
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside);
 
@@ -1571,6 +1582,7 @@ class DatasetEdit extends Component {
     return (
       <React.Fragment>
         <Paper className="paper-container">
+          {this.fetchDataset()}
         <form>
           <div className='row m-0'>
                 <h3 className='float-left mr-1'>
@@ -2101,4 +2113,6 @@ class DatasetEdit extends Component {
   }
 }
 
-export default DatasetEdit;
+module.exports= {DatasetEdit,FetchDataset};
+
+

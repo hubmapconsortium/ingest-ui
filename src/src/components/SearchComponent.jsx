@@ -1,8 +1,20 @@
 import React, { Component  } from "react";
+
+
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useSearchParams,
+  Navigate
+} from "react-router-dom";
+
 import { DataGrid } from '@material-ui/data-grid';
 import Paper from '@material-ui/core/Paper';
 import axios from "axios";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../utils/constants";
+
+import Select from 'react-select'
 
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { api_search2, search_api_search_group_list } from '../service/search_api';
@@ -15,6 +27,39 @@ import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../se
 // Creation donor_form_components
 
 // import { browserHistory } from 'react-router'
+
+function SearchHandling(){
+  let [searchParams, setSearchParams] = useSearchParams();
+
+  // searchParams is a URLSearchParams object.
+  // See https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+  let user = searchParams.get("search");
+
+  let [userData, setUserData] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    let abortController = new AbortController();
+
+    async function getGitHubUser() {
+      let response = await fetch(`https://api.github.com/users/${user}`, {
+        signal: abortController.signal
+      });
+      if (!abortController.signal.aborted) {
+        let data = await response.json();
+        setUserData(data);
+      }
+    }
+
+    if (user) {
+      getGitHubUser();
+    }
+
+    return () => {
+      abortController.abort();
+    };
+  }, [user]);
+}
+
 
 class SearchComponent extends Component {
 
@@ -40,6 +85,12 @@ class SearchComponent extends Component {
       keywords: "",
       last_keyword: "",
       loading: false,
+      dropdown_test: [
+        { value: 'chocolate', label: 'Chocolate' },
+        { value: 'strawberry', label: 'Strawberry' },
+        { value: 'vanilla', label: 'Vanilla' }
+      ],
+      
       table_loading:false,
       modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
     };
@@ -49,6 +100,8 @@ class SearchComponent extends Component {
   componentDidMount() {     
     console.debug("SEARCH componentDidMount")
     console.debug("SearchComponent Props: ",this.props);
+    var listTest = this.handleTypeDropdownMap();
+    console.debug("listTest",listTest);
 
 
     if(this.props.sample_type){
@@ -58,12 +111,62 @@ class SearchComponent extends Component {
       },
       () => {
         console.debug("Sample Type Prop set to State");
-        this.handleSearchClick()
+        this.setFilterType();
+        this.handleSearchClick();
       });
 
       
     }
 
+    
+    // if(this.props.location.search){
+    //   //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
+    //   //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
+    //   // Hooks into search_api.js :O 
+    //   var searchProp = this.props.location.search
+    //   let searchParams = new URLSearchParams(searchProp);
+
+
+    //   var searchQueryType = searchParams.has('sampleType')
+    //   console.debug("searchQueryType", searchQueryType);
+    //   if(searchQueryType){
+    //     var searchType = searchParams.get('sampleType');
+    //     console.debug("searchType", searchType);
+    //     this.setState({
+    //       sampleType: searchType
+    //     });
+    //   }
+      
+    //   var searchQueryKeyword = searchParams.has('keywords')
+    //   console.debug("searchQueryKeyword", searchQueryKeyword);
+    //   if(searchQueryKeyword){
+    //     var searchKeyword = searchParams.get('keywords');
+    //     console.debug("searchKeyword", searchKeyword);
+    //     this.setState({
+    //       keywords: searchKeyword
+    //     });
+    //   }
+    // }
+
+    if(this.props.blank_search === "true"){
+      this.handleClearFilter();
+    }
+
+  }
+
+
+  handleTypeDropdownMap = () => {
+    let sampleList = [];
+      for (const[ key, value] in SAMPLE_TYPES){
+        console.debug(key, value);
+        console.debug(SAMPLE_TYPES[key], SAMPLE_TYPES[value]);
+        sampleList.push({
+          // label: value:SAMPLE_TYPES[value]
+          "test":"yes"
+        });
+      }
+      console.log("sampleList",sampleList);
+      return sampleList;
   }
 
   handleExtractQuery= () =>{
@@ -112,7 +215,6 @@ class SearchComponent extends Component {
   setFilterType = () => {
 
     var new_filter_list = [];
-
     //console.debug('FILTER TYPES', SAMPLE_TYPES)
     //console.debug('FILTER TYPES', this.props.filter_type)
     if (this.props.filter_type) {
@@ -173,6 +275,10 @@ class SearchComponent extends Component {
     //this.setState({ loading: true, filtered: true, page: 0 });
     
     //@TODO #REFACTOR we have URL routes for the the search by type at least now~
+    // UPDATE: so react routing ONLY handles search Querys in the URL through Functional components now,
+    // the by-class workaround has been stripped out. 
+
+
     const group = this.state.group;
     var sample_type= this.props.sample_type ? this.props.sample_type:this.state.sample_type
     //var sample_type = this.state.sampleType;
@@ -196,7 +302,7 @@ class SearchComponent extends Component {
     if (sample_type) {
       console.debug("Sample_type for URL Search ",sample_type);
       //@TODO #REFACTOR we have URLS nowm see where sample_type is set;
-        url.searchParams.set('ample_type',sample_type);
+        url.searchParams.set('sample_type',sample_type);
       }
 
       if (sample_type === 'donors') {
@@ -235,6 +341,7 @@ class SearchComponent extends Component {
         table_loading:true, 
       });
     }
+     window.history.pushState({}, '', url);
 
 
     // window.history.pushState({}, '', url);
@@ -292,6 +399,13 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     console.debug("Changes to URL Management! ps: ", targetPath);
+
+    if(targetPath!=="----" && targetPath!=="undefined"){
+      window.history.pushState(
+        null,
+        "", 
+        "/"+targetPath);
+    }
   }
 
   handlePageChange = (page) => {
@@ -324,7 +438,6 @@ class SearchComponent extends Component {
   }
 
   handleTableSelection = (row) => {
-    ////console.debug('you selected a row', row)   // datagrid only provides single selection,  Array[0]
     if (row.length > 0) {
       alert(row)
     }
@@ -337,14 +450,8 @@ class SearchComponent extends Component {
       show_search: true,
       loading: false
     });
-    // console.debug("cancelEdit")
-    // console.debug(this.props.match)
-    // console.debug(this.props.match.params.type)
-    // this.handleClearFilter();
     this.handleUrlChange();
     this.handleSearchClick();
-    //this.filterEntity();
-    //this.props.onCancel();
   };
 
   onUpdated = data => {
@@ -440,7 +547,7 @@ class SearchComponent extends Component {
             loading: false
             });
         }
-      // this.handleUrlChange(this.handleSingularty(entity_data.entity_type, "plural")+"/"+entity_data.uuid);
+      this.handleUrlChange(entity_data.entity_type.toLowerCase()+"s/"+entity_data.uuid);
       }
     });
     }
@@ -452,7 +559,7 @@ class SearchComponent extends Component {
       {
         filtered: false,
         datarows: [],
-        sample_type: "----",
+        sample_type: "",
         group: "All Components",
         keywords: "",
         page: 0,
@@ -589,6 +696,11 @@ renderInfoPanel() {
                   <div className="col">
                     <div className="form-group">
                       <label htmlFor="sample_type" className="portal-jss116">Type</label>
+                      {/* <Select 
+                                               options={this.state.entity_type_list} 
+
+                       // options={this.state.dropdown_test} 
+                      /> */}
                         <select
                           name="sample_type"
                           id="sample_type"

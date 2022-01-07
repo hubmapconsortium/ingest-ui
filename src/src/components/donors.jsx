@@ -30,6 +30,7 @@ import { ingest_api_users_groups } from '../service/ingest_api';
 import { entity_api_update_entity, entity_api_create_entity } from '../service/entity_api';
 import { ingest_api_allowable_edit_states } from '../service/ingest_api';
 
+// class DonorForm extends Component {
 class DonorForm extends Component {
   state = {
     form_id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),

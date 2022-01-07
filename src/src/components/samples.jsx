@@ -359,10 +359,10 @@ class TissueForm extends Component {
             "Content-Type": "application/json"
           }
       };
-
+        // @TODO #Refactor this needs to get moved into the API proper? 
         axios
           .get(
-            `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${entity.uuid}/ingest-group-ids`,
+            `${process.env.REACT_APP_SPECIMEN_API_URL}specimens/${entity.uuid}/ingest-group-ids/`,
             config
           )
           .then(res => {
