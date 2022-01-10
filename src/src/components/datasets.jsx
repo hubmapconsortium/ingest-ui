@@ -45,13 +45,14 @@ function Alert(props) {
 
 
 
-function FetchDataset = () => {
+export function FetchDataset(){
   let params = useParams();
-  return <h1>Invoice {params.uuid}</h1>;
+  var page = DatasetEdit.render();
+  return page;
 }
 
 
-class DatasetEdit extends Component {
+export class DatasetEdit extends Component {
   state = {
     status: "NEW",
     collection_candidates:"",
@@ -2112,7 +2113,4 @@ class DatasetEdit extends Component {
     );
   }
 }
-
-module.exports= {DatasetEdit,FetchDataset};
-
 

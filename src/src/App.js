@@ -34,8 +34,8 @@ import MuiAlert from '@material-ui/lab/Alert';
 import SearchComponent from './components/SearchComponent';
 
 import DonorForm from "./components/donors";
-import TissueForm from "./components/samples";
-import {DatasetForm, FetchDataset} from "./components/datasets";
+import {TissueForm, FetchSample } from "./components/samples";
+import {DatasetEdit, FetchDataset} from "./components/datasets";
 import UploadsForm from "./components/uploads";
 
 // Bulky
@@ -431,15 +431,15 @@ class App extends Component {
                       <Route path="/donors" index element={<SearchComponent sample_type="donors" filter_type="Donors"/>} ></Route>
                         <Route path="/donors/:uuid" element={<DonorForm status="view"/>} />
                       
-                      <Route path="/samples" element={<SearchComponent sample_type="samples" />} ></Route>
-                        <Route path="/samples/:uuid" element={<TissueForm status="view"/>} />
+                      {/* <Route path="/samples" element={<SearchComponent sample_type="samples" />} ></Route> */}
+                      <Route path="/samples/:uuid" element={<FetchSample status="view"/>} />
                       <Route path="/datasets" element={<SearchComponent sample_type="datasets" />} ></Route>
                         <Route path="/datasets/:uuid" element={<FetchDataset status="view"/>} />
                       <Route path="/uploads" element={<SearchComponent sample_type="datasets" />} ></Route>
                         <Route path="/uploads/:uuid" element={<UploadsForm status="view"/>} />
                       <Route path="/new/donor" element={<DonorForm status="new" />} />
-                      <Route path="/new/sample" element={<TissueForm status="new" />} />
-                      <Route path="/new/dataset" element={<DatasetForm status="new" />} />
+                      <Route path="/new/sample" element={<FetchSample status="new" />} />
+                      <Route path="/new/dataset" element={<DatasetEdit status="new" />} />
                       <Route path="/new/donors" exact element={<BulkProcess bulkType="donors" />} />
                       <Route path="/new/samples" element={<BulkProcess bulkType="samples" />} />
                       <Route path="/new/data" element={<SearchComponent modal="newUpload" />} />

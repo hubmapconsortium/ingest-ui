@@ -1,4 +1,7 @@
-import React, { Component } from "react";
+import React, { useEffect, useState, Component } from "react";
+
+import { Routes, Route, useParams, useSearchParams,  } from "react-router-dom";
+
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
@@ -50,7 +53,36 @@ import { entity_api_get_entity,
 import { ingest_api_allowable_edit_states } from '../service/ingest_api';
 // import { useHistory } from "react-router-dom";
 
-class TissueForm extends Component {
+
+
+export function FetchSample () {
+  const [eventDetails, setEventDetails] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+;
+    let params = useParams();
+    console.debug("param uuids",params.uuid);
+    // function getEvents() {
+    //     setIsLoading(true);
+    //     entity_api_get_entity(params.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+    //       .then(response => {
+    //         console.debug("response",response.results);
+    //           setEventDetails(response.results.uuid)
+    //           setIsLoading(false);
+    //       });
+    // }
+    // useEffect(() => {
+    //     getEvents();
+    // },[])
+    
+    return <>{isLoading ? <TissueForm /> : <TissueForm uuid={params.uuid} editingEntity={params} />}</>
+
+  }
+
+
+
+
+
+export class TissueForm extends Component {
   state = {
     lab: "",
     lab_tissue_id: "",
@@ -85,6 +117,7 @@ class TissueForm extends Component {
     metadata_file_name: "Choose a file",
 
     metadatas: [],
+    uuid: "",
     images: [],
     related_group_ids: [],
 
@@ -126,6 +159,11 @@ class TissueForm extends Component {
     }
   };
 
+  componentDidUpdate(prevProps,prevState) {
+    if (this.state.uuid !== prevState.uuid) {
+      console.log("NEW UUID", this.state.uuid);
+    }
+  }
   // constructor(props) {
   //   super(props);
   // //   // create a ref to store the file Input DOM element   
@@ -156,7 +194,6 @@ class TissueForm extends Component {
   };
 
   componentDidMount() {
-
     // let history = this.props.history;
     // //////console.debug('HISTORY', history)
 
@@ -192,17 +229,12 @@ class TissueForm extends Component {
       });
 
 
-      //console.debug('PROPS', this.props)
-    
-      try {
-          let param_uuid = ""
-          try {
-            param_uuid = this.props.match.params.uuid
-            console.debug('Param match', param_uuid)
-          } catch {
-            param_uuid = this.props.editingEntity.uuid;
-            console.debug('editingEntity', param_uuid)
-          }
+      console.debug('PROPS', this.props)
+      
+      let param_uuid = "";
+      if( this.props.uuid){
+        param_uuid =  this.props.uuid
+      }
         
           //console.debug('UUID', param_uuid)
           entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -237,24 +269,7 @@ class TissueForm extends Component {
                   });
                 }
           });
-      } catch {
-        //console.debug('check for PROPS', this.props)
-
-        if (this.props) {
-        // run load props from  createnext previous call
-          this.setState(
-            {
-              specimen_type: this.props.specimenType,
-              source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
-              source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
-              source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
-              ancestor_organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
-              organ: this.props.direct_ancestor ? this.props.direct_ancestor.organ : "",
-              source_uuid_list: this.props.uuid  // true uuid
-            });
-        }
-      }
-
+  
     }
 
     initialize() {
@@ -1552,10 +1567,14 @@ handleAddImage = () => {
   };
 
 
+
   render() {
     return (
       <div className="row">
        <Paper className="paper-container">
+
+      <h1>SUUID {this.state.uuid.uuid}</h1>
+
         {this.state.related_group_ids.length > 1
           && (
           <div className="alert alert-primary col-sm-12" role="alert">
@@ -2669,5 +2688,3 @@ handleAddImage = () => {
     );
   }
 }
-
-export default TissueForm;
