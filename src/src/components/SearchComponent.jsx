@@ -6,10 +6,14 @@ import {
   Routes,
   Route,
   useSearchParams,
-  Navigate
-} from "react-router-dom";
+  useNavigate,
+  Navigate,
+  useLocation} from "react-router-dom";
 
-import { DataGrid } from '@material-ui/data-grid';
+// import { DataGrid } from '@mui/x-data-grid';
+// import { GridCellParams } from '@mui/x-data-grid';
+// import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import Paper from '@material-ui/core/Paper';
 import axios from "axios";
 import { SAMPLE_TYPES, ORGAN_TYPES } from "../utils/constants";
@@ -26,42 +30,72 @@ import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../se
 
 // Creation donor_form_components
 
-// import { browserHistory } from 'react-router'
+function OpenEntity(target) {
+  let navigate = useNavigate();
+  navigate(target, { replace: true });
+ }
 
-function SearchHandling(){
-  let [searchParams, setSearchParams] = useSearchParams();
+export const RenderSearch = props => {
+  return <SearchComponent history={this.props.history} {...props} />
+}
 
-  // searchParams is a URLSearchParams object.
-  // See https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
-  let user = searchParams.get("search");
-
-  let [userData, setUserData] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    let abortController = new AbortController();
-
-    async function getGitHubUser() {
-      let response = await fetch(`https://api.github.com/users/${user}`, {
-        signal: abortController.signal
-      });
-      if (!abortController.signal.aborted) {
-        let data = await response.json();
-        setUserData(data);
-      }
-    }
-
-    if (user) {
-      getGitHubUser();
-    }
-
-    return () => {
-      abortController.abort();
-    };
-  }, [user]);
+const SearchCellClick = (params) => {
+  var selected = params.row;
+  var targetPage = selected.entity_type + '/' + selected.entity_id;
+  console.debug("SearchCellClick");
+  console.debug(targetPage);  
+  OpenEntity(targetPage);
 }
 
 
-class SearchComponent extends Component {
+export default function SubscribeToEvents() {
+  const apiRef = useGridApiRef();
+  const [message, setMessage] = React.useState('');
+  const { data } = useDemoData({
+    dataSet: 'Commodity',
+    rowLength: 1,
+    maxColumns: 6,
+  });
+
+  React.useEffect(() => {
+    return apiRef.current.subscribeEvent('cellClick', (params) => {
+      console.debug("CellClick", params);
+    });
+  }, [apiRef]);
+
+
+
+// const RenderTable = (dataRows, column_def, results_total, table_loading) => {
+//   return ( 
+//       <Paper className="paper-container pt-2 ">
+//       <div style={{ height: 590, width: '100%' }}>
+//         <DataGrid 
+//               rows={dataRows}
+//               columns={column_def}
+//               disableColumnMenu={true}
+//               pagination
+//               hideFooterSelectedRowCount
+//               rowCount={results_total}
+//               paginationMode="server"
+//               // onPageChange={(params) => 
+//               //   this.handlePageChange(params)
+//               // }
+//               // onPageSizeChange={(page) =>
+//               //   this.handlePageSizeSelection(page)
+//               // }
+//               loading={table_loading}
+//               onCellClick={SearchCellClick}  // this allows a props handler to override the local handler
+//              // onCellClick={this.props.select ? this.props.select : SearchCellClick}  // this allows a props handler to override the local handler
+
+//         />
+//       </div>
+//       </Paper>
+//     );
+//   }
+
+
+
+export class SearchComponent extends Component {
 
   state = {
       selectionModel: "",
@@ -117,36 +151,6 @@ class SearchComponent extends Component {
 
       
     }
-
-    
-    // if(this.props.location.search){
-    //   //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
-    //   //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
-    //   // Hooks into search_api.js :O 
-    //   var searchProp = this.props.location.search
-    //   let searchParams = new URLSearchParams(searchProp);
-
-
-    //   var searchQueryType = searchParams.has('sampleType')
-    //   console.debug("searchQueryType", searchQueryType);
-    //   if(searchQueryType){
-    //     var searchType = searchParams.get('sampleType');
-    //     console.debug("searchType", searchType);
-    //     this.setState({
-    //       sampleType: searchType
-    //     });
-    //   }
-      
-    //   var searchQueryKeyword = searchParams.has('keywords')
-    //   console.debug("searchQueryKeyword", searchQueryKeyword);
-    //   if(searchQueryKeyword){
-    //     var searchKeyword = searchParams.get('keywords');
-    //     console.debug("searchKeyword", searchKeyword);
-    //     this.setState({
-    //       keywords: searchKeyword
-    //     });
-    //   }
-    // }
 
     if(this.props.blank_search === "true"){
       this.handleClearFilter();
@@ -401,10 +405,11 @@ class SearchComponent extends Component {
     console.debug("Changes to URL Management! ps: ", targetPath);
 
     if(targetPath!=="----" && targetPath!=="undefined"){
-      window.history.pushState(
-        null,
-        "", 
-        "/"+targetPath);
+      OpenEntity(targetPath);
+      // window.history.pushState(
+      //   null,
+      //   "", 
+      //   "/"+targetPath);
     }
   }
 
@@ -437,12 +442,7 @@ class SearchComponent extends Component {
   
   }
 
-  handleTableSelection = (row) => {
-    if (row.length > 0) {
-      alert(row)
-    }
-  }
-
+  
  cancelEdit = () => {
     this.setState({ 
       editingEntity: null, 
@@ -640,7 +640,12 @@ renderInfoPanel() {
                 this.handlePageSizeSelection(page)
               }
               loading={this.state.table_loading}
-              onCellClick={this.props.select ? this.props.select : this.handleTableCellClick}  // this allows a props handler to override the local handler
+              //onCellClick={this.props.select ? this.props.select : this.handleTableCellClick}  // this allows a props handler to override the local handler
+              // onCellClick={() =>
+              //   SearchCellClick()
+              // }
+              onCellClick={this.props.select ? this.props.select : SearchCellClick}  // this allows a props handler to override the local handler
+
         />
       </div>
       </Paper>

@@ -4,6 +4,8 @@
   "private": true,
   "homepage": ".",
   "dependencies": {
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
@@ -12,6 +14,8 @@
     "@material-ui/data-grid": "^4.0.0-alpha.37",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.60",
+    "@mui/material": "^5.2.8",
+    "@mui/x-data-grid": "^5.2.2",
     "axios": "^0.24.0",
     "axios-hooks": "^3.0.0",
     "bootstrap": "^5.1.3",

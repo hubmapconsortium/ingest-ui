@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Component } from "react";
 
-import { Routes, Route, useParams, useSearchParams,  } from "react-router-dom";
+import { Routes, Route, useParams, useSearchParams, useNavigate } from "react-router-dom";
 
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
@@ -55,27 +55,10 @@ import { ingest_api_allowable_edit_states } from '../service/ingest_api';
 
 
 
-export function FetchSample () {
-  const [eventDetails, setEventDetails] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-;
+export function RenderSample () {
     let params = useParams();
     console.debug("param uuids",params.uuid);
-    // function getEvents() {
-    //     setIsLoading(true);
-    //     entity_api_get_entity(params.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-    //       .then(response => {
-    //         console.debug("response",response.results);
-    //           setEventDetails(response.results.uuid)
-    //           setIsLoading(false);
-    //       });
-    // }
-    // useEffect(() => {
-    //     getEvents();
-    // },[])
-    
-    return <>{isLoading ? <TissueForm /> : <TissueForm uuid={params.uuid} editingEntity={params} />}</>
-
+    return ( <TissueForm uuid={params.uuid} editingEntity={params} />)
   }
 
 
@@ -164,14 +147,7 @@ export class TissueForm extends Component {
       console.log("NEW UUID", this.state.uuid);
     }
   }
-  // constructor(props) {
-  //   super(props);
-  // //   // create a ref to store the file Input DOM element   
-  // //   //this.protocolFile = React.createRef();
-  // //   //this.protocol = React.createRef();
-  // //   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
 
-  // }
 
   handleRUIJson = (dataFromChild) => {
     this.setState({
@@ -235,7 +211,7 @@ export class TissueForm extends Component {
       if( this.props.uuid){
         param_uuid =  this.props.uuid
       }
-        
+  
           //console.debug('UUID', param_uuid)
           entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
