@@ -307,9 +307,7 @@ class TissueForm extends Component {
             thumbnail_list.push({
               id: index + 1,
               ref: React.createRef(),
-              file_name: thumbnail.filename,
-              description: thumbnail.description,
-              file_uuid: thumbnail.file_uuid
+              temp_file_id: thumbnail.temp_file_id
             });
           });
         } catch {}
@@ -893,6 +891,33 @@ class TissueForm extends Component {
         });
         //break;
       }
+      case "thumbnail": {
+        const i = this.state.thumbnail.findIndex(i => i.id === id);
+        let thumbnail = [...this.state.thumbnail];
+        thumbnail[i].file_name = thumbnail[i].ref.current.thumbnail_file.current.files[0].name;
+        let new_thumbnail = [...this.state.new_thumbnail];
+        new_thumbnail.push(thumbnail[i].file_name)
+        new_thumbnail.shift();
+        return new Promise((resolve, reject) => {
+          this.setState({
+            thumbnail,
+            new_thumbnail
+          }, () => {
+            if (!this.validateThumbnailFile(id)) {
+              thumbnail[i].file_name = "";
+              this.setState({
+                thumbnail
+              })
+              reject();
+            } else {
+              this.setState({
+                new_thumbnail
+              })
+              resolve();
+            }
+          })
+        })
+      }
       default:
         break;
     }
@@ -1019,6 +1044,7 @@ class TissueForm extends Component {
       deleted_metas
     });
   };
+
 
 handleAddImage = () => {
     let newId = 1;
