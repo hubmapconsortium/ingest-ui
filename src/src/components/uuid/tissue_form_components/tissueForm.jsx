@@ -271,7 +271,7 @@ class TissueForm extends Component {
         //console.debug('editingEntity', this.state.editingEntity)
         let images = this.state.editingEntity.image_files;
         let metadatas = this.state.editingEntity.metadata_files;
-        let thumbnail = this.state.editingEntity.thumbnail_files;
+        let thumbnail = this.state.editingEntity.thumbnail_file;
     
         const image_list = [];
         const metadata_list = [];
@@ -303,13 +303,14 @@ class TissueForm extends Component {
         } catch {}
 
         try {
-          thumbnail.forEach((thumbnail, index) => {
-            thumbnail_list.push({
-              id: index + 1,
-              ref: React.createRef(),
-              temp_file_id: thumbnail.temp_file_id
-            });
+
+          thumbnail_list.push({
+            id: index + 1,
+            ref: React.createRef(),
+            file_name: thumbnail.filename,
+            file_uuid: thumbnail.file_uuid
           });
+          
         } catch {}
 
         this.setState(
