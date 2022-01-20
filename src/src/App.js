@@ -122,17 +122,17 @@ export function App (){
             {renderContent()}
 
                 <Routes>
-                    <Route path="/" element={<RenderSearchComponent sample_type='true' />} />
+                    <Route path="/" element={<RenderSearchComponent entity_type=' ' />} />
 
-                    <Route path="/donors" index element={<RenderSearchComponent sample_type="donors" loadOdefaultOptionValueptions="Donors"/>} ></Route>
+                    <Route path="/donors" index element={<RenderSearchComponent custom_title="Search" entity_type="donors" loadOdefaultOptionValueptions="Donors"/>} ></Route>
                       <Route path="/donors/:uuid" element={<DonorForm status="view"/>} />
                     
-                    <Route path="/samples" element={<RenderSearchComponent sample_type="samples" 
+                    <Route path="/samples" element={<RenderSearchComponent entity_type="samples" 
                     loadOdefaultOptionValueptions="samples"/>} ></Route>
                     <Route path="/samples/:uuid" element={<RenderSample status="view"/>} />
-                    <Route path="/datasets" element={<RenderSearchComponent sample_type="datasets" />} ></Route>
+                    <Route path="/datasets" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
                       <Route path="/datasets/:uuid" element={<FetchDataset status="view"/>} />
-                    <Route path="/uploads" element={<RenderSearchComponent sample_type="datasets" />} ></Route>
+                    <Route path="/uploads" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
                       <Route path="/uploads/:uuid" element={<UploadsForm status="view"/>} />
                     <Route path="/new/donor" element={<DonorForm status="new" />} />
                     <Route path="/new/sample" element={<RenderSample status="new" />} />

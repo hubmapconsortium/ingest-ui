@@ -58,8 +58,9 @@ export function api_search2(params, auth, from, size) {
         "Content-Type": "application/json"
       }
     };
-
-  let payload = search_api_filter_es_query_builder(params, from , size);
+    // console.debug("params", params);
+    let payload = search_api_filter_es_query_builder(params, from , size);
+    // console.debug("payload", payload);
 
   ////console.debug('payload', payload)
 
@@ -68,7 +69,7 @@ export function api_search2(params, auth, from, size) {
               payload, options
       )
       .then(res => {
-       
+        console.debug("API api_search2 res", res);
           let hits = res.data.hits.hits;
       
           let entities = [];
@@ -82,6 +83,7 @@ export function api_search2(params, auth, from, size) {
         return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
       .catch(err => {
+        console.debug("API api_search2 err", err);
          return {status: 500, results: err.response}
       });
 };
@@ -93,12 +95,12 @@ export function api_search2(params, auth, from, size) {
 export function search_api_filter_es_query_builder(fields, from, size) {
 
   let requestBody =  esb.requestBodySearch();
- console.debug("here in the filter es builder")
- console.debug(fields);
+//  console.debug("here in the filter es builder")
+//  console.debug(fields);
 
 
 let boolQuery = "";
-
+console.debug("Fields", fields);
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
     boolQuery = esb.queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS)
@@ -152,7 +154,8 @@ let boolQuery = "";
   requestBody.query(boolQuery).from(from).size(size).sort(esb.sort('last_modified_timestamp', 'desc'));
   //requestBody.query(boolQuery).size(100);
 
-  console.debug(requestBody.toJSON());
+  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
+  console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
   return requestBody.toJSON();
 }
 

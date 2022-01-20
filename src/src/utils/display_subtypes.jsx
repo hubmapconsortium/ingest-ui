@@ -7,6 +7,9 @@
 // otherwise the display name linked to the value of the corresponding description of specimen_type code
 // Dataset: the display names linked to the values in data_types as a comma separated list
 
+
+import { SAMPLE_TYPES } from "../utils/constants";
+
 var organs = {
     //Manually Copied from Search API's 
     //search-schema/data/definitions/enums/organ_types.yaml
@@ -145,7 +148,62 @@ export function generateDisplaySubtype( entity) {
 };
 
 
+export function compiledTypes() {
+    
+  const  compileTypeList = () =>{
+    // Ok, we have all the:
+    //  Core Sample Types
+    //  Organ Types
+    // Tissue Types
+    // Cell Types
+    var core_types=[]
+    var organ_types=[]
+    var tissue_types=[]
+    var cell_types=[]
+    var misc_types=[]
+    SAMPLE_TYPES.map((optgs, index) => {
+      Object.entries(optgs).map(op => {
+        var type = {
+          label: op[1],
+          value: op[0]
+        }
+        
+        if(index<5){
+          core_types.push(type);
+        }else if (index === 5) {
+          organ_types.push(type)
+        }else if (index === 6) {
+          tissue_types.push(type)
+        }else if (index === 7) {  
+          cell_types.push(type)
+        }else if (index === 8) {
+          misc_types.push(type)
+        }
+      })
+      
+    })
+    var groupedOption = [{
+      label: '',
+      options: core_types,
+    },{
+      label: 'Organs',
+      options: organ_types,
+    },{
+      label: 'Tissues',
+      options: tissue_types,
+    },{
+      label: 'Cells',
+      options: cell_types,
+    },{
+      label: 'Other', 
+      options: misc_types,
+    }];
+  console.debug("groupedTypeList", groupedOption);
+    return groupedOption;
+  };
 
+  return compileTypeList();
+}
 
 
 
