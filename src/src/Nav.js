@@ -10,17 +10,18 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
 
 export default class Navigation extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-          anchorElS:false,
-          anchorElB: false
-
-        }
-        console.debug(this.props);
-        // Expected Props: 
-          // login: boolean / Login status from App
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorElS:false,
+      anchorElB: false
+      
     }
+    console.debug(this.props);
+    // Expected Props: 
+    // login: boolean / Login status from App
+    
+  }
 
 
     handleBulkClick = (event) => {
@@ -51,11 +52,9 @@ export default class Navigation extends Component {
   };
 
 
-
-
     render() {
 
-        const logout_url = `${process.env.REACT_APP_BACKEND_URL}/logout`;
+        const logout_url = `;${process.env.REACT_APP_BACKEND_URL}/logout`;
         let logout = this.state.isAuthenticated ? (
         
         <Button

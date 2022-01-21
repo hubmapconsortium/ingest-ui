@@ -1,4 +1,4 @@
-import React, { useEffect, useState  } from "react";
+import React, { useEffect, useState, useMemo, useRef  } from "react";
 import Select from 'react-select'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -13,6 +13,7 @@ import {
 import { DataGrid, useGridApiRef } from '@mui/x-data-grid';
 import { toTitleCase, toSingular, toPlural } from "../utils/string_helper";
 import { compiledTypes } from "../utils/display_subtypes";
+import { ErrBox } from "../utils/ui_elements";
 
 import { api_search2, search_api_search_group_list } from '../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './ui/table_constants';
@@ -20,7 +21,10 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 
 export const RenderSearchComponent = (props) => {
+
+  let navigate = useNavigate();
 //console.debug("RenderSearchComponent", props);
+  // const apiRef = useGridApiRef();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [isLoading, setLoading] = useState(true);
   var [rowData, setRowData] = useState([]);
@@ -28,8 +32,21 @@ export const RenderSearchComponent = (props) => {
   var [searchContent, setSearchContent] = useState([]);
   var [queryParams, setQueryParams] = useState();
 
+  // React.useEffect(() => {
+  //   apiRef.current.subscribeEvent("cellClick", (params) => {
+  //     props.Intent(params);
+  //   });
+  // }, [apiRef]);
+
  
-  
+  function OpenEntity(params){
+    console.debug("openEntity", params.row);
+    console.debug(params.row.entity_type, params.row.id);
+    var entity = (params.row.entity_type).toLowerCase();
+    navigate(`/${entity}/${params.row.id}`, { replace: true });
+    // 
+  }
+
   useEffect(() => {
     fetchDataset({
       group_uuid: "",
@@ -39,6 +56,7 @@ export const RenderSearchComponent = (props) => {
   }, []);
 
   function fetchDataset(queryParams){
+    console.debug("fetchDataset", queryParams);
     if(!queryParams && !props.entity_type){
       console.debug("No queryParams and no entity_type");
       queryParams = {
@@ -68,17 +86,19 @@ export const RenderSearchComponent = (props) => {
     };
 
     if (isLoading) {
+      console.debug("isLoading");
       return (
-      <div className="card-body search-filter">
+      <div className=" search-filter">
         <Preamble {...props} custom_title={props.custom_title} />
         <RenderFilterControls {...props} entity_type={props.entity_type} searchHandler={fetchDataset}/>
         <div className="loader">Loading...</div>
       </div>
       );
     }else{
+      console.debug("isLoading", isLoading);
       return (
-        <div className="card-body search-filter">
-          <Preamble {...props} custom_title="Search" />
+        <div>
+          <Preamble {...props} custom_title={props.custom_title} />
           <RenderFilterControls {...props} custom_title={props.custom_title} entity_type={props.entity_type} searchHandler={fetchDataset}/>
           <Box sx={{ height: 400, bgcolor: 'background.paper' }}>
             <DataGrid rows={rowData} columns={columnData} onCellClick={OpenEntity}/>
@@ -90,18 +110,12 @@ export const RenderSearchComponent = (props) => {
 }
 
 
-function OpenEntity(params){
-  let navigate = useNavigate();
-  console.debug("openEntity", params.row);
-  console.debug(params.row.entity_type, params.row.id);
-  var entity = (params.row.entity_type).toLowerCase();
-  navigate(`/${entity}/${params.row.id}`);
-}
+
 
 
 function Preamble(props) {
   return( 
-    <div>
+    <div className=""> 
     {props.custom_title && (
         <span className="portal-label text-center display-block">{props.custom_title}</span>
       )}
@@ -109,13 +123,17 @@ function Preamble(props) {
         <span className="portal-label text-center display-block">Search</span>
       )}
       <span className="text-center mb-2 display-block">      
-      Use the filter controls to search for   s, Samples, Datasets or Data Uploads.
+      Use the filter controls to search for   s, Samples, Datasets or Data Uploads. <br />
       If you know a specific ID you can enter it into the keyword field to locate individual entities.
       </span>
     </div>
   );
   
 }
+
+
+
+
 
 // Cell Actions
 // function OpenEntity(target) {

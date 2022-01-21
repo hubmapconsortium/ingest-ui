@@ -163,3 +163,70 @@ export const ES_SEARCHABLE_WILDCARDS = [
   "lab_tissue_sample_id",
   "lab_dataset_id"
   ];
+
+
+
+  export function compiledTissueTypes() {
+    const  compileTypeList = () =>{
+      var donor_types=[]
+      var sample_types=[]
+      TISSUE_TYPES.map((optgs, index) => {
+        Object.entries(optgs).map(op => {
+          var type = {
+            label: op[1],
+            value: op[0]
+          }
+          
+          if(index>0){
+            sample_types.push(type);
+          }else{
+            donor_types.push(type)
+          }
+        })
+        
+      })
+      var groupedOption = [{
+        label: 'Donor',
+        options: donor_types,
+      },{
+        label: 'Sample',
+        options: sample_types
+,
+      }];
+  //console.debug("groupedTypeList", groupedOption);
+      return groupedOption;
+    };
+    return compileTypeList();
+  }
+  
+
+
+
+  export function compiledSelectList(params) {
+//console.debug("compiledSelectList", params);
+  
+      var groups = []; 
+      params.map((optgs, index) => {
+        groups.push({
+          "label": "---" ,
+          "options":[]
+        })
+      
+        var list = []; 
+        Object.entries(optgs).map(op => {
+          var option = {
+            label: op[1],
+            value: op[0]
+          }
+          list.push(option);
+          groups[index].options.push(option);
+        //console.debug("index", index);
+        //console.debug("groupCOunt", groups[index]);
+        })        
+      //console.debug("index", index); 
+      //console.debug("group", groups);
+    //console.debug("list", list[0], list[1]);
+    //console.debug("compiledSelectList", list);
+      })
+    return groups;
+  }

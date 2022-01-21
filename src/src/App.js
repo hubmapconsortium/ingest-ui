@@ -1,10 +1,13 @@
 
 import * as React from "react";
 import {
+  useNavigate,
+  Navigate,
   Routes,
   Route} from "react-router-dom";
 
 //import Navigation from './components/Navbar.js';
+import { useGridApiRef } from "@mui/x-data-grid";
 
 
 // Login Management
@@ -56,10 +59,20 @@ function SetAuth(){
   }
 }
 
-function CheckAuth(){
+function CheckCreds(){
   var infoJSON = localStorage.getItem("info");
   if(infoJSON){
     return infoJSON;
+  }
+  else{
+    SetAuth();
+  }
+}
+
+function CheckAuth(){
+  var isAuth = localStorage.getItem("isAuthenticated");
+  if(isAuth){
+    return isAuth;
   }
   else{
     SetAuth();
@@ -89,15 +102,36 @@ function cleanJSON(str){
 }
 
 
+function OpenEntity(params){
+
+
+  let navigate = useNavigate();
+  console.debug("openEntity", params.row);
+  console.debug(params.row.entity_type, params.row.id);
+  var entity = (params.row.entity_type).toLowerCase();
+  navigate(`/${entity}/${params.row.id}`);
+}
+
+
 function renderContent() {
-  let html = <Login />;
-  // const { redirect } = this.state;
+  var loginStatus = CheckAuth
+  let html;
+  console.debug("Login Status: " + loginStatus);
+  if(loginStatus === true){
+    html = <Login />;
+  }
   return html;
 }
 
-export function App (){
+
+
+
+export function App (props){
+  const apiRef = useGridApiRef();
+
+  console.debug("props", props);
   return (
-    <div className="">
+    <div className="App">
       {/* <IdleTimer
         ref={ref => {
           idleTimer = ref;
@@ -115,25 +149,26 @@ export function App (){
         // logout={handleLogout}
         // userInfo={this.getUserInfo()}
       />
-      
-      <div id="content" className="container App">
-        <div className="col-sm-12">
-          <div className="row">
+      <div  className="container card mb-5">
+           <div className="" id="content">
             {renderContent()}
-
                 <Routes>
-                    <Route path="/" element={<RenderSearchComponent entity_type=' ' />} />
+                    <Route path="/" element={
+                    <RenderSearchComponent 
+                      entity_type=' ' 
+                      I  ntent={() => OpenEntity}  
+                    />} />
 
                     <Route path="/donors" index element={<RenderSearchComponent custom_title="Search" entity_type="donors" loadOdefaultOptionValueptions="Donors"/>} ></Route>
-                      <Route path="/donors/:uuid" element={<DonorForm status="view"/>} />
+                      <Route path="/donor/:uuid" element={<DonorForm status="view"/>} />
                     
                     <Route path="/samples" element={<RenderSearchComponent entity_type="samples" 
                     loadOdefaultOptionValueptions="samples"/>} ></Route>
-                    <Route path="/samples/:uuid" element={<RenderSample status="view"/>} />
+                    <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
                     <Route path="/datasets" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
-                      <Route path="/datasets/:uuid" element={<FetchDataset status="view"/>} />
+                      <Route path="/dataset/:uuid" element={<FetchDataset status="view"/>} />
                     <Route path="/uploads" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
-                      <Route path="/uploads/:uuid" element={<UploadsForm status="view"/>} />
+                      <Route path="/upload/:uuid" element={<UploadsForm status="view"/>} />
                     <Route path="/new/donor" element={<DonorForm status="new" />} />
                     <Route path="/new/sample" element={<RenderSample status="new" />} />
                     <Route path="/new/dataset" element={<DatasetEdit status="new" />} />
@@ -142,17 +177,7 @@ export function App (){
                     <Route path="/new/data" element={<RenderSearchComponent modal="newUpload" />} />
 
                 </Routes>
-
-
-         
-                
-      </div>
   </div>
-
-     
-
-   
-
 
     </div>
   </div>

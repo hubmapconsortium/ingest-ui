@@ -6,11 +6,13 @@
 }
 
 #content {
+  margin: 0 auto;
+  width:85%;
   padding-bottom: 10px;
 }
 
 #body {
-  background-color: #f4f4f4;
+  background-color: #ebebeb;
 }
 
 .tooltip 
