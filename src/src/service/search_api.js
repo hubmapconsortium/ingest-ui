@@ -6,6 +6,33 @@ import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
 
 export const esb = require('elastic-builder');
 
+/*
+ * Auth Validation  method
+ * 
+ * return:  { status}
+ */
+// Something of a hack to validate the auth token
+export function api_validate_token(auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+    let payload = search_api_filter_es_query_builder("test", 1 , 1);
+
+  return axios 
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
+        payload, options
+      )
+      .then(res => {
+        return {status: res.status}
+      })
+      .catch(err => {
+        return {status: err.response.status, results: err.response.data}
+      });
+};
 
 
 /*

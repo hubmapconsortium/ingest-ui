@@ -6,8 +6,10 @@ import {
   Navigate,
   Routes,
   Route} from "react-router-dom";
+
   // Login Management
   import Login from './components/ui/login';
+  import {api_validate_token} from './service/search_api';
   
   import Dialog from '@mui/material/Dialog';
   import DialogActions from '@mui/material/DialogActions';
@@ -48,9 +50,28 @@ function SetAuth(){
       window.location.replace(`${process.env.REACT_APP_URL}`);  
       return false    
     }else{
+      console.debug("infoJSON", infoJSON.groups_token);
+      // We have a token, but is it good? 
+      api_validate_token(infoJSON.groups_token)
+      .then(res => {
+        console.debug("Token Check", res);
+        if(res.status === 401){
+          console.debug("Token is invalid. Clearing...");
+          localStorage.removeItem("info");
+          localStorage.removeItem("isAuthenticated");
+          window.location.replace(`${process.env.REACT_APP_URL}`);  
+        }else if(res.status === 200){
+          localStorage.setItem("isAuthenticated", true);
+          return true
+        }else{
+          console.debug("Token Issues", res);
+        }
+      })
+      .catch(err => {
+        console.debug("Error validating token", err);
+      })
       // console.debug("Info JSON forund in localStorage",infoJSON);
-      localStorage.setItem("isAuthenticated", true);
-      return true
+      
     }
   // And if wevve got nothing  
   }else{
@@ -64,35 +85,7 @@ function SetAuth(){
   }
 }
 
-function CheckCreds(){
-  var infoJSON = localStorage.getItem("info");
-  if(infoJSON){
-    return true
-  }
-  else{
-    return false
-  }
-}
 
-function CheckAuth(){
-  var isAuth = localStorage.getItem("isAuthenticated");
-  if(isAuth){
-    return isAuth;
-  }
-  else{
-    SetAuth();
-  }
-}
-
-function CheckToken(){  
-  var infoJSON = localStorage.getItem("info");
-  if(infoJSON){
-    return infoJSON.group_token;
-  }
-  else{
-    SetAuth();
-  }
-}
 
 function cleanJSON(str){
   try {     
@@ -128,6 +121,7 @@ export function App (props){
   }, []);
 
 
+  
 
   function handleCancel(){
     window.history.back()
