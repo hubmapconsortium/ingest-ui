@@ -163,7 +163,7 @@ export function App (props){
       /> */}
       
       <Navigation 
-        login={localStorage.getItem("isAuthenticated")} 
+        login={authStatus} 
         logout={handleLogout}
         app_info={localStorage.getItem("info")}
         uploadsDialogRender={uploadsDialogRender}
