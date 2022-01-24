@@ -756,7 +756,7 @@ class DonorForm extends Component {
                 )}
                 {this.state.readOnly && (
                   <div>
-                   <input type="text" readonly class="form-control" id="static_lab_donor_id" value={this.state.lab_donor_id}></input>
+                   <input type="text" readOnly className="form-control" id="static_lab_donor_id" value={this.state.lab_donor_id}></input>
                    
                   </div>
                 )}
@@ -808,7 +808,7 @@ class DonorForm extends Component {
                 )}
                 {this.state.readOnly && (
                   <div>
-                    <input type="text" readonly class="form-control" id="static_identifying_name" value={this.state.identifying_name}></input>
+                    <input type="text" readOnly className="form-control" id="static_identifying_name" value={this.state.identifying_name}></input>
                   </div>
                 )}
                
@@ -866,7 +866,7 @@ class DonorForm extends Component {
                 )}
                 {this.state.readOnly && (
                   <div>
-                    <input type="text" readonly class="form-control" id="static_protocol" value={this.state.protocol_url}></input>
+                    <input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol_url}></input>
 
                   </div>
                 )}
@@ -914,7 +914,7 @@ class DonorForm extends Component {
                   {this.state.readOnly && (
                     <div>
                       {/*<p>{truncateString(this.state.description, 400)}</p>*/}
-                       <input type="text" readonly class="form-control" id="static_description" value={this.state.description}></input>
+                       <input type="text" readOnly className="form-control" id="static_description" value={this.state.description}></input>
 
                     </div>
                   )}

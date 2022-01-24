@@ -1556,7 +1556,7 @@ handleAddImage = () => {
   render() {
     return (
       <div className="row">
-       <Paper className="paper-container">
+
         {this.state.related_group_ids.length > 1
           && (
           <div className="alert alert-primary col-sm-12" role="alert">
@@ -2629,7 +2629,8 @@ handleAddImage = () => {
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}
         />
-        </Paper>
+
+
          <Snackbar open={this.state.show_snack} 
                       onClose={this.closeSnack}
                       anchorOrigin={{

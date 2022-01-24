@@ -14,7 +14,7 @@ import { ingest_api_allowable_edit_states } from '../service/ingest_api';
 import {ErrBox} from "../utils/ui_elements";
 import { TissueForm } from "../utils/form_schema";
 
-import DonorForm from "./uuid/tissue_form_components/tissueForm";
+import DonorForm from "./uuid/donor_form_components/donorForm";
 import { useNavigate} from "react-router-dom";
 
 
