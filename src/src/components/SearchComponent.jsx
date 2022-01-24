@@ -26,7 +26,7 @@ export const RenderSearchComponent = (props) => {
   let navigate = useNavigate();
 //console.debug("RenderSearchComponent", props);
   // const apiRef = useGridApiRef();
-  var authSet = JSON.parse(localStorage.getItem("info"));
+  // var authSet = JSON.parse(localStorage.getItem("info"));
   var [isLoading, setLoading] = useState(true);
   var [rowData, setRowData] = useState([]);
   var [columnData, setColumnData] = useState([]);

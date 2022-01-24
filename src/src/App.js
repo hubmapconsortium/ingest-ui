@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {
   useNavigate,
   Navigate,
@@ -18,7 +18,8 @@ import {
   
   
   // Site Content
-  import {Navigation} from "./Nav";
+import {Navigation} from "./Nav";
+import {RenderLogin} from "./components/login";
 import {RenderSearchComponent} from './components/SearchComponent';
 import {RenderDonor} from "./components/donors";
 import { RenderDataset} from "./components/datasets";
@@ -44,10 +45,12 @@ function SetAuth(){
       // console.debug("Malformed Info stored. Clearing...");
       localStorage.removeItem("info");
       localStorage.removeItem("isAuthenticated");
-      window.location.replace(`${process.env.REACT_APP_URL}`);      
+      window.location.replace(`${process.env.REACT_APP_URL}`);  
+      return false    
     }else{
       // console.debug("Info JSON forund in localStorage",infoJSON);
       localStorage.setItem("isAuthenticated", true);
+      return true
     }
   // And if wevve got nothing  
   }else{
@@ -56,16 +59,18 @@ function SetAuth(){
       email: "",
       globus_id: ""
     };
+    return false
+    window.location.replace(`${process.env.REACT_APP_URL}`);  
   }
 }
 
 function CheckCreds(){
   var infoJSON = localStorage.getItem("info");
   if(infoJSON){
-    return infoJSON;
+    return true
   }
   else{
-    SetAuth();
+    return false
   }
 }
 
@@ -105,24 +110,24 @@ function cleanJSON(str){
 
 
 
-function renderContent() {
-  var loginStatus = CheckAuth
-  let html;
-  console.debug("Login Status: " + loginStatus);
-  if(loginStatus === true){
-    html = <Login />;
-  }
-  return html;
-}
-
-
-
-
-
 export function App (props){
   var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
+  var [authStatus, setAuthStatus] = useState(false);
   const apiRef = useGridApiRef();
   let navigate = useNavigate();
+
+  useEffect(() => {
+
+    if(SetAuth() === false){
+      console.debug("No Auth");
+      setAuthStatus(false);
+    }else{
+      console.debug("Auth");
+      setAuthStatus(true);
+    }
+  }, []);
+
+
 
   function handleCancel(){
     window.history.back()
@@ -165,42 +170,50 @@ export function App (props){
       />
       <div  className="container card mb-5">
            <div className="" id="content">
-            {renderContent()}
-                <Routes>
-                    <Route path="/" element={
-                    <RenderSearchComponent 
-                      entity_type=' ' 
-                    />} />
 
-                    <Route path="/donors" index element={<RenderSearchComponent custom_title="Search" entity_type="donors" />} ></Route>
-                    <Route path="/samples" element={<RenderSearchComponent entity_type="samples" />} ></Route>
-                    <Route path="/datasets" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
-                    <Route path="/uploads" element={<RenderSearchComponent entity_type="uploads" />} ></Route>
-                    
-                    
-                    <Route path="/donor/:uuid" element={<RenderDonor  status="view"/>} />
-                    <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
-                    <Route path="/dataset/:uuid" element={<RenderDataset  status="view"/>} />
-                    <Route path="/upload/:uuid" element={<RenderUpload  status="view"/>} />
-                    
-                    
-                    <Route path="/new/donor" element={
-                      <Forms formType='donor' onCancel={handleCancel} /> 
-                    }/>
-                    <Route path="/new/sample" element={
-                      <Forms formType='sample' onCancel={handleCancel} /> 
-                    }/>
-                    <Route path="/new/dataset" element={
-                      <Forms formType='dataset' onCancel={handleCancel} /> 
-                    }/> 
 
-                    <Route path="/new/sample" element={<RenderSample status="new" />} />
-                    <Route path="/new/dataset" element={<RenderDataset status="new" />} />
-                    <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
-                    <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
-                    <Route path="/new/data" element={<RenderSearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} />} />
-                    {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
-                </Routes>
+           {!authStatus && (
+             <Routes>
+                 <Route path="/" element={ <Login />} />
+             </Routes>
+           )}
+
+          {authStatus && (
+          <Routes>
+
+              <Route path="/" element={ <RenderSearchComponent entity_type=' ' />} />
+>
+              <Route path="/login" element={<RenderLogin />} />
+
+              <Route path="/donors" element={<RenderSearchComponent custom_title="Search" entity_type="donors" />} ></Route>
+              <Route path="/samples" element={<RenderSearchComponent entity_type="samples" />} ></Route>
+              <Route path="/datasets" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
+              <Route path="/uploads" element={<RenderSearchComponent entity_type="uploads" />} ></Route>
+            
+              <Route path="/donor/:uuid" element={<RenderDonor  status="view"/>} />
+              <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
+              <Route path="/dataset/:uuid" element={<RenderDataset  status="view"/>} />
+              <Route path="/upload/:uuid" element={<RenderUpload  status="view"/>} />
+              
+              <Route path="/new/donor" element={
+                <Forms formType='donor' onCancel={handleCancel} /> 
+              }/>
+              <Route path="/new/sample" element={
+                <Forms formType='sample' onCancel={handleCancel} /> 
+              }/>
+              <Route path="/new/dataset" element={
+                <Forms formType='dataset' onCancel={handleCancel} /> 
+              }/> 
+
+              <Route path="/new/sample" element={<RenderSample status="new" />} />
+              <Route path="/new/dataset" element={<RenderDataset status="new" />} />
+              <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
+              <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
+              <Route path="/new/data" element={<RenderSearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} />} />
+              {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
+
+          </Routes>
+          )}
   </div>
 
     </div>

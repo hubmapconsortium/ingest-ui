@@ -32,6 +32,7 @@ export const Navigation = (props) => {
   const location = useLocation();
 
   useEffect(() => {
+    
     setAppInfo(props.app_info);
     console.debug("props", props);
     console.debug("location", location);
