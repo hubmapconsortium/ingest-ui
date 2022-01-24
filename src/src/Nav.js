@@ -1,74 +1,58 @@
-import React, { Component } from "react";
+import React, { useEffect, useState  } from "react";
+import { Link } from 'react-router-dom'
+import {useNavigate} from "react-router-dom";
 
 // UI Menu 
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
+// import MenuItem from '@material-ui/core/MenuItem';
+// import Menu from '@material-ui/core/Menu';
 
-import { Button,Typography} from "@material-ui/core";
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
 
-
-export default class Navigation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorElS:false,
-      anchorElB: false
-      
-    }
-    console.debug(this.props);
-    // Expected Props: 
-    // login: boolean / Login status from App
-    
-  }
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 
-    handleBulkClick = (event) => {
-      console.debug('clicked', event.currentTarget);
-      this.setState({
-        anchorElB: event.currentTarget,
-        anchorElS: null,
-        show_menu_popup: true,
-        // creatingBulkEntity: true
-      });
-    };
-    handleSingleClick = (event) => {
-      console.debug('clicked', event.currentTarget);
-      this.setState({
-        anchorElB: null,  
-        anchorElS: event.currentTarget,
-        show_menu_popup: true,
-        // creatingBulkEntity: true
-      });
-    };
+export const Navigation = (props) => {
+  let navigate = useNavigate();
+  const [app_info, setAppInfo] = React.useState();
+  const [anchorEl_I, setAnchorEl_I] = React.useState(null);
+  const [anchorEl_B, setAnchorEl_B] = React.useState(null);
+  const open_I = Boolean(anchorEl_I);
+  const open_B = Boolean(anchorEl_B);
 
-  handleClose = () => {
-    //console.log("App.js handleClose");
-    this.setState({
-      anchorElB: false,
-      anchorElS: false,
-    });
+
+  useEffect(() => {
+    setAppInfo(props.app_info);
+  }, [])
+
+
+  const handleClick_I = (event) => {
+    console.debug("HandleClick", event );
+    setAnchorEl_I(event.currentTarget);
   };
 
+  const handleClick_B = (event) => {
+    console.debug("HandleClick", event );
+    setAnchorEl_B(event.currentTarget);
+  };
 
-    render() {
+  const handleClose = (e) => {
+    console.debug("HandleClose", e);
+    setAnchorEl_I(null);
+    setAnchorEl_B(null);
+  };
 
-        const logout_url = `;${process.env.REACT_APP_BACKEND_URL}/logout`;
-        let logout = this.state.isAuthenticated ? (
-        
-        <Button
-            href={logout_url}
-            className=""
-            onClick={this.props.logout}
-            ref={a => (this.logoutButton = a)}
-        >
-            Logout
-        </Button>
-        ) : ("");
+  // const NavTo = (path, type) => {
+  //   console.debug("NavTo", path, type);
+  //   navigate('/'+path+'/'+type);
+  // }
 
-        return (
-        <header id="header" className="navbar navbar-light">
+    return(
+
+      <header id="header" className="navbar navbar-light">
         <nav className="container menu-bar" id="navMenu">
           <div id="MenuLeft">
             <a className="navbar-brand" href="/">
@@ -83,7 +67,7 @@ export default class Navigation extends Component {
               />
             </a>
       
-              {this.props.login && (
+              {props.login && (
                 <div className="d-inline">                
                 <span className="menu-bar-static-label mr-3">REGISTER NEW:</span>
                 
@@ -91,62 +75,81 @@ export default class Navigation extends Component {
 
 
                 <Button 
-                  aria-controls="IndividualMenu" 
-                  className="btn mr-1" 
-                  aria-haspopup="true" 
-                  color="primary"
-                  endIcon={<ArrowDropDownIcon />}
-                  onClick={this.handleSingleClick}>
+                  id="IndividualButton"
+                  aria-controls={open_I ? 'IndividualMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_I ? 'true' : undefined}
+                  onClick={handleClick_I} >
                     Individual
                 </Button>
                   <Menu
                     id="IndividualMenu"
-                    keepMounted
-                    anchorEl={this.state.anchorElS}
-                    open={Boolean(this.state.anchorElS)}
-                    onClose={this.handleClose}
-                    getContentAnchorEl={null}
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                    transformOrigin={{vertical: 'top', horizontal: 'center'}}
-                  >
-                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Donor</MenuItem>
-                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Sample</MenuItem>
-                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Dataset</MenuItem>
+                    anchorEl={anchorEl_I}
+                    open={open_I}
+                    onClose={handleClose}
+                    MenuListProps={{
+                      'aria-labelledby': 'IndividualButton',
+                    }}>
+                    <MenuItem 
+                      className="nav-link" 
+                      component={Link}
+                      to="/new/donor" >
+                      Donor
+                    </MenuItem>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      to="/new/sample" >
+                      Sample
+                    </MenuItem>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      to="/new/dataset" >
+                      Dataset
+                    </MenuItem>
                   </Menu>
 
-
-                <Button 
-                  aria-controls="BulkMenu" 
-                  aria-haspopup="true" 
-                  color="primary"
-                  endIcon={<ArrowDropDownIcon />}
-                  onClick={this.handleBulkClick}>
+                  <Button 
+                  id="BulkButton"
+                  aria-controls={open_B ? 'BulkMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_B ? 'true' : undefined}
+                  onClick={handleClick_B} >
                     Bulk
-                  </Button>
+                </Button>
                   <Menu
                     id="BulkMenu"
-                    keepMounted
-                    anchorEl={this.state.anchorElB}
-                    open={Boolean(this.state.anchorElB)}
-                    onClose={this.handleClose}
-                    getContentAnchorEl={null}
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                    transformOrigin={{vertical: 'top', horizontal: 'center'}}
-                  >
-                    <MenuItem onClick={this.handleBulkSelection}>Donors</MenuItem>
-                    <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
-                    <MenuItem onClick={this.handleUploadsDialog}>Data</MenuItem>
+                    anchorEl={anchorEl_B}
+                    open={open_B}
+                    onClose={handleClose}
+                    MenuListProps={{
+                      'aria-labelledby': 'BulkButton',
+                    }}>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      to="/bulk/donors" >Donors</MenuItem>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      to="/bulk/samples" >Samples</MenuItem>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      to="/bulk/data" >Data</MenuItem>
                   </Menu>
+
 
                 </div>
               )}
             </div>
         <div id="MenuRight">
-          {this.state.isAuthenticated && (
+          {props.login && (
             <div className="float-right">
               <span className="username">
                 <Typography variant="button" className="username-menu">
-                  {this.state.email}{" "}
+                  {props.app_info.email}{" "}
                 </Typography>
                 <Button
                 href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
@@ -154,13 +157,16 @@ export default class Navigation extends Component {
                   Edit Profile
                 </Button>
               </span>
-              {logout}
+              {props.logout}
             </div>
           
           )}
           </div>
         </nav>
       </header>
-        );
-    }
-}
+    );
+
+  }
+  
+
+

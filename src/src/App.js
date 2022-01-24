@@ -15,7 +15,7 @@ import Login from './components/ui/login';
 
 // UI Bases
 
-import Navigation from "./Nav";
+import {Navigation} from "./Nav";
 
 // UI Feedback
 import MuiAlert from '@material-ui/lab/Alert';
@@ -26,10 +26,10 @@ import {RenderSearchComponent} from './components/SearchComponent';
 import {RenderDonor} from "./components/donors";
 import { RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
-import UploadsForm from "./components/uploads";
+import {RenderUpload} from "./components/uploads";
 
 // Bulky
-import BulkProcess from "./components/bulk";
+import {RenderBulk} from "./components/bulk";
 
 // The Old Stuff
 import Forms from "./components/uuid/forms";
@@ -120,10 +120,22 @@ function renderContent() {
 
 
 
+
+
 export function App (props){
   const apiRef = useGridApiRef();
+  let navigate = useNavigate();
 
-
+  function handleCancel(){
+    window.history.back()
+  }
+  
+  function handleLogout(e) {
+    localStorage.setItem("isAuthenticated", false);
+    localStorage.removeItem("info");
+    navigate('/');
+  };
+  
 
   console.debug("props", props);
   return (
@@ -142,8 +154,8 @@ export function App (props){
       
       <Navigation 
         login={localStorage.getItem("isAuthenticated")} 
-        // logout={handleLogout}
-        // userInfo={this.getUserInfo()}
+        logout={handleLogout}
+        app_info={localStorage.getItem("info")}
       />
       <div  className="container card mb-5">
            <div className="" id="content">
@@ -163,16 +175,25 @@ export function App (props){
                     <Route path="/donor/:uuid" element={<RenderDonor  status="view"/>} />
                     <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
                     <Route path="/dataset/:uuid" element={<RenderDataset  status="view"/>} />
-                    <Route path="/upload/:uuid" element={<UploadsForm  status="view"/>} />
+                    <Route path="/upload/:uuid" element={<RenderUpload  status="view"/>} />
                     
                     
-                    <Route path="/new/donor" element={<RenderDonor status="new" />} />
+                    <Route path="/new/donor" element={
+                      <Forms formType='donor' onCancel={handleCancel} /> 
+                    }/>
+                    <Route path="/new/sample" element={
+                      <Forms formType='sample' onCancel={handleCancel} /> 
+                    }/>
+                    <Route path="/new/dataset" element={
+                      <Forms formType='dataset' onCancel={handleCancel} /> 
+                    }/> 
+
                     <Route path="/new/sample" element={<RenderSample status="new" />} />
                     <Route path="/new/dataset" element={<RenderDataset status="new" />} />
-                    <Route path="/new/donors" exact element={<BulkProcess bulkType="donors" />} />
-                    <Route path="/new/samples" element={<BulkProcess bulkType="samples" />} />
+                    <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
+                    <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
                     <Route path="/new/data" element={<RenderSearchComponent modal="newUpload" />} />
-
+                    {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
                 </Routes>
   </div>
 

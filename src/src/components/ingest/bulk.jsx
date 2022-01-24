@@ -26,7 +26,7 @@ import {ingest_api_bulk_entities_upload,
         ingest_api_users_groups} from '../../service/ingest_api';
 
 
-class bulkSamples extends Component {
+class bulkCreation extends Component {
 
   constructor(props) {
     super(props);
@@ -903,5 +903,5 @@ renderFileGrabber = () =>{
   }
 }
 
-export default bulkSamples;
+export default bulkCreation;
  
