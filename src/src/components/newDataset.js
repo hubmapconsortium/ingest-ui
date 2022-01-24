@@ -1352,7 +1352,7 @@ function DatasetEdit()  {
           <button
               type='button'
               className='btn btn-secondary btn-block'
-              onClick={() => props.handleCancel()}>
+              onClick={() => props.HandleCancel()}>
               Cancel
           </button>
       </div>

@@ -26,9 +26,9 @@ import {
 import ReactTooltip from "react-tooltip";
 import HIPPA from "../HIPPA";
 import GroupModal from "../groupModal";
-import { ingest_api_users_groups } from '../../service/ingest_api';
-import { entity_api_update_entity, entity_api_create_entity } from '../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
+import { ingest_api_users_groups } from '../../../service/ingest_api';
+import { entity_api_update_entity, entity_api_create_entity } from '../../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
 
 class DonorForm extends Component {
   state = {
@@ -453,7 +453,7 @@ class DonorForm extends Component {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => this.props.handleCancel()}
+                onClick={() => this.props.HandleCancel()}
               >
                 Cancel
               </button>
@@ -485,7 +485,7 @@ class DonorForm extends Component {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => this.props.handleCancel()}
+                onClick={() => this.props.HandleCancel()}
               >
                  Cancel
               </button>
@@ -518,7 +518,7 @@ class DonorForm extends Component {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => this.props.handleCancel()}
+              onClick={() => this.props.HandleCancel()}
             >
               Cancel
             </button>

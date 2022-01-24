@@ -37,7 +37,7 @@ import SearchComponent from "../../search/SearchComponent";
 //import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
-import ImageUpload from "../../../utils/imageUpload.jsx"; 
+import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
 //import LabIDsModa7l from "../labIdsModal";
 import RUIModal from "./ruiModal";
@@ -47,8 +47,8 @@ import { entity_api_get_entity,
     entity_api_create_entity,
     entity_api_create_multiple_entities, 
     entity_api_get_entity_ancestor 
-} from '../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../service/ingest_api';
+} from '../../../service/entity_api';
+import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
 // import { useHistory } from "react-router-dom";
 
 class TissueForm extends Component {
@@ -160,7 +160,7 @@ class TissueForm extends Component {
 
     // let history = this.props.history;
     // //////console.debug('HISTORY', history)
-
+    console.debug('PROPS', this.props);
     const config = {
       headers: {
         Authorization:
@@ -205,7 +205,7 @@ class TissueForm extends Component {
             console.debug('editingEntity', param_uuid)
           }
         
-          //console.debug('UUID', param_uuid)
+          console.debug('TISSUE FORM UUID', param_uuid)
           entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
                 if (response.status === 200) {
@@ -533,7 +533,7 @@ class TissueForm extends Component {
      if (this.props.history) {
        this.props.history.goBack();
     } else {
-      this.props.handleCancel();
+      this.props.HandleCancel();
     }
   }
 

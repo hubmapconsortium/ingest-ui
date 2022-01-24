@@ -20,10 +20,10 @@ import {
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
-import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../service/ingest_api';
-import { entity_api_update_entity } from '../service/entity_api';
+import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
+import { entity_api_update_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import { get_assay_type } from '../service/search_api';
+import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -1341,7 +1341,7 @@ class DatasetEdit extends Component {
           <button
               type='button'
               className='btn btn-secondary btn-block'
-              onClick={() => this.props.handleCancel()}>
+              onClick={() => this.props.HandleCancel()}>
               Cancel
           </button>
       </div>
@@ -2085,7 +2085,7 @@ class DatasetEdit extends Component {
           <div className='row'>
             <div className='col-sm-12 text-center alert'>
               <h4>
-                {(this.props.editingDataset &&
+                {(this.props.editingDataset && this.props.editingDataset.status &&
                   this.props.editingDataset.status.toUpperCase()) ||
                   "STATUS"}
               </h4>

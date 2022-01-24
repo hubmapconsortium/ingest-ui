@@ -23,14 +23,16 @@ import MuiAlert from '@material-ui/lab/Alert';
 // Site Content
 import {RenderSearchComponent} from './components/SearchComponent';
 
-import DonorForm from "./components/donors";
+import {RenderDonor} from "./components/donors";
+import { RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
-import {DatasetEdit, FetchDataset} from "./components/datasets";
 import UploadsForm from "./components/uploads";
 
 // Bulky
 import BulkProcess from "./components/bulk";
 
+// The Old Stuff
+import Forms from "./components/uuid/forms";
 
 
 
@@ -102,15 +104,7 @@ function cleanJSON(str){
 }
 
 
-function OpenEntity(params){
 
-
-  let navigate = useNavigate();
-  console.debug("openEntity", params.row);
-  console.debug(params.row.entity_type, params.row.id);
-  var entity = (params.row.entity_type).toLowerCase();
-  navigate(`/${entity}/${params.row.id}`);
-}
 
 
 function renderContent() {
@@ -128,6 +122,8 @@ function renderContent() {
 
 export function App (props){
   const apiRef = useGridApiRef();
+
+
 
   console.debug("props", props);
   return (
@@ -156,22 +152,23 @@ export function App (props){
                     <Route path="/" element={
                     <RenderSearchComponent 
                       entity_type=' ' 
-                      I  ntent={() => OpenEntity}  
                     />} />
 
-                    <Route path="/donors" index element={<RenderSearchComponent custom_title="Search" entity_type="donors" loadOdefaultOptionValueptions="Donors"/>} ></Route>
-                      <Route path="/donor/:uuid" element={<DonorForm status="view"/>} />
-                    
-                    <Route path="/samples" element={<RenderSearchComponent entity_type="samples" 
-                    loadOdefaultOptionValueptions="samples"/>} ></Route>
-                    <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
+                    <Route path="/donors" index element={<RenderSearchComponent custom_title="Search" entity_type="donors" />} ></Route>
+                    <Route path="/samples" element={<RenderSearchComponent entity_type="samples" />} ></Route>
                     <Route path="/datasets" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
-                      <Route path="/dataset/:uuid" element={<FetchDataset status="view"/>} />
-                    <Route path="/uploads" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
-                      <Route path="/upload/:uuid" element={<UploadsForm status="view"/>} />
-                    <Route path="/new/donor" element={<DonorForm status="new" />} />
+                    <Route path="/uploads" element={<RenderSearchComponent entity_type="uploads" />} ></Route>
+                    
+                    
+                    <Route path="/donor/:uuid" element={<RenderDonor  status="view"/>} />
+                    <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
+                    <Route path="/dataset/:uuid" element={<RenderDataset  status="view"/>} />
+                    <Route path="/upload/:uuid" element={<UploadsForm  status="view"/>} />
+                    
+                    
+                    <Route path="/new/donor" element={<RenderDonor status="new" />} />
                     <Route path="/new/sample" element={<RenderSample status="new" />} />
-                    <Route path="/new/dataset" element={<DatasetEdit status="new" />} />
+                    <Route path="/new/dataset" element={<RenderDataset status="new" />} />
                     <Route path="/new/donors" exact element={<BulkProcess bulkType="donors" />} />
                     <Route path="/new/samples" element={<BulkProcess bulkType="samples" />} />
                     <Route path="/new/data" element={<RenderSearchComponent modal="newUpload" />} />
