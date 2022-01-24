@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef  } from "react";
+import React, { useEffect, useState } from "react";
 import Select from 'react-select'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -10,10 +10,9 @@ import {
 // import { DataGrid } from '@mui/x-data-grid';
 // import { GridCellParams } from '@mui/x-data-grid';
 // import { DataGrid } from '@material-ui/data-grid';
-import { DataGrid, useGridApiRef, GridOverlay } from '@mui/x-data-grid';
+import { DataGrid, GridOverlay } from '@mui/x-data-grid';
 import { toTitleCase, toSingular, toPlural } from "../utils/string_helper";
 import { compiledTypes } from "../utils/display_subtypes";
-import { ErrBox } from "../utils/ui_elements";
 
 import { api_search2, search_api_search_group_list } from '../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './ui/table_constants';
@@ -30,8 +29,6 @@ export const RenderSearchComponent = (props) => {
   var [isLoading, setLoading] = useState(true);
   var [rowData, setRowData] = useState([]);
   var [columnData, setColumnData] = useState([]);
-  var [searchContent, setSearchContent] = useState([]);
-  var [queryParams, setQueryParams] = useState();
   var [gridLoading, setGridLoading] = useState(true);
 
   // React.useEffect(() => {
@@ -246,11 +243,13 @@ function TypeSelect(props) {
 
   return (
     <Select    
+        placeholder={"------"}
         name="entity_type"
         options={options}
         value ={selectedValue}
         defaultValue={defaultValue}
         onChange={handleChange}
+        style={{zIndex: '100'}} 
         >
     </Select>
   )
@@ -265,6 +264,7 @@ return (
       name="keywords"
       label="Keywords" 
       variant="filled" 
+      style={{zIndex: '0'}} 
       placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"/>
   )
 }
@@ -318,9 +318,9 @@ function RenderFilterControls(props){
                   </div>
                   </div>
                 </div>
-                <div className="row">
-                    <div className="col-12 m-2">
-                    <div className="form-group">
+                <div className="row my-3">
+                    <div className="col">
+                    <div className="px-0 mx-0">
                      <KeywordInput  />
                      </div>
                   </div>
@@ -329,9 +329,10 @@ function RenderFilterControls(props){
                   <div className="col">
                     <Button
                       fullWidth
-                      className="btn btn-primary "
+                      className="btn btn-primary py-3 "
                       type="submit"
                       variant="contained"
+                      
                     >
                       Search
                     </Button>
@@ -339,7 +340,7 @@ function RenderFilterControls(props){
                   <div className="col">
                     <Button
                       fullWidth
-                      className="btn btn-outline-secondary "
+                      className="btn btn-outline-secondary py-3"
                       type="button"
                       onClick={handleClear}
                       variant="outlined"

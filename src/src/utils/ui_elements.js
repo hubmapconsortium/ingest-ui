@@ -1,12 +1,11 @@
 
-import React, { useEffect, useState  } from "react";
+import React from "react";
 
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import HelpTwoToneIcon from '@mui/icons-material/HelpTwoTone';
-import Button from '@mui/material/Button';
 
 
 
@@ -38,7 +37,6 @@ export function ErrBox(params) {
 
 export function HelpLabelTooltip(params) {
   let info = params.info;
-  let field = info.field;
   let title = info.title;
   let details = info.details;
   let place = info.place;
@@ -64,7 +62,6 @@ export function HelpLabelTooltip(params) {
 
 
 export function InputSelect(params) {
-  let field = params.field;
   let title = params.title;
   let details = params.details;
     return(
@@ -86,7 +83,7 @@ export function InputSelect(params) {
     );
   }
 
-  export function TestTable(params) {
+  export function TestTable() {
 
     return(
       <div className="card"><div className="card-body"><div className="row"><div className="col-sm-6"><b>Source Type:</b> Organ</div><div className="col-sm-12"><b>Organ Type:</b> Spleen</div><div className="col-sm-12"><b>Submission ID:</b> UFL0012-SP</div><div className="col-sm-12"><b>Group Name: </b> University of Florida TMC</div><div className="col-sm-12"><p><b>Description: </b> 2/3 of spleen</p></div></div></div></div>

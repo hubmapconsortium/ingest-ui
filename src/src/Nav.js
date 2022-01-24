@@ -1,6 +1,6 @@
-import React, { useEffect, useState  } from "react";
+import React, { useEffect} from "react";
 import { Link } from 'react-router-dom'
-import {useNavigate, useLocation} from "react-router-dom";
+import { useLocation} from "react-router-dom";
 
 
 import Dialog from '@mui/material/Dialog';
@@ -9,7 +9,6 @@ import DialogContent from '@mui/material/DialogContent';
 // import MenuItem from '@material-ui/core/MenuItem';
 // import Menu from '@material-ui/core/Menu';
 
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
 
 import Typography from '@mui/material/Typography';
@@ -22,9 +21,7 @@ import UploadsForm from "./components/uploads/createUploads";
 
 
 export const Navigation = (props) => {
-  let navigate = useNavigate();
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
-  const [app_info, setAppInfo] = React.useState();
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
   const [anchorEl_B, setAnchorEl_B] = React.useState(null);
   const open_I = Boolean(anchorEl_I);
@@ -32,9 +29,7 @@ export const Navigation = (props) => {
   const location = useLocation();
 
   useEffect(() => {
-    
-    setAppInfo(props.app_info);
-    console.debug("props", props);
+        console.debug("props", props);
     console.debug("location", location);
     if(location.pathname === "/new/data"){
       console.debug("Setting uploadsDialog to true");
@@ -68,6 +63,11 @@ export const Navigation = (props) => {
     setUploadsDialog(false);
     console.debug("onClose");
   };
+
+  const onCreated = () => {
+    console.debug("onCreated");
+  };
+
   // const NavTo = (path, type) => {
   //   console.debug("NavTo", path, type);
   //   navigate('/'+path+'/'+type);
@@ -75,7 +75,16 @@ export const Navigation = (props) => {
 
     return(
       <div>
-      <RenderUploadsDialog open={uploadsDialog} onClose={onClose}/>
+      <Dialog
+        open={uploadsDialog}
+      >
+        <DialogContent> 
+        <UploadsForm
+            onCreated={onCreated}
+            cancelEdit={onClose}
+          />
+        </DialogContent>
+      </Dialog>
       <header id="header" className="navbar navbar-light">
         <nav className="container menu-bar" id="navMenu">
           <div id="MenuLeft">
@@ -93,12 +102,13 @@ export const Navigation = (props) => {
       
               {props.login && (
                 <div className="d-inline">                
-                <span className="menu-bar-static-label mr-3">REGISTER NEW:</span>
+                <span className="menu-bar-static-label mr-4">REGISTER NEW:</span>
                 
 
 
 
                 <Button 
+                  className="ml-2"
                   id="IndividualButton"
                   aria-controls={open_I ? 'IndividualMenu' : undefined}
                   aria-haspopup="true"
@@ -196,26 +206,3 @@ export const Navigation = (props) => {
   
 
 
-
-  function RenderUploadsDialog(props) {
-
-
-  
-    const onCreated = () => {
-      console.debug("onCreated");
-    };
-  
-    return (
-      <Dialog
-        open={props.open}
-      >
-        <DialogContent> 
-        <UploadsForm
-            onCreated={onCreated}
-            cancelEdit={props.onClose}
-          />
-        </DialogContent>
-      </Dialog>
-    )
-  
-  }

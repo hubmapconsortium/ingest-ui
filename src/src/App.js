@@ -3,7 +3,6 @@ import * as React from "react";
 import {useState, useEffect} from "react";
 import {
   useNavigate,
-  Navigate,
   Routes,
   Route} from "react-router-dom";
 
@@ -11,11 +10,7 @@ import {
   import Login from './components/ui/login';
   import {api_validate_token} from './service/search_api';
   
-  import Dialog from '@mui/material/Dialog';
-  import DialogActions from '@mui/material/DialogActions';
-  import DialogContent from '@mui/material/DialogContent';
   import { useGridApiRef } from "@mui/x-data-grid";
-  import MuiAlert from '@material-ui/lab/Alert';
   // UI Feedback
   
   
@@ -33,7 +28,6 @@ import {RenderBulk} from "./components/bulk";
 
 // The Old Stuff
 import Forms from "./components/uuid/forms";
-import UploadsForm from "./components/uploads/createUploads";
 
 
 

@@ -1,18 +1,9 @@
 import React, { useEffect, useState  } from "react";
-
-// import Select from '@mui/material/Select';import TextField from '@mui/material/TextField';
 import { useParams } from 'react-router-dom';
-
-
-
 import { entity_api_get_entity} from '../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../service/ingest_api';
-
 import {ErrBox} from "../utils/ui_elements";
-import { TissueForm } from "../utils/form_schema";
 import DatasetFormLegacy from "./ingest/dataset_edit";
 
-import { useNavigate} from "react-router-dom";
 
 
 

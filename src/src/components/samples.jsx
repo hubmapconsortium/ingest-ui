@@ -1,18 +1,9 @@
 import React, { useEffect, useState  } from "react";
-
-// import Select from '@mui/material/Select';import TextField from '@mui/material/TextField';
 import { useParams } from 'react-router-dom';
-
-
 import { entity_api_get_entity} from '../service/entity_api';
-
 import {ErrBox} from "../utils/ui_elements";
-
-
-
 import TissueFormLegacy from "./uuid/tissue_form_components/tissueForm";
 
-import { useNavigate} from "react-router-dom";
 
 
 
