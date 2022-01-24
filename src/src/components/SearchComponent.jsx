@@ -10,7 +10,7 @@ import {
 // import { DataGrid } from '@mui/x-data-grid';
 // import { GridCellParams } from '@mui/x-data-grid';
 // import { DataGrid } from '@material-ui/data-grid';
-import { DataGrid, useGridApiRef } from '@mui/x-data-grid';
+import { DataGrid, useGridApiRef, GridOverlay } from '@mui/x-data-grid';
 import { toTitleCase, toSingular, toPlural } from "../utils/string_helper";
 import { compiledTypes } from "../utils/display_subtypes";
 import { ErrBox } from "../utils/ui_elements";
@@ -20,6 +20,7 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 
 
+import LinearProgress from '@mui/material/LinearProgress';
 export const RenderSearchComponent = (props) => {
 
   let navigate = useNavigate();
@@ -31,6 +32,7 @@ export const RenderSearchComponent = (props) => {
   var [columnData, setColumnData] = useState([]);
   var [searchContent, setSearchContent] = useState([]);
   var [queryParams, setQueryParams] = useState();
+  var [gridLoading, setGridLoading] = useState(true);
 
   // React.useEffect(() => {
   //   apiRef.current.subscribeEvent("cellClick", (params) => {
@@ -38,6 +40,15 @@ export const RenderSearchComponent = (props) => {
   //   });
   // }, [apiRef]);
 
+  function CustomLoadingOverlay() {
+    return (
+      <GridOverlay>
+        <div style={{ position: 'absolute', top: 0, width: '100%' }}>
+          <LinearProgress />
+        </div>
+      </GridOverlay>
+    );
+  }
  
   function OpenEntity(params){
     console.debug("openEntity", params.row);
@@ -60,6 +71,8 @@ export const RenderSearchComponent = (props) => {
   }, []);
 
   function fetchDataset(queryParams){
+
+    setGridLoading(true);
     console.debug("fetchDataset", queryParams);
     if(!queryParams && !props.entity_type){
       console.debug("No queryParams and no entity_type");
@@ -82,6 +95,7 @@ export const RenderSearchComponent = (props) => {
         setColumnData( columnDefs(queryParams.entity_type));
         setRowData(response.results);
         setLoading(false);
+        setGridLoading(false);
       })
       .catch(error => {
           console.error(error);
@@ -105,7 +119,15 @@ export const RenderSearchComponent = (props) => {
           <Preamble {...props} custom_title={props.custom_title} />
           <RenderFilterControls {...props} custom_title={props.custom_title} entity_type={props.entity_type} searchHandler={fetchDataset}/>
           <Box sx={{ height: 400, bgcolor: 'background.paper' }}>
-            <DataGrid rows={rowData} columns={columnData} onCellClick={OpenEntity}/>
+            <DataGrid 
+              loading={gridLoading}
+              rows={rowData} 
+              columns={columnData} 
+              onCellClick={OpenEntity}
+              components={{
+                LoadingOverlay: CustomLoadingOverlay,
+              }}
+            />
           </Box>
         </div>
       )
