@@ -53,6 +53,10 @@ export const RenderSearchComponent = (props) => {
       keywords: '',
       entity_type: ""
     });
+    if(props.uploadsDialog){
+      // console.debug("uploadsDialog", props.uploadsDialog);
+      props.CallUploadsDialog(true);
+    }
   }, []);
 
   function fetchDataset(queryParams){

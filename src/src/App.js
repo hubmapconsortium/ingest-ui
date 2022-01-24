@@ -1,28 +1,25 @@
 
 import * as React from "react";
+import {useState} from "react";
 import {
   useNavigate,
   Navigate,
   Routes,
   Route} from "react-router-dom";
-
-//import Navigation from './components/Navbar.js';
-import { useGridApiRef } from "@mui/x-data-grid";
-
-
-// Login Management
-import Login from './components/ui/login';
-
-// UI Bases
-
-import {Navigation} from "./Nav";
-
-// UI Feedback
-import MuiAlert from '@material-ui/lab/Alert';
-
-// Site Content
+  // Login Management
+  import Login from './components/ui/login';
+  
+  import Dialog from '@mui/material/Dialog';
+  import DialogActions from '@mui/material/DialogActions';
+  import DialogContent from '@mui/material/DialogContent';
+  import { useGridApiRef } from "@mui/x-data-grid";
+  import MuiAlert from '@material-ui/lab/Alert';
+  // UI Feedback
+  
+  
+  // Site Content
+  import {Navigation} from "./Nav";
 import {RenderSearchComponent} from './components/SearchComponent';
-
 import {RenderDonor} from "./components/donors";
 import { RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
@@ -33,6 +30,7 @@ import {RenderBulk} from "./components/bulk";
 
 // The Old Stuff
 import Forms from "./components/uuid/forms";
+import UploadsForm from "./components/uploads/createUploads";
 
 
 
@@ -121,8 +119,8 @@ function renderContent() {
 
 
 
-
 export function App (props){
+  var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   const apiRef = useGridApiRef();
   let navigate = useNavigate();
 
@@ -135,6 +133,13 @@ export function App (props){
     localStorage.removeItem("info");
     navigate('/');
   };
+
+
+  function CallUploadsDialog(){
+    console.debug("CallUploadsDialog uploadsDialogRender");
+    setUploadsDialogRender(true);
+  }
+ 
   
 
   console.debug("props", props);
@@ -156,6 +161,7 @@ export function App (props){
         login={localStorage.getItem("isAuthenticated")} 
         logout={handleLogout}
         app_info={localStorage.getItem("info")}
+        uploadsDialogRender={uploadsDialogRender}
       />
       <div  className="container card mb-5">
            <div className="" id="content">
@@ -192,7 +198,7 @@ export function App (props){
                     <Route path="/new/dataset" element={<RenderDataset status="new" />} />
                     <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
                     <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
-                    <Route path="/new/data" element={<RenderSearchComponent modal="newUpload" />} />
+                    <Route path="/new/data" element={<RenderSearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} />} />
                     {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
                 </Routes>
   </div>

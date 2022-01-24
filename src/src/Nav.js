@@ -1,7 +1,10 @@
 import React, { useEffect, useState  } from "react";
 import { Link } from 'react-router-dom'
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useLocation} from "react-router-dom";
 
+
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
 // UI Menu 
 // import MenuItem from '@material-ui/core/MenuItem';
 // import Menu from '@material-ui/core/Menu';
@@ -14,18 +17,28 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
+import UploadsForm from "./components/uploads/createUploads";
+
+
 
 export const Navigation = (props) => {
   let navigate = useNavigate();
+  const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [app_info, setAppInfo] = React.useState();
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
   const [anchorEl_B, setAnchorEl_B] = React.useState(null);
   const open_I = Boolean(anchorEl_I);
   const open_B = Boolean(anchorEl_B);
-
+  const location = useLocation();
 
   useEffect(() => {
     setAppInfo(props.app_info);
+    console.debug("props", props);
+    console.debug("location", location);
+    if(location.pathname === "/new/data"){
+      console.debug("Setting uploadsDialog to true");
+      setUploadsDialog(true);
+    }
   }, [])
 
 
@@ -38,20 +51,30 @@ export const Navigation = (props) => {
     console.debug("HandleClick", event );
     setAnchorEl_B(event.currentTarget);
   };
-
+  
   const handleClose = (e) => {
     console.debug("HandleClose", e);
     setAnchorEl_I(null);
     setAnchorEl_B(null);
   };
+  
+  const OpenUploads = (event) => {
+    setUploadsDialog(true);
+    setAnchorEl_B(null);
+  };
 
+  const onClose = () => {
+    setUploadsDialog(false);
+    console.debug("onClose");
+  };
   // const NavTo = (path, type) => {
   //   console.debug("NavTo", path, type);
   //   navigate('/'+path+'/'+type);
   // }
 
     return(
-
+      <div>
+      <RenderUploadsDialog open={uploadsDialog} onClose={onClose}/>
       <header id="header" className="navbar navbar-light">
         <nav className="container menu-bar" id="navMenu">
           <div id="MenuLeft">
@@ -136,7 +159,7 @@ export const Navigation = (props) => {
                       to="/bulk/samples" >Samples</MenuItem>
                     <MenuItem 
                       className="nav-link"
-                      component={Link}
+                      onClick={() => OpenUploads()}
                       to="/bulk/data" >Data</MenuItem>
                   </Menu>
 
@@ -163,10 +186,35 @@ export const Navigation = (props) => {
           )}
           </div>
         </nav>
+        
       </header>
+      </div>
     );
 
   }
   
 
 
+
+  function RenderUploadsDialog(props) {
+
+
+  
+    const onCreated = () => {
+      console.debug("onCreated");
+    };
+  
+    return (
+      <Dialog
+        open={props.open}
+      >
+        <DialogContent> 
+        <UploadsForm
+            onCreated={onCreated}
+            cancelEdit={props.onClose}
+          />
+        </DialogContent>
+      </Dialog>
+    )
+  
+  }

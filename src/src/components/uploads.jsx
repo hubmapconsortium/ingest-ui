@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
-import EditUploads from "./uploads/createUploads";
+import EditUploads from "./uploads/editUploads";
 
 
 
