@@ -1004,7 +1004,6 @@ class TissueForm extends Component {
   };
 
   handleAddThumbnail = () => {
-    let newId = 1;
     this.setState({
       thumbnail: [
       ...this.state.thumbnail,
@@ -1212,13 +1211,11 @@ handleAddImage = () => {
           }
         }
 
- console.debug('submit: thumbnail', this.state.thumbnail)
         if (this.state.thumbnail.length > 0) {
               let thumb_files_to_add = [];
               let existing_thumb_files_to_update = [];
               this.state.thumbnail.forEach(i => {
 
-              console.debug('thumb ref', i.ref.current.state)
               // if a file has a non-blank temp_file_id then assume it a new image 
                 if (i.ref.current.state.temp_file_id !== "") {
                   thumb_files_to_add.push({
@@ -1230,7 +1227,7 @@ handleAddImage = () => {
                   })
                 }
               });  
-              console.log('thumb_files_to_add', thumb_files_to_add)
+
                // check to see if we really did add any new images 
               if (thumb_files_to_add.length > 0) {
                 data['thumbnail_file_to_add'] = thumb_files_to_add[0];
@@ -1241,6 +1238,11 @@ handleAddImage = () => {
               }
           }
 
+          // check for any removed images
+          if (this.state.deleted_thumbnail.length > 0) {
+            data['thumbnail_file_to_remove'] = this.state.deleted_thumbnail
+          }
+        
         //////console.debug("SUBMMITED data")
         //////console.debug(data)
       
