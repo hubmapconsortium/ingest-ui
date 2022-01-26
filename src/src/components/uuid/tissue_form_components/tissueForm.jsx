@@ -208,11 +208,12 @@ class TissueForm extends Component {
             console.debug('editingEntity', param_uuid)
           }
         
-          //console.debug('UUID', param_uuid)
+          console.debug('UUID', param_uuid)
           entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
                 if (response.status === 200) {
                   let entity_data = response.results;
+                  console.debug('Got results', entity_data)
                   // check to see if user can edit
                   ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((resp) => {
@@ -233,11 +234,19 @@ class TissueForm extends Component {
                               this.initialize();
                            
                               //console.debug('readOnly', this.state.readOnly);
-                            }
-
-                            );
+                            });
+                          }  else {   // need to do this if the response fails, or it won't load the entity data
+                             this.setState({
+                              editingEntity: entity_data,
+                              readOnly: false, 
+                              param_uuid: param_uuid 
+                            }, () => {
+                              this.checkForRelatedGroupIds(entity_data);
+                              this.initialize();
                            
-                          }         
+                              //console.debug('readOnly', this.state.readOnly);
+                            });
+                          }           
                   });
                 }
           });
@@ -271,7 +280,7 @@ class TissueForm extends Component {
         //console.debug('editingEntity', this.state.editingEntity)
         let images = this.state.editingEntity.image_files;
         let metadatas = this.state.editingEntity.metadata_files;
-        let thumbnail = this.state.editingEntity.thumbnail_file;
+        let thumbnail_file = this.state.editingEntity.thumbnail_file;
     
         const image_list = [];
         const metadata_list = [];
@@ -303,14 +312,13 @@ class TissueForm extends Component {
         } catch {}
 
         try {
-
-          thumbnail_list.push({
-            id: index + 1,
-            ref: React.createRef(),
-            file_name: thumbnail.filename,
-            file_uuid: thumbnail.file_uuid
-          });
-          
+         
+            thumbnail_list.push({
+              id: 1,
+              ref: React.createRef(),
+              file_name: thumbnail_file.filename,
+              file_uuid: thumbnail_file.file_uuid
+            });         
         } catch {}
 
         this.setState(
@@ -894,30 +902,24 @@ class TissueForm extends Component {
       }
       case "thumbnail": {
         const i = this.state.thumbnail.findIndex(i => i.id === id);
+        // //////console.debug('image', id)
         let thumbnail = [...this.state.thumbnail];
-        thumbnail[i].file_name = thumbnail[i].ref.current.thumbnail_file.current.files[0].name;
+        //////console.debug('images', images)
+        thumbnail[i].file_name = thumbnail[i].ref.current.image_file.current.files[0].name;
+        //////console.debug('images file data', images[i].ref.current.image_file.current.files)
         let new_thumbnail = [...this.state.new_thumbnail];
-        new_thumbnail.push(thumbnail[i].file_name)
-        new_thumbnail.shift();
+        new_thumbnail.push(thumbnail[i].file_name);
         return new Promise((resolve, reject) => {
           this.setState({
             thumbnail,
             new_thumbnail
           }, () => {
-            if (!this.validateThumbnailFile(id)) {
-              thumbnail[i].file_name = "";
-              this.setState({
-                thumbnail
-              })
-              reject();
-            } else {
               this.setState({
                 new_thumbnail
               })
               resolve();
-            }
-          })
-        })
+          });
+        });
       }
       default:
         break;
@@ -963,19 +965,20 @@ class TissueForm extends Component {
   }
 
   validateThumbnailFile = id => {
-    const file_name = this.state.thumbnail.map(m => {
-      return m.file_name;
-    })
+  //   // const file_name = this.state.thumbnail.map(m => {
+  //   //   console.debug('validateThumbnailFile', m.file_name)
+  //   //   return m.file_name;
+  //   // })
 
-    if (file_name.length > new Set(file_name).size) {
-      const i = this.state.thumbnail.findIndex(i => i.id === id);
-      let thumbnail = [...this.state.thumbnail];
-      thumbnail[i].error = "Duplicate file name is not allowed."
-      this.setState({ thumbnail })
-
-      return true;
-    }
-  }
+  //   if (file_name.length > new Set(file_name).size) {
+  //     const i = this.state.thumbnail.findIndex(i => i.id === id);
+  //     let thumbnail = [...this.state.thumbnail];
+  //     thumbnail[i].error = "Duplicate file name is not allowed."
+  //     this.setState({ thumbnail })
+      console.debug('validate thumb', id)
+       return true;
+  //   }
+   }
 
   handleAddImage = () => {
     let newId = 1;
@@ -1010,15 +1013,17 @@ class TissueForm extends Component {
     })
   }
 
-  handleDeleteThumbnail = thumbnailId => {
+  handleDeleteThumbnail = id => {
+    const deleted_thumb = this.state.thumbnail.find(i => i.id === id);
+    const new_thumbnail = this.state.new_thumbnail.filter(dm => dm !== deleted_thumb.file_name);
+    let deleted_thumbnail = [...this.state.deleted_thumbnail];
 
-    const remove_thumb = this.state.thumbnail.find(i => i.id === thumbnailId);
-    const thumbnail = this.state.thumbnail.find(i => i.id !== thumbnailId);
-    const new_thumbnail = this.state.new_thumbnail.filter(dm => dm !== remove_thumb.uuid);
-    let deleted_thumbnail = [...this.state.deleted_thumbnail]
-
-    deleted_thumbnail.push(remove_thumb.file_uuid);
-
+    //////console.debug('deleted image', deleted_image)
+    if (new_thumbnail.length === this.state.new_thumbnail.length){
+      //deleted_images.push(deleted_image.file_name);
+      deleted_thumbnail.push(deleted_thumb.file_uuid);
+    }
+    const thumbnail = this.state.thumbnail.filter(i => i.id !== id);
     this.setState({
       thumbnail,
       new_thumbnail,
@@ -1165,7 +1170,7 @@ handleAddImage = () => {
              data['metadata_files_to_remove'] = this.state.deleted_metas;
            }
 
-            if (this.state.images.length > 0) {
+          if (this.state.images.length > 0) {
               let image_files_to_add = [];
               let existing_image_files_to_update = [];
               //////console.debug('submit images', this.state.images)
@@ -1200,13 +1205,41 @@ handleAddImage = () => {
               if (existing_image_files_to_update.length > 0 ) {
                 data["image_files"] = existing_image_files_to_update;
               }
-          }
-        
+          }  
           // check for any removed images
           if (this.state.deleted_images.length > 0) {
             data['image_files_to_remove'] = this.state.deleted_images
           }
         }
+
+ console.debug('submit: thumbnail', this.state.thumbnail)
+        if (this.state.thumbnail.length > 0) {
+              let thumb_files_to_add = [];
+              let existing_thumb_files_to_update = [];
+              this.state.thumbnail.forEach(i => {
+
+              console.debug('thumb ref', i.ref.current.state)
+              // if a file has a non-blank temp_file_id then assume it a new image 
+                if (i.ref.current.state.temp_file_id !== "") {
+                  thumb_files_to_add.push({
+                    temp_file_id: i.ref.current.state.temp_file_id
+                  });
+                } else {  // this will send image data that may have been updated
+                  existing_thumb_files_to_update.push({
+                     file_uuid: i.file_uuid
+                  })
+                }
+              });  
+              console.log('thumb_files_to_add', thumb_files_to_add)
+               // check to see if we really did add any new images 
+              if (thumb_files_to_add.length > 0) {
+                data['thumbnail_file_to_add'] = thumb_files_to_add[0];
+              }
+              // send any updates to the existing descriptions, there is no check for changes
+              if (existing_thumb_files_to_update.length > 0 ) {
+                data["thumbnail_file"] = existing_thumb_files_to_update[0];
+              }
+          }
 
         //////console.debug("SUBMMITED data")
         //////console.debug(data)
@@ -2592,7 +2625,7 @@ handleAddImage = () => {
                             icon={faPaperclip}
                             title="Uploaded meta data"
                           />
-                            Add a Metadata File
+                            Add a Metadata file
                           </button>
                            <ReactTooltip
                               id="add_meta_tooltip"
@@ -2680,6 +2713,8 @@ handleAddImage = () => {
                       onFileChange={this.onFileChange}
                       validate={this.validateImagesFiles}
                       onDelete={this.handleDeleteImage}
+                      imageType="image"
+                      show_description={true}
                     />
                   ))}
                 </div>
@@ -2699,7 +2734,7 @@ handleAddImage = () => {
                           onClick={this.handleAddThumbnail}
                           className="btn btn-secondary btn-block"
                           data-tip
-                          data-for="add_image_tooltip"
+                          data-for="add_thumbimage_tooltip"
                         >
                           <FontAwesomeIcon
                             className="inline-icon"
@@ -2713,14 +2748,14 @@ handleAddImage = () => {
                             <FontAwesomeIcon icon={faUserShield} />
                           </span> Upload de-identified images only</small>
                            <ReactTooltip
-                              id="add_image_tooltip"
+                              id="add_thumbimage_tooltip"
                               className={"tooltip"}
                               place="top"
                               type="info"
                               effect="solid"
                           >
                             <p>
-                                Click here to attach a single image.
+                                Click here to attach a single thumbnail image.
                             </p>
                             </ReactTooltip>
                       </div>
@@ -2739,6 +2774,8 @@ handleAddImage = () => {
                         onFileChange={this.onFileChange}
                         validate={this.validateThumbnailFile}
                         onDelete={this.handleDeleteThumbnail}
+                        imageType="thumbnail"
+                        show_description={false}
                       />
                     ))}
                     </div>
