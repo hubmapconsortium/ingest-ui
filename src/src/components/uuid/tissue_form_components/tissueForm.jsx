@@ -1239,7 +1239,7 @@ handleAddImage = () => {
           // check for any removed thumbnails
           if (this.state.deleted_thumbnail.length > 0) {
             console.debug('delete thumbs', this.state.deleted_thumbnail)
-            data['thumbnail_file_to_remove'] = this.state.deleted_thumbnail
+            data['thumbnail_file_to_remove'] = this.state.deleted_thumbnail[0]
           }
         }  // end of:  if (this.state.sample_count < 1)
 
