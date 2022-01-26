@@ -1,6 +1,6 @@
 import React, { useEffect} from "react";
 import { Link } from 'react-router-dom'
-import { useLocation} from "react-router-dom";
+import { useLocation, useNavigate} from "react-router-dom";
 
 
 import Dialog from '@mui/material/Dialog';
@@ -69,7 +69,14 @@ export const Navigation = (props) => {
   const onCreated = () => {
     console.debug("onCreated");
   };
-
+  
+  function logout(e) {
+    console.debug("Logging out");
+    localStorage.removeItem("info");
+    localStorage.removeItem("isAuthenticated");
+    window.location.replace(`${process.env.REACT_APP_URL}`);  
+    
+  };
   // const NavTo = (path, type) => {
   //   console.debug("NavTo", path, type);
   //   navigate('/'+path+'/'+type);
@@ -181,7 +188,7 @@ export const Navigation = (props) => {
               )}
             </div>
         <div id="MenuRight">
-          {userInfo.email && (
+          {(userInfo) && userInfo.email && (
             <div className="float-right">
               <span className="username">
                 <Typography variant="button" className="username-menu">
@@ -193,7 +200,14 @@ export const Navigation = (props) => {
                   Edit Profile
                 </Button>
               </span>
-              {props.logout}
+              <span className="logout">
+                <Button
+                onClick={logout}
+                className="nav-link" >
+                  Log Out 
+                </Button>
+              </span>
+              {}
             </div>
           
           )}

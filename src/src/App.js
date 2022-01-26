@@ -97,6 +97,8 @@ function cleanJSON(str){
 
 
 
+
+
 export function App (props){
   var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
@@ -104,7 +106,6 @@ export function App (props){
   let navigate = useNavigate();
 
   useEffect(() => {
-
     if(SetAuth() === false){
       console.debug("No Auth");
       setAuthStatus(false);
@@ -115,17 +116,20 @@ export function App (props){
   }, []);
 
 
+  function Logout(){
+    console.debug("Logging out");
+    localStorage.removeItem("info");
+    localStorage.removeItem("isAuthenticated");
+    window.location.replace(`${process.env.REACT_APP_URL}`);  
+  }
+
+
   
 
-  function handleCancel(){
+  function handleCancel(){  
     window.history.back()
   }
-  
-  function handleLogout(e) {
-    localStorage.setItem("isAuthenticated", false);
-    localStorage.removeItem("info");
-    navigate('/');
-  };
+
 
 
   function CallUploadsDialog(){
@@ -152,14 +156,16 @@ export function App (props){
       
       <Navigation 
         login={authStatus} 
-        logout={handleLogout}
+        logout={Logout}
         app_info={ JSON.parse(localStorage.getItem("info"))}
         uploadsDialogRender={uploadsDialogRender}
-      />
+      />       
+
+
       <div  className="container card mb-5">
            <div className="" id="content">
 
-
+            
            {!authStatus && (
              <Routes>
                  <Route path="/" element={ <Login />} />
@@ -170,14 +176,14 @@ export function App (props){
           <Routes>
 
               <Route path="/" element={ <RenderSearchComponent entity_type=' ' />} />
->
+
               <Route path="/login" element={<RenderLogin />} />
 
               <Route path="/donors" element={<RenderSearchComponent custom_title="Search" entity_type="donors" />} ></Route>
               <Route path="/samples" element={<RenderSearchComponent entity_type="samples" />} ></Route>
               <Route path="/datasets" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
               <Route path="/uploads" element={<RenderSearchComponent entity_type="uploads" />} ></Route>
-            
+                                    
               <Route path="/donor/:uuid" element={<RenderDonor  status="view"/>} />
               <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
               <Route path="/dataset/:uuid" element={<RenderDataset  status="view"/>} />
@@ -210,8 +216,6 @@ export function App (props){
   // return html;
   
 }
-
-
-
+      
 
 export default App
