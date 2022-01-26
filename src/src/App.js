@@ -153,7 +153,7 @@ export function App (props){
       <Navigation 
         login={authStatus} 
         logout={handleLogout}
-        app_info={localStorage.getItem("info")}
+        app_info={ JSON.parse(localStorage.getItem("info"))}
         uploadsDialogRender={uploadsDialogRender}
       />
       <div  className="container card mb-5">

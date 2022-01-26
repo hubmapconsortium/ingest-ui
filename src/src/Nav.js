@@ -5,10 +5,6 @@ import { useLocation} from "react-router-dom";
 
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-// UI Menu 
-// import MenuItem from '@material-ui/core/MenuItem';
-// import Menu from '@material-ui/core/Menu';
-
 
 
 import Typography from '@mui/material/Typography';
@@ -21,6 +17,8 @@ import UploadsForm from "./components/uploads/createUploads";
 
 
 export const Navigation = (props) => {
+  const [userInfo, setUserInfo] = React.useState({email:""});
+  const [authStatus, setAuthStatus] = React.useState(false);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
   const [anchorEl_B, setAnchorEl_B] = React.useState(null);
@@ -29,13 +27,17 @@ export const Navigation = (props) => {
   const location = useLocation();
 
   useEffect(() => {
-        console.debug("props", props);
+    console.debug("props", props);
+    console.debug("props.appInfo", props.app_info);
     console.debug("location", location);
+    setAuthStatus(props.login)
+    setUserInfo(props.app_info);
     if(location.pathname === "/new/data"){
       console.debug("Setting uploadsDialog to true");
       setUploadsDialog(true);
     }
-  }, [])
+  }, [props, props.app_info, location]);
+
 
 
   const handleClick_I = (event) => {
@@ -179,11 +181,11 @@ export const Navigation = (props) => {
               )}
             </div>
         <div id="MenuRight">
-          {props.login && (
+          {userInfo.email && (
             <div className="float-right">
               <span className="username">
                 <Typography variant="button" className="username-menu">
-                  {props.app_info.email}{" "}
+                   {userInfo.email} 
                 </Typography>
                 <Button
                 href={`${process.env.REACT_APP_PROFILE_URL}/profile`}

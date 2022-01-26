@@ -265,7 +265,7 @@ return (
       label="Keywords" 
       variant="filled" 
       style={{zIndex: '0'}} 
-      placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"/>
+      helperText="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"/>
   )
 }
 
