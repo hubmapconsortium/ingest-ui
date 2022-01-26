@@ -1019,7 +1019,6 @@ class TissueForm extends Component {
 
     //////console.debug('deleted image', deleted_image)
     if (new_thumbnail.length === this.state.new_thumbnail.length){
-      //deleted_images.push(deleted_image.file_name);
       deleted_thumbnail.push(deleted_thumb.file_uuid);
     }
     const thumbnail = this.state.thumbnail.filter(i => i.id !== id);
@@ -1209,9 +1208,8 @@ handleAddImage = () => {
           if (this.state.deleted_images.length > 0) {
             data['image_files_to_remove'] = this.state.deleted_images
           }
-        }
 
-        if (this.state.thumbnail.length > 0) {
+          if (this.state.thumbnail.length > 0) {
               let thumb_files_to_add = [];
               let existing_thumb_files_to_update = [];
               this.state.thumbnail.forEach(i => {
@@ -1238,10 +1236,13 @@ handleAddImage = () => {
               }
           }
 
-          // check for any removed images
+          // check for any removed thumbnails
           if (this.state.deleted_thumbnail.length > 0) {
+            console.debug('delete thumbs', this.state.deleted_thumbnail)
             data['thumbnail_file_to_remove'] = this.state.deleted_thumbnail
           }
+        }  // end of:  if (this.state.sample_count < 1)
+
         
         //////console.debug("SUBMMITED data")
         //////console.debug(data)
