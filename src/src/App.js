@@ -5,14 +5,13 @@ import {
   useNavigate,
   Routes,
   Route} from "react-router-dom";
-
+  
   // Login Management
   import Login from './components/ui/login';
+  import Timer from './components/ui/idle';
   import {api_validate_token} from './service/search_api';
-  
   import { useGridApiRef } from "@mui/x-data-grid";
-  // UI Feedback
-  
+
   
   // Site Content
 import {Navigation} from "./Nav";
@@ -32,8 +31,6 @@ import Forms from "./components/uuid/forms";
 
 
 
-
-
 function SetAuth(){
   var infoJSON = ""
   if(localStorage.getItem("info")){
@@ -47,13 +44,13 @@ function SetAuth(){
       window.location.replace(`${process.env.REACT_APP_URL}`);  
       return false    
     }else{
-      console.debug("infoJSON", infoJSON.groups_token);
+    //console.debug("infoJSON", infoJSON.groups_token);
       // We have a token, but is it good? 
       api_validate_token(infoJSON.groups_token)
       .then(res => {
-        console.debug("Token Check", res);
+      //console.debug("Token Check", res);
         if(res.status === 401){
-          console.debug("Token is invalid. Clearing...");
+        //console.debug("Token is invalid. Clearing...");
           localStorage.removeItem("info");
           localStorage.removeItem("isAuthenticated");
           window.location.replace(`${process.env.REACT_APP_URL}`);  
@@ -61,11 +58,11 @@ function SetAuth(){
           localStorage.setItem("isAuthenticated", true);
           return true
         }else{
-          console.debug("Token Issues", res);
+        //console.debug("Token Issues", res);
         }
       })
       .catch(err => {
-        console.debug("Error validating token", err);
+      //console.debug("Error validating token", err);
       })
       // console.debug("Info JSON forund in localStorage",infoJSON);
       
@@ -122,17 +119,17 @@ export function App (props){
     }
 
     if(SetAuth() === false){
-      console.debug("No Auth");
+    //console.debug("No Auth");
       setAuthStatus(false);
     }else{
-      console.debug("Auth");
+    //console.debug("Auth");
       setAuthStatus(true);
     }
   }, []);
 
 
   function Logout(){
-    console.debug("Logging out");
+  //console.debug("Logging out");
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
@@ -148,26 +145,16 @@ export function App (props){
 
 
   function CallUploadsDialog(){
-    console.debug("CallUploadsDialog uploadsDialogRender");
+  //console.debug("CallUploadsDialog uploadsDialogRender");
     setUploadsDialogRender(true);
   }
  
   
 
-  console.debug("props", props);
+//console.debug("props", props);
   return (
     <div className="App">
-      {/* <IdleTimer
-        ref={ref => {
-          idleTimer = ref;
-        }}
-        element={document}
-        onActive={this.onActive}
-        onIdle={this.onIdle}
-        onAction={this.onAction}
-        debounce={250}
-        timeout={SESSION_TIMEOUT_IDLE_TIME}
-      /> */}
+      
       
       <Navigation 
         login={authStatus} 
@@ -175,6 +162,7 @@ export function App (props){
         app_info={ JSON.parse(localStorage.getItem("info"))}
         uploadsDialogRender={uploadsDialogRender}
       />       
+      <Timer logout={Logout}/>
 
 
       <div  className="container card mb-5">

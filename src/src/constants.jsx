@@ -1,5 +1,6 @@
 
 // These ones show on the main Search/Filter page
+// export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SAMPLE_TYPES = [
   { donor: "Donor" },

@@ -48,8 +48,8 @@ export const RenderSearchComponent = (props) => {
   }
  
   function OpenEntity(params){
-    console.debug("openEntity", params.row);
-    console.debug(params.row.entity_type, params.row.id);
+  //console.debug("openEntity", params.row);
+  //console.debug(params.row.entity_type, params.row.id);
     var entity = (params.row.entity_type).toLowerCase();
     navigate(`/${entity}/${params.row.id}`, { replace: true });
     // 
@@ -70,9 +70,9 @@ export const RenderSearchComponent = (props) => {
   function fetchDataset(queryParams){
 
     setGridLoading(true);
-    console.debug("fetchDataset", queryParams);
+  //console.debug("fetchDataset", queryParams);
     if(!queryParams && !props.entity_type){
-      console.debug("No queryParams and no entity_type");
+    //console.debug("No queryParams and no entity_type");
       queryParams = {
         group_uuid: "",
         keywords: '',
@@ -88,7 +88,7 @@ export const RenderSearchComponent = (props) => {
     
     api_search2(queryParams, JSON.parse(localStorage.getItem("info")).groups_token, 0, 100)
     .then((response) => {
-      console.debug("fetchDataset Search Res", response.results);
+    //console.debug("fetchDataset Search Res", response.results);
         setColumnData( columnDefs(queryParams.entity_type));
         setRowData(response.results);
         setLoading(false);
@@ -101,7 +101,7 @@ export const RenderSearchComponent = (props) => {
     };
 
     if (isLoading) {
-      console.debug("isLoading");
+    //console.debug("isLoading");
       return (
       <div className=" search-filter">
         <Preamble {...props} custom_title={props.custom_title} />
@@ -110,7 +110,7 @@ export const RenderSearchComponent = (props) => {
       </div>
       );
     }else{
-      console.debug("isLoading", isLoading);
+    //console.debug("isLoading", isLoading);
       return (
         <div>
           <Preamble {...props} custom_title={props.custom_title} />
@@ -167,7 +167,7 @@ function Preamble(props) {
 function columnDefs(param) {
   var formattedParam = "";
   if(param && param.length > 1){
-    console.debug("columnDefs", param);
+  //console.debug("columnDefs", param);
     formattedParam = toPlural(param.toLowerCase());
   }
   
@@ -232,7 +232,7 @@ function TypeSelect(props) {
       // setDefaultValue({"value": props.entity_type, "label": toTitleCase(toSingular(props.entity_type))});
       defaultValue = {"value": props.entity_type, "label": toTitleCase(toSingular(props.entity_type))};
       setSelectedValue(defaultValue)
-      console.debug("defaultValue", defaultValue);
+    //console.debug("defaultValue", defaultValue);
     }
   }, []);
   

@@ -27,13 +27,13 @@ export const Navigation = (props) => {
   const location = useLocation();
 
   useEffect(() => {
-    console.debug("props", props);
-    console.debug("props.appInfo", props.app_info);
-    console.debug("location", location);
+  //console.debug("props", props);
+  //console.debug("props.appInfo", props.app_info);
+  //console.debug("location", location);
     setAuthStatus(props.login)
     setUserInfo(props.app_info);
     if(location.pathname === "/new/data"){
-      console.debug("Setting uploadsDialog to true");
+    //console.debug("Setting uploadsDialog to true");
       setUploadsDialog(true);
     }
   }, [props, props.app_info, location]);
@@ -41,17 +41,17 @@ export const Navigation = (props) => {
 
 
   const handleClick_I = (event) => {
-    console.debug("HandleClick", event );
+  //console.debug("HandleClick", event );
     setAnchorEl_I(event.currentTarget);
   };
 
   const handleClick_B = (event) => {
-    console.debug("HandleClick", event );
+  //console.debug("HandleClick", event );
     setAnchorEl_B(event.currentTarget);
   };
   
   const handleClose = (e) => {
-    console.debug("HandleClose", e);
+  //console.debug("HandleClose", e);
     setAnchorEl_I(null);
     setAnchorEl_B(null);
   };
@@ -63,22 +63,22 @@ export const Navigation = (props) => {
 
   const onClose = () => {
     setUploadsDialog(false);
-    console.debug("onClose");
+  //console.debug("onClose");
   };
 
   const onCreated = () => {
-    console.debug("onCreated");
+  //console.debug("onCreated");
   };
   
   function logout(e) {
-    console.debug("Logging out");
+  //console.debug("Logging out");
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
     
   };
   // const NavTo = (path, type) => {
-  //   console.debug("NavTo", path, type);
+  // //console.debug("NavTo", path, type);
   //   navigate('/'+path+'/'+type);
   // }
 
