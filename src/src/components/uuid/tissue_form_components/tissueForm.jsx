@@ -1004,6 +1004,10 @@ class TissueForm extends Component {
   };
 
   handleAddThumbnail = () => {
+    // only allow one thumbnail
+    if (this.state.thumbnail.length > 0) {
+      return
+    }
     this.setState({
       thumbnail: [
       ...this.state.thumbnail,
