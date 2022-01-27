@@ -31,6 +31,9 @@ import Forms from "./components/uuid/forms";
 
 
 
+
+
+
 function SetAuth(){
   var infoJSON = ""
   if(localStorage.getItem("info")){
@@ -105,7 +108,19 @@ export function App (props){
   const apiRef = useGridApiRef();
   let navigate = useNavigate();
 
+    
+
   useEffect(() => {
+
+    let url = new URL(window.location.href);
+    let info = url.searchParams.get("info");
+
+    if (info !== null) {
+      localStorage.setItem("info", info);
+      localStorage.setItem("isAuthenticated", true);
+      setAuthStatus(true);
+    }
+
     if(SetAuth() === false){
       console.debug("No Auth");
       setAuthStatus(false);
