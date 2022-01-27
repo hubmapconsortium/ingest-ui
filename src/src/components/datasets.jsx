@@ -29,6 +29,10 @@ export const RenderDataset = (props) => {
     window.history.back()
   }
 
+  function onUpdated(data){
+    console.debug("onUpdated", data);
+  }
+
 
 
   function passError(status, message) {
@@ -71,7 +75,7 @@ export const RenderDataset = (props) => {
     }else{
       return (
         <div>
-          <DatasetFormLegacy HandleCancel={HandleCancel} editingDataset={entity_data} />
+          <DatasetFormLegacy onUpdated={onUpdated} HandleCancel={HandleCancel} editingDataset={entity_data} />
         </div>
       )
     }

@@ -30,6 +30,10 @@ export const RenderUpload = (props) => {
     window.history.back()
   }
 
+  function onUpdated(data){
+    console.debug("onUpdated", data);
+  }
+
 
 
   function passError(status, message) {
@@ -72,7 +76,7 @@ export const RenderUpload = (props) => {
     }else{
       return (
         <div>
-          <EditUploads HandleCancel={HandleCancel} editingUpload={entity_data} />
+          <EditUploads HandleCancel={HandleCancel} editingUpload={entity_data} onUpdated={onUpdated}/>
         </div>
       )
     }

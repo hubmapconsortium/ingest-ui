@@ -30,6 +30,10 @@ export const RenderDonor = (props) => {
     fetchData(uuid);
   }, []);
 
+  function onUpdated(data){
+    console.debug("onUpdated", data);
+  }
+
 
   function passError(status, message) {
    //console.debug("Error", status, message);
@@ -71,7 +75,7 @@ export const RenderDonor = (props) => {
     }else{
       return (
         <div>
-          <DonorForm HandleCancel={HandleCancel} editingEntity={entity_data} />
+          <DonorForm HandleCancel={HandleCancel} editingEntity={entity_data} onUpdated={onUpdated}/>
         </div>
       )
     }

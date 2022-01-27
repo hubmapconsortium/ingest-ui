@@ -37,6 +37,9 @@ export const RenderSample = (props) => {
       })
     }
 
+  function onUpdated(data){
+    console.debug("onUpdated", data);
+  }
 
 
  
@@ -71,7 +74,7 @@ export const RenderSample = (props) => {
     }else{
       return (
         <div>
-          <TissueFormLegacy HandleCancel={HandleCancel} uuid={entity_data.uuid} editingEntity={entity_data} />
+          <TissueFormLegacy HandleCancel={HandleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
         </div>
       )
     }
