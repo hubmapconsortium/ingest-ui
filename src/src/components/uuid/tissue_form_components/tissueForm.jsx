@@ -2394,7 +2394,7 @@ handleAddImage = () => {
             {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              this.isSpecialOrganType(this.state.ancestor_organ) && this.state.RUI_ACTIVE &&  //source_entity.organ
+              this.isSpecialOrganType(this.state.source_entity.organ) && this.state.RUI_ACTIVE &&  
               (
                 <div className="form-group">
                   <label
