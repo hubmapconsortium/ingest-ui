@@ -388,6 +388,7 @@ caption {
  .container {
     width:100% !important;
     padding:1px 0 1px !important;
+    max-width: 960px;
 }
 
 .paper-container {

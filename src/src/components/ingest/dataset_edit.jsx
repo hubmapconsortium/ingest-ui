@@ -1570,75 +1570,83 @@ class DatasetEdit extends Component {
   render() {
     return (
       <React.Fragment>
-        <Paper className="paper-container">
         <form>
-          <div className='row m-0'>
-                <h3 className='float-left mr-1'>
-                  <span
-                    className={"badge " + this.state.badge_class}
-                    style={{ cursor: "pointer" }}
-                    onClick={() =>
-                      this.showErrorMsgModal(
-                        this.props.editingDataset.pipeline_message
-                      )
-                    }
-                  >
-                    {this.state.status}
-                  </span>
-                </h3>
-
-            <div className='alert alert-danger' role='alert'>
-              <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
-              data containing any of the{" "}
+          <div className='row'>
+          <div className='col-md-6'>
+            <h3>
               <span
+                className={"badge " + this.state.badge_class}
                 style={{ cursor: "pointer" }}
-                className='text-primary'
-                onClick={this.showModal}
-              >
-                18 identifiers specified by HIPAA
+                onClick={() =>
+                  this.showErrorMsgModal(
+                    this.props.editingDataset.pipeline_message
+                )}> 
+                  {this.state.status}
               </span>
-              .
-            </div>
-            <div className='col-sm-10'>
-              <h3>
-                {this.props.editingDataset &&
-                  "HuBMAP Dataset ID " +
-                    this.state.display_doi}
+
+              {this.props.editingDataset && (
+                <span className="mx-1"> HuBMAP Dataset ID  {this.state.display_doi} </span>
+              )}
               </h3>
-            </div>
+              <p>
+              <strong>
+                  <big>
+
+                    {this.props.editingDataset &&
+                      this.props.editingDataset.title}
+                  </big>
+                </strong>
+              </p>
+
+              <p>
+              <strong>
+                <big>
+                  
+                  {this.state.globus_path && (
+
+                    <a
+                      href={this.state.globus_path}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
+                      <FontAwesomeIcon icon={faExternalLinkAlt} />
+                    </a>
+                  )}
+                  
+                </big>
+              </strong>
+            </p>
+
+
+         
           </div>
 
-          <div className='row m-0'>
-                  <p>
-                    <strong>
-                      <big>
+          <div className='col-md-6'>
+          
+          
+          <div className='alert alert-danger' role='alert'>
+        <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
+        data containing any of the{" "}
+        <span
+          style={{ cursor: "pointer" }}
+          className='text-primary'
+          onClick={this.showModal}
+        >
+          18 identifiers specified by HIPAA
+        </span>
+        .
+      </div>
+           
+          </div>  
 
-                        {this.props.editingDataset &&
-                          this.props.editingDataset.title}
-                      </big>
-                    </strong>
-                  </p>
-                </div>
-                <div>
-                  <p>
-                    <strong>
-                      <big>
-                       
-                        {this.state.globus_path && (
 
-                          <a
-                            href={this.state.globus_path}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                          >
-                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
-                            <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </a>
-                        )}
-                       
-                      </big>
-                    </strong>
-                  </p>
+              
+          </div>
+
+
+          <div className='row'>
+                  
           </div>
 
           
@@ -2095,7 +2103,6 @@ class DatasetEdit extends Component {
             </div>
           </div>
         </Modal>
-        </Paper>
       </React.Fragment>
     );
   }

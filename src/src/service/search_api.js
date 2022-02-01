@@ -89,7 +89,7 @@ export function api_search2(params, auth, from, size) {
     let payload = search_api_filter_es_query_builder(params, from , size);
     // console.debug("payload", payload);
 
-  ////console.debug('payload', payload)
+    console.debug('payload', payload)
 
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,

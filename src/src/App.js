@@ -9,14 +9,17 @@ import {
   // Login Management
   import Login from './components/ui/login';
   import Timer from './components/ui/idle';
+  
+import Paper from '@mui/material/Paper';
   import {api_validate_token} from './service/search_api';
   import { useGridApiRef } from "@mui/x-data-grid";
-
-  
   // Site Content
 import {Navigation} from "./Nav";
-import {RenderLogin} from "./components/login";
-import {RenderSearchComponent} from './components/SearchComponent';
+// import {RenderLogin} from "./components/login";
+
+/* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
+//  import {RenderSearchComponent} from './components/SearchComponent';
+
 import {RenderDonor} from "./components/donors";
 import { RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
@@ -26,6 +29,7 @@ import {RenderUpload} from "./components/uploads";
 import {RenderBulk} from "./components/bulk";
 
 // The Old Stuff
+import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 
 
@@ -95,10 +99,6 @@ function cleanJSON(str){
 
 
 
-
-
-
-
 export function App (props){
   var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
@@ -116,6 +116,8 @@ export function App (props){
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
       setAuthStatus(true);
+      navigate(`/`, { replace: true });
+      // window.location.replace(`${process.env.REACT_APP_URL}`);  
     }
 
     if(SetAuth() === false){
@@ -138,10 +140,16 @@ export function App (props){
 
   
 
-  function handleCancel(){  
-    window.history.back()
+  function handleCancel(){
+    navigate(-1);  
   }
 
+
+
+
+  function urlChange(target) {
+    navigate(target);
+  }
 
 
   function CallUploadsDialog(){
@@ -163,57 +171,49 @@ export function App (props){
         uploadsDialogRender={uploadsDialogRender}
       />       
       <Timer logout={Logout}/>
-
-
-      <div  className="container card mb-5">
-           <div className="" id="content">
+      <div id="content" className="container">
+        
+        {!authStatus && (
+            <Routes>
+                <Route path="/" element={ <Login />} />
+            </Routes>
+        )}
 
             
-           {!authStatus && (
-             <Routes>
-                 <Route path="/" element={ <Login />} />
-             </Routes>
-           )}
-
           {authStatus && (
+          <Paper className="px-5 py-4">
+
           <Routes>
 
-              <Route path="/" element={ <RenderSearchComponent entity_type=' ' />} />
+              <Route path="/" element={ <SearchComponent entity_type=' ' urlChange={urlChange} onCancel={handleCancel}/>} />
 
-              <Route path="/login" element={<RenderLogin />} />
+              <Route path="/login" element={<Login />} />
 
-              <Route path="/donors" element={<RenderSearchComponent custom_title="Search" entity_type="donors" />} ></Route>
-              <Route path="/samples" element={<RenderSearchComponent entity_type="samples" />} ></Route>
-              <Route path="/datasets" element={<RenderSearchComponent entity_type="datasets" />} ></Route>
-              <Route path="/uploads" element={<RenderSearchComponent entity_type="uploads" />} ></Route>
+              <Route path="/donors" element={<SearchComponent filter_type="donors" urlChange={urlChange}/>} ></Route>
+              <Route path="/samples" element={<SearchComponent filter_type="Sample" urlChange={urlChange} />} ></Route>
+              <Route path="/datasets" element={<SearchComponent filter_type="Dataset" urlChange={urlChange} />} ></Route>
+              <Route path="/uploads" element={<SearchComponent filter_type="uploads" urlChange={urlChange} />} ></Route>
                                     
-              <Route path="/donor/:uuid" element={<RenderDonor  status="view"/>} />
-              <Route path="/sample/:uuid" element={<RenderSample status="view"/>} />
-              <Route path="/dataset/:uuid" element={<RenderDataset  status="view"/>} />
-              <Route path="/upload/:uuid" element={<RenderUpload  status="view"/>} />
+              <Route path="/donor/:uuid" element={<RenderDonor  onCancel={handleCancel} status="view"/>} />
+              <Route path="/sample/:uuid" element={<RenderSample onCancel={handleCancel} status="view"/>} />
+              <Route path="/dataset/:uuid" element={<RenderDataset  onCancel={handleCancel} status="view"/>} />
+              <Route path="/upload/:uuid" element={<RenderUpload  onCancel={handleCancel} status="view"/>} />
               
-              <Route path="/new/donor" element={
-                <Forms formType='donor' onCancel={handleCancel} /> 
-              }/>
-              <Route path="/new/sample" element={
-                <Forms formType='sample' onCancel={handleCancel} /> 
-              }/>
-              <Route path="/new/dataset" element={
-                <Forms formType='dataset' onCancel={handleCancel} /> 
-              }/> 
+              <Route path="/new/donor" element={ <Forms formType='donor' onCancel={handleCancel} />}/>
+              <Route path="/new/sample" element={<Forms formType='sample' onCancel={handleCancel} /> }/>
+              <Route path="/new/dataset" element={<Forms formType='dataset' onCancel={handleCancel} /> }/> 
 
               <Route path="/new/sample" element={<RenderSample status="new" />} />
               <Route path="/new/dataset" element={<RenderDataset status="new" />} />
               <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
-              <Route path="/new/data" element={<RenderSearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} />} />
+              <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} />} />
               {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
 
           </Routes>
+          </Paper>
           )}
   </div>
-
-    </div>
   </div>
   );
   // return html;

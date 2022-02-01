@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import DatasetFormLegacy from "./ingest/dataset_edit";
+import {useNavigate} from "react-router-dom";
 
 
 
@@ -10,6 +11,7 @@ import DatasetFormLegacy from "./ingest/dataset_edit";
 
 export const RenderDataset = (props) => {
 //console.debug("RenderSearchComponent", props);
+  let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
@@ -26,8 +28,8 @@ export const RenderDataset = (props) => {
 
 
   function HandleCancel(){
-    window.history.back()
-  }
+    navigate(-1);  
+  };
 
   function onUpdated(data){
     console.debug("onUpdated", data);

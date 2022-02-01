@@ -126,14 +126,6 @@ class TissueForm extends Component {
     }
   };
 
-  // constructor(props) {
-  //   super(props);
-  // //   // create a ref to store the file Input DOM element   
-  // //   //this.protocolFile = React.createRef();
-  // //   //this.protocol = React.createRef();
-  // //   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
-
-  // }
 
   handleRUIJson = (dataFromChild) => {
     this.setState({
@@ -532,7 +524,7 @@ class TissueForm extends Component {
      if (this.props.history) {
        this.props.history.goBack();
     } else {
-      this.props.HandleCancel();
+      this.props.onCancel();
     }
   }
 
@@ -990,6 +982,7 @@ handleAddImage = () => {
   };
 
   isSpecialOrganType = otype => {
+    console.debug("special org type", otype);
     return RUI_ORGAN_TYPES.includes(otype);
   }
 
@@ -1245,7 +1238,7 @@ handleAddImage = () => {
                 id="editBackBtn"
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => this.handleCancel()}
+                onClick={() => this.props.onCancel()}
               >
                 Cancel
               </button>

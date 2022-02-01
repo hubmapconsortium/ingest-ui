@@ -704,7 +704,6 @@ class DonorForm extends Component {
           )}
          
           <div className="col-sm-12 form-border">
-         <Paper className="paper-container">
             <form onSubmit={this.handleSubmit}>
              
               <div className="text-danger">
@@ -943,74 +942,7 @@ class DonorForm extends Component {
                     )}
                   </div>
               </div>
-              {/*(!this.state.readOnly || this.state.metadatas.length > 0) && (
-                <div className="form-group row">
-                  <label
-                    htmlFor="metadata"
-                    className="col-sm-3 col-form-label text-right"
-                  >
-                    Metadata
-                  </label>
-                  <div className="col-sm-8">
-                    {!this.state.readOnly && (
-                      <div className="row">
-                        <div className="col-sm-5">
-                          <button
-                            type="button"
-                            onClick={this.handleAddMetadata}
-                            className="btn btn-secondary btn-block"
-                          >
-                            <FontAwesomeIcon
-                              className="inline-icon"
-                              icon={faPlus}
-                              title="Uploaded images (multiple allowed)."
-                            />
-                            Add Metadata
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {this.state.metadatas.map(metadata => (
-                      <MetadataUpload
-                        key={metadata.id}
-                        id={metadata.id}
-                        file_name={metadata.file_name}
-                        ref={metadata.ref}
-                        error={metadata.error}
-                        readOnly={this.state.readOnly}
-                        formId={this.state.form_id}
-                        onFileChange={this.onFileChange}
-                        validate={this.validateMetadataFiles}
-                        onDelete={this.handleDeleteMetadata}
-                      />
-                    ))}
-                  </div>
-                  <div className="col-sm-1 my-auto text-center">
-                    <span className="invisible text-danger inline-icon">
-                      <FontAwesomeIcon icon={faQuestionCircle} />
-                    </span>
-                    <span>
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="metadata_tooltip"
-                      />
-                      <ReactTooltip
-                        id="metadata_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <p>
-                          Metadata describing the specimen. <br /> 
-                          Select a file to uploaded file
-                          such as a spreadsheet, csv file, etc.
-                        </p>
-                      </ReactTooltip>
-                    </span>
-                  </div>
-                </div>
-              )*/}
+             
               {(!this.state.readOnly || this.state.images.length > 0) && (
                 <div className="form-group">
                   {/*<label
@@ -1093,7 +1025,6 @@ class DonorForm extends Component {
                 </React.Fragment>
               )}
             </form>
-            </Paper>
           </div>
         </div>
         <HIPPA show={this.state.show} handleClose={this.hideModal} />

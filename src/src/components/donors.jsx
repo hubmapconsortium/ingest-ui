@@ -4,18 +4,15 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import DonorForm from "./uuid/donor_form_components/donorForm";
+import {useNavigate} from "react-router-dom";
 
-
-
-function HandleCancel(){
-  window.history.back();
-}
 
 
 
 
 export const RenderDonor = (props) => {
 //console.debug("RenderSearchComponent", props);
+  let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
@@ -34,6 +31,10 @@ export const RenderDonor = (props) => {
     console.debug("onUpdated", data);
   }
 
+
+  function HandleCancel(){
+    navigate(-1);  
+  };
 
   function passError(status, message) {
    //console.debug("Error", status, message);

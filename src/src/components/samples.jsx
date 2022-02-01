@@ -3,16 +3,14 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import TissueFormLegacy from "./uuid/tissue_form_components/tissueForm";
+import {useNavigate} from "react-router-dom";
 
 
 
-
-function HandleCancel(){
-  window.history.back()
-};
 
 export const RenderSample = (props) => {
-//console.debug("RenderSearchComponent", props);
+  console.debug("Render New SAMPLES", props);
+  let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
@@ -26,6 +24,11 @@ export const RenderSample = (props) => {
   useEffect(() => {
     fetchData(uuid);
   }, []);
+
+  function HandleCancel(){
+    navigate(-1);  
+  };
+
 
   function passError(status, message) {
    //console.debug("Error", status, message);
@@ -74,7 +77,7 @@ export const RenderSample = (props) => {
     }else{
       return (
         <div>
-          <TissueFormLegacy HandleCancel={HandleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
+          <TissueFormLegacy onCancel={HandleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
         </div>
       )
     }
