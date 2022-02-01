@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { ORGAN_TYPES, RUI_ORGAN_MAPPING } from "../../../constants.jsx";
+import { ORGAN_TYPES } from "../../../constants.jsx";
 import "../../../App.css";
 
 
@@ -67,7 +67,6 @@ class RUIIntegration extends Component {
   }
 
   updateRUIConfig() {
-    const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
     const organ_info = ORGAN_TYPES[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
@@ -83,7 +82,7 @@ class RUIIntegration extends Component {
       lastName: user_name.split(" ")[1]
     };
     rui.organ = {
-      ontologyId: organ_id,
+      //ontologyId: xxx, // IEC TODO
       name: organ_name,
       sex: sex || "female",
       side: organ_side
