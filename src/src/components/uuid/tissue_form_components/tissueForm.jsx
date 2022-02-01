@@ -223,7 +223,7 @@ class TissueForm extends Component {
                             ////////console.debug(resp.results);
                             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
                             // THIS WILL ALWAYS ALLOW THE SCREEN TO BE EDITED. TEMPORARY SOLUTION 
-                            read_only_state = false
+                            //read_only_state = false
 
                             this.setState({
                               editingEntity: entity_data,
@@ -346,7 +346,7 @@ class TissueForm extends Component {
             thumbnail: thumbnail_list
           } );
 
-        //this.getSourceAncestorOrgan(this.state.editingEntity);
+        this.getSourceAncestorOrgan(this.state.editingEntity);
 
 
       } else {
@@ -2394,7 +2394,7 @@ handleAddImage = () => {
             {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              this.isSpecialOrganType(this.state.source_entity.organ) && this.state.RUI_ACTIVE &&  
+              this.isSpecialOrganType(this.state.ancestor_organ) && this.state.RUI_ACTIVE &&  
               (
                 <div className="form-group">
                   <label
