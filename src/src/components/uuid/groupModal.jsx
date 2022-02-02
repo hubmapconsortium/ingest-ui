@@ -5,6 +5,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@material-ui/core/Button';
 
+
+import Select from '@mui/material/Select';
+
 class GroupModal extends Component {
   state = {
     groups: []
@@ -27,6 +30,7 @@ class GroupModal extends Component {
                 <h5 className="card-title">You currently have multiple group assignments, Please select a primary group for submission</h5>
                 <div className="form-group row">
                   <div className="col-sm-6 offset-sm-3">
+                    
                     <select
                       name="groups"
                       id="groups"

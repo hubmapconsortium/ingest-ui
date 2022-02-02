@@ -10,6 +10,7 @@ import EditUploads from "./uploads/editUploads";
 
 
 export const RenderUpload = (props) => {
+  console.debug("Rendering from NEWER Route, not Legacy Route");
 //console.debug("RenderSearchComponent", props);
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);

@@ -9,7 +9,7 @@ import {useNavigate} from "react-router-dom";
 
 
 export const RenderSample = (props) => {
-  console.debug("Render New SAMPLES", props);
+  console.debug("Rendering from NEWER Route, not Legacy Route");
   let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);

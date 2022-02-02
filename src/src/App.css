@@ -618,7 +618,7 @@ a.disabled {
 }
 /* Hide arrow icon in IE browsers */
 .select-css::-ms-expand {
-  display: none;
+  display: none!important;
 }
 /* Hover style */
 .select-css:hover {
@@ -655,6 +655,14 @@ a.disabled {
 .select-css:disabled:hover, .select-css[aria-disabled=true] {
   border-color: #aaa;
 }
+
+
+
+select#groups{
+  -webkit-appearance: auto!important;
+  appearance: auto!important;
+}
+
 
 .search-filter {
   background-color: white;

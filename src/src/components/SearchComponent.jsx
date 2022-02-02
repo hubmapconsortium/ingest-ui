@@ -193,7 +193,7 @@ function Preamble(props) {
         <span className="portal-label text-center display-block">Search</span>
       )}
       <span className="text-center mb-2 display-block">      
-      Use the filter controls to search for   s, Samples, Datasets or Data Uploads. <br />
+      Use the filter controls to search for Donors, Samples, Datasets or Data Uploads. <br />
       If you know a specific ID you can enter it into the keyword field to locate individual entities.
       </span>
     </div>

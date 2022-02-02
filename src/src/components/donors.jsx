@@ -11,6 +11,7 @@ import {useNavigate} from "react-router-dom";
 
 
 export const RenderDonor = (props) => {
+  console.debug("Rendering from NEWER Route, not Legacy Route");
 //console.debug("RenderSearchComponent", props);
   let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));

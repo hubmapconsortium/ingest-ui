@@ -846,7 +846,7 @@ class SearchComponent extends Component {
 
           {this.state.show_search && (
             // this.renderFilterControls()
-            this.renderFilterControlsAlt()
+            this.renderFilterControls()
             )}
 
             
@@ -1037,6 +1037,7 @@ renderInfoPanel() {
                   container 
                   spacing={3}
                   pb={3}
+                  alignItems="center"
                   sx={{ 
                     display: 'flex',
                     justifyContent: 'flex-start' 
@@ -1103,7 +1104,7 @@ renderInfoPanel() {
                         />
                   </Grid>
                   
-          
+                  <Grid item xs={2}></Grid>
                 <Grid item xs={4}>
                     <Button
                       fullWidth
@@ -1127,6 +1128,7 @@ renderInfoPanel() {
                     </Button>
                 </Grid>
                   
+                <Grid item xs={2}></Grid>
               </Grid>
             </form>
             </div>
