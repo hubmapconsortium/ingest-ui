@@ -6,8 +6,9 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
-import Snackbar from '@material-ui/core/Snackbar';
-//import SnackbarContent from '@material-ui/core/SnackbarContent';
+import MuiAlert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';//import SnackbarContent from '@material-ui/core/SnackbarContent';
+import Grid from '@mui/material/Grid';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import axios from "axios";
@@ -1198,30 +1199,25 @@ handleAddImage = () => {
     if (this.state.editingEntity) {
       if (this.state.readOnly) {
         return (
-          <div className="row"><div className="col-sm-12">
-          <Divider />
-          </div>
-            <div className="col-sm-12 text-right pads">
-              <button
-                type="button"
-                className="btn btn-secondary"
+            
+            <Grid item >
+              <Button
+                variant="outline"
                 onClick={() => this.handleCancel()}
               >
                 Cancel
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Grid>
         );
       } else {
         return (
-          <div className="row">
-          <div className="col-sm-12">
-            <Divider />
-          </div>
-            <div className="col-sm-12 text-right pads">
-              <button
+          <React.Fragment >
+
+          <Grid item >
+              <Button
+                variant="contained"
+                color="primary"
                 type="submit"
-                className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
               >
                 {this.state.submitting && (
@@ -1232,32 +1228,33 @@ handleAddImage = () => {
                   />
                 )}
                 {!this.state.submitting && "Update"}
-              </button>
+              </Button>
+            </Grid>
+
             {!this.state.back_btn_hide && (
-              <button
+            <Grid item >
+              <Button
+                variant="outlined"
                 id="editBackBtn"
-                type="button"
-                className="btn btn-secondary"
                 onClick={() => this.props.onCancel()}
               >
                 Cancel
-              </button>
+              </Button>
+              </Grid>
               )}
-            </div>
-          </div>
+            </React.Fragment>
         );
       }
     } else {
       return (
 
-        <div className="row"> 
-          <div className="col-sm-12">
-              <Divider />
-            </div>
-            <div className="col-md-11 text-right pads">
-            <button
+        <React.Fragment > 
+
+            <Grid item >
+            <Button
+              variant="contained"
+              color="primary"
               type="submit"
-              className="btn btn-primary mr-1"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (
@@ -1268,16 +1265,17 @@ handleAddImage = () => {
                 />
               )}
               {!this.state.submitting && "Generate ID"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
+            </Button>
+            </Grid>
+            <Grid item >
+            <Button
+              variant="outlined"
               onClick={() => this.handleCancel()}
             >
               Cancel
-            </button>
-            </div>
-        </div>
+            </Button>
+            </Grid>
+            </React.Fragment>
       );
     }
   }
@@ -2601,7 +2599,17 @@ handleAddImage = () => {
                 {this.state.error_message}
               </div>
             )}
-            {this.renderButtons()}
+            <Divider />
+            <Grid
+              container 
+              direction="row"
+              justifyContent="flex-end"
+              alignItems="flex-end"
+              columns={12}
+              spacing={2}
+              >
+              {this.renderButtons()}
+            </Grid>
             {this.state.editingEntity && 
             this.state.editingEntity.data_access_level === 'public' &&
             this.state.read_only_state && (
@@ -2626,11 +2634,11 @@ handleAddImage = () => {
          <Snackbar open={this.state.show_snack} 
                       onClose={this.closeSnack}
                       anchorOrigin={{
-                          vertical: 'top',
-                          horizontal: 'right',
+                          vertical: 'bottom',
+                          horizontal: 'left',
                       }}
-                      autoHideDuration={6000} 
-                      message={this.state.snackmessage}
+                      severity="success"
+                      autoHideDuration={3000}
                       action={
                             <React.Fragment>
                               <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
@@ -2638,7 +2646,9 @@ handleAddImage = () => {
                               </IconButton>
                             </React.Fragment>
                           }
-            /> 
+            > 
+              <MuiAlert severity="success"  >{this.state.snackmessage}</MuiAlert>
+            </Snackbar>
 
             <Snackbar open={this.state.show_dirty_warning} 
                       //onClose={this.closeSnack}
