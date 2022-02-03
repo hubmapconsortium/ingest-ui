@@ -762,3 +762,11 @@ svg.invalid{
 #TissueForm .MuiFilledInput-root:first-child {
   background:#e8e8e8;
 }
+
+
+/* Recolors the primary button elements from the new MUI */
+
+.MuiButton-containedPrimary {
+  color: #fff;
+  background-color: #1976d2!important;
+}
