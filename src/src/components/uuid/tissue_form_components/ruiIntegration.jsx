@@ -101,7 +101,9 @@ class RUIIntegration extends Component {
     rui.cancelRegistration = function () {
       rui.register(self.props.location);
     };
-    if (location) {
+    if (location &&
+        // Don't re-set the registration if it's the same as before
+        (!rui.editRegistration || location['@id'] !== rui.editRegistration['@id'])) {
       rui.editRegistration = location;
     }
     rui.useDownload = false;
