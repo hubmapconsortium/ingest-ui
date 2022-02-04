@@ -26,7 +26,10 @@ import { ingest_api_get_globus_url,
   ingest_api_validate_upload,
   ingest_api_submit_upload,
   ingest_api_reorganize_upload,
-  ingest_api_users_groups } from '../../service/ingest_api';
+  ingest_api_all_user_groups } from '../../service/ingest_api';
+import {
+    entity_api_update_entity
+} from '../../service/entity_api';
 import { DATA_ADMIN, DATA_CURATOR } from '../../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
@@ -205,7 +208,7 @@ class EditUploads extends Component {
   allowablePermissions = (data_group_uuid) => {
     var local = JSON.parse(localStorage.getItem("info"));
     // get the users groups
-    ingest_api_users_groups(local.groups_token).then((results) => {
+    ingest_api_all_user_groups(local.groups_token).then((results) => {
       if (results.status === 200) {
         var users_groups = results.results
         var admin = false
@@ -213,9 +216,6 @@ class EditUploads extends Component {
         var group_editor = false
 
         users_groups.forEach(function(result) {
-          // if (ALLOWABLE_UPLOADS_GROUPS.includes(result.uuid)) {
-          //   var valid_group = true
-          // }
           if (DATA_ADMIN === result.uuid) {
             admin = true
           }
@@ -231,9 +231,9 @@ class EditUploads extends Component {
           data_curator: curator,
           data_group_editor: group_editor
         });
-        console.debug('admin', admin)
-        console.debug('curator', curator)
-        console.debug('data grp', group_editor)
+        // console.debug('admin', admin)
+        // console.debug('curator', curator)
+        // console.debug('data grp', group_editor)
       }
     })
 
@@ -257,6 +257,47 @@ class EditUploads extends Component {
   hideConfirmModal = () => {
     this.setState({ confirmModal: false });
   };
+
+  handleSave = (i) => {
+
+    this.validateForm().then((isValid) => {
+      if (isValid) {
+        if (
+          !this.props.editingUpload &&
+          this.state.groups.length > 1 &&
+          !this.state.GroupSelectShow
+        ){
+          this.setState({ GroupSelectShow: true });
+        } else {
+          this.setState({
+            GroupSelectShow: false,
+            submitting: false,
+          });
+          this.setState({ submitting: true });
+          // package the data up
+          let data = {
+            title: this.state.title,
+            description: this.state.description
+          };
+  
+
+          if (this.props.editingUpload) {
+            entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                .then((response) => {
+                  if (response.status === 200) {
+                     this.props.onUpdated(response.results);
+                  } else {
+                    this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+                  }
+                }).catch((error) => {
+                  this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+                  console.debug("SAVE error", error)
+                });
+          } 
+        }
+      }
+    });
+  }
 
   handleSubmitUpload = (data) =>{
     this.setState({
@@ -602,7 +643,10 @@ renderReorganizeButton() {
     }, () => {
       console.debug("handleButtonClick ",i, action)
       if(action){
-        if(action === "save" || action === "create" || action === "validate"){
+        if(action === "save") {
+          this.handleSave(i)
+        } else 
+        if (action === "create" || action === "validate"){
           console.debug("SAVE")
           this.handleValidateUpload(i);
         }else if(action==="submit"){
