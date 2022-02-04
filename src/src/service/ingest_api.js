@@ -4,7 +4,7 @@ import axios from "axios";
 import FormData from "form-data"
 
 /*
- * User Group API
+ * User Groups only those data provider groups are return
  *
  */
 export function ingest_api_users_groups(auth) { 
@@ -26,6 +26,35 @@ export function ingest_api_users_groups(auth) {
           .map(g => {
             return g;
           });
+    //console.debug('API USER GROUPs', group_list);
+    return {status: res.status, results: group_list}
+ })
+ .catch(err => {
+    return {status: err.response.status, results: err.response}
+     //return err.response.status;
+ });
+}
+
+/*
+ * User Groups ALL groups are return
+ *
+ */
+export function ingest_api_all_user_groups(auth) { 
+   const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  return axios 
+ .get(
+   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+ .then(res => {
+  //////console.debug(res.data)
+  const group_list = res.data.groups;
+         
     //console.debug('API USER GROUPs', group_list);
     return {status: res.status, results: group_list}
  })
