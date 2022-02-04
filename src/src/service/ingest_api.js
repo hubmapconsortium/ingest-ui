@@ -375,3 +375,30 @@ export function ingest_api_validate_upload(uuid, data, auth) {
 };
 
 
+/* 
+ * Reorganize or uploads
+ *
+ */
+export function ingest_api_reorganize_upload(uuid, data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+    
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/reorganize`;
+//console.debug(data);
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+        ////console.debug(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};
