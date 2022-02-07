@@ -1,10 +1,5 @@
 import React, { Component } from "react";
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
 import Divider from '@material-ui/core/Divider';
-import Box from '@mui/material/Box';
-
-import Grid from '@mui/material/Grid';
 import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import axios from "axios";
@@ -377,44 +372,27 @@ class EditUploads extends Component {
 
   renderButtonBar(){
       return (
-        <Grid
-          container 
-          direction="row"
-          justifyContent="flex-end"
-          alignItems="flex-end"
-          columns={12}
-          >
-          
-          <Grid item xs={12}>
-          < Divider />
-          </Grid>
-          
-          
-          <Grid item xs={12}>
-            {this.renderHelperText()}
-          </Grid>
+        <div>
+          <div className="col-sm-12">
+          <Divider />
+          </div>
 
+          {this.renderHelperText()}
 
-          <Grid container item 
-            spacing={2}
-            xs={12}
-            direction="row"
-            justifyContent="flex-end"
-            alignItems="flex-end"> 
-                {this.renderValidateButton()}
-                {this.renderActionButton()}
-              <Grid item> 
-                <Button
-                  variant="outlined"
-                  onClick={() => this.props.HandleCancel()}
-                >
-                  Cancel
-                </Button>
-            </Grid>
-          </Grid>
-
-
-        </Grid>
+          <div class="text-right">
+            <div class="btn-group" role="group">
+              {this.renderValidateButton()}
+              {this.renderActionButton()}
+              <button
+                type='button'
+                className='btn btn-secondary float-right'
+                onClick={() => this.props.handleCancel()}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       );
   } 
 /*
@@ -475,9 +453,7 @@ class EditUploads extends Component {
       this.state.status.toUpperCase()
       )) {
       return (
-              <Button 
-                  variant="contained"
-                  color="info"
+              <button 
                   type='button'
                   className = 'btn btn-info mr-1'
                   onClick = {() => this.handleButtonClick(this.state.status.toLowerCase(), "validate") }
@@ -490,7 +466,7 @@ class EditUploads extends Component {
                 />
               )}
               {!this.state.submitting && "Validate"}
-                </Button>
+                </button>
               )
     }   
   }
@@ -508,13 +484,9 @@ class EditUploads extends Component {
     return ( 
 
       <React.Fragment>
-        <Grid item >
-
-        <Button
+        <button
           type='button'
-          variant="contained"
-          color="info"
-          className='btn btn-info mr-3'
+          className='btn btn-info mr-1'
           disabled={this.state.submitting_submission}
           onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"submit") }
           data-status={this.state.status.toLowerCase()}
@@ -527,16 +499,10 @@ class EditUploads extends Component {
           />
         )}
         {!this.state.submitting_submission && "Submit"}
-      </Button>
-
-      </Grid>
-
-      <Grid item>
-      <Button
+      </button>
+      <button
           type='button'
-          variant="contained"
-          color="primary"
-          className='btn btn-primary mr-3'
+          className='btn btn-primary mr-1'
           disabled={this.state.submitting}
           onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"save") }
           data-status={this.state.status.toLowerCase()}
@@ -549,16 +515,14 @@ class EditUploads extends Component {
           />
         )}
         {!this.state.submitting && "Save"}
-      </Button>
-
-      </Grid>
+      </button>
     </React.Fragment>
     );
   } else if (["VALID"].includes(this.state.status.toUpperCase())){
     return (
       <button
         type='button'
-        className='btn btn-info mr-3'
+        className='btn btn-info mr-1'
         disabled={this.state.submitting}
         onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"create") }
         data-status={this.state.status.toLowerCase()}
@@ -754,7 +718,7 @@ class EditUploads extends Component {
            <label>
             Datsets 
           </label>
-        <TableContainer component={Paper} style={{ maxHeight: 350, width:"100%"}}>
+        <TableContainer component={Paper} style={{ maxHeight: 350 }}>
         <Table aria-label="Associated Datasets" size="small" stickyHeader>
           <TableHead>
             <TableRow>
@@ -818,7 +782,7 @@ class EditUploads extends Component {
   render() {
     return (
       <React.Fragment>
-      <div className="div-container">
+      <Paper className="paper-container">
       <form>
         <div>
             <div className='row mt-3 mb-3'>
@@ -826,7 +790,7 @@ class EditUploads extends Component {
               <div className='col-sm-12'>
                 <h3 className='float-left'>
                     <span
-                      className={"mr-3 badge " + this.state.badge_class}
+                      className={"mr-1 badge " + this.state.badge_class}
                       style={{ cursor: "pointer" }}
                       onClick={() =>
                         this.showErrorMsgModal(
@@ -837,7 +801,7 @@ class EditUploads extends Component {
                       {this.props.editingUpload.status}
                     </span> 
                     {this.props.editingUpload &&
-                       "  HuBMAP Upload ID " +
+                      "HuBMAP Upload ID " +
                       this.props.editingUpload.hubmap_id}
                   </h3>
                 </div>
@@ -881,7 +845,7 @@ class EditUploads extends Component {
               </div>
               </div>
             </React.Fragment>
-          <div className='form-group mb-3 '>
+          <div className='form-group'>
           {this.renderValidationMessage()}
             <label htmlFor='title'  className="mt-3">
               Upload Title <span className='text-danger'>*</span>
@@ -970,7 +934,7 @@ class EditUploads extends Component {
             
             <div>
          
-          <div className='col-sm-12 col-form-label'>
+          <div className='col-sm-9 col-form-label'>
             {this.renderDatasets(this.state.datasets)}
           </div>  
             </div>
@@ -1014,7 +978,7 @@ class EditUploads extends Component {
           </div>
         </div>
       </Modal>
-      </div>
+      </Paper>
     </React.Fragment>
 
     );

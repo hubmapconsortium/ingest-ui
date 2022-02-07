@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import EditUploads from "./uploads/editUploads";
-import {useNavigate} from "react-router-dom";
 
 
 
@@ -13,7 +12,6 @@ import {useNavigate} from "react-router-dom";
 export const RenderUpload = (props) => {
   console.debug("Rendering from NEWER Route, not Legacy Route");
 //console.debug("RenderSearchComponent", props);
-  let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
@@ -30,8 +28,8 @@ export const RenderUpload = (props) => {
 
 
   function HandleCancel(){
-    navigate(-1);  
-  };
+    window.history.back()
+  }
 
   function onUpdated(data){
     console.debug("onUpdated", data);

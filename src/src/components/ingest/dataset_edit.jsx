@@ -3,7 +3,6 @@ import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import Grid from '@mui/material/Grid';
 import Button from '@material-ui/core/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -1276,12 +1275,11 @@ class DatasetEdit extends Component {
             && this.state.previous_revision_uuid === undefined 
             && this.state.status.toUpperCase() === "PUBLISHED") {
          return (
-            <React.Fragment>
-
+           <div className="row">
                 {this.reprocessButton()}
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
-              </React.Fragment>
+            </div>
           )
     }
             
@@ -1296,41 +1294,41 @@ class DatasetEdit extends Component {
       if (["NEW", "INVALID", "REOPENED", "ERROR"].includes(
               this.state.status.toUpperCase())) {
         return (
-            <React.Fragment>
+            <div className="row">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {!this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
                 }
                 {this.cancelButton()}
-            </React.Fragment>
+            </div>
           )
       }
       if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
         return (
-            <React.Fragment>
+            <div className="row">
                 {this.aButton("published", "Publish")}
                 {this.cancelButton()}
-            </React.Fragment>
+            </div>
           )
       }   
       if (this.state.status.toUpperCase() === 'PUBLISHED') {
         return (
-            <React.Fragment>
+            <div className="row">
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
-            </React.Fragment>
+            </div>
           )
       } 
       if (this.state.status.toUpperCase() === 'QA') {
         return (
-            <React.Fragment>
+            <div className="row">
                 {this.aButton("hold", "Hold")}
                 {this.aButton("reopened", "Reopen")}
                 {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
-            </React.Fragment>
+            </div>
           )
       }      
     }
@@ -1338,23 +1336,26 @@ class DatasetEdit extends Component {
 
   // Cancel button
   cancelButton() {
-    return(<Grid item >
-          <Button
-          variant="outline"
+    return(<React.Fragment>
+        <div className="col-sm">
+          <button
+              type='button'
+              className='btn btn-secondary btn-block'
               onClick={() => this.props.HandleCancel()}>
               Cancel
-          </Button>
-       </Grid>
+          </button>
+      </div>
+       </React.Fragment>
       )
   }
 
   // General button
   aButton(state, which_button) {
-    return (
-      <Grid item >
-        <Button
-          color="primary"
-          variant="contained"
+    return (<React.Fragment>
+      <div className="col-sm">
+        <button
+          type='button'
+          className='btn btn-info btn-block'
           disabled={this.state.submitting}
           onClick={() =>
             this.handleButtonClick(state)
@@ -1369,17 +1370,18 @@ class DatasetEdit extends Component {
             />
           )}
           {!this.state.submitting && which_button}
-        </Button>
-        </Grid>
+        </button>
+        </div>
+        </React.Fragment>
       )
   }
 
   reprocessButton() {
     return (<React.Fragment>
-      <Grid item >
-        <Button
-          color="info"
-          variant="contained"
+      <div className="col-sm">
+        <button
+          type='button'
+          className='btn btn-warning btn-block'
           disabled={this.state.submitting}
           onClick={() =>
             this.handleReprocess()
@@ -1394,8 +1396,8 @@ class DatasetEdit extends Component {
             />
           )}
           {!this.state.submitting && "Reprocess"}
-        </Button>
-        </Grid>
+        </button>
+        </div>
         </React.Fragment>
       )
   }
@@ -2074,16 +2076,7 @@ class DatasetEdit extends Component {
               )}
             </div>
           )}
-            <Grid
-              container 
-              direction="row"
-              justifyContent="flex-end"
-              alignItems="flex-end"
-              columns={12}
-              spacing={2}
-              >
           {this.renderButtons()}
-          </Grid>
         </form>
         <GroupModal
           show={this.state.GroupSelectShow}

@@ -18,12 +18,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { tsToDate } from "../../../utils/string_helper";
 //import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
-
-import Grid from '@mui/material/Grid';
-import Button from '@material-ui/core/Button';
-
-
-
 import {
   validateRequired,
   validateProtocolIODOI,
@@ -450,23 +444,30 @@ class DonorForm extends Component {
     if (this.props.editingEntity) {
       if (this.state.readOnly) {
         return (
-
+          <div className="row">
+           <div className="col-sm-12">
+          <Divider />
+          </div>
       
-            <React.Fragment>
-              <Button
-                variant="outline"
+            <div className="col-sm-12 text-right pads">
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={() => this.props.HandleCancel()}
               >
                 Cancel
-              </Button>
-            </React.Fragment>
+              </button>
+            </div>
+          </div>
         );
       } else {
         return (
-          <React.Fragment>
-              <Button
-                variant="contained"
-                color="primary"
+          <div className="row">
+          <div className="col-sm-12">
+          <Divider />
+          </div>
+            <div className="col-md-12 text-right pads">
+              <button
                 type="submit"
                 className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
@@ -479,27 +480,29 @@ class DonorForm extends Component {
                   />
                 )}
                 {!this.state.submitting && "Update"}
-              </Button>
+              </button>
             
-              <Button
-                variant="outline"
+              <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => this.props.HandleCancel()}
               >
                  Cancel
-              </Button>
-          </React.Fragment>
+              </button>
+          </div>
+          </div>
         );
       }
     } else {
       return (
-
-            <React.Fragment >
-            <Button
-                variant="contained"
-                color="primary"
+        <div className="row">
+        <div className="col-sm-12">
+          <Divider />
+        </div>
+            <div className="col-md-12 text-right pads">
+            <button
               type="submit"
+              className="btn btn-primary mr-1"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (
@@ -510,15 +513,17 @@ class DonorForm extends Component {
                 />
               )}
               {!this.state.submitting && "Generate ID"}
-            </Button>
+            </button>
          
-            <Button
-                variant="outline"
+            <button
+              type="button"
+              className="btn btn-secondary"
               onClick={() => this.props.HandleCancel()}
             >
               Cancel
-            </Button>
-          </React.Fragment>
+            </button>
+          </div>
+        </div>
       );
     }
   }
@@ -698,7 +703,7 @@ class DonorForm extends Component {
             </React.Fragment>
           )}
          
-          <div className="">
+          <div className="col-sm-12 form-border">
             <form onSubmit={this.handleSubmit}>
              
               <div className="text-danger">
@@ -1010,21 +1015,7 @@ class DonorForm extends Component {
                   help.
                 </div>
               )}
-                        
-              <div className="row">
-              <Divider />
-              </div>
-              <Grid
-              container 
-              direction="row"
-              justifyContent="flex-end"
-              alignItems="flex-end"
-              columns={12}
-              spacing={2}
-              sx={{ "margin-top": 4 }}
-              >
               {this.renderButtons()}
-              </Grid> 
                {this.props.editingEntity && 
                 this.props.editingEntity.data_access_level === 'public' && (
 
