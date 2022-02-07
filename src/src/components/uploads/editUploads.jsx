@@ -841,7 +841,6 @@ renderReorganizeButton() {
   render() {
     return (
       <React.Fragment>
-      <Paper className="paper-container">
       <form>
         <div>
             <div className='row mt-3 mb-3'>
@@ -1037,7 +1036,6 @@ renderReorganizeButton() {
           </div>
         </div>
       </Modal>
-      </Paper>
     </React.Fragment>
 
     );

@@ -77,7 +77,7 @@ export const RenderUpload = (props) => {
     }else{
       return (
         <div>
-          <EditUploads HandleCancel={HandleCancel} editingUpload={entity_data} onUpdated={onUpdated}/>
+          <EditUploads handleCancel={HandleCancel} editingUpload={entity_data} onUpdated={onUpdated}/>
         </div>
       )
     }
