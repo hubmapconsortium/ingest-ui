@@ -146,18 +146,18 @@ export function App (props){
   }
 
 
-
-
-  function urlChange(target) {
-    navigate(target);
-  }
-
-
   function CallUploadsDialog(){
   //console.debug("CallUploadsDialog uploadsDialogRender");
     setUploadsDialogRender(true);
   }
  
+  
+  function urlChange(target) {
+    navigate(target);
+  }
+
+
+
   
 
 //console.debug("props", props);

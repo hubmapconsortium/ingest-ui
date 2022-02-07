@@ -25,8 +25,12 @@ import TableRow from '@material-ui/core/TableRow';
 import { ingest_api_get_globus_url, 
   ingest_api_validate_upload,
   ingest_api_submit_upload,
-  ingest_api_users_groups } from '../../service/ingest_api';
-//import { GROUPS } from '../../service/groups'
+  ingest_api_reorganize_upload,
+  ingest_api_all_user_groups } from '../../service/ingest_api';
+import {
+    entity_api_update_entity
+} from '../../service/entity_api';
+import { DATA_ADMIN, DATA_CURATOR } from '../../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component {
@@ -46,7 +50,10 @@ class EditUploads extends Component {
     creatingNewUploadFolder: true,
     confirmModal: false,
     writeable: false,
-    pageSize:10
+    pageSize:10,
+    data_admin: false,
+    data_curator: false,
+    data_group_editor: false
   }
 
   
@@ -64,7 +71,7 @@ class EditUploads extends Component {
     };
     let entity_data = this.props.editingUpload;
     
-    
+
     this.setState({
       // groups: this.props.groups,
       updateSuccess: null,
@@ -76,7 +83,7 @@ class EditUploads extends Component {
       description:entity_data.description,
       author:entity_data.created_by_user_displayname,
       created:entity_data.created_timestamp,
-      group:entity_data.group_name,
+      group:entity_data.group_uuid,
       datasets:entity_data.datasets,
       status:entity_data.status,
       editForm: true,
@@ -92,6 +99,10 @@ class EditUploads extends Component {
           name: ""        },
       },
       () => {
+
+        // gets fine permissions
+        this.allowablePermissions(this.state.group)
+
         //@TODO: Decouple Badge class from this switch that sets writeable state & Validation Messge Style
         // Unless these are a different Badge not RE status but another state? 
         switch (this.state.status.toUpperCase()) {
@@ -192,17 +203,50 @@ class EditUploads extends Component {
     console.debug(this.state);
     console.debug(this.props.editingUpload);
     
-    
-
   };
 
-    handleCancel = () => {
-      if (this.props.history) {
-        this.props.history.goBack();
-      } else {
-        this.props.handleCancel();
+  allowablePermissions = (data_group_uuid) => {
+    var local = JSON.parse(localStorage.getItem("info"));
+    // get the users groups
+    ingest_api_all_user_groups(local.groups_token).then((results) => {
+      if (results.status === 200) {
+        var users_groups = results.results
+        var admin = false
+        var curator = false
+        var group_editor = false
+
+        users_groups.forEach(function(result) {
+          if (DATA_ADMIN === result.uuid) {
+            admin = true
+          }
+          if (DATA_CURATOR === result.uuid) {
+            curator = true
+          }
+          if (data_group_uuid === result.uuid) {
+            group_editor = true
+          }
+        });
+        this.setState({
+          data_admin: admin,
+          data_curator: curator,
+          data_group_editor: group_editor
+        });
+        // console.debug('admin', admin)
+        // console.debug('curator', curator)
+        // console.debug('data grp', group_editor)
       }
+    })
+
+  }
+
+
+  handleCancel = () => {
+    if (this.props.history) {
+      this.props.history.goBack();
+    } else {
+      this.props.handleCancel();
     }
+  }
 
 
   showConfirmModal = () => {
@@ -213,6 +257,47 @@ class EditUploads extends Component {
   hideConfirmModal = () => {
     this.setState({ confirmModal: false });
   };
+
+  handleSave = (i) => {
+
+    this.validateForm().then((isValid) => {
+      if (isValid) {
+        if (
+          !this.props.editingUpload &&
+          this.state.groups.length > 1 &&
+          !this.state.GroupSelectShow
+        ){
+          this.setState({ GroupSelectShow: true });
+        } else {
+          this.setState({
+            GroupSelectShow: false,
+            submitting: false,
+          });
+          this.setState({ submitting: true });
+          // package the data up
+          let data = {
+            title: this.state.title,
+            description: this.state.description
+          };
+  
+
+          if (this.props.editingUpload) {
+            entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                .then((response) => {
+                  if (response.status === 200) {
+                     this.props.onUpdated(response.results);
+                  } else {
+                    this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+                  }
+                }).catch((error) => {
+                  this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+                  console.debug("SAVE error", error)
+                });
+          } 
+        }
+      }
+    });
+  }
 
   handleSubmitUpload = (data) =>{
     this.setState({
@@ -234,7 +319,28 @@ class EditUploads extends Component {
       });
       
   }
-    
+  
+  handleReorganize = () => {
+    this.setState({
+      submitting_submission:true,
+      submitting: false,
+    })
+    ingest_api_reorganize_upload(this.props.editingUpload.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((response) => {
+        console.debug(response.results);
+        if (response.status === 200) {
+          this.props.onUpdated(response.results);
+        } else {
+          this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+        }
+      })
+      .catch((error) => {
+        this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+        console.debug("Reorganize error", error)
+      });
+      
+
+  }
   
 
   handleValidateUpload = (i) => {
@@ -382,12 +488,13 @@ class EditUploads extends Component {
           <div class="text-right">
             <div class="btn-group" role="group">
               {this.renderValidateButton()}
-              {this.renderActionButton()}
+              {this.renderReorganizeButton()}
+              {this.renderSubmitButton()}
+              {this.renderSaveButton()}
               <button
                 type='button'
                 className='btn btn-secondary float-right'
-                onClick={() => this.props.handleCancel()}
-              >
+                onClick={() => this.props.handleCancel()}>
                 Cancel
               </button>
             </div>
@@ -395,63 +502,12 @@ class EditUploads extends Component {
         </div>
       );
   } 
-/*
-  renderValidateButton() {
-    var local = JSON.parse(localStorage.getItem("info"));
-    var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4", "5bd084c8-edc2-11e8-802f-0e368f3075e8"];
-    console.log("group is ", this.state.group);
-    ingest_api_users_groups(local.groups_token).then((results) => {
-      console.log("results is ", results.results);
-    });
-    if (["SUBMITTED", "INVALID", "ERROR"].includes(
-      this.state.status.toUpperCase()
-      )){
-      console.log("this ran");
-      ingest_api_users_groups(local.groups_token).then((results) => {
-        if (results.status === 200) {
-          results.results.forEach(function(result) {
-            console.log("uuid is ", result.uuid)
-            if (group_uuids.includes(result.uuid)) {
-              return (
-                <button 
-                    type='button'
-                    className = 'btn btn-info mr-1'
-                    onClick = {() => this.tempAlert()}
-                  >
-                  {this.state.submitting && (
-                  <FontAwesomeIcon
-                    className='inline-icon'
-                    icon={faSpinner}
-                    spin
-                  />
-                )}
-                {!this.state.submitting && "Validate"}
-                  </button>
-                )
-            }
-          }
-        )
-      }
-    });
-    }
-  }*/
-  renderValidateButton() {
-    var local = JSON.parse(localStorage.getItem("info"));
-    var group_uuids = ["89a69625-99d7-11ea-9366-0e98982705c1", "75804b96-d4a8-11e9-9da9-0ad4acb67ed4", "5bd084c8-edc2-11e8-802f-0e368f3075e8"];
-    console.log("group is ", this.state.group);
-    ingest_api_users_groups(local.groups_token).then((results) => {
-      if (results.status === 200) {
-        results.results.forEach(function(result) {
-          if (group_uuids.includes(result.uuid)) {
-            // var valid_group = true
-          }
-        })
-      }
-    })
 
-    if (["SUBMITTED", "INVALID", "ERROR"].includes(
-      this.state.status.toUpperCase()
-      )) {
+  renderValidateButton() {
+   
+    if (["SUBMITTED", "VALID", "INVALID", "ERROR", "NEW"].includes(
+      this.state.status.toUpperCase() 
+      ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
       return (
               <button 
                   type='button'
@@ -471,88 +527,93 @@ class EditUploads extends Component {
     }   
   }
 
+  renderSubmitButton() {
+  
+    if (["VALID"].includes(
+      this.state.status.toUpperCase()
+      ) && (this.state.data_admin || this.state.data_group_editor)) {
+      return (
+            <button
+              type='button'
+              className='btn btn-info mr-1'
+              disabled={this.state.submitting_submission}
+              onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"submit") }
+              data-status={this.state.status.toLowerCase()}>
+              {this.state.submitting_submission && (
+                  <FontAwesomeIcon
+                    className='inline-icon'
+                    icon={faSpinner}
+                    spin
+                  />
+                )}
+                {!this.state.submitting_submission && "Submit"}
+          </button>
+      )
+    }   
+  }
+
+ renderSaveButton() {
+    if (["VALID","INVALID", "ERROR", "NEW"].includes(
+      this.state.status.toUpperCase()
+      ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
+      return (
+            <button
+              type='button'
+              className='btn btn-primary mr-1'
+              disabled={this.state.submitting}
+              onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"save") }
+              data-status={this.state.status.toLowerCase()}
+            >
+              {this.state.submitting && (
+              <FontAwesomeIcon
+                className='inline-icon'
+                icon={faSpinner}
+                spin
+              />
+            )}
+            {!this.state.submitting && "Save"}
+          </button>
+      )
+    }   
+  }
+
+renderReorganizeButton() {
+    if (["SUBMITTED"].includes(
+      this.state.status.toUpperCase()
+      ) && (this.state.data_admin)) {
+      return (
+           <button
+            type='button'
+            className='btn btn-info mr-1'
+            disabled={this.state.submitting}
+            onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"reorganize") }
+            data-status={this.state.status.toLowerCase()}
+          >
+            {this.state.submitting && (
+            <FontAwesomeIcon
+              className='inline-icon'
+              icon={faSpinner}
+              spin
+            />
+          )}
+          {!this.state.submitting && "Reorganize"}
+        </button>
+        )
+    }   
+  }
+
   tempAlert() {
     window.alert("This function has not yet been implemented.");
   }
 
-  renderActionButton() {
-    var local = JSON.parse(localStorage.getItem("info"));
-    console.debug(local);
-    if (["NEW", "INVALID", "ERROR"].includes(
-      this.state.status.toUpperCase()
-    )){
-    return ( 
 
-      <React.Fragment>
-        <button
-          type='button'
-          className='btn btn-info mr-1'
-          disabled={this.state.submitting_submission}
-          onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"submit") }
-          data-status={this.state.status.toLowerCase()}
-        >
-          {this.state.submitting_submission && (
-          <FontAwesomeIcon
-            className='inline-icon'
-            icon={faSpinner}
-            spin
-          />
-        )}
-        {!this.state.submitting_submission && "Submit"}
-      </button>
-      <button
-          type='button'
-          className='btn btn-primary mr-1'
-          disabled={this.state.submitting}
-          onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"save") }
-          data-status={this.state.status.toLowerCase()}
-        >
-          {this.state.submitting && (
-          <FontAwesomeIcon
-            className='inline-icon'
-            icon={faSpinner}
-            spin
-          />
-        )}
-        {!this.state.submitting && "Save"}
-      </button>
-    </React.Fragment>
-    );
-  } else if (["VALID"].includes(this.state.status.toUpperCase())){
-    return (
-      <button
-        type='button'
-        className='btn btn-info mr-1'
-        disabled={this.state.submitting}
-        onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"create") }
-        data-status={this.state.status.toLowerCase()}
-      >
-        {this.state.submitting && (
-        <FontAwesomeIcon
-          className='inline-icon'
-          icon={faSpinner}
-          spin
-        />
-      )}
-      {!this.state.submitting && "Create Datasets"}
-    </button>
-    );
-  }else if (
-    ["REORGANIZED"].includes(
-      this.state.status.toUpperCase()
-    )){
-    return ("");
-  } else {
-    return ("");
-  }
-  };
-    
   renderHelperText = () => {
     if(this.state.writeable){
       return(
         <div className="helper-text p-2 m-2 align-right w-100 text-right">
           <p className="text-small text-end p-0 m-0">Use the <strong>Submit</strong> button when all data has been uploaded and is ready for HIVE review.</p>
-          <p className="text-small text-end p-0 m-0">Use the <strong>Save</strong> button to save any updates to the Title or Description.</p>
+          <p className="text-small text-end p-0 
+          m-0">Use the <strong>Save</strong> button to save any updates to the Title or Description.</p>
         </div>
       )
     }
@@ -582,12 +643,17 @@ class EditUploads extends Component {
     }, () => {
       console.debug("handleButtonClick ",i, action)
       if(action){
-        if(action === "save" || action === "create" || action === "validate"){
+        if(action === "save") {
+          this.handleSave(i)
+        } else 
+        if (action === "create" || action === "validate"){
           console.debug("SAVE")
           this.handleValidateUpload(i);
         }else if(action==="submit"){
           console.debug("SUB")
         this.handleValidateUploadSubmission(i);
+        } else if (action === "reorganize") {
+          this.handleReorganize();
         }
       }
      
@@ -596,8 +662,6 @@ class EditUploads extends Component {
   };
 
   fetchGlobusURL = (uploads_uuid) => {  
-
-
     ingest_api_get_globus_url(uploads_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
         console.debug('ingest_api_get_globus_url', resp)
@@ -607,9 +671,6 @@ class EditUploads extends Component {
     });
 
   };
-
-
-
 
   validateForm() {
     return new Promise((resolve, reject) => {
@@ -695,8 +756,6 @@ class EditUploads extends Component {
 
 
   renderDatasets = (datasetCollection) => {
-    console.log(datasetCollection)
-    console.log(this.state.datasets)
 
     if(this.state.datasets && this.state.datasets.length > 0 ){
 

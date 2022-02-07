@@ -33,7 +33,7 @@ class ImageUpload extends Component {
   handleImageFileChange = ({ target: { files } }) => {
     if (files[0]) {
       let file_name = files[0].name;
-      this.props.onFileChange('image', this.props.id)
+      this.props.onFileChange(this.props.imageType, this.props.id)
         .then(() => {
           if (file_name !== "") {
             this.setState({
@@ -197,7 +197,7 @@ class ImageUpload extends Component {
                 </div>
               </div>)}
             <div className="row">
-            {!this.props.readOnly && (
+            {!this.props.readOnly && this.props.show_description && (
               <div className="col-sm-12">
                 <textarea
                   type="text"
