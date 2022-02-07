@@ -199,11 +199,7 @@ class TissueForm extends Component {
             console.debug('editingEntity', param_uuid)
           }
         
-<<<<<<< HEAD
-          console.debug('TISSUE FORM UUID', param_uuid)
-=======
           console.debug('UUID', param_uuid)
->>>>>>> test-release
           entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
                 if (response.status === 200) {
