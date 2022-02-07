@@ -3,10 +3,25 @@
 import axios from "axios";
 import FormData from "form-data"
 
+
+
 /*
  * User Group API
  *
  */
+
+// Process the error to show the user friendly message if possible
+function HandleError(err, msg){
+  console.debug("Ingest_API Error", err, msg);
+  if(err.response){
+    //@TODO: dont speak for the server, just return the error
+    return {status: 500, results: err.response}
+  }else{
+    return {status: 500, results: err}
+  }
+}
+
+
 export function ingest_api_users_groups(auth) { 
    const options = {
       headers: {
@@ -20,18 +35,17 @@ export function ingest_api_users_groups(auth) {
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
  .then(res => {
-  //////console.debug(res.data)
+  console.debug("ingest_api_users_groups", res);
   const group_list = res.data.groups
           .filter(g => g.data_provider)
           .map(g => {
             return g;
           });
-    //console.debug('API USER GROUPs', group_list);
+    console.debug('API USER GROUPs', group_list);
     return {status: res.status, results: group_list}
  })
  .catch(err => {
-    return {status: err.response.status, results: err.response}
-     //return err.response.status;
+    HandleError(err, "ingest_api_users_groups");
  });
 }
 
@@ -62,7 +76,8 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
         return {status: res.status, results: res.data}
       })
       .catch(err => {
-        return {status: 500, results: err.response}
+        HandleError(err, "ingest_api_allowable_edit_states" );
+     
       });
 };
 
@@ -117,7 +132,7 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: 500, results: err.response}
+        HandleError(err, "ingest_api_dataset_submit" );
       });
 };
 
@@ -145,8 +160,8 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: 500, results: err.response}
-      });
+        HandleError(err, "ingest_api_derived_dataset" );
+     });
 };
 
 
@@ -187,9 +202,8 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        console.debug(err);
-        return {status: err.response.status, results: err.response.data}
-      });
+        HandleError(err, "ingest_api_bulk_entities_upload" );
+     });
 };
 
 
@@ -221,9 +235,8 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        console.debug(err);
-        return {status: err.response.status, results: err.response.data}
-      });
+        HandleError(err, "ingest_api_users_groups_bulk_entities_register" );
+     });
 };
 
 
@@ -287,7 +300,7 @@ export function ingest_api_get_associated_ids(uuid, auth) {
           return {status: res.status, results: res.data.ingest_group_ids}
         })
         .catch(err => {
-          return {status: 500, results: err.response}
+          HandleError(err, "ingest_api_get_associated_ids");
         });
 }
 
@@ -308,8 +321,8 @@ export function ingest_api_get_globus_url(uuid, auth) {
       .then((res) => {
         return {status: 200, results: res.data}
       })
-      .catch((err) => {
-        return {status: 500, results: err.response}
+      .catch(err => {
+        HandleError(err, "ingest_api_get_globus_url");
       });
 }
 
@@ -340,7 +353,7 @@ export function ingest_api_submit_upload(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: 500, results: err.response}
+        HandleError(err, "ingest_api_submit_upload" );
       });
 };
 
@@ -370,7 +383,7 @@ export function ingest_api_validate_upload(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: 500, results: err.response}
+        HandleError(err, "ingest_api_validate_upload" );
       });
 };
 

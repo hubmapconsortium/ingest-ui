@@ -270,9 +270,11 @@ class SearchComponent extends Component {
         });
       })
       .catch((err) => {
-        if (err.response.status === 401) {
+        if (err.response && err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
+        }else{
+          console.debug("Error getting user groups", err);
         }
       });
   }

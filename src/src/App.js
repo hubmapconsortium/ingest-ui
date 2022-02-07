@@ -39,10 +39,11 @@ function SetAuth(){
   var infoJSON = ""
   if(localStorage.getItem("info")){
     infoJSON = cleanJSON(localStorage.getItem("info"));
+    console.debug("infoJSON", infoJSON);
     var JSONkeys = Object.keys(infoJSON);
     // And if it's not, wipe it clean so we dont need to manually clear
     if(JSONkeys[0]==="Error"){
-      // console.debug("Malformed Info stored. Clearing...");
+      console.debug("Malformed Info stored. Clearing...");
       localStorage.removeItem("info");
       localStorage.removeItem("isAuthenticated");
       window.location.replace(`${process.env.REACT_APP_URL}`);  
@@ -52,7 +53,7 @@ function SetAuth(){
       // We have a token, but is it good? 
       api_validate_token(infoJSON.groups_token)
       .then(res => {
-      //console.debug("Token Check", res);
+      console.debug("Token Check", res);
         if(res.status === 401){
         //console.debug("Token is invalid. Clearing...");
           localStorage.removeItem("info");
@@ -79,7 +80,7 @@ function SetAuth(){
       globus_id: ""
     };
     return false
-    window.location.replace(`${process.env.REACT_APP_URL}`);  
+    // window.location.replace(`${process.env.REACT_APP_URL}`);  
   }
 }
 
