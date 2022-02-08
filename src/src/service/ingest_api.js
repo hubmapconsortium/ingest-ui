@@ -416,11 +416,13 @@ export function ingest_api_reorganize_upload(uuid, auth) {
         "Content-Type": "application/json"
       }
     };
+  const data = {}
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/reorganize`;
+
 //console.debug(data);
   return axios 
-     .put(url, options)
+     .put(url, data, options)
       .then(res => {
         ////console.debug(res);
           let results = res.data;
