@@ -421,7 +421,7 @@ export function ingest_api_validate_upload(uuid, data, auth) {
  * Reorganize or uploads
  *
  */
-export function ingest_api_reorganize_upload(uuid, data, auth) { 
+export function ingest_api_reorganize_upload(uuid, auth) { 
   const options = {
       headers: {
         Authorization:
@@ -429,8 +429,10 @@ export function ingest_api_reorganize_upload(uuid, data, auth) {
         "Content-Type": "application/json"
       }
     };
+  const data = {}
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/reorganize`;
+
 //console.debug(data);
   return axios 
      .put(url, data, options)
