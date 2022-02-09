@@ -3,7 +3,7 @@ import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
@@ -281,6 +281,7 @@ class DatasetEdit extends Component {
           this.setState({
             badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
           });
+          console.debug("this.state.status", this.state.status);
           axios
             .get(
               `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingDataset.uuid}`,
@@ -684,7 +685,8 @@ class DatasetEdit extends Component {
         {this.state.writeable && (
         <React.Fragment>
           <div className="mt-2 text-right">
-            <button
+            <Button
+              variant="contained"
               type='button'
               className='btn btn-secondary'
               onClick={() => this.handleLookUpClick()} 
@@ -696,7 +698,7 @@ class DatasetEdit extends Component {
                 className='fa button-icon ml-2'
                 icon={faPlus}
               />
-            </button>
+            </Button>
           </div>
         </React.Fragment>
         )}
@@ -1275,7 +1277,7 @@ class DatasetEdit extends Component {
             && this.state.previous_revision_uuid === undefined 
             && this.state.status.toUpperCase() === "PUBLISHED") {
          return (
-           <div className="row">
+           <div className="buttonWrapRight">
                 {this.reprocessButton()}
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
@@ -1285,7 +1287,7 @@ class DatasetEdit extends Component {
             
     if (this.state.writeable === false) {            
       return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.cancelButton()}
             </div>
           )
@@ -1294,7 +1296,7 @@ class DatasetEdit extends Component {
       if (["NEW", "INVALID", "REOPENED", "ERROR"].includes(
               this.state.status.toUpperCase())) {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {!this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
@@ -1305,7 +1307,7 @@ class DatasetEdit extends Component {
       }
       if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton("published", "Publish")}
                 {this.cancelButton()}
             </div>
@@ -1313,7 +1315,7 @@ class DatasetEdit extends Component {
       }   
       if (this.state.status.toUpperCase() === 'PUBLISHED') {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
@@ -1322,7 +1324,7 @@ class DatasetEdit extends Component {
       } 
       if (this.state.status.toUpperCase() === 'QA') {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton("hold", "Hold")}
                 {this.aButton("reopened", "Reopen")}
                 {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
@@ -1337,13 +1339,13 @@ class DatasetEdit extends Component {
   // Cancel button
   cancelButton() {
     return(<React.Fragment>
-        <div className="col-sm">
-          <button
+        <div >
+          <Button
               type='button'
-              className='btn btn-secondary btn-block'
+              variant="outlined"
               onClick={() => this.props.HandleCancel()}>
               Cancel
-          </button>
+          </Button>
       </div>
        </React.Fragment>
       )
@@ -1352,10 +1354,11 @@ class DatasetEdit extends Component {
   // General button
   aButton(state, which_button) {
     return (<React.Fragment>
-      <div className="col-sm">
-        <button
+      <div >
+        <Button
           type='button'
-          className='btn btn-info btn-block'
+          variant="contained"
+          // className='btn btn-info btn-block'
           disabled={this.state.submitting}
           onClick={() =>
             this.handleButtonClick(state)
@@ -1370,7 +1373,7 @@ class DatasetEdit extends Component {
             />
           )}
           {!this.state.submitting && which_button}
-        </button>
+        </Button>
         </div>
         </React.Fragment>
       )
@@ -1378,10 +1381,11 @@ class DatasetEdit extends Component {
 
   reprocessButton() {
     return (<React.Fragment>
-      <div className="col-sm">
-        <button
+      <div >
+        <Button
+          variant="contained"
           type='button'
-          className='btn btn-warning btn-block'
+          // className='btn btn-warning btn-block'
           disabled={this.state.submitting}
           onClick={() =>
             this.handleReprocess()
@@ -1396,7 +1400,7 @@ class DatasetEdit extends Component {
             />
           )}
           {!this.state.submitting && "Reprocess"}
-        </button>
+        </Button>
         </div>
         </React.Fragment>
       )
@@ -1663,7 +1667,7 @@ class DatasetEdit extends Component {
                   />
                 </DialogContent>  
                 <DialogActions>
-                  <Button onClick={this.cancelLookUpModal} color="primary">
+                  <Button onClick={this.cancelLookUpModal} variant="contained" color="primary">
                     Close
                   </Button>
                 </DialogActions>

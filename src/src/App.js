@@ -21,7 +21,7 @@ import {Navigation} from "./Nav";
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
 import {RenderDonor} from "./components/donors";
-import { RenderDataset} from "./components/datasets";
+import {RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 
@@ -136,10 +136,15 @@ export function App (props){
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
-  }
-
+  };
 
   
+  function onChangeGlobusLink(newLink, newDataset){
+    const {name, display_doi, doi} = newDataset;
+    // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
+  };
+
+
 
   function handleCancel(){
     navigate(-1);  
@@ -170,6 +175,7 @@ export function App (props){
         logout={Logout}
         app_info={ JSON.parse(localStorage.getItem("info"))}
         uploadsDialogRender={uploadsDialogRender}
+        onCreatedReditect={""}
       />       
       <Timer logout={Logout}/>
       <div id="content" className="container">
@@ -208,7 +214,7 @@ export function App (props){
               <Route path="/new/dataset" element={<RenderDataset status="new" />} />
               <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
-              <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} />} />
+              <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} />
               {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
 
           </Routes>

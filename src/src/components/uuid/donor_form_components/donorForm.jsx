@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import Paper from '@material-ui/core/Paper';
+import Button from '@mui/material/Button';
 import Divider from '@material-ui/core/Divider';
 import '../../../App.css';
 // import axios from "axios";
@@ -450,13 +450,13 @@ class DonorForm extends Component {
           </div>
       
             <div className="col-sm-12 text-right pads">
-              <button
+              <Button
                 type="button"
-                className="btn btn-secondary"
+               variant="outlined"
                 onClick={() => this.props.HandleCancel()}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -467,7 +467,7 @@ class DonorForm extends Component {
           <Divider />
           </div>
             <div className="col-md-12 text-right pads">
-              <button
+              <Button
                 type="submit"
                 className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
@@ -480,15 +480,15 @@ class DonorForm extends Component {
                   />
                 )}
                 {!this.state.submitting && "Update"}
-              </button>
+              </Button>
             
-              <button
+              <Button
                 type="button"
-                className="btn btn-secondary"
+               variant="outlined"
                 onClick={() => this.props.HandleCancel()}
               >
                  Cancel
-              </button>
+              </Button>
           </div>
           </div>
         );
@@ -500,7 +500,7 @@ class DonorForm extends Component {
           <Divider />
         </div>
             <div className="col-md-12 text-right pads">
-            <button
+            <Button
               type="submit"
               className="btn btn-primary mr-1"
               disabled={this.state.submitting}
@@ -513,15 +513,15 @@ class DonorForm extends Component {
                 />
               )}
               {!this.state.submitting && "Generate ID"}
-            </button>
+            </Button>
          
-            <button
+            <Button
               type="button"
-              className="btn btn-secondary"
+             variant="outlined"
               onClick={() => this.props.HandleCancel()}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       );
@@ -954,11 +954,10 @@ class DonorForm extends Component {
                     {!this.state.readOnly && (
                       <div>
                        
-                          <button
+                          <Button
                             type="button"
                             onClick={this.handleAddImage}
-                            className="btn btn-secondary btn-block"
-                            data-tip
+                            variant="outlined"                            data-tip
                             data-for="add_image_tooltip"
                           >
                             <FontAwesomeIcon
@@ -967,7 +966,7 @@ class DonorForm extends Component {
                               title="Uploaded images (multiple allowed)."
                             />
                             Add an Image File
-                          </button>
+                          </Button>
                          <small id="emailHelp" className="form-text text-muted"> 
                           <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />

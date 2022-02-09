@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
@@ -33,7 +34,7 @@ import {
 import { DATA_ADMIN, DATA_CURATOR } from '../../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
-class EditUploads extends Component {
+class EditUploads extends Component{
 
   
   state = {
@@ -43,6 +44,7 @@ class EditUploads extends Component {
     author:"created_by_user_displayname",
     created:"created_timestamp",
     group:"group",
+    groups:[],
     hid:"hubmap_id",
     uuid:"uuid",
     datasets:{},
@@ -53,7 +55,11 @@ class EditUploads extends Component {
     pageSize:10,
     data_admin: false,
     data_curator: false,
-    data_group_editor: false
+    data_group_editor: false,
+    validation_message:"",
+    badge_class:"",
+    submitting:false
+    
   }
 
   
@@ -421,12 +427,14 @@ class EditUploads extends Component {
             // if user selected Publish
             ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
-                console.debug(response.results);
                   if (response.status === 200) {
                     this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false, submitting_submission:false  });
                   }
+            })
+            .catch((error) => {
+              console.debug("SUBMIT error", error);
             });
           } 
         }
@@ -485,18 +493,17 @@ class EditUploads extends Component {
 
           {this.renderHelperText()}
 
-          <div class="text-right">
-            <div class="btn-group" role="group">
+          <div classname="text-right">
+            <div classname="btn-group" role="group">
               {this.renderValidateButton()}
               {this.renderReorganizeButton()}
               {this.renderSubmitButton()}
               {this.renderSaveButton()}
-              <button
+              <Button
                 type='button'
-                className='btn btn-secondary float-right'
                 onClick={() => this.props.handleCancel()}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -509,7 +516,7 @@ class EditUploads extends Component {
       this.state.status.toUpperCase() 
       ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
       return (
-              <button 
+              <Button 
                   type='button'
                   className = 'btn btn-info mr-1'
                   onClick = {() => this.handleButtonClick(this.state.status.toLowerCase(), "validate") }
@@ -522,7 +529,7 @@ class EditUploads extends Component {
                 />
               )}
               {!this.state.submitting && "Validate"}
-                </button>
+                </Button>
               )
     }   
   }
@@ -533,7 +540,7 @@ class EditUploads extends Component {
       this.state.status.toUpperCase()
       ) && (this.state.data_admin || this.state.data_group_editor)) {
       return (
-            <button
+            <Button
               type='button'
               className='btn btn-info mr-1'
               disabled={this.state.submitting_submission}
@@ -547,7 +554,7 @@ class EditUploads extends Component {
                   />
                 )}
                 {!this.state.submitting_submission && "Submit"}
-          </button>
+          </Button>
       )
     }   
   }
@@ -557,7 +564,7 @@ class EditUploads extends Component {
       this.state.status.toUpperCase()
       ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
       return (
-            <button
+            <Button
               type='button'
               className='btn btn-primary mr-1'
               disabled={this.state.submitting}
@@ -572,7 +579,7 @@ class EditUploads extends Component {
               />
             )}
             {!this.state.submitting && "Save"}
-          </button>
+          </Button>
       )
     }   
   }
@@ -582,7 +589,7 @@ renderReorganizeButton() {
       this.state.status.toUpperCase()
       ) && (this.state.data_admin)) {
       return (
-           <button
+           <Button
             type='button'
             className='btn btn-info mr-1'
             disabled={this.state.submitting}
@@ -597,7 +604,7 @@ renderReorganizeButton() {
             />
           )}
           {!this.state.submitting && "Reorganize"}
-        </button>
+        </Button>
         )
     }   
   }
@@ -605,6 +612,9 @@ renderReorganizeButton() {
   tempAlert() {
     window.alert("This function has not yet been implemented.");
   }
+  showErrorMsgModal = (msg) => {
+    this.setState({ errorMsgShow: true, statusErrorMsg: msg });
+  };
 
 
   renderHelperText = () => {

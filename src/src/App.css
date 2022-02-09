@@ -762,3 +762,30 @@ svg.invalid{
 #TissueForm .MuiFilledInput-root:first-child {
   background:#e8e8e8;
 }
+
+
+/* To better align the buttons for the Class based forms */
+.buttonWrapRight{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  margin-bottom:auto;
+}
+.buttonWrapLeft{
+  display:flex;
+  justify-content:flex-start;
+  gap: 0px;
+  flex-direction:column;
+  margin-bottom:auto;
+}
+
+.formSpacer .form-group{
+  margin-bottom: 0.5rem;
+}
+
+/* Re-apply styles to badges that lost color/formatting between Material UI and MUI */
+
+.badge-info{
+  color: #fff;
+  background-color: #17a2b8;
+}

@@ -15,7 +15,8 @@ import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
-import { ingest_api_users_groups } from '../../service/ingest_api';
+import { ingest_api_users_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
+import { entity_api_get_entity } from '../../service/entity_api';
 // import 'url-search-params-polyfill';
 
 // Creation donor_form_components
@@ -80,7 +81,7 @@ class SearchComponent extends Component {
       console.debug("Loadingfrom URL");
       this.handleLoadEntity(euuid)
     }
-
+ 
 
     console.debug("modecheck ",this.props.modecheck);
     if(this.props.editNewEntity){
@@ -708,6 +709,7 @@ class SearchComponent extends Component {
     //this.props.onCancel();
   };
 
+  
   onUpdated = data => {
     //this.filterEntity();
     console.debug("onUpdated SC", data)
@@ -765,51 +767,52 @@ class SearchComponent extends Component {
       var typeText = (params.row.entity_type).toLowerCase();
     this.props.urlChange( typeText+"/"+params.row.uuid);
 
-    /* We're controlling the Routing and all other views from the outer App wrapping, not within the SearchComponent Itself Anymore */
-    // entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-    // .then((response) => {
-    //   if (response.status === 200) {
-    //     let entity_data = response.results;
+    /* We're controlling the Routing and Most other views from the outer App wrapping, not within the SearchComponent Itself Anymore */
+    // Exception being Uploads
+    entity_api_get_entity(params.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+    .then((response) => {
+      if (response.status === 200) {
+        let entity_data = response.results;
 
-    //     if(entity_data.read_only_state){
-    //       ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-    //         .then((resp) => {
-    //           //console.debug('ingest_api_allowable_edit_states done', resp)
-    //         let read_only_state = false
-    //         if (resp.status === 200) {
-    //           read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-    //         }
+        if(entity_data.read_only_state){
+          ingest_api_allowable_edit_states(params.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((resp) => {
+              //console.debug('ingest_api_allowable_edit_states done', resp)
+            let read_only_state = false
+            if (resp.status === 200) {
+              read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+            }
 
-    //           this.setState({
-    //             updateSuccess: null,
-    //             editingEntity: entity_data,
-    //             //editingDisplayId: display_id,
-    //             readOnly: read_only_state,   // used for hidding UI components
-    //             editForm: true,
-    //             show_modal: true,
-    //             show_search: false,
-    //             loading: false
-    //             });
-    //       //this.props.onEdit();
-    //       });
-    //     }else{
-    //       this.setState({
-    //         updateSuccess: null,
-    //         editingEntity: entity_data,
-    //         //editingDisplayId: display_id,
-    //         readOnly: "read_only_state",   // used for hidding UI components
-    //         editForm: true,
-    //         show_modal: true,
-    //         show_search: false,
-    //         loading: false
-    //         });
-    //     }
-    //   this.handleUrlChange(entity_data.entity_type+"/"+entity_data.uuid);
-    //   }
-    // });
-    // }
+              this.setState({
+                updateSuccess: null,
+                editingEntity: entity_data,
+                //editingDisplayId: display_id,
+                readOnly: read_only_state,   // used for hidding UI components
+                editForm: true,
+                show_modal: true,
+                show_search: false,
+                loading: false
+                });
+          //this.props.onEdit();
+          });
+        }else{
+          this.setState({
+            updateSuccess: null,
+            editingEntity: entity_data,
+            //editingDisplayId: display_id,
+            readOnly: "read_only_state",   // used for hidding UI components
+            editForm: true,
+            show_modal: true,
+            show_search: false,
+            loading: false
+            });
+        }
+      this.handleUrlChange(entity_data.entity_type+"/"+entity_data.uuid);
+      }
+    });
     }
-  }
+    }
+  
 
   handleClearFilter = () => {
 
@@ -1139,6 +1142,8 @@ renderInfoPanel() {
       //</Modal>
     );
   }
+  
+
   renderFilterControlsAlt() {
     return(
       <Box > 
