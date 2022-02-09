@@ -109,7 +109,6 @@ class App extends Component {
 
 
   componentDidMount() {
-    document.addEventListener("keydown", this.handleKeyDown);
     var type;
     var fauxEvent;
     var url = window.location.href;
@@ -600,36 +599,7 @@ class App extends Component {
       system: "collection"
     });
   };
-  
-  handleKeyDown = (event) => {
-    // console.debug(event);
-    // console.debug(this.state.devMode);
-    if( event.ctrlKey && event.shiftKey && event.altKey && event.code==="KeyE" ) {
-        console.debug("devMode "+this.state.devMode);
-        this.setState(prevState => ({
-          devMode: !prevState.devMode,
-          openSnack: true
-        }));
-    }
-    this.devModeSnack();
-  };
 
-  devModeSnack(){
-    switch (this.state.devMode) {
-      case true:
-        this.setState({
-          dml: "Active",
-          snackPriotity: "warning"
-        });
-        break;
-      default:
-        this.setState({
-          dml: "Inactive",
-          snackPriotity: "info"
-        });
-        break;
-    }
-  };
 
   snackSeverity (){
     var stateUsed="";
@@ -862,19 +832,7 @@ class App extends Component {
 
         </div>
 
-          
-          <Snackbar open={this.state.openSnack} autoHideDuration={6000} onClose={this.handleCloseSnack}>
-            
-            <Alert onClose={this.handleCloseSnack} severity={this.state.snackPriotity}>
-              DevMode is Currently: {this.state.dml}
-            </Alert>
-          </Snackbar>
-
-          <Paper position="fixed" hidden={!this.state.devMode} className={"fixed-bottom bg-"+this.state.snackPriotity} >
-            DevMode is Currently: {this.state.dml}
-          </Paper>
-
-     
+      
 
 
       </div>

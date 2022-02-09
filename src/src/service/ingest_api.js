@@ -4,7 +4,7 @@ import axios from "axios";
 import FormData from "form-data"
 
 /*
- * User Group API
+ * User Groups only those data provider groups are return
  *
  */
 export function ingest_api_users_groups(auth) { 
@@ -26,6 +26,35 @@ export function ingest_api_users_groups(auth) {
           .map(g => {
             return g;
           });
+    //console.debug('API USER GROUPs', group_list);
+    return {status: res.status, results: group_list}
+ })
+ .catch(err => {
+    return {status: err.response.status, results: err.response}
+     //return err.response.status;
+ });
+}
+
+/*
+ * User Groups ALL groups are return
+ *
+ */
+export function ingest_api_all_user_groups(auth) { 
+   const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  return axios 
+ .get(
+   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+ .then(res => {
+  //////console.debug(res.data)
+  const group_list = res.data.groups;
+         
     //console.debug('API USER GROUPs', group_list);
     return {status: res.status, results: group_list}
  })
@@ -375,3 +404,32 @@ export function ingest_api_validate_upload(uuid, data, auth) {
 };
 
 
+/* 
+ * Reorganize or uploads
+ *
+ */
+export function ingest_api_reorganize_upload(uuid, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+  const data = {}
+    
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/reorganize`;
+
+//console.debug(data);
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+        ////console.debug(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {status: 500, results: err.response}
+      });
+};

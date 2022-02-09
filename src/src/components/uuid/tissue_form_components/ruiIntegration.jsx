@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { ORGAN_TYPES } from "../../../constants.jsx";
+import { ORGAN_TYPES, RUI_ORGAN_MAPPING } from "../../../constants.jsx";
 import "../../../App.css";
 
 
@@ -67,6 +67,7 @@ class RUIIntegration extends Component {
   }
 
   updateRUIConfig() {
+    const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
     const organ_info = ORGAN_TYPES[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
@@ -82,7 +83,7 @@ class RUIIntegration extends Component {
       lastName: user_name.split(" ")[1]
     };
     rui.organ = {
-      //ontologyId: xxx, // IEC TODO
+      ontologyId: organ_id,
       name: organ_name,
       sex: sex || "female",
       side: organ_side
@@ -100,7 +101,9 @@ class RUIIntegration extends Component {
     rui.cancelRegistration = function () {
       rui.register(self.props.location);
     };
-    if (location) {
+    if (location &&
+        // Don't re-set the registration if it's the same as before
+        (!rui.editRegistration || location['@id'] !== rui.editRegistration['@id'])) {
       rui.editRegistration = location;
     }
     rui.useDownload = false;
