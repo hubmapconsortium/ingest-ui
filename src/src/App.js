@@ -13,6 +13,8 @@ import {
 import Paper from '@mui/material/Paper';
   import {api_validate_token} from './service/search_api';
   import { useGridApiRef } from "@mui/x-data-grid";
+  import { ingest_api_users_groups } from './service/ingest_api';
+
   // Site Content
 import {Navigation} from "./Nav";
 // import {RenderLogin} from "./components/login";
@@ -35,100 +37,79 @@ import Forms from "./components/uuid/forms";
 
 
 
-function SetAuth(){
-  var infoJSON = ""
-  if(localStorage.getItem("info")){
-    infoJSON = cleanJSON(localStorage.getItem("info"));
-    console.debug("infoJSON", infoJSON);
-    var JSONkeys = Object.keys(infoJSON);
-    // And if it's not, wipe it clean so we dont need to manually clear
-    if(JSONkeys[0]==="Error"){
-      console.debug("Malformed Info stored. Clearing...");
-      localStorage.removeItem("info");
-      localStorage.removeItem("isAuthenticated");
-      window.location.replace(`${process.env.REACT_APP_URL}`);  
-      return false    
-    }else{
-    //console.debug("infoJSON", infoJSON.groups_token);
-      // We have a token, but is it good? 
-      api_validate_token(infoJSON.groups_token)
-      .then(res => {
-      console.debug("Token Check", res);
-        if(res.status === 401){
-        //console.debug("Token is invalid. Clearing...");
-          localStorage.removeItem("info");
-          localStorage.removeItem("isAuthenticated");
-          window.location.replace(`${process.env.REACT_APP_URL}`);  
-        }else if(res.status === 200){
-          localStorage.setItem("isAuthenticated", true);
-          return true
-        }else{
-        //console.debug("Token Issues", res);
-        }
-      })
-      .catch(err => {
-      //console.debug("Error validating token", err);
-      })
+
+
+
+
+
+
+
+      // Check auth from both URL and LocalStorGE, THEN check token
       // console.debug("Info JSON forund in localStorage",infoJSON);
       
-    }
-  // And if wevve got nothing  
-  }else{
-    infoJSON = {
-      name: "",
-      email: "",
-      globus_id: ""
-    };
-    return false
-    // window.location.replace(`${process.env.REACT_APP_URL}`);  
-  }
-}
+//     }
+//   // And if wevve got nothing  
+//   }else{
+//     infoJSON = {
+//       name: "",
+//       email: "",
+//       globus_id: ""
+//     };
+//     return false
+//     // window.location.replace(`${process.env.REACT_APP_URL}`);  
+//   }
+// }
 
-
-
-function cleanJSON(str){
-  try {     
-    return JSON.parse(str);
-  }
-  catch (e) {
-     return {
-      "Error":true,
-      "String":str,
-    }
-  }
-}
 
 
 
 export function App (props){
   var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
+  var [groupsToken, setGroupsToken] = useState(null);
   const apiRef = useGridApiRef();
   let navigate = useNavigate();
 
     
 
+  function LocalStorageAuth(){
+
+  try {
+    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
+    if (results.status === 200) { 
+      console.debug("LocalStorageAuth", results);
+      setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+      setAuthStatus(true);
+    } else if (results.status === 401) {
+      console.debug("LocalStorageAuth", results);
+      setGroupsToken(null);
+      setAuthStatus(false);
+    }
+      
+    });
+  } catch {
+    console.debug("LocalStorageAuth", "CATCh No LocalStorage");
+  }
+}
+
+  
+
   useEffect(() => {
 
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
-
     if (info !== null) {
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
-      setAuthStatus(true);
-      navigate(`/`, { replace: true });
-      // window.location.replace(`${process.env.REACT_APP_URL}`);  
+      // Redirect to home page without query string
+      window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
-    if(SetAuth() === false){
-    //console.debug("No Auth");
-      setAuthStatus(false);
-    }else{
-    //console.debug("Auth");
-      setAuthStatus(true);
-    }
+    LocalStorageAuth();
   }, []);
+
+
+
 
 
   function Logout(){

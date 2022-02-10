@@ -40,7 +40,7 @@ export const RenderDataset = (props) => {
 
 
   function passError(status, message) {
-   //console.debug("Error", status, message);
+    console.debug("passError Error", status, message);
     setLoading(false);
     setErrorHandler({
         status: status,
@@ -57,16 +57,20 @@ export const RenderDataset = (props) => {
             console.debug("entity_data", response.results);
             setLoading(false);
           }else{
-            passError(response.status, response.results.error );
+            console.debug("Response not 200 Error", response);
+            setLoading(true); //@TODO: lets flip the error display up here instead 
+            passError(response.status, response.results);
           }
         })
         .catch((error) => {
-          passError(error.status, error.results.error );
+          console.debug("fetchData Response Error", error);
+          passError(error.status, error.response );
         });
 
   }
   
     if (!isLoading && errorHandler.isError === true){
+      console.debug("ERR HANDLER ", errorHandler);
       return (
         <ErrBox err={errorHandler} />
       );
@@ -77,6 +81,7 @@ export const RenderDataset = (props) => {
           </div>
         );
     }else{
+      console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
       return (
         <div>
           <DatasetFormLegacy onUpdated={onUpdated} HandleCancel={HandleCancel} editingDataset={entity_data} />

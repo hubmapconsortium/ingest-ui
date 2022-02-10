@@ -220,14 +220,15 @@ class SearchComponent extends Component {
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
+        console.debug("ingest_api_users_groups", results);
 
-      if (results.status === 200) { 
+      if (results && results.status && results.status === 200) { 
         this.setState({
           isAuthenticated: true
         }, () => {
           this.setFilterType();
         });
-      } else if (results.status === 401) {
+      } else if (results && results.status &&  results.status === 401) {
           this.setState({
             isAuthenticated: false
           });

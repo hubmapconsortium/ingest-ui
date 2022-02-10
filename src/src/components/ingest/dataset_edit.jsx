@@ -211,9 +211,14 @@ class DatasetEdit extends Component {
         });
       })
       .catch((err) => {
-        if (err.response.status === 401) {
+        if (err.response && err.response.status === 401) {
+          console.debug("Err w response", err.response);
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
+        }else if(err.status){
+          console.debug("Err wo response", err.response);
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload(); 
         }
       });
 
