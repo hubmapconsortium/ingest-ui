@@ -11,8 +11,6 @@ import {
   import Timer from './components/ui/idle';
   
 import Paper from '@mui/material/Paper';
-  import {api_validate_token} from './service/search_api';
-  import { useGridApiRef } from "@mui/x-data-grid";
   import { ingest_api_users_groups } from './service/ingest_api';
 
   // Site Content
@@ -67,7 +65,6 @@ export function App (props){
   var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
-  const apiRef = useGridApiRef();
   let navigate = useNavigate();
 
     
@@ -80,6 +77,7 @@ export function App (props){
       console.debug("LocalStorageAuth", results);
       setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
       setAuthStatus(true);
+      console.debug("groupsToken",groupsToken);
     } else if (results.status === 401) {
       console.debug("LocalStorageAuth", results);
       setGroupsToken(null);

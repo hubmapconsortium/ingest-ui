@@ -1,6 +1,6 @@
 import React, { useEffect} from "react";
 import { Link } from 'react-router-dom'
-import { useLocation, useNavigate} from "react-router-dom";
+import { useLocation} from "react-router-dom";
 
 
 import Dialog from '@mui/material/Dialog';
@@ -18,7 +18,7 @@ import UploadsForm from "./components/uploads/createUploads";
 
 export const Navigation = (props) => {
   const [userInfo, setUserInfo] = React.useState({email:""});
-  const [authStatus, setAuthStatus] = React.useState(false);
+  // const [authStatus, setAuthStatus] = React.useState(false);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
   const [anchorEl_B, setAnchorEl_B] = React.useState(null);
@@ -30,7 +30,7 @@ export const Navigation = (props) => {
   //console.debug("props", props);
   //console.debug("props.appInfo", props.app_info);
   //console.debug("location", location);
-    setAuthStatus(props.login)
+    // setAuthStatus(props.login)
     setUserInfo(props.app_info);
     if(location.pathname === "/new/data"){
     //console.debug("Setting uploadsDialog to true");
@@ -50,13 +50,13 @@ export const Navigation = (props) => {
     setAnchorEl_B(event.currentTarget);
   };
   
-  const handleClose = (e) => {
+  const handleClose = () => {
   //console.debug("HandleClose", e);
     setAnchorEl_I(null);
     setAnchorEl_B(null);
   };
   
-  const OpenUploads = (event) => {
+  const OpenUploads = () => {
     setUploadsDialog(true);
     setAnchorEl_B(null);
   };
