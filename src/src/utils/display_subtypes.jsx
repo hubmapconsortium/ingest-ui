@@ -163,8 +163,9 @@ export function compiledTypes() {
     var tissue_types=[]
     var cell_types=[]
     var misc_types=[]
-    SAMPLE_TYPES.map((optgs, index) => {
-      Object.entries(optgs).map(op => {
+    SAMPLE_TYPES.forEach((optgs, index) => (
+
+      Object.entries(optgs).forEach(op => {
         var type = {
           label: op[1],
           value: op[0]
@@ -183,7 +184,8 @@ export function compiledTypes() {
         }
       })
       
-    })
+    ))
+    
     var groupedOption = [{
       label: '',
       options: core_types,

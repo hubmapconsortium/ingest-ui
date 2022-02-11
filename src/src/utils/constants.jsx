@@ -170,8 +170,8 @@ export const ES_SEARCHABLE_WILDCARDS = [
     const  compileTypeList = () =>{
       var donor_types=[]
       var sample_types=[]
-      TISSUE_TYPES.map((optgs, index) => {
-        Object.entries(optgs).map(op => {
+      TISSUE_TYPES.forEach((optgs, index) => {
+        Object.entries(optgs).forEach(op => {
           var type = {
             label: op[1],
             value: op[0]
@@ -206,14 +206,14 @@ export const ES_SEARCHABLE_WILDCARDS = [
 //console.debug("compiledSelectList", params);
   
       var groups = []; 
-      params.map((optgs, index) => {
+      params.forEach((optgs, index) => {
         groups.push({
           "label": "---" ,
           "options":[]
         })
       
         var list = []; 
-        Object.entries(optgs).map(op => {
+        Object.entries(optgs).forEach(op => {
           var option = {
             label: op[1],
             value: op[0]

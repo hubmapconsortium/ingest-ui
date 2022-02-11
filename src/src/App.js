@@ -69,26 +69,10 @@ export function App (props){
 
     
 
-  function LocalStorageAuth(){
+//   function LocalStorageAuth(){
 
-  try {
-    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-    if (results.status === 200) { 
-      console.debug("LocalStorageAuth", results);
-      setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-      setAuthStatus(true);
-      console.debug("groupsToken",groupsToken);
-    } else if (results.status === 401) {
-      console.debug("LocalStorageAuth", results);
-      setGroupsToken(null);
-      setAuthStatus(false);
-    }
-      
-    });
-  } catch {
-    console.debug("LocalStorageAuth", "CATCh No LocalStorage");
-  }
-}
+    
+// }
 
   
 
@@ -103,8 +87,24 @@ export function App (props){
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
-    LocalStorageAuth();
-  }, []);
+    try {
+      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
+      if (results.status === 200) { 
+        console.debug("LocalStorageAuth", results);
+        setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+        setAuthStatus(true);
+        console.debug("groupsToken",groupsToken);
+      } else if (results.status === 401) {
+        console.debug("LocalStorageAuth", results);
+        setGroupsToken(null);
+        setAuthStatus(false);
+      }
+        
+      });
+    } catch {
+      console.debug("LocalStorageAuth", "CATCh No LocalStorage");
+    }
+  }, [groupsToken]);
 
 
 
