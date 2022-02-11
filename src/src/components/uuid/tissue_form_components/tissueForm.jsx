@@ -222,8 +222,8 @@ class TissueForm extends Component {
                             //console.debug('api_allowable_edit_states...', resp.results);
                             ////////console.debug(resp.results);
                             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-                            // THIS WILL ALWAYS ALLOW THE SCREEN TO BE EDITED. TEMPORARY SOLUTION 
-                            //read_only_state = false
+                            // OVERRIDE: THIS WILL ALWAYS ALLOW THE SCREEN TO BE EDITED. TEMPORARY SOLUTION 
+                            read_only_state = false
 
                             this.setState({
                               editingEntity: entity_data,
