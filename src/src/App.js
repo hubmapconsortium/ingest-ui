@@ -119,7 +119,7 @@ export function App (props){
 
   
   function onChangeGlobusLink(newLink, newDataset){
-    const {name, display_doi, doi} = newDataset;
+    // const {name, display_doi, doi} = newDataset;
     // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
   };
 
