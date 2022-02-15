@@ -10,16 +10,6 @@ import FormData from "form-data"
  *
  */
 
-// Process the error to show the user friendly message if possible
-function HandleError(err, msg){
-  console.debug("Ingest_API Error", err, msg);
-  if(err.response){
-    //@TODO: dont speak for the server, just return the error
-    return {status: 500, results: err.response}
-  }else{
-    return {status: 500, results: err}
-  }
-}
 
 
 export function ingest_api_users_groups(auth) { 
@@ -45,7 +35,9 @@ export function ingest_api_users_groups(auth) {
     return {status: res.status, results: group_list}
  })
  .catch(err => {
-    HandleError(err, "ingest_api_users_groups");
+   console.debug("ingest_api_users_groups ERR", err);
+      return {status: err.response.status, results: err.response}
+    // HandleError(err, msg:"ingest_api_users_groups");
  });
 }
 
@@ -105,8 +97,8 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
         return {status: res.status, results: res.data}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_allowable_edit_states" );
-     
+        return{err, msg:"ingest_api_allowable_edit_states"}
+      
       });
 };
 
@@ -161,7 +153,7 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_dataset_submit" );
+        return {err, msg:"ingest_api_dataset_submit" };
       });
 };
 
@@ -189,7 +181,7 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_derived_dataset" );
+        return {err, msg:"ingest_api_derived_dataset" };
      });
 };
 
@@ -231,7 +223,7 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_bulk_entities_upload" );
+        return {err, msg:"ingest_api_bulk_entities_upload" }
      });
 };
 
@@ -264,7 +256,7 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_users_groups_bulk_entities_register" );
+        return {err, msg:"ingest_api_users_groups_bulk_entities_register" };
      });
 };
 
@@ -329,7 +321,7 @@ export function ingest_api_get_associated_ids(uuid, auth) {
           return {status: res.status, results: res.data.ingest_group_ids}
         })
         .catch(err => {
-          HandleError(err, "ingest_api_get_associated_ids");
+          return {err, msg:"ingest_api_get_associated_ids"}
         });
 }
 
@@ -351,7 +343,7 @@ export function ingest_api_get_globus_url(uuid, auth) {
         return {status: 200, results: res.data}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_get_globus_url");
+        return {err, msg:"ingest_api_get_globus_url"}
       });
 }
 
@@ -382,7 +374,7 @@ export function ingest_api_submit_upload(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_submit_upload" );
+        return {err, msg:"ingest_api_submit_upload" }
       });
 };
 
@@ -412,7 +404,7 @@ export function ingest_api_validate_upload(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        HandleError(err, "ingest_api_validate_upload" );
+        return {err, msg:"ingest_api_validate_upload" }
       });
 };
 

@@ -82,7 +82,7 @@ export const RenderDataset = (props) => {
       console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
       return (
         <div>
-          <DatasetFormLegacy onUpdated={onUpdated} HandleCancel={HandleCancel} editingDataset={entity_data} />
+          <DatasetFormLegacy onUpdated={onUpdated} HandleCancel={HandleCancel} editingDataset={entity_data} passError={passError} />
         </div>
       )
     }

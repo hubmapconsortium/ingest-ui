@@ -21,13 +21,14 @@ export function entity_api_get_entity(uuid, auth) {
       .then(res => {
         //console.debug(res);
           let results = res.data;
-      
-        return {status: res.status, results: results}
+          return {status: res.status, results: results}
       })
       .catch(err => {
         if(err.response){
+          console.debug("entity_api_get_entity have response");
           return {status: err.response.status, results: err.response.data}
-        }else{
+        }else{ 
+          console.debug("entity_api_get_entity no response");
           return err;
         }
         

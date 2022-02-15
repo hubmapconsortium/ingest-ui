@@ -77,7 +77,7 @@ export function api_search(params, auth) {
       });
 };
 
-export function api_search2(params, auth, from, size) { 
+export function api_search2(params, auth, from, size, fields) { 
   const options = {
       headers: {
         Authorization:
@@ -86,7 +86,7 @@ export function api_search2(params, auth, from, size) {
       }
     };
     // console.debug("params", params);
-    let payload = search_api_filter_es_query_builder(params, from , size);
+    let payload = search_api_filter_es_query_builder(params, from, size, fields);
     // console.debug("payload", payload);
 
     console.debug('payload', payload)
@@ -98,13 +98,11 @@ export function api_search2(params, auth, from, size) {
       .then(res => {
         console.debug("API api_search2 res", res);
           let hits = res.data.hits.hits;
-      
           let entities = [];
           hits.forEach(s => {
             let data = s['_source']
             data['id'] = s['_source']['uuid']
             entities.push(data);
-            
           });
            //console.debug(entities);
         return {status: res.status, results: entities, total: res.data.hits.total.value}
@@ -119,7 +117,7 @@ export function api_search2(params, auth, from, size) {
  * Elasticsearch query builder helper
  *
  */
-export function search_api_filter_es_query_builder(fields, from, size) {
+export function search_api_filter_es_query_builder(fields, from, size, colFields) {
 
   let requestBody =  esb.requestBodySearch();
 //  console.debug("here in the filter es builder")
@@ -178,10 +176,26 @@ console.debug("Fields", fields);
       
       }
     }
-  requestBody.query(boolQuery).from(from).size(size).sort(esb.sort('last_modified_timestamp', 'desc'));
+  requestBody
+    .query(boolQuery)
+    .from(from)
+    .size(size)
+    .sort(esb.sort('last_modified_timestamp', 'desc'))
+    .source(colFields);
   //requestBody.query(boolQuery).size(100);
 
-  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
+/*  
+
+submission_id
+lab_name
+group_name
+created_by_user_email
+lab_donor_id
+
+*/
+  
+
+console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
   console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
   return requestBody.toJSON();
 }

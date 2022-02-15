@@ -9,9 +9,18 @@ import {
   // Login Management
   import Login from './components/ui/login';
   import Timer from './components/ui/idle';
-  
+
+
+import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
-  import { ingest_api_users_groups } from './service/ingest_api';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+
+import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
+import { ingest_api_users_groups } from './service/ingest_api';
 
   // Site Content
 import {Navigation} from "./Nav";
@@ -33,36 +42,9 @@ import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 
 
-
-
-
-
-
-
-
-
-
-      // Check auth from both URL and LocalStorGE, THEN check token
-      // console.debug("Info JSON forund in localStorage",infoJSON);
-      
-//     }
-//   // And if wevve got nothing  
-//   }else{
-//     infoJSON = {
-//       name: "",
-//       email: "",
-//       globus_id: ""
-//     };
-//     return false
-//     // window.location.replace(`${process.env.REACT_APP_URL}`);  
-//   }
-// }
-
-
-
-
 export function App (props){
   var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
+  var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   let navigate = useNavigate();
@@ -89,19 +71,24 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-      if (results.status === 200) { 
+      if (results && results.status === 200) { 
         console.debug("LocalStorageAuth", results);
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
         setAuthStatus(true);
         console.debug("groupsToken",groupsToken);
-      } else if (results.status === 401) {
+      } else if (results && results.status === 401) {
         console.debug("LocalStorageAuth", results);
         setGroupsToken(null);
         setAuthStatus(false);
+        if(localStorage.getItem("info")){
+          // If we were logged out and we have an old token,
+          // We should promopt to sign back in
+          CallLoginDialog(); 
+        }
       }
         
-      });
-    } catch {
+    });
+    }catch {
       console.debug("LocalStorageAuth", "CATCh No LocalStorage");
     }
   }, [groupsToken]);
@@ -130,16 +117,32 @@ export function App (props){
   }
 
 
+
+  const onCloseLogin = (event, reason) => {
+      // setLoginDialogRender(true)
+      console.debug("onCloseLogin ", event, reason);
+      navigate("/");
+      setLoginDialogRender(false);
+    
+  }
+
+  function CallLoginDialog(){
+    console.debug("CallLoginDialog Open");
+    setLoginDialogRender(true);
+  }
+
   function CallUploadsDialog(){
   //console.debug("CallUploadsDialog uploadsDialogRender");
     setUploadsDialogRender(true);
   }
  
+
+ 
   
   function urlChange(target) {
     navigate(target);
   }
-
+ 
 
 
   
@@ -160,9 +163,44 @@ export function App (props){
       <div id="content" className="container">
         
         {!authStatus && (
+          <React.Fragment>
             <Routes>
                 <Route path="/" element={ <Login />} />
             </Routes>
+
+
+          <Dialog
+            open={loginDialogRender}
+            onClose={onCloseLogin}
+            disableEscapeKeyDown={false}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+            onBackdropClick={onCloseLogin}
+          >
+            <DialogTitle 
+              color="white"
+              backgroundColor="red"
+              id="alert-dialog-title"
+            >
+
+            <React.Fragment>
+            <AnnouncementTwoToneIcon /> Session Has Ended
+            </React.Fragment>
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                <br />
+                It looks like your login session has ended. Please log in again to continue
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={onCloseLogin} autoFocus>
+                Log In
+              </Button>
+            </DialogActions>
+          </Dialog>
+          </React.Fragment>
+
         )}
 
             
@@ -197,6 +235,8 @@ export function App (props){
               {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
 
           </Routes>
+
+
           </Paper>
           )}
   </div>

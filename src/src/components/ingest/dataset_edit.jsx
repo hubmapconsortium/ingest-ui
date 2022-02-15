@@ -213,12 +213,17 @@ class DatasetEdit extends Component {
       .catch((err) => {
         if (err.response && err.response.status === 401) {
           console.debug("Err w response", err.response);
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
+          this.props.passError(err);
+          // Rather than reload here, let's have a modal or such'
+          // Telling the user their session has expired, and invite 
+          // then to log in again
+          // localStorage.setItem("isAuthenticated", false);
+          // window.location.reload();
         }else if(err.status){
           console.debug("Err wo response", err.response);
           localStorage.setItem("isAuthenticated", false);
-          window.location.reload(); 
+          // Stop reloading; handle & pass the error first
+          // window.location.reload(); 
         }
       });
 

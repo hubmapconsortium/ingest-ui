@@ -23,6 +23,15 @@ import { entity_api_get_entity } from '../../service/entity_api';
 
 // import { browserHistory } from 'react-router'
 
+function resultFieldSet(){
+  var fieldObjects= [];
+  var fieldArray = fieldObjects.concat(COLUMN_DEF_SAMPLE,COLUMN_DEF_DATASET,COLUMN_DEF_UPLOADS, COLUMN_DEF_DONOR)  
+  const unique = [...new Set(fieldArray.map(item => item.field))]; // [ 'A', 'B']
+  // fieldArray
+  console.log("resultFieldSet", unique);
+  return unique;
+}
+
 class SearchComponent extends Component {
 
   constructor(props) {
@@ -39,6 +48,7 @@ class SearchComponent extends Component {
       results_total: 0,
       page: 0,
       pageSize: 100,
+      fieldSet:[],
       editForm: false,
       show_modal: false,
       hide_modal: true, 
@@ -56,11 +66,18 @@ class SearchComponent extends Component {
     };
   }
 
-  componentDidMount() {     
+  componentDidMount() {    
+    resultFieldSet(); 
 
     if(this.props.custom_title){
       this.setState({search_title:this.props.custom_title});
     }
+
+    this.setState({
+      fieldSet: resultFieldSet()
+    },function(){ 
+      console.debug("FieldSetState",this.state.fieldSet);
+    })
 
     console.debug("SEARCH componentDidMount")
     var euuid;
@@ -232,6 +249,7 @@ class SearchComponent extends Component {
           this.setState({
             isAuthenticated: false
           });
+          window.location.reload();
         }
     });
   } catch {
@@ -280,6 +298,7 @@ class SearchComponent extends Component {
         }
       });
   }
+
 
   handleExtractQuery= () =>{
     //@TODO: Using a polyfill to solve IE woes instead 
@@ -584,7 +603,7 @@ class SearchComponent extends Component {
     },() => {
       console.debug("SEARCHCOM this.state.pageSize", this.state.pageSize);
       api_search2(params, JSON.parse(localStorage.getItem("info")).groups_token, 
-          (this.state.page*this.state.pageSize), this.state.pageSize)
+          (this.state.page*this.state.pageSize), this.state.pageSize, this.state.fieldSet)
       .then((response) => {
         // console.debug("Search Res", response.results);
         
