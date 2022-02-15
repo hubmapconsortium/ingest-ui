@@ -13,17 +13,31 @@ export const RenderSample = (props) => {
   let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
+  var [uuid, setUUID] = useState("");
   var [isLoading, setLoading] = useState(true);
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
   });
-  let { uuid } = useParams();
 
+  setUUID(useParams())
   useEffect(() => {
-    fetchData(uuid);
-  }, []);
+    
+    entity_api_get_entity(uuid, authSet.groups_token)
+      .then((response) => {
+          if (response.status === 200) {
+            setEntity(response.results);
+            console.debug("entity_data", response.results);
+            setLoading(false);
+          } else {  
+            passError(response.status, response.message);
+          }
+        })
+        .catch((error) => {
+          passError(error.status, error.results.error );
+        });
+  }, [authSet, uuid]);
 
   function HandleCancel(){
     navigate(-1);  
@@ -47,22 +61,6 @@ export const RenderSample = (props) => {
 
  
 
-  function fetchData(uuid){
-    entity_api_get_entity(uuid, authSet.groups_token)
-      .then((response) => {
-          if (response.status === 200) {
-            setEntity(response.results);
-            console.debug("entity_data", response.results);
-            setLoading(false);
-          } else {  
-            passError(response.status, response.message);
-          }
-        })
-        .catch((error) => {
-          passError(error.status, error.results.error );
-        });
-
-  }
   
     if (!isLoading && errorHandler.isError === true){
       return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState  } from "react";
-import { useParams } from 'react-router-dom';
+import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import DatasetFormLegacy from "./ingest/dataset_edit";
@@ -14,19 +14,37 @@ export const RenderDataset = (props) => {
   //console.debug("RenderSearchComponent", props);
 
   let navigate = useNavigate();
-  var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
+  var [uuid, setUUID] = useState("");
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
   });
-  let { uuid } = useParams();
 
+
+  setUUID(useParams())
   useEffect(() => {
-    fetchData(uuid);
-  }, []);
+    var authSet = JSON.parse(localStorage.getItem("info"));
+    entity_api_get_entity(uuid, authSet.groups_token)
+      .then((response) => {
+          if (response.status === 200) {
+            setEntity(response.results);
+            console.debug("entity_data", response.results);
+            setLoading(false);
+          }else{
+            console.debug("Response not 200 Error", response);
+            setLoading(true); //@TODO: lets flip the error display up here instead 
+            passError(response.status, response.results);
+          }
+        })
+        .catch((error) => {
+          console.debug("fetchData Response Error", error);
+          passError(error.status, error.response );
+        });
+
+  }, [uuid]);
 
 
   function HandleCancel(){
@@ -49,26 +67,6 @@ export const RenderDataset = (props) => {
       })
     }
 
-  function fetchData(uuid){
-    entity_api_get_entity(uuid, authSet.groups_token)
-      .then((response) => {
-          if (response.status === 200) {
-            setEntity(response.results);
-            console.debug("entity_data", response.results);
-            setLoading(false);
-          }else{
-            console.debug("Response not 200 Error", response);
-            setLoading(true); //@TODO: lets flip the error display up here instead 
-            passError(response.status, response.results);
-          }
-        })
-        .catch((error) => {
-          console.debug("fetchData Response Error", error);
-          passError(error.status, error.response );
-        });
-
-  }
-  
     if (!isLoading && errorHandler.isError === true){
       console.debug("ERR HANDLER ", errorHandler);
       return (

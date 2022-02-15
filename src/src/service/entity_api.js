@@ -25,7 +25,12 @@ export function entity_api_get_entity(uuid, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: err.response.status, results: err.response.data}
+        if(err.response){
+          return {status: err.response.status, results: err.response.data}
+        }else{
+          return err;
+        }
+        
       });
 };
 
