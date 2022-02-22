@@ -623,9 +623,19 @@ class SearchComponent extends Component {
           loading: false,
           table_loading:false, 
         });
-      }else{
-        console.debug("Error on Search ", response)
-      }
+        }else{
+
+          // SEND BACK ERROR
+          this.props.packageError(response);
+          console.debug("Error on Search ", response)
+        }
+
+    })
+    .catch((error) => {
+      console.debug("Error on Search ", error)
+      this.props.packageError(error);
+
+  
     })
   
     });

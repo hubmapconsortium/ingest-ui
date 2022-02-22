@@ -11,7 +11,6 @@ import {useNavigate} from "react-router-dom";
 export const RenderSample = (props) => {
   console.debug("Rendering from NEWER Route, not Legacy Route");
   let navigate = useNavigate();
-  var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [uuid, setUUID] = useState("");
   var [isLoading, setLoading] = useState(true);
@@ -23,10 +22,14 @@ export const RenderSample = (props) => {
 
   setUUID(useParams())
   useEffect(() => {
+    if(!localStorage.getItem("info")){
+      // the app.js should reload on missing/outdated Info item
+    }else{
     
-    entity_api_get_entity(uuid, authSet.groups_token)
+    entity_api_get_entity(uuid,  JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
-          if (response.status === 200) {
+        console.debug("response", response);
+        if (response.status === 200) {
             setEntity(response.results);
             console.debug("entity_data", response.results);
             setLoading(false);
@@ -37,7 +40,8 @@ export const RenderSample = (props) => {
         .catch((error) => {
           passError(error.status, error.results.error );
         });
-  }, [authSet, uuid]);
+      }
+  }, [uuid]);
 
   function HandleCancel(){
     navigate(-1);  
@@ -45,7 +49,7 @@ export const RenderSample = (props) => {
 
 
   function passError(status, message) {
-   //console.debug("Error", status, message);
+    console.debug("passError Error ", status, message);
     setLoading(false);
     setErrorHandler({
         status: status,

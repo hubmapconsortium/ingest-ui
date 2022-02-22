@@ -86,17 +86,17 @@ export function api_search2(params, auth, from, size, fields) {
       }
     };
     // console.debug("params", params);
-    let payload = search_api_filter_es_query_builder(params, from, size, fields);
+    let payload = search_api_filter_es_query_builder( from, size, fields);
     // console.debug("payload", payload);
 
     console.debug('payload', payload)
 
   return axios 
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
-              payload, options
-      )
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,payload,options )
       .then(res => {
         console.debug("API api_search2 res", res);
+        console.debug("res.data.error", res.dassadta.error);
+        if(res.data.hits && !res.data.error){
           let hits = res.data.hits.hits;
           let entities = [];
           hits.forEach(s => {
@@ -104,12 +104,20 @@ export function api_search2(params, auth, from, size, fields) {
             data['id'] = s['_source']['uuid']
             entities.push(data);
           });
+          return {status: res.status, results: entities, total: res.data.hits.total.value}
+        }else if(res.data.error || res.error){
+          console.debug("HAVE res.data.error", res.data.error);
+          return {status: 500, results: res.data.error}
+        }else{
+          //  lacking hits likely means we hit another error?
+          console.debug("No Hits No Error", res.data);
+          return {status: res.status, results: res.data} 
+        }
            //console.debug(entities);
-        return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
       .catch(err => {
         console.debug("API api_search2 err", err);
-         return {status: 500, results: err.response}
+         return {err}
       });
 };
 
