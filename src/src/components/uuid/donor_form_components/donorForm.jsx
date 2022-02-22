@@ -1070,6 +1070,8 @@ class DonorForm extends Component {
                         onFileChange={this.onFileChange}
                         validate={this.validateImagesFiles}
                         onDelete={this.handleDeleteImage}
+                        imageType="image"
+                        show_description={true}
                       />
                     ))}
                   </div>
