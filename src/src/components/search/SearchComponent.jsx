@@ -21,6 +21,15 @@ import { ingest_api_allowable_edit_states, ingest_api_users_groups } from '../..
 
 // import { browserHistory } from 'react-router'
 
+function resultFieldSet(){
+  var fieldObjects= [];
+  var fieldArray = fieldObjects.concat(COLUMN_DEF_SAMPLE,COLUMN_DEF_DATASET,COLUMN_DEF_UPLOADS, COLUMN_DEF_DONOR)  
+  const unique = [...new Set(fieldArray.map(item => item.field))]; // [ 'A', 'B']
+  // fieldArray
+  // console.log("resultFieldSet", unique);
+  return unique;
+}
+
 class SearchComponent extends Component {
 
   constructor(props) {
@@ -64,6 +73,12 @@ class SearchComponent extends Component {
     // if(uuid){
     //   this.handleLoadEntity(uuid)
     // }
+    this.setState({
+      fieldSet: resultFieldSet()
+    },function(){ 
+      console.debug("FieldSetState",this.state.fieldSet);
+    })
+
     //@TODO: Look into using the query/search functionality the search-api uses instead of all..... this
     var url = window.location.href;
     var urlPart = url.split("/");
@@ -565,9 +580,9 @@ class SearchComponent extends Component {
       filtered: true
     },() => {
       api_search2(params, JSON.parse(localStorage.getItem("info")).groups_token, 
-          (this.state.page*this.state.pageSize), this.state.pageSize)
-      .then((response) => {
-        // console.debug("Search Res", response.results);
+      (this.state.page*this.state.pageSize), this.state.pageSize, this.state.fieldSet)
+        .then((response) => {
+        console.debug("Search Res", response.results);
         
         if (response.status === 200) {
           if (response.total === 1) {  // for single returned items, customize the columns to match
@@ -647,7 +662,7 @@ class SearchComponent extends Component {
     this.setState({
           datarows: [],
           loading: true,
-//          page: 0    // reset the page
+          page: 0    // reset the page
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
         });
@@ -973,7 +988,7 @@ renderInfoPanel() {
               )}
               <span className="portal-jss116 text-center">
 
-              <h1>{this.props.test}</h1>
+              {/* <h1>{this.props.test}</h1> */}
               Use the filter controls to search for Donors, Samples, Datasets or Data Uploads.
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
               </span>

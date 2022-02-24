@@ -25,17 +25,11 @@ import Modal from "./components/uuid/modal";
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
-import Paper from '@material-ui/core/Paper';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import UploadsForm from "./components/uploads/createUploads";
 import BulkSamples from "./components/ingest/bulk";
-function Alert(props) {
-  return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
 class App extends Component {
 
 
@@ -284,7 +278,7 @@ class App extends Component {
 
   
 
-  handleLogout = e => {
+  handleLogout = () => {
     localStorage.setItem("isAuthenticated", false);
     localStorage.removeItem("info");
   };
@@ -350,7 +344,7 @@ class App extends Component {
       this.handleUrlChange("new/"+formtype);
   }
 
-  handleMenuDropdown = (event) => {
+  handleMenuDropdown = () => {
     console.debug("this.state.showDropDown",this.state.showDropDown);
     this.setState({
       anchorElB: null,
@@ -360,7 +354,7 @@ class App extends Component {
   };
   
 
-  handleUploadsDialog = (event) => {
+  handleUploadsDialog = () => {
     console.debug("handleUploadsDialog");
     this.handleMenuDropdown();
     this.setState({
@@ -541,7 +535,7 @@ class App extends Component {
                   </Button>
                   <Menu
                     id="BulkMenu"
-                    menuStyle={{width: 'auto', backgroundColor: 'red'}}
+                    // menuStyle={{width: 'auto', backgroundColor: 'red'}}
                     keepMounted
                     anchorEl={this.state.anchorElB}
                     open={Boolean(this.state.anchorElB)}
@@ -686,9 +680,9 @@ class App extends Component {
     return html;
   }
 
-  onAction = e => { };
+  onAction = () => { };
 
-  onIdle = e => {
+  onIdle = () => {
     if (localStorage.getItem("isAuthenticated") === "true") {
       this.setState(
         {
@@ -720,7 +714,7 @@ class App extends Component {
     }
   };
 
-  onActive = e => { };
+  onActive = () => { };
 
   hideModal = () => {
     clearTimeout(this.state.timer);
