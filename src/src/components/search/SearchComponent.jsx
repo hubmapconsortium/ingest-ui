@@ -662,7 +662,7 @@ class SearchComponent extends Component {
     this.setState({
           datarows: [],
           loading: true,
-//          page: 0    // reset the page
+          page: 0    // reset the page
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
         });
@@ -988,7 +988,7 @@ renderInfoPanel() {
               )}
               <span className="portal-jss116 text-center">
 
-              <h1>{this.props.test}</h1>
+              {/* <h1>{this.props.test}</h1> */}
               Use the filter controls to search for Donors, Samples, Datasets or Data Uploads.
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
               </span>
