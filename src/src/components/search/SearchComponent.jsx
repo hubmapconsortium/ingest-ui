@@ -703,7 +703,7 @@ class SearchComponent extends Component {
       loading: false
     }, () => {   
       console.debug("onUpdated state", this.state)
-      // this.handleSearchClick();onUpdated
+      // this.handleSearchClick();
       this.cancelEdit();
       // ONLY works for functional components and all oura are class components
        // this.props.history.push("/"+this.state.formType+"/"+this.state.editNewEntity.uuid)
