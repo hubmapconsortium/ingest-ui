@@ -50,7 +50,7 @@ export function api_search(params, auth) {
       });
 };
 
-export function api_search2(params, auth, from, size) { 
+export function api_search2(params, auth, from, size, fields) { 
   const options = {
       headers: {
         Authorization:
@@ -59,10 +59,8 @@ export function api_search2(params, auth, from, size) {
       }
     };
 
-  let payload = search_api_filter_es_query_builder(params, from , size);
-
+  let payload = search_api_filter_es_query_builder(params, from, size, fields);
   ////console.debug('payload', payload)
-
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
               payload, options
@@ -90,14 +88,14 @@ export function api_search2(params, auth, from, size) {
  * Elasticsearch query builder helper
  *
  */
-export function search_api_filter_es_query_builder(fields, from, size) {
+export function search_api_filter_es_query_builder(fields, from, size, colFields) {
 
   let requestBody =  esb.requestBodySearch();
- console.debug("here in the filter es builder")
- console.debug(fields);
+  console.debug("here in the filter es builder")
+  console.debug(fields);
 
 
-let boolQuery = "";
+  let boolQuery = "";
 
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
     boolQuery = esb.queryStringQuery(fields["keywords"])
@@ -149,8 +147,12 @@ let boolQuery = "";
       
       }
     }
-  requestBody.query(boolQuery).from(from).size(size).sort(esb.sort('last_modified_timestamp', 'desc'));
-  //requestBody.query(boolQuery).size(100);
+    requestBody
+    .query(boolQuery)
+    .from(from)
+    .size(size)
+    .sort(esb.sort('last_modified_timestamp', 'desc'))
+    .source(colFields);  //requestBody.query(boolQuery).size(100);
 
   console.debug(requestBody.toJSON());
   return requestBody.toJSON();
