@@ -34,6 +34,7 @@ export function entity_api_get_entity(uuid, auth) {
  *
  */
 export function entity_api_update_entity(uuid, data, auth) { 
+  console.debug("entity_api_update_entity", data);
   const options = {
       headers: {
         Authorization:
