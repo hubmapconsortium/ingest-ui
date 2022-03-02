@@ -128,6 +128,7 @@ export function ingest_api_create_dataset(data, auth) {
  *
  */
 export function ingest_api_dataset_submit(uuid, data, auth) { 
+  console.debug("ingest_api_dataset_submit", data);
   const options = {
       headers: {
         Authorization:
