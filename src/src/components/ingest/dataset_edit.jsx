@@ -954,6 +954,8 @@ class DatasetEdit extends Component {
           };
          
           if (this.props.editingDataset) {
+
+            console.log("data is ", data)
             // if user selected Publish
             if (i === "published") {
               let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
