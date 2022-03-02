@@ -927,7 +927,7 @@ class DatasetEdit extends Component {
             lab_dataset_id: this.state.lab_dataset_id,
             //collection_uuid: this.state.collection.uuid,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            data_types: data_types,
+            data_types: uniqueDT,
             description: this.state.description,
             dataset_info: this.state.dataset_info,
             //status: this.state.new_status,
@@ -955,6 +955,8 @@ class DatasetEdit extends Component {
           };
          
           if (this.props.editingDataset) {
+
+            console.debug("I is ", i);
 
             console.log("data is ", data)
             // if user selected Publish
@@ -985,6 +987,7 @@ class DatasetEdit extends Component {
                     }
                 });
               } else { // just updatehttps://us05web.zoom.us/j/88679615635?pwd=UEd6T0FmMjFpNnl0TWJvZmlkekRNUT09
+                console.debug("no I, entity_api_update_entity", data);
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status === 200) {
@@ -1496,7 +1499,7 @@ class DatasetEdit extends Component {
 
 	    //var entries_per_col = Math.ceil(len / 3);
 	    //var num_cols = Math.ceil(len / entries_per_col);
-      console.log("data_type_dicts", this.state.data_type_dicts)
+      // console.log("data_type_dicts", this.state.data_type_dicts)
 
       if (this.state.data_types.size === 1 && this.state.has_other_datatype) {
         return (<>
