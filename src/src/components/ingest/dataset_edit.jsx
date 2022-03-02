@@ -915,7 +915,8 @@ class DatasetEdit extends Component {
 
           // Lets make sure the data types array is unique
           var uniqueDT = Array.from(new Set(data_types));
-          // console.debug("uniqueDT", uniqueDT);
+          console.debug("Orig data_types", data_types);
+          console.debug("uniqueDT", uniqueDT);
           this.setState({
             data_types: uniqueDT,
           })
@@ -931,6 +932,7 @@ class DatasetEdit extends Component {
             //status: this.state.new_status,
             //is_protected: this.state.is_protected,
           };
+          console.debug("Compiled data: ", data);
   
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
