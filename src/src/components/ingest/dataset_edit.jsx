@@ -886,6 +886,7 @@ class DatasetEdit extends Component {
       data_types.add(this.state.other_dt);
       this.setState({ data_types: data_types });
     }
+    console.debug("Post SUBSTATE mod", this.state);
 
     //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
@@ -954,8 +955,11 @@ class DatasetEdit extends Component {
           };
          
           if (this.props.editingDataset) {
+
+            console.log("data is ", data)
             // if user selected Publish
             if (i === "published") {
+              console.debug("about to publish with data ", data); 
               let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
               axios
                 .put(uri, JSON.stringify(data), config)
@@ -968,7 +972,7 @@ class DatasetEdit extends Component {
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
-               console.log("data is ", data)
+               console.log("ABout to call ingest_api_dataset_submit with ", data)
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status === 200) {
@@ -980,7 +984,7 @@ class DatasetEdit extends Component {
                       this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                     }
                 });
-              } else { // just update
+              } else { // just updatehttps://us05web.zoom.us/j/88679615635?pwd=UEd6T0FmMjFpNnl0TWJvZmlkekRNUT09
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status === 200) {
