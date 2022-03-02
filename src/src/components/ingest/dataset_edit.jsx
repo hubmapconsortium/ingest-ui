@@ -103,7 +103,6 @@ class DatasetEdit extends Component {
     if (this.props.hasOwnProperty('editingDataset')
 	       && this.props.editingDataset
 	       && this.props.editingDataset.data_types) {
-      //////console.log('editingDataset.data_types', this.props.editingDataset.data_types)
       // data_types = JSON.parse(
       //   this.props.editingDataset.data_types
       //     .replace(/'/g, '"')
@@ -111,7 +110,6 @@ class DatasetEdit extends Component {
       // );
       //////console.log('this.state.data_type_dicts', this.state.data_type_dicts)
       const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
-      //////console.log('data_type_options: ', data_type_options);
       other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
       data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
       if (other_dt) {
@@ -880,9 +878,8 @@ class DatasetEdit extends Component {
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
       (dt) => !data_type_options.has(dt)
-    )[0];
+      )[0];
     data_types.delete(other_dt);
-
     //////console.log('submit: data_types',data_types)
     if (this.state.other_dt) {
       const data_types = this.state.data_types;
@@ -915,6 +912,13 @@ class DatasetEdit extends Component {
               this.state.other_dt.replace(/'/g, "\\'"),
             ];
           }
+
+          // Lets make sure the data types array is unique
+          var uniqueDT = Array.from(new Set(data_types));
+          // console.debug("uniqueDT", uniqueDT);
+          this.setState({
+            data_types: uniqueDT,
+          })
 
           // package the data up
           let data = {
@@ -1461,7 +1465,7 @@ class DatasetEdit extends Component {
   renderAssay(val, idx) {
     var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
     return (
-      <option value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
+      <option key={idstr} value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
       )
   }
 
