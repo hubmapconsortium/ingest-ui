@@ -346,9 +346,6 @@ class TissueForm extends Component {
             thumbnail: thumbnail_list
           } );
 
-        this.getSourceAncestorOrgan(this.state.editingEntity);
-
-
       } else {
         //console.debug('NOT EDITING', this.props.entity)
 
