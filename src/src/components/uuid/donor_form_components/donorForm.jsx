@@ -54,6 +54,7 @@ class DonorForm extends Component {
 //    metadata_file_name: "Choose a file",
 
     groups: [],
+    groups_dataprovider: [],
     selected_group: null,
 
     formErrors: {
@@ -86,8 +87,22 @@ class DonorForm extends Component {
       // const groups = results.results.filter(
       //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
       //   );
+        // this.setState({
+        //   groups: results.results
+        // });
+        console.debug("results.data.groups",results.data.groups);
+        const groups = results.data.groups.filter(
+          // It filters our read only, but what about other permissions like admin? 
+          // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          g => g.data_provider === true
+        );
+        console.debug("groups",groups);
+          //  We have both Data-Provider groups as well as non. 
+          // The DP needs to be deliniated for the dropdown & assignments
+          // the rest are for permissions
         this.setState({
-          groups: results.results
+          groups: groups,
+          groups_dataprovider: groups,
         });
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -414,11 +429,22 @@ class DonorForm extends Component {
       
               });
         } else {
-            if (this.state.selected_group && this.state.selected_group.length > 0) {
-              data["group_uuid"] = this.state.selected_group;
-            } else {
-              data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
-            }
+          
+            // if (this.state.selected_group && this.state.selected_group.length > 0) {
+            //   data["group_uuid"] = this.state.selected_group;
+            // } else {
+            //   data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+            // }
+          if (this.state.selected_group && this.state.selected_group.length > 0) {
+              console.debug("Selected_group", this.state.selected_group);
+              data["group_uuid"] = this.state.selected_group; 
+          } else {
+            // If none selected, we need to pick a default BUT
+            // It must be from the data provviders, not permissions
+            console.debug("UN Selected_group", this.state.selected_group);              
+            data["group_uuid"] = this.state.groups_dataprovider[0].uuid; // consider the first users group        
+          }
+          console.debug("data[\"group_uuid\"]",data["group_uuid"]);
 
             //console.debug("Create a new Entity....group uuid", data["group_uuid"])
             entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
