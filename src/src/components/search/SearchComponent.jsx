@@ -66,8 +66,15 @@ class SearchComponent extends Component {
     };
   }
 
+
+  componentDidCatch(error) {
+    console.debug("componentDidCatch",error);
+    this.setState({error: `${error.name}: ${error.message}`});
+  }
+
+
   componentDidMount() {    
-    resultFieldSet(); 
+    // resultFieldSet(); 
 
     if(this.props.custom_title){
       this.setState({search_title:this.props.custom_title});
@@ -233,8 +240,6 @@ class SearchComponent extends Component {
         }
       }
     }
-
-
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
         console.debug("ingest_api_users_groups", results);
@@ -299,6 +304,13 @@ class SearchComponent extends Component {
       });
   }
 
+  handleUpdateQueryCols(){
+    this.setState({
+      fieldSet: resultFieldSet()
+    },function(){ 
+      console.debug("FieldSetState",this.state.fieldSet);
+    })
+  }
 
   handleExtractQuery= () =>{
     //@TODO: Using a polyfill to solve IE woes instead 
@@ -624,8 +636,8 @@ class SearchComponent extends Component {
           table_loading:false, 
         });
         }else{
-
-          // SEND BACK ERROR
+          console.debug("ERR",response);
+          throw new Error(response.results);
           this.props.packageError(response);
           console.debug("Error on Search ", response)
         }
@@ -633,6 +645,7 @@ class SearchComponent extends Component {
     })
     .catch((error) => {
       console.debug("Error on Search ", error)
+      throw new Error(error);
       this.props.packageError(error);
 
   

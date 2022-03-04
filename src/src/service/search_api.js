@@ -30,6 +30,8 @@ export function api_validate_token(auth) {
         return {status: res.status}
       })
       .catch(err => {
+
+        throw new Error(err);
         return {status: err.response.status, results: err.response.data}
       });
 };
@@ -73,6 +75,8 @@ export function api_search(params, auth) {
         return {status: res.status, results: entities}
       })
       .catch(err => {
+
+          throw new Error(err);
          return {status: 500, results: err.response}
       });
 };
@@ -95,7 +99,7 @@ export function api_search2(params, auth, from, size, fields) {
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,payload,options )
       .then(res => {
         console.debug("API api_search2 res", res);
-        console.debug("res.data.error", res.dassadta.error);
+        console.debug("res.data.error", res.data.error);
         if(res.data.hits && !res.data.error){
           let hits = res.data.hits.hits;
           let entities = [];
@@ -111,12 +115,15 @@ export function api_search2(params, auth, from, size, fields) {
         }else{
           //  lacking hits likely means we hit another error?
           console.debug("No Hits No Error", res.data);
+          
           return {status: res.status, results: res.data} 
         }
            //console.debug(entities);
       })
       .catch(err => {
-        console.debug("API api_search2 err", err);
+        console.debug("FROMAPI API api_search2 err");
+        console.debug( err);
+        throw new Error(err);
          return {err}
       });
 };
