@@ -82,16 +82,30 @@ class DonorForm extends Component {
   UNSAFE_componentWillMount() {
 
    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-
+      console.debug("ingest_api_users_groups", results);
       if (results.status === 200) { 
+        console.debug("results", results);
       // const groups = results.results.filter(
       //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
       //   );
         // this.setState({
         //   groups: results.results
         // });
-        console.debug("results.data.groups",results.data.groups);
-        const groups = results.data.groups.filter(
+        var resultGroups = [];
+        console.debug("HAVE results",results);
+        
+        if (results.results && results.results.length > 0) {
+          resultGroups = results.results;
+          console.debug("HAVE Doube results.results ",results.results);
+        }else if (results.data && results.data.length > 0) {
+          resultGroups = results.data.groups;
+          console.debug("HAVE data with Groups ",results.data.groups);
+        }else{
+          resultGroups = results.groups;
+          console.debug("NO data just Groups ",results.groups);
+        }
+        console.debug("resultGroups", resultGroups);
+        const groups = resultGroups.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
@@ -103,6 +117,8 @@ class DonorForm extends Component {
         this.setState({
           groups: groups,
           groups_dataprovider: groups,
+        }, () => {
+          console.debug("SET STATE TO GROUPS ", this.state.groups_dataprovider);
         });
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -429,7 +445,8 @@ class DonorForm extends Component {
       
               });
         } else {
-          
+
+          console.log("Creating Entity....", data);;
             // if (this.state.selected_group && this.state.selected_group.length > 0) {
             //   data["group_uuid"] = this.state.selected_group;
             // } else {
