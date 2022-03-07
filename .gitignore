@@ -49,3 +49,5 @@ src/yarn-error.log*
 src/build/*
 !src/build/README.md
 
+# VS Code Workspaces
+*.code-workspace
