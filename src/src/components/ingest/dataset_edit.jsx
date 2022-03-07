@@ -63,6 +63,7 @@ class DatasetEdit extends Component {
     description: "",
     dataset_info: "",
     source_uuids: [],
+    groups_dataprovider:[],
     globus_path: "",
     writeable: true,
     handleSelectionLoading:false,
@@ -201,11 +202,26 @@ class DatasetEdit extends Component {
         // this.setState({
         //   groups: display_names,
         // });
+        // const groups = res.data.groups.filter(
+        //   g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+        // );
+        // this.setState({
+        //   groups: groups
+        // });
+
+        console.debug("res.data.groups",res.data.groups);
         const groups = res.data.groups.filter(
-          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          // It filters our read only, but what about other permissions like admin? 
+          // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          g => g.data_provider === true
         );
+        console.debug("groups",groups);
+          //  We have both Data-Provider groups as well as non. 
+          // The DP needs to be deliniated for the dropdown & assignments
+          // the rest are for permissions
         this.setState({
-          groups: groups
+          groups: groups,
+          groups_dataprovider: groups,
         });
       })
       .catch((err) => {
@@ -1014,7 +1030,11 @@ class DatasetEdit extends Component {
               if (this.state.selected_group && this.state.selected_group.length > 0) {
                 data["group_uuid"] = this.state.selected_group;
               } else {
-                data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+                // If none selected, we need to pick a default BUT
+                // It must be from the data provviders, not permissions
+                console.debug("UN Selected_group", this.state.selected_group);
+                data["group_uuid"] = this.state.groups_dataprovider[0].uuid; 
+                // data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
               }
 
               console.log('DATASET TO SAVE', JSON.stringify(data))

@@ -97,6 +97,8 @@ class TissueForm extends Component {
     new_thumbnail: [],
     deleted_thumbnail: [],
     groups: [],
+    groups_dataprovider:[],
+    groups_access:[],
     selected_group: "",
     error_message_detail: "",
     error_message: "Oops! Something went wrong. Please contact administrator for help.",
@@ -179,12 +181,20 @@ class TissueForm extends Component {
         config
       )
       .then(res => {
+        console.debug("res.data.groups",res.data.groups);
         const groups = res.data.groups.filter(
-          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          // It filters our read only, but what about other permissions like admin? 
+          // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          g => g.data_provider === true
+
         );
-        ////////console.debug('groups', groups)
+        console.debug("groups",groups);
+        //  We have both Data-Provider groups as well as non. 
+        // The DP needs to be deliniated for the dropdown & assignments
+        // the rest are for permissions
         this.setState({
-          groups: groups
+          groups: groups,
+          groups_dataprovider: groups,
         });
       })
       .catch(err => {
@@ -345,6 +355,9 @@ class TissueForm extends Component {
             metadatas: metadata_list,
             thumbnail: thumbnail_list
           } );
+
+        this.getSourceAncestorOrgan(this.state.editingEntity);
+
 
       } else {
         //console.debug('NOT EDITING', this.props.entity)
@@ -763,6 +776,7 @@ class TissueForm extends Component {
       //   });
       //   break;
       case "groups":
+        console.debug("handleInputChange groups Value: ",value);
         this.setState({
           selected_group: value
         });
@@ -972,7 +986,7 @@ class TissueForm extends Component {
   //     let thumbnail = [...this.state.thumbnail];
   //     thumbnail[i].error = "Duplicate file name is not allowed."
   //     this.setState({ thumbnail })
-      console.debug('validate thumb', id)
+      // console.debug('validate thumb', id)
        return true;
   //   }
    }
@@ -1239,7 +1253,7 @@ handleAddImage = () => {
 
           // check for any removed thumbnails
           if (this.state.deleted_thumbnail.length > 0) {
-            console.debug('delete thumbs', this.state.deleted_thumbnail)
+            // console.debug('delete thumbs', this.state.deleted_thumbnail)
             data['thumbnail_file_to_remove'] = this.state.deleted_thumbnail[0]
           }
         }  // end of:  if (this.state.sample_count < 1)
@@ -1280,12 +1294,17 @@ handleAddImage = () => {
               });
         } else {
             //////console.debug('selected group', this.state.selected_group);
-
+            
             if (this.state.selected_group && this.state.selected_group.length > 0) {
-                data["group_uuid"] = this.state.selected_group;
+                console.debug("Selected_group", this.state.selected_group);
+                data["group_uuid"] = this.state.selected_group; 
             } else {
-                data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+              // If none selected, we need to pick a default BUT
+              // It must be from the data providers, not permissions
+              console.debug("UN Selected_group", this.state.selected_group);              
+              data["group_uuid"] = this.state.groups_dataprovider[0].uuid; // consider the first users group        
             }
+            console.debug("data[\"group_uuid\"]",data["group_uuid"]);
             if (this.state.sample_count < 1) {
                 //console.debug("Create a new Entity....", this.state.sample_count)
                 entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)

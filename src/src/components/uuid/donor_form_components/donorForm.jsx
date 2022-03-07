@@ -54,6 +54,7 @@ class DonorForm extends Component {
 //    metadata_file_name: "Choose a file",
 
     groups: [],
+    groups_dataprovider: [],
     selected_group: null,
 
     formErrors: {
@@ -81,13 +82,43 @@ class DonorForm extends Component {
   UNSAFE_componentWillMount() {
 
    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-
+      console.debug("ingest_api_users_groups", results);
       if (results.status === 200) { 
+        console.debug("results", results);
       // const groups = results.results.filter(
       //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
       //   );
+        // this.setState({
+        //   groups: results.results
+        // });
+        var resultGroups = [];
+        console.debug("HAVE results",results);
+        
+        if (results.results && results.results.length > 0) {
+          resultGroups = results.results;
+          console.debug("HAVE Doube results.results ",results.results);
+        }else if (results.data && results.data.length > 0) {
+          resultGroups = results.data.groups;
+          console.debug("HAVE data with Groups ",results.data.groups);
+        }else{
+          resultGroups = results.groups;
+          console.debug("NO data just Groups ",results.groups);
+        }
+        console.debug("resultGroups", resultGroups);
+        const groups = resultGroups.filter(
+          // It filters our read only, but what about other permissions like admin? 
+          // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          g => g.data_provider === true
+        );
+        console.debug("groups",groups);
+          //  We have both Data-Provider groups as well as non. 
+          // The DP needs to be deliniated for the dropdown & assignments
+          // the rest are for permissions
         this.setState({
-          groups: results.results
+          groups: groups,
+          groups_dataprovider: groups,
+        }, () => {
+          console.debug("SET STATE TO GROUPS ", this.state.groups_dataprovider);
         });
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -414,11 +445,23 @@ class DonorForm extends Component {
       
               });
         } else {
-            if (this.state.selected_group && this.state.selected_group.length > 0) {
-              data["group_uuid"] = this.state.selected_group;
-            } else {
-              data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
-            }
+
+          console.log("Creating Entity....", data);;
+            // if (this.state.selected_group && this.state.selected_group.length > 0) {
+            //   data["group_uuid"] = this.state.selected_group;
+            // } else {
+            //   data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+            // }
+          if (this.state.selected_group && this.state.selected_group.length > 0) {
+              console.debug("Selected_group", this.state.selected_group);
+              data["group_uuid"] = this.state.selected_group; 
+          } else {
+            // If none selected, we need to pick a default BUT
+            // It must be from the data provviders, not permissions
+            console.debug("UN Selected_group", this.state.selected_group);              
+            data["group_uuid"] = this.state.groups_dataprovider[0].uuid; // consider the first users group        
+          }
+          console.debug("data[\"group_uuid\"]",data["group_uuid"]);
 
             //console.debug("Create a new Entity....group uuid", data["group_uuid"])
             entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
