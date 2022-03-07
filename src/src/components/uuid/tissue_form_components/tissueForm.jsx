@@ -1300,7 +1300,7 @@ handleAddImage = () => {
                 data["group_uuid"] = this.state.selected_group; 
             } else {
               // If none selected, we need to pick a default BUT
-              // It must be from the data provviders, not permissions
+              // It must be from the data providers, not permissions
               console.debug("UN Selected_group", this.state.selected_group);              
               data["group_uuid"] = this.state.groups_dataprovider[0].uuid; // consider the first users group        
             }
