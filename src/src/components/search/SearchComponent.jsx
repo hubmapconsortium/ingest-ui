@@ -70,6 +70,7 @@ class SearchComponent extends Component {
   componentDidCatch(error) {
     console.debug("componentDidCatch",error);
     this.setState({error: `${error.name}: ${error.message}`});
+    this.props.packageError(error);
   }
 
 
@@ -637,7 +638,7 @@ class SearchComponent extends Component {
         });
         }else{
           console.debug("ERR",response);
-          throw new Error(response.results);
+          // throw new Error(response.results);
           this.props.packageError(response);
           console.debug("Error on Search ", response)
         }
@@ -645,7 +646,7 @@ class SearchComponent extends Component {
     })
     .catch((error) => {
       console.debug("Error on Search ", error)
-      throw new Error(error);
+      // throw new Error(error);
       this.props.packageError(error);
 
   

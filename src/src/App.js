@@ -73,7 +73,9 @@ export function App (props){
   var [groupsToken, setGroupsToken] = useState(null);
   var [errStatus, setErrStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
-  var [errArray, setErrArray] = useState();
+  var [errArray, setErrArray] = useState([]);
+  var [errorPackage, setErrorPackage] = useState();
+  var [errRender, setErrRender] = useState();
   var [stackTrace, setStackTrace] = useState();
   var [errNavigator, setErrNavigator] = useState();
   var [errMessage, setErrMessage] = useState();
@@ -104,155 +106,140 @@ export function App (props){
 
 function packageError(err){
   console.debug("packageError", err);
-}
   // When it bubbles up from within, 
-  // get it packaged up all nice n neat
-  // function packageError(err){
-  //   console.debug("packageError", err);
-    
-  //   let errorPackage;
-  //   if(err.results){
-  //     errorPackage = (err.results);
-  //   }else{
-  //     errorPackage = {"err":err};      
-  //   }
-  //   // setErrMessage(errorPackage);
-  //   console.debug("errorPackage", errorPackage, errorPackage.reason);
-  //   var errArray =  Object.entries(errorPackage); 
-  //   setErrStatus(true);
+  // get it packaged up all nice n neat    
+  if(err.results){
+      setErrorPackage(err.results);
+      // errorPackage = (err.results);
+  }else{
+      setErrorPackage({"err":err});
+      // errorPackage = {"err":err};      
+    }
+    // setErrMessage(errorPackage);
+   console.debug("errorPackage", errorPackage, errorPackage.reason);
+  // var errArray =  Object.entries(errorPackage); 
+  // if(){
 
-  
-
-
-  //   function getStackTrace (err) {
-
-  //     // var e2 
-  //     // e2.name = undefined;
-  //     // console.log("er2",e2,e2.toString()); // 'Error: fatal error'
-  //     // console.debug("e2",e2[0], e2.reason, e2.stack);
-
-  //     let stack = new Error().stack || '';
-  //     // console.log("stack",stack);
-  //     stack = stack.split('\n').map(function (line) { return line.trim(); });
-  //       return stack.splice(stack[0] == 'Error' ? 2 : 1);
-  //   } 
-
-    
-  //   var deets = getStackTrace(errorPackage)[1]+""; // get stack trace info 1 levels-deep
-  //   var cleanStack = deets.slice(0, deets.lastIndexOf('////'))
-  //   // console.debug("cleanStack", cleanStack);
+  // }
+  setErrArray(Object.entries(errorPackage));
+  setErrStatus(true);
+  renderErrorDetails();
+        
+}
 
 
-  //   var thisErr = new Error(errorPackage);
-  //   var testThisArray = new Error(Object.entries(errorPackage));
-  //   // console.debug("testThisArray", testThisArray);
-  //   // ─────────────────────────────────────────────────────────────────
-  //   // var thisErr = new Error(errorPackage.reason, errorPackage.fileName, errorPackage.lineNumber);
-  //   // console.debug("thisErr", thisErr);
-  //   // console.debug("thisErrMore", thisErr[0]);
-  //   // var errorDetails = deets.split("at ");
-  //   // var errorDetails = {};
-  //   var errorDetails = {};
-  //   if(errArray[0][1].err && errArray[0][1].err.lineNumber){
-  //     var errLocation = "Line: "+errArray[0][1].err.lineNumber+" Column:"+ errArray[0][1].err.columnNumber
-  //     // console.debug("errLocation",errLocation);
-  //     // // errLocation = errLocation+"\n"+<Typography variant="subtitle"> "test"</Typography>;
-  //     // console.debug("errArray[0]",errArray[0]);
-  //     // Were in TypeError format
-  //     errorDetails = {
-  //       where: errLocation,
-  //       type: errArray[0][1].err.results,
-  //       message: errArray[0][1].err.message,
-  //       stack: errArray[0][1].err.stack,
-  //     };
-  //     setErrMessage(errorDetails[0].message);
-  //   }else if(errorPackage && errorPackage.reason){
-  //       errLocation = "Line: "+errorPackage.line+" Column:"+ errorPackage.col;
-  //       errorDetails = {
-  //         where: errLocation,
-  //         type: errorPackage.type,
-  //         message: errorPackage.reason
-  //       };
-  //       setErrMessage(errorDetails.message);
-  //     }
+  function getStackTrace (err) {
+    let stack = new Error().stack || '';
+    stack = stack.split('\n').map(function (line) { return line.trim(); });
+    return stack.splice(stack[0] === 'Error' ? 2 : 1);
+  } 
+
+  function renderErrorDetails(){
+    var deets = "";
+    if(errorPackage){
+      deets = getStackTrace(errorPackage)[1]+""; // get stack trace info 1 levels-deep
+    }
+    console.debug("deets",deets);
 
 
-  //   if(errArray[0][1].err){
-  //     var stack = errArray[0][1].err.stack.split('\n').map(function (line) { return line.trim(); });
-  //     var splicedStack = stack.splice(stack[0] == 'Error' ? 2 : 1);
-  //     // console.debug("splicedStack", splicedStack);
-  //     // console.debug("stack", stack);
-  //     // console.log("errorDetails",errorDetails);
-  //     // console.debug("errMessage",errMessage);
-  //   }
+    var errLocation = "";
+    var errorDetails = {};
+    if(errArray[0] && errArray[0][1].err && errArray[0][1].err.lineNumber){
+      // Were in TypeError format
+      errLocation = "Line: "+errArray[0][1].err.lineNumber+" Column:"+ errArray[0][1].err.columnNumber
+      errorDetails = {
+        where: errLocation,
+        type: errArray[0][1].err.results,
+        message: errArray[0][1].err.message,
+        stack: errArray[0][1].err.stack,
+      };
+      setErrMessage(errorDetails[0].message);
+    }else if(errorPackage && errorPackage.reason){
+        errLocation = "Line: "+errorPackage.line+" Column:"+ errorPackage.col;
+        errorDetails = {
+          where: errLocation,
+          type: errorPackage.type,
+          message: errorPackage.reason
+        };
+        setErrMessage(errorDetails.message);
+      }
+
+
+    if(errArray[0] && errArray[0][1].err){
+      var stack = errArray[0][1].err.stack.split('\n').map(function (line) { return line.trim(); });
+      var splicedStack = stack.splice(stack[0] == 'Error' ? 2 : 1);
+      console.debug("splicedStack", splicedStack);
+      console.debug("stack", stack);
+    }
     
 
-  //   var errNavArray = [
-  //     navigator.appCodeName,
-  //     navigator.appName,
-  //     navigator.appVersion,
-  //     navigator.cookieEnabled,
-  //     navigator.language,
-  //     navigator.userAgent,
-  //     navigator.platform,
-  //     navigator.onLine,
-  //   ];
+    var errNavArray = [
+      navigator.appCodeName,
+      navigator.appName,
+      navigator.appVersion,
+      navigator.cookieEnabled,
+      navigator.language,
+      navigator.userAgent,
+      navigator.platform,
+      navigator.onLine,
+    ];
+    setErrNavigator(errNavArray)
+    console.debug("errNavArray",errNavArray);
 
-  //   setErrNavigator(errNavArray)
-  //   console.debug("errNavArray",errNavArray);
-
-  //   var ua = <Typography>{navigator.userAgent}</Typography>;
-  //   var cookieEnabled = <Typography>{navigator.cookieEnabled}</Typography>;
-  //   var networkInformation = <Typography>{navigator.networkInformation}</Typography>;
+    // var ua = <Typography>{navigator.userAgent}</Typography>;
+    // var cookieEnabled = <Typography>{navigator.cookieEnabled}</Typography>;
+    // var networkInformation = <Typography>{navigator.networkInformation}</Typography>;
 
     
  
-  //   // var listArray = [];
+    // var listArray = [];
     
-  //   var listArray = [
-  //     <ListItem key={"Messgae"}  sx={{  display: "inline-block",}} >
-  //       <ListItemText  
-  //         primary={<strong>Message:</strong>} 
-  //         secondary={<Typography sx={{color:"red", fontSize:"1.3rem"}}> {errorDetails.message }</Typography>} />
-  //     </ListItem>,
+    var listArray = [
+      <ListItem key={"Messgae"}  sx={{  display: "inline-block",}} >
+        <ListItemText  
+          primary={<strong>Message:</strong>} 
+          secondary={<Typography sx={{color:"red", fontSize:"1.3rem"}}> {errorDetails.message }</Typography>} />
+      </ListItem>,
 
-  //     <ListItem key={"Location"} sx={{  display: "inline-block",}}>
-  //       <ListItemText  
-  //         primary="Where:" 
-  //         secondary={errorDetails.where}  />
-  //     </ListItem>,
-  //     <ListItem key={"Deets"} sx={{  display: "inline-block",}}>
-  //       <ListItemText  
-  //         primary="" 
-  //         secondary={deets}  />
-  //     </ListItem>,
-  //     <ListItem key={"Time"} sx={{  display: "inline-block",}}>
-  //       <ListItemText 
-  //         primary={"Error time:"}  
-  //         secondary={new Date().toLocaleString() + ""}/>
-  //     </ListItem>,
-  //     <ListItem key={"Server"} sx={{  display: "inline-block",}}>
-  //       <ListItemText 
-  //         primary={"Cookies:"}  
-  //         secondary={"Test"}/>
-  //     </ListItem>,
-  //     <ListItem key={"UAS"} sx={{  display: "inline-block",}}>
-  //     <ListItemText 
-  //       primary={"User agent string:"}  
-  //       secondary={navigator.userAgent}/>
-  //     </ListItem>
+      <ListItem key={"Location"} sx={{  display: "inline-block",}}>
+        <ListItemText  
+          primary="Where:" 
+          secondary={errorDetails.where}  />
+      </ListItem>,
+      <ListItem key={"Deets"} sx={{  display: "inline-block",}}>
+        <ListItemText  
+          primary="" 
+          secondary={deets}  />
+      </ListItem>,
+      <ListItem key={"Time"} sx={{  display: "inline-block",}}>
+        <ListItemText 
+          primary={"Error time:"}  
+          secondary={new Date().toLocaleString() + ""}/>
+      </ListItem>,
+      <ListItem key={"Server"} sx={{  display: "inline-block",}}>
+        <ListItemText 
+          primary={"Cookies:"}  
+          secondary={"Test"}/>
+      </ListItem>,
+      <ListItem key={"UAS"} sx={{  display: "inline-block",}}>
+      <ListItemText 
+        primary={"User agent string:"}  
+        secondary={navigator.userAgent}/>
+      </ListItem>
     
-  //     // <ListItem>
-  //     //   <ListItemText 
-  //     //   primary={"Network Information:"}  
-  //     //   secondary={networkInformation}/>
-  //     // </ListItem>
-  //   ];
-  //   setErrArray(listArray);
+      // <ListItem>
+      //   <ListItemText 
+      //   primary={"Network Information:"}  
+      //   secondary={networkInformation}/>
+      // </ListItem>
+    ];
+
+    setErrRender(listArray);
+    // setErrArray(listArray);
 
 
 
-  // }
+  }
 
   
 
@@ -431,14 +418,14 @@ function packageError(err){
             <List dense sx={{
               display: 'inline-block',
               maxWidth: "360px",
+              padding:"10px"
             }}>
-              {errArray}
+              {errRender}
               <ListItem>
                 <ListItemText 
                   primary={"If this error persists, please contact"}  
                   secondary={"help@hubmapconsiortium.org"}/>
               </ListItem>
-              
             </List>
           </Box>
 
