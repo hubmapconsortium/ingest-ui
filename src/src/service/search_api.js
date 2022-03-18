@@ -3,6 +3,47 @@
 import axios from "axios";
 import { GROUPS } from "./groups";
 import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
+import {APIError} from "../components/errorFormatting";
+import StackTrace from 'stacktrace-js'
+import StackGenerator from 'stack-generator'
+import cleanStack from 'clean-stack';
+import { get } from 'stack-trace';
+import StackTracey from 'stacktracey'
+
+var bearer = localStorage.getItem("bearer")
+console.debug("bearer", bearer);
+
+
+const SearchAPI = axios.create({
+  baseURL: `${process.env.REACT_APP_SEARCH_API_URL}`,
+  headers: {
+      Authorization:
+      "Bearer " + bearer,
+      "Content-Type": "application/json"
+    }
+});
+
+SearchAPI.interceptors.response.use(function (response) {
+  console.debug("interceptors.response.use", response);
+  // Any status code that lie within the range of 2xx cause this function to trigger
+  // Do something with response data
+  return response;
+}, function (error) {
+  console.debug("interceptors.response.error", error);
+  console.debug(error.response.data.error);
+    if ((error.code && error.code.status === 400) || (error.status && error.status === 400)) {
+      console.debug("Rejecting");
+      return Promise.reject({
+        message: "You've recieved an error!"
+      });
+  }
+
+  // Any status codes that falls outside the range of 2xx cause this function to trigger
+  // Do something with response error
+  return Promise.reject(error);
+});
+
+
 
 export const esb = require('elastic-builder');
 
@@ -30,9 +71,13 @@ export function api_validate_token(auth) {
         return {status: res.status}
       })
       .catch(err => {
+
+        throw new Error(err);
         return {status: err.response.status, results: err.response.data}
       });
 };
+
+
 
 
 /*
@@ -73,30 +118,22 @@ export function api_search(params, auth) {
         return {status: res.status, results: entities}
       })
       .catch(err => {
-         return {status: 500, results: err.response}
+        ////console.debug(err);
+        throw new Error(err);
+        return {status: err.response.status, results: err.response.data}  
       });
 };
 
-export function api_search2(params, auth, from, size, fields) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
-    // console.debug("params", params);
-    let payload = search_api_filter_es_query_builder( from, size, fields);
-    // console.debug("payload", payload);
-
+export function api_search2(params, auth, from, size, fields, colFields) { 
+ 
+    let payload = search_api_filter_es_query_builder(fields, from, size, colFields );
     console.debug('payload', payload)
 
-  return axios 
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,payload,options )
+  return SearchAPI
+      .post('/search',payload) 
       .then(res => {
         console.debug("API api_search2 res", res);
-        console.debug("res.data.error", res.dassadta.error);
-        if(res.data.hits && !res.data.error){
+        if(res.data.hits){
           let hits = res.data.hits.hits;
           let entities = [];
           hits.forEach(s => {
@@ -105,9 +142,6 @@ export function api_search2(params, auth, from, size, fields) {
             entities.push(data);
           });
           return {status: res.status, results: entities, total: res.data.hits.total.value}
-        }else if(res.data.error || res.error){
-          console.debug("HAVE res.data.error", res.data.error);
-          return {status: 500, results: res.data.error}
         }else{
           //  lacking hits likely means we hit another error?
           console.debug("No Hits No Error", res.data);
@@ -115,10 +149,48 @@ export function api_search2(params, auth, from, size, fields) {
         }
            //console.debug(entities);
       })
-      .catch(err => {
-        console.debug("API api_search2 err", err);
-         return {err}
-      });
+      .catch(error => {
+       
+        var APIErrorMSG = error.response;
+        // var APIErrorMSG = APIError.digestError(error);
+        var NE = new Error(error);
+        console.debug("NE", NE);
+        
+        console.debug("APIErrorMSG", APIErrorMSG);
+        // var trimStack = stack.slice(0,5);
+        // console.debug("trimStack", trimStack);
+        var bundled = {error: APIErrorMSG, stack: stack};
+        
+        // the API Error Handler Handles the stack Tracing, 
+        // Since the UI Error View depends on the Error Object occuring in the class,
+        // We can just pass the info for the ui to MAKE the error accurately 
+        //var apiErr = Error("OH NO");
+        
+        var stack = new StackTracey (error)            // captures the current call stack
+        console.debug("stack", stack);
+        var top = stack.withSourceAt (0) 
+        console.debug("top", top);
+
+        // console.debug("api_search2 error", bundled);
+        // return apiErr
+
+
+        // var newErr =  APIError.digestError(error);
+        // // var newErr = Error( APIError.digestError(error));
+        // console.debug("newErr", newErr);
+        // // throw newErr;
+        // return Promise.reject(newErr);
+
+        // throw ;
+        // console.log(error.config);
+        // return {status: 500, results: error.response}
+        
+
+        
+        // return {error} 
+        // res.status(500).send(errorStack.toString())
+        // console.log(error.config);
+    });
 };
 
 /*
@@ -258,3 +330,10 @@ export function get_assay_type(assay) {
          return {status: 500, results: err.response}
       });
 };
+
+function stackCallback(stackframes) {
+  var stringifiedStack = stackframes.map(function(sf) {
+    return sf.toString();
+  }).join('\n');
+  console.log(stringifiedStack);
+}
