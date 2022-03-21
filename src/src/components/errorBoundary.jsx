@@ -14,6 +14,12 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
 
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import CloudSyncTwoToneIcon from '@mui/icons-material/CloudSyncTwoTone';
+import CancelTwoToneIcon from '@mui/icons-material/CancelTwoTone';
+
+
 import TreeView from '@mui/lab/TreeView';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -64,54 +70,138 @@ export default class ErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
       console.debug("Bound componentDidCatch");
       console.debug(error);
-      console.debug(errorInfo);
+      // console.debug(errorInfo);
       this.setState({error: error});
       // StackTrace.fromError(error).then(this.stackTraceCallback);
   }
 
-
-  renderStackTrace(){
-    console.debug("renderStackTrace!!!");
-    // var stackList = [];
-
-    // for (const element of this.state.localStackFrames) {
-    //   console.debug("element",element);
-    //   stackList.push(
-    //     // <ListItem 
-    //     // key={element[0]+""+element[1][1]}
-    //     // dense
-    //     // disableGutters>
-    //     // <ListItemText  
-    //     //   primary={
-    //     //     <Typography 
-    //     //       > 
-    //     //       <strong> {element[0]}</strong>
-    //     //     </Typography>
-    //     // } 
-    //     //   secondary={
-    //     //   <Typography > 
-    //     //    at Line {element[1][1]} Column {element[1][2]} <br />
-    //     //     in <em>{element[1][0]}</em>
-    //     //   </Typography>} />
-       
-    //     // </ListItem>
-       
-    //       // <TreeItem nodeId="1" label={element[0]}>
-    //       //   <TreeItem nodeId="2" label={ element[1][0]+":"+element[1][1] } />
-    //       // </TreeItem>
-    //       <React.Fragment>
-    //         <Typography sx={{}}> {element[0]} </Typography>
-    //         <Typography sx={{fontSize: '0.7em'}}>{ element[1][0]+":"+element[1][1] } </Typography>
-    //       </React.Fragment>
-    //   );
-    // }
-
-    return ("stackList");
-    // return (stackList);
-  }
-
   static getDerivedStateFromError() {
     return { hasError: true };
+  }
+
+  formatErrorMessage() {
+    var ErrMessage = {
+      source: "",
+      type: "",
+      reason:""
+    }
+    if(this.state.error.message){
+      var capturedMessage = this.state.error.message;
+      console.debug("capturedMessage", capturedMessage);
+      // Gonna need to format the different messages right.
+      //  Comes back custom from an ES error
+      if(capturedMessage.includes('Source: Elastic Search')){
+
+
+        var errArraySBT = this.state.error.message.substring(6);
+        console.debug("errArraySBT", errArraySBT);
+        // var errArray = this.state.error.message.split(",");
+        var errArray = errArraySBT.toJSON();
+
+        console.debug("errArray", errArray);
+
+
+        ErrMessage.source = "Elastic Search";
+        ErrMessage.type = errArray[1].slice(6);
+        ErrMessage.reason = errArray[2].slice(8);
+      }else{
+        ErrMessage.source = "IMPORT";
+        ErrMessage.type = "IMPORT";
+        ErrMessage.reason = "IMPORT";
+      }
+      
+      console.log(errArray);
+      return (
+        <React.Fragment>
+           <Typography 
+            sx={{
+              color:"red"}}>
+            <strong>Type:</strong>  {ErrMessage.type}
+          </Typography>
+          <Typography> 
+          <Typography>
+            <strong>Reason:</strong>  {ErrMessage.reason}
+          </Typography>
+            <strong>Source: </strong>{ErrMessage.source}
+          </Typography>
+         </React.Fragment>
+        )
+        
+      }
+  }
+
+  formatStack() {
+    var stackMSG = {
+      function: "",
+      file: "",
+      line:""
+    }
+    if(this.props.stack.length > 0){
+      var capturedStack = this.props.stack;
+      console.debug("capturedStack", capturedStack);
+      if(this.state.error.message.includes('Source: Elastic Search')){
+        // We're from StackTracey / API Error
+        stackMSG.function = this.props.stack[0].slice(0,-2);;
+        stackMSG.file = this.props.stack[1];
+        stackMSG.line = this.props.stack[2];
+      }else{
+        stackMSG.function = "IMPORT";
+        stackMSG.file = "IMPORT";
+        stackMSG.line = "IMPORT";
+      }
+      
+      console.log("stackMSG", stackMSG);
+      return (
+        <React.Fragment>
+            <Typography 
+              sx={{}}> 
+              {stackMSG.function} 
+            </Typography>
+            <Typography 
+              sx={{fontSize: '0.9em'}}>
+               <strong>{stackMSG.file}</strong>: {stackMSG.line}   
+            </Typography> 
+         </React.Fragment>
+        )
+        
+      }
+  }
+
+  formatRequest() {
+    var requestMSG = {
+      function: "",
+      file: "",
+      line:""
+    }
+    if(this.props.request.length > 0){
+      var capturedStack = this.props.stack;
+      console.debug("capturedStack", capturedStack);
+      if(this.state.error.message.includes('Source: Elastic Search')){
+        // We're from StackTracey / API Error
+        requestMSG.function = this.props.stack[0].slice(0,-2);;
+        requestMSG.file = this.props.stack[1];
+        requestMSG.line = this.props.stack[2];
+      }else{
+        requestMSG.function = "IMPORT";
+        requestMSG.file = "IMPORT";
+        requestMSG.line = "IMPORT";
+      }
+      
+      console.log("requestMSG", requestMSG);
+      return (
+        <React.Fragment>
+            <Typography 
+              sx={{}}> 
+              {requestMSG.function} 
+            </Typography>
+            <Typography 
+              sx={{fontSize: '0.9em'}}>
+               <strong>{requestMSG.file}</strong>: {requestMSG.line}   
+            </Typography> 
+         </React.Fragment>
+        )
+        
+      }
   }
 
 
@@ -150,7 +240,7 @@ export default class ErrorBoundary extends Component {
               color: 'white',
               padding: '1em',
             }}> 
-            <Typography variant="h4" > <ErrorTwoToneIcon color="red" fontSize="Large"/>  Internal Server Error  </Typography>
+            <Typography variant="h4" > <ErrorTwoToneIcon color="red" fontSize="Large"/>  Internal Error  </Typography>
 
           </Box>
         </ThemeProvider>
@@ -162,30 +252,60 @@ export default class ErrorBoundary extends Component {
         }}>  
 
         <Typography sx={{}}> <strong>Message:</strong></Typography>
-        <Typography sx={{color:"red", fontSize:"1.3rem", marginBottom:'10px'}}> {error.message}</Typography>
 
-        <Typography sx={{}}> <strong>Stack:</strong></Typography>
-      {/* <TreeView
-          aria-label="Stack navigator"
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
-          sx={{ height: 240, flexGrow: 1, maxWidth: 200, overflowX: 'auto' }}
-        > */}
-          {this.renderStackTrace()}
+        <Box
+          sx={{
+           backgroundColor: '#f5f5f5',
+           padding: '1em',
+           fontSize: '0.8rem',
+          }}>
+        {this.formatErrorMessage()}
+      </Box>
+      
+
+        <Typography sx={{
+          marginTop: '1em',
+        }}> <strong>Location:</strong></Typography>
         
-        {/* </TreeView> */}
+        <Box
+          sx={{
+           backgroundColor: '#f5f5f5',
+           padding: '1em',
+           fontSize: '0.8rem',
+          }}>
+        {this.formatStack()}
+      </Box>
 
+      <Box
+          sx={{
+           backgroundColor: '#f5f5f5',
+           padding: '1em',
+           fontSize: '0.8rem',
+          }}>
+        {this.formatRequest()}
+      </Box>
+
+
+       
       </Box>
 
 
           
 
-      <Box
-      sx={{
-        //   margin: '1em' ,
-          padding: '1em',
-        }}>
+      <Box sx={{ padding: '1em', }}>
         If this error persists, please contact help@hubmapconsiortium.org
+      </Box>
+
+      <Box sx={{padding: '1em', }}>
+
+        <Stack direction="row" spacing={2}>
+          <Button variant="outlined" startIcon={<CloudSyncTwoToneIcon />}>
+            Reload Page
+          </Button>
+          <Button variant="outlined" startIcon={<CancelTwoToneIcon />}>
+            Close
+          </Button>
+        </Stack>
       </Box>
       </Drawer>
         // <div>ERROR {error}</div>

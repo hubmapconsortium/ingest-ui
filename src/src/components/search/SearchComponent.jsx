@@ -551,12 +551,8 @@ class SearchComponent extends Component {
       })
     .catch((error) => {
       console.debug("processSearch",error)
-      this.setState({ 
-        error: error
-      }, () => {
-      console.log(this.state.error)
+      this.setState({error: error});
       this.props.packageError(error);
-    });
     })
 
   }
@@ -893,8 +889,9 @@ class SearchComponent extends Component {
   render() {
        
     if (this.state.error){
-      // console.debug("Throwin an Error in SearchCom Render", this.state.error);
-      throw Error(this.state.error);
+      // console.debug(this.state.error);
+      console.debug("Throwin an Error in SearchCom Render", this.state.error);
+      throw Error(this.state.error.error);
     };
     // const { redirect } = this.state;
     if (this.state.isAuthenticated) {

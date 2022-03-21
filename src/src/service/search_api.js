@@ -4,6 +4,7 @@ import axios from "axios";
 import { GROUPS } from "./groups";
 import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
 import {APIError} from "../components/errorFormatting";
+import {HTTPError} from "../components/httperror";
 import StackTrace from 'stacktrace-js'
 import StackGenerator from 'stack-generator'
 import cleanStack from 'clean-stack';
@@ -12,9 +13,7 @@ import StackTracey from 'stacktracey'
 
 var bearer = localStorage.getItem("bearer")
 console.debug("bearer", bearer);
-
-
-const SearchAPI = axios.create({
+let SearchAPI = axios.create({
   baseURL: `${process.env.REACT_APP_SEARCH_API_URL}`,
   headers: {
       Authorization:
@@ -22,28 +21,6 @@ const SearchAPI = axios.create({
       "Content-Type": "application/json"
     }
 });
-
-SearchAPI.interceptors.response.use(function (response) {
-  console.debug("interceptors.response.use", response);
-  // Any status code that lie within the range of 2xx cause this function to trigger
-  // Do something with response data
-  return response;
-}, function (error) {
-  console.debug("interceptors.response.error", error);
-  console.debug(error.response.data.error);
-    if ((error.code && error.code.status === 400) || (error.status && error.status === 400)) {
-      console.debug("Rejecting");
-      return Promise.reject({
-        message: "You've recieved an error!"
-      });
-  }
-
-  // Any status codes that falls outside the range of 2xx cause this function to trigger
-  // Do something with response error
-  return Promise.reject(error);
-});
-
-
 
 export const esb = require('elastic-builder');
 
@@ -119,7 +96,7 @@ export function api_search(params, auth) {
       })
       .catch(err => {
         ////console.debug(err);
-        throw new Error(err);
+        throw new HTTPError(err);
         return {status: err.response.status, results: err.response.data}  
       });
 };
@@ -133,6 +110,11 @@ export function api_search2(params, auth, from, size, fields, colFields) {
       .post('/search',payload) 
       .then(res => {
         console.debug("API api_search2 res", res);
+        if(res.status != 20){
+
+          console.debug("Got Err in 200 again");
+          // throw new Error(res.data);
+        }
         if(res.data.hits){
           let hits = res.data.hits.hits;
           let entities = [];
@@ -150,46 +132,44 @@ export function api_search2(params, auth, from, size, fields, colFields) {
            //console.debug(entities);
       })
       .catch(error => {
+        console.debug("API api_search2 error");
+        console.debug(error);
+        // var stack = new StackTracey ()            // captures the current call stack
+        // console.debug("stack", stack);
+        // var top = stack.withSourceAt (0) 
+        // console.debug("top", top);
        
-        var APIErrorMSG = error.response;
         // var APIErrorMSG = APIError.digestError(error);
-        var NE = new Error(error);
-        console.debug("NE", NE);
+        // console.debug("APIErrorMSG", APIErrorMSG);
+        // // var trimStack = stack.slice(0,5);
+        // // console.debug("trimStack", trimStack);
+        // console.debug(error.request);
         
-        console.debug("APIErrorMSG", APIErrorMSG);
-        // var trimStack = stack.slice(0,5);
-        // console.debug("trimStack", trimStack);
-        var bundled = {error: APIErrorMSG, stack: stack};
-        
+        // var bundled = {error: APIErrorMSG, stack: top, request:""};
+        // return Promise.reject(bundled);
+
+        // toJSON() {
+        //   return { message: error.message, status: error.status };
+        // }
+
+
+
+        const e = new HTTPError(error);
+        console.debug("httperr", e);
+        // {"nested":{"message":"Fail","status":404},"arr":[{"message":"Fail","status":404}]}
+        console.log(JSON.stringify({
+          nested: e,
+          arr: [e]
+        }));
+        return e;
+
         // the API Error Handler Handles the stack Tracing, 
         // Since the UI Error View depends on the Error Object occuring in the class,
         // We can just pass the info for the ui to MAKE the error accurately 
-        //var apiErr = Error("OH NO");
         
-        var stack = new StackTracey (error)            // captures the current call stack
-        console.debug("stack", stack);
-        var top = stack.withSourceAt (0) 
-        console.debug("top", top);
-
-        // console.debug("api_search2 error", bundled);
-        // return apiErr
-
-
-        // var newErr =  APIError.digestError(error);
-        // // var newErr = Error( APIError.digestError(error));
-        // console.debug("newErr", newErr);
-        // // throw newErr;
-        // return Promise.reject(newErr);
-
-        // throw ;
-        // console.log(error.config);
-        // return {status: 500, results: error.response}
         
 
-        
-        // return {error} 
-        // res.status(500).send(errorStack.toString())
-        // console.log(error.config);
+
     });
 };
 

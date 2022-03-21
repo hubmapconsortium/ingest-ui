@@ -16,7 +16,7 @@
 }
 
 .App.blur-true{
-  blur: 8px;
+  filter: blur(4px);
 }
 
 .tooltip 

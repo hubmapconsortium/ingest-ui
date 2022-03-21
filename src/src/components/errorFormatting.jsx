@@ -32,6 +32,7 @@ function buildStackFrame( stack ) {
   }
 
 function formatErrorForRender( error ) {
+  
     var errResponse;
     if (error.response) {
         // The request was made and the server responded with a status code
@@ -39,10 +40,19 @@ function formatErrorForRender( error ) {
         // MOST LIKELY FROM ES
         // Let's check, eventually have an ES Error type?
         var reason = error.response.data.error.reason;
-        var esErrType = error.response.data.error.type
+        var status = error.response.status;
+        var statusText = error.response.statusText;
+        var errMessage = "Source: Elastic Search, Type: "+esErrType+", Reason: "+reason;
+        var esErrType = error.response.data.error.type;
+        var errJSON = {
+            status: status,
+            statusText: statusText,
+            message:errMessage
+        }
         // console.log(error.response.data.error.reason);
-        errResponse = "ES error: Type: "+esErrType+" Reason: "+reason;
-        console.debug(errResponse);
+        var errString = JSON.stringify(errJSON);
+        errResponse = errString;
+        console.debug(errString);
       } else if (error.request) {
         const errorMessage = JSON.parse(error.request.response)
         console.log("errorMessage",errorMessage,errorMessage.message)

@@ -10,7 +10,6 @@ import {
   import Login from './components/ui/login';
   import Timer from './components/ui/idle';
 
-
 import { createTheme } from '@mui/material/styles';
 
 import Button from '@mui/material/Button';
@@ -21,14 +20,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-
-
-
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
 import {Navigation} from "./Nav";
 // import {RenderLogin} from "./components/login";
-
 
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
@@ -56,6 +51,8 @@ export function App (props){
   var [authStatus, setAuthStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [errStatus, setErrStatus] = useState(false);
+  var [errStack, setErrStack] = useState(false);
+  var [errReq, setErrReq] = useState(false);
   let navigate = useNavigate();
 
   
@@ -162,7 +159,9 @@ export function App (props){
   
   function packageError(err) {
     console.debug("packageError", err);
+    console.debug("packageError", err.stack.fileName);
     setErrStatus(true)
+    setErrStack([err.stack.callee,err.stack.fileName,err.stack.line])
   }
  
   
@@ -239,7 +238,7 @@ export function App (props){
           <Routes>
               <Route path="/" element={ 
 
-              <ErrorBoundary>
+              <ErrorBoundary stack={errStack} request={errReq}>
                 <SearchComponent  
                   packageError={packageError} 
                   entity_type=' ' 
