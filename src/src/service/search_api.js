@@ -4,11 +4,9 @@ import axios from "axios";
 import { GROUPS } from "./groups";
 import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
 import {APIError} from "../components/errorFormatting";
-import HTTPError from "../components/httperror";
 import StackTracey from 'stacktracey'
 
 var bearer = localStorage.getItem("bearer")
-console.debug("bearer", bearer);
 let SearchAPI = axios.create({
   baseURL: `${process.env.REACT_APP_SEARCH_API_URL}`,
   headers: {
@@ -18,14 +16,27 @@ let SearchAPI = axios.create({
     }
 });
 
-export const esb = require('elastic-builder');
 
+
+function handleError(error,stack){
+  console.debug("handleError", error, stack);
+  var top = stack.withSourceAt (0) 
+  error.target = error.config.baseURL + error.config.url;
+  var APIErrorMSG = APIError.digestError(error);
+  var bundled = {error: APIErrorMSG, stack: top};
+  return (bundled);
+}
+
+
+
+export const esb = require('elastic-builder');
 /*
  * Auth Validation  method
  * 
  * return:  { status}
  */
 // Something of a hack to validate the auth token
+// Maybe removeable with handling in app.js?
 export function api_validate_token(auth) { 
   const options = {
       headers: {
@@ -35,7 +46,6 @@ export function api_validate_token(auth) {
       }
     };
     let payload = search_api_filter_es_query_builder("test", 1 , 1);
-
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
         payload, options
@@ -44,13 +54,10 @@ export function api_validate_token(auth) {
         return {status: res.status}
       })
       .catch(err => {
-
-        throw new Error(err);
+        // NEW ERR
         // return {status: err.response.status, results: err.response.data}
       });
 };
-
-
 
 
 /*
@@ -66,50 +73,43 @@ export function api_search(params, auth) {
         "Content-Type": "application/json"
       }
     };
-
-    ////console.debug(options)
   let payload = search_api_filter_es_query_builder(params, 0, 100);
-
   return axios 
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
-              payload, options
-      )
-      .then(res => {
-        ////console.debug(res);
-          let hits = res.data.hits.hits;
-      
-          let entities = {};
-          hits.forEach(s => {
-            let uuid = s['_source']['uuid'];
-            if (entities[uuid]) {
-              entities[s['_source']['uuid']].push(s['_source']);
-            } else {
-              entities[s['_source']['uuid']] = [s['_source']];
-            }
-          });
+    .post(
+      `${process.env.REACT_APP_SEARCH_API_URL}/search`,
+      payload, 
+      options
+    )
+    .then(res => {
+        let hits = res.data.hits.hits;
+        let entities = {};
+        hits.forEach(s => {
+          let uuid = s['_source']['uuid'];
+          if (entities[uuid]) {
+            entities[s['_source']['uuid']].push(s['_source']);
+          } else {
+            entities[s['_source']['uuid']] = [s['_source']];
+          }
+        });
+      return {status: res.status, results: entities}
+    })
+    .catch(err => {
 
-        return {status: res.status, results: entities}
-      })
-      .catch(err => {
-        ////console.debug(err);
-        throw new HTTPError(err);
-        // return {status: err.response.status, results: err.response.data}  
-      });
+      // NEW ER HERE
+    });
 };
 
 export function api_search2(params, auth, from, size, fields, colFields) { 
- 
-    let payload = search_api_filter_es_query_builder(fields, from, size, colFields );
-    console.debug('payload', payload)
-
+  let payload = search_api_filter_es_query_builder(fields, from, size, colFields );
+  console.debug("SearchAPI");
   return SearchAPI
       .post('/search',payload) 
       .then(res => {
-        console.debug("API api_search2 res", res);
-        if(res.status !== 20){
 
+        console.debug("SearchAPI RES", res);
+        if(res.status !== 200){
           console.debug("Got Err in 200 again");
-          // throw new Error(res.data);
+          throw new Error(res.data);
         }
         if(res.data.hits){
           let hits = res.data.hits.hits;
@@ -125,49 +125,37 @@ export function api_search2(params, auth, from, size, fields, colFields) {
           console.debug("No Hits No Error", res.data);
           return {status: res.status, results: res.data} 
         }
-           //console.debug(entities);
       })
       .catch(error => {
-        var stack = new StackTracey ()            // captures the current call stack
+        console.debug("api search ERROR", error);
+        var stack = new StackTracey ()// captures the current call stack
         var top = stack.withSourceAt (0) 
-        var errorTarget = error.config.baseURL + error.config.url;
-        error.target = errorTarget;
+        error.target = error.config.baseURL + error.config.url;
         var APIErrorMSG = APIError.digestError(error);
-        // var trimStack = stack.slice(0,5);
-        // console.debug("trimStack", trimStack);
-        var bundled = {error: APIErrorMSG, stack: top, request:""};
-        return Promise.reject(bundled);
-
+        var bundled = {error: APIErrorMSG, stack: top};
+        return Promise.reject(bundled);    
     });
 };
+
 
 /*
  * Elasticsearch query builder helper
  *
  */
 export function search_api_filter_es_query_builder(fields, from, size, colFields) {
-
-  let requestBody =  esb.requestBodySearch();
-//  console.debug("here in the filter es builder")
-//  console.debug(fields);
-
-
+let requestBody =  esb.requestBodySearch();
 let boolQuery = "";
 console.debug("Fields", fields);
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
     boolQuery = esb.queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS)
-
   } else {
-
       boolQuery = esb.boolQuery();
-
       // if no field criteria is sent just default to a 
       if (Object.keys(fields).length === 0 && fields.constructor === Object) {
           console.debug("full search")
             boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset OR Upload')); 
       } else {
-       
         // was a group name selected
         if (fields["group_name"]) {
           boolQuery.must(esb.matchQuery("group_name.keyword", fields["group_name"]));
@@ -278,10 +266,3 @@ export function get_assay_type(assay) {
          return {status: 500, results: err.response}
       });
 };
-
-// function stackCallback(stackframes) {
-//   var stringifiedStack = stackframes.map(function(sf) {
-//     return sf.toString();
-//   }).join('\n');
-//   console.log(stringifiedStack);
-// }

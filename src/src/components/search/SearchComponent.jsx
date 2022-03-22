@@ -525,8 +525,7 @@ class SearchComponent extends Component {
   }
 
   processSearch = (params,colums) => {
-    // console.debug('processSearch', params, colums);
-    // console.debug("SEARCHCOM this.state.pageSize", this.state.pageSize);
+    console.debug('processSearch', params, colums);
     api_search2(
       params, 
       JSON.parse(localStorage.getItem("info")).groups_token, //WHERE THE FAKE ERROR"S FAKED
@@ -535,12 +534,11 @@ class SearchComponent extends Component {
       this.state.pageSize, 
       this.state.fieldSet)
     .then((response) => {
-      // console.debug("SEARCHCOM response", response);
+      console.debug("SEARCHCOM response", response);
       var colDefs = colums;
-      if(response.total === 1){ // for single returned items, customize the columns to match
+      if(response && response.total === 1){ // for single returned items, customize the columns to match
         colDefs = this.columnDefType(response.results[0].entity_type);
       }
-      // console.debug("SEARCHCOM colDefs", colDefs);
         this.setState({
           datarows: response.results, // Object.values(response.results)
           results_total: response.total,
@@ -890,56 +888,45 @@ class SearchComponent extends Component {
        
     if (this.state.error){
       // console.debug(this.state.error);
-      console.debug("Throwin an Error in SearchCom Render", this.state.error);
+      // the Error Boundary needs to see an error rise from within a class, 
+      // Otherwise ignored errors from the API
+    //  console.debug("Throwin an Error in SearchCom Render", this.state.error.error);
       throw Error(this.state.error.error);
     };
+
+
+    try {
     // const { redirect } = this.state;
-    if (this.state.isAuthenticated) {
-    return  (
+      if (this.state.isAuthenticated) {
+        return  (
+          <div style={{ width: '100%' }}>
+              {this.state.show_search && (
+                // this.renderFilterControls()
+                this.renderFilterControls()
+                )}
+                
+              {this.state.loading &&(
+                this.renderLoadingBar()
+              )}
+              {this.state.show_search && this.state.datarows &&
+                        this.state.datarows.length > 0 && (
+                  this.renderTable())
+              }
+              {this.state.datarows &&
+              this.state.datarows.length === 0 && 
+              this.state.filtered && 
+              !this.state.loading && (
+                <div className="text-center">No record found.</div>
+              )}
+          </div>
+        );
+      }else{
+        return null;
+      }
       
-      <div style={{ width: '100%' }}>
-
-      {/* {this.state.errorActive &&(
-          <RenderError err={this.state.error} />
-      )} */}
-
-
-          {this.state.show_search && (
-            // this.renderFilterControls()
-            this.renderFilterControls()
-            )}
-
-            
-          {this.state.loading &&(
-             this.renderLoadingBar()
-          )}
-            
-          {/* {this.state.loading &&(
-             <span>Loading...</span>
-          )} */}
-
-
-          {this.state.show_search && this.state.datarows &&
-                    this.state.datarows.length > 0 && (
-              this.renderTable())
-          }
-          {this.state.datarows &&
-          this.state.datarows.length === 0 && 
-          this.state.filtered && 
-          !this.state.loading && (
-            <div className="text-center">No record found.</div>
-          )}
-
-
-          {/* {!this.state.show_search && (
-            // this.renderEditForm()
-            this.props.urlChange()
-          )} */}
-
-        </div>
-      );
+    } catch (error) {
+      throw Error(error);
     }
-    return null;
   }
 
   renderProps() {

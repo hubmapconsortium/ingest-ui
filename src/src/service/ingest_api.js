@@ -207,13 +207,11 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
       }
     };
   let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
-
   return axios 
     .post(url, dataForm, options)
       .then(res => {
         console.debug("ingest_api_bulk_entities",res);
-
-        //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
+        //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Validation
         // We might back back a 201 with an array of errors encountered. Let's check for that!  
         let results = res.data;
         console.debug("results",results);

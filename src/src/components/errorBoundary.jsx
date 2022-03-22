@@ -4,12 +4,9 @@ import Drawer from '@mui/material/Drawer';
 import ErrorTwoToneIcon from '@mui/icons-material/ErrorTwoTone';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-
-
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import CloudSyncTwoToneIcon from '@mui/icons-material/CloudSyncTwoTone';
-
+import CircularProgress from '@mui/material/CircularProgress';
 
 
 
@@ -45,8 +42,9 @@ export default class ErrorBoundary extends Component {
     super(props);
     this.state = {
       error: "",
-      respStatus:null,
+      loadState: true,
       errStatus:false,
+      respStatus:null,
       localStackFrames:"",
       stackCollapse:false,
       errorObj:{
@@ -65,17 +63,20 @@ export default class ErrorBoundary extends Component {
       console.debug("Bound componentDidCatch");
       console.debug(error);
       // console.debug(errorInfo);
-      this.setState({error: error});
+      this.setState({
+        error: error,
+        loadState: true
+      });
       
 
       if(error.message.includes('Source: Elastic Search')){
         var errArraySBT = error.message.substring(6);
-        // var errArray = errArraySBT.split(",");       
         var errObj = JSON.parse(errArraySBT);
         var errMsg= errObj.message;
         var errMsgArr = errMsg.split(",");    
         this.setState({
           respStatus:errObj.status,
+          loadState: false,
           errStatus:true,
           errorObj:{
             "source": "Elastic Search",
@@ -123,7 +124,6 @@ export default class ErrorBoundary extends Component {
           </Typography>
          </React.Fragment>
         )
-        
   }
 
   formatStack() {
@@ -145,8 +145,7 @@ export default class ErrorBoundary extends Component {
         stackMSG.file = "IMPORT";
         stackMSG.line = "IMPORT";
       }
-      
-      console.log("stackMSG", stackMSG);
+  
       return (
         <React.Fragment>
            <Typography 
@@ -161,117 +160,90 @@ export default class ErrorBoundary extends Component {
             sx={{fontSize:"1em"}}>
             <strong>Target:</strong>  {this.state.errorObj.target}
           </Typography>
-
-           
          </React.Fragment>
         )
         
       }
   }
-
-
+  
+  renderLoadingSpinner() {
+    if (this.state.loading) {
+      return ( <CircularProgress /> );
+    }
+  }
 
   render() {
-    
-    // const handleClick = () => {
-    //   this.setState({stackCollapse: !this.state.stackCollapse});
-    // };
-    // const {error} = this.state;
-    // var stack = this.state.localStackFrames;
-    // console.debug("stack",stack);
     if (this.state.errStatus) {
-      // console.debug("ErrorBoundary error", error);
       return (
         <Drawer
-        PaperProps={{
-          sx: { 
-            width: "300px" 
-          },
-        }}
-        // open={errStatus}
         open={this.state.errStatus}
         anchor="right"
-        // onClose={setErrDrawerOpen(false)}
-        > 
-      
+        PaperProps={{  sx:{ width: "300px" }}}> 
+        <Box 
+          role="error">
+          <ThemeProvider theme={theme}>
+            <Box  
+              sx={{
+                backgroundColor: 'red',
+                color: 'white',
+                padding: '1em',
+              }}> 
+              <Typography variant="h4" >
+                <ErrorTwoToneIcon color="red" fontSize="Large"/>  Internal Error  
+              </Typography>
+            </Box>
+          </ThemeProvider>
+        </Box>
 
-        
-      <Box 
-        role="error">
-        <ThemeProvider theme={theme}>
-          <Box  
+        {this.state.loadState && (
+          <CircularProgress />
+        )}
+        {!this.state.loadState && (
+          <>
+          <Box 
             sx={{
-            //   margin: '1em' ,
-              backgroundColor: 'red',
-              color: 'white',
-              padding: '1em',
-            }}> 
-            <Typography variant="h4" > <ErrorTwoToneIcon color="red" fontSize="Large"/>  Internal Error  </Typography>
-
+                padding: '1em',
+              }}>  
+              <Typography sx={{}}> <strong>Status:</strong> {this.state.respStatus}</Typography>
+              <Typography sx={{}}> <strong>Message:</strong></Typography>
+              <Box
+                sx={{
+                  backgroundColor: '#f5f5f5',
+                  padding: '1em',
+                  fontSize: '0.8rem',
+                }}>
+                {this.formatErrorMessage()}
+              </Box>
+              <Typography sx={{marginTop: '1em'}}> <strong>Location:</strong> </Typography>
+              <Box
+                sx={{
+                backgroundColor: '#f5f5f5',
+                padding: '1em',
+                fontSize: '0.8rem',
+                }}>
+                {this.formatStack()}
+              </Box>
           </Box>
-        </ThemeProvider>
-      </Box>
-
-      <Box 
-      sx={{
-          padding: '1em',
-        }}>  
-
-        <Typography sx={{}}> <strong>Status:</strong> {this.state.respStatus}</Typography>
-        <Typography sx={{}}> <strong>Message:</strong></Typography>
-
-        <Box
-          sx={{
-           backgroundColor: '#f5f5f5',
-           padding: '1em',
-           fontSize: '0.8rem',
-          }}>
-        {this.formatErrorMessage()}
-      </Box>
-      
-
-        <Typography sx={{
-          marginTop: '1em',
-        }}> <strong>Location:</strong></Typography>
-        
-        <Box
-          sx={{
-           backgroundColor: '#f5f5f5',
-           padding: '1em',
-           fontSize: '0.8rem',
-          }}>
-        {this.formatStack()}
-      </Box>
+          <Box sx={{ padding: '1em', }}>
+            If this error persists, please contact help@hubmapconsiortium.org
+          </Box>
+          <Box sx={{padding: '1em', }}>
+              <Button 
+                variant="outlined" 
+                fullWidth
+                startIcon={<CloudSyncTwoToneIcon />}
+                onClick={() => window.location.reload(true)}>
+                Reload Page
+              </Button>
+          </Box>
+        </>
+        )}
 
 
-       
-      </Box>
-
-
-          
-
-      <Box sx={{ padding: '1em', }}>
-        If this error persists, please contact help@hubmapconsiortium.org
-      </Box>
-
-      <Box sx={{padding: '1em', }}>
-
-        <Stack direction="row" spacing={2}>
-          <Button 
-            variant="outlined" 
-            fullWidth
-            startIcon={<CloudSyncTwoToneIcon />}
-            onClick={() => window.location.reload(true)}>
-            Reload Page
-          </Button>
-         
-        </Stack>
-      </Box>
-      </Drawer>
-        // <div>ERROR {error}</div>
+    </Drawer>
       );
     } else {
-      return <>{this.props.children}</>;
+        return <>{this.props.children}</>;
     }
   }
 }
