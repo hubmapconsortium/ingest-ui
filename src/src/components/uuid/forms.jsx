@@ -25,14 +25,14 @@ class Forms extends Component {
       formType: e.target.value.toLowerCase(),
       createSuccess: false
     });
-    console.debug("handleFormTypeChange ",this.state);
+   //console.debug("handleFormTypeChange ",this.state);
   };
 
  handleDirty = (isDirty) => {
     this.setState({
       isDirty: isDirty
     });
-    console.debug('Forms:isDirty', isDirty);
+   //console.debug('Forms:isDirty', isDirty);
   }
 
   UNSAFE_componentWillMount() {
@@ -40,11 +40,11 @@ class Forms extends Component {
       formType: this.props.formType,
         open: true
     });
-    console.debug('FORMS', this.props.formType);
+   //console.debug('FORMS', this.props.formType);
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.debug("FORMS componentDidUpdate");
+   //console.debug("FORMS componentDidUpdate");
     if (prevProps.formType !== this.props.formType) {
       this.setState({
         editForm: true,      
@@ -54,7 +54,7 @@ class Forms extends Component {
         anchorEl: null,
         formType: this.props.formType,
       });
-      console.debug("forms handleFormTypeChange ",this.props.formType,this.state);
+     //console.debug("forms handleFormTypeChange ",this.props.formType,this.state);
       // this.handleUrlChange("new/"+target);
     }
 
@@ -64,7 +64,7 @@ class Forms extends Component {
   
 
   onCreated = data => {
-    console.debug('FORMS onCreated:', data);
+   //console.debug('FORMS onCreated:', data);
     if (data["new_samples"]) {  // means that we need to show a larger screen
       this.setState({
         result_dialog_size: "xl"
@@ -103,7 +103,7 @@ class Forms extends Component {
 
 
   handleUrlChange = (targetPath) =>{
-    console.debug("handleUrlChange "+targetPath)
+   //console.debug("handleUrlChange "+targetPath)
     var targetPathString = ""
     if(targetPath && targetPath !== undefined){
       targetPathString = targetPath
@@ -120,7 +120,7 @@ class Forms extends Component {
   }
 
   onCreateNext = e => {
-    console.log('onCreateNext', e)
+   //console.log('onCreateNext', e)
 //    let ancestor = e
     this.setState({
       createSuccess: false,
@@ -136,13 +136,13 @@ class Forms extends Component {
   };
 
   onChangeGlobusLink(newLink, newDataset) {
-    console.debug(newDataset)
+   //console.debug(newDataset)
     const {name, display_doi, doi} = newDataset;
     this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi, createSuccess: true});
   }
 
   handleClose = () => {
-    console.debug('CLOSED');
+   //console.debug('CLOSED');
   }
 
   renderForm() {

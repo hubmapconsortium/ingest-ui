@@ -25,17 +25,17 @@ export function ingest_api_users_groups(auth) {
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
  .then(res => {
-  console.debug("ingest_api_users_groups", res);
+  // console.debug("ingest_api_users_groups", res);
   const group_list = res.data.groups
           .filter(g => g.data_provider)
           .map(g => {
             return g;
           });
-    console.debug('API USER GROUPs', group_list);
+   //console.debug('API USER GROUPs', group_list);
     return {status: res.status, results: group_list}
  })
  .catch(err => {
-   console.debug("ingest_api_users_groups ERR", err);
+  //console.debug("ingest_api_users_groups ERR", err);
       return {status: err.response.status, results: err.response}
     // HandleError(err, msg:"ingest_api_users_groups");
  });
@@ -191,8 +191,8 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
  *
  */
 export function ingest_api_bulk_entities_upload(type, data, auth) { 
-  console.debug("Starting Data: ",data);
-  console.debug("Going to : ",type);
+  // console.debug("Starting Data: ",data);
+  // console.debug("Going to : ",type);
   var dataForm = new FormData();
   dataForm.append('file', data);
   const options = {
@@ -203,20 +203,20 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
       },
       onUploadProgress: (ev: ProgressEvent) => {
         const progress = ev.loaded / ev.total * 100;
-        console.debug("prog", Math.round(progress));
+       //console.debug("prog", Math.round(progress));
       }
     };
   let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
   return axios 
     .post(url, dataForm, options)
       .then(res => {
-        console.debug("ingest_api_bulk_entities",res);
+       //console.debug("ingest_api_bulk_entities",res);
         //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Validation
         // We might back back a 201 with an array of errors encountered. Let's check for that!  
         let results = res.data;
-        console.debug("results",results);
+       //console.debug("results",results);
         if(results[0]){
-          console.debug("results DATA ",results[0]);
+         //console.debug("results DATA ",results[0]);
         }
         return {status: res.status, results: results}
       })
@@ -231,7 +231,7 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
  *
  */
 export function ingest_api_bulk_entities_register(type, data, auth) { 
-  console.debug("Starting Data: ",data);
+  // console.debug("Starting Data: ",data);
   const options = {
       headers: {
         Authorization:
@@ -240,16 +240,16 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
       },
       onUploadProgress: (ev: ProgressEvent) => {
         const progress = ev.loaded / ev.total * 100;
-        console.debug("prog", Math.round(progress));
+       //console.debug("prog", Math.round(progress));
       }
     };
   let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`;
-  console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
+  // console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
   
   return axios 
      .post(url, data, options)
       .then(res => {
-        console.debug("ingest_api_bulk_entities",res);
+       //console.debug("ingest_api_bulk_entities",res);
           let results = res.data;
         return {status: res.status, results: results}
       })

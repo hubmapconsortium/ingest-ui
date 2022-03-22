@@ -6,6 +6,7 @@ import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
 import {APIError} from "../components/errorFormatting";
 import StackTracey from 'stacktracey'
 
+
 var bearer = localStorage.getItem("bearer")
 let SearchAPI = axios.create({
   baseURL: `${process.env.REACT_APP_SEARCH_API_URL}`,
@@ -16,6 +17,7 @@ let SearchAPI = axios.create({
     }
 });
 
+
 function handleError(error,stack){
   console.debug("handleError", error, stack);
   var top = stack.withSourceAt (0) 
@@ -24,7 +26,6 @@ function handleError(error,stack){
   var bundled = {error: APIErrorMSG, stack: top};
   return (bundled);
 }
-
 
 
 export const esb = require('elastic-builder');
@@ -207,8 +208,8 @@ lab_donor_id
 */
   
 
-  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
-  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
+  console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
+  console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
   return requestBody.toJSON();
 }
 

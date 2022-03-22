@@ -7,11 +7,12 @@ import {useNavigate} from "react-router-dom";
 
 
 
+
 export const RenderSample = (props) => {
   console.debug("Rendering from NEWER Route, not Legacy Route");
   let navigate = useNavigate();
-  var [entity_data, setEntity] = useState(true);
-  var [uuid, setUUID] = useState("");
+  var [entity_data, setEntity] = useState(null);
+  // var [uuid, setUUID] = useState("");
   var [isLoading, setLoading] = useState(true);
   var [errorHandler, setErrorHandler] = useState({
     status: "",
@@ -19,8 +20,13 @@ export const RenderSample = (props) => {
     isError: null 
   });
 
-  setUUID(useParams())
+  // Using the Set State here throws us into an Endless re-render :(
+  // setUUID(useParams())
+  const { uuid } = useParams();
+
+  console.debug("uuid,", uuid);
   useEffect(() => {
+    console.debug("ise Effect");
     if(!localStorage.getItem("info")){
       // the app.js should reload on missing/outdated Info item
     }else{
@@ -70,6 +76,10 @@ export const RenderSample = (props) => {
         <ErrBox err={errorHandler} />
       );
     }else if (isLoading) {
+      console.debug("Samples Loading");
+      console.debug(props);
+      console.debug(entity_data);
+      console.debug(errorHandler);
         return (
           <div className="card-body ">
             <div className="loader">Loading...</div>

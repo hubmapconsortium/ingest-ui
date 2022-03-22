@@ -65,6 +65,7 @@ class EditUploads extends Component{
   
 
   componentDidMount() {
+    console.debug("LEGACYUPLOADS");
 
     console.debug(this.props.editingUpload);
     // let history = this.props.history;
@@ -77,7 +78,7 @@ class EditUploads extends Component{
     };
     let entity_data = this.props.editingUpload;
     
-
+    console.debug("entity_data", entity_data);
     this.setState({
       // groups: this.props.groups,
       updateSuccess: null,
@@ -630,8 +631,8 @@ renderReorganizeButton() {
   }
   
   componentDidUpdate(prevProps) { 
-    // console.log("componentDidUpdate");
-    // console.log(prevProps);
+    console.log("componentDidUpdate");
+    console.log(prevProps);
     // Typical usage (don't forget to compare props):
     // console.debug(this.props.editingUpload.datasets);
     if (this.props.targetUUID !== prevProps.targetUUID) {

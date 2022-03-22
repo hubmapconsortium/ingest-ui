@@ -132,7 +132,7 @@ function handleDataClick(dataset_uuid) {
 
   ingest_api_get_globus_url(dataset_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
-            console.debug('ingest_api_get_globus_url', resp)
+            // console.debug('ingest_api_get_globus_url', resp)
           if (resp.status === 200) {
              window.open(resp.results, "_blank");
           }

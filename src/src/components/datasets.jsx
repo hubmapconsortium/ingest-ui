@@ -10,13 +10,13 @@ import {useNavigate} from "react-router-dom";
 
 
 export const RenderDataset = (props) => {
-  console.debug("Rendering from NEWER Route, not Legacy Route");
+  //console.debug("Rendering from NEWER Route, not Legacy Route");
   //console.debug("RenderSearchComponent", props);
 
   let navigate = useNavigate();
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
-  var [uuid, setUUID] = useState("");
+  // var [uuid, setUUID] = useState("");
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
@@ -24,23 +24,26 @@ export const RenderDataset = (props) => {
   });
 
 
-  setUUID(useParams())
+  // Using the Set State here throws us into an Endless re-render :(
+  // setUUID(useParams())
+  const { uuid } = useParams();
+
   useEffect(() => {
     var authSet = JSON.parse(localStorage.getItem("info"));
     entity_api_get_entity(uuid, authSet.groups_token)
       .then((response) => {
           if (response.status === 200) {
             setEntity(response.results);
-            console.debug("entity_data", response.results);
+            //console.debug("entity_data", response.results);
             setLoading(false);
           }else{
-            console.debug("Response not 200 Error", response);
+            //console.debug("Response not 200 Error", response);
             setLoading(true); //@TODO: lets flip the error display up here instead 
             passError(response.status, response.results);
           }
         })
         .catch((error) => {
-          console.debug("fetchData Response Error", error);
+          //console.debug("fetchData Response Error", error);
           passError(error.status, error.response );
         });
 
@@ -52,13 +55,13 @@ export const RenderDataset = (props) => {
   };
 
   function onUpdated(data){
-    console.debug("onUpdated", data);
+    //console.debug("onUpdated", data);
   }
 
 
 
   function passError(status, message) {
-    console.debug("passError Error", status, message);
+    //console.debug("passError Error", status, message);
     setLoading(false);
     setErrorHandler({
         status: status,
@@ -68,7 +71,7 @@ export const RenderDataset = (props) => {
     }
 
     if (!isLoading && errorHandler.isError === true){
-      console.debug("ERR HANDLER ", errorHandler);
+      //console.debug("ERR HANDLER ", errorHandler);
       return (
         <ErrBox err={errorHandler} />
       );
@@ -79,7 +82,7 @@ export const RenderDataset = (props) => {
           </div>
         );
     }else{
-      console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
+      //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
       return (
         <div>
           <DatasetFormLegacy onUpdated={onUpdated} HandleCancel={HandleCancel} editingDataset={entity_data} passError={passError} />

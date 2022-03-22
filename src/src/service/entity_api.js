@@ -6,6 +6,7 @@ import axios from "axios";
  * return:  { status, results}
  */
 export function entity_api_get_entity(uuid, auth) { 
+  console.debug("get ent", uuid, auth);
   const options = {
       headers: {
         Authorization:
@@ -81,6 +82,7 @@ export function entity_api_create_entity(entitytype, data, auth) {
         "Content-Type": "application/json"
       }
     };
+
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${entitytype}`;
         
   return axios 

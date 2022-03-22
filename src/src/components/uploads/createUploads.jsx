@@ -34,10 +34,10 @@ class CreateUploads extends Component {
 
 
   componentDidMount() {
-    var tgl = this.getUserGroups();
-    console.log(tgl);
-    console.debug(this.state);
-    console.debug(this.props);
+    // var tgl = this.getUserGroups();
+   //console.log(tgl);
+   //console.debug(this.state);
+   //console.debug(this.props);
   }
 
   
@@ -45,9 +45,9 @@ class CreateUploads extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    console.log(this.validateForm());
+   //console.log(this.validateForm());
     if (this.validateForm()) {
-      console.log("IS VALID")
+     //console.log("IS VALID")
       this.setState({
         processingUpload: true
       });
@@ -70,9 +70,9 @@ class CreateUploads extends Component {
           config
         )
         .then(response => {
-          console.debug("response: ", response);
+         //console.debug("response: ", response);
           if (response.status === 200) {
-            console.debug(response.data);
+           //console.debug(response.data);
             this.props.onCreated(response.data);            
           } else {
             this.setState({ 
@@ -81,20 +81,20 @@ class CreateUploads extends Component {
               processingUpload:false,
               errorMessage:response,
             });
-            console.debug("NON 200: "+response.status);
-            console.debug(response);
+           //console.debug("NON 200: "+response.status);
+           //console.debug(response);
           }
         })
         .catch(error => {
-          console.log("Uploads FOlder Created NOT OK!");
-          console.debug(error);
+         //console.log("Uploads FOlder Created NOT OK!");
+         //console.debug(error);
           var err ="";
           if(error.response){
             err = error.response.data.error;
-            console.log(err);
+           //console.log(err);
           }else{
             err = error;
-            console.log(error);
+           //console.log(error);
           }
           this.setState({ 
             submit_error: true, 
@@ -105,7 +105,7 @@ class CreateUploads extends Component {
           
         });
       }else{
-        console.log("IS INVALID")
+       //console.log("IS INVALID")
       };
   };
 
@@ -117,7 +117,7 @@ class CreateUploads extends Component {
 
 
   cancelEdit = () => {
-    console.debug("form js cancelEdit!!");
+   //console.debug("form js cancelEdit!!");
     this.setState({ 
       creatingNewSubmission: false, 
       editingSubmission: null ,
@@ -166,7 +166,7 @@ class CreateUploads extends Component {
           formErrors: { ...prevState.formErrors, group: "valid" },
         }));
       }
-      console.log(this.state.formErrors);
+     //console.log(this.state.formErrors);
       return isValid;
   }
 

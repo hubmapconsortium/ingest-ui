@@ -9,60 +9,52 @@ function getErrorMessageFromResponseBody( string ) {
         errorString = json.errors[0].msg
       }
     } catch ( parseOrAccessError ) {
-        console.debug("parseOrAccessError", parseOrAccessError);
+        //console.debug("parseOrAccessError", parseOrAccessError);
     }
-    
     return errorString
   }
 
 
-// function buildStackFrame( stack ) {
-    // var stackFrame = new StackFrame({
-    //     functionName: 'funName',
-    //     args: ['args'],
-    //     fileName: 'http://localhost:3000/file.js',
-    //     lineNumber: 1,
-    //     columnNumber: 3288, 
-    //     isEval: true,
-    //     isNative: false,
-    //     source: 'ORIGINAL_STACK_LINE'
-    //     evalOrigin: new StackFrame({functionName: 'withinEval', lineNumber: 2, columnNumber: 43})
-    // });
-    // return stackFrame
-  // }
-
 function formatErrorForRender( error ) {
-  
     var errResponse;
     if (error.response) {
-        // The request was made and the server responded with a status code
+      var errString;
+      // The request was made and the server responded with a status code
+        // console.debug("error Responmse", error.response);
         // that falls out of the range of 2xx
         // MOST LIKELY FROM ES
         // Let's check, eventually have an ES Error type?
-        var target = error.target;;
-        var reason = error.response.data.error.reason;
-        var status = error.response.status;
-        var statusText = error.response.statusText;
-        var esErrType = error.response.data.error.type;
-        var errMessage = "Source: Elastic Search, Type: "+esErrType+", Reason: "+reason+", StatusText: "+statusText+", Target: "+target;
-        var errJSON = {
-          status: status,
-          message:errMessage,
+        if(error.response.data.error.root_cause[0]){
+          var rootError = error.response.data.error.root_cause[0]
+          var target = error.target;
+          var reason = rootError.reason;
+          var status = error.response.status;
+          var statusText = error.response.statusText;
+          var esErrType = rootError.type;
+          var errIndex = [rootError.index, rootError.index_uuid];
+          var errMessage = "Source: Elastic Search, Type: "+esErrType+", Reason: "+reason+", StatusText: "+statusText+", Target: "+target+", Index: ["+rootError.index+", "+rootError.index_uuid+"]";
+          var errJSON = {
+            status: status,
+            message:errMessage,
+          }
+          errString = JSON.stringify(errJSON);
+        }else{
+          errString = error.response.data.error;
         }
-        // console.log(error.response.data.error.reason);
-        var errString = JSON.stringify(errJSON);
         errResponse = errString;
-        console.debug(errString);
+        //console.debug(errString);
       } else if (error.request) {
+        // The request was made but no response was received
         const errorMessage = JSON.parse(error.request.response)
-        console.log("errorMessage",errorMessage,errorMessage.message)
+        //console.log("errorMessage",errorMessage,errorMessage.message)
         errResponse = errorMessage.message;
-        console.log(error.request);
+        //console.log(error.request);
       } else {
         // Something happened in setting up the request that triggered an Error
-        console.log('Error', error);
+        //console.log('Error', error);
         errResponse = error;
       }
+      console.debug("errResponse", errResponse);
       return errResponse;
   }
 
@@ -81,18 +73,18 @@ APIError.digestError = function ( error ) {
 
 
 // function stackTraceCallback = (stackTrace) => {
-//     console.debug("stackTraceCallback", stackTrace);
+//     //console.debug("stackTraceCallback", stackTrace);
 //     var localStackFrames = [];
 //     // We could check the whole stack trce, but that could get super long
 //     // Let's only look at the first 30 or so lines\
-//     console.debug("stackTrace.length",stackTrace.length);
+//     //console.debug("stackTrace.length",stackTrace.length);
 //     var stackLimit = 50;
 //     if(stackTrace.length < stackLimit){
 //       stackLimit = stackTrace.length;
 //     }
 //     for (var i = 0; i < stackLimit; i++) {
 //       if (stackTrace[i].fileName.includes("/src/src")) {
-//         console.debug("STACK INDEX", i);
+//         //console.debug("STACK INDEX", i);
 //         var filenameShort = stackTrace[i].fileName.substr(stackTrace[i].fileName.lastIndexOf("/")+1);
 //         var stackLocation = [
 //           filenameShort, 
@@ -107,5 +99,5 @@ APIError.digestError = function ( error ) {
 //       }
 //     }
 //     this.setState({localStackFrames: localStackFrames});
-//     console.debug("localStackFrames", localStackFrames);
+//     //console.debug("localStackFrames", localStackFrames);
 //   }

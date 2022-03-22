@@ -48,7 +48,7 @@ import ErrorBoundary from './components/errorBoundary';
 export function App (props){
   var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [loginDialogRender, setLoginDialogRender] = useState(false);
-  var [authStatus, setAuthStatus] = useState(false);
+  var [authStatus, setAuthStatus] = useState(true);
   var [groupsToken, setGroupsToken] = useState(null);
   var [errStatus, setErrStatus] = useState(false);
   var [errStack, setErrStack] = useState(false);
@@ -72,7 +72,7 @@ export function App (props){
 
 //   window.onerror = function(msg, file, line, col, error) {
 //     // callback is called with an Array[StackFrame]
-//     console.debug("window.onerror", msg, file, line, col, error);
+//     //console.debug("window.onerror", msg, file, line, col, error);
 //     StackTrace.fromError(error).then(console.log("fromErrSuccess")).catch(console.log("fromErrFail"));
 // };
 
@@ -94,7 +94,6 @@ export function App (props){
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
       if (results && results.status === 200) { 
-        console.debug("LocalStorageAuth", JSON.parse(localStorage.getItem("info")).groups_token);
         localStorage.setItem("bearer", JSON.parse(localStorage.getItem("info")).groups_token);
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token)
         setAuthStatus(true);
@@ -104,7 +103,7 @@ export function App (props){
         setGroupsToken(null);
         setAuthStatus(false);
         if(localStorage.getItem("info")){
-          console.debug("login timed out");
+          //console.debug("login timed out");
           // If we were logged out and we have an old token,
           // We should promopt to sign back in
           CallLoginDialog(); 
@@ -113,7 +112,7 @@ export function App (props){
         
     });
     }catch {
-      console.debug("LocalStorageAuth", "CATCh No LocalStorage");
+      //console.debug("LocalStorageAuth", "CATCh No LocalStorage");
     }
   }, [groupsToken]);
 
@@ -145,14 +144,14 @@ export function App (props){
 
   const onCloseLogin = (event, reason) => {
       // setLoginDialogRender(true)
-      console.debug("onCloseLogin ", event, reason);
+      //console.debug("onCloseLogin ", event, reason);
       navigate("/");
       setLoginDialogRender(false);
     
   }
 
   function CallLoginDialog(){
-    console.debug("CallLoginDialog Open");
+    //console.debug("CallLoginDialog Open");
     setLoginDialogRender(true);
   }
 
@@ -163,8 +162,8 @@ export function App (props){
 
   
   function packageError(err) {
-    console.debug("packageError", err);
-    console.debug("packageError", err.stack.fileName);
+    //console.debug("packageError", err);
+    //console.debug("packageError", err.stack.fileName);
     setErrStatus(true)
     setErrStack([err.stack.callee,err.stack.fileName,err.stack.line])
   }
@@ -242,32 +241,32 @@ export function App (props){
     
           <Routes>
               <Route path="/" element={ 
-
-              <ErrorBoundary stack={errStack}  >
-                <SearchComponent  
-                  packageError={packageError} 
-                  entity_type=' ' 
-                  urlChange={urlChange} 
-                  onCancel={handleCancel}/>
-              </ErrorBoundary>
-              
-              } />
+                <ErrorBoundary stack={errStack}  > <SearchComponent  packageError={packageError}  entity_type=' ' urlChange={urlChange} onCancel={handleCancel}/>  </ErrorBoundary>
+              }/>
 
               <Route path="/login" element={<Login />} />
 
-              <Route path="/donors" element={<SearchComponent packageError={packageError} filter_type="donors" urlChange={urlChange}/>} ></Route>
+              <Route path="/donors" element={
+                <ErrorBoundary stack={errStack}  > <SearchComponent packageError={packageError} filter_type="donors" urlChange={urlChange}/></ErrorBoundary>
+              }/>
+
               <Route path="/samples" element={<SearchComponent packageError={packageError} filter_type="Sample" urlChange={urlChange} />} ></Route>
               <Route path="/datasets" element={<SearchComponent packageError={packageError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-              <Route path="/uploads" element={<SearchComponent packageError={packageError} filter_type="uploads" urlChange={urlChange} />} ></Route>
-                                    
+
+              <Route path="/uploads" element={
+                <ErrorBoundary stack={errStack}  > <SearchComponent packageError={packageError} filter_type="uploads" urlChange={urlChange} /></ErrorBoundary>
+              }/>       
+
               <Route path="/donor/:uuid" element={<RenderDonor  onCancel={handleCancel} status="view"/>} />
-              <Route path="/sample/:uuid" element={
-                
-                <RenderSample onCancel={handleCancel} status="view"/>
-                
-              } />
+              
+              <Route path="/sample/:uuid" element={ 
+                <ErrorBoundary stack={errStack}  > <RenderSample onCancel={handleCancel} status="view"/></ErrorBoundary>
+              }/>
               <Route path="/dataset/:uuid" element={<RenderDataset  onCancel={handleCancel} status="view"/>} />
-              <Route path="/upload/:uuid" element={<RenderUpload  onCancel={handleCancel} status="view"/>} />
+
+              <Route path="/upload/:uuid" element={
+                  <ErrorBoundary stack={errStack}  ><RenderUpload proptest={true}  onCancel={handleCancel} status="view"/></ErrorBoundary>
+              } />
               
               <Route path="/new/donor" element={ <Forms formType='donor' onCancel={handleCancel} />}/>
               <Route path="/new/sample" element={<Forms formType='sample' onCancel={handleCancel} /> }/>

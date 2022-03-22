@@ -39,7 +39,7 @@ theme.typography.h3 = {
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
-    super(props);
+    super(props); 
     this.state = {
       error: "",
       loadState: true,
@@ -53,6 +53,7 @@ export default class ErrorBoundary extends Component {
           "reason":null,
           "target":null,
           "statusText":null,
+          "index":null
       }
     };
     
@@ -62,7 +63,7 @@ export default class ErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
       console.debug("Bound componentDidCatch");
       console.debug(error);
-      // console.debug(errorInfo);
+      console.debug(errorInfo);
       this.setState({
         error: error,
         loadState: true
@@ -83,7 +84,8 @@ export default class ErrorBoundary extends Component {
             "type": errMsgArr[1].slice(6),
             "reason": errMsgArr[2].slice(8),
             "target": errMsgArr[4].slice(8),
-            "statusText": errMsgArr[3].slice(11)
+            "statusText": errMsgArr[3].slice(11),
+            "index":errMsgArr[5].slice(6),
           }
         });
         
@@ -119,6 +121,12 @@ export default class ErrorBoundary extends Component {
           <Typography sx={{fontSize:"1em"}}>
             <strong>Reason:</strong>  {this.state.errorObj.reason}
           </Typography>
+          {this.state.submit_error && (
+            <Typography sx={{fontSize:"1em"}}>
+              <strong>Index:</strong>  {this.state.errorObj.index}
+            </Typography>
+          )} 
+
           <Typography sx={{fontSize:"1em"}}>
             <strong>Source: </strong>{this.state.errorObj.source}
           </Typography>
@@ -133,8 +141,7 @@ export default class ErrorBoundary extends Component {
       line:""
     }
     if(this.props.stack.length > 0){
-      var capturedStack = this.props.stack;
-      console.debug("capturedStack", capturedStack);
+      //console.debug("capturedStack", capturedStack);
       if(this.state.error.message.includes('Source: Elastic Search')){
         // We're from StackTracey / API Error
         stackMSG.function = this.props.stack[0].slice(0,-2);;

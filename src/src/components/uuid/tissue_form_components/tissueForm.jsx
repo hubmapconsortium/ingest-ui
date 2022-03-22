@@ -151,7 +151,7 @@ class TissueForm extends Component {
   };
 
   componentDidMount() {
-
+    console.debug("SAMPLES MOUNTED");
     // let history = this.props.history;
     // //////console.debug('HISTORY', history)
     console.debug('PROPS', this.props);
@@ -180,7 +180,9 @@ class TissueForm extends Component {
       })
       .catch(err => {
         if (err.response === undefined) {
+          console.debug("Undef Err");
         } else if (err.response.status === 401) {
+          console.debug("402");
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
         }
