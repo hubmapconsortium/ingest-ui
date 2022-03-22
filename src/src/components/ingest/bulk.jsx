@@ -20,7 +20,9 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
 import _ from 'lodash';
 import {  parseErrorMessage, toTitleCase } from "../../utils/string_helper";
-import {  readString } from 'react-papaparse'
+// import {  readString } from 'react-papaparse'
+import { usePapaParse } from 'react-papaparse';
+
 import {ingest_api_bulk_entities_upload, 
         ingest_api_bulk_entities_register,
         ingest_api_users_groups} from '../../service/ingest_api';
@@ -76,6 +78,8 @@ class bulkCreation extends Component {
     //   groups: groupSet.groups,
     //   inputValue_group_uuid: groupSet.inputValue_group_uuid
     // });
+
+    // const { readString } = usePapaParse();
 
     console.debug("BULK MOUNTED");
 
@@ -368,7 +372,14 @@ parseUpload = () =>{
     skipEmptyLines: true,
     complete: this.parseResults,
   }
-  var parsedData = readString(this.state.tsvFile,config);
+  var parsedData = "str";
+  // var parsedData = readString(this.state.tsvFile,config);
+  // var parsedData = readString(this.state.tsvFile,config, {
+  //   worker: true,
+  //   complete: (parsedCsv) => {
+  //     console.log(parsedCsv);
+  //   }
+  // });
   this.setState({ 
     parsedData:parsedData
   });

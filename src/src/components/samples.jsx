@@ -7,7 +7,6 @@ import {useNavigate} from "react-router-dom";
 
 
 
-
 export const RenderSample = (props) => {
   console.debug("Rendering from NEWER Route, not Legacy Route");
   let navigate = useNavigate();

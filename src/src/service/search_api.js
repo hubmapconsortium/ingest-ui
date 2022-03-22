@@ -3,15 +3,40 @@
 import axios from "axios";
 import { GROUPS } from "./groups";
 import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
+import {APIError} from "../components/errorFormatting";
+import StackTracey from 'stacktracey'
+
+var bearer = localStorage.getItem("bearer")
+let SearchAPI = axios.create({
+  baseURL: `${process.env.REACT_APP_SEARCH_API_URL}`,
+  headers: {
+      Authorization:
+      "Bearer " + bearer,
+      "Content-Type": "application/json"
+    }
+});
+
+
+
+function handleError(error,stack){
+  console.debug("handleError", error, stack);
+  var top = stack.withSourceAt (0) 
+  error.target = error.config.baseURL + error.config.url;
+  var APIErrorMSG = APIError.digestError(error);
+  var bundled = {error: APIErrorMSG, stack: top};
+  return (bundled);
+}
+
+
 
 export const esb = require('elastic-builder');
-
 /*
  * Auth Validation  method
  * 
  * return:  { status}
  */
 // Something of a hack to validate the auth token
+// Maybe removeable with handling in app.js?
 export function api_validate_token(auth) { 
   const options = {
       headers: {
@@ -21,7 +46,6 @@ export function api_validate_token(auth) {
       }
     };
     let payload = search_api_filter_es_query_builder("test", 1 , 1);
-
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
         payload, options
@@ -30,9 +54,8 @@ export function api_validate_token(auth) {
         return {status: res.status}
       })
       .catch(err => {
-
-        throw new Error(err);
-        return {status: err.response.status, results: err.response.data}
+        // NEW ERR
+        // return {status: err.response.status, results: err.response.data}
       });
 };
 
@@ -50,57 +73,45 @@ export function api_search(params, auth) {
         "Content-Type": "application/json"
       }
     };
-
-    ////console.debug(options)
   let payload = search_api_filter_es_query_builder(params, 0, 100);
-
   return axios 
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
-              payload, options
-      )
-      .then(res => {
-        ////console.debug(res);
-          let hits = res.data.hits.hits;
-      
-          let entities = {};
-          hits.forEach(s => {
-            let uuid = s['_source']['uuid'];
-            if (entities[uuid]) {
-              entities[s['_source']['uuid']].push(s['_source']);
-            } else {
-              entities[s['_source']['uuid']] = [s['_source']];
-            }
-          });
+    .post(
+      `${process.env.REACT_APP_SEARCH_API_URL}/search`,
+      payload, 
+      options
+    )
+    .then(res => {
+        let hits = res.data.hits.hits;
+        let entities = {};
+        hits.forEach(s => {
+          let uuid = s['_source']['uuid'];
+          if (entities[uuid]) {
+            entities[s['_source']['uuid']].push(s['_source']);
+          } else {
+            entities[s['_source']['uuid']] = [s['_source']];
+          }
+        });
+      return {status: res.status, results: entities}
+    })
+    .catch(err => {
 
-        return {status: res.status, results: entities}
-      })
-      .catch(err => {
-
-          throw new Error(err);
-         return {status: 500, results: err.response}
-      });
+      // NEW ER HERE
+    });
 };
 
-export function api_search2(params, auth, from, size, fields) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
-    // console.debug("params", params);
-    let payload = search_api_filter_es_query_builder( from, size, fields);
-    // console.debug("payload", payload);
-
-    console.debug('payload', payload)
-
-  return axios 
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,payload,options )
+export function api_search2(params, auth, from, size, fields, colFields) { 
+  let payload = search_api_filter_es_query_builder(fields, from, size, colFields );
+  console.debug("SearchAPI");
+  return SearchAPI
+      .post('/search',payload) 
       .then(res => {
-        console.debug("API api_search2 res", res);
-        console.debug("res.data.error", res.data.error);
-        if(res.data.hits && !res.data.error){
+
+        console.debug("SearchAPI RES", res);
+        if(res.status !== 200){
+          console.debug("Got Err in 200 again");
+          throw new Error(res.data);
+        }
+        if(res.data.hits){
           let hits = res.data.hits.hits;
           let entities = [];
           hits.forEach(s => {
@@ -109,52 +120,43 @@ export function api_search2(params, auth, from, size, fields) {
             entities.push(data);
           });
           return {status: res.status, results: entities, total: res.data.hits.total.value}
-        }else if(res.data.error || res.error){
-          console.debug("HAVE res.data.error", res.data.error);
-          return {status: 500, results: res.data.error}
         }else{
           //  lacking hits likely means we hit another error?
           console.debug("No Hits No Error", res.data);
           
           return {status: res.status, results: res.data} 
         }
-           //console.debug(entities);
       })
-      .catch(err => {
-        console.debug("FROMAPI API api_search2 err");
-        console.debug( err);
-        throw new Error(err);
-         return {err}
-      });
+      .catch(error => {
+        console.debug("api search ERROR", error);
+        var stack = new StackTracey ()// captures the current call stack
+        var top = stack.withSourceAt (0) 
+        error.target = error.config.baseURL + error.config.url;
+        var APIErrorMSG = APIError.digestError(error);
+        var bundled = {error: APIErrorMSG, stack: top};
+        return Promise.reject(bundled);    
+    });
 };
+
 
 /*
  * Elasticsearch query builder helper
  *
  */
 export function search_api_filter_es_query_builder(fields, from, size, colFields) {
-
-  let requestBody =  esb.requestBodySearch();
-//  console.debug("here in the filter es builder")
-//  console.debug(fields);
-
-
+let requestBody =  esb.requestBodySearch();
 let boolQuery = "";
 console.debug("Fields", fields);
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
     boolQuery = esb.queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS)
-
   } else {
-
       boolQuery = esb.boolQuery();
-
       // if no field criteria is sent just default to a 
       if (Object.keys(fields).length === 0 && fields.constructor === Object) {
           console.debug("full search")
             boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset OR Upload')); 
       } else {
-       
         // was a group name selected
         if (fields["group_name"]) {
           boolQuery.must(esb.matchQuery("group_name.keyword", fields["group_name"]));

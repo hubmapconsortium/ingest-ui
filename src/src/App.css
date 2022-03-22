@@ -15,6 +15,10 @@
   background-color: #ebebeb;
 }
 
+.App.blur-true{
+  filter: blur(4px);
+}
+
 .tooltip 
 {
   width: 250px;

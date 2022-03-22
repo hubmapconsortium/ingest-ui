@@ -81,7 +81,6 @@ export function entity_api_create_entity(entitytype, data, auth) {
         "Content-Type": "application/json"
       }
     };
-
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${entitytype}`;
         
   return axios 

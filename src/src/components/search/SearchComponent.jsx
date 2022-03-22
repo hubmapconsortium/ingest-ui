@@ -17,6 +17,8 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { ingest_api_users_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
+
+// import {RenderError} from '../renderError'
 // import 'url-search-params-polyfill';
 
 // Creation donor_form_components
@@ -36,11 +38,13 @@ class SearchComponent extends Component {
 
   constructor(props) {
     super(props); 
-    console.debug("SearchCompprops",props);
+    console.debug("SearchComponent constructor",props);
     this.state = {
       selectionModel: "",
       filtered_keywords: "",
       filtered: false,
+      error: null,
+      errorActive:false,
       entity_type_list: SAMPLE_TYPES,
       column_def: COLUMN_DEF_DONOR, 
       show_info_panel: true,
@@ -67,11 +71,11 @@ class SearchComponent extends Component {
   }
 
 
-  componentDidCatch(error) {
-    console.debug("componentDidCatch",error);
-    this.setState({error: `${error.name}: ${error.message}`});
-    this.props.packageError(error);
-  }
+  // componentDidCatch(error) {
+  //   console.debug("SearchComponent componentDidCatch",error);
+  //   this.setState({error: `${error.name}: ${error.message}`});
+  //   // this.props.packageError(error);
+  // }
 
 
   componentDidMount() {    
@@ -519,6 +523,37 @@ class SearchComponent extends Component {
 
     return combinedList
   }
+
+  processSearch = (params,colums) => {
+    console.debug('processSearch', params, colums);
+    api_search2(
+      params, 
+      JSON.parse(localStorage.getItem("info")).groups_token, //WHERE THE FAKE ERROR"S FAKED
+      // (this.state.page*this.state.pageSize), 
+      ("A"), 
+      this.state.pageSize, 
+      this.state.fieldSet)
+    .then((response) => {
+      console.debug("SEARCHCOM response", response);
+      var colDefs = colums;
+      if(response && response.total === 1){ // for single returned items, customize the columns to match
+        colDefs = this.columnDefType(response.results[0].entity_type);
+      }
+        this.setState({
+          datarows: response.results, // Object.values(response.results)
+          results_total: response.total,
+          column_def: colDefs,
+          loading: false,
+          table_loading:false, 
+        });
+      })
+    .catch((error) => {
+      console.debug("processSearch",error)
+      this.setState({error: error});
+      this.props.packageError(error);
+    })
+
+  }
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
     console.debug("handleSearchClick")
@@ -538,9 +573,10 @@ class SearchComponent extends Component {
     //if (this.state.last_keyword !== keywords) {
     //  this.setState({ page: 0 });  
     //}
-  
     this.setState({
-      last_keyword: keywords
+      last_keyword: keywords,
+      loading: true,
+      filtered: true
     })
 
     // const group = this.group.current.value;
@@ -609,52 +645,11 @@ class SearchComponent extends Component {
     window.history.pushState({}, '', url);
     //window.history.pushState({}, '', search);
     // window.location.search = window.location.search.replace(/file=[^&$]*/i, 'file=filename');
-
-    this.setState({ 
-      loading: true,
-      filtered: true
-    },() => {
-      console.debug("SEARCHCOM this.state.pageSize", this.state.pageSize);
-      api_search2(params, JSON.parse(localStorage.getItem("info")).groups_token, 
-          (this.state.page*this.state.pageSize), this.state.pageSize, this.state.fieldSet)
-      .then((response) => {
-        // console.debug("Search Res", response.results);
-        
-        if (response.status === 200) {
-          if (response.total === 1) {  // for single returned items, customize the columns to match
-            which_cols_def = this.columnDefType(response.results[0].entity_type);
-            ////console.debug("which_cols_def: ", which_cols_def);
-          }else if(response.total <= 0 ){
-            
-              console.log("0 results not mid-load");
-            }
-          
-        this.setState({
-          datarows: response.results, // Object.values(response.results)
-          results_total: response.total,
-          column_def: which_cols_def,
-          loading: false,
-          table_loading:false, 
-        });
-        }else{
-          console.debug("ERR",response);
-          // throw new Error(response.results);
-          this.props.packageError(response);
-          console.debug("Error on Search ", response)
-        }
-
-    })
-    .catch((error) => {
-      console.debug("Error on Search ", error)
-      // throw new Error(error);
-      this.props.packageError(error);
-
-  
-    })
-  
-    });
-      
-    
+    // var newState = { 
+    //   loading: true,
+    //   filtered: true
+    // }
+    this.processSearch(params, which_cols_def)
   };
 
   columnDefType = (et) => {
@@ -710,6 +705,8 @@ class SearchComponent extends Component {
             this.handleSearchClick();
         });
   }
+
+
 
   handlePageSizeSelection = (pagesize) => {
     this.setState({
@@ -859,19 +856,23 @@ class SearchComponent extends Component {
   
 
   handleClearFilter = () => {
-
-    this.setState(
-      {
-        filtered: false,
+    var newState = { 
+      filtered: false,
         datarows: [],
         sampleType: "----",
         group: "All Components",
         keywords: "",
         page: 0,
-      }, () => {
-        this.handleSearchClick();
-    });
+    }
+    this.setState(
+      newState,
+      this.handleSearchClick()
+    )
+        
   };
+
+
+  
 
  onChangeGlobusLink(newLink, newDataset) {
     const {name, display_doi, doi} = newDataset;
@@ -885,50 +886,47 @@ class SearchComponent extends Component {
 
   render() {
        
+    if (this.state.error){
+      // console.debug(this.state.error);
+      // the Error Boundary needs to see an error rise from within a class, 
+      // Otherwise ignored errors from the API
+    //  console.debug("Throwin an Error in SearchCom Render", this.state.error.error);
+      throw Error(this.state.error.error);
+    };
 
+
+    try {
     // const { redirect } = this.state;
-    if (this.state.isAuthenticated) {
-    return  (
-        
-        <div style={{ width: '100%' }}>
-
-
-          {this.state.show_search && (
-            // this.renderFilterControls()
-            this.renderFilterControls()
-            )}
-
-            
-          {this.state.loading &&(
-             this.renderLoadingBar()
-          )}
-            
-          {/* {this.state.loading &&(
-             <span>Loading...</span>
-          )} */}
-
-
-          {this.state.show_search && this.state.datarows &&
-                    this.state.datarows.length > 0 && (
-              this.renderTable())
-          }
-          {this.state.datarows &&
-          this.state.datarows.length === 0 && 
-          this.state.filtered && 
-          !this.state.loading && (
-            <div className="text-center">No record found.</div>
-          )}
-
-
-          {/* {!this.state.show_search && (
-            // this.renderEditForm()
-            this.props.urlChange()
-          )} */}
-
-        </div>
-      );
+      if (this.state.isAuthenticated) {
+        return  (
+          <div style={{ width: '100%' }}>
+              {this.state.show_search && (
+                // this.renderFilterControls()
+                this.renderFilterControls()
+                )}
+                
+              {this.state.loading &&(
+                this.renderLoadingBar()
+              )}
+              {this.state.show_search && this.state.datarows &&
+                        this.state.datarows.length > 0 && (
+                  this.renderTable())
+              }
+              {this.state.datarows &&
+              this.state.datarows.length === 0 && 
+              this.state.filtered && 
+              !this.state.loading && (
+                <div className="text-center">No record found.</div>
+              )}
+          </div>
+        );
+      }else{
+        return null;
+      }
+      
+    } catch (error) {
+      throw Error(error);
     }
-    return null;
   }
 
   renderProps() {

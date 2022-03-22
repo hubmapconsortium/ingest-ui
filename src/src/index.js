@@ -7,7 +7,6 @@ import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from "./App";
 // import * as serviceWorker from "./serviceWorker";
-import ErrorBoundary from './components/errorBoundary';
 
 ReactDOM.render(
   <BrowserRouter>
