@@ -529,8 +529,8 @@ class SearchComponent extends Component {
     api_search2(
       params, 
       JSON.parse(localStorage.getItem("info")).groups_token, //WHERE THE FAKE ERROR"S FAKED
-      // (this.state.page*this.state.pageSize), 
-      ("A"), 
+      (this.state.page*this.state.pageSize), 
+      // ("A"), 
       this.state.pageSize, 
       this.state.fieldSet)
     .then((response) => {

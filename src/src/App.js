@@ -25,8 +25,6 @@ import { ingest_api_users_groups } from './service/ingest_api';
 import {Navigation} from "./Nav";
 // import {RenderLogin} from "./components/login";
 
-
-import StackTrace from 'stacktrace-js'
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 

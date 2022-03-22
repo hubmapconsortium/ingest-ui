@@ -16,8 +16,6 @@ let SearchAPI = axios.create({
     }
 });
 
-
-
 function handleError(error,stack){
   console.debug("handleError", error, stack);
   var top = stack.withSourceAt (0) 
@@ -46,15 +44,17 @@ export function api_validate_token(auth) {
       }
     };
     let payload = search_api_filter_es_query_builder("test", 1 , 1);
-  return axios 
+    return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
         payload, options
       )
       .then(res => {
         return {status: res.status}
       })
-      .catch(err => {
-        // NEW ERR
+      .catch(error => {
+        var stack = new StackTracey ()// captures the current call stack
+        var bundled = handleError(error, stack);
+        return Promise.reject(bundled); 
         // return {status: err.response.status, results: err.response.data}
       });
 };
@@ -93,20 +93,20 @@ export function api_search(params, auth) {
         });
       return {status: res.status, results: entities}
     })
-    .catch(err => {
-
-      // NEW ER HERE
+    .catch(error => {
+      var stack = new StackTracey ()// captures the current call stack
+      var bundled = handleError(error, stack);
+      return Promise.reject(bundled); 
     });
 };
 
 export function api_search2(params, auth, from, size, fields, colFields) { 
   let payload = search_api_filter_es_query_builder(fields, from, size, colFields );
-  console.debug("SearchAPI");
+  console.debug("SearchAPI Payload", payload);
   return SearchAPI
       .post('/search',payload) 
       .then(res => {
-
-        console.debug("SearchAPI RES", res);
+        // console.debug("SearchAPI RES", res);
         if(res.status !== 200){
           console.debug("Got Err in 200 again");
           throw new Error(res.data);
@@ -123,17 +123,12 @@ export function api_search2(params, auth, from, size, fields, colFields) {
         }else{
           //  lacking hits likely means we hit another error?
           console.debug("No Hits No Error", res.data);
-          
           return {status: res.status, results: res.data} 
         }
       })
       .catch(error => {
-        console.debug("api search ERROR", error);
         var stack = new StackTracey ()// captures the current call stack
-        var top = stack.withSourceAt (0) 
-        error.target = error.config.baseURL + error.config.url;
-        var APIErrorMSG = APIError.digestError(error);
-        var bundled = {error: APIErrorMSG, stack: top};
+        var bundled = handleError(error, stack);
         return Promise.reject(bundled);    
     });
 };
@@ -146,7 +141,7 @@ export function api_search2(params, auth, from, size, fields, colFields) {
 export function search_api_filter_es_query_builder(fields, from, size, colFields) {
 let requestBody =  esb.requestBodySearch();
 let boolQuery = "";
-console.debug("Fields", fields);
+// console.debug("Fields", fields);
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
     boolQuery = esb.queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS)
@@ -212,8 +207,8 @@ lab_donor_id
 */
   
 
-console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
-  console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
+  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
+  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
   return requestBody.toJSON();
 }
 
