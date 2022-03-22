@@ -1,5 +1,5 @@
 
-class HTTPError extends Error {
+export default class  HTTPError extends Error {
     constructor(message, status) {
       super(message);
       this.status = status;
@@ -10,9 +10,9 @@ class HTTPError extends Error {
     }
   }
   
-  const e = new HTTPError('Fail', 404);
-  // {"nested":{"message":"Fail","status":404},"arr":[{"message":"Fail","status":404}]}
-  console.log(JSON.stringify({
-    nested: e,
-    arr: [e]
-  }));
+  // const e = new HTTPError('Fail', 404);
+  // // {"nested":{"message":"Fail","status":404},"arr":[{"message":"Fail","status":404}]}
+  // console.log(JSON.stringify({
+  //   nested: e,
+  //   arr: [e]
+  // }));

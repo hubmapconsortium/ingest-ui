@@ -16,7 +16,7 @@ function getErrorMessageFromResponseBody( string ) {
   }
 
 
-function buildStackFrame( stack ) {
+// function buildStackFrame( stack ) {
     // var stackFrame = new StackFrame({
     //     functionName: 'funName',
     //     args: ['args'],
@@ -29,7 +29,7 @@ function buildStackFrame( stack ) {
     //     evalOrigin: new StackFrame({functionName: 'withinEval', lineNumber: 2, columnNumber: 43})
     // });
     // return stackFrame
-  }
+  // }
 
 function formatErrorForRender( error ) {
   
@@ -39,15 +39,15 @@ function formatErrorForRender( error ) {
         // that falls out of the range of 2xx
         // MOST LIKELY FROM ES
         // Let's check, eventually have an ES Error type?
+        var target = error.target;;
         var reason = error.response.data.error.reason;
         var status = error.response.status;
         var statusText = error.response.statusText;
-        var errMessage = "Source: Elastic Search, Type: "+esErrType+", Reason: "+reason;
         var esErrType = error.response.data.error.type;
+        var errMessage = "Source: Elastic Search, Type: "+esErrType+", Reason: "+reason+", StatusText: "+statusText+", Target: "+target;
         var errJSON = {
-            status: status,
-            statusText: statusText,
-            message:errMessage
+          status: status,
+          message:errMessage,
         }
         // console.log(error.response.data.error.reason);
         var errString = JSON.stringify(errJSON);
@@ -75,6 +75,7 @@ APIError.digestError = function ( error ) {
   let message = formatErrorForRender(error)
   return new APIError(message)
 }
+
 
 
 

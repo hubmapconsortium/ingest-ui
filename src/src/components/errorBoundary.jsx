@@ -2,31 +2,16 @@ import React, { Component } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Drawer from '@mui/material/Drawer';
 import ErrorTwoToneIcon from '@mui/icons-material/ErrorTwoTone';
-import ListAltTwoToneIcon from '@mui/icons-material/ListAltTwoTone';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
 
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import CloudSyncTwoToneIcon from '@mui/icons-material/CloudSyncTwoTone';
-import CancelTwoToneIcon from '@mui/icons-material/CancelTwoTone';
 
 
-import TreeView from '@mui/lab/TreeView';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import TreeItem from '@mui/lab/TreeItem';
 
-import Collapse from '@mui/material/Collapse';
-import StackTrace from 'stacktrace-js'
 
 const theme = createTheme();
 
@@ -60,8 +45,17 @@ export default class ErrorBoundary extends Component {
     super(props);
     this.state = {
       error: "",
+      respStatus:null,
+      errStatus:false,
       localStackFrames:"",
       stackCollapse:false,
+      errorObj:{
+          "source":null,
+          "type":null,
+          "reason":null,
+          "target":null,
+          "statusText":null,
+      }
     };
     
   }
@@ -72,62 +66,64 @@ export default class ErrorBoundary extends Component {
       console.debug(error);
       // console.debug(errorInfo);
       this.setState({error: error});
+      
+
+      if(error.message.includes('Source: Elastic Search')){
+        var errArraySBT = error.message.substring(6);
+        // var errArray = errArraySBT.split(",");       
+        var errObj = JSON.parse(errArraySBT);
+        var errMsg= errObj.message;
+        var errMsgArr = errMsg.split(",");    
+        this.setState({
+          respStatus:errObj.status,
+          errStatus:true,
+          errorObj:{
+            "source": "Elastic Search",
+            "type": errMsgArr[1].slice(6),
+            "reason": errMsgArr[2].slice(8),
+            "target": errMsgArr[4].slice(8),
+            "statusText": errMsgArr[3].slice(11)
+          }
+        });
+        
       // StackTrace.fromError(error).then(this.stackTraceCallback);
-  }
+  }}
 
   static getDerivedStateFromError() {
     return { hasError: true };
   }
 
+
+  closeErr(){
+    this.setState({
+      errStatus:false
+    });
+  }
+
+
   formatErrorMessage() {
-    var ErrMessage = {
-      source: "",
-      type: "",
-      reason:""
-    }
-    if(this.state.error.message){
-      var capturedMessage = this.state.error.message;
-      console.debug("capturedMessage", capturedMessage);
-      // Gonna need to format the different messages right.
-      //  Comes back custom from an ES error
-      if(capturedMessage.includes('Source: Elastic Search')){
-
-
-        var errArraySBT = this.state.error.message.substring(6);
-        console.debug("errArraySBT", errArraySBT);
-        // var errArray = this.state.error.message.split(",");
-        var errArray = errArraySBT.toJSON();
-
-        console.debug("errArray", errArray);
-
-
-        ErrMessage.source = "Elastic Search";
-        ErrMessage.type = errArray[1].slice(6);
-        ErrMessage.reason = errArray[2].slice(8);
-      }else{
-        ErrMessage.source = "IMPORT";
-        ErrMessage.type = "IMPORT";
-        ErrMessage.reason = "IMPORT";
-      }
-      
-      console.log(errArray);
-      return (
+        
+        return (
         <React.Fragment>
            <Typography 
             sx={{
+              fontSize:"1em",
               color:"red"}}>
-            <strong>Type:</strong>  {ErrMessage.type}
+            <strong>Message:</strong>  {this.state.errorObj.statusText}
           </Typography>
-          <Typography> 
-          <Typography>
-            <strong>Reason:</strong>  {ErrMessage.reason}
+           <Typography 
+            sx={{fontSize:"1em"}}>
+            <strong>Type:</strong>  {this.state.errorObj.type}
           </Typography>
-            <strong>Source: </strong>{ErrMessage.source}
+          <Typography sx={{fontSize:"1em"}}>
+            <strong>Reason:</strong>  {this.state.errorObj.reason}
+          </Typography>
+          <Typography sx={{fontSize:"1em"}}>
+            <strong>Source: </strong>{this.state.errorObj.source}
           </Typography>
          </React.Fragment>
         )
         
-      }
   }
 
   formatStack() {
@@ -153,67 +149,37 @@ export default class ErrorBoundary extends Component {
       console.log("stackMSG", stackMSG);
       return (
         <React.Fragment>
-            <Typography 
-              sx={{}}> 
-              {stackMSG.function} 
-            </Typography>
-            <Typography 
-              sx={{fontSize: '0.9em'}}>
-               <strong>{stackMSG.file}</strong>: {stackMSG.line}   
-            </Typography> 
+           <Typography 
+            sx={{fontSize:"1em"}}>
+            <strong>Function:</strong>  {stackMSG.function}
+          </Typography>
+          <Typography 
+            sx={{fontSize:"1em"}}>
+            <strong>File: {stackMSG.file}</strong>  : {stackMSG.line} 
+          </Typography>
+          <Typography 
+            sx={{fontSize:"1em"}}>
+            <strong>Target:</strong>  {this.state.errorObj.target}
+          </Typography>
+
+           
          </React.Fragment>
         )
         
       }
   }
 
-  formatRequest() {
-    var requestMSG = {
-      function: "",
-      file: "",
-      line:""
-    }
-    if(this.props.request.length > 0){
-      var capturedStack = this.props.stack;
-      console.debug("capturedStack", capturedStack);
-      if(this.state.error.message.includes('Source: Elastic Search')){
-        // We're from StackTracey / API Error
-        requestMSG.function = this.props.stack[0].slice(0,-2);;
-        requestMSG.file = this.props.stack[1];
-        requestMSG.line = this.props.stack[2];
-      }else{
-        requestMSG.function = "IMPORT";
-        requestMSG.file = "IMPORT";
-        requestMSG.line = "IMPORT";
-      }
-      
-      console.log("requestMSG", requestMSG);
-      return (
-        <React.Fragment>
-            <Typography 
-              sx={{}}> 
-              {requestMSG.function} 
-            </Typography>
-            <Typography 
-              sx={{fontSize: '0.9em'}}>
-               <strong>{requestMSG.file}</strong>: {requestMSG.line}   
-            </Typography> 
-         </React.Fragment>
-        )
-        
-      }
-  }
 
 
   render() {
     
-    const handleClick = () => {
-      this.setState({stackCollapse: !this.state.stackCollapse});
-    };
-    const {error} = this.state;
+    // const handleClick = () => {
+    //   this.setState({stackCollapse: !this.state.stackCollapse});
+    // };
+    // const {error} = this.state;
     // var stack = this.state.localStackFrames;
     // console.debug("stack",stack);
-    if (error) {
+    if (this.state.errStatus) {
       // console.debug("ErrorBoundary error", error);
       return (
         <Drawer
@@ -223,13 +189,13 @@ export default class ErrorBoundary extends Component {
           },
         }}
         // open={errStatus}
-        open={true}
+        open={this.state.errStatus}
         anchor="right"
         // onClose={setErrDrawerOpen(false)}
         > 
       
 
-
+        
       <Box 
         role="error">
         <ThemeProvider theme={theme}>
@@ -251,6 +217,7 @@ export default class ErrorBoundary extends Component {
           padding: '1em',
         }}>  
 
+        <Typography sx={{}}> <strong>Status:</strong> {this.state.respStatus}</Typography>
         <Typography sx={{}}> <strong>Message:</strong></Typography>
 
         <Box
@@ -276,15 +243,6 @@ export default class ErrorBoundary extends Component {
         {this.formatStack()}
       </Box>
 
-      <Box
-          sx={{
-           backgroundColor: '#f5f5f5',
-           padding: '1em',
-           fontSize: '0.8rem',
-          }}>
-        {this.formatRequest()}
-      </Box>
-
 
        
       </Box>
@@ -299,12 +257,14 @@ export default class ErrorBoundary extends Component {
       <Box sx={{padding: '1em', }}>
 
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" startIcon={<CloudSyncTwoToneIcon />}>
+          <Button 
+            variant="outlined" 
+            fullWidth
+            startIcon={<CloudSyncTwoToneIcon />}
+            onClick={() => window.location.reload(true)}>
             Reload Page
           </Button>
-          <Button variant="outlined" startIcon={<CancelTwoToneIcon />}>
-            Close
-          </Button>
+         
         </Stack>
       </Box>
       </Drawer>

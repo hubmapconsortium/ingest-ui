@@ -52,7 +52,7 @@ export function App (props){
   var [groupsToken, setGroupsToken] = useState(null);
   var [errStatus, setErrStatus] = useState(false);
   var [errStack, setErrStack] = useState(false);
-  var [errReq, setErrReq] = useState(false);
+  // var [errReq, setErrReq] = useState(false);
   let navigate = useNavigate();
 
   
@@ -238,7 +238,7 @@ export function App (props){
           <Routes>
               <Route path="/" element={ 
 
-              <ErrorBoundary stack={errStack} request={errReq}>
+              <ErrorBoundary stack={errStack}  >
                 <SearchComponent  
                   packageError={packageError} 
                   entity_type=' ' 
