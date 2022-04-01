@@ -8,6 +8,10 @@ import Button from '@mui/material/Button';
 import CloudSyncTwoToneIcon from '@mui/icons-material/CloudSyncTwoTone';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import Collapse from '@mui/material/Collapse';
+
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 
 
 const theme = createTheme();
@@ -42,6 +46,7 @@ export default class ErrorBoundary extends Component {
     super(props); 
     this.state = {
       error: "",
+      showDetails:false,
       loadState: true,
       errStatus:false,
       respStatus:null,
@@ -103,6 +108,11 @@ export default class ErrorBoundary extends Component {
     });
   }
 
+  handleDetails(){
+    this.setState({
+      showDetails:!this.state.showDetails
+    });
+  };
 
   formatErrorMessage() {
         
@@ -212,7 +222,10 @@ export default class ErrorBoundary extends Component {
                 padding: '1em',
               }}>  
               <Typography sx={{}}> <strong>Status:</strong> {this.state.respStatus}</Typography>
-              <Typography sx={{}}> <strong>Message:</strong></Typography>
+              <Typography sx={{}}> <strong>Message:</strong>  {this.state.errorObj.statusText}</Typography>
+              <Button sx={{}} onClick={() => this.handleDetails()}> Details:  {this.state.showDetails ? <ExpandLess /> : <ExpandMore />} </Button>
+              <Collapse
+                in={this.state.showDetails}>
               <Box
                 sx={{
                   backgroundColor: '#f5f5f5',
@@ -230,6 +243,7 @@ export default class ErrorBoundary extends Component {
                 }}>
                 {this.formatStack()}
               </Box>
+              </Collapse>
           </Box>
           <Box sx={{ padding: '1em', }}>
             If this error persists, please contact help@hubmapconsiortium.org
@@ -240,7 +254,7 @@ export default class ErrorBoundary extends Component {
                 fullWidth
                 startIcon={<CloudSyncTwoToneIcon />}
                 onClick={() => window.location.reload(true)}>
-                Reload Page
+                Close
               </Button>
           </Box>
         </>

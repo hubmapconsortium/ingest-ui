@@ -104,6 +104,7 @@ export function api_search(params, auth) {
 export function api_search2(params, auth, from, size, fields, colFields) { 
   let payload = search_api_filter_es_query_builder(fields, from, size, colFields );
   console.debug("SearchAPI Payload", payload);
+  payload.from = "A";
   return SearchAPI
       .post('/search',payload) 
       .then(res => {
