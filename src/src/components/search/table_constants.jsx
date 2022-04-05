@@ -12,10 +12,10 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 export const COLUMN_DEF_DONOR = [
   	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 145 },
-  	{ field: 'lab_name', headerName: 'Deidentified Name', width: 190 },
+  	{ field: 'lab_donor_id', headerName: 'Deidentified Name', width: 190 },
   	{ field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
-  	{ field: 'lab_donor_id', headerName: 'LABID', hide: true}
+  	// { field: 'lab_donor_id', headerName: 'LABID', hide: true}
 ];
 
 // SAMPLE COLUMNS

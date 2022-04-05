@@ -60,46 +60,47 @@ export function api_validate_token(auth) {
       });
 };
 
-
 /*
  * Search API method
  * 
  * return:  { status, results}
- */
-export function api_search(params, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
-  let payload = search_api_filter_es_query_builder(params, 0, 100);
-  return axios 
-    .post(
-      `${process.env.REACT_APP_SEARCH_API_URL}/search`,
-      payload, 
-      options
-    )
-    .then(res => {
-        let hits = res.data.hits.hits;
-        let entities = {};
-        hits.forEach(s => {
-          let uuid = s['_source']['uuid'];
-          if (entities[uuid]) {
-            entities[s['_source']['uuid']].push(s['_source']);
-          } else {
-            entities[s['_source']['uuid']] = [s['_source']];
-          }
-        });
-      return {status: res.status, results: entities}
-    })
-    .catch(error => {
-      var stack = new StackTracey ()// captures the current call stack
-      var bundled = handleError(error, stack);
-      return Promise.reject(bundled); 
-    });
-};
+//  */
+// export function api_search2(params, auth, from, size, fields) { 
+
+//   const options = {
+//       headers: {
+//         Authorization:
+//           "Bearer " + auth,
+//         "Content-Type": "application/json"
+//       }
+//     };
+//   let payload = search_api_filter_es_query_builder(params, from, size, fields);
+//   ////console.debug('payload', payload)
+//   return axios 
+//     .post(
+//       `${process.env.REACT_APP_SEARCH_API_URL}/search`,
+//       payload, 
+//       options
+//     )
+//     .then(res => {
+//         let hits = res.data.hits.hits;
+//         let entities = {};
+//         hits.forEach(s => {
+//           let uuid = s['_source']['uuid'];
+//           if (entities[uuid]) {
+//             entities[s['_source']['uuid']].push(s['_source']);
+//           } else {
+//             entities[s['_source']['uuid']] = [s['_source']];
+//           }
+//         });
+//       return {status: res.status, results: entities}
+//     })
+//     .catch(error => {
+//       var stack = new StackTracey ()// captures the current call stack
+//       var bundled = handleError(error, stack);
+//       return Promise.reject(bundled); 
+//     });
+// };
 
 export function api_search2(params, auth, from, size, fields, colFields) { 
   let payload = search_api_filter_es_query_builder(fields, from, size, colFields );
@@ -140,9 +141,12 @@ export function api_search2(params, auth, from, size, fields, colFields) {
  *
  */
 export function search_api_filter_es_query_builder(fields, from, size, colFields) {
-let requestBody =  esb.requestBodySearch();
-let boolQuery = "";
-// console.debug("Fields", fields);
+
+  let requestBody =  esb.requestBodySearch();
+  console.debug("here in the filter es builder")
+  console.debug(fields);
+  let boolQuery = "";
+
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
     boolQuery = esb.queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS)
@@ -194,12 +198,9 @@ let boolQuery = "";
     .from(from)
     .size(size)
     .sort(esb.sort('last_modified_timestamp', 'desc'))
-    .source(colFields);
-  //requestBody.query(boolQuery).size(100);
+    .source(colFields);  //requestBody.query(boolQuery).size(100);
 
-/*  
-
-submission_id
+/*    submission_id
 lab_name
 group_name
 created_by_user_email

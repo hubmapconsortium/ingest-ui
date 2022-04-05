@@ -101,6 +101,12 @@ class SearchComponent extends Component {
     // if(uuid){
     //   this.handleLoadEntity(uuid)
     // }
+    this.setState({
+      fieldSet: resultFieldSet()
+    },function(){ 
+      console.debug("FieldSetState",this.state.fieldSet);
+    })
+
     //@TODO: Look into using the query/search functionality the search-api uses instead of all..... this
     var url = window.location.href;
     var urlPart = url.split("/");
@@ -719,7 +725,7 @@ class SearchComponent extends Component {
     this.setState({
           datarows: [],
           loading: true,
-//          page: 0    // reset the page
+          page: 0    // reset the page
         }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
             this.handleSearchClick();
         });

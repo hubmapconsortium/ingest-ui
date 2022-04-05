@@ -10,6 +10,7 @@ import {
   import Login from './components/ui/login';
   import Timer from './components/ui/idle';
 
+
 import { createTheme } from '@mui/material/styles';
 
 import Button from '@mui/material/Button';
@@ -81,7 +82,6 @@ export function App (props){
 
   useEffect(() => {
 
-    
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
@@ -116,10 +116,6 @@ export function App (props){
     }
   }, [groupsToken]);
 
- 
-  
-
-
 
   function Logout(){
   //console.debug("Logging out");
@@ -147,7 +143,6 @@ export function App (props){
       //console.debug("onCloseLogin ", event, reason);
       navigate("/");
       setLoginDialogRender(false);
-    
   }
 
   function CallLoginDialog(){
@@ -233,7 +228,6 @@ export function App (props){
           </React.Fragment>
 
         )}
-
             
           {authStatus && (
           <Paper className="px-5 py-4">

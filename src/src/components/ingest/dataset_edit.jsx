@@ -63,6 +63,7 @@ class DatasetEdit extends Component {
     description: "",
     dataset_info: "",
     source_uuids: [],
+    groups_dataprovider:[],
     globus_path: "",
     writeable: true,
     handleSelectionLoading:false,
@@ -103,7 +104,6 @@ class DatasetEdit extends Component {
     if (this.props.hasOwnProperty('editingDataset')
 	       && this.props.editingDataset
 	       && this.props.editingDataset.data_types) {
-      //////console.log('editingDataset.data_types', this.props.editingDataset.data_types)
       // data_types = JSON.parse(
       //   this.props.editingDataset.data_types
       //     .replace(/'/g, '"')
@@ -111,7 +111,6 @@ class DatasetEdit extends Component {
       // );
       //////console.log('this.state.data_type_dicts', this.state.data_type_dicts)
       const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
-      //////console.log('data_type_options: ', data_type_options);
       other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
       data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
       if (other_dt) {
@@ -203,11 +202,26 @@ class DatasetEdit extends Component {
         // this.setState({
         //   groups: display_names,
         // });
+        // const groups = res.data.groups.filter(
+        //   g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+        // );
+        // this.setState({
+        //   groups: groups
+        // });
+
+        console.debug("res.data.groups",res.data.groups);
         const groups = res.data.groups.filter(
-          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          // It filters our read only, but what about other permissions like admin? 
+          // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+          g => g.data_provider === true
         );
+        console.debug("groups",groups);
+          //  We have both Data-Provider groups as well as non. 
+          // The DP needs to be deliniated for the dropdown & assignments
+          // the rest are for permissions
         this.setState({
-          groups: groups
+          groups: groups,
+          groups_dataprovider: groups,
         });
       })
       .catch((err) => {
@@ -892,15 +906,15 @@ class DatasetEdit extends Component {
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
       (dt) => !data_type_options.has(dt)
-    )[0];
+      )[0];
     data_types.delete(other_dt);
-
     //////console.log('submit: data_types',data_types)
     if (this.state.other_dt) {
       const data_types = this.state.data_types;
       data_types.add(this.state.other_dt);
       this.setState({ data_types: data_types });
     }
+    console.debug("Post SUBSTATE mod", this.state);
 
     //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
@@ -928,17 +942,26 @@ class DatasetEdit extends Component {
             ];
           }
 
+          // Lets make sure the data types array is unique
+          var uniqueDT = Array.from(new Set(data_types));
+          console.debug("Orig data_types", data_types);
+          console.debug("uniqueDT", uniqueDT);
+          this.setState({
+            data_types: uniqueDT,
+          })
+
           // package the data up
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
             //collection_uuid: this.state.collection.uuid,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            data_types: data_types,
+            data_types: uniqueDT,
             description: this.state.description,
             dataset_info: this.state.dataset_info,
             //status: this.state.new_status,
             //is_protected: this.state.is_protected,
           };
+          console.debug("Compiled data: ", data);
   
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
@@ -960,8 +983,13 @@ class DatasetEdit extends Component {
           };
          
           if (this.props.editingDataset) {
+
+            console.debug("I is ", i);
+
+            console.log("data is ", data)
             // if user selected Publish
             if (i === "published") {
+              console.debug("about to publish with data ", data); 
               let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
               axios
                 .put(uri, JSON.stringify(data), config)
@@ -974,7 +1002,8 @@ class DatasetEdit extends Component {
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
-              //console.log("data is ", data)
+                console.log("ABout to call ingest_api_dataset_submit with ", data)
+
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status === 200) {
@@ -986,7 +1015,8 @@ class DatasetEdit extends Component {
                       this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                     }
                 });
-              } else { // just update
+              } else { // just updatehttps://us05web.zoom.us/j/88679615635?pwd=UEd6T0FmMjFpNnl0TWJvZmlkekRNUT09
+                console.debug("no I, entity_api_update_entity", data);
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status === 200) {
@@ -1013,7 +1043,11 @@ class DatasetEdit extends Component {
               if (this.state.selected_group && this.state.selected_group.length > 0) {
                 data["group_uuid"] = this.state.selected_group;
               } else {
-                data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+                // If none selected, we need to pick a default BUT
+                // It must be from the data provviders, not permissions
+                console.debug("UN Selected_group", this.state.selected_group);
+                data["group_uuid"] = this.state.groups_dataprovider[0].uuid; 
+                // data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
               }
 
              //console.log('DATASET TO SAVE', JSON.stringify(data))
@@ -1475,7 +1509,7 @@ class DatasetEdit extends Component {
   renderAssay(val, idx) {
     var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
     return (
-      <option value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
+      <option key={idstr} value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
       )
   }
 
@@ -1500,8 +1534,6 @@ class DatasetEdit extends Component {
 
 	    //var entries_per_col = Math.ceil(len / 3);
 	    //var num_cols = Math.ceil(len / entries_per_col);
-     //console.log("data_type_dicts", this.state.data_type_dicts)
-
       if (this.state.data_types.size === 1 && this.state.has_other_datatype) {
         return (<>
 
