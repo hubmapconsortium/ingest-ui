@@ -12,8 +12,9 @@ export const RenderSample = (props) => {
   console.debug("Rendering from NEWER Route, not Legacy Route");
   let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
-  var [entity_data, setEntity] = useState(true);
-  var [uuid, setUUID] = useState("");
+  const { uuid } = useParams();
+
+  var [entity_data, setEntity] = useState(null);
   var [isLoading, setLoading] = useState(true);
   var [errorHandler, setErrorHandler] = useState({
     status: "",
@@ -21,7 +22,7 @@ export const RenderSample = (props) => {
     isError: null 
   });
 
-  setUUID(useParams())
+  console.debug("uuid,", uuid);
   useEffect(() => {
     
     entity_api_get_entity(uuid, authSet.groups_token)
@@ -67,6 +68,10 @@ export const RenderSample = (props) => {
         <ErrBox err={errorHandler} />
       );
     }else if (isLoading) {
+      console.debug("Samples Loading");
+      console.debug(props);
+      console.debug(entity_data);
+      console.debug(errorHandler);
         return (
           <div className="card-body ">
             <div className="loader">Loading...</div>

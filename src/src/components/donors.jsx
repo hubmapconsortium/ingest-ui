@@ -11,26 +11,29 @@ import {useNavigate} from "react-router-dom";
 
 
 export const RenderDonor = (props) => {
-  console.debug("Rendering from NEWER Route, not Legacy Route");
+  //console.debug("Rendering from NEWER Route, not Legacy Route");
 //console.debug("RenderSearchComponent", props);
   let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
-  var [uuid, setUUID] = useState("");
+  // var [uuid, setUUID] = useState("");
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
   });
-  setUUID(useParams())
 
+  // Using the Set State here throws us into an Endless re-render :(
+  // setUUID(useParams())
+  const { uuid } = useParams();
+  
   useEffect(() => {
     entity_api_get_entity(uuid, authSet.groups_token)
       .then((response) => {
           if (response.status === 200) {
             setEntity(response.results);
-            console.debug("entity_data", response.results);
+            //console.debug("entity_data", response.results);
             setLoading(false);
           } else {
             passError(response.status, response.message);
@@ -42,7 +45,7 @@ export const RenderDonor = (props) => {
   }, [authSet, uuid]);
 
   function onUpdated(data){
-    console.debug("onUpdated", data);
+    //console.debug("onUpdated", data);
   }
 
 
