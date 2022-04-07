@@ -72,7 +72,7 @@ class RUIIntegration extends Component {
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
     const sex = this.props.sex;
-    const user_name = this.props.user;
+    const user_name = this.props.user || "";
     const location = this.props.location === "" ? null : JSON.parse(this.props.location);
     const self = this;
 
