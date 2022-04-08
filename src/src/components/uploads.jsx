@@ -47,7 +47,7 @@ export const RenderUpload = (props) => {
   },  [uuid]);
 
 
-  function HandleCancel(){
+  function handleCancel(){
     window.history.back()
   }
 
@@ -83,7 +83,7 @@ export const RenderUpload = (props) => {
       console.debug("LOADED",entity_data );
       return (
         <div>
-          <EditUploads handleCancel={HandleCancel} editingUpload={entity_data} onUpdated={onUpdated}/>
+          <EditUploads handleCancel={handleCancel} editingUpload={entity_data} onUpdated={onUpdated}/>
         </div>
       )
     }

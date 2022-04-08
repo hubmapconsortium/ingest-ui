@@ -496,7 +496,7 @@ class DonorForm extends Component {
               <Button
                 type="button"
                variant="outlined"
-                onClick={() => this.props.HandleCancel()}
+                onClick={() => this.props.handleCancel()}
               >
                 Cancel
               </Button>
@@ -528,7 +528,7 @@ class DonorForm extends Component {
               <Button
                 type="button"
                variant="outlined"
-                onClick={() => this.props.HandleCancel()}
+                onClick={() => this.props.handleCancel()}
               >
                  Cancel
               </Button>
@@ -561,7 +561,7 @@ class DonorForm extends Component {
             <Button
               type="button"
              variant="outlined"
-              onClick={() => this.props.HandleCancel()}
+              onClick={() => this.props.handleCancel()}
             >
               Cancel
             </Button>

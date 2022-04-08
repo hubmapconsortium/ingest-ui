@@ -49,7 +49,7 @@ export const RenderDonor = (props) => {
   }
 
 
-  function HandleCancel(){
+  function handleCancel(){
     navigate(-1);  
   };
 
@@ -78,7 +78,7 @@ export const RenderDonor = (props) => {
     }else{
       return (
         <div>
-          <DonorForm HandleCancel={HandleCancel} editingEntity={entity_data} onUpdated={onUpdated}/>
+          <DonorForm handleCancel={handleCancel} editingEntity={entity_data} onUpdated={onUpdated}/>
         </div>
       )
     }

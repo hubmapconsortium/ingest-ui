@@ -40,7 +40,7 @@ export const RenderSample = (props) => {
         });
   }, [authSet, uuid]);
 
-  function HandleCancel(){
+  function handleCancel(){
     navigate(-1);  
   };
 
@@ -80,7 +80,7 @@ export const RenderSample = (props) => {
     }else{
       return (
         <div>
-          <TissueFormLegacy onCancel={HandleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
+          <TissueFormLegacy onCancel={handleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
         </div>
       )
     }

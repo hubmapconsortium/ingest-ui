@@ -50,7 +50,7 @@ export const RenderDataset = (props) => {
   }, [uuid]);
 
 
-  function HandleCancel(){
+  function handleCancel(){
     navigate(-1);  
   };
 
@@ -85,7 +85,7 @@ export const RenderDataset = (props) => {
       //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
       return (
         <div>
-          <DatasetFormLegacy onUpdated={onUpdated} HandleCancel={HandleCancel} editingDataset={entity_data} passError={passError} />
+          <DatasetFormLegacy onUpdated={onUpdated} handleCancel={handleCancel} editingDataset={entity_data} passError={passError} />
         </div>
       )
     }

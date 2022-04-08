@@ -1386,7 +1386,7 @@ class DatasetEdit extends Component {
           <Button
               type='button'
               variant="outlined"
-              onClick={() => this.props.HandleCancel()}>
+              onClick={() => this.props.handleCancel()}>
               Cancel
           </Button>
       </div>

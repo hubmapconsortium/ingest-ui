@@ -7,13 +7,13 @@ import {useNavigate} from "react-router-dom";
 export const RenderBulk = (props) => {
   let navigate = useNavigate();
 
-  function HandleCancel(){
+  function handleCancel(){
     navigate(-1);  
   };
 
       return (
         <div>
-          <BulkCreation bulkType={props.bulkType} onCancel={HandleCancel} />
+          <BulkCreation bulkType={props.bulkType} onCancel={handleCancel} />
         </div>
       )
     
