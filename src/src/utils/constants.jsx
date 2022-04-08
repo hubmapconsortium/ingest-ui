@@ -1,6 +1,5 @@
 
 // These ones show on the main Search/Filter page
-// export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SAMPLE_TYPES = [
   { donor: "Donor" },
@@ -117,9 +116,7 @@ export const ORGAN_TYPES = {
   LI: "Large Intestine",
   LV: "Liver",
   LL: "Lung (Left)",
-  LN: "Knee (Left)",
   RL: "Lung (Right)",
-  RN: "Knee (Right)",
   LY: "Lymph Node",
   LO: "Ovary (Left)",
   RO: "Ovary (Right)",
@@ -136,45 +133,7 @@ export const ORGAN_TYPES = {
   OT: "Other"
 };
 
-// Direct mapping from HuBMAP Organ Code to appropriate RUI Reference Organ IRIs
-export const RUI_ORGAN_MAPPING = {
-  AO: "http://purl.obolibrary.org/obo/UBERON_0000948",
-  BL: "http://purl.obolibrary.org/obo/UBERON_0001255",
-  BD: "http://purl.obolibrary.org/obo/UBERON_0001270",
-  BM: "http://purl.obolibrary.org/obo/UBERON_0001270",
-  BR: "http://purl.obolibrary.org/obo/UBERON_0000955",
-  LB: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  RB: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  LE: "http://purl.obolibrary.org/obo/UBERON_0004548",
-  RE: "http://purl.obolibrary.org/obo/FMA_54449",
-  LF: "http://purl.obolibrary.org/obo/UBERON_0001303",
-  RF: "http://purl.obolibrary.org/obo/UBERON_0001302",
-  HT: "http://purl.obolibrary.org/obo/UBERON_0000948",
-  LK: "http://purl.obolibrary.org/obo/UBERON_0004538",
-  RK: "http://purl.obolibrary.org/obo/UBERON_0004539",
-  LI: "http://purl.obolibrary.org/obo/UBERON_0000059",
-  LV: "http://purl.obolibrary.org/obo/UBERON_0002107",
-  LL: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  LN: "http://purl.obolibrary.org/obo/FMA_24978",
-  RL: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  RN: "http://purl.obolibrary.org/obo/FMA_24977",
-  LY: "http://purl.obolibrary.org/obo/UBERON_0002509",
-  LO: "http://purl.obolibrary.org/obo/FMA_7214",
-  RO: "http://purl.obolibrary.org/obo/FMA_7213",
-  PA: "http://purl.obolibrary.org/obo/UBERON_0001264",
-  // PL: "", // No CCF Reference Organ for Placenta yet
-  SI: "http://purl.obolibrary.org/obo/UBERON_0002108",
-  SK: "http://purl.obolibrary.org/obo/UBERON_0002097",
-  SP: "http://purl.obolibrary.org/obo/UBERON_0002106",
-  // ST: "", // No CCF Reference Organ for Sternum yet
-  TH: "http://purl.obolibrary.org/obo/UBERON_0002370",
-  TR: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  UR: "http://purl.obolibrary.org/obo/UBERON_0001223",
-  UT: "http://purl.obolibrary.org/obo/UBERON_0000995",
-  // OT: "" // No CCF Reference Organ for 'Other' ever
-};
-
-export const RUI_ORGAN_TYPES = Object.keys(RUI_ORGAN_MAPPING);
+export const RUI_ORGAN_TYPES = ["SK", "LI", "HT", "LK", "RK", "SP", "BR", "LL", "RL", "LY", "TH"];
 
 export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "5777527e-ec11-11e8-ab41-0af86edb4424"];
 
@@ -204,3 +163,70 @@ export const ES_SEARCHABLE_WILDCARDS = [
   "lab_tissue_sample_id",
   "lab_dataset_id"
   ];
+
+
+
+  export function compiledTissueTypes() {
+    const  compileTypeList = () =>{
+      var donor_types=[]
+      var sample_types=[]
+      TISSUE_TYPES.forEach((optgs, index) => {
+        Object.entries(optgs).forEach(op => {
+          var type = {
+            label: op[1],
+            value: op[0]
+          }
+          
+          if(index>0){
+            sample_types.push(type);
+          }else{
+            donor_types.push(type)
+          }
+        })
+        
+      })
+      var groupedOption = [{
+        label: 'Donor',
+        options: donor_types,
+      },{
+        label: 'Sample',
+        options: sample_types
+,
+      }];
+  //console.debug("groupedTypeList", groupedOption);
+      return groupedOption;
+    };
+    return compileTypeList();
+  }
+  
+
+
+
+  export function compiledSelectList(params) {
+//console.debug("compiledSelectList", params);
+  
+      var groups = []; 
+      params.forEach((optgs, index) => {
+        groups.push({
+          "label": "---" ,
+          "options":[]
+        })
+      
+        var list = []; 
+        Object.entries(optgs).forEach(op => {
+          var option = {
+            label: op[1],
+            value: op[0]
+          }
+          list.push(option);
+          groups[index].options.push(option);
+        //console.debug("index", index);
+        //console.debug("groupCOunt", groups[index]);
+        })        
+      //console.debug("index", index); 
+      //console.debug("group", groups);
+    //console.debug("list", list[0], list[1]);
+    //console.debug("compiledSelectList", list);
+      })
+    return groups;
+  }

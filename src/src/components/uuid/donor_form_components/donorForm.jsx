@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import Paper from '@material-ui/core/Paper';
+import Button from '@mui/material/Button';
 import Divider from '@material-ui/core/Divider';
 import '../../../App.css';
 // import axios from "axios";
@@ -493,13 +493,13 @@ class DonorForm extends Component {
           </div>
       
             <div className="col-sm-12 text-right pads">
-              <button
+              <Button
                 type="button"
-                className="btn btn-secondary"
-                onClick={() => this.props.handleCancel()}
+               variant="outlined"
+                onClick={() => this.props.HandleCancel()}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -510,7 +510,7 @@ class DonorForm extends Component {
           <Divider />
           </div>
             <div className="col-md-12 text-right pads">
-              <button
+              <Button
                 type="submit"
                 className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
@@ -523,15 +523,15 @@ class DonorForm extends Component {
                   />
                 )}
                 {!this.state.submitting && "Update"}
-              </button>
+              </Button>
             
-              <button
+              <Button
                 type="button"
-                className="btn btn-secondary"
-                onClick={() => this.props.handleCancel()}
+               variant="outlined"
+                onClick={() => this.props.HandleCancel()}
               >
                  Cancel
-              </button>
+              </Button>
           </div>
           </div>
         );
@@ -543,7 +543,7 @@ class DonorForm extends Component {
           <Divider />
         </div>
             <div className="col-md-12 text-right pads">
-            <button
+            <Button
               type="submit"
               className="btn btn-primary mr-1"
               disabled={this.state.submitting}
@@ -556,15 +556,15 @@ class DonorForm extends Component {
                 />
               )}
               {!this.state.submitting && "Generate ID"}
-            </button>
+            </Button>
          
-            <button
+            <Button
               type="button"
-              className="btn btn-secondary"
-              onClick={() => this.props.handleCancel()}
+             variant="outlined"
+              onClick={() => this.props.HandleCancel()}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       );
@@ -747,7 +747,6 @@ class DonorForm extends Component {
           )}
          
           <div className="col-sm-12 form-border">
-         <Paper className="paper-container">
             <form onSubmit={this.handleSubmit}>
              
               <div className="text-danger">
@@ -799,7 +798,7 @@ class DonorForm extends Component {
                 )}
                 {this.state.readOnly && (
                   <div>
-                   <input type="text" readonly class="form-control" id="static_lab_donor_id" value={this.state.lab_donor_id}></input>
+                   <input type="text" readOnly className="form-control" id="static_lab_donor_id" value={this.state.lab_donor_id}></input>
                    
                   </div>
                 )}
@@ -851,7 +850,7 @@ class DonorForm extends Component {
                 )}
                 {this.state.readOnly && (
                   <div>
-                    <input type="text" readonly class="form-control" id="static_identifying_name" value={this.state.identifying_name}></input>
+                    <input type="text" readOnly className="form-control" id="static_identifying_name" value={this.state.identifying_name}></input>
                   </div>
                 )}
                
@@ -909,7 +908,7 @@ class DonorForm extends Component {
                 )}
                 {this.state.readOnly && (
                   <div>
-                    <input type="text" readonly class="form-control" id="static_protocol" value={this.state.protocol_url}></input>
+                    <input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol_url}></input>
 
                   </div>
                 )}
@@ -957,7 +956,7 @@ class DonorForm extends Component {
                   {this.state.readOnly && (
                     <div>
                       {/*<p>{truncateString(this.state.description, 400)}</p>*/}
-                       <input type="text" readonly class="form-control" id="static_description" value={this.state.description}></input>
+                       <input type="text" readOnly className="form-control" id="static_description" value={this.state.description}></input>
 
                     </div>
                   )}
@@ -986,74 +985,7 @@ class DonorForm extends Component {
                     )}
                   </div>
               </div>
-              {/*(!this.state.readOnly || this.state.metadatas.length > 0) && (
-                <div className="form-group row">
-                  <label
-                    htmlFor="metadata"
-                    className="col-sm-3 col-form-label text-right"
-                  >
-                    Metadata
-                  </label>
-                  <div className="col-sm-8">
-                    {!this.state.readOnly && (
-                      <div className="row">
-                        <div className="col-sm-5">
-                          <button
-                            type="button"
-                            onClick={this.handleAddMetadata}
-                            className="btn btn-secondary btn-block"
-                          >
-                            <FontAwesomeIcon
-                              className="inline-icon"
-                              icon={faPlus}
-                              title="Uploaded images (multiple allowed)."
-                            />
-                            Add Metadata
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {this.state.metadatas.map(metadata => (
-                      <MetadataUpload
-                        key={metadata.id}
-                        id={metadata.id}
-                        file_name={metadata.file_name}
-                        ref={metadata.ref}
-                        error={metadata.error}
-                        readOnly={this.state.readOnly}
-                        formId={this.state.form_id}
-                        onFileChange={this.onFileChange}
-                        validate={this.validateMetadataFiles}
-                        onDelete={this.handleDeleteMetadata}
-                      />
-                    ))}
-                  </div>
-                  <div className="col-sm-1 my-auto text-center">
-                    <span className="invisible text-danger inline-icon">
-                      <FontAwesomeIcon icon={faQuestionCircle} />
-                    </span>
-                    <span>
-                      <FontAwesomeIcon
-                        icon={faQuestionCircle}
-                        data-tip
-                        data-for="metadata_tooltip"
-                      />
-                      <ReactTooltip
-                        id="metadata_tooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                      >
-                        <p>
-                          Metadata describing the specimen. <br /> 
-                          Select a file to uploaded file
-                          such as a spreadsheet, csv file, etc.
-                        </p>
-                      </ReactTooltip>
-                    </span>
-                  </div>
-                </div>
-              )*/}
+             
               {(!this.state.readOnly || this.state.images.length > 0) && (
                 <div className="form-group">
                   {/*<label
@@ -1065,11 +997,10 @@ class DonorForm extends Component {
                     {!this.state.readOnly && (
                       <div>
                        
-                          <button
+                          <Button
                             type="button"
                             onClick={this.handleAddImage}
-                            className="btn btn-secondary btn-block"
-                            data-tip
+                            variant="outlined"                            data-tip
                             data-for="add_image_tooltip"
                           >
                             <FontAwesomeIcon
@@ -1078,7 +1009,7 @@ class DonorForm extends Component {
                               title="Uploaded images (multiple allowed)."
                             />
                             Add an Image File
-                          </button>
+                          </Button>
                          <small id="emailHelp" className="form-text text-muted"> 
                           <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />
@@ -1138,7 +1069,6 @@ class DonorForm extends Component {
                 </React.Fragment>
               )}
             </form>
-            </Paper>
           </div>
         </div>
         <HIPPA show={this.state.show} handleClose={this.hideModal} />

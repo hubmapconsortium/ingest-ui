@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
-import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -9,7 +8,7 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Snackbar from '@material-ui/core/Snackbar';
 //import SnackbarContent from '@material-ui/core/SnackbarContent';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import IconButton from '@material-ui/core/IconButton';
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -132,14 +131,6 @@ class TissueForm extends Component {
     }
   };
 
-  // constructor(props) {
-  //   super(props);
-  // //   // create a ref to store the file Input DOM element   
-  // //   //this.protocolFile = React.createRef();
-  // //   //this.protocol = React.createRef();
-  // //   // this.handleSavedLocations = this.handleSavedLocations.bind(this);
-
-  // }
 
   handleRUIJson = (dataFromChild) => {
     this.setState({
@@ -165,7 +156,7 @@ class TissueForm extends Component {
 
     // let history = this.props.history;
     // //////console.debug('HISTORY', history)
-
+    console.debug('PROPS', this.props);
     const config = {
       headers: {
         Authorization:
@@ -567,7 +558,7 @@ class TissueForm extends Component {
      if (this.props.history) {
        this.props.history.goBack();
     } else {
-      this.props.handleCancel();
+      this.props.onCancel();
     }
   }
 
@@ -1094,6 +1085,7 @@ handleAddImage = () => {
   };
 
   isSpecialOrganType = otype => {
+    console.debug("special org type", otype);
     return RUI_ORGAN_TYPES.includes(otype);
   }
 
@@ -1347,29 +1339,30 @@ handleAddImage = () => {
     if (this.state.editingEntity) {
       if (this.state.readOnly) {
         return (
-          <div className="row"><div className="col-sm-12">
+          <div className="row"><div className="col-sm-12  m-2">
           <Divider />
           </div>
             <div className="col-sm-12 text-right pads">
-              <button
+              <Button
                 type="button"
-                className="btn btn-secondary"
+               variant="outlined"
                 onClick={() => this.handleCancel()}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         );
       } else {
         return (
           <div className="row">
-          <div className="col-sm-12">
+          <div className="col-sm-12 m-2">
             <Divider />
           </div>
-            <div className="col-sm-12 text-right pads">
-              <button
+            <div className="buttonWrapRight">
+              <Button
                 type="submit"
+                variant="contained"
                 className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
               >
@@ -1381,16 +1374,16 @@ handleAddImage = () => {
                   />
                 )}
                 {!this.state.submitting && "Update"}
-              </button>
+              </Button> 
             {!this.state.back_btn_hide && (
-              <button
+              <Button
                 id="editBackBtn"
                 type="button"
-                className="btn btn-secondary"
-                onClick={() => this.handleCancel()}
+                variant="outlined"
+                onClick={() => this.props.onCancel()}
               >
                 Cancel
-              </button>
+              </Button>
               )}
             </div>
           </div>
@@ -1403,8 +1396,8 @@ handleAddImage = () => {
           <div className="col-sm-12">
               <Divider />
             </div>
-            <div className="col-md-11 text-right pads">
-            <button
+            <div className="buttonWrapRight">
+            <Button
               type="submit"
               className="btn btn-primary mr-1"
               disabled={this.state.submitting}
@@ -1417,14 +1410,14 @@ handleAddImage = () => {
                 />
               )}
               {!this.state.submitting && "Generate ID"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="btn btn-secondary"
+             variant="outlined"
               onClick={() => this.handleCancel()}
             >
               Cancel
-            </button>
+            </Button>
             </div>
         </div>
       );
@@ -1697,7 +1690,7 @@ handleAddImage = () => {
   render() {
     return (
       <div className="row">
-       <Paper className="paper-container">
+
         {this.state.related_group_ids.length > 1
           && (
           <div className="alert alert-primary col-sm-12" role="alert">
@@ -1719,13 +1712,13 @@ handleAddImage = () => {
                       if (item.uuid === this.state.editingEntity.uuid) {
                         return (
                           <li key={item.submission_id}>
-                             <button type="button" className="btn btn-link disabled">{`${item.submission_id}`}</button>
+                             <Button type="button" className="btn btn-link disabled">{`${item.submission_id}`}</Button>
                           </li>
                           );
                       } else {
                         return (
                           <li key={item.submission_id}>
-                          <button type="button" className="btn btn-link" onClick={(e) => this.handleMultiEdit(item.uuid, e)}>{`${item.submission_id}`}</button>
+                          <Button type="button" className="btn btn-link" onClick={(e) => this.handleMultiEdit(item.uuid, e)}>{`${item.submission_id}`}</Button>
                           </li>
                          );
                       }
@@ -1783,7 +1776,7 @@ handleAddImage = () => {
             </React.Fragment>
           )}
      
-          <form onSubmit={this.handleSubmit}>
+          <form className="formSpacer" onSubmit={this.handleSubmit}>
             <div className="form-group">
               <label htmlFor="source_uuid">
                 Source ID <span className="text-danger">*</span>  <FontAwesomeIcon
@@ -1822,7 +1815,8 @@ handleAddImage = () => {
                       onFocus={this.handleLookUpClick}
                       autoComplete='off'
                     />
-                     <button
+                     <Button
+                      variant="outlined"
                       className="btn btn-outline-secondary"
                       type="button"
                       onClick={this.handleLookUpClick}
@@ -1832,7 +1826,7 @@ handleAddImage = () => {
                           data-tip
                           data-for="source_uuid_tooltip"
                       />
-                    </button>
+                    </Button>
                   </div>
                   
                     <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
@@ -2355,14 +2349,14 @@ handleAddImage = () => {
                       </ReactTooltip>
                     </span>
                 </label>
-                  <div className="col-sm-4 text-center">
-                    <button
-                      type="button"
+                  <div className="col-sm-4 text-left">
+                    <Button
                       onClick={this.handleAddRUILocation}
+                      variant="contained"
                       className="btn btn-primary btn-block"
                     >
                       Register Location
-          </button>
+                  </Button>
                   </div>
                   { this.state.rui_click && this.state.RUI_ACTIVE && (
                   <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
@@ -2378,17 +2372,18 @@ handleAddImage = () => {
                   { this.state.rui_check && (
                     <React.Fragment>
             
-                      <div className="col-sm-2">
+                      <div className="col-sm-2 text-left">
                       <img src={check}
                           alt="check"
                           className="check" />
-                        <button
+                        <Button
+                          variant="text"
                           className="btn btn-link"
                           type="button"
                           onClick={this.openRUIModalHandler}
                         >
                           View Location
-                        </button>
+                        </Button>
                       </div>
                       <RUIModal
                         className="Modal"
@@ -2441,14 +2436,15 @@ handleAddImage = () => {
                     this.state.rui_check && this.state.RUI_ACTIVE &&(
                       <React.Fragment>
                        
-                        <div className="col-sm-3 text-center">
-                          <button
+                        <div className="col-sm-3 text-left">
+                          <Button
                             type="button"
                             onClick={this.handleAddRUILocation}
+                            variant="contained"
                             className="btn btn-primary btn-block"
                           >
                             Modify Location Information
-                          </button>
+                          </Button>
                         </div>
                         { this.state.rui_click && (
                            <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
@@ -2466,13 +2462,13 @@ handleAddImage = () => {
 
                       <React.Fragment>
                     <div className="col-sm-3">
-                      <button
+                      <Button
                         className="btn btn-link"
                         type="button"
                         onClick={this.openRUIModalHandler}
                       >
                         View Location
-                    </button>
+                    </Button>
                     </div>
                     <RUIModal
                       className="Modal"
@@ -2490,13 +2486,14 @@ handleAddImage = () => {
                     !this.state.rui_check && this.state.RUI_ACTIVE && (
                       <React.Fragment>
                         <div className="col-sm-4 text-center">
-                          <button
+                          <Button
                             type="button"
                             onClick={this.handleAddRUILocation}
                             className="btn btn-primary btn-block"
+                            variant="contained"
                           >
                             Register Location
-                        </button>
+                        </Button>
                 
                         </div>
                     
@@ -2628,18 +2625,20 @@ handleAddImage = () => {
               )}
             </div>
           */}
-            {((!this.state.readOnly || this.state.metadatas.length > 0) && 
+            <div className="buttonWrapLeft">
+            
+                        {((!this.state.readOnly || this.state.metadatas.length > 0) && 
               !this.state.multiple_id) && (
               <div className="form-group">
                 
                 <div>
                   {!this.state.readOnly && (
                     <div>
-                      <div>
-                        <button
+                      <div className="">
+                        <Button
                           type="button"
                           onClick={this.handleAddMetadata}
-                          className="btn btn-secondary btn-block"
+                          variant="outlined"
                           data-tip
                           data-for="add_meta_tooltip"
                         >
@@ -2649,7 +2648,7 @@ handleAddImage = () => {
                             title="Uploaded meta data"
                           />
                             Add a Metadata file
-                          </button>
+                          </Button>
                            <ReactTooltip
                               id="add_meta_tooltip"
                               className={"tooltip"}
@@ -2689,11 +2688,12 @@ handleAddImage = () => {
                 <div>
                   {!this.state.readOnly && (
                     <div>
-                      <div>
-                        <button
+                      <div className="">
+                        <Button
+                          className="mr-2"
                           type="button"
                           onClick={this.handleAddImage}
-                          className="btn btn-secondary btn-block"
+                          variant="outlined"
                           data-tip
                           data-for="add_image_tooltip"
                         >
@@ -2703,8 +2703,8 @@ handleAddImage = () => {
                             title="Uploaded images (multiple allowed)."
                           />
                             Add an Image file
-                          </button> 
-                          <small id="emailHelp" className="form-text text-muted"> 
+                          </Button> 
+                          <small id="emailHelp" className="form-text text-muted m-3"> 
                           <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />
                           </span> Upload de-identified images only</small>
@@ -2752,10 +2752,10 @@ handleAddImage = () => {
                   {!this.state.readOnly && (
                     <div>
                       <div>
-                        <button 
+                        <Button 
                           type="button"
                           onClick={this.handleAddThumbnail}
-                          className="btn btn-secondary btn-block"
+                          variant="outlined"                          
                           data-tip
                           data-for="add_thumbimage_tooltip"
                         >
@@ -2765,8 +2765,8 @@ handleAddImage = () => {
                             title="Uploaded images (multiple allowed)."
                           />
                             Add a Thumbnail file
-                          </button> 
-                          <small id="emailHelp" className="form-text text-muted"> 
+                          </Button> 
+                          <small id="emailHelp" className="form-text text-muted m-3"> 
                           <span className="text-danger inline-icon">
                             <FontAwesomeIcon icon={faUserShield} />
                           </span> Upload de-identified images only</small>
@@ -2805,6 +2805,7 @@ handleAddImage = () => {
                     </div>
 
               )}
+            </div>
             {this.state.submit_error && (
               <div className="alert alert-danger col-sm-12" role="alert">
                 <p>
@@ -2833,7 +2834,8 @@ handleAddImage = () => {
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}
         />
-        </Paper>
+
+
          <Snackbar open={this.state.show_snack} 
                       onClose={this.closeSnack}
                       anchorOrigin={{
@@ -2862,10 +2864,14 @@ handleAddImage = () => {
                       message={<span id="client-snackbar">You have made changes, please UPDATE to save.</span>}
                       action={
                         <React.Fragment>
-                         <Button color="inherit" size="small" onClick={this.snackCancel}>
+                         <Button 
+                          variant="contained"
+                          color="inherit" 
+                          size="small" 
+                          onClick={this.snackCancel}>
                             Cancel Changes
-                          </Button>
-                          </React.Fragment>
+                        </Button>
+                        </React.Fragment>
                       }
                   >
 

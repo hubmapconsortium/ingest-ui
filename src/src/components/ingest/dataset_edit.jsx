@@ -3,7 +3,7 @@ import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
@@ -22,7 +22,7 @@ import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
-import { withRouter } from 'react-router-dom';
+//import { withRouter } from 'react-router-dom';
 import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
@@ -160,10 +160,10 @@ class DatasetEdit extends Component {
         }
       });
     }else{
-      console.debug("No editingDataset Prop, Must be a New Form")
+     //console.debug("No editingDataset Prop, Must be a New Form")
     }
 
-    console.log("info is ", localStorage.getItem("info"));
+   //console.log("info is ", localStorage.getItem("info"));
     const config = {
       headers: {
         Authorization:
@@ -225,9 +225,19 @@ class DatasetEdit extends Component {
         });
       })
       .catch((err) => {
-        if (err.response.status === 401) {
+        if (err.response && err.response.status === 401) {
+         //console.debug("Err w response", err.response);
+          this.props.passError(err);
+          // Rather than reload here, let's have a modal or such'
+          // Telling the user their session has expired, and invite 
+          // then to log in again
+          // localStorage.setItem("isAuthenticated", false);
+          // window.location.reload();
+        }else if(err.status){
+         //console.debug("Err wo response", err.response);
           localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
+          // Stop reloading; handle & pass the error first
+          // window.location.reload(); 
         }
       });
 
@@ -240,7 +250,7 @@ class DatasetEdit extends Component {
           source_uuids: this.props.editingDataset.direct_ancestors
         });
       } catch {
-        console.debug("editingDataset Prop Not Found")
+       //console.debug("editingDataset Prop Not Found")
       }
 
    
@@ -295,6 +305,7 @@ class DatasetEdit extends Component {
           this.setState({
             badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
           });
+         //console.debug("this.state.status", this.state.status);
           axios
             .get(
               `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingDataset.uuid}`,
@@ -341,10 +352,10 @@ class DatasetEdit extends Component {
   };
 
   showConfirmDialog(row,index) {
-    console.debug("ShowConfDia")
+   //console.debug("ShowConfDia")
 
-    console.debug("row", row)
-    console.debug("row index", index)
+   //console.debug("row", row)
+   //console.debug("row index", index)
     this.setState({ 
         confirmDialog: true,
         editingSource: row,
@@ -366,7 +377,7 @@ class DatasetEdit extends Component {
   };
 
   handleLookUpClick = () => {
-    console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.lookUpCancelled, this.state.LookUpShow)
+   //console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.lookUpCancelled, this.state.LookUpShow)
     if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
@@ -462,7 +473,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-      console.log('ping!', id);
+     //console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -491,7 +502,7 @@ class DatasetEdit extends Component {
             data_types: data_types,
             has_other_datatype: value === "other",
           });
-          console.log("other", this.state.has_other_datatype);
+         //console.log("other", this.state.has_other_datatype);
           if (value !== "other") {
             const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
             const data_types = this.state.data_types;
@@ -575,7 +586,7 @@ class DatasetEdit extends Component {
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
     
-    console.debug("handleSelectClick",this.state.selectedSource,  selection.uuid, this.state.selectedSource !== selection.uuid, selection);
+   //console.debug("handleSelectClick",this.state.selectedSource,  selection.uuid, this.state.selectedSource !== selection.uuid, selection);
       if(this.state.selectedSource !== selection.row.uuid){
         this.setState({
           selectedSource: selection.row.uuid
@@ -593,19 +604,19 @@ class DatasetEdit extends Component {
         // this.cancelLookUpModal();
       });
     }else{
-      console.debug("Not adding to slist; already added");
+     //console.debug("Not adding to slist; already added");
     }
   };
 
   sourceRemover = (row) => {
-    console.debug("Removing Source ",row.uuid)
+   //console.debug("Removing Source ",row.uuid)
     var slist=this.state.source_uuid_list;
     slist =  slist.filter(source => source.uuid !== row.uuid)
       this.setState( {
         source_uuid_list: slist,
         slist: slist,
       } ,() => {
-        console.log("NEW LIST ",this.state.source_uuid_list);
+       //console.log("NEW LIST ",this.state.source_uuid_list);
         // this.hideConfirmDialog();
         
       });
@@ -698,7 +709,8 @@ class DatasetEdit extends Component {
         {this.state.writeable && (
         <React.Fragment>
           <div className="mt-2 text-right">
-            <button
+            <Button
+              variant="contained"
               type='button'
               className='btn btn-secondary'
               onClick={() => this.handleLookUpClick()} 
@@ -710,7 +722,7 @@ class DatasetEdit extends Component {
                 className='fa button-icon ml-2'
                 icon={faPlus}
               />
-            </button>
+            </Button>
           </div>
         </React.Fragment>
         )}
@@ -723,7 +735,7 @@ class DatasetEdit extends Component {
 
   getUuidList = (new_uuid_list) => {
     //this.setState({uuid_list: new_uuid_list});
-   console.log('**getUuidList', new_uuid_list)
+  //console.log('**getUuidList', new_uuid_list)
     this.setState(
       {
         source_uuid: this.getSourceAncestor(new_uuid_list),
@@ -845,7 +857,7 @@ class DatasetEdit extends Component {
           }
         })
         .catch((err) => {
-          console.debug("Err Caught in validateUUID catch for then Catch")
+         //console.debug("Err Caught in validateUUID catch for then Catch")
           this.setState((prevState) => ({
             submitErrorResponse:err,
             source_entity: null,
@@ -863,7 +875,7 @@ class DatasetEdit extends Component {
           return isValid;
         });
     } else {
-      console.debug("Err Caught in validateUUID Return")
+     //console.debug("Err Caught in validateUUID Return")
       this.setState((prevState) => ({
         formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
       }));
@@ -888,8 +900,8 @@ class DatasetEdit extends Component {
   };
 
   handleSubmit = (i) => {
-    console.log('SUBMIT STATE', this.state)
-    console.log('SOURCE UUIDS', this.state.source_uuid_list)
+   //console.log('SUBMIT STATE', this.state)
+   //console.log('SOURCE UUIDS', this.state.source_uuid_list)
     const data_type_options = new Set(this.state.data_type_dicts.map((elt, idx) => {return elt.name}));
     const data_types = this.state.data_types;
     const other_dt = Array.from(data_types).filter(
@@ -985,20 +997,20 @@ class DatasetEdit extends Component {
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
-                  console.debug("ERROR ", error)
+                 //console.debug("ERROR ", error)
                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
                 });
             } else if (i === "processing") {
                ////console.log('Submit Dataset...');
-               console.log("ABout to call ingest_api_dataset_submit with ", data)
+              //console.log("data is ", data)
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status === 200) {
                       ////console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else {
-                      console.log("ERR response");
-                      console.log(response);
+                     //console.log("ERR response");
+                     //console.log(response);
                       this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                     }
                 });
@@ -1015,7 +1027,7 @@ class DatasetEdit extends Component {
                              ////console.log(response.results);
                             this.props.onUpdated(response.results);
                           } else {
-                            console.debug("ERROR ",response)
+                           //console.debug("ERROR ",response)
                             this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                           }
                 });
@@ -1037,12 +1049,12 @@ class DatasetEdit extends Component {
                 // data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
               }
 
-              console.log('DATASET TO SAVE', JSON.stringify(data))
+             //console.log('DATASET TO SAVE', JSON.stringify(data))
               // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    console.log('create Dataset...', response.results);
+                   //console.log('create Dataset...', response.results);
                      this.setState({
                         //globus_path: res.data.globus_directory_url_path,
                         display_doi: response.results.display_doi,
@@ -1057,33 +1069,33 @@ class DatasetEdit extends Component {
                       this.setState({
                         globus_path: res.data,
                       }, () => {
-                        console.debug('globus_path', res.data)
+                       //console.debug('globus_path', res.data)
                         this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
                         this.onChangeGlobusURL();
                       });
                     })
                     .catch((err) => {
-                     console.log('ERROR catch', err)
+                    //console.log('ERROR catch', err)
                       if (err.response && err.response.status === 401) {
                         localStorage.setItem("isAuthenticated", false);
                         window.location.reload();
                       }
                     });
                   } else {
-                    console.debug("Error response", response) 
+                   //console.debug("Error response", response) 
                     this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.data.error} ,
                       () => {
-                        console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
+                       //console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
                       });
                    
                   }
                 
               })
               .catch((err) => {
-                console.debug("err", err)
+               //console.debug("err", err)
                 this.setState({ submit_error: true, submitting: false, submitErrorResponse:err } ,
                   () => {
-                    console.debug("CATCH ", err) 
+                   //console.debug("CATCH ", err) 
                   });
               });
           }  //else
@@ -1095,7 +1107,7 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-      console.debug("data_types", this.state.data_types);
+     //console.debug("data_types", this.state.data_types);
       // if (!validateRequired(this.state.lab_dataset_id)) {
       //   this.setState((prevState) => ({
       //     formErrors: { ...prevState.formErrors, lab_dataset_id: "required" },
@@ -1153,7 +1165,7 @@ class DatasetEdit extends Component {
       // do a check to on the data type to see what if it normally contains pii
       let pii_check = this.assay_contains_pii(this.state.data_types);
 
-      console.debug('VALIDATE: pii_check', pii_check)
+     //console.debug('VALIDATE: pii_check', pii_check)
       if (this.state.contains_human_genetic_sequences === true && pii_check === true) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
@@ -1188,7 +1200,7 @@ class DatasetEdit extends Component {
   try {
     return source_uuids
   } catch {
-    console.debug("getSourceAncestory Not Found?! ",source_uuids)
+   //console.debug("getSourceAncestory Not Found?! ",source_uuids)
   }
  
 }
@@ -1198,7 +1210,7 @@ class DatasetEdit extends Component {
     try {
       return source_uuids[0].hubmap_id;  // just get the first one
     } catch {
-      console.debug("getSourceAncestory Not Found?! ",source_uuids)
+     //console.debug("getSourceAncestory Not Found?! ",source_uuids)
     }
     return ""
   }
@@ -1208,7 +1220,7 @@ class DatasetEdit extends Component {
     try {
       return source_uuids[0];  // just get the first one
     } catch {
-      console.debug("getSourceAncestorEntity Not Found?! ",source_uuids)
+     //console.debug("getSourceAncestorEntity Not Found?! ",source_uuids)
     }
     return ""
   }
@@ -1218,7 +1230,7 @@ class DatasetEdit extends Component {
     // console.debug("~~~~~~~~~~` generateDisplaySourceId", source_uuids);
     //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
-      console.debug("source_uuids.length > 1")
+     //console.debug("source_uuids.length > 1")
       //is_subset is a flag indicating if the source_uuid list is
       //a consecutive set of values (ex: 1-5) or a subset of values (ex: 1,3,5)
       var is_subset = "";
@@ -1308,7 +1320,7 @@ class DatasetEdit extends Component {
             && this.state.previous_revision_uuid === undefined 
             && this.state.status.toUpperCase() === "PUBLISHED") {
          return (
-           <div className="row">
+           <div className="buttonWrapRight">
                 {this.reprocessButton()}
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
@@ -1318,7 +1330,7 @@ class DatasetEdit extends Component {
             
     if (this.state.writeable === false) {            
       return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.cancelButton()}
             </div>
           )
@@ -1327,9 +1339,9 @@ class DatasetEdit extends Component {
       if (["NEW", "INVALID", "REOPENED", "ERROR"].includes(
               this.state.status.toUpperCase())) {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.state.has_submit_priv && (
+                {!this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
                 }
                 {this.cancelButton()}
@@ -1338,7 +1350,7 @@ class DatasetEdit extends Component {
       }
       if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton("published", "Publish")}
                 {this.cancelButton()}
             </div>
@@ -1346,7 +1358,7 @@ class DatasetEdit extends Component {
       }   
       if (this.state.status.toUpperCase() === 'PUBLISHED') {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
@@ -1355,7 +1367,7 @@ class DatasetEdit extends Component {
       } 
       if (this.state.status.toUpperCase() === 'QA') {
         return (
-            <div className="row">
+            <div className="buttonWrapRight">
                 {this.aButton("hold", "Hold")}
                 {this.aButton("reopened", "Reopen")}
                 {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
@@ -1370,13 +1382,13 @@ class DatasetEdit extends Component {
   // Cancel button
   cancelButton() {
     return(<React.Fragment>
-        <div className="col-sm">
-          <button
+        <div >
+          <Button
               type='button'
-              className='btn btn-secondary btn-block'
-              onClick={() => this.props.handleCancel()}>
+              variant="outlined"
+              onClick={() => this.props.HandleCancel()}>
               Cancel
-          </button>
+          </Button>
       </div>
        </React.Fragment>
       )
@@ -1385,10 +1397,11 @@ class DatasetEdit extends Component {
   // General button
   aButton(state, which_button) {
     return (<React.Fragment>
-      <div className="col-sm">
-        <button
+      <div >
+        <Button
           type='button'
-          className='btn btn-info btn-block'
+          variant="contained"
+          // className='btn btn-info btn-block'
           disabled={this.state.submitting}
           onClick={() =>
             this.handleButtonClick(state)
@@ -1403,7 +1416,7 @@ class DatasetEdit extends Component {
             />
           )}
           {!this.state.submitting && which_button}
-        </button>
+        </Button>
         </div>
         </React.Fragment>
       )
@@ -1411,10 +1424,11 @@ class DatasetEdit extends Component {
 
   reprocessButton() {
     return (<React.Fragment>
-      <div className="col-sm">
-        <button
+      <div >
+        <Button
+          variant="contained"
           type='button'
-          className='btn btn-warning btn-block'
+          // className='btn btn-warning btn-block'
           disabled={this.state.submitting}
           onClick={() =>
             this.handleReprocess()
@@ -1429,7 +1443,7 @@ class DatasetEdit extends Component {
             />
           )}
           {!this.state.submitting && "Reprocess"}
-        </button>
+        </Button>
         </div>
         </React.Fragment>
       )
@@ -1588,12 +1602,12 @@ class DatasetEdit extends Component {
    
   assay_contains_pii(assay) {
     let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
-    console.debug('assay_contains_pii', assay_val)
+   //console.debug('assay_contains_pii', assay_val)
     for (let i in this.state.data_type_dicts) {
       let e = this.state.data_type_dicts[i]
 
       if (e['name'] === assay_val) {
-        console.debug('assay_contains_pii?', e['contains-pii'])
+       //console.debug('assay_contains_pii?', e['contains-pii'])
           return e['contains-pii']
       }
     }
@@ -1603,75 +1617,83 @@ class DatasetEdit extends Component {
   render() {
     return (
       <React.Fragment>
-        <Paper className="paper-container">
         <form>
-          <div className='row m-0'>
-                <h3 className='float-left mr-1'>
-                  <span
-                    className={"badge " + this.state.badge_class}
-                    style={{ cursor: "pointer" }}
-                    onClick={() =>
-                      this.showErrorMsgModal(
-                        this.props.editingDataset.pipeline_message
-                      )
-                    }
-                  >
-                    {this.state.status}
-                  </span>
-                </h3>
-
-            <div className='alert alert-danger' role='alert'>
-              <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
-              data containing any of the{" "}
+          <div className='row'>
+          <div className='col-md-6'>
+            <h3>
               <span
+                className={"badge " + this.state.badge_class}
                 style={{ cursor: "pointer" }}
-                className='text-primary'
-                onClick={this.showModal}
-              >
-                18 identifiers specified by HIPAA
+                onClick={() =>
+                  this.showErrorMsgModal(
+                    this.props.editingDataset.pipeline_message
+                )}> 
+                  {this.state.status}
               </span>
-              .
-            </div>
-            <div className='col-sm-10'>
-              <h3>
-                {this.props.editingDataset &&
-                  "HuBMAP Dataset ID " +
-                    this.state.display_doi}
+
+              {this.props.editingDataset && (
+                <span className="mx-1"> HuBMAP Dataset ID  {this.state.display_doi} </span>
+              )}
               </h3>
-            </div>
+              <p>
+              <strong>
+                  <big>
+
+                    {this.props.editingDataset &&
+                      this.props.editingDataset.title}
+                  </big>
+                </strong>
+              </p>
+
+              <p>
+              <strong>
+                <big>
+                  
+                  {this.state.globus_path && (
+
+                    <a
+                      href={this.state.globus_path}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
+                      <FontAwesomeIcon icon={faExternalLinkAlt} />
+                    </a>
+                  )}
+                  
+                </big>
+              </strong>
+            </p>
+
+
+         
           </div>
 
-          <div className='row m-0'>
-                  <p>
-                    <strong>
-                      <big>
+          <div className='col-md-6'>
+          
+          
+          <div className='alert alert-danger' role='alert'>
+        <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
+        data containing any of the{" "}
+        <span
+          style={{ cursor: "pointer" }}
+          className='text-primary'
+          onClick={this.showModal}
+        >
+          18 identifiers specified by HIPAA
+        </span>
+        .
+      </div>
+           
+          </div>  
 
-                        {this.props.editingDataset &&
-                          this.props.editingDataset.title}
-                      </big>
-                    </strong>
-                  </p>
-                </div>
-                <div>
-                  <p>
-                    <strong>
-                      <big>
-                       
-                        {this.state.globus_path && (
 
-                          <a
-                            href={this.state.globus_path}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                          >
-                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
-                            <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </a>
-                        )}
-                       
-                      </big>
-                    </strong>
-                  </p>
+              
+          </div>
+
+
+          <div className='row'>
+                  
           </div>
 
           
@@ -1688,7 +1710,7 @@ class DatasetEdit extends Component {
                   />
                 </DialogContent>  
                 <DialogActions>
-                  <Button onClick={this.cancelLookUpModal} color="primary">
+                  <Button onClick={this.cancelLookUpModal} variant="contained" color="primary">
                     Close
                   </Button>
                 </DialogActions>
@@ -2118,7 +2140,7 @@ class DatasetEdit extends Component {
           <div className='row'>
             <div className='col-sm-12 text-center alert'>
               <h4>
-                {(this.props.editingDataset &&
+                {(this.props.editingDataset && this.props.editingDataset.status &&
                   this.props.editingDataset.status.toUpperCase()) ||
                   "STATUS"}
               </h4>
@@ -2128,10 +2150,9 @@ class DatasetEdit extends Component {
             </div>
           </div>
         </Modal>
-        </Paper>
       </React.Fragment>
     );
   }
 }
 
-export default withRouter(DatasetEdit);
+export default DatasetEdit;

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import ErrorIcon from '@material-ui/icons/Error';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
@@ -26,7 +26,7 @@ import {ingest_api_bulk_entities_upload,
         ingest_api_users_groups} from '../../service/ingest_api';
 
 
-class bulkSamples extends Component {
+class bulkCreation extends Component {
 
   constructor(props) {
     super(props);
@@ -903,5 +903,5 @@ renderFileGrabber = () =>{
   }
 }
 
-export default bulkSamples;
+export default bulkCreation;
  
