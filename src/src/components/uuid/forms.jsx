@@ -5,10 +5,11 @@ import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
+// import NewDatasetModal from "../../ingest/newDatasetModal";
 import NewDatasetModal from "../ingest/newDatasetModal";
 
 
-class Forms extends Component {
+class Forms extends Component { 
   state = { formType: "----",
     createSuccess: false,
     isDirty: false,
