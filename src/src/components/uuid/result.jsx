@@ -29,6 +29,7 @@ class Result extends Component {
   };
 
   handleReturnClick = e => {
+    console.debug("handleReturnClick", e);
     this.props.onReturn();
   };
 
