@@ -954,6 +954,10 @@ renderInfoPanel() {
         <DataGrid 
               rows={this.state.datarows}
               columns={this.state.column_def}
+              columnVisibilityModel={{
+                // Hide columns status and traderName, the other columns will remain visible
+                created_by_user_displayname: false,
+              }}
               disableColumnMenu={true}
               pagination
               hideFooterSelectedRowCount

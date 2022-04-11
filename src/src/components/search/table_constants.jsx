@@ -20,6 +20,7 @@ export const COLUMN_DEF_DONOR = [
 
 // SAMPLE COLUMNS
 export const COLUMN_DEF_SAMPLE = [
+    { field: 'created_by_user_displayname', headerName: 'Created By', width: 210, hidden: true},
   	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 150 },
   	{
