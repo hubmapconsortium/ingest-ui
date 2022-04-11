@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolder
 } from "@fortawesome/free-solid-svg-icons";
+import Button from '@mui/material/Button';
 
 class Result extends Component {
   state = { results: [] };
@@ -107,8 +108,13 @@ class Result extends Component {
                   )}
                   { this.props.result !== undefined  && 
                       this.props.result.entity.specimen_type === "organ" && (
-                      <button
+                      <Button
                         className="btn btn-primary mr-2"
+                        variant="contained" 
+                        color="success"
+                        sx={{ 
+                          marginRight: '10px',
+                        }}
                         type="button"
                         onClick={() =>
                           this.props.onCreateNext(
@@ -117,15 +123,16 @@ class Result extends Component {
                         }
                       >
                         Register tissue samples from this organ
-                      </button>
+                      </Button>
                     )}
-                  <button
+                  <Button
                     className="btn btn-success"
                     type="button"
+                    variant="contained" 
                     onClick={this.handleReturnClick}
                   >
                     Done
-                  </button>
+                  </Button>
                   </div>
               </div>
             
