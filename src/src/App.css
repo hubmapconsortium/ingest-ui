@@ -789,3 +789,12 @@ svg.invalid{
   color: #fff;
   background-color: #17a2b8;
 }
+
+body{
+  background-color:"black!important"
+}
+.donor-form{
+}
+.donor-form .form-group{
+  margin-bottom:20px;
+}

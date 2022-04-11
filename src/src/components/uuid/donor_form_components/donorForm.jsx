@@ -747,7 +747,7 @@ class DonorForm extends Component {
           )}
          
           <div className="col-sm-12 form-border">
-            <form onSubmit={this.handleSubmit}>
+            <form onSubmit={this.handleSubmit} className="donor-form">
              
               <div className="text-danger">
                 <p>
