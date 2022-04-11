@@ -41,8 +41,9 @@ export const Navigation = (props) => {
 
 
   const handleClick_I = (event) => {
-  //console.debug("HandleClick", event );
+    console.debug("HandleClick", event );
     setAnchorEl_I(event.currentTarget);
+    // setAnchorEl_I(!anchorEl_I);
   };
 
   const handleClick_B = (event) => {
@@ -52,13 +53,13 @@ export const Navigation = (props) => {
   
   const handleClose = () => {
   //console.debug("HandleClose", e);
-    setAnchorEl_I(null);
-    setAnchorEl_B(null);
+    setAnchorEl_I();
+    setAnchorEl_B();
   };
   
   const OpenUploads = () => {
     setUploadsDialog(true);
-    setAnchorEl_B(null);
+    setAnchorEl_B();
   };
 
   const onClose = () => {
@@ -117,7 +118,7 @@ export const Navigation = (props) => {
 
 
                 <Button 
-                  className="ml-2"
+                  // className="ml-2"
                   id="IndividualButton"
                   aria-controls={open_I ? 'IndividualMenu' : undefined}
                   aria-haspopup="true"
@@ -136,18 +137,21 @@ export const Navigation = (props) => {
                     <MenuItem 
                       className="nav-link" 
                       component={Link}
+                      onClick={handleClose}
                       to="/new/donor" >
                       Donor
                     </MenuItem>
                     <MenuItem 
                       className="nav-link"
                       component={Link}
+                      onClick={handleClose}
                       to="/new/sample" >
                       Sample
                     </MenuItem>
                     <MenuItem 
                       className="nav-link"
                       component={Link}
+                      onClick={handleClose}
                       to="/new/dataset" >
                       Dataset
                     </MenuItem>
@@ -171,10 +175,12 @@ export const Navigation = (props) => {
                     }}>
                     <MenuItem 
                       className="nav-link"
+                      onClick={handleClose}
                       component={Link}
                       to="/bulk/donors" >Donors</MenuItem>
                     <MenuItem 
                       className="nav-link"
+                      onClick={handleClose}
                       component={Link}
                       to="/bulk/samples" >Samples</MenuItem>
                     <MenuItem 

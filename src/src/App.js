@@ -117,6 +117,15 @@ export function App (props){
 
 
 
+  const onClose = (event, reason) => {
+      // setLoginDialogRender(true)
+      console.debug("onClose ", event, reason);
+      navigate("/");
+      // setLoginDialogRender(false);
+    
+  }
+
+
   const onCloseLogin = (event, reason) => {
       // setLoginDialogRender(true)
       console.debug("onCloseLogin ", event, reason);
@@ -222,9 +231,9 @@ export function App (props){
               <Route path="/dataset/:uuid" element={<RenderDataset  onCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  onCancel={handleCancel} status="view"/>} />
               
-              <Route path="/new/donor" element={ <Forms formType='donor' onCancel={handleCancel} />}/>
-              <Route path="/new/sample" element={<Forms formType='sample' onCancel={handleCancel} /> }/>
-              <Route path="/new/dataset" element={<Forms formType='dataset' onCancel={handleCancel} /> }/> 
+              <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} onCancel={handleCancel} />}/>
+              <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} onCancel={handleCancel} /> }/>
+              <Route path="/new/dataset" element={<Forms formType='dataset' onReturn={onClose} onCancel={handleCancel} /> }/> 
 
               <Route path="/new/sample" element={<RenderSample status="new" />} />
               <Route path="/new/dataset" element={<RenderDataset status="new" />} />

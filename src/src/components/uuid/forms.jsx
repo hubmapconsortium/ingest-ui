@@ -152,7 +152,8 @@ class Forms extends Component {
         <DialogContent>
         <Result
           result={this.state.result}
-          onReturn={this.props.onCancel}
+          onReturn={this.props.onReturn}
+          onCancel={this.props.onCancel}
           onCreateNext={this.onCreateNext}
           entity={this.state.entity}
         />
@@ -171,7 +172,7 @@ class Forms extends Component {
       return (
         <TissueForm
           onCreated={this.onCreated}
-          handleCancel={this.props.onCancel}
+          onReturn={this.props.onReturn}
           specimenType={this.state.specimenType}
           source_entity_type={this.state.source_entity_type}
           sourceUUID={this.state.sourceUUID}
@@ -184,7 +185,7 @@ class Forms extends Component {
          <DatasetEdit
             testProp="HAIL"
             onCreated={this.onCreated}
-            handleCancel={this.props.onCancel}
+            onReturn={this.props.onCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}
             newForm={false}
             testData="DISCORDIA!"
