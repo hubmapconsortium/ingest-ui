@@ -1776,7 +1776,7 @@ handleAddImage = () => {
             </React.Fragment>
           )}
      
-          <form className="formSpacer" onSubmit={this.handleSubmit}>
+          <form className="formSpacer expanded-form" onSubmit={this.handleSubmit}>
             <div className="form-group">
               <label htmlFor="source_uuid">
                 Source ID <span className="text-danger">*</span>  <FontAwesomeIcon

@@ -793,8 +793,12 @@ svg.invalid{
 body{
   background-color:"black!important"
 }
-.donor-form{
-}
-.donor-form .form-group{
+
+.expanded-form .form-group{
   margin-bottom:20px;
+}
+
+.badge-neutral{
+  background-color:#424242;
+  color:white;
 }

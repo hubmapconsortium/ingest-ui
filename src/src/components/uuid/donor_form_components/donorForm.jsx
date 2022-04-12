@@ -546,6 +546,7 @@ class DonorForm extends Component {
             <Button
               type="submit"
               className="btn btn-primary mr-1"
+              variant="contained"
               disabled={this.state.submitting}
             >
               {this.state.submitting && (
@@ -747,7 +748,7 @@ class DonorForm extends Component {
           )}
          
           <div className="col-sm-12 form-border">
-            <form onSubmit={this.handleSubmit} className="donor-form">
+            <form onSubmit={this.handleSubmit} className="expanded-form">
              
               <div className="text-danger">
                 <p>
@@ -972,7 +973,7 @@ class DonorForm extends Component {
                   </label>
                   <div className="col-sm-8 my-auto">
                     {this.state.donor_metadata_status || (
-                      <span className="badge badge-secondary">No value set</span>
+                      <span className="badge badge-neutral">No value set</span>
                     )}
                     {this.state.donor_metadata_status === 0 && (
                       <span className="badge badge-secondary">No metadata</span>
