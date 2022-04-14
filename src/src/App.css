@@ -789,3 +789,16 @@ svg.invalid{
   color: #fff;
   background-color: #17a2b8;
 }
+
+body{
+  background-color:"black!important"
+}
+
+.expanded-form .form-group{
+  margin-bottom:20px;
+}
+
+.badge-neutral{
+  background-color:#424242;
+  color:white;
+}

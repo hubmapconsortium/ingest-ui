@@ -1617,7 +1617,7 @@ class DatasetEdit extends Component {
   render() {
     return (
       <React.Fragment>
-        <form>
+        <form className="expanded-form">
           <div className='row'>
           <div className='col-md-6'>
             <h3>
