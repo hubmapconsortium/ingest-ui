@@ -1341,7 +1341,7 @@ class DatasetEdit extends Component {
         return (
             <div className="buttonWrapRight">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {!this.state.has_submit_priv && (
+                {!this.state.has_submit_priv &&  this.props.editingDataset && (
                   this.aButton("processing", "Submit"))
                 }
                 {this.cancelButton()}
