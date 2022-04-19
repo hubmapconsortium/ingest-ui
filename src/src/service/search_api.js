@@ -195,9 +195,11 @@ lab_donor_id
 */
   
 
-console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
-  console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
+// console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
+// console.debug("requestBody", requestBody);
+  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
   return requestBody.toJSON();
+
 }
 
 export function fixKeywordText(text) {
