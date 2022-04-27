@@ -635,12 +635,13 @@ class SearchComponent extends Component {
         });
       }else{
         console.debug("Error on Search ", response)
+        var errStringMSG = ""
         var errString = response.results.data.error.root_cause[0].type+" | "+response.results.data.error.root_cause[0].reason
-        typeof errString.type === 'string' ? errString = "Error on Search" : errString = errString
-        console.debug("errString",errString);
+        typeof errString.type === 'string' ? errStringMSG = "Error on Search" : errStringMSG = errString
+        console.debug("errString",errStringMSG);
         this.setState({
           errorState:true,
-          error: errString
+          error: errStringMSG
         })
       }
     })

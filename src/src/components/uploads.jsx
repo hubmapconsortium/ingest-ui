@@ -15,7 +15,7 @@ export const RenderUpload = (props) => {
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
   // var [uuid, setUUID] = useState("");
-  var [errorHandler, setErrorHandler] = useState({
+  var [errorHandler] = useState({
     status: "",
     message: "",
     isError: null 
@@ -57,15 +57,15 @@ export const RenderUpload = (props) => {
 
 
 
-  function passError(status, message) {
-   //console.debug("Error", status, message);
-    setLoading(false);
-    setErrorHandler({
-        status: status,
-        message:message,
-        isError: true 
-      })
-    }
+  // function passError(status, message) {
+  //  //console.debug("Error", status, message);
+  //   setLoading(false);
+  //   setErrorHandler({
+  //       status: status,
+  //       message:message,
+  //       isError: true 
+  //     })
+  //   }
 
     if (!isLoading && errorHandler.isError === true){
       console.debug("errorHandler", errorHandler);

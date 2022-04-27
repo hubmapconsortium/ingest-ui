@@ -13,10 +13,11 @@ export const RenderError = (props) => {
     },  [props.error, props.errorMSG]);
      console.debug("RenderError",errorMSG );
      if(errorMSG){
-        typeof errorMSG.type === 'string' ? errorMSG = "Error on Search" : errorMSG = errorMSG
+         var errorString = "";
+        typeof errorMSG.type === 'string' ? errorString = "Error on Search" : errorString = errorMSG
         return (
             <div>
-              <Alert severity="error" variant="filled">{errorMSG}</Alert>
+              <Alert severity="error" variant="filled">{errorString}</Alert>
             </div>
           )
      }else{ return (<div></div> ) }
