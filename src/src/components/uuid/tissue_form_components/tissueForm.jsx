@@ -982,15 +982,18 @@ class TissueForm extends Component {
   //   }
    }
 
-  handleAddImage = () => {
-    let newId = 1;
-    if (this.state.images.length > 0) {
-      newId = this.state.images[this.state.images.length - 1].id + 1;
-    }
-    this.setState({
-      images: [...this.state.images, { id: newId, ref: React.createRef() }]
-    });
-  };
+
+  // Seemingly replaced by the other handleAddImage so commenting for now
+
+  // handleAddImage = () => {
+  //   let newId = 1;
+  //   if (this.state.images.length > 0) {
+  //     newId = this.state.images[this.state.images.length - 1].id + 1;
+  //   }
+  //   this.setState({
+  //     images: [...this.state.images, { id: newId, ref: React.createRef() }]
+  //   });
+  // };
 
   handleAddMetadata = () => {
     let newId = 1;
