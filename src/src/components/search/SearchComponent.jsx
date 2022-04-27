@@ -17,6 +17,8 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 
 import { ingest_api_users_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
+import { RenderError } from '../../utils/errorAlert'
+
 // import 'url-search-params-polyfill';
 
 // Creation donor_form_components
@@ -41,6 +43,8 @@ class SearchComponent extends Component {
       selectionModel: "",
       filtered_keywords: "",
       filtered: false,
+      errorState:false,
+      error:"",
       entity_type_list: SAMPLE_TYPES,
       column_def: COLUMN_DEF_DONOR, 
       show_info_panel: true,
@@ -631,6 +635,13 @@ class SearchComponent extends Component {
         });
       }else{
         console.debug("Error on Search ", response)
+        var errString = response.results.data.error.root_cause[0].type+" | "+response.results.data.error.root_cause[0].reason
+        typeof errString.type === 'string' ? errString = "Error on Search" : errString = errString
+        console.debug("errString",errString);
+        this.setState({
+          errorState:true,
+          error: errString
+        })
       }
     })
   
@@ -663,7 +674,7 @@ class SearchComponent extends Component {
     })
     if(targetPath!=="----" && targetPath!=="undefined" && targetPath.length>0){
       console.debug("Changing to "+targetPath);
-      this.props.pageChange(targetPath);
+      this.props.onPageChange(targetPath);
     }
   }
   // handleUrlChange = (targetPath) =>{
@@ -875,6 +886,7 @@ class SearchComponent extends Component {
         <div style={{ width: '100%' }}>
 
 
+
           {this.state.show_search && (
             // this.renderFilterControls()
             this.renderFilterControls()
@@ -906,6 +918,9 @@ class SearchComponent extends Component {
             // this.renderEditForm()
             this.props.urlChange()
           )} */}
+  
+          
+          
 
         </div>
       );
@@ -917,12 +932,13 @@ class SearchComponent extends Component {
     // console.debug("INITIALSTATE",this.initialState);
     return (
       <div>
-      {/* <span className="portal-jss116 text-center">
+      <span className="portal-jss116 text-center">
       Found Props: {this.state.preset.entityType} {this.state.preset.entityUuid}
-      </span> <br /><br /> */}
+      </span> <br /><br />
       </div>
       );
 }
+
 
 
 
@@ -1065,6 +1081,11 @@ renderInfoPanel() {
 
             <div className="m-2">
               {this.renderPreamble()}
+
+              {this.state.errorState && (
+                <RenderError error={this.state.error} />
+                // <Alert severity="error" variant="filled"> {this.state.error}</Alert>
+              )} 
               
               <form>
                 <Grid 
