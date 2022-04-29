@@ -711,7 +711,8 @@ class SearchComponent extends Component {
     })
   }
 
-  handleSearchButtonClick = () => {
+  handleSearchButtonClick = (event) => {
+    event.preventDefault();
     console.debug("handleSearchButtonClick")
     this.setState({
           datarows: [],
@@ -1088,7 +1089,7 @@ renderInfoPanel() {
                 // <Alert severity="error" variant="filled"> {this.state.error}</Alert>
               )} 
               
-              <form>
+              <form onSubmit={this.handleSearchButtonClick}>
                 <Grid 
                   container 
                   spacing={3}
@@ -1220,8 +1221,12 @@ renderInfoPanel() {
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
               </Typography>
             </Grid>
+            {this.state.errorState && (
+                <RenderError error={this.state.error} />
+                // <Alert severity="error" variant="filled"> {this.state.error}</Alert>
+              )} 
             <Grid item xs={8}>
-              <form>
+              <form onSubmit={this.handleSearchButtonClick}>
                     <Grid 
                       container 
                       justifyContent="center"
