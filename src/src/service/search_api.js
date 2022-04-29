@@ -180,7 +180,7 @@ console.debug("Fields", fields);
     .query(boolQuery)
     .from(from)
     .size(size)
-    .sort(esb.sort('last_modified_timestamp', 'desc'))
+    .sort(esb.sort('last_modified_timestamp', 'asc'))
     .source(colFields);
   //requestBody.query(boolQuery).size(100);
 
