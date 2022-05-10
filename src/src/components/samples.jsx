@@ -13,20 +13,25 @@ export const RenderSample = (props) => {
   let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   const { uuid } = useParams();
-
+  // console.debug("uuid,", uuid);
   var [entity_data, setEntity] = useState(null);
   var [isLoading, setLoading] = useState(true);
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
-  });
+  })
 
-  console.debug("uuid,", uuid);
+  //@TODO: Figure out Why The Samples Pages re-polls for the UUID here and not on other entity Types
+  // & address Underlying issue instead of using this Bandage 
+  var [loadFlag, setLoadFlag] = useState(false);
+
+
   useEffect(() => {
-    
-    entity_api_get_entity(uuid, authSet.groups_token)
+    if(loadFlag === false){ //@TODO: See Coments At loadFlag Definition
+      entity_api_get_entity(uuid, authSet.groups_token)
       .then((response) => {
+          setLoadFlag(true);
           if (response.status === 200) {
             setEntity(response.results);
             console.debug("entity_data", response.results);
@@ -38,7 +43,11 @@ export const RenderSample = (props) => {
         .catch((error) => {
           passError(error.status, error.results.error );
         });
-  }, [authSet, uuid]);
+    }else{
+      console.debug("Teat Flag Previously Flipped True");
+    }
+    
+  }, [authSet, uuid, loadFlag]);
 
   function handleCancel(){
     navigate(-1);  
@@ -46,7 +55,7 @@ export const RenderSample = (props) => {
 
 
   function passError(status, message) {
-   //console.debug("Error", status, message);
+    console.debug("Error", status, message);
     setLoading(false);
     setErrorHandler({
         status: status,
@@ -58,9 +67,6 @@ export const RenderSample = (props) => {
   function onUpdated(data){
     console.debug("onUpdated", data);
   }
-
-
- 
 
   
     if (!isLoading && errorHandler.isError === true){
