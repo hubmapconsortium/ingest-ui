@@ -6,10 +6,11 @@ import {
   Routes,
   Route} from "react-router-dom";
   
-  // Login Management
-  import Login from './components/ui/login';
-  import Timer from './components/ui/idle';
+// Login Management
+import Login from './components/ui/login';
+import Timer from './components/ui/idle';
 
+import LinearProgress from '@mui/material/LinearProgress';
 
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -47,6 +48,7 @@ export function App (props){
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
+  var [timerStatus, setTimerStatus] = useState(true);
   let navigate = useNavigate();
 
     
@@ -63,6 +65,7 @@ export function App (props){
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
+      // Grabs the ?info= bit
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
       // Redirect to home page without query string
@@ -75,11 +78,13 @@ export function App (props){
         console.debug("LocalStorageAuth", results);
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
         setAuthStatus(true);
+        setTimerStatus(false);
         console.debug("groupsToken",groupsToken);
       } else if (results && results.status === 401) {
         console.debug("LocalStorageAuth", results);
         setGroupsToken(null);
         setAuthStatus(false);
+        setTimerStatus(false);
         if(localStorage.getItem("info")){
           // If we were logged out and we have an old token,
           // We should promopt to sign back in
@@ -90,6 +95,7 @@ export function App (props){
     });
     }catch {
       console.debug("LocalStorageAuth", "CATCh No LocalStorage");
+      setTimerStatus(false);
     }
   }, [groupsToken]);
 
@@ -169,8 +175,12 @@ export function App (props){
       />       
       <Timer logout={Logout}/>
       <div id="content" className="container">
-        
-        {!authStatus && (
+        {timerStatus &&(
+
+            <LinearProgress />
+        )}
+
+        {!authStatus && !timerStatus && (
           <React.Fragment>
             <Routes>
                 <Route path="/" element={ <Login />} />
@@ -212,7 +222,7 @@ export function App (props){
         )}
 
             
-          {authStatus && (
+          {authStatus && !timerStatus &&(
           <Paper className="px-5 py-4">
 
           <Routes>

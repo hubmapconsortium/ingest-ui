@@ -666,6 +666,7 @@ class SearchComponent extends Component {
   }
 
   handleUrlChange = (targetPath) =>{
+    console.debug("handleURL Change:");
     console.debug("handleUrlChange "+targetPath)
     if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
       targetPath = ""
@@ -675,7 +676,8 @@ class SearchComponent extends Component {
     })
     if(targetPath!=="----" && targetPath!=="undefined" && targetPath.length>0){
       console.debug("Changing to "+targetPath);
-      this.props.onPageChange(targetPath);
+      this.props.urlChange(targetPath);
+      // this.props.onPageChange(targetPath);
     }
   }
   // handleUrlChange = (targetPath) =>{
