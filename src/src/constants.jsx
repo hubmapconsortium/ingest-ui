@@ -161,7 +161,7 @@ export const RUI_ORGAN_MAPPING = {
   LO: "http://purl.obolibrary.org/obo/FMA_7214",
   RO: "http://purl.obolibrary.org/obo/FMA_7213",
   PA: "http://purl.obolibrary.org/obo/UBERON_0001264",
-  // PL: "", // No CCF Reference Organ for Placenta yet
+  PL: "http://purl.obolibrary.org/obo/UBERON_0001987",
   SI: "http://purl.obolibrary.org/obo/UBERON_0002108",
   SK: "http://purl.obolibrary.org/obo/UBERON_0002097",
   SP: "http://purl.obolibrary.org/obo/UBERON_0002106",
