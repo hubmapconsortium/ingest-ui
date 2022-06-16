@@ -145,7 +145,7 @@ export const RUI_ORGAN_MAPPING = {
   LB: "http://purl.obolibrary.org/obo/UBERON_0001004",
   RB: "http://purl.obolibrary.org/obo/UBERON_0001004",
   LE: "http://purl.obolibrary.org/obo/UBERON_0004548",
-  RE: "http://purl.obolibrary.org/obo/FMA_54449",
+  RE: "http://purl.obolibrary.org/obo/UBERON_0004549",
   LF: "http://purl.obolibrary.org/obo/UBERON_0001303",
   RF: "http://purl.obolibrary.org/obo/UBERON_0001302",
   HT: "http://purl.obolibrary.org/obo/UBERON_0000948",
