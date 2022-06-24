@@ -146,7 +146,7 @@ export const RUI_ORGAN_MAPPING = {
   LB: "http://purl.obolibrary.org/obo/UBERON_0001004",
   RB: "http://purl.obolibrary.org/obo/UBERON_0001004",
   LE: "http://purl.obolibrary.org/obo/UBERON_0004548",
-  RE: "http://purl.obolibrary.org/obo/FMA_54449",
+  RE: "http://purl.obolibrary.org/obo/UBERON_0004549",
   LF: "http://purl.obolibrary.org/obo/UBERON_0001303",
   RF: "http://purl.obolibrary.org/obo/UBERON_0001302",
   HT: "http://purl.obolibrary.org/obo/UBERON_0000948",
@@ -162,7 +162,7 @@ export const RUI_ORGAN_MAPPING = {
   LO: "http://purl.obolibrary.org/obo/FMA_7214",
   RO: "http://purl.obolibrary.org/obo/FMA_7213",
   PA: "http://purl.obolibrary.org/obo/UBERON_0001264",
-  // PL: "", // No CCF Reference Organ for Placenta yet
+  PL: "http://purl.obolibrary.org/obo/UBERON_0001987",
   SI: "http://purl.obolibrary.org/obo/UBERON_0002108",
   SK: "http://purl.obolibrary.org/obo/UBERON_0002097",
   SP: "http://purl.obolibrary.org/obo/UBERON_0002106",
