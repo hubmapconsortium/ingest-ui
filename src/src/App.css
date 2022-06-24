@@ -783,6 +783,10 @@ svg.invalid{
   margin-bottom: 0.5rem;
 }
 
+.expanded-form .form-group{
+  margin-bottom:20px;
+}
+
 /* Re-apply styles to badges that lost color/formatting between Material UI and MUI */
 
 .badge-info{
@@ -790,15 +794,20 @@ svg.invalid{
   background-color: #17a2b8;
 }
 
-body{
-  background-color:"black!important"
-}
-
-.expanded-form .form-group{
-  margin-bottom:20px;
-}
-
 .badge-neutral{
+  background-color:#424242;
+  color:white;
+}
+
+.badge-success,
+.badge-published,
+.badge-valid{
+  background-color:#0ecd3a;
+  color:white;
+}
+
+.badge-hold,
+.badge-dark {
   background-color:#424242;
   color:white;
 }
