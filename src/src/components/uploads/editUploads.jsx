@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
@@ -486,27 +488,46 @@ class EditUploads extends Component{
 
   renderButtonBar(){
       return (
-        <div>
-          <div className="col-sm-12">
-          <Divider />
-          </div>
+<div>
+  <div className="col-sm-12">
+  <Divider />
+  </div>
 
-          {this.renderHelperText()}
+  {this.renderHelperText()}
+  <Box
+    sx={{
+    display: 'flex',
+    '& > *': {
+        m: 1,
+      },
+    button:{
+      m:1,
+      align:'right',
+      float:'right',
+    },
+    
+    }}
+  >
+    <ButtonGroup component={Box} display="block !important"
 
-          <div classname="text-right">
-            <div classname="btn-group" role="group">
-              {this.renderValidateButton()}
-              {this.renderReorganizeButton()}
-              {this.renderSubmitButton()}
-              {this.renderSaveButton()}
-              <Button
-                type='button'
-                onClick={() => this.props.handleCancel()}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
+      orientation="horizontal"
+      alignItems="right"
+      // aria-label="horizontal outlined button group"
+    >
+      {this.renderValidateButton()}
+      {this.renderReorganizeButton()}
+      {this.renderSubmitButton()}
+      {this.renderSaveButton()}
+      <Button
+        variant="contained"
+        type='button'
+        onClick={() => this.props.handleCancel()}>
+        Cancel
+      </Button>
+    </ButtonGroup>
+  </Box>
+
+</div>
       );
   } 
 
@@ -516,9 +537,10 @@ class EditUploads extends Component{
       this.state.status.toUpperCase() 
       ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
       return (
-              <Button 
+              <Button
+              variant="contained" 
                   type='button'
-                  className = 'btn btn-info mr-1'
+                  className = 'btn btn-info mr-1 badge-info'
                   onClick = {() => this.handleButtonClick(this.state.status.toLowerCase(), "validate") }
                 >
                 {this.state.submitting && (
@@ -541,8 +563,9 @@ class EditUploads extends Component{
       ) && (this.state.data_admin || this.state.data_group_editor)) {
       return (
             <Button
+            variant="contained"
               type='button'
-              className='btn btn-info mr-1'
+              className='btn btn-info mr-1 badge-success'
               disabled={this.state.submitting_submission}
               onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"submit") }
               data-status={this.state.status.toLowerCase()}>
@@ -565,6 +588,7 @@ class EditUploads extends Component{
       ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
       return (
             <Button
+            variant="contained"
               type='button'
               className='btn btn-primary mr-1'
               disabled={this.state.submitting}
@@ -590,6 +614,7 @@ renderReorganizeButton() {
       ) && (this.state.data_admin)) {
       return (
            <Button
+           variant="contained"
             type='button'
             className='btn btn-info mr-1'
             disabled={this.state.submitting}
