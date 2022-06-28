@@ -745,3 +745,32 @@ svg.invalid{
 /* .bulk-statustext{
   min-height:80px;
 } */
+
+
+
+/* Re-apply styles to badges that lost color/formatting between Material UI and MUI */
+
+.badge-info,
+.btn-info{
+  color: #fff;
+  background-color: #17a2b8;
+}
+
+.badge-neutral{
+  background-color:#424242;
+  color:white;
+}
+
+.badge-success,
+.badge-published,
+.badge-valid,
+.btn-success{
+  background-color:#0ecd3a;
+  color:white;
+}
+
+.badge-hold,
+.badge-dark {
+  background-color:#424242;
+  color:white;
+}

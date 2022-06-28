@@ -821,7 +821,7 @@ class SearchComponent extends Component {
               //console.debug('ingest_api_allowable_edit_states done', resp)
             let read_only_state = false
             if (resp.status === 200) {
-              read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+              read_only_state = !resp.results.has_write_priv;      //results map opposite for UI
             }
 
               this.setState({

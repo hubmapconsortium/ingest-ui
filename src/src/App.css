@@ -789,7 +789,8 @@ svg.invalid{
 
 /* Re-apply styles to badges that lost color/formatting between Material UI and MUI */
 
-.badge-info{
+.badge-info,
+.btn-info{
   color: #fff;
   background-color: #17a2b8;
 }
@@ -801,7 +802,8 @@ svg.invalid{
 
 .badge-success,
 .badge-published,
-.badge-valid{
+.badge-valid,
+.btn-success{
   background-color:#0ecd3a;
   color:white;
 }
