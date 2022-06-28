@@ -1,6 +1,7 @@
 import React, { useEffect} from "react";
 import { Link } from 'react-router-dom'
 import { useLocation} from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 
 
 import Dialog from '@mui/material/Dialog';
@@ -25,6 +26,7 @@ export const Navigation = (props) => {
   const open_I = Boolean(anchorEl_I);
   const open_B = Boolean(anchorEl_B);
   const location = useLocation();
+  let navigate = useNavigate();
 
   useEffect(() => {
   //console.debug("props", props);
@@ -67,8 +69,11 @@ export const Navigation = (props) => {
   //console.debug("onClose");
   };
 
-  const onCreated = () => {
-  //console.debug("onCreated");
+  const onCreated = (data) => {
+    console.debug("onCreated");
+    console.debug("data", data);
+    navigate("/Upload/"+data.uuid);
+    setUploadsDialog(false);
   };
   
   function logout(e) {

@@ -53,6 +53,22 @@ export const RenderDonor = (props) => {
     navigate(-1);  
   };
 
+ function onCreated (data) {
+    console.debug('FORMS onCreated:', data);
+    if (data["new_samples"]) {  // means that we need to show a larger screen
+      this.setState({
+        result_dialog_size: "xl"
+      });
+    }
+    this.setState({
+      entity: data.entity,
+      result: data,
+      formType: "----",
+      createSuccess: true,
+      showSuccessDialog: true
+   });
+  }
+
   function passError(status, message) {
    //console.debug("Error", status, message);
     setLoading(false);
@@ -78,7 +94,7 @@ export const RenderDonor = (props) => {
     }else{
       return (
         <div>
-          <DonorForm handleCancel={handleCancel} editingEntity={entity_data} onUpdated={onUpdated}/>
+          <DonorForm handleCancel={handleCancel} onCreated={onCreated} editingEntity={entity_data} onUpdated={onUpdated}/>
         </div>
       )
     }
