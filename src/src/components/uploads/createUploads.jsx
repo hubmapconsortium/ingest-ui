@@ -259,12 +259,12 @@ class CreateUploads extends Component {
             name="Submission_Group"
             id="Submission_Group"
             label="Group"
-            className={"form-control mt-3" +
+            className={"form-control select-css" +
               this.errorClass(this.state.formErrors.group)
             }
             onChange={this.updateInputValue}
-            size="small"
-            margin="dense"
+            // size="small"
+            // margin="dense"
           >
             {this.state.groups.map(g => {
               return <option key={g.uuid} value={g.uuid}>{g.displayname}</option>;
@@ -284,7 +284,8 @@ class CreateUploads extends Component {
           <div className="col-md-12 text-right pads">
               <button
               type="submit"
-              className="btn btn-primary mr-1 "
+              style={{marginRight: "10px", marginLeft: "10px"}}
+              className="btn btn-primary  "
               >
                   {this.state.submitting && (
                   <FontAwesomeIcon
@@ -298,6 +299,7 @@ class CreateUploads extends Component {
               <button
               type="button"
               className="btn btn-secondary"
+              style={{marginRight: "10px"}}
               onClick={this.props.cancelEdit}
               >
                   Cancel
@@ -336,7 +338,7 @@ class CreateUploads extends Component {
             <div>
               <form onSubmit={this.handleSubmit}>
 
-                <div className='form-group'>
+                <div className='form-group  mb-4'>
                     <label htmlFor='title'>
                       Title <span className='text-danger'>*</span>
                     </label>
@@ -369,7 +371,7 @@ class CreateUploads extends Component {
                         />
                   </div>
 
-                <div className='form-group'>
+                <div className='form-group mb-4'>
                     <label
                       htmlFor='description'>
                       Description 
@@ -408,12 +410,12 @@ class CreateUploads extends Component {
                       </React.Fragment>
                     </div>
 
-                    <div className='form-group'>
+                    <div className='form-group mb-1'>
                       <label
                         htmlFor='Submission_Group'>
                         Select the data provider group that this data belongs to 
                       </label>
-                      <span className="px-2">
+                      <span className="px-1">
                         <FontAwesomeIcon
                           icon={faQuestionCircle}
                           data-tip

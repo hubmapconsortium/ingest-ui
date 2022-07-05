@@ -786,7 +786,9 @@ svg.invalid{
 .expanded-form .form-group{
   margin-bottom:20px;
 }
-
+.upload-slide-results div{
+  margin-right:10px;
+}
 /* Re-apply styles to badges that lost color/formatting between Material UI and MUI */
 
 .badge-info,
@@ -812,4 +814,9 @@ svg.invalid{
 .badge-dark {
   background-color:#424242;
   color:white;
+}
+
+.upload-slide-results{
+  padding:10px;
+  margin:10px;
 }

@@ -884,7 +884,7 @@ renderReorganizeButton() {
                 <h3 className='float-left'>
                     <span
                       className={"mr-1 badge " + this.state.badge_class}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", marginRight: "10px" }}
                       onClick={() =>
                         this.showErrorMsgModal(
                           this.props.editingUpload.pipeline_message
@@ -926,7 +926,10 @@ renderReorganizeButton() {
                             target='_blank'
                             rel='noopener noreferrer'
                           >
-                              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip' className="mr-2"/>
+                              <FontAwesomeIcon icon={faFolder}
+                                style={{marginRight: "10px"}} 
+                                data-tip data-for='folder_tooltip' 
+                                className="mr-2"/>
                                 {this.state.globusLinkText}{" "}
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
                           </a>

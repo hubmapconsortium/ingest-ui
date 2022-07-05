@@ -774,3 +774,8 @@ svg.invalid{
   background-color:#424242;
   color:white;
 }
+
+.upload-slide-results{
+  padding:10px;
+  margin:10px;
+}
