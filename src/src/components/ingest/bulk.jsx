@@ -24,6 +24,7 @@ import {  readString } from 'react-papaparse'
 import {ingest_api_bulk_entities_upload, 
         ingest_api_bulk_entities_register,
         ingest_api_users_groups} from '../../service/ingest_api';
+import { Box } from "@mui/system";
 
 
 class bulkCreation extends Component {
@@ -122,25 +123,54 @@ class bulkCreation extends Component {
   handleErrorCompiling = (data) =>{
     var errors = [];
     // console.debug("handleErrorCompiling",data, data.length);
-    for (const [key, value] of Object.entries(data)) {
-      console.log(`${key}: ${value}`);
+
+    console.debug("LEN",data.err.response.data.data)
+
+    //  If the error regards the first / fundamental structure of file, 
+    //  it'll come back like this
+    var coreError = data.err.response.data.data;
+
+
+    // if(data.value && data.value.length > 0){
+    if(coreError){
       
-      var errRow = {};
-      var cleanString = value.replace("Row Number: ", "");
-      var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
-      var cleanErr = cleanString.substring(cleanString.indexOf('.') + 1);
-      console.debug(cleanErr);
-      errRow.row = cleanNum;
-      errRow.message = cleanErr;
-      errors.push(errRow);
-      // var cleanOth = cleanString.substr(2, cleanString.indexOf('.')); 
+      
+      for (const [key, value] of Object.entries(coreError)) {
+        // if(){
+
+        // }
+        console.log("ROW __________________",`${key}: ${value}`);
+        var parsedVal = value.toString();   
+        // console.debug("parsedVal",parsedVal,value);
+        // console.debug("key",key);
+        var errRow = {};
+        var cleanString = parsedVal.replace("Row Number: ", "");
+        // console.debug("cleanString",cleanString);
+        // console.debug(parsedVal.replace("Row Number: ", ""));
+        
+        var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
+        var cleanErr =value;
+        // var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
+        // var cleanErr = cleanString.substring(cleanString.indexOf('.') + 1);
+        // console.debug(cleanErr);
+        // console.debug("cleanNum",cleanNum);
+        errRow.row = cleanNum;
+        // Everything before first space;
+        var errStr = parsedVal.slice(parsedVal.indexOf('.') + 1);
+        // var errStr = parsedVal.split(".").pop();
+        errRow.message = errStr;
+
       console.debug("errRow",errRow);
+        errors.push(errRow);
+        // var cleanOth = cleanString.substr(2, cleanString.indexOf('.')); 
+        // console.debug("errRow",errRow);
+      }
     }
-    console.debug("errors",errors);
-    this.setState({
-      errorSet: errors
-    })    
-  }
+      console.debug("errors",errors);
+      this.setState({
+        errorSet: errors
+      })    
+    }
 
 
     
@@ -212,7 +242,11 @@ handleUpload= () =>{
     console.debug("Appended Form Data: ",formData, this.state.tsvFile);
     ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
-        console.debug("RESP", resp,resp.results.temp_id);
+
+        console.debug("RESP", resp);
+        if(resp.results && resp.results.temp_id){
+          console.debug("Temp ID: ",resp.results.temp_id);
+        }
         if (resp.status === 201) {
           this.setState({
             success_status:true,
@@ -229,7 +263,7 @@ handleUpload= () =>{
           //  Process Error maybe?
           // and bundle up the errors here in their own data table
           var parsedError;
-          if(resp.results.data){
+          if(resp.results && resp.results.data){
             parsedError = parseErrorMessage(resp.results.data);
           }else{
             parsedError=resp;
@@ -300,7 +334,7 @@ handleRegister = () =>{
             let respInfo = _.map(respData, (value, prop) => {
               return { "prop": prop, "value": value };
             });
-            if( respInfo[1].value['error']){
+            if( respInfo[1] && respInfo[1].value['error']){
              console.debug("EERRRS DETECTED");
              this.setState({ 
               submit_error:"error",
@@ -470,7 +504,7 @@ renderFileGrabber = () =>{
 
   renderUploadSlide = () =>{
     return(
-      <div className="d-flex flex-row justify-content-center"> 
+      <div className="d-flex upload-slide-results flex-row justify-content-center"> 
         
         {this.state.error_status === false&&(
           <div className="">
@@ -518,6 +552,7 @@ renderFileGrabber = () =>{
         {/* Err on its own Stepper pane?  */}
           {this.state.error_status === true&&(
             <div className="text-left">
+
               There were some problems validating your document. Please review &amp; resubmit.
               <Button 
                 onClick={() => this.handleBack()}
@@ -612,6 +647,7 @@ renderFileGrabber = () =>{
     console.debug("this.state.uploadedSources",this.state.uploadedSources);
     if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
       console.debug("this.state.uploadedSources",this.state.uploadedSources);
+      console.debug("this.state.uploadedSources",this.state.uploadedSources);
       return(
         <TableBody>
           {this.state.uploadedSources.map((row, index) => (
@@ -619,7 +655,7 @@ renderFileGrabber = () =>{
               {this.state.registeredStatus === true && (
                 <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
               )}
-              <TableCell  className="" scope="row"> {row.source_id ? row.source_id : row.direct_ancestor.hubmap_id}</TableCell>
+              {/* <TableCell  className="" scope="row"> {row.source_id ? row.source_id : row.direct_ancestor.hubmap_id}</TableCell> */}
               <TableCell  className="" scope="row"> {row.lab_id ? row.lab_id : row.lab_tissue_sample_id}</TableCell>
               <TableCell  className="" scope="row"> {row.sample_type ? row.sample_type : row.specimen_type}</TableCell>
               <TableCell  className="" scope="row"> {row.organ_type ? row.organ_type : ""}</TableCell>
@@ -653,7 +689,7 @@ renderFileGrabber = () =>{
     var headCells = [];
     if(this.props.bulkType.toLowerCase() === "samples"){
       headCells = [
-        { id: 'source_id',  label: 'Source Id ' },
+        // { id: 'source_id',  label: 'Source Id ' },
         { id: 'lab_id',  label: 'Lab Id ' },
         { id: 'sample_type',  label: 'Type' },
         { id: 'organ_type',  label: 'Organ ' },
@@ -755,9 +791,10 @@ renderFileGrabber = () =>{
 
 
   renderTrimDescription = (desc) =>{
+    console.log("desc", desc);
       var description = desc;
     //Thisll auto-trim descriptions & place their full content in a tooltip
-    if(desc.length >= 22 ){
+    if(desc && desc.length >= 22 ){
       return(
         <Tooltip title={desc} aria-label="Full Description">
           <span>{description}</span>
@@ -815,8 +852,15 @@ renderFileGrabber = () =>{
           <div className={"alert col-sm-12 text-left alert-"+this.state.alertStatus} role="alert" >
             {this.state.error_message &&(
               <div>
-                <h6>{this.state.error_message_detail}</h6>
-                {this.state.error_message_detail}
+                <Box 
+                sx={{
+                  textAlign: "left",
+                  padding: "0.5rem",
+                }}>
+
+                  <h6>{this.state.error_message_detail}</h6>
+                  {this.state.error_message_detail}
+                </Box>
               </div>
             )}
             {!this.state.error_message &&(
@@ -854,7 +898,7 @@ renderFileGrabber = () =>{
             );
           })}
         </Stepper>
-        <div className="text-center mt-3" id="stepContainer">{this.getStepContent(this.state.activeStep)}</div>
+        <div className="p-2 mt-3" id="stepContainer">{this.getStepContent(this.state.activeStep)}</div>
       </div>
     );
   }
@@ -877,7 +921,7 @@ renderFileGrabber = () =>{
                 download
                 target="_blank "
                 className="btn-lg btn-block"
-                style={{ padding: "12px" }} 
+                style={{ padding: "12px", marginRight: "10px"  }} 
                 variant="contained" 
                 color="primary" >
                {<FontAwesomeIcon
@@ -890,7 +934,7 @@ renderFileGrabber = () =>{
               </Typography>
             <div className="col-sm-12 text-left p-0">
               <h4>{toTitleCase(this.props.bulkType).slice(0, -1)} Information Upload</h4>
-              <Typography className="d-inline-block ">To bulk register multiple {this.props.bulkType.toLowerCase()} at one time, upload a tsv file here in the format specified by this example file. <br /> Include one line per {this.props.bulkType.toLowerCase().slice(0, -1)} to register. {toTitleCase(this.props.bulkType).slice(0, -1)} metadata must be provided separately.</Typography> 
+              <Typography className="d-inline-block " style={{ display: "inline-block"  }} >To bulk register multiple {this.props.bulkType.toLowerCase()} at one time, upload a tsv file here in the format specified by this example file. <br /> Include one line per {this.props.bulkType.toLowerCase().slice(0, -1)} to register. {toTitleCase(this.props.bulkType).slice(0, -1)} metadata must be provided separately.</Typography> 
               </div> 
             </div>
             
