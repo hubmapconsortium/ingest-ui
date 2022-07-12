@@ -1,3 +1,5 @@
+# Hubmap Entity Form Element Tests 
+
 ### Donors
 
 * Creation of individual Donors:
@@ -11,7 +13,7 @@
   * adding a new image file to a donor created without an image file
   * editing all text fields
 
-### Read
+### Samples
 
 * Creation individual samples including:
   * organs
@@ -50,9 +52,6 @@
 
 Table Overview:
 
-
-
-
 | Column | Info |
 |----|----|
 | Type | The Type of Entity |
@@ -67,14 +66,10 @@ Table Overview:
 
 ##### (Read, Write, Admin)
 
-
 ### Read
 
 > Account: jjw118_hubRead@gmail.com
 > Group: HuBMAP-Read
-
-
-
 
 | Type | State | Action | Access |
 |----|----|----|----|
@@ -138,9 +133,6 @@ Table Overview:
 
 #### Access Chart
 
-
-
-
 | Type | State | Action | Access |
 |----|----|----|----|
 | 📋__Dataset__ |    |    |    |
@@ -202,9 +194,6 @@ Table Overview:
 > User can submit any Dataset that is in the QA state
 
 #### Access Chart
-
-
-
 
 | Type | State | Action | Access |
 |----|----|----|----|
