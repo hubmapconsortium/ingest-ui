@@ -1,10 +1,11 @@
 import React, { useEffect, useState  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
+import { yell, search_api_get_assay_list} from '../service/search_api';
 import {ErrBox} from "../utils/ui_elements";
 import DatasetFormLegacy from "./ingest/dataset_edit";
 import {useNavigate} from "react-router-dom";
-
+import axios from "axios";
 
 
 
@@ -15,7 +16,10 @@ export const RenderDataset = (props) => {
 
   let navigate = useNavigate();
   var [entity_data, setEntity] = useState(true);
+  var [entityLoaded, setEntityLoaded] = useState(false);
+  var [dataTypeLoaded, setDataTypeLoaded] = useState(false);
   var [isLoading, setLoading] = useState(true);
+  var [dataTypeList, setDataTypeList] = useState();
   // var [uuid, setUUID] = useState("");
   var [errorHandler, setErrorHandler] = useState({
     status: "",
@@ -30,38 +34,66 @@ export const RenderDataset = (props) => {
 
   useEffect(() => {
     var authSet = JSON.parse(localStorage.getItem("info"));
-    entity_api_get_entity(uuid, authSet.groups_token)
-      .then((response) => {
-          if (response.status === 200) {
-            setEntity(response.results);
-            //console.debug("entity_data", response.results);
+
+    function fetchEntity(authSet){
+      entity_api_get_entity(uuid, authSet.groups_token)
+        .then((response) => {
+            if (response.status === 200) {
+              setEntity(response.results);
+              setEntityLoaded(true)
+              fetchPrimaryDataTypes();
+              //console.debug("entity_data", response.results);
+            }else{
+              setLoading(true); 
+              passError(response.status, response.results);
+            }
+            
+          })
+          .catch((error) => {
+            setLoading(true);
+            console.debug("fetchData Response Error", error);
+            passError(error.status, error.response );
+          }); 
+    };
+  
+    function fetchPrimaryDataTypes(){
+      search_api_get_assay_list({"primary": "true"})
+        .then((response) => {
+          console.debug("fetchPrimaryDataTypes Response", response);
+            let data = response.data;
+            var dt_dict = data.result.map((value, index) => { return value });
+            console.debug("dt_dict", dt_dict);
+            setDataTypeList(dt_dict);
             setLoading(false);
-          }else{
-            //console.debug("Response not 200 Error", response);
-            setLoading(true); //@TODO: lets flip the error display up here instead 
-            passError(response.status, response.results);
-          }
         })
-        .catch((error) => {
-          //console.debug("fetchData Response Error", error);
+        .catch(error => {
+          console.debug("fetch DT list Response Error", error);
           passError(error.status, error.response );
         });
+    };
+
+    fetchEntity(authSet);
+
 
   }, [uuid]);
 
+
+ 
 
   function handleCancel(){
     navigate(-1);  
   };
 
   function onUpdated(data){
+    // Return to home search once finished here
     //console.debug("onUpdated", data);
+    navigate('../')
   }
 
 
 
   function passError(status, message) {
-    //console.debug("passError Error", status, message);
+    console.debug("passError Error", status, message);
     setLoading(false);
     setErrorHandler({
         status: status,
@@ -71,7 +103,7 @@ export const RenderDataset = (props) => {
     }
 
     if (!isLoading && errorHandler.isError === true){
-      //console.debug("ERR HANDLER ", errorHandler);
+      console.error("ERR HANDLER ", errorHandler);
       return (
         <ErrBox err={errorHandler} />
       );
@@ -85,7 +117,13 @@ export const RenderDataset = (props) => {
       //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
       return (
         <div>
-          <DatasetFormLegacy onUpdated={onUpdated} handleCancel={handleCancel} editingDataset={entity_data} passError={passError} />
+          <DatasetFormLegacy 
+          onUpdated={onUpdated} 
+          handleCancel={handleCancel} 
+          editingDataset={entity_data} 
+          passError={passError} 
+          dataTypeList={dataTypeList} 
+          />
         </div>
       )
     }
