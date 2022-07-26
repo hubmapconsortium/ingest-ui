@@ -149,7 +149,7 @@ class bulkCreation extends Component {
         // console.debug(parsedVal.replace("Row Number: ", ""));
         
         var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
-        var cleanErr =value;
+        // var cleanErr =value;
         // var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
         // var cleanErr = cleanString.substring(cleanString.indexOf('.') + 1);
         // console.debug(cleanErr);

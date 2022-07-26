@@ -26,7 +26,6 @@ import { entity_api_update_entity } from '../../service/entity_api';
 import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
-import {ErrBox} from "../../utils/ui_elements";
 
 import { Alert, AlertTitle } from '@material-ui/lab';
 import Table from '@material-ui/core/Table';
@@ -220,7 +219,7 @@ class DatasetEdit extends Component {
 
     // Sets up the Entity's info  
     if (this.props.editingDataset) {      //
-      let source_uuids;
+      // let source_uuids;
       try {
         // use only the first direct ancestor
          this.setState({

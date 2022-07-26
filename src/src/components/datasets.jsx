@@ -1,11 +1,9 @@
 import React, { useEffect, useState  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
-import { yell, search_api_get_assay_list} from '../service/search_api';
-import {ErrBox} from "../utils/ui_elements";
+import { search_api_get_assay_list} from '../service/search_api';
 import DatasetFormLegacy from "./ingest/dataset_edit";
 import {useNavigate} from "react-router-dom";
-import axios from "axios";
 
 
 
@@ -16,8 +14,6 @@ export const RenderDataset = (props) => {
 
   let navigate = useNavigate();
   var [entity_data, setEntity] = useState(true);
-  var [entityLoaded, setEntityLoaded] = useState(false);
-  var [dataTypeLoaded, setDataTypeLoaded] = useState(false);
   var [isLoading, setLoading] = useState(true);
   var [dataTypeList, setDataTypeList] = useState();
   // var [uuid, setUUID] = useState("");
@@ -40,7 +36,6 @@ export const RenderDataset = (props) => {
         .then((response) => {
             if (response.status === 200) {
               setEntity(response.results);
-              setEntityLoaded(true)
               fetchPrimaryDataTypes();
               //console.debug("entity_data", response.results);
             }else{
