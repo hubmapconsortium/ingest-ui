@@ -22,7 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
-
+// import {ErrBox} from "../utils/ui_elements";
   // Site Content
 import {Navigation} from "./Nav";
 // import {RenderLogin} from "./components/login";
@@ -160,6 +160,7 @@ export function App (props){
 
 
   
+  const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
 
 //console.debug("props", props);
   return (
@@ -169,7 +170,7 @@ export function App (props){
       <Navigation 
         login={authStatus} 
         logout={Logout}
-        app_info={ JSON.parse(localStorage.getItem("info"))}
+        app_info={ app_info_storage}
         uploadsDialogRender={uploadsDialogRender}
         onCreatedReditect={""}
       />       
@@ -249,6 +250,7 @@ export function App (props){
               <Route path="/new/dataset" element={<RenderDataset status="new" />} />
               <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
+              {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
               <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} />
               {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
 

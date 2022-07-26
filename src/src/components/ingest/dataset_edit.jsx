@@ -26,9 +26,9 @@ import { entity_api_update_entity } from '../../service/entity_api';
 import { get_assay_type } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
+import {ErrBox} from "../../utils/ui_elements";
 
-
-import MuiAlert from '@material-ui/lab/Alert';
+import { Alert, AlertTitle } from '@material-ui/lab';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -36,9 +36,9 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
-function Alert(props) {
-  return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
+// function Alert(props) {
+//   return <MuiAlert elevation={6} variant="filled" {...props} />;
+// }
 
 
 class DatasetEdit extends Component {
@@ -80,10 +80,13 @@ class DatasetEdit extends Component {
     LookUpShow: false,
     other_dt: "",
     previous_revision_uuid: undefined,
+    buttonSpinnerTarget: "",
+    errorSnack:false,
     
     // Form Validation & processing
     has_other_datatype: false,
     submitErrorResponse:"",
+    submitErrorStatus:"",
     formErrors: {
       contains_human_genetic_sequences:"",
       data_types: "",
@@ -833,9 +836,17 @@ class DatasetEdit extends Component {
     Alert("Reprocessing feature not implemented")
   }
 
-  handleButtonClick = (i) => {
+  handleButtonClick = (i, event) => {
+    console.debug("handleButtonClick", i);
+    if(event){
+      console.debug([event.target.name]);
+    }
+
     this.setState({
-      new_status: i
+      new_status: i,
+      buttonState:{
+        i:true
+      }
     }, () => {
       this.handleSubmit(i);
     })
@@ -933,7 +944,8 @@ class DatasetEdit extends Component {
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
-                 //console.debug("ERROR ", error)
+                 console.error("published ERROR ", error)
+                  // this.props.passError(error);
                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
                 });
             } else if (submitIntention === "processing") {
@@ -941,15 +953,27 @@ class DatasetEdit extends Component {
               //console.log("data is ", data)
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
+                    console.debug("response is ", response, response.err.response);
                     if (response.status === 200) {
                       ////console.log(response.results);
                       this.props.onUpdated(response.results);
-                    } else {
-                     //console.log("ERR response");
-                     //console.log(response);
-                      this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
+                    } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
+                     var statusText = response.err.response.status+" "+response.err.response.statusText;
+                    //  this.props.passError(statusText, response.err.response.data );
+                      this.setState({ 
+                        submit_error: true, 
+                        submitting: false,
+                        buttonSpinnerTarget:"", 
+                        submitErrorStatus:statusText,
+                        submitErrorResponse:response.err.response.data 
+                      });
                     }
-                });
+                })
+                .catch((error) => {
+                  console.error("processing ERROR ", error)
+                  this.props.passError(error);
+                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error });
+                 });
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
@@ -965,7 +989,12 @@ class DatasetEdit extends Component {
                            //console.debug("ERROR ",response)
                             this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
                           }
-                });
+                }) 
+                .catch((error) => {
+                  console.error("else ERROR ", error)
+                  this.props.passError(error);
+                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
+                 });;
               }
           } else {  // new creations
 
@@ -1009,7 +1038,7 @@ class DatasetEdit extends Component {
                       });
                     })
                     .catch((err) => {
-                    //console.log('ERROR catch', err)
+                      console.log('ERROR catch', err)
                       if (err.response && err.response.status === 401) {
                         localStorage.setItem("isAuthenticated", false);
                         window.location.reload();
@@ -1251,6 +1280,7 @@ class DatasetEdit extends Component {
   }
 
   renderButtons() {
+    console.debug("renderButtons",this.state.status.toLowerCase());
 
     if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
             && this.state.previous_revision_uuid === undefined 
@@ -1272,12 +1302,12 @@ class DatasetEdit extends Component {
           )
     } else {
 
-      if (["NEW", "INVALID", "REOPENED", "ERROR"].includes(
+      if (["NEW", "INVALID", "REOPENED", "ERROR"].includes( 
               this.state.status.toUpperCase())) {
         return (
             <div className="buttonWrapRight">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {!this.state.has_submit_priv &&  this.props.editingDataset && (
+                {this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
                 }
                 {this.cancelButton()}
@@ -1331,27 +1361,46 @@ class DatasetEdit extends Component {
   }
 
   // General button
-  aButton(state, which_button) {
+  aButton(newstate, which_button, event) {
+    console.debug("aButton", newstate, which_button);
     return (<React.Fragment>
       <div >
         <Button
           type='button'
+          name={"button-" + which_button}
           variant="contained"
           // className='btn btn-info btn-block'
           disabled={this.state.submitting}
-          onClick={() =>
-            this.handleButtonClick(state)
-          }
-          data-status={this.state.status.toLowerCase()}
+          // onClick={(e) =>
+          //   this.handleButtonClick(newstate)
+          // }
+          onClick={ 
+            (e) => {
+              console.debug("buttonOnclick from aButton Factory");
+              console.debug("which_button.toLowerCase()", which_button.toLowerCase());
+                  // e.preventDefault();
+                // var thisButton = which_button;
+                this.setState({ 
+                  buttonSpinnerTarget:which_button.toLowerCase()
+                },() => {  
+                  console.debug("Button State Saved, ",this.state.buttonSpinnerTarget);
+                })
+                // console.debug("onClick", e); 
+                this.handleButtonClick(newstate)
+            }
+        }
+          data-status={newstate.toLowerCase()} 
+          // data-status={this.state.status.toLowerCase()} This just grabs what the current state is, not the goal state passed in? 
         >
-          {this.state.submitting && (
-            <FontAwesomeIcon
-              className='inline-icon'
-              icon={faSpinner}
-              spin
-            />
+          {this.state.buttonSpinnerTarget===which_button.toLowerCase()  && (
+            <span>              
+              <FontAwesomeIcon
+                icon={faSpinner}
+                spin
+                />
+            </span>
           )}
-          {!this.state.submitting && which_button}
+          {this.state.buttonSpinnerTarget!==which_button.toLowerCase()&& which_button}
         </Button>
         </div>
         </React.Fragment>
@@ -1359,6 +1408,7 @@ class DatasetEdit extends Component {
   }
 
   reprocessButton() {
+    console.debug("reprocessButton");
     return (<React.Fragment>
       <div >
         <Button
@@ -1555,7 +1605,7 @@ class DatasetEdit extends Component {
                   
                 </big>
               </strong>
-            </p>
+            </p> 
 
 
          
@@ -1693,7 +1743,7 @@ class DatasetEdit extends Component {
               </React.Fragment>
             )}
             {!this.state.writeable && (
-              <div className='col-sm-9 col-form-label'>
+              <div className='col-sm-12 col-form-label'>
                 <p>{this.state.description}</p>
               </div>
             )}
@@ -1738,12 +1788,12 @@ class DatasetEdit extends Component {
                 </React.Fragment>
               )}
               {!this.state.writeable && (
-              <div className='col-sm-9 col-form-label'>
+              <div className='col-sm-12 col-form-label'>
                 <p>{this.state.dataset_info}</p>
               </div>
             )}
           </div>
-            <div className='form-group row'>
+            <div className='form-group '>
               <label
                 htmlFor='contains_human_genetic_sequences'
                 className='col-sm-2 col-form-label text-right '
@@ -1865,18 +1915,19 @@ class DatasetEdit extends Component {
             
             </div>
           
-          <div className='form-group row'>
+          <div className='form-group '>
             <label
               htmlFor='description'
-              className='col-sm-2 col-form-label text-right'
+              className='col col-form-label text-right'
             >
-              Data Type <span className='text-danger'>*</span>
+              Data Type <span className='text-danger'>* </span>
             </label>
             <span>
               <FontAwesomeIcon
                 icon={faQuestionCircle}
                 data-tip
                 data-for='datatype_tooltip'
+                style={{ marginLeft: "10px" }}
               />
               <ReactTooltip
                 id='datatype_tooltip'
@@ -1889,11 +1940,9 @@ class DatasetEdit extends Component {
             </span>
             {this.state.writeable&& (
 		          <React.Fragment>
-                Writeable
-                <div className='col-sm-9'>
-                  <div className='row'>Row 
+                
+                <div className='col-sm-12'>
                       { this.renderAssayArray()}
-                  </div>
                 </div>
 		
                 <div className='col-sm-12'>
@@ -1906,11 +1955,8 @@ class DatasetEdit extends Component {
 	             </React.Fragment>
             )}
             {!this.state.writeable && (
-                <div className='col-sm-9'>
-                  Not Writeable
-                  <div className='row'> Row 2
+                <div className='col-sm-12'>
                       {true && this.renderAssayArray()}
-                  </div>
                 </div>
             )}
             
@@ -2010,12 +2056,17 @@ class DatasetEdit extends Component {
             </div>
           )}
           {this.state.submit_error && (
-            <div className='alert alert-danger col-sm-12' role='alert'>
+            <Alert severity="error">
+              {this.state.submitErrorResponse &&(
+                <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
+              )}
               Oops! Something went wrong. Please contact administrator for help. <br />
               {this.state.submitErrorResponse &&(
-                <small><strong>Details:</strong> {this.state.submitErrorResponse}</small>
+                <>
+                <strong>Details: {this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
+                </>
               )}
-            </div>
+            </Alert>
           )}
           {this.renderButtons()}
         </form>

@@ -6,9 +6,14 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import HelpTwoToneIcon from '@mui/icons-material/HelpTwoTone';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Stack from '@mui/material/Stack';
 
-
-
+import Snackbar from '@mui/material/Snackbar';
+import Slide from '@mui/material/Slide';
+import SnackbarContent from '@mui/material/SnackbarContent';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 const HtmlTooltip = styled(({ className, ...props }) => (
@@ -27,13 +32,18 @@ const HtmlTooltip = styled(({ className, ...props }) => (
 
 export function ErrBox(params) {
   console.debug("ErrBox", params);
+  var statusName = params.err.status;
+  console.debug("ErrBox", params);
   return( 
-    <div className="error text-center">
-      <h1>{params.err.status}</h1>
-      <p>{params.err.message }</p>
-    </div>
+    
+      <Alert severity="error" variant="filled" sx={{ width: '100%', backgroundColor:"red" }}>
+        <AlertTitle>{statusName}</AlertTitle>
+       { params.err.message}
+      </Alert>
+    
   ); 
 }
+
 
 export function HelpLabelTooltip(params) {
   let info = params.info;

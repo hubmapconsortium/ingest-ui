@@ -81,7 +81,8 @@ export const RenderDataset = (props) => {
  
 
   function handleCancel(){
-    navigate(-1);  
+    // React wants to simply scroll to the top of the page if we use -1
+    navigate(-2);  
   };
 
   function onUpdated(data){
@@ -105,7 +106,19 @@ export const RenderDataset = (props) => {
     if (!isLoading && errorHandler.isError === true){
       console.error("ERR HANDLER ", errorHandler);
       return (
-        <ErrBox err={errorHandler} />
+        <>
+          <div>
+            <DatasetFormLegacy 
+            onUpdated={onUpdated} 
+            handleCancel={handleCancel} 
+            editingDataset={entity_data} 
+            passError={passError} 
+            dataTypeList={dataTypeList} 
+            />
+
+          </div>
+          {/* <ErrBox err={errorHandler} /> */}
+        </>
       );
     }else if (isLoading) {
         return (

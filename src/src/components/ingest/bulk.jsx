@@ -482,7 +482,7 @@ renderStatusButon = (message) =>{
 
 renderFileGrabber = () =>{
     return (
-      <div> 
+      <div className="text-center"> 
       <label>
         <input
           accept=".tsv"
@@ -910,9 +910,8 @@ renderFileGrabber = () =>{
     var targetFile = (this.props.bulkType).slice(0, -1).toLowerCase()
     const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/"+targetBranch+"/src/src/assets/Documents/example-"+targetFile+"-registrations.tsv"
     return (
-      <Paper>
-        <div className="col-sm-12 pads">
-          <div className="px-3 my-2"> 
+      <>
+        <div className="col-sm-12">
             <div className=" d-flex ">
             <Typography className="mr-3 d-inline-block"> 
               <Button 
@@ -932,17 +931,16 @@ renderFileGrabber = () =>{
                 Example.tsv
               </Button>
               </Typography>
-            <div className="col-sm-12 text-left p-0">
+            <div className="">
               <h4>{toTitleCase(this.props.bulkType).slice(0, -1)} Information Upload</h4>
               <Typography className="d-inline-block " style={{ display: "inline-block"  }} >To bulk register multiple {this.props.bulkType.toLowerCase()} at one time, upload a tsv file here in the format specified by this example file. <br /> Include one line per {this.props.bulkType.toLowerCase().slice(0, -1)} to register. {toTitleCase(this.props.bulkType).slice(0, -1)} metadata must be provided separately.</Typography> 
               </div> 
             </div>
             
           {this.renderStepper()}
-          </div>
 
         </div>
-      </Paper>
+      </>
     );
   }
 }
