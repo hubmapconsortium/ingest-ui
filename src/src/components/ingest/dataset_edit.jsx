@@ -165,6 +165,7 @@ class DatasetEdit extends Component {
 
       // Figure out our permissions
       if (this.props.editingDataset) {
+        console.debug("Editing Dataset", this.props.editingDataset);
         if (this.props.editingDataset.uuid)
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1280,7 +1281,7 @@ class DatasetEdit extends Component {
   }
 
   renderButtons() {
-    console.debug("renderButtons",this.state.status.toLowerCase());
+    // console.debug("renderButtons",this.state.status.toLowerCase());
 
     if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
             && this.state.previous_revision_uuid === undefined 
@@ -1362,7 +1363,7 @@ class DatasetEdit extends Component {
 
   // General button
   aButton(newstate, which_button, event) {
-    console.debug("aButton", newstate, which_button);
+    // console.debug("aButton", newstate, which_button);
     return (<React.Fragment>
       <div >
         <Button
@@ -1376,8 +1377,8 @@ class DatasetEdit extends Component {
           // }
           onClick={ 
             (e) => {
-              console.debug("buttonOnclick from aButton Factory");
-              console.debug("which_button.toLowerCase()", which_button.toLowerCase());
+              // console.debug("buttonOnclick from aButton Factory");
+              // console.debug("which_button.toLowerCase()", which_button.toLowerCase());
                   // e.preventDefault();
                 // var thisButton = which_button;
                 this.setState({ 
@@ -1408,7 +1409,7 @@ class DatasetEdit extends Component {
   }
 
   reprocessButton() {
-    console.debug("reprocessButton");
+    // console.debug("reprocessButton");
     return (<React.Fragment>
       <div >
         <Button
@@ -1489,7 +1490,7 @@ class DatasetEdit extends Component {
    }
 
   renderAssayColumn(min, max) {
-    console.debug("renderAssayColumn", min, max);
+    // console.debug("renderAssayColumn", min, max);
 	 return (
 		this.props.dataTypeList.slice(min, max).map((val, idx) =>
 								{return this.renderAssay(val, idx)})
@@ -1530,7 +1531,7 @@ class DatasetEdit extends Component {
 
           </>)
       }else{ 
-        console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
+        // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
   	    return (<>
   		    <select className="form-select" value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
             <option></option>
@@ -1589,7 +1590,7 @@ class DatasetEdit extends Component {
 
               <p>
               <strong>
-                <big>
+                {/* <big> */}
                   
                   {this.state.globus_path && (
 
@@ -1598,12 +1599,12 @@ class DatasetEdit extends Component {
                       target='_blank'
                       rel='noopener noreferrer'
                     >
-                        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> To add or modify data files go to the data repository{" "}
-                      <FontAwesomeIcon icon={faExternalLinkAlt} />
+                        <FontAwesomeIcon icon={faFolder} style={{ marginRight: "10px" }} data-tip data-for='folder_tooltip'/>To add or modify data files go to the data repository
+                      <FontAwesomeIcon icon={faExternalLinkAlt} style={{ marginLeft: "5px" }} />
                     </a>
                   )}
                   
-                </big>
+                {/* </big> */}
               </strong>
             </p> 
 
