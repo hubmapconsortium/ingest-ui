@@ -22,6 +22,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
+import {search_api_get_assay_list} from "./service/search_api";
+
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
 import {Navigation} from "./Nav";
@@ -49,6 +51,8 @@ export function App (props){
   var [authStatus, setAuthStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
+  var [isLoading, setIsLoading] = useState(true);
+  var [dataTypeList, setDataTypeList] = useState({});
   let navigate = useNavigate();
 
     
@@ -80,6 +84,23 @@ export function App (props){
         setAuthStatus(true);
         setTimerStatus(false);
         console.debug("groupsToken",groupsToken);
+
+        search_api_get_assay_list({"primary": "true"})
+        .then((response) => {
+          console.debug("fetchPrimaryDataTypes Response", response);
+            let data = response.data;
+            setDataTypeList(data);
+            setIsLoading(false)
+            console.debug(isLoading);
+        })
+        .catch(error => {
+          console.debug("fetch DT list Response Error", error);
+          // return error;
+          // passError(error.status, error.response );
+        });
+        // return dt_dict;
+
+
       } else if (results && results.status === 401) {
         console.debug("LocalStorageAuth", results);
         setGroupsToken(null);
@@ -97,7 +118,10 @@ export function App (props){
       console.debug("LocalStorageAuth", "CATCh No LocalStorage");
       setTimerStatus(false);
     }
+
+
   }, [groupsToken]);
+  
 
 
 
@@ -223,7 +247,7 @@ export function App (props){
         )}
 
             
-          {authStatus && !timerStatus &&(
+          {authStatus && !timerStatus && !isLoading &&(
           <Paper className="px-5 py-4">
 
           <Routes>
@@ -231,6 +255,10 @@ export function App (props){
               <Route path="/" element={ <SearchComponent entity_type=' ' urlChange={urlChange} onCancel={handleCancel}/>} />
 
               <Route path="/login" element={<Login />} />
+              
+              <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} onCancel={handleCancel} />}/>
+              <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} onCancel={handleCancel} /> }/>
+              <Route path="/new/dataset" element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} onCancel={handleCancel} /> }/> 
 
               <Route path="/donors" element={<SearchComponent filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent filter_type="Sample" urlChange={urlChange} />} ></Route>
@@ -241,17 +269,13 @@ export function App (props){
               <Route path="/sample/:uuid" element={<RenderSample onCancel={handleCancel} status="view"/>} />
               <Route path="/dataset/:uuid" element={<RenderDataset  onCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  onCancel={handleCancel} status="view"/>} />
-              
-              <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} onCancel={handleCancel} />}/>
-              <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} onCancel={handleCancel} /> }/>
-              <Route path="/new/dataset" element={<Forms formType='dataset' onReturn={onClose} onCancel={handleCancel} /> }/> 
 
-              <Route path="/new/sample" element={<RenderSample status="new" />} />
-              <Route path="/new/dataset" element={<RenderDataset status="new" />} />
+              {/* <Route path="/new/sample" element={<RenderSample status="new" />} /> */}
+              {/* <Route path="/new/dataset" element={<RenderDataset status="new" />} /> */}
               <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
               {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
-              <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} />
+              {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
               {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
 
           </Routes>

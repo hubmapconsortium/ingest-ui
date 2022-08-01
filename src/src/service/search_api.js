@@ -255,13 +255,15 @@ export function get_assay_type(assay) {
 
 
 export function search_api_get_assay_list(params) { 
-  console.debug("search_api_get_assay_list", params);
+  // console.debug("search_api_get_assay_list", params);
   var primaryParam = { params: params };
   return axios 
     .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,  primaryParam)
     .then(res => {
         let data = res.data;
-        return {status: res.status, data: data}
+        let dtListMapped = data.result.map((value, index) => { return value });
+        console.debug("search_api_get_assay_list", dtListMapped);
+        return {status: res.status, data: dtListMapped}
       })
       .catch(err => {
         console.debug("search_api_get_assay_list", err.response);

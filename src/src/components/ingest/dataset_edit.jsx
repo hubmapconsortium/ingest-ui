@@ -43,8 +43,10 @@ import TableRow from '@material-ui/core/TableRow';
 class DatasetEdit extends Component {
   state = {
    // The Entity Itself
+   newForm: this.props.newForm,
     contains_human_genetic_sequences: undefined,
-    data_types: this.props.editingDataset.data_types,
+    // data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
+     data_types: this.props.dataTypeList,
     // data_types: new Set(),
     dataset_info: "",
     description: "",
@@ -128,6 +130,8 @@ class DatasetEdit extends Component {
     
     componentDidMount() {
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
+      // console.debug("DATATYPELIST",this.props);
+      console.debug("newForm", this.props.newForm);
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
       var savedGeneticsStatus = undefined;
@@ -218,7 +222,7 @@ class DatasetEdit extends Component {
       });
 
     // Sets up the Entity's info  
-    if (this.props.editingDataset) {      //
+    if (this.props.editingDataset && !this.props.newForm) {      //
       // let source_uuids;
       try {
         // use only the first direct ancestor
@@ -930,7 +934,8 @@ class DatasetEdit extends Component {
           };
          
           // @TODO: Should be using services for this instead of Axios
-          if (this.props.editingDataset) {
+          console.debug(" !this.props.newForm",  !this.props.newForm);
+          if (this.props.editingDataset && !this.props.newForm) {
 
             console.debug("submitIntention is our status as passed into handleSubmit", submitIntention);
             console.log("data is ", data)
@@ -1103,7 +1108,7 @@ class DatasetEdit extends Component {
         // });
       }
       
-      if (this.state.data_types.size === 0 || this.state.data_types === "") {
+      if (this.state.data_types && this.state.data_types.size === 0 || this.state.data_types === "") {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
@@ -1521,7 +1526,7 @@ class DatasetEdit extends Component {
   renderAssayArray() {
 	    var len = this.props.dataTypeList.length;
 
-       if (this.state.data_types.size > 1) {
+       if (this.props.dataTypeList.size > 1) {
         return (<>
   
           <ul>
@@ -1532,7 +1537,7 @@ class DatasetEdit extends Component {
       }else{ 
         // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
   	    return (<>
-  		    <select className="form-select" value={this.state.data_types.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+  		    <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}>
             <option></option>
             {this.renderAssayColumn(0, len)}
             <option value="other">Other</option>

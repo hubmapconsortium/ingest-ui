@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
+// Originally looked like these would pull in different forms, 
+// given their management in this forms file. However, it 
+// now looks like these load the same forms as elsewhere, 
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import DatasetEdit from "../ingest/dataset_edit";
@@ -13,8 +16,10 @@ class Forms extends Component {
   state = { formType: "----",
     createSuccess: false,
     isDirty: false,
+    isLoading: true,
     open:false,
     entity: null,
+    dataTypeList:null,
     showDatasetResultsDialog: false,
     showSuccessDialog: false,
     result_dialog_size: "xs"
@@ -35,12 +40,52 @@ class Forms extends Component {
     console.debug('Forms:isDirty', isDirty);
   }
 
+  // fetchPrimaryDataTypes = () =>{
+  //   search_api_get_assay_list({"primary": "true"})
+  //     .then((response) => {
+  //       console.debug("fetchPrimaryDataTypes Response", response);
+  //         let data = response.data;
+  //         var dt_dict = data.result.map((value, index) => { return value });
+  //         console.debug("dt_dict", dt_dict);
+          
+  //       this.setState({
+  //         dataTypesList: dt_dict
+  //       });
+
+  //       // setDataTypeList(dt_dict);
+  //       // setLoading(false);
+  //       return dt_dict;
+  //     })
+  //     .catch(error => {
+  //       console.debug("fetch DT list Response Error", error);
+  //       // passError(error.status, error.response );
+  //       return error;
+  //     });
+  // };
+
+  prepDatatypes= () =>{
+
+  }
+  // @TODO: Since we're pulling the form in another wrapper when in edit mode, 
+  //  all the prop stuff is effectively less than useless.
+  // just populate the dt list in the dataset_edit form itself, 
+  // Edit will still used whats passed in through props
+
+ 
   UNSAFE_componentWillMount() {
+    console.debug("UNSAFE_componentWillMount");
+    // console.debug("dtlist",this.props.dataTypeList);
+    var DTList = this.props.dataTypeList;
+    console.debug("prepDatatypes", this.prepDatatypes(), DTList);
+
     this.setState({
       formType: this.props.formType,
-        open: true
+        open: true,
+        dataTypeList: DTList
+    }, () => {   
+     this.setState({ isLoading: false });
+     console.debug("FORMS componentWillMount", this.state);
     });
-    console.debug('FORMS', this.props.formType);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -57,11 +102,9 @@ class Forms extends Component {
       console.debug("forms handleFormTypeChange ",this.props.formType,this.state);
       // this.handleUrlChange("new/"+target);
     }
-
-
   };
     
-  
+
 
   onCreated = data => {
     console.debug('FORMS onCreated:', data);
@@ -146,6 +189,8 @@ class Forms extends Component {
   }
 
   renderForm() {
+    console.debug("this.props", this.props);
+    // var dataTypesList = this.fetchPrimaryDataTypes();
     if (this.state.createSuccess) {
       return (
         <Dialog aria-labelledby="result-dialog" open={this.state.showSuccessDialog} maxWidth={this.state.result_dialog_size}>
@@ -180,18 +225,21 @@ class Forms extends Component {
           direct_ancestor={this.state.ancestor_entity}
         />
       );
-    } else if (this.state.formType === "dataset") {
+    } else if (this.props.formType === "dataset"  ) {
+      console.debug("NEW DATASET");
         return (
          <DatasetEdit
-            testProp="HAIL"
+            dataTypeList={this.props.dataTypeList}
             onCreated={this.onCreated}
             onReturn={this.props.onCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}
-            newForm={false}
-            testData="DISCORDIA!"
+            newForm={true}
+            editingDataset="{}"
           />
+          
         )
-    } else if (this.state.formType === "dataset") {
+    // } else if (this.state.formType === "dataset") {
+      
         // return (
         // //  <UploadsForm  // Loads from a dialog in app.js
         // //     handleCancel={this.props.onCancel}
@@ -208,7 +256,17 @@ class Forms extends Component {
 
   render() {
     return <div>
-      {this.renderForm()}
+
+
+      {this.state.isLoading && (
+        <>Loading</>
+        // <span>  LOADING </span>
+      )}
+
+      {!this.state.isLoading && (
+
+        this.renderForm()
+      )}
       {this.state.showDatasetResultsDialog && ( // for results of a new Dataset
           <NewDatasetModal
             show={this.state.showDatasetResultsDialog}
