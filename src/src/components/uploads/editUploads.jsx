@@ -489,13 +489,14 @@ class EditUploads extends Component{
   renderButtonBar(){
       return (
 <div>
-  <div className="col-sm-12">
+  <div className="col-sm-12 align-right">
   <Divider />
   </div>
 
   {this.renderHelperText()}
   <Box
     sx={{
+      width: "100%",
     display: 'flex',
     '& > *': {
         m: 1,
@@ -1030,7 +1031,7 @@ renderReorganizeButton() {
             
             <div>
          
-          <div className='col-sm-9 col-form-label'>
+          <div className=''>
             {this.renderDatasets(this.state.datasets)}
           </div>  
             </div>
