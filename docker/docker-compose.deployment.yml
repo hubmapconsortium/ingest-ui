@@ -4,4 +4,4 @@ services:
 
   ingest-ui:
     # Use the published image and tag from DockerHub
-    image: ingest-ui:${INGEST_UI_VERSION:?err}
+    image: hubmap/ingest-ui:${INGEST_UI_VERSION:?err}
