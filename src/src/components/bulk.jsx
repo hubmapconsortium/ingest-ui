@@ -8,12 +8,17 @@ export const RenderBulk = (props) => {
   let navigate = useNavigate();
 
   function handleCancel(){
-    navigate(-1);  
+    if(this.props.handleCancel){
+      // How is this happening???
+     this.props.handleCancel();
+    }else{
+      window.history.back();
+    }
   };
 
       return (
         <div>
-          <BulkCreation bulkType={props.bulkType} onCancel={handleCancel} />
+          <BulkCreation bulkType={props.bulkType} handleCancel={handleCancel} />
         </div>
       )
     

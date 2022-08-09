@@ -142,7 +142,7 @@ export function App (props){
 
 
   function handleCancel(){
-    navigate(-1);  
+    window.history.back();  
   }
 
 
@@ -178,7 +178,9 @@ export function App (props){
  
   
   function urlChange(target) {
-    navigate(target);
+    var lowerTarget = target.toLowerCase();
+    console.debug("urlChange", target, lowerTarget);
+    navigate(lowerTarget,  { replace: true });
   }
  
 
@@ -252,23 +254,25 @@ export function App (props){
 
           <Routes>
 
-              <Route path="/" element={ <SearchComponent entity_type=' ' urlChange={urlChange} onCancel={handleCancel}/>} />
+              <Route path="/" element={ <SearchComponent entity_type=' ' urlChange={urlChange} handleCancel={handleCancel}/>} />
 
               <Route path="/login" element={<Login />} />
               
-              <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} onCancel={handleCancel} />}/>
-              <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} onCancel={handleCancel} /> }/>
-              <Route path="/new/dataset" element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} onCancel={handleCancel} /> }/> 
+              <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+              <Route path="/new/dataset" element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+
+              <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/>
+              {/* <Route path="/new/sample"><Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} />  </Route> */}
 
               <Route path="/donors" element={<SearchComponent filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent filter_type="Sample" urlChange={urlChange} />} ></Route>
               <Route path="/datasets" element={<SearchComponent filter_type="Dataset" urlChange={urlChange} />} ></Route>
               <Route path="/uploads" element={<SearchComponent filter_type="uploads" urlChange={urlChange} />} ></Route>
                                     
-              <Route path="/donor/:uuid" element={<RenderDonor  onCancel={handleCancel} status="view"/>} />
-              <Route path="/sample/:uuid" element={<RenderSample onCancel={handleCancel} status="view"/>} />
-              <Route path="/dataset/:uuid" element={<RenderDataset  onCancel={handleCancel} status="view"/>} />
-              <Route path="/upload/:uuid" element={<RenderUpload  onCancel={handleCancel} status="view"/>} />
+              <Route path="/donor/:uuid" element={<RenderDonor  handleCancel={handleCancel} status="view"/>} />
+              <Route path="/sample/:uuid" element={<RenderSample handleCancel={handleCancel} status="view"/>} />
+              <Route path="/dataset/:uuid" element={<RenderDataset  handleCancel={handleCancel} status="view"/>} />
+              <Route path="/upload/:uuid" element={<RenderUpload  handleCancel={handleCancel} status="view"/>} />
 
               {/* <Route path="/new/sample" element={<RenderSample status="new" />} /> */}
               {/* <Route path="/new/dataset" element={<RenderDataset status="new" />} /> */}
@@ -276,7 +280,7 @@ export function App (props){
               <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
               {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
               {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
-              {/* <Forms formType={this.state.formType} onCancel={this.handleClose} /> */}
+              {/* <Forms formType={this.state.formType} handleCancel={this.handleClose} /> */}
 
           </Routes>
 

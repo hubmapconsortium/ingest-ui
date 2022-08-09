@@ -84,10 +84,13 @@ export const RenderDataset = (props) => {
   }, [uuid, props]);
 
   function handleCancel(){
-    console.debug(navigate);
-    // React wants to simply scroll to the top of the page if we use -1
-    // navigate(-2);  
-    navigate('../');
+    
+    if(this.props && this.props.handleCancel){
+      // How is this happening???
+     this.props.handleCancel();
+    }else{
+      window.history.back();
+    }
   };
 
   function onUpdated(data){

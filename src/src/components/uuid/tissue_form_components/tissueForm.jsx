@@ -555,10 +555,11 @@ class TissueForm extends Component {
   }
 
   handleCancel = () => {
-     if (this.props.history) {
-       this.props.history.goBack();
-    } else {
-      this.props.onCancel();
+    if(this.props.handleCancel){
+      // How is this happening???
+     this.props.handleCancel();
+    }else{
+      window.history.back();
     }
   }
 
@@ -1383,7 +1384,7 @@ handleAddImage = () => {
                 id="editBackBtn"
                 type="button"
                 variant="outlined"
-                onClick={() => this.props.onCancel()}
+                onClick={() => this.props.handleCancel()}
               >
                 Cancel
               </Button>

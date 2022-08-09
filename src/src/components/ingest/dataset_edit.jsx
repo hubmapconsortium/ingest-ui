@@ -836,6 +836,15 @@ class DatasetEdit extends Component {
     }
   };
 
+  handleCancel = () => {
+    if(this.props && this.props.handleCancel){
+      // How is this happening???
+     this.props.handleCancel();
+    }else{
+      window.history.back();
+    }
+  }
+
   handleReprocess = () => {
     Alert("Reprocessing feature not implemented")
   }
@@ -1357,7 +1366,7 @@ class DatasetEdit extends Component {
           <Button
               type='button'
               variant="outlined"
-              onClick={() => this.props.handleCancel()}>
+              onClick={() => this.handleCancel()}>
               Cancel
           </Button>
       </div>

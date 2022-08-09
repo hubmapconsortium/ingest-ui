@@ -44,13 +44,23 @@ export const RenderSample = (props) => {
           passError(error.status, error.results.error );
         });
     }else{
-      console.debug("Teat Flag Previously Flipped True");
+      console.debug("Loadflag True");
     }
     
   }, [authSet, uuid, loadFlag]);
 
   function handleCancel(){
-    navigate(-1);  
+    if(this.props && this.props.handleCancel){
+      // How is this happening???
+     this.props.handleCancel();
+    }else{
+      window.history.back();
+    }
+    // console.debug(this.props);
+    // console.debug("Props On Cancel");
+    // // window.history.back();  
+    // // navigate(-1,  {replace: true});  
+    // window.history.back()
   };
 
 
@@ -86,7 +96,7 @@ export const RenderSample = (props) => {
     }else{
       return (
         <div>
-          <TissueFormLegacy onCancel={handleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
+          <TissueFormLegacy handleCancel={handleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
         </div>
       )
     }
