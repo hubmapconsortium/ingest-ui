@@ -84,8 +84,10 @@ export const RenderDataset = (props) => {
   }, [uuid, props]);
 
   function handleCancel(){
+    console.debug(navigate);
     // React wants to simply scroll to the top of the page if we use -1
-    navigate(-2);  
+    // navigate(-2);  
+    navigate('../');
   };
 
   function onUpdated(data){
@@ -132,7 +134,7 @@ export const RenderDataset = (props) => {
       // console.debug("BG");
       // console.debug("DTLIST", this.props.dataTypeList);
       //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
-      return (
+      return ( 
         <div>
           <DatasetFormLegacy 
           onUpdated={onUpdated} 

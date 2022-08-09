@@ -1,0 +1,7 @@
+version: "3.7"
+
+services:
+
+  ingest-ui:
+    # Use the published image and tag from DockerHub
+    image: hubmap/ingest-ui:${INGEST_UI_VERSION:?err}
