@@ -1,0 +1,9 @@
+version: "3.7"
+
+services:
+
+  ingest-ui:
+    build: ./ingest-ui
+    # Build the image with name and tag
+    # Exit with an error message containing err if unset or empty in the environment
+    image: hubmap/ingest-ui:${INGEST_UI_VERSION:?err}
