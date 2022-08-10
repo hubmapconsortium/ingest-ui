@@ -176,7 +176,7 @@ class EntityList extends Component {
   cancelEdit = () => {
     this.setState({ editingEntity: null });
     this.filterEntity();
-    this.props.onCancel();
+    this.props.handleCancel();
   };
 
   onUpdated = data => {
@@ -188,7 +188,7 @@ class EntityList extends Component {
     setTimeout(() => {
       this.setState({ updateSuccess: null });
     }, 5000);
-    this.props.onCancel();
+    this.props.handleCancel();
   };
 
   handleFilterInputChange = e => {

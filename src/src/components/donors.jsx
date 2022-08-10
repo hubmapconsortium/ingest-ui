@@ -50,7 +50,12 @@ export const RenderDonor = (props) => {
 
 
   function handleCancel(){
-    navigate(-1);  
+    if(this.props && this.props.handleCancel){
+      // How is this happening???
+     this.props.handleCancel();
+    }else{
+      window.history.back();
+    }
   };
 
  function onCreated (data) {

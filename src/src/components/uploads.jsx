@@ -48,6 +48,7 @@ export const RenderUpload = (props) => {
 
 
   function handleCancel(){
+    // this.props.handleCancel();
     window.history.back()
   }
 

@@ -198,7 +198,7 @@ class Forms extends Component {
         <Result
           result={this.state.result}
           onReturn={this.props.onReturn}
-          onCancel={this.props.onCancel}
+          handleCancel={this.props.handleCancel}
           onCreateNext={this.onCreateNext}
           entity={this.state.entity}
         />
@@ -210,7 +210,7 @@ class Forms extends Component {
       return (       
         <DonorForm
           onCreated={this.onCreated}
-          handleCancel={this.props.onCancel}
+          handleCancel={this.props.handleCancel}
         />
       );
     } else if (this.state.formType === "sample") {
@@ -223,6 +223,7 @@ class Forms extends Component {
           sourceUUID={this.state.sourceUUID}
           uuid={this.state.uuid}
           direct_ancestor={this.state.ancestor_entity}
+          handleCancel={this.props.handleCancel}
         />
       );
     } else if (this.props.formType === "dataset"  ) {
@@ -231,7 +232,7 @@ class Forms extends Component {
          <DatasetEdit
             dataTypeList={this.props.dataTypeList}
             onCreated={this.onCreated}
-            onReturn={this.props.onCancel}
+            onReturn={this.props.handleCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}
             newForm={true}
             editingDataset="{}"
@@ -242,7 +243,7 @@ class Forms extends Component {
       
         // return (
         // //  <UploadsForm  // Loads from a dialog in app.js
-        // //     handleCancel={this.props.onCancel}
+        // //     handleCancel={this.props.handleCancel}
         // //     uuid={this.state.uuid}
         // //     //onUpdated={this.handleDatasetUpdated}
         // //     onCreated={this.onCreated}

@@ -91,6 +91,11 @@ class bulkCreation extends Component {
 
 
   getUserGroups(){
+    console.debug("Groups TOken Grabby");
+    var GT = localStorage.getItem("info");
+    console.debug("GT", GT);
+
+
     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token+"").then((results) => {
       if (results.status === 200) { 
       const groups = results.results.filter(
