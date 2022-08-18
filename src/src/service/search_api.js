@@ -270,6 +270,3 @@ export function search_api_get_assay_list(params) {
          return {results: err.response}
       });
 };
-export function yell(params) { 
-  return {results: "HAIL"}
-};

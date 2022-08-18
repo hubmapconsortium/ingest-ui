@@ -45,8 +45,8 @@ class DatasetEdit extends Component {
    // The Entity Itself
    newForm: this.props.newForm,
     contains_human_genetic_sequences: undefined,
-    // data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
-     data_types: this.props.dataTypeList,
+    data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
+    //  data_types: this.props.dataTypeList,
     // data_types: new Set(),
     dataset_info: "",
     description: "",
@@ -99,27 +99,37 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
+    console.debug("updateStateDataTypeInfo");
     let data_types = null;
     let other_dt = undefined;
+    console.debug("this.props", this.props);
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
+        console.debug("EditingDataset datatype Found", this.props.editingDataset.data_types);
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
         other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
+        console.debug("data_types", data_types);
         if (other_dt) {
+          console.debug("has Other DT", other_dt);
           data_types.push(other_dt);
         }
         get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
-          if (resp.status === 200) {
-            if (resp.results) {
-              this.setState({
-                assay_type_primary: resp.results.primary
-              });
+            console.debug("assay_type", resp);
+            if (resp.status === 200) {
+              if (resp.results) {
+                this.setState({
+                  assay_type_primary: resp.results.primary
+                });
+              }
             }
-          }
+        })
+        .catch((err) => {
+          console.debug("ERR assay_type", err);
         }); 
+       
       }
       this.setState({
         data_types: new Set(data_types),
@@ -1546,7 +1556,13 @@ class DatasetEdit extends Component {
       }else{ 
         // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
   	    return (<>
-  		    <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+  		    <select 
+            className="form-select" 
+            defaultValue={this.props.editingDataset.data_types[0]} 
+            // value={this.props.editingDataset.data_types} 
+            id="dt_select" 
+            onChange={this.handleInputChange}>
+  		    {/* <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}> */}
             <option></option>
             {this.renderAssayColumn(0, len)}
             <option value="other">Other</option>
@@ -1931,7 +1947,7 @@ class DatasetEdit extends Component {
           
           <div className='form-group '>
             <label
-              htmlFor='description'
+              htmlFor='dt_select'
               className='col col-form-label text-right'
             >
               Data Type <span className='text-danger'>* </span>

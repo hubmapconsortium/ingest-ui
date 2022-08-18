@@ -33,7 +33,7 @@ export const RenderDataset = (props) => {
     var authSet = JSON.parse(localStorage.getItem("info"));
 
 
-    search_api_get_assay_list({"primary": "true"})
+    search_api_get_assay_list({"primary": "false"})
     .then((response) => {
       console.debug("fetchPrimaryDataTypes Response", response);
         let data = response.data;
