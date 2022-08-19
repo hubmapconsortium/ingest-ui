@@ -258,7 +258,7 @@ export function search_api_get_assay_list(params) {
   // console.debug("search_api_get_assay_list", params);
   var primaryParam = { params: params };
   return axios 
-    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,  primaryParam)
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,  false)
     .then(res => {
         let data = res.data;
         let dtListMapped = data.result.map((value, index) => { return value });
