@@ -35,6 +35,10 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
+
+import Select from '@material-ui/core/Select';
+import NativeSelect from '@material-ui/core/NativeSelect';
+
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
@@ -1556,7 +1560,8 @@ class DatasetEdit extends Component {
       }else{ 
         // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
   	    return (<>
-  		    <select 
+  		    <Select 
+            native
             className="form-select" 
             defaultValue={this.props.editingDataset.data_types[0]} 
             // value={this.props.editingDataset.data_types} 
@@ -1566,7 +1571,7 @@ class DatasetEdit extends Component {
             <option></option>
             {this.renderAssayColumn(0, len)}
             <option value="other">Other</option>
-          </select>
+          </Select>
           </> )
    
       }    

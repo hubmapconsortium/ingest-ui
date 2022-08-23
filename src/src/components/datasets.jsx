@@ -132,8 +132,8 @@ export const RenderDataset = (props) => {
     //   );
     // }else 
     if (!isLoadingEntity && !isLoadingDTList ) {
-      console.debug(isLoadingDTList, dataTypeList );
-      console.debug(isLoadingEntity, entity_data);
+      // console.debug(isLoadingDTList, dataTypeList );
+      // console.debug(isLoadingEntity, entity_data);
       // console.debug("BG");
       // console.debug("DTLIST", this.props.dataTypeList);
       //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
