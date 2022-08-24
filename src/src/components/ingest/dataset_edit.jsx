@@ -35,6 +35,12 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
+import Box from '@material-ui/core/Box';
+
+
+import Select from '@material-ui/core/Select';
+import NativeSelect from '@material-ui/core/NativeSelect';
+
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
@@ -44,9 +50,9 @@ class DatasetEdit extends Component {
   state = {
    // The Entity Itself
    newForm: this.props.newForm,
-    contains_human_genetic_sequences: undefined,
-    // data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
-     data_types: this.props.dataTypeList,
+    data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
+    selected_dt:"",
+    //  data_types: this.props.dataTypeList,
     // data_types: new Set(),
     dataset_info: "",
     description: "",
@@ -88,6 +94,7 @@ class DatasetEdit extends Component {
     has_other_datatype: false,
     submitErrorResponse:"",
     submitErrorStatus:"",
+    isValidData:true,
     formErrors: {
       contains_human_genetic_sequences:"",
       data_types: "",
@@ -99,27 +106,37 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
+    console.debug("updateStateDataTypeInfo");
     let data_types = null;
     let other_dt = undefined;
+    console.debug("this.props", this.props);
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
+        console.debug("EditingDataset datatype Found", this.props.editingDataset.data_types);
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
         other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
+        console.debug("data_types", data_types);
         if (other_dt) {
+          console.debug("has Other DT", other_dt);
           data_types.push(other_dt);
         }
         get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
-          if (resp.status === 200) {
-            if (resp.results) {
-              this.setState({
-                assay_type_primary: resp.results.primary
-              });
+            console.debug("assay_type", resp);
+            if (resp.status === 200) {
+              if (resp.results) {
+                this.setState({
+                  assay_type_primary: resp.results.primary
+                });
+              }
             }
-          }
+        })
+        .catch((err) => {
+          console.debug("ERR assay_type", err);
         }); 
+       
       }
       this.setState({
         data_types: new Set(data_types),
@@ -132,6 +149,16 @@ class DatasetEdit extends Component {
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // console.debug("DATATYPELIST",this.props);
       console.debug("newForm", this.props.newForm);
+      var selected = ""
+      if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
+        // Set DT Select by state so it behaves as "controlled"
+        var selected = this.props.editingDataset.data_types[0].toLowerCase();
+        console.debug("SELECTED FORMATTED", selected);
+      }
+      this.setState({
+        selected_dt: selected,
+      })
+
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
       var savedGeneticsStatus = undefined;
@@ -376,7 +403,7 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    //console.debug('**name', name)
+    console.debug('**name', name, id, value)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
@@ -415,6 +442,11 @@ class DatasetEdit extends Component {
           new_status: value,
         });
         break;
+      case "status":
+        this.setState({
+          new_status: value,
+        });
+        break;
       // case "is_protected":
       //   this.setState({
       //     is_protected: e.target.checked,
@@ -423,6 +455,16 @@ class DatasetEdit extends Component {
       case "other_dt":
         this.setState({ other_dt: value });
         break;
+      case "dt_select":
+
+        var data_types = [];
+        data_types.add(value);
+        this.setState({
+          has_other_datatype: false,
+          data_types: data_types,
+          // selected_dt: value,
+        });
+          break;
       case "groups":
         this.setState({
           selected_group: value
@@ -432,7 +474,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-     //console.log('ping!', id);
+     console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -466,13 +508,15 @@ class DatasetEdit extends Component {
           
           
         } else {
-
+          console.debug("value", value);
+          
           const data_types = this.state.data_types;
           data_types.clear();
           data_types.add(value);
           this.setState({
             has_other_datatype: false,
-            data_types: data_types,
+            // data_types: data_types,
+            selected_dt: value,
           });
 
         }/*if (e.target.checked) {
@@ -596,11 +640,7 @@ class DatasetEdit extends Component {
               At least <strong>one source </strong>is required, but multiple may be specified.
             </p>
           </ReactTooltip>
-          {this.errorClass(this.state.formErrors.source_uuid_list) && (
-            <div className='alert alert-danger'>
-            At least one source is Required
-          </div>
-          )}
+
         <TableContainer 
           component={Paper} 
           style={{ maxHeight: 450 }}
@@ -657,22 +697,36 @@ class DatasetEdit extends Component {
                  
         {this.state.writeable && (
         <React.Fragment>
-          <div className="mt-2 text-right">
-            <Button
-              variant="contained"
-              type='button'
-              className='btn btn-secondary'
-              onClick={() => this.handleLookUpClick()} 
-              >
-              Add {this.props.newForm === true && (
-                "Another"
-                )} Source 
-              <FontAwesomeIcon
-                className='fa button-icon ml-2'
-                icon={faPlus}
-              />
-            </Button>
-          </div>
+          <Box className="mt-2 w-100" width="100%"  display="flex">
+            
+              <Box p={1} className="m-0  text-right" flexShrink={0}  >
+                <Button
+                  variant="contained"
+                  type='button'
+                  size="small"
+                  className='btn btn-secondary'
+                  onClick={() => this.handleLookUpClick()} 
+                  >
+                  Add {this.props.newForm === true && (
+                    "Another"
+                    )} Source 
+                  <FontAwesomeIcon
+                    className='fa button-icon m-2'
+                    icon={faPlus}
+                  />
+                </Button>
+              </Box>
+
+              <Box p={1} width="100%"   >
+              {this.errorClass(this.state.formErrors.source_uuid_list) && (
+                    <Alert severity="error" width="100% " >
+                      {this.state.formErrors.source_uuid_list}  {this.state.formErrors.source_uuid} 
+                    </Alert>
+                )}
+              </Box>
+              
+              {/*  */}
+          </Box>
         </React.Fragment>
         )}
       </div>
@@ -984,9 +1038,9 @@ class DatasetEdit extends Component {
                     }
                 })
                 .catch((error) => {
-                  console.error("processing ERROR ", error)
-                  this.props.passError(error);
-                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error });
+                    console.error("processing ERROR ", error)
+                    this.props.passError(error);
+                    this.setState({ submit_error: true, submitting: false, submitErrorResponse:error, submitErrorStatus:error });
                  });
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1072,13 +1126,22 @@ class DatasetEdit extends Component {
                //console.debug("err", err)
                 this.setState({ submit_error: true, submitting: false, submitErrorResponse:err } ,
                   () => {
-                   //console.debug("CATCH ", err) 
+                   console.debug("CATCH ", err) 
                   });
               });
           }  //else
         }
       }else{
-        Alert("There was a problem handling your form. Please review the marked items and try again.");
+        console.debug("Is Not Valid");
+        // console.debug("There was a problem handling your form. Please review the marked items and try again.");
+        this.setState({ 
+          submit_error: true, 
+          submitting: false, 
+          
+          // submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again." 
+        });
+
+        // Alert("There was a problem handling your form. Please review the marked items and try again.");
       }
     });
   };
@@ -1104,7 +1167,7 @@ class DatasetEdit extends Component {
       
       if (!validateRequired(this.state.source_uuid_list)) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid_list: "required" },
+          formErrors: { ...prevState.formErrors, source_uuid_list: "At least one Source is required" },
         }));
         isValid = false;
         resolve(isValid);
@@ -1160,11 +1223,25 @@ class DatasetEdit extends Component {
           } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
             emsg = "The selected data type doesn’t contain gene sequence information, please select No or change the data type."
           } 
+          console.debug('VALIDATE: emsg', emsg)
+          
           this.setState((prevState) => ({
-              formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },
+              formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },              
           }));
      
           isValid = false;       
+      }
+      this.setState({ isValidData: isValid});
+      if(!isValid){
+        this.setState({ 
+          submit_error: true, 
+          submitting: false,  
+        });
+        var errorSet = this.state.formErrors;
+        var result = Object.keys(errorSet).find(e => errorSet[e].length);
+        console.debug('VALIDATE: result', result);
+
+
       }
       resolve(isValid);
     });
@@ -1511,9 +1588,15 @@ class DatasetEdit extends Component {
     }
   renderAssay(val, idx) {
     // console.debug("renderAssay", val, idx);
-    var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+    var lcName =val.name.toLowerCase();
+    var idstr = 'dt_' + lcName.replace(' ','_');
+    var selectedDT = "";
+    if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
+      console.debug("THIS ONE,", lcName);
+      selectedDT="selected";
+    }
     return (
-      <option key={idstr} value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
+      <option key={idstr} value={lcName}  id={idstr}>{val.description}</option>
       )
   }
 
@@ -1533,24 +1616,47 @@ class DatasetEdit extends Component {
 
    
   renderAssayArray() {
-	    var len = this.props.dataTypeList.length;
+      var len = 0;
+      var dtlistLen = this.props.dataTypeList.length;
+      if(this.props.editingDataset && this.props.editingDataset.data_types) {
+        console.debug("this.props.editingDataset", this.props.editingDataset);
+        len = this.props.editingDataset.data_types.length;
+      }else{
+        console.debug("no editingDataset");
+      }
 
-       if (this.props.dataTypeList.size > 1) {
+       if (len > 1) {
+        console.debug("Multiple DTs", len);
         return (<>
-  
           <ul>
             {this.renderMultipleAssays()}
           </ul>
 
           </>)
       }else{ 
+         var selectedID = null;
+          if(this.props.editingDataset && this.props.editingDataset.data_types){
+            console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
+            selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
+          }
+          console.debug("selectedID", selectedID);
         // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
   	    return (<>
-  		    <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+  		    <Select 
+            native
+            name="dt_select"
+            className="form-select" 
+            disabled={!this.state.writeable}
+            value={this.state.selected_dt} 
+            // defaultValue={selectedID} 
+            // value={this.props.editingDataset.data_types} 
+            id="dt_select" 
+            onChange={this.handleInputChange}>
+  		    {/* <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}> */}
             <option></option>
-            {this.renderAssayColumn(0, len)}
-            <option value="other">Other</option>
-          </select>
+            {this.renderAssayColumn(0, dtlistLen)}
+            {/* <option value="other">Other</option> */}
+          </Select>
           </> )
    
       }    
@@ -1655,6 +1761,7 @@ class DatasetEdit extends Component {
           
           <div className='form-group'>
               {this.renderSources()}
+              
               
               <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
                 <DialogContent>
@@ -1807,172 +1914,181 @@ class DatasetEdit extends Component {
               </div>
             )}
           </div>
-            <div className='form-group '>
-              <label
-                htmlFor='contains_human_genetic_sequences'
-                className='col-sm-2 col-form-label text-right '
-              >
-                Gene Sequences <span className='text-danger'> * </span>
-              </label>
-              
-               <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for='contains_human_genetic_sequences_tooltip'
-                  />
-                  <ReactTooltip
-                    id='contains_human_genetic_sequences_tooltip'
-                    place='top'
-                    type='info'
-                    effect='solid'
-                  >
+          
+          {/* <div className={ this.state.formErrors.contains_human_genetic_sequences.length>0 ? 'form-group alert alert-danger' : 'form-group' } >
+            <div className='formRowWrapper p-2'>   */}
+            <div className='form-group  '>  
+                <label
+                  htmlFor='contains_human_genetic_sequences'
+                  className='col-sm-2 col-form-label text-right '
+                >
+                  Gene Sequences <span className='text-danger'> * </span>
+                </label>
+                
+                <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for='contains_human_genetic_sequences_tooltip'
+                    />
+                    <ReactTooltip
+                      id='contains_human_genetic_sequences_tooltip'
+                      place='top'
+                      type='info'
+                      effect='solid'
+                    >
 
-                    <p>Gene Sequences Tips</p>
-                  </ReactTooltip>
-              {this.props.editingDataset && (
-                <div className='col-sm-9'>
-                  <div className='form-check form-check-inline'>
-                    <input
-                      className='form-check-input'
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_no'
-                      value='no'
-                      // defaultChecked={true}
-                      checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      disabled={this.props.editingDataset}
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
-                      No
-                    </label>
-                  </div>
-                  <div className='form-check form-check-inline'>
-                    <input
-                      className='form-check-input'
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_yes'
-                      value='yes'
-                      checked={this.state.contains_human_genetic_sequences  === true && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      disabled={this.props.editingDataset}
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
-                      Yes
-                    </label>
-                  </div>
-                  <small id='PHIHelpBlock' className='form-text text-muted'>
-                    Will this data contain any human genomic sequence data?
-                  </small>
-                </div>
-              )}
-              {!this.props.editingDataset && (
-                <div className="col-sm-9 ">
-                  <div className='form-check form-check-inline'>
-                    <input 
-                      className={
-                        "form-check-input " +
-                        this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
-                      }
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_no'
-                      value='no'
-                      // defaultChecked={true}
-                      //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      //disabled={this.props.editingDataset}
-                      //required
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
-                      No
-                    </label>
-                  </div>
-                  <div className='form-check form-check-inline'>
-                    <input 
-                      className={
-                        "form-check-input " +
-                        this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
-                      }
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_yes'
-                      value='yes'
-                      //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      //disabled={this.props.editingDataset}
-                      //required
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
-                      Yes
-                    </label>
-                  </div>
-                  <small id='PHIHelpBlock' className='form-text text-muted'>
-                    Will this data contain any human genomic sequence data?
-                  </small>
-                   { this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
-                      <div className='alert alert-danger'>
-                      
-                      {this.state.formErrors.contains_human_genetic_sequences}
+                      <p>Gene Sequences Tips</p>
+                    </ReactTooltip>
+                <div className="row">
+                  {this.props.editingDataset && (
+                    <div className='col-sm-9'>
+                      <div className='form-check form-check-inline'>
+                        <input
+                          className='form-check-input'
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_no'
+                          value='no'
+                          // defaultChecked={true}
+                          checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          disabled={!this.state.writeable}
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
+                          No
+                        </label>
+                      </div>
+                      <div className='form-check form-check-inline'>
+                        <input
+                          className='form-check-input'
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_yes'
+                          value='yes'
+                          checked={this.state.contains_human_genetic_sequences  === true && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          disabled={!this.state.writeable}
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
+                          Yes
+                        </label>
+                      </div>
+                      <small id='PHIHelpBlock' className='form-text text-muted'>
+                        Will this data contain any human genomic sequence data?
+                      </small>
                     </div>
-                   )}
-                 
-                </div>
-              )}
+                  )}
+                  {!this.props.editingDataset && (
+                    <div className="col-sm-9 ">
+                      <div className='form-check form-check-inline'>
+                        <input 
+                          className={
+                            "form-check-input " +
+                            this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
+                          }
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_no'
+                          value='no'
+                          // defaultChecked={true}
+                          //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          //disabled={this.props.editingDataset}
+                          //required
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
+                          No
+                        </label>
+                      </div>
+                      <div className='form-check form-check-inline'>
+                        <input 
+                          className={
+                            "form-check-input " +
+                            this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
+                          }
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_yes'
+                          value='yes'
+                          //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          //disabled={this.props.editingDataset}
+                          //required
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
+                          Yes
+                        </label>
+                      </div>
+                      <small id='PHIHelpBlock' className='form-text text-muted'>
+                        Will this data contain any human genomic sequence data? TEST
+                      </small>
+                      
+                    
+                    </div>
+                  )}
 
-              {/*!this.state.writeable && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.contains_human_genetic_sequences}</p>
+                  {/*!this.state.writeable && (
+                    <div className='col-sm-9 col-form-label'>
+                      <p>{this.state.contains_human_genetic_sequences}</p>
+                    </div>
+                  )*/}
+                  {this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
+                        <Alert severity="error">
+                          {this.state.formErrors.contains_human_genetic_sequences}
+                        </Alert>
+                    )}
+                
                 </div>
-              )*/}
-            
+
+
             </div>
           
-          <div className='form-group '>
-            <label
-              htmlFor='description'
-              className='col col-form-label text-right'
-            >
-              Data Type <span className='text-danger'>* </span>
-            </label>
-            <span>
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                data-tip
-                data-for='datatype_tooltip'
-                style={{ marginLeft: "10px" }}
-              />
-              <ReactTooltip
-                id='datatype_tooltip'
-                place='top'
-                type='info'
-                effect='solid'
+          {/* <div className={ this.state.formErrors.contains_human_genetic_sequences.length>0 ? 'form-group alert alert-danger' : 'form-group' } >
+            <div className='formRowWrapper p-2'> */}
+            <div className= 'form-group'>
+              <label
+                htmlFor='dt_select'
+                className='col col-form-label text-right'
               >
-                <p>Data Type Tips</p>
-              </ReactTooltip>
-            </span>
-            {this.state.writeable&& (
-		          <React.Fragment>
-                
-                <div className='col-sm-12'>
-                      { this.renderAssayArray()}
-                </div>
-		
-                <div className='col-sm-12'>
-                {this.state.formErrors.data_types && (
-                  <div className='alert alert-danger'>
-                    At least one Data Type is Required.
+                Data Type <span className='text-danger'>* </span>
+              </label>
+              <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='datatype_tooltip'
+                  style={{ marginLeft: "10px" }}
+                />
+                <ReactTooltip
+                  id='datatype_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Data Type Tips</p>
+                </ReactTooltip>
+              </span>
+              {this.state.writeable&& (
+                <React.Fragment>
+                  
+                  <div className='col-sm-12'>
+                        { this.renderAssayArray()}
                   </div>
-                )}
-                </div>
-	             </React.Fragment>
-            )}
-            {!this.state.writeable && (
-                <div className='col-sm-12'>
-                      {true && this.renderAssayArray()}
-                </div>
-            )}
+      
+                  <div className='col-sm-12'>
+                  {this.state.formErrors.data_types && (
+                    <div className='alert alert-danger'>
+                      At least one Data Type is Required.
+                    </div>
+                  )}
+                  </div>
+                </React.Fragment>
+              )}
+              {!this.state.writeable && (
+                  <div className='col-sm-12'>
+                        {true && this.renderAssayArray()}
+                  </div>
+              )}
             
           </div>
  
@@ -2069,20 +2185,29 @@ class DatasetEdit extends Component {
               </div>
             </div>
           )}
-          {this.state.submit_error && (
-            <Alert severity="error">
-              {this.state.submitErrorResponse &&(
-                <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
+
+          
+          <div className='row'>
+
+            <div className="col-8">
+              {this.state.submit_error && (
+                <Alert severity="error" >
+                  {this.state.submitErrorResponse &&(
+                    <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
+                  )}
+                  Oops! Something went wrong. Please contact administrator for help. <br />
+                  {/* {this.state.submitErrorResponse || this.state.submitErrorStatus || this.state. &&( */}
+                    <>
+                      Details:  <strong>{this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
+                    </>
+                  {/* )} */}
+                </Alert>
               )}
-              Oops! Something went wrong. Please contact administrator for help. <br />
-              {this.state.submitErrorResponse &&(
-                <>
-                <strong>Details: {this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
-                </>
-              )}
-            </Alert>
-          )}
-          {this.renderButtons()}
+            </div>
+            <div className="col-4">  
+              {this.renderButtons()}
+            </div>
+          </div>
         </form>
         <GroupModal
           show={this.state.GroupSelectShow}

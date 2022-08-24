@@ -31,9 +31,11 @@ export const RenderDataset = (props) => {
 
   useEffect(() => {
     var authSet = JSON.parse(localStorage.getItem("info"));
+    var primary = false;
 
-
-    search_api_get_assay_list({"primary": "true"})
+    if(props.new){primary=true }
+    console.debug("primary", primary);
+    search_api_get_assay_list({"primary": primary})
     .then((response) => {
       console.debug("fetchPrimaryDataTypes Response", response);
         let data = response.data;
@@ -132,8 +134,8 @@ export const RenderDataset = (props) => {
     //   );
     // }else 
     if (!isLoadingEntity && !isLoadingDTList ) {
-      console.debug(isLoadingDTList, dataTypeList );
-      console.debug(isLoadingEntity, entity_data);
+      // console.debug(isLoadingDTList, dataTypeList );
+      // console.debug(isLoadingEntity, entity_data);
       // console.debug("BG");
       // console.debug("DTLIST", this.props.dataTypeList);
       //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);

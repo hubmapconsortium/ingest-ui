@@ -85,7 +85,7 @@ export function App (props){
         setTimerStatus(false);
         console.debug("groupsToken",groupsToken);
 
-        search_api_get_assay_list({"primary": "true"})
+        search_api_get_assay_list({"primary": "false"})
         .then((response) => {
           console.debug("fetchPrimaryDataTypes Response", response);
             let data = response.data;

@@ -255,8 +255,12 @@ export function get_assay_type(assay) {
 
 
 export function search_api_get_assay_list(params) { 
-  // console.debug("search_api_get_assay_list", params);
-  var primaryParam = { params: params };
+  console.debug("search_api_get_assay_list", params);
+  // So the api defaults to primary even if False is passed as ?primary=false
+  var primaryParam = {};
+  if(params){
+    primaryParam = { params: params };
+  }
   return axios 
     .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,  primaryParam)
     .then(res => {
@@ -269,7 +273,4 @@ export function search_api_get_assay_list(params) {
         console.debug("search_api_get_assay_list", err.response);
          return {results: err.response}
       });
-};
-export function yell(params) { 
-  return {results: "HAIL"}
 };
