@@ -457,8 +457,8 @@ class DatasetEdit extends Component {
         break;
       case "dt_select":
 
-        var data_types = [];
-        data_types.add(value);
+        var data_types = [];  
+        data_types.push(value);
         this.setState({
           has_other_datatype: false,
           data_types: data_types,
