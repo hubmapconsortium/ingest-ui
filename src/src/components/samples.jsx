@@ -3,14 +3,14 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import TissueFormLegacy from "./uuid/tissue_form_components/tissueForm";
-import {useNavigate} from "react-router-dom";
+// import {useNavigate} from "react-router-dom";
 
 
 
 
 export const RenderSample = (props) => {
   console.debug("Rendering from NEWER Route, not Legacy Route");
-  let navigate = useNavigate();
+  // let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   const { uuid } = useParams();
   // console.debug("uuid,", uuid);

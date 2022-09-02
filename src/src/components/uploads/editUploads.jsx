@@ -989,7 +989,7 @@ renderReorganizeButton() {
           <div className='form-group'>
             <label
               htmlFor='description'>
-              Description 
+              Description <span className='text-danger'>*</span>
             </label>
             <span className="px-2">
                 <FontAwesomeIcon
@@ -1015,7 +1015,10 @@ renderReorganizeButton() {
                     id='description'
                     cols='30'
                     rows='5'
-                    className='form-control'
+                    className={
+                      "form-control " +
+                      this.errorClass(this.state.formErrors.description)
+                    }
                     placeholder='Description'
                     onChange={this.updateInputValue}
                     value={this.state.description}
