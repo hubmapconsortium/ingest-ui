@@ -498,6 +498,7 @@ class EditUploads extends Component{
   <Box
     sx={{
       width: "100%",
+      justifyContent: 'flex-end',
     display: 'flex',
     '& > *': {
         m: 1,
@@ -513,19 +514,19 @@ class EditUploads extends Component{
     <ButtonGroup component={Box} display="block !important"
 
       orientation="horizontal"
-      alignItems="right"
+      // alignItems="right"
       // aria-label="horizontal outlined button group"
     >
-      {this.renderValidateButton()}
-      {this.renderReorganizeButton()}
-      {this.renderSubmitButton()}
-      {this.renderSaveButton()}
       <Button
         variant="contained"
         type='button'
         onClick={() => this.props.handleCancel()}>
         Cancel
       </Button>
+      {this.renderSaveButton()}
+      {this.renderReorganizeButton()}
+      {this.renderSubmitButton()}
+      {this.renderValidateButton()}
     </ButtonGroup>
   </Box>
 
