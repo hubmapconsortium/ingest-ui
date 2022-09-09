@@ -904,6 +904,10 @@ renderReorganizeButton() {
                 </div>
               </div>
 
+             
+             
+             
+             
               <React.Fragment>
             <div className="row  mb-3 ">
               
@@ -930,12 +934,13 @@ renderReorganizeButton() {
                             target='_blank'
                             rel='noopener noreferrer'
                           >
-                              <FontAwesomeIcon icon={faFolder}
-                                style={{marginRight: "10px"}} 
+                              {/* <FontAwesomeIcon icon={faExternalLinkAlt}
+                                style={{marginRight: "5px"}} 
                                 data-tip data-for='folder_tooltip' 
-                                className="mr-2"/>
+                                className="mr-1" /> */}
                                 {this.state.globusLinkText}{" "}
-                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+
+                                <FontAwesomeIcon icon={faExternalLinkAlt} />
                           </a>
                         )}
                       
