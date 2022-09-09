@@ -106,6 +106,7 @@ export const RenderDataset = (props) => {
   function passError(status, message) {
     console.debug("passError Error", status, message);
     // setIsLoadingEntity(false);
+    console.debug("errorHandler", errorHandler);
     setErrorHandler({
         status: status,
         message:message,

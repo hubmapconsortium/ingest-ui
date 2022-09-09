@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import DonorForm from "./uuid/donor_form_components/donorForm";
-import {useNavigate} from "react-router-dom";
+// import {useNavigate} from "react-router-dom";
 
 
 
@@ -13,7 +13,7 @@ import {useNavigate} from "react-router-dom";
 export const RenderDonor = (props) => {
   //console.debug("Rendering from NEWER Route, not Legacy Route");
 //console.debug("RenderSearchComponent", props);
-  let navigate = useNavigate();
+  // let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);

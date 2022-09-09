@@ -817,6 +817,11 @@ svg.invalid{
   color:white;
 }
 
+.badge-danger {
+  background-color: rgb(220, 0, 78);
+  color:white;
+}
+
 .upload-slide-results{
   padding:10px;
   margin:10px;

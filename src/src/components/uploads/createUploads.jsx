@@ -281,7 +281,7 @@ class CreateUploads extends Component {
           <div className="col-sm-12">
           <Divider />
           </div>
-          <div className="col-md-12 text-right pads">
+          <div className="col-md-12 text-right pads" style={{"textAlign":"right"}}>
               <button
               type="submit"
               style={{marginRight: "10px", marginLeft: "10px"}}

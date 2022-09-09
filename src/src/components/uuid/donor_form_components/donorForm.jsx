@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Button from '@mui/material/Button';
 import Divider from '@material-ui/core/Divider';
+import Box from '@mui/material/Box';
 import '../../../App.css';
 // import axios from "axios";
 import ImageUpload from "./imageUpload";
@@ -487,11 +488,7 @@ class DonorForm extends Component {
     if (this.props.editingEntity) {
       if (this.state.readOnly) {
         return (
-          <div className="row">
-           <div className="col-sm-12">
-          <Divider />
-          </div>
-      
+         
             <div className="col-sm-12 text-right pads">
               <Button
                 type="button"
@@ -501,14 +498,10 @@ class DonorForm extends Component {
                 Cancel
               </Button>
             </div>
-          </div>
         );
       } else {
         return (
-          <div className="row">
-          <div className="col-sm-12">
-          <Divider />
-          </div>
+         
             <div className="col-md-12 text-right pads">
               <Button
                 type="submit"
@@ -533,16 +526,11 @@ class DonorForm extends Component {
                  Cancel
               </Button>
           </div>
-          </div>
         );
       }
     } else {
       return (
-        <div className="row">
-        <div className="col-sm-12">
-          <Divider />
-        </div>
-            <div className="col-md-12 text-right pads">
+          <div className="col-md-12 text-right pads">
             <Button
               type="submit"
               className="btn btn-primary mr-1"
@@ -567,7 +555,6 @@ class DonorForm extends Component {
               Cancel
             </Button>
           </div>
-        </div>
       );
     }
   }
@@ -1060,7 +1047,25 @@ class DonorForm extends Component {
                   help.
                 </div>
               )}
-              {this.renderButtons()}
+
+            <div className="row">
+              <div className="col-sm-12">
+                <Divider />
+              </div>
+              
+              <Box sx={{
+                  width: "100%",
+                  justifyContent: 'flex-end',
+                  display: 'flex',
+                  button:{
+                    m:1,
+                  },
+                }} >
+                {this.renderButtons()}
+              </Box>
+
+            </div>
+
                {this.props.editingEntity && 
                 this.props.editingEntity.data_access_level === 'public' && (
 

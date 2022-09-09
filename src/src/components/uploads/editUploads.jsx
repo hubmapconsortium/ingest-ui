@@ -60,7 +60,12 @@ class EditUploads extends Component{
     data_group_editor: false,
     validation_message:"",
     badge_class:"",
-    submitting:false
+    submitting:false,
+    // Button State Classes
+    button_submit:false,
+    button_validate:false,
+    button_save:false,
+    button_reorganize:false,
     
   }
 
@@ -104,7 +109,8 @@ class EditUploads extends Component{
       globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
         formErrors: {
-          name: ""        },
+          name: ""        ,
+          description: ""        },
       },
       () => {
 
@@ -267,6 +273,7 @@ class EditUploads extends Component{
   };
 
   handleSave = (i) => {
+    this.setState({ button_save: true });
 
     this.validateForm().then((isValid) => {
       if (isValid) {
@@ -287,18 +294,16 @@ class EditUploads extends Component{
             title: this.state.title,
             description: this.state.description
           };
-  
-
           if (this.props.editingUpload) {
             entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
                      this.props.onUpdated(response.results);
                   } else {
-                    this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+                    this.setState({ submit_error: true, submitting: false, submitting_submission:false, button_save: false });
                   }
                 }).catch((error) => {
-                  this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+                  this.setState({ submit_error: true, submitting: false, submitting_submission:false, button_save: false, });
                   console.debug("SAVE error", error)
                 });
           } 
@@ -311,6 +316,7 @@ class EditUploads extends Component{
     this.setState({
       submitting_submission:true,
       submitting: false,
+      button_submit: true,
     })
     ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
@@ -318,11 +324,11 @@ class EditUploads extends Component{
         if (response.status === 200) {
           this.props.onUpdated(response.results);
         } else {
-          this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+          this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_submit: false, });
         }
       })
       .catch((error) => {
-        this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+        this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_submit: false, });
         console.debug("SUBMIT error", error)
       });
       
@@ -332,6 +338,7 @@ class EditUploads extends Component{
     this.setState({
       submitting_submission:true,
       submitting: false,
+      button_reorganize: true,
     })
     ingest_api_reorganize_upload(this.props.editingUpload.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
@@ -339,11 +346,11 @@ class EditUploads extends Component{
         if (response.status === 200) {
           this.props.onUpdated(response.results);
         } else {
-          this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+          this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_reorganize: false, });
         }
       })
       .catch((error) => {
-        this.setState({ submit_error: true, submitting: false, submitting_submission:false });
+        this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_reorganize: false, });
         console.debug("Reorganize error", error)
       });
       
@@ -352,6 +359,7 @@ class EditUploads extends Component{
   
 
   handleValidateUpload = (i) => {
+    this.setState({ button_validate: true });
     this.validateForm().then((isValid) => {
       if (isValid) {
         if (
@@ -397,7 +405,10 @@ class EditUploads extends Component{
 
   //@TODO: DRY this out 
   handleValidateUploadSubmission = (i) => {
-    this.setState({ submitting_submission: true });
+    this.setState({ 
+      submitting_submission: true,
+      button_submit: true,  
+    });
     console.debug("handleValidateUploadSubmission")
     this.validateForm().then((isValid) => {
       if (isValid) {
@@ -497,6 +508,7 @@ class EditUploads extends Component{
   <Box
     sx={{
       width: "100%",
+      justifyContent: 'flex-end',
     display: 'flex',
     '& > *': {
         m: 1,
@@ -512,19 +524,19 @@ class EditUploads extends Component{
     <ButtonGroup component={Box} display="block !important"
 
       orientation="horizontal"
-      alignItems="right"
+      // alignItems="right"
       // aria-label="horizontal outlined button group"
     >
-      {this.renderValidateButton()}
-      {this.renderReorganizeButton()}
-      {this.renderSubmitButton()}
-      {this.renderSaveButton()}
       <Button
         variant="contained"
         type='button'
         onClick={() => this.props.handleCancel()}>
         Cancel
       </Button>
+      {this.renderSaveButton()}
+      {this.renderReorganizeButton()}
+      {this.renderSubmitButton()}
+      {this.renderValidateButton()}
     </ButtonGroup>
   </Box>
 
@@ -544,14 +556,14 @@ class EditUploads extends Component{
                   className = 'btn btn-info mr-1 badge-info'
                   onClick = {() => this.handleButtonClick(this.state.status.toLowerCase(), "validate") }
                 >
-                {this.state.submitting && (
+                {this.state.button_validate && (
                 <FontAwesomeIcon
                   className='inline-icon'
                   icon={faSpinner}
                   spin
                 />
               )}
-              {!this.state.submitting && "Validate"}
+              {!this.state.button_validate && "Validate"}
                 </Button>
               )
     }   
@@ -570,14 +582,14 @@ class EditUploads extends Component{
               disabled={this.state.submitting_submission}
               onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"submit") }
               data-status={this.state.status.toLowerCase()}>
-              {this.state.submitting_submission && (
+              {this.state.button_submit && (
                   <FontAwesomeIcon
                     className='inline-icon'
                     icon={faSpinner}
                     spin
                   />
                 )}
-                {!this.state.submitting_submission && "Submit"}
+                {!this.state.button_submit && "Submit"}
           </Button>
       )
     }   
@@ -596,14 +608,14 @@ class EditUploads extends Component{
               onClick={() => this.handleButtonClick(this.state.status.toLowerCase(),"save") }
               data-status={this.state.status.toLowerCase()}
             >
-              {this.state.submitting && (
+              {this.state.button_save && (
               <FontAwesomeIcon
                 className='inline-icon'
                 icon={faSpinner}
                 spin
               />
             )}
-            {!this.state.submitting && "Save"}
+            {!this.state.button_save && "Save"}
           </Button>
       )
     }   
@@ -762,7 +774,8 @@ renderReorganizeButton() {
 
 
   errorClass(error) {
-    if (error === "valid") return "is-valid";
+    console.debug(error);
+    if (error && error === "valid" ) return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
   }
 
@@ -901,6 +914,10 @@ renderReorganizeButton() {
                 </div>
               </div>
 
+             
+             
+             
+             
               <React.Fragment>
             <div className="row  mb-3 ">
               
@@ -927,12 +944,13 @@ renderReorganizeButton() {
                             target='_blank'
                             rel='noopener noreferrer'
                           >
-                              <FontAwesomeIcon icon={faFolder}
-                                style={{marginRight: "10px"}} 
+                              {/* <FontAwesomeIcon icon={faExternalLinkAlt}
+                                style={{marginRight: "5px"}} 
                                 data-tip data-for='folder_tooltip' 
-                                className="mr-2"/>
+                                className="mr-1" /> */}
                                 {this.state.globusLinkText}{" "}
-                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+
+                                <FontAwesomeIcon icon={faExternalLinkAlt} />
                           </a>
                         )}
                       
@@ -989,7 +1007,7 @@ renderReorganizeButton() {
           <div className='form-group'>
             <label
               htmlFor='description'>
-              Description 
+              Description <span className='text-danger'>*</span>
             </label>
             <span className="px-2">
                 <FontAwesomeIcon
@@ -1015,7 +1033,10 @@ renderReorganizeButton() {
                     id='description'
                     cols='30'
                     rows='5'
-                    className='form-control'
+                    className={
+                      "form-control " +
+                      this.errorClass(this.state.formErrors.description)
+                    }
                     placeholder='Description'
                     onChange={this.updateInputValue}
                     value={this.state.description}

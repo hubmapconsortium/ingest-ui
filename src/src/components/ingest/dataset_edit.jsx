@@ -39,7 +39,6 @@ import Box from '@material-ui/core/Box';
 
 
 import Select from '@material-ui/core/Select';
-import NativeSelect from '@material-ui/core/NativeSelect';
 
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -152,7 +151,7 @@ class DatasetEdit extends Component {
       var selected = ""
       if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
         // Set DT Select by state so it behaves as "controlled"
-        var selected = this.props.editingDataset.data_types[0].toLowerCase();
+        selected = this.props.editingDataset.data_types[0].toLowerCase();
         console.debug("SELECTED FORMATTED", selected);
       }
       this.setState({
@@ -437,11 +436,6 @@ class DatasetEdit extends Component {
           dataset_info: value,
         });
       break;
-      case "status":
-        this.setState({
-          new_status: value,
-        });
-        break;
       case "status":
         this.setState({
           new_status: value,
@@ -1180,7 +1174,7 @@ class DatasetEdit extends Component {
         // });
       }
       
-      if (this.state.data_types && this.state.data_types.size === 0 || this.state.data_types === "") {
+      if (this.state.data_types && (this.state.data_types.size === 0 || this.state.data_types === "")) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
@@ -1590,10 +1584,10 @@ class DatasetEdit extends Component {
     // console.debug("renderAssay", val, idx);
     var lcName =val.name.toLowerCase();
     var idstr = 'dt_' + lcName.replace(' ','_');
-    var selectedDT = "";
+    // var selectedDT = "";
     if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
       console.debug("THIS ONE,", lcName);
-      selectedDT="selected";
+      // selectedDT="selected";
     }
     return (
       <option key={idstr} value={lcName}  id={idstr}>{val.description}</option>
@@ -1718,7 +1712,7 @@ class DatasetEdit extends Component {
                       target='_blank'
                       rel='noopener noreferrer'
                     >
-                        <FontAwesomeIcon icon={faFolder} style={{ marginRight: "10px" }} data-tip data-for='folder_tooltip'/>To add or modify data files go to the data repository
+                        To add or modify data files go to the data repository
                       <FontAwesomeIcon icon={faExternalLinkAlt} style={{ marginLeft: "5px" }} />
                     </a>
                   )}

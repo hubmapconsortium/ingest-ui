@@ -46,7 +46,7 @@ import Forms from "./components/uuid/forms";
 
 
 export function App (props){
-  var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
+  // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
@@ -120,7 +120,7 @@ export function App (props){
     }
 
 
-  }, [groupsToken]);
+  }, [groupsToken, isLoading]);
   
 
 
@@ -134,10 +134,10 @@ export function App (props){
   };
 
   
-  function onChangeGlobusLink(newLink, newDataset){
-    // const {name, display_doi, doi} = newDataset;
-    // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
-  };
+  // function onChangeGlobusLink(newLink, newDataset){
+  //   // const {name, display_doi, doi} = newDataset;
+  //   // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
+  // };
 
 
 
@@ -169,10 +169,10 @@ export function App (props){
     setLoginDialogRender(true);
   }
 
-  function CallUploadsDialog(){
-  //console.debug("CallUploadsDialog uploadsDialogRender");
-    setUploadsDialogRender(true);
-  }
+  // function CallUploadsDialog(){
+  // //console.debug("CallUploadsDialog uploadsDialogRender");
+  //   setUploadsDialogRender(true);
+  // }
  
 
  
@@ -197,7 +197,7 @@ export function App (props){
         login={authStatus} 
         logout={Logout}
         app_info={ app_info_storage}
-        uploadsDialogRender={uploadsDialogRender}
+        // uploadsDialogRender={uploadsDialogRender}
         onCreatedReditect={""}
       />       
       <Timer logout={Logout}/>
