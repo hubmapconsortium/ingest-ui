@@ -1712,7 +1712,7 @@ class DatasetEdit extends Component {
                       target='_blank'
                       rel='noopener noreferrer'
                     >
-                        <FontAwesomeIcon icon={faFolder} style={{ marginRight: "10px" }} data-tip data-for='folder_tooltip'/>To add or modify data files go to the data repository
+                        To add or modify data files go to the data repository
                       <FontAwesomeIcon icon={faExternalLinkAlt} style={{ marginLeft: "5px" }} />
                     </a>
                   )}
