@@ -51,16 +51,11 @@ export const RenderSample = (props) => {
 
   function handleCancel(){
     if(this.props && this.props.handleCancel){
-      // How is this happening???
+      
      this.props.handleCancel();
     }else{
       window.history.back();
     }
-    // console.debug(this.props);
-    // console.debug("Props On Cancel");
-    // // window.history.back();  
-    // // navigate(-1,  {replace: true});  
-    // window.history.back()
   };
 
 
@@ -84,10 +79,10 @@ export const RenderSample = (props) => {
         <ErrBox err={errorHandler} />
       );
     }else if (isLoading) {
-      console.debug("Samples Loading");
-      console.debug(props);
-      console.debug(entity_data);
-      console.debug(errorHandler);
+      // console.debug("Samples Loading");
+      // console.debug(props);
+      // console.debug(entity_data);
+      // console.debug(errorHandler);
         return (
           <div className="card-body ">
             <div className="loader">Loading...</div>

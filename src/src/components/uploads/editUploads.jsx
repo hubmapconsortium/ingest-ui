@@ -104,7 +104,8 @@ class EditUploads extends Component{
       globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
         formErrors: {
-          name: ""        },
+          name: ""        ,
+          description: ""        },
       },
       () => {
 
@@ -762,7 +763,8 @@ renderReorganizeButton() {
 
 
   errorClass(error) {
-    if (error === "valid") return "is-valid";
+    console.debug(error);
+    if (error && error === "valid" ) return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
   }
 
