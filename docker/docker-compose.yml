@@ -13,8 +13,9 @@ services:
       retries: 3
       start_period: 40s
     environment:
-      - HOST_GID=${HOST_GID:-1000}
-      - HOST_UID=${HOST_UID:-1000}
+      # UID and GID 1001 to match the hive user by default
+      - HOST_GID=${HOST_GID:-1001}
+      - HOST_UID=${HOST_UID:-1001}
     init: true
     restart: always
     volumes:

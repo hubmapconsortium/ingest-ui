@@ -929,22 +929,37 @@ class DatasetEdit extends Component {
     // this.setState({ data_types: data_types });
     //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
-    
+    console.debug("GroupSelectShow", this.state.GroupSelectShow);
+    console.debug("editingDataset", this.props.editingDataset);
       if (isValid) {
         if (
-          !this.props.editingDataset &&
+          (!this.props.editingDataset || 
+            this.props.editingDataset.length<=0||
+            !this.props.editingDataset.uuid) &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
+          console.debug("showing Group Select!!");
           this.setState({ GroupSelectShow: true });
         } else {
+
+
+          console.debug("NO MODAL...",
+          "Editi Mode:",!this.props.editingDataset,
+          "| Dataset:",this.props.editingDataset,
+          "| length:",this.props.editingDataset.length,
+          "| & ",
+          this.state.groups.length, 
+          !this.state.GroupSelectShow
+           );
+
           this.setState({
             GroupSelectShow: false,
             submitting: true,
           });
           this.setState({ submitting: true });
           const state_data_types = this.state.data_types;
-          state_data_types.delete("other");
+          // state_data_types.delete("other");
           let data_types = [...state_data_types];
           if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
             data_types = [
@@ -2205,7 +2220,7 @@ class DatasetEdit extends Component {
         </form>
         <GroupModal
           show={this.state.GroupSelectShow}
-          hide={this.hideGroupSelectModal}
+          // hide={this.hideGroupSelectModal}
           groups={this.state.groups}
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}
