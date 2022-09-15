@@ -798,7 +798,8 @@ svg.invalid{
   background-color: #17a2b8;
 }
 
-.badge-neutral{
+.badge-neutral,
+.btn-neutral{
   background-color:#424242;
   color:white;
 }
@@ -825,4 +826,10 @@ svg.invalid{
 .upload-slide-results{
   padding:10px;
   margin:10px;
+}
+
+.thead-dark th {
+  color: #fff;
+  background-color: #343a40;
+  border-color: #454d55;
 }
