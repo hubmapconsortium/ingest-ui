@@ -957,7 +957,6 @@ class DatasetEdit extends Component {
             GroupSelectShow: false,
             submitting: true,
           });
-          this.setState({ submitting: true });
           const state_data_types = this.state.data_types;
           // state_data_types.delete("other");
           let data_types = [...state_data_types];
@@ -1023,7 +1022,11 @@ class DatasetEdit extends Component {
                 .catch((error) => {
                  console.error("published ERROR ", error)
                   // this.props.passError(error);
-                  this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
+                  this.setState({ 
+                    submit_error: true, 
+                    submitting: false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"", });
                 });
             } else if (submitIntention === "processing") {
                ////console.log('Submit Dataset...');
@@ -1042,14 +1045,20 @@ class DatasetEdit extends Component {
                         submitting: false,
                         buttonSpinnerTarget:"", 
                         submitErrorStatus:statusText,
-                        submitErrorResponse:response.err.response.data 
+                        submitErrorResponse:response.err.response.data ,
+                        buttonSpinnerTarget:""
                       });
                     }
                 })
                 .catch((error) => {
                     console.error("processing ERROR ", error)
                     this.props.passError(error);
-                    this.setState({ submit_error: true, submitting: false, submitErrorResponse:error, submitErrorStatus:error });
+                    this.setState({ 
+                      submit_error: true, 
+                      submitting: false, 
+                      submitErrorResponse:error, 
+                      submitErrorStatus:error,
+                      buttonSpinnerTarget:"" });
                  });
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1064,13 +1073,21 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                            //console.debug("ERROR ",response)
-                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
+                            this.setState({ 
+                              submit_error: true, 
+                              submitting: false, 
+                              submitErrorResponse:response.results.statusText,
+                              buttonSpinnerTarget:"" });
                           }
                 }) 
                 .catch((error) => {
                   console.error("else ERROR ", error)
                   this.props.passError(error);
-                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
+                   this.setState({ 
+                    submit_error: true, 
+                    submitting: false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"" });
                  });;
               }
           } else {  // new creations
@@ -1123,7 +1140,11 @@ class DatasetEdit extends Component {
                     });
                   } else {
                    //console.debug("Error response", response) 
-                    this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.data.error} ,
+                    this.setState({ 
+                      submit_error: true, 
+                      submitting: false, 
+                      submitErrorResponse:response.results.data.error,
+                      buttonSpinnerTarget:""} ,
                       () => {
                        //console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
                       });
@@ -1133,7 +1154,7 @@ class DatasetEdit extends Component {
               })
               .catch((err) => {
                //console.debug("err", err)
-                this.setState({ submit_error: true, submitting: false, submitErrorResponse:err } ,
+                this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
                   () => {
                    console.debug("CATCH ", err) 
                   });
@@ -1146,7 +1167,7 @@ class DatasetEdit extends Component {
         this.setState({ 
           submit_error: true, 
           submitting: false, 
-          
+          buttonSpinnerTarget:""
           // submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again." 
         });
 
@@ -1245,6 +1266,7 @@ class DatasetEdit extends Component {
         this.setState({ 
           submit_error: true, 
           submitting: false,  
+          buttonSpinnerTarget:""
         });
         var errorSet = this.state.formErrors;
         var result = Object.keys(errorSet).find(e => errorSet[e].length);
