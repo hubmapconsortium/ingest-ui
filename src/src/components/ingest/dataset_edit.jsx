@@ -490,9 +490,9 @@ class DatasetEdit extends Component {
       } else {
         //////console.log(id, e.target.checked)
         if (value === "other") {
-          const data_types = this.state.data_types;
-          data_types.clear();
-          data_types.add(value);
+          // const data_types = this.state.data_types;
+          // data_types.clear();
+          // data_types.add(value);
           this.setState({
             data_types: data_types,
             has_other_datatype: value === "other",
@@ -504,9 +504,9 @@ class DatasetEdit extends Component {
         } else {
           console.debug("value", value);
           
-          const data_types = this.state.data_types;
-          data_types.clear();
-          data_types.add(value);
+          // const data_types = this.state.data_types;
+          // data_types.clear();
+          // data_types.add(value);
           this.setState({
             has_other_datatype: false,
             // data_types: data_types,
@@ -698,7 +698,7 @@ class DatasetEdit extends Component {
                   variant="contained"
                   type='button'
                   size="small"
-                  className='btn btn-secondary'
+                  className='btn btn-neutral'
                   onClick={() => this.handleLookUpClick()} 
                   >
                   Add {this.props.newForm === true && (
