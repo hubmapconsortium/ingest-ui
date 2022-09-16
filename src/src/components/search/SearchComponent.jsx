@@ -40,33 +40,33 @@ class SearchComponent extends Component {
     super(props); 
     // console.debug("SearchCompprops",props);
     this.state = {
-      selectionModel: "",
+      column_def: COLUMN_DEF_DONOR, 
+      editForm: false,
+      entity_type_list: SAMPLE_TYPES,
+      error:"",
+      errorState:false,
+      fieldSet:[],
       filtered_keywords: "",
       filtered: false,
-      errorState:false,
-      error:"",
-      entity_type_list: SAMPLE_TYPES,
-      column_def: COLUMN_DEF_DONOR, 
-      show_info_panel: true,
-      show_search: true,
-      results_total: 0,
-      page: 0,
-      pageSize: 100,
-      fieldSet:[],
-      editForm: false,
-      show_modal: false,
-      hide_modal: true, 
-      updateSuccess: false,
       globus_url: "",
-      isAuthenticated: false,
       group: "All Components",
-      sampleType: "----",
+      hide_modal: true, 
+      isAuthenticated: false,
       keywords: "",
       last_keyword: "",
       loading: false,
-      table_loading:false,
+      modeCheck:"", //@TODO: Patch for loadingsearch within dataset edits, We should move this
+      page: 0,
+      pageSize: 100,
+      results_total: 0,
+      sampleType: "----",
       search_title:"Search",
-      modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
+      selectionModel: "",
+      show_info_panel: true,
+      show_modal: false,
+      show_search: true,
+      table_loading:false,
+      updateSuccess: false,
     };
   }
 
@@ -75,12 +75,16 @@ class SearchComponent extends Component {
 
     if(this.props.packagedQuery){
       console.debug("Bundled Parameters", this.props.packagedQuery);
-      // sample_type =this.props.packagedQuery.sampleType
+      //  sample_type =this.props.packagedQuery.sampleType
       // keywords =this.props.packagedQuery.keywords
       this.setState({
         sampleType: this.props.packagedQuery.sampleType,
         keywords: this.props.packagedQuery.keywords
-      });
+      },function(){ 
+        this.handleSearchClick();
+      })
+
+      
     }
 
     resultFieldSet(); 
@@ -158,8 +162,8 @@ class SearchComponent extends Component {
         //   loading: false
         // },function(){ 
         this.setState({
-          sampleType: lastSegment,
-          sample_type: lastSegment,
+          // sampleType: lastSegment,
+          // sample_type: lastSegment,
           loading: false
         },function(){ 
 
@@ -189,7 +193,9 @@ class SearchComponent extends Component {
       }else{
         // We're running without filter props passed or URL routing 
         console.log("No Props Or URL, Clear Filter")
-        this.handleClearFilter();
+        // this.handleClearFilter();
+        // Can't just clear filter, new Props through URL could be setting search vals
+
       }
     }else if (this.props.match ){ // Ok so we're getting props match eveen w/o, lets switch to search? 
       console.debug("this.props.match",this.props.match);
@@ -199,7 +205,7 @@ class SearchComponent extends Component {
         // console.log("NOT NEW PAGE");
         // console.log(type+" | "+euuid);
         this.setState({
-          sampleType: type,
+          // sampleType: type,
           loading: false
         },function(){ 
           if(euuid){
@@ -525,11 +531,10 @@ class SearchComponent extends Component {
     console.debug("handleSearchClick")
     var group = this.state.group;
     var sample_type = this.state.sampleType;
+    var sampleType = this.state.sampleType;
     var keywords = this.state.keywords;
-    console.debug("handleSearchClick", group, sample_type, keywords)
+    console.debug("handleSearchClick", group, sampleType, keywords)
     
-    
-
 
     var url = new URL(window.location);
 
