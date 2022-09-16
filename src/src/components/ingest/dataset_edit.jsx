@@ -4,6 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
+
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
@@ -701,7 +702,7 @@ class DatasetEdit extends Component {
                   className='btn btn-neutral'
                   onClick={() => this.handleLookUpClick()} 
                   >
-                  Add {this.props.newForm === true && (
+                  Add {this.state.source_uuids && this.state.source_uuids.length>=1 && (
                     "Another"
                     )} Source 
                   <FontAwesomeIcon
@@ -1723,10 +1724,16 @@ class DatasetEdit extends Component {
                 )}> 
                   {this.state.status}
               </span>
-
-              {this.props.editingDataset && (
+                
+                
+              {this.props.editingDataset && !this.props.newForm &&(
                 <span className="mx-1"> HuBMAP Dataset ID  {this.state.display_doi} </span>
               )}
+                
+              {!this.props.editingDataset || this.props.newForm && (
+                <span className="mx-1">Registering a Dataset  {this.state.display_doi} </span>
+              )}
+
               </h3>
               <p>
               <strong>

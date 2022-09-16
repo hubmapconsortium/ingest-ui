@@ -38,7 +38,7 @@ class SearchComponent extends Component {
 
   constructor(props) {
     super(props); 
-    console.debug("SearchCompprops",props);
+    // console.debug("SearchCompprops",props);
     this.state = {
       selectionModel: "",
       filtered_keywords: "",
@@ -71,6 +71,18 @@ class SearchComponent extends Component {
   }
 
   componentDidMount() {    
+    console.debug("packagedQuery", this.props.packagedQuery);
+
+    if(this.props.packagedQuery){
+      console.debug("Bundled Parameters", this.props.packagedQuery);
+      // sample_type =this.props.packagedQuery.sampleType
+      // keywords =this.props.packagedQuery.keywords
+      this.setState({
+        sampleType: this.props.packagedQuery.sampleType,
+        keywords: this.props.packagedQuery.keywords
+      });
+    }
+
     resultFieldSet(); 
 
     if(this.props.custom_title){
@@ -123,7 +135,8 @@ class SearchComponent extends Component {
       var lastSegment = (urlsplit[3]);
       euuid = urlsplit[4];
 
-     console.debug(lastSegment, euuid)
+      console.debug("URLAMAGIC", urlProp, urlsplit, lastSegment, euuid );
+    //  console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         console.debug("NEW FROM R ", this.props.modecheck)
         if(this.props.modecheck === "Source" ){
@@ -214,7 +227,13 @@ class SearchComponent extends Component {
         });
       }
 
+
+ 
+
       if(this.props.location.search){
+        // * Replacing with parameters passed in from wrapper app above, 
+        // * see bundledParameters
+        console.debug("this.props.location.search",this.props.location.search);
         //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
         //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
         // Hooks into search_api.js :O 
@@ -310,21 +329,6 @@ class SearchComponent extends Component {
   }
 
 
-  handleExtractQuery= () =>{
-    //@TODO: Using a polyfill to solve IE woes instead 
-    var queryObject = window.location.search
-    .slice(1)
-    .split('&')
-    .map(p => p.split('='))
-    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
-    console.debug("queryObject", queryObject);
-    return queryObject;
-
-  }
-
-  handleAddQuery = (key,value) =>{
-    // searchParams.append('topic', 'webdev');
-  }
 
   handleShowSearch  = (show) => {
     if ( show === true ){
@@ -419,7 +423,7 @@ class SearchComponent extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    // console.debug('handleInputChange', name)
+    console.debug('handleInputChange', name, value);
     switch (name) {
       case "group":
         this.setState({ group: value });
@@ -519,9 +523,12 @@ class SearchComponent extends Component {
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
     console.debug("handleSearchClick")
-    const group = this.state.group;
-    const sample_type = this.state.sampleType;
-    const keywords = this.state.keywords;
+    var group = this.state.group;
+    var sample_type = this.state.sampleType;
+    var keywords = this.state.keywords;
+    console.debug("handleSearchClick", group, sample_type, keywords)
+    
+    
 
 
     var url = new URL(window.location);
@@ -593,6 +600,7 @@ class SearchComponent extends Component {
       params["keywords"] = keywords;
       url.searchParams.set('keywords',keywords);
     }
+
 
     console.debug('results_total  ', this.state.results_total);
     console.debug('From Page ', this.state.page);
