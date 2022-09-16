@@ -38,39 +38,55 @@ class SearchComponent extends Component {
 
   constructor(props) {
     super(props); 
-    console.debug("SearchCompprops",props);
+    // console.debug("SearchCompprops",props);
     this.state = {
-      selectionModel: "",
+      column_def: COLUMN_DEF_DONOR, 
+      editForm: false,
+      entity_type_list: SAMPLE_TYPES,
+      error:"",
+      errorState:false,
+      fieldSet:[],
       filtered_keywords: "",
       filtered: false,
-      errorState:false,
-      error:"",
-      entity_type_list: SAMPLE_TYPES,
-      column_def: COLUMN_DEF_DONOR, 
-      show_info_panel: true,
-      show_search: true,
-      results_total: 0,
-      page: 0,
-      pageSize: 100,
-      fieldSet:[],
-      editForm: false,
-      show_modal: false,
-      hide_modal: true, 
-      updateSuccess: false,
       globus_url: "",
-      isAuthenticated: false,
       group: "All Components",
-      sampleType: "----",
+      hide_modal: true, 
+      isAuthenticated: false,
       keywords: "",
       last_keyword: "",
       loading: false,
-      table_loading:false,
+      modeCheck:"", //@TODO: Patch for loadingsearch within dataset edits, We should move this
+      page: 0,
+      pageSize: 100,
+      results_total: 0,
+      sampleType: "----",
       search_title:"Search",
-      modeCheck:"" //@TODO: Patch for loadingsearch within dataset edits, We should move this
+      selectionModel: "",
+      show_info_panel: true,
+      show_modal: false,
+      show_search: true,
+      table_loading:false,
+      updateSuccess: false,
     };
   }
 
   componentDidMount() {    
+    console.debug("packagedQuery", this.props.packagedQuery);
+
+    if(this.props.packagedQuery){
+      console.debug("Bundled Parameters", this.props.packagedQuery);
+      //  sample_type =this.props.packagedQuery.sampleType
+      // keywords =this.props.packagedQuery.keywords
+      this.setState({
+        sampleType: this.props.packagedQuery.sampleType,
+        keywords: this.props.packagedQuery.keywords
+      },function(){ 
+        this.handleSearchClick();
+      })
+
+      
+    }
+
     resultFieldSet(); 
 
     if(this.props.custom_title){
@@ -123,7 +139,8 @@ class SearchComponent extends Component {
       var lastSegment = (urlsplit[3]);
       euuid = urlsplit[4];
 
-     console.debug(lastSegment, euuid)
+      console.debug("URLAMAGIC", urlProp, urlsplit, lastSegment, euuid );
+    //  console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
         console.debug("NEW FROM R ", this.props.modecheck)
         if(this.props.modecheck === "Source" ){
@@ -145,8 +162,8 @@ class SearchComponent extends Component {
         //   loading: false
         // },function(){ 
         this.setState({
-          sampleType: lastSegment,
-          sample_type: lastSegment,
+          // sampleType: lastSegment,
+          // sample_type: lastSegment,
           loading: false
         },function(){ 
 
@@ -176,7 +193,9 @@ class SearchComponent extends Component {
       }else{
         // We're running without filter props passed or URL routing 
         console.log("No Props Or URL, Clear Filter")
-        this.handleClearFilter();
+        // this.handleClearFilter();
+        // Can't just clear filter, new Props through URL could be setting search vals
+
       }
     }else if (this.props.match ){ // Ok so we're getting props match eveen w/o, lets switch to search? 
       console.debug("this.props.match",this.props.match);
@@ -186,7 +205,7 @@ class SearchComponent extends Component {
         // console.log("NOT NEW PAGE");
         // console.log(type+" | "+euuid);
         this.setState({
-          sampleType: type,
+          // sampleType: type,
           loading: false
         },function(){ 
           if(euuid){
@@ -214,7 +233,13 @@ class SearchComponent extends Component {
         });
       }
 
+
+ 
+
       if(this.props.location.search){
+        // * Replacing with parameters passed in from wrapper app above, 
+        // * see bundledParameters
+        console.debug("this.props.location.search",this.props.location.search);
         //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
         //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
         // Hooks into search_api.js :O 
@@ -310,21 +335,6 @@ class SearchComponent extends Component {
   }
 
 
-  handleExtractQuery= () =>{
-    //@TODO: Using a polyfill to solve IE woes instead 
-    var queryObject = window.location.search
-    .slice(1)
-    .split('&')
-    .map(p => p.split('='))
-    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
-    console.debug("queryObject", queryObject);
-    return queryObject;
-
-  }
-
-  handleAddQuery = (key,value) =>{
-    // searchParams.append('topic', 'webdev');
-  }
 
   handleShowSearch  = (show) => {
     if ( show === true ){
@@ -419,7 +429,7 @@ class SearchComponent extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    // console.debug('handleInputChange', name)
+    console.debug('handleInputChange', name, value);
     switch (name) {
       case "group":
         this.setState({ group: value });
@@ -519,10 +529,12 @@ class SearchComponent extends Component {
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
     console.debug("handleSearchClick")
-    const group = this.state.group;
-    const sample_type = this.state.sampleType;
-    const keywords = this.state.keywords;
-
+    var group = this.state.group;
+    var sample_type = this.state.sampleType;
+    var sampleType = this.state.sampleType;
+    var keywords = this.state.keywords;
+    console.debug("handleSearchClick", group, sampleType, keywords)
+    
 
     var url = new URL(window.location);
 
@@ -593,6 +605,7 @@ class SearchComponent extends Component {
       params["keywords"] = keywords;
       url.searchParams.set('keywords',keywords);
     }
+
 
     console.debug('results_total  ', this.state.results_total);
     console.debug('From Page ', this.state.page);

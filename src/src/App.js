@@ -3,9 +3,14 @@ import * as React from "react";
 import {useState, useEffect} from "react";
 import {
   useNavigate,
+  BrowserRouter as Router,
+  Link,
+  useParams,
+  useLocation,
+  useSearchParams ,
   Routes,
   Route} from "react-router-dom";
-  
+
 // Login Management
 import Login from './components/ui/login';
 import Timer from './components/ui/idle';
@@ -54,7 +59,9 @@ export function App (props){
   var [isLoading, setIsLoading] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
   let navigate = useNavigate();
+  // const { sampleType, keywords } = useParams();
 
+  
     
 
 //   function LocalStorageAuth(){
@@ -65,19 +72,21 @@ export function App (props){
   
 
   useEffect(() => {
-
+    
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
       // Grabs the ?info= bit
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
+      localStorage.setItem("isHubmapUser", true);
       // Redirect to home page without query string
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
+        console.debug("ingest_api_users_groups", results);
       if (results && results.status === 200) { 
         console.debug("LocalStorageAuth", results);
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
@@ -91,10 +100,11 @@ export function App (props){
             let data = response.data;
             setDataTypeList(data);
             setIsLoading(false)
-            console.debug(isLoading);
+            console.debug("isLoading", isLoading);  
         })
         .catch(error => {
           console.debug("fetch DT list Response Error", error);
+          setIsLoading(false)
           // return error;
           // passError(error.status, error.response );
         });
@@ -106,7 +116,8 @@ export function App (props){
         setGroupsToken(null);
         setAuthStatus(false);
         setTimerStatus(false);
-        if(localStorage.getItem("info")){
+        setIsLoading(false);
+        if(localStorage.getItem("isHubmapUser")){
           // If we were logged out and we have an old token,
           // We should promopt to sign back in
           CallLoginDialog(); 
@@ -117,12 +128,19 @@ export function App (props){
     }catch {
       console.debug("LocalStorageAuth", "CATCh No LocalStorage");
       setTimerStatus(false);
+      setIsLoading(false)
     }
 
 
   }, [groupsToken, isLoading]);
   
 
+  // A custom hook that builds on useLocation to parse
+// the query string for you.
+function useQuery() {
+  const { search } = useLocation();
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
 
 
 
@@ -182,11 +200,15 @@ export function App (props){
     console.debug("urlChange", target, lowerTarget);
     navigate(lowerTarget,  { replace: true });
   }
- 
 
-
-  
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
+
+ const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const queryType = queryParams.get('sampleType');
+  const queryKeyword = queryParams.get('keywords');
+  var bundledParameters = {sampleType: queryType, keywords: queryKeyword};
+
 
 //console.debug("props", props);
   return (
@@ -207,10 +229,13 @@ export function App (props){
             <LinearProgress />
         )}
 
-        {!authStatus && !timerStatus && (
+        { !authStatus && !isLoading && (
           <React.Fragment>
             <Routes>
                 <Route path="/" element={ <Login />} />
+                <Route path="/*" element={ <Login />} />
+                <Route path="*" element={ <Login />} />
+                <Route path="/login" element={ <Login />} />
             </Routes>
 
 
@@ -248,20 +273,28 @@ export function App (props){
 
         )}
 
-            
+       
+
           {authStatus && !timerStatus && !isLoading &&(
           <Paper className="px-5 py-4">
 
           <Routes>
-
-              <Route path="/" element={ <SearchComponent entity_type=' ' urlChange={urlChange} handleCancel={handleCancel}/>} />
-
+              <Route index element={<SearchComponent entity_type='' packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+              <Route path="/" element={ <SearchComponent entity_type=' ' packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/login" element={<Login />} />
-              
-              <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-              <Route path="/new/dataset" element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+              <Route path="/new">
+                <Route index element={<SearchComponent />} />
+                <Route path='donor' element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                <Route path='dataset' element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='sample' element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
 
-              <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/>
+{/* 
+                  <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                  <Route path="/new/dataset" element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
+
+              </Route>
+
               {/* <Route path="/new/sample"><Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} />  </Route> */}
 
               <Route path="/donors" element={<SearchComponent filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -281,7 +314,7 @@ export function App (props){
               {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
               {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
               {/* <Forms formType={this.state.formType} handleCancel={this.handleClose} /> */}
-
+             
           </Routes>
 
 
