@@ -49,5 +49,12 @@ src/yarn-error.log*
 src/build/*
 !src/build/README.md
 
-# VS Code Workspaces
+# VS Code 
 *.code-workspace
+favorites.json
+.favorites.json
+
+# Lock FIles
+*.lock
+*.~lock
+*.~lock.*

@@ -44,61 +44,57 @@ function export_version() {
     echo "INGEST_UI_VERSION: $INGEST_UI_VERSION"
 }
 
-if [[ "$1" != "localhost" && "$1" != "dev" && "$1" != "test" && "$1" != "stage" && "$1" != "prod" ]]; then
-    echo "Unknown build environment '$1', specify one of the following: localhost|dev|test|stage|prod"
+if [[ "$1" != "check" && "$1" != "config" && "$1" != "build" && "$1" != "start" && "$1" != "stop" && "$1" != "down" ]]; then
+    echo "Unknown command '$1', specify one of the following: check|config|build|start|stop|down"
 else
-    if [[ "$2" != "check" && "$2" != "config" && "$2" != "build" && "$2" != "start" && "$2" != "stop" && "$2" != "down" ]]; then
-        echo "Unknown command '$2', specify one of the following: check|config|build|start|stop|down"
-    else
-        # Always show the script dir
-        get_dir_of_this_script
+    # Always show the script dir
+    get_dir_of_this_script
 
-        # Always export and show the version
-        export_version
-        
-        # Always show the build in case branch changed or new commits
-        generate_build_version
+    # Always export and show the version
+    export_version
+    
+    # Always show the build in case branch changed or new commits
+    generate_build_version
 
-        # Print empty line
-        echo
+    # Print empty line
+    echo
 
-        if [ "$2" = "check" ]; then
-            # Bash array
-            config_paths=(
-                '../src/.env'
-            )
+    if [ "$2" = "check" ]; then
+        # Bash array
+        config_paths=(
+            '../src/.env'
+        )
 
-            for pth in "${config_paths[@]}"; do
-                if [ ! -e $pth ]; then
-                    echo "Missing file (relative path to DIR of script) :$pth"
-                    exit -1
-                fi
-            done
-
-            absent_or_newer ingest-ui/src ../src/ingest-ui
-
-            echo 'Checks complete, all good :)'
-        elif [ "$2" = "config" ]; then
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui config
-        elif [ "$2" = "build" ]; then
-            # Delete the copied source code dir if exists
-            if [ -d "ingest-ui/src" ]; then
-                rm -rf ingest-ui/src
+        for pth in "${config_paths[@]}"; do
+            if [ ! -e $pth ]; then
+                echo "Missing file (relative path to DIR of script) :$pth"
+                exit -1
             fi
+        done
 
-            # Copy over the source code
-            mkdir ingest-ui/src
-            cp -r ../src/* ingest-ui/src
-            # Also explicitly copy the .env file
-            cp ../src/.env ingest-ui/src
+        absent_or_newer ingest-ui/src ../src/ingest-ui
 
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui build
-        elif [ "$2" = "start" ]; then
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui up -d
-        elif [ "$2" = "stop" ]; then
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui stop
-        elif [ "$2" = "down" ]; then
-            docker-compose -f docker-compose-ingest-ui.$1.yml -p ingest-ui down
+        echo 'Checks complete, all good :)'
+    elif [ "$1" = "config" ]; then
+        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui config
+    elif [ "$1" = "build" ]; then
+        # Delete the copied source code dir if exists
+        if [ -d "ingest-ui/src" ]; then
+            rm -rf ingest-ui/src
         fi
+
+        # Copy over the source code
+        mkdir ingest-ui/src
+        cp -r ../src/* ingest-ui/src
+        # Also explicitly copy the .env file
+        cp ../src/.env ingest-ui/src
+
+        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui build
+    elif [ "$1" = "start" ]; then
+        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui up -d
+    elif [ "$1" = "stop" ]; then
+        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui stop
+    elif [ "$1" = "down" ]; then
+        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui down
     fi
 fi

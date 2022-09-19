@@ -6,6 +6,33 @@ import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
 
 export const esb = require('elastic-builder');
 
+/*
+ * Auth Validation  method
+ * 
+ * return:  { status}
+ */
+// Something of a hack to validate the auth token
+export function api_validate_token(auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+    let payload = search_api_filter_es_query_builder("test", 1 , 1);
+
+  return axios 
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
+        payload, options
+      )
+      .then(res => {
+        return {status: res.status}
+      })
+      .catch(err => {
+        return {status: err.response.status, results: err.response.data}
+      });
+};
 
 
 /*
@@ -58,28 +85,30 @@ export function api_search2(params, auth, from, size, fields) {
         "Content-Type": "application/json"
       }
     };
+    // console.debug("params", params);
+    let payload = search_api_filter_es_query_builder(params, from, size, fields);
+    // console.debug("payload", payload);
 
-  let payload = search_api_filter_es_query_builder(params, from, size, fields);
-  ////console.debug('payload', payload)
+    console.debug('payload', payload)
+
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
               payload, options
       )
       .then(res => {
-       
+        console.debug("API api_search2 res", res);
           let hits = res.data.hits.hits;
-      
           let entities = [];
           hits.forEach(s => {
             let data = s['_source']
             data['id'] = s['_source']['uuid']
             entities.push(data);
-            
           });
            //console.debug(entities);
         return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
       .catch(err => {
+        console.debug("API api_search2 err", err);
          return {status: 500, results: err.response}
       });
 };
@@ -91,12 +120,12 @@ export function api_search2(params, auth, from, size, fields) {
 export function search_api_filter_es_query_builder(fields, from, size, colFields) {
 
   let requestBody =  esb.requestBodySearch();
-  console.debug("here in the filter es builder")
-  console.debug(fields);
+//  console.debug("here in the filter es builder")
+//  console.debug(fields);
 
 
-  let boolQuery = "";
-
+let boolQuery = "";
+console.debug("Fields", fields);
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
     boolQuery = esb.queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS)
@@ -147,15 +176,30 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
       
       }
     }
-    requestBody
+  requestBody
     .query(boolQuery)
     .from(from)
     .size(size)
-    .sort(esb.sort('last_modified_timestamp', 'desc'))
-    .source(colFields);  //requestBody.query(boolQuery).size(100);
+    .sort(esb.sort('last_modified_timestamp', 'asc'))
+    .source(colFields);
+  //requestBody.query(boolQuery).size(100);
 
-  console.debug(requestBody.toJSON());
+/*  
+
+submission_id
+lab_name
+group_name
+created_by_user_email
+lab_donor_id
+
+*/
+  
+
+// console.debug("search_api_filter_es_query_builder", requestBody.toJSON());
+// console.debug("requestBody", requestBody);
+  // console.debug("search_api_filter_es_query_builder", requestBody.toJSON().query.bool.must);
   return requestBody.toJSON();
+
 }
 
 export function fixKeywordText(text) {
@@ -196,7 +240,7 @@ export function get_assay_type(assay) {
         //var dt_dict = data.result.map((value, index) => { return value });
         var found_dt = undefined
         data.result.forEach(s => {
-          if (s['name'] === assay) {
+          if (s['name'] === assay) { 
             found_dt = s;
           }
         });
@@ -205,6 +249,28 @@ export function get_assay_type(assay) {
         return {status: res.status, results: found_dt}
       })
       .catch(err => {
-         return {status: 500, results: err.response}
+         return {results: err.response}
+      });
+};
+
+
+export function search_api_get_assay_list(params) { 
+  console.debug("search_api_get_assay_list", params);
+  // So the api defaults to primary even if False is passed as ?primary=false
+  var primaryParam = {};
+  if(params){
+    primaryParam = { params: params };
+  }
+  return axios 
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,  primaryParam)
+    .then(res => {
+        let data = res.data;
+        let dtListMapped = data.result.map((value, index) => { return value });
+        console.debug("search_api_get_assay_list", dtListMapped);
+        return {status: res.status, data: dtListMapped}
+      })
+      .catch(err => {
+        console.debug("search_api_get_assay_list", err.response);
+         return {results: err.response}
       });
 };

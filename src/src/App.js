@@ -1,837 +1,331 @@
-import React, { Component } from 'react';
-import './App.css';
-//import Navigation from './components/Navbar.js';
-import { Router, Route, withRouter  } from "react-router-dom";
-import history from './history';
-import Login from './components/uuid/login';
-import IdleTimer from "react-idle-timer";
-import { SESSION_TIMEOUT_IDLE_TIME } from "./constants";
-import Forms from "./components/uuid/forms";
+
+import * as React from "react";
+import {useState, useEffect} from "react";
+import {
+  useNavigate,
+  BrowserRouter as Router,
+  Link,
+  useParams,
+  useLocation,
+  useSearchParams ,
+  Routes,
+  Route} from "react-router-dom";
+
+// Login Management
+import Login from './components/ui/login';
+import Timer from './components/ui/idle';
+
+import LinearProgress from '@mui/material/LinearProgress';
+
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+
+import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
+import { ingest_api_users_groups } from './service/ingest_api';
+import {search_api_get_assay_list} from "./service/search_api";
+
+// import {ErrBox} from "../utils/ui_elements";
+  // Site Content
+import {Navigation} from "./Nav";
+// import {RenderLogin} from "./components/login";
+
+/* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
+//  import {RenderSearchComponent} from './components/SearchComponent';
+
+import {RenderDonor} from "./components/donors";
+import {RenderDataset} from "./components/datasets";
+import {RenderSample } from "./components/samples";
+import {RenderUpload} from "./components/uploads";
+
+// Bulky
+import {RenderBulk} from "./components/bulk";
+
+// The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faExclamationTriangle,
-  faAddressCard,
-  faWindowClose
-} from "@fortawesome/free-solid-svg-icons";
-import {
-  Button,
-  Typography
-} from "@material-ui/core";
-import Modal from "./components/uuid/modal";
+import Forms from "./components/uuid/forms";
 
 
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
+export function App (props){
+  // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
+  var [loginDialogRender, setLoginDialogRender] = useState(false);
+  var [authStatus, setAuthStatus] = useState(false);
+  var [groupsToken, setGroupsToken] = useState(null);
+  var [timerStatus, setTimerStatus] = useState(true);
+  var [isLoading, setIsLoading] = useState(true);
+  var [dataTypeList, setDataTypeList] = useState({});
+  let navigate = useNavigate();
+  // const { sampleType, keywords } = useParams();
 
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import UploadsForm from "./components/uploads/createUploads";
-import BulkSamples from "./components/ingest/bulk";
-class App extends Component {
+  
+    
 
+//   function LocalStorageAuth(){
 
-  constructor(props) {
-    super(props);
-    const app_info = localStorage.getItem("info")
-      ? JSON.parse(localStorage.getItem("info"))
-      : {
-        name: "",
-        email: "",
-        globus_id: ""
-      };
-    //@TODO: one state was being compiled outside the class, and again after a bunch of checks 
-    // ignoring all of the externally set items
-    // Ive got the two starter sets mashed together here, but 
-    // we're gonna wanna go through and trim whatever's not needed anymore
-    this.state = {
-      // Using JSON.parse() to get the boolean value
-      isAuthenticated: JSON.parse(localStorage.getItem("isAuthenticated")),
-      username: app_info.name || "",
-      email: app_info.email || "",
-      globus_id: app_info.globus_id || "",
-      system: "",
-      registered: true,
-      devMode: false,
-      openSnack:false,
-      dml:"Inactive",
-      snackPriotity:"info",
-      anchorElB: null,
-      anchorElS:null,
-      show_menu_popup: false,
-      creatingNewEntity: false,
-      formType: "",
-      open_edit_dialog: false.valueOf,
-      creatingNewUpload: false,
-      editNewEntity: false,
-      showSearch: false,
-      creatingBulkEntity: false,
-      bulkType: 'samples',
-      setAnchorEl: null
-    };
+    
+// }
 
-    this.idleTimer = null;
-    // Testing, set local storage flag
-    // Note: many browsers local storage can only store string
-    if (localStorage.getItem("isAuthenticated") === null) {
-      localStorage.setItem("isAuthenticated", false);
-    }
+  
 
-
-    // IE doesn't support the URL api
+  useEffect(() => {
+    
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
-    const search = props.location.search; // could be '?foo=bar'
-    const params = new URLSearchParams(search);
-    console.debug("params", params);
-
-
-
     if (info !== null) {
+      // Grabs the ?info= bit
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
+      localStorage.setItem("isHubmapUser", true);
       // Redirect to home page without query string
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
+    try {
+      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
+        console.debug("ingest_api_users_groups", results);
+      if (results && results.status === 200) { 
+        console.debug("LocalStorageAuth", results);
+        setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+        setAuthStatus(true);
+        setTimerStatus(false);
+        console.debug("groupsToken",groupsToken);
 
-    // Binding event handler methods to an instance
-    this.handleLogout = this.handleLogout.bind(this);
-  }
-
-
-  componentDidMount() {
-    var type;
-    var fauxEvent;
-    var url = window.location.href;
-    var urlSplit = url.split("/");
-
-    //set the system state if the URL includes 'collections'
-    if (window.location.href.includes("/collections/")) {
-      this.setState({
-        system: "collection"
-      });
-    }
-    // If the url contains 'new', we'll wanna prepare for the new entity form
-    if (window.location.href.includes("/new/")) {
-      console.log("WINDOW URL INCLUDES NEW");
-    }
-    if (window.location.href.includes("/new/uploads")) {
-      console.log("WINDOW URL INCLUDES NEW UPLOADS");
-      this.handleUploadsDialog();
-    }
-    if (window.location.href.includes("/bulk")) {
-      console.log("BULK UPLOAD");
-      // We cant depend on the BulkType to come from the menu selection & props
-      // Since we could get here through URL only
-      // var urlState = window.location.href;
-      console.debug("URLsplut", urlSplit, urlSplit[4]);
-      this.setState({
-        creatingBulkEntity: true,
-        bulkType:urlSplit[4]
-      }, () => {   
-        console.debug("!!!!!Set the Bulk State!")
-     });
-    }
-
-
-    if (this.props.match && this.props.creatingBulkEntity === false){
-      console.debug("APP this.props.match");
-      type = this.props.match.params.type;
-      console.log(type);
-      if(type === "new"){
-        console.log("NEW PAGE");
-        fauxEvent = {
-          currentTarget:{
-            innerText:type
-          } 
-        }
-        this.handleMenuSelection(fauxEvent);
-      }
-        
-    }else if(!this.props.match && this.props.creatingBulkEntity === false){
-      if(window.location.href.includes("/new")){
-        var firstSegment = (urlSplit[3]);
-        type = (urlSplit[4]);
-        console.log("NEW PAGE");
-        console.log(firstSegment, type);
-        fauxEvent = {
-          currentTarget:{
-            innerText:type
-          } 
-        }
-        this.handleMenuSelection(fauxEvent);
-      }
-    }
-
-    if (localStorage.getItem("info") !== null) {
-      const config = {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-          "Content-Type": "application/json"
-        }
-      };
-
-      axios
-        .get(
-          `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-          config
-        )
-        .then(res => {
-          this.setState({
-            allowed: true
-          });
-          const display_names = res.data.groups
-            .filter(g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
-            .map(g => {
-              return g.displayname;
-            });
-          if (display_names.length === 0) {
-            this.setState({
-              read_only_member: true
-            });
-          }
+        search_api_get_assay_list({"primary": "false"})
+        .then((response) => {
+          console.debug("fetchPrimaryDataTypes Response", response);
+            let data = response.data;
+            setDataTypeList(data);
+            setIsLoading(false)
+            console.debug("isLoading", isLoading);  
         })
-        .catch(err => {
-          if (err.response === undefined) {
-            this.setState({
-              web_services_error: true
-            });
-          } else if (err.response.status === 401) {
-            localStorage.setItem("isAuthenticated", false);
-            // window.location.reload();
-          } else if (err.response.status === 403) {
-            this.setState({
-              allowed: false
-            });
-          }
+        .catch(error => {
+          console.debug("fetch DT list Response Error", error);
+          setIsLoading(false)
+          // return error;
+          // passError(error.status, error.response );
         });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    console.debug("componentDidUpdate");
-    // // console.debug(prevProps, this.props);
-    // console.debug(this.props.show_search);
-    // console.debug(this.state.show_search);
-    // console.debug(prevState, this.state);
-    if (prevState.formType !== this.state.formType) {
-      this.setState({
-        editForm: true,
-        show_modal: true,
-        show_search: false,
-        showSearch: false
-        });
-    }
-    if (prevState.editNewEntity !== this.state.editNewEntity) {
-      console.debug("DIDUPDATE new entity", this.state.editNewEntity)
-      this.setState({
-        editForm: true,
-        show_modal: true,
-        show_search: false,
-        showSearch: false
-       }, () => {   
-        // console.debug("NewEntryStateUpdated")
-      });
-    }
-    
-    if (prevState.creatingBulkEntries !== this.state.creatingBulkEntries) {
-      console.debug("creatingBulkEntries toggle", this.state.creatingBulkEntries)
-      this.setState({
-        editForm: false,
-        show_modal: false,
-        show_search: false,
-        showSearch: false,
-       }, () => {   
-        // console.debug("NewEntryStateUpdated")
-      });
-    }
-  }
+        // return dt_dict;
 
 
-  getQuery = () => {
-    if (typeof window !== 'undefined') {
-      return new URLSearchParams(window.location.search);
-    }
-    return new URLSearchParams();
-  };
-
-  handleSingularty  = (target, size) => {
-    if(size === "plural"){
-      console.debug(target.slice(-1));
-      if(target.slice(-1) === "s"){
-        return target.toLowerCase();
-      }else{
-        return (target+"s").toLowerCase();
-      }
-    }else{ // we wanna singularize
-      if(target.slice(-1) === "s"){
-        return (target.slice(0, -1)).toLowerCase()
-      }else{
-        return target.toLowerCase();
-      }
-    } 
-  }
-
-  
-
-  handleLogout = () => {
-    localStorage.setItem("isAuthenticated", false);
-    localStorage.removeItem("info");
-  };
-
-  handleUrlChange = (targetPath) =>{  
-    
-    console.debug("handleUrlChange "+targetPath)
-    console.debug(this.state.creatingNewEntity)
-      window.history.pushState(
-        null,
-        "", 
-        "/"+targetPath.toLowerCase());
-  }
-
-
-  // handleFormTypeChange = (event) => {
-  handleFormTypeChange(target){
-    this.setState({
-      anchorElB: null,
-      anchorElS: null,
-      show_menu_popup: false,
-      creatingNewEntity: true,
-      formType: target.toLowerCase(),
-      createSuccess: false,
-      show_search: false,
-      showSearch: false,
-    });
-    console.debug("handleFormTypeChange ",target,this.state);
-    this.handleUrlChange("new/"+target);
-  };
-
-  handleMenuSelection = (event) => {
-    console.debug("handleMenuSelection")
-    var formtype = event.currentTarget.innerText.trim();
-    this.setState({
-        anchorElB: null,
-        anchorElS: null,
-        show_menu_popup: false,
-        creatingNewEntity: true,
-        formType: formtype.toLowerCase(),
-        open_edit_dialog: true,
-        show_search: false,
-        showSearch: false,
-      })
-      // this.handleFormTypeChange(formtype);
-      this.handleUrlChange("new/"+formtype);
-  }
-
-  handleIndividualMenuSelection = (event) => {
-    var formtype = event.currentTarget.innerText.trim();
-    console.debug("handleIndividualMenuSelection "+formtype)
-    this.setState({
-        anchorElB: null,
-        anchorElS: null,
-        show_menu_popup: false,
-        creatingNewEntity: true,
-        formType: formtype.toLowerCase(),
-        open_edit_dialog: true,
-        show_search: false,
-        showSearch: false,
-      })
-      // this.handleFormTypeChange(formtype);
-      this.handleUrlChange("new/"+formtype);
-  }
-
-  handleMenuDropdown = () => {
-    console.debug("this.state.showDropDown",this.state.showDropDown);
-    this.setState({
-      anchorElB: null,
-      anchorElS: null,
-      showDropDown:false
-      })
-  };
-  
-
-  handleUploadsDialog = () => {
-    console.debug("handleUploadsDialog");
-    this.handleMenuDropdown();
-    this.setState({
-      creatingNewUpload: true,
-      showDropDown: false
-    });
-    this.handleUrlChange("new/upload");
-  }
-
-  handleClick = (event) => {
-    console.debug('clicked', event.currentTarget);
-    this.setState({
-      anchorEl: event.currentTarget,
-      show_menu_popup: true
-    })
-  };
-
-  handleClose = () => {
-    //console.log("App.js handleClose");
-    this.setState({
-      creatingNewUpload: false,
-      anchorElB: null,
-      anchorElS: null,
-      setAnchorEl:null,
-      show_menu_popup: false,
-      open_edit_dialog: false, 
-      creatingNewEntity: false,
-      showSearch: false
-    });
-    this.handleUrlChange("");
-  };
-
-  handleBulkClick = (event) => {
-    console.debug('clicked', event.currentTarget);
-    this.setState({
-      anchorElB: event.currentTarget,
-      anchorElS: null,
-      show_menu_popup: true,
-      // creatingBulkEntity: true
-    });
-  };
-  handleSingleClick = (event) => {
-    console.debug('clicked', event.currentTarget);
-    this.setState({
-      anchorElB: null,
-      anchorElS: event.currentTarget,
-      show_menu_popup: true,
-      // creatingBulkEntity: true
-    });
-  };
-
-
-  handleBulkSelection = (event) => {
-    console.debug("handleBulkSelection")
-    console.debug(event);
-    this.handleMenuDropdown();
-    // this.handleBulkClick(event);
-    var bulkType = event.currentTarget.innerText.trim();
-    console.debug("bulkType",bulkType);
-    this.setState({
-        anchorElB: null,
-        show_menu_popup: false,
-        creatingBulkEntries: true,
-        creatingNewEntity:false,
-        bulkType:bulkType,
-        open_edit_dialog: true,
-        show_search: false,
-        showSearch: false,
-        creatingBulkEntity:true,
-      })
-      // this.handleFormTypeChange(formtype);
-      console.debug("bulk/"+bulkType);
-      this.handleUrlChange("bulk/"+bulkType);
-  }
-  
-
-  onCreated = data => {
-    console.debug("onCreated ",data);
-    //console.debug(data.entity_type);
-    this.setState({
-      show_menu_popup: false,
-      createSuccess: true,
-      creatingNewEntity: false,
-      creatingNewUpload: false,
-      editNewEntity: data,
-      formType: data.entity_type.toLowerCase(),
-      preSearch: "uploads",
-      showSearch: false
-     }, () => {   
-       console.debug("onCreated state", this.state)
-       // ONLY works for functional components and all oura are class components
-        // this.props.history.push("/"+this.state.formType+"/"+this.state.editNewEntity.uuid)
-        this.setState({ redirect: true })
-    });
-
-
-    
-  };
-
-  showDropDwn = () => {
-    this.setState(prevState => ({
-      showDropDown: !prevState.showDropDown
-    }));
-  };
-
-  renderHeader() {
-  const logout_url = `${process.env.REACT_APP_BACKEND_URL}/logout`;
-    let logout = this.state.isAuthenticated ? (
-      
-      <Button
-        href={logout_url}
-        className=""
-        onClick={this.handleLogout}
-        ref={a => (this.logoutButton = a)}
-      >
-        Logout
-      </Button>
-    ) : (
-        ""
-      );
-
-    // Must wrap the componments in an enclosing tag
-    return (
-        <header id="header" className="navbar navbar-light">
-        <nav className="container menu-bar" id="navMenu">
-          <div id="MenuLeft">
-            <a className="navbar-brand" href="/">
-              <img
-                //src="https://hubmapconsortium.org/wp-content/uploads/2019/01/HuBMAP-Retina-Logo-Color-300x110.png"
-                src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                //width="300"
-                height="40"
-                className="d-inline-block align-top"
-                id="MenuLogo"
-                alt="HuBMAP logo"
-              />
-            </a>
-      
-              {this.state.isAuthenticated && (
-                <div className="d-inline">                
-                <span className="menu-bar-static-label mr-3">REGISTER NEW:</span>
-                
-
-
-
-                <Button 
-                  aria-controls="IndividualMenu" 
-                  className="btn mr-1" 
-                  aria-haspopup="true" 
-                  color="primary"
-                  endIcon={<ArrowDropDownIcon />}
-                  onClick={this.handleSingleClick}>
-                    Individual
-                </Button>
-                  <Menu
-                    id="IndividualMenu"
-                    keepMounted
-                    anchorEl={this.state.anchorElS}
-                    open={Boolean(this.state.anchorElS)}
-                    onClose={this.handleClose}
-                    getContentAnchorEl={null}
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                    transformOrigin={{vertical: 'top', horizontal: 'center'}}
-                  >
-                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Donor</MenuItem>
-                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Sample</MenuItem>
-                    <MenuItem className="nav-link" onClick={this.handleIndividualMenuSelection}>Dataset</MenuItem>
-                  </Menu>
-
-
-                <Button 
-                  aria-controls="BulkMenu" 
-                  aria-haspopup="true" 
-                  color="primary"
-                  endIcon={<ArrowDropDownIcon />}
-                  onClick={this.handleBulkClick}>
-                    Bulk
-                  </Button>
-                  <Menu
-                    id="BulkMenu"
-                    // menuStyle={{width: 'auto', backgroundColor: 'red'}}
-                    keepMounted
-                    anchorEl={this.state.anchorElB}
-                    open={Boolean(this.state.anchorElB)}
-                    onClose={this.handleClose}
-                    getContentAnchorEl={null}
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                    transformOrigin={{vertical: 'top', horizontal: 'center'}}
-                  >
-                    <MenuItem onClick={this.handleBulkSelection}>Donors</MenuItem>
-                    <MenuItem onClick={this.handleBulkSelection}>Samples</MenuItem>
-                    <MenuItem onClick={this.handleUploadsDialog}>Data</MenuItem>
-                  </Menu>
-
-                </div>
-              )}
-            </div>
-        <div id="MenuRight">
-          {this.state.isAuthenticated && (
-            <div className="float-right">
-              <span className="username">
-                <Typography variant="button" className="username-menu">
-                  {this.state.email}{" "}
-                </Typography>
-                <Button
-                href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
-                className="nav-link" >
-                  Edit Profile
-                </Button>
-              </span>
-              {logout}
-            </div>
-          
-          )}
-          </div>
-        </nav>
-       
-      </header>
-   );
-  }
-
-  handleEnterUUID = () => {
-    this.setState({
-      system: "uuid"
-    });
-  };
-
-  handleEnterIngest = () => {
-    this.setState({
-      system: "ingest"
-    });
-  };
-
-  handleEnterCollection = () => {
-    this.setState({
-      system: "collection"
-    });
-  };
-
-
-  snackSeverity (){
-    var stateUsed="";
-    switch (this.state.devMode) {
-      case true:
-        stateUsed= "warning";
-        break;
-      default:
-        break;
-    }
-    return stateUsed;
-  };
-
-
-  renderContent() {
-    let html = <Login />;
-    // const { redirect } = this.state;
-
-    // fire http call to verify if user registerd.
-    //axio.get("")
-
-    if (this.state.isAuthenticated) {
-      // Must wrap the two componments in an enclosing tag
-      html = (
-        <div className="dataopts">
-          {this.state.web_services_error && (
-            <div className="row">
-              <div className="alert alert-warning col-sm-12 text-center">
-                <FontAwesomeIcon icon={faWindowClose} size="6x" />
-                <br />
-                The web services are currently not accessible.
-              </div>
-            </div>
-          )}
-          {this.state.registered === false && (
-            <div className="row">
-              <div className="alert alert-info col-sm-12 text-center">
-                <FontAwesomeIcon icon={faAddressCard} size="6x" />
-                <br />
-                You have not registered in HuBMAP System yet. Please click{" "}
-                <a href={`${process.env.REACT_APP_PROFILE_URL}/register`}>
-                  here
-                </a>{" "}
-                to sign up first.
-              </div>
-            </div>
-          )}
-          {this.state.registered === true && this.state.allowed === false && (
-            <div className="row">
-              <div className="alert alert-danger col-sm-12 text-center">
-                <FontAwesomeIcon icon={faExclamationTriangle} size="6x" />
-                <br />
-                You do not have access to use the HuBMAP ID System. You can
-                request access by checking the "HuBMAP ID System" option in the
-                HuBMAP resources section on your profile or by sending an email
-                to{" "}
-                <a href="mailto:help@hubmapconsortium.org">
-                  help@hubmapconsortium.org
-                </a>
-              </div>
-            </div>
-          )}
-        {/* THIS CAN MOVE TO ROUTES.JS 
-          <Router>
-            <Switch>
-              <Route path="/" exact component={Main} />
-              <Route path="/donors-samples" exact component={UUIDEntrance} />
-              <Route path="/datasets" exact component={IngestEntrance} />
-            </Switch>
-          </Router>
-        */}
-
-          {/* {this.state.system === "uuid" && 
-              <UUIDEntrance  />}
-          {this.state.system === "ingest" && 
-              <IngestEntrance  />} */}
-          {/**  {this.state.system === "collection" && 
-              <CollectionsEntrance  />} */}
-
-        </div>
-      );
-    }
-
-    return html;
-  }
-
-  onAction = () => { };
-
-  onIdle = () => {
-    if (localStorage.getItem("isAuthenticated") === "true") {
-      this.setState(
-        {
-          logout_in: 60
-        },
-        () => {
-          setTimeout(countDown.bind(this), 1000);
-
-          function countDown() {
-            this.setState(
-              {
-                logout_in: this.state.logout_in - 1
-              },
-              () => {
-                if (this.state.logout_in > 0) {
-                  this.setState({
-                    timer: setTimeout(countDown.bind(this), 1000)
-                  });
-                }
-                if (this.state.logout_in === 0) {
-                  this.logoutButton.click();
-                }
-              }
-            );
-          }
-          this.setState({ show: true });
+      } else if (results && results.status === 401) {
+        console.debug("LocalStorageAuth", results);
+        setGroupsToken(null);
+        setAuthStatus(false);
+        setTimerStatus(false);
+        setIsLoading(false);
+        if(localStorage.getItem("isHubmapUser")){
+          // If we were logged out and we have an old token,
+          // We should promopt to sign back in
+          CallLoginDialog(); 
         }
-      );
-    }
-  };
-
-  onActive = () => { };
-
-  hideModal = () => {
-    clearTimeout(this.state.timer);
-    this.setState({ show: false });
-  };
-  getSystem = (system) => {
-    // This is the system data from Navigation
-    this.setState({
-      system: system
-    })
-  }
-
-  handleCloseSnack = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    this.setState({
-      openSnack: false
-    })
-  };
-
-
-  // Display the final output
-  render() {
-    const collections = window.location.href.includes("/collections") ? true : false;
-    //const system = this.state.system;
-    return (
-      <div className="">
-        <IdleTimer
-          ref={ref => {
-            this.idleTimer = ref;
-          }}
-          element={document}
-          onActive={this.onActive}
-          onIdle={this.onIdle}
-          onAction={this.onAction}
-          debounce={250}
-          timeout={SESSION_TIMEOUT_IDLE_TIME}
-        />
-        <Modal show={this.state.show} handleClose={this.hideModal}>
-          <div className="row">
-            <div className="col-sm-12 text-center">
-              <h4>Are you still there?</h4>
-              <p>
-                The application will automatically log out in{" "}
-                {this.state.logout_in} seconds. If you want to keep you logged
-                in, please click "close" below.
-              </p>
-            </div>
-          </div>
-        </Modal>
-        {this.renderHeader()}
-        <div id="content" className="container">
-          {!collections && (
-            this.renderContent()
-          )}
-          <div className="App">
-            
-          <div className="col-sm-12">
-
-          {/* {this.state.creatingBulkEntries && ( */}
-              
-          {/* )} */}
+      }
         
-            {this.state.isAuthenticated && (
-              <Router history={history}>
-                    <Route path="/"  >
-                    {!this.state.creatingNewEntity && this.state.creatingBulkEntity === false && (
-                        <SearchComponent fromRoute="OORIG" editNewEntity={this.state.editNewEntity} />
-                    )}
-                    </Route> 
-              </Router>
-            )}
-
-            {this.state.isAuthenticated && this.state.creatingNewEntity && (
-              // Loads in for new things, not editing things
-              <Forms formType={this.state.formType} onCancel={this.handleClose} />
-            )}
-                  
-            {this.state.isAuthenticated && this.state.creatingBulkEntity === true && (
-              <BulkSamples bulkType={this.state.bulkType} onCancel={this.handleClose} />
-            )}
-
-            {this.state.isAuthenticated && this.state.creatingNewUpload && (
-                <Dialog 
-                  open={this.state.creatingNewUpload}
-                  fullWidth={true} 
-                  maxWidth="lg" 
-                  aria-labelledby="source-lookup-dialog" 
-                  // onClose={this.handleClose} 
-                  onClose={(event, reason) => {
-                    if (reason !== 'backdropClick') {
-                      this.handleClose()
-                    }
-                  }}
-                >
-                <DialogContent>
-                  <UploadsForm
-                    onCreated={this.onCreated}
-                    cancelEdit={this.handleClose}
-                  />
-                </DialogContent>
-              </Dialog>
-            )}
-
-                  
-        </div>
-                  </div>
-
-        </div>
-
-      
+    });
+    }catch {
+      console.debug("LocalStorageAuth", "CATCh No LocalStorage");
+      setTimerStatus(false);
+      setIsLoading(false)
+    }
 
 
-      </div>
-    );
-  }
+  }, [groupsToken, isLoading]);
+  
+
+  // A custom hook that builds on useLocation to parse
+// the query string for you.
+function useQuery() {
+  const { search } = useLocation();
+  return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-export default withRouter(App);
+
+
+  function Logout(){
+  //console.debug("Logging out");
+    localStorage.removeItem("info");
+    localStorage.removeItem("isAuthenticated");
+    window.location.replace(`${process.env.REACT_APP_URL}`);  
+  };
+
+  
+  // function onChangeGlobusLink(newLink, newDataset){
+  //   // const {name, display_doi, doi} = newDataset;
+  //   // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
+  // };
+
+
+
+  function handleCancel(){
+    window.history.back();  
+  }
+
+
+
+  const onClose = (event, reason) => {
+      // setLoginDialogRender(true)
+      console.debug("onClose ", event, reason);
+      navigate("/");
+      // setLoginDialogRender(false);
+    
+  }
+
+
+  const onCloseLogin = (event, reason) => {
+      // setLoginDialogRender(true)
+      console.debug("onCloseLogin ", event, reason);
+      navigate("/");
+      setLoginDialogRender(false);
+    
+  }
+
+  function CallLoginDialog(){
+    console.debug("CallLoginDialog Open");
+    setLoginDialogRender(true);
+  }
+
+  // function CallUploadsDialog(){
+  // //console.debug("CallUploadsDialog uploadsDialogRender");
+  //   setUploadsDialogRender(true);
+  // }
+ 
+
+ 
+  
+  function urlChange(target) {
+    var lowerTarget = target.toLowerCase();
+    console.debug("urlChange", target, lowerTarget);
+    navigate(lowerTarget,  { replace: true });
+  }
+
+  const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
+
+ const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const queryType = queryParams.get('sampleType');
+  const queryKeyword = queryParams.get('keywords');
+  var bundledParameters = {sampleType: queryType, keywords: queryKeyword};
+
+
+//console.debug("props", props);
+  return (
+    <div className="App">
+      
+      
+      <Navigation 
+        login={authStatus} 
+        logout={Logout}
+        app_info={ app_info_storage}
+        // uploadsDialogRender={uploadsDialogRender}
+        onCreatedReditect={""}
+      />       
+      <Timer logout={Logout}/>
+      <div id="content" className="container">
+        {timerStatus &&(
+
+            <LinearProgress />
+        )}
+
+        { !authStatus && !isLoading && (
+          <React.Fragment>
+            <Routes>
+                <Route path="/" element={ <Login />} />
+                <Route path="/*" element={ <Login />} />
+                <Route path="*" element={ <Login />} />
+                <Route path="/login" element={ <Login />} />
+            </Routes>
+
+
+          <Dialog
+            open={loginDialogRender}
+            onClose={onCloseLogin}
+            disableEscapeKeyDown={false}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+            onBackdropClick={onCloseLogin}
+          >
+            <DialogTitle 
+              color="white"
+              backgroundColor="red"
+              id="alert-dialog-title"
+            >
+
+            <React.Fragment>
+            <AnnouncementTwoToneIcon /> Session Has Ended
+            </React.Fragment>
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                <br />
+                It looks like your login session has ended. Please log in again to continue
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={onCloseLogin} autoFocus>
+                Log In
+              </Button>
+            </DialogActions>
+          </Dialog>
+          </React.Fragment>
+
+        )}
+
+       
+
+          {authStatus && !timerStatus && !isLoading &&(
+          <Paper className="px-5 py-4">
+
+          <Routes>
+              <Route index element={<SearchComponent entity_type='' packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+              <Route path="/" element={ <SearchComponent entity_type=' ' packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/new">
+                <Route index element={<SearchComponent />} />
+                <Route path='donor' element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                <Route path='dataset' element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='sample' element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
+
+{/* 
+                  <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                  <Route path="/new/dataset" element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
+
+              </Route>
+
+              {/* <Route path="/new/sample"><Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} />  </Route> */}
+
+              <Route path="/donors" element={<SearchComponent filter_type="donors" urlChange={urlChange}/>} ></Route>
+              <Route path="/samples" element={<SearchComponent filter_type="Sample" urlChange={urlChange} />} ></Route>
+              <Route path="/datasets" element={<SearchComponent filter_type="Dataset" urlChange={urlChange} />} ></Route>
+              <Route path="/uploads" element={<SearchComponent filter_type="uploads" urlChange={urlChange} />} ></Route>
+                                    
+              <Route path="/donor/:uuid" element={<RenderDonor  handleCancel={handleCancel} status="view"/>} />
+              <Route path="/sample/:uuid" element={<RenderSample handleCancel={handleCancel} status="view"/>} />
+              <Route path="/dataset/:uuid" element={<RenderDataset  handleCancel={handleCancel} status="view"/>} />
+              <Route path="/upload/:uuid" element={<RenderUpload  handleCancel={handleCancel} status="view"/>} />
+
+              {/* <Route path="/new/sample" element={<RenderSample status="new" />} /> */}
+              {/* <Route path="/new/dataset" element={<RenderDataset status="new" />} /> */}
+              <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
+              <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
+              {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
+              {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
+              {/* <Forms formType={this.state.formType} handleCancel={this.handleClose} /> */}
+             
+          </Routes>
+
+
+          </Paper>
+          )}
+  </div>
+  </div>
+  );
+  // return html;
+  
+}
+      
+
+export default App

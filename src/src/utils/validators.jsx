@@ -38,3 +38,17 @@ export function validateFileType(file_type, allow_types) {
   if (allow_types.includes(file_type)) return true;
   else return false;
 }
+
+
+export function ValidateJSON(str){
+  try {     
+    return JSON.parse(str);
+  }
+  catch (e) {
+     return {
+      "Error":true,
+      "String":str,
+    }
+  }
+}
+

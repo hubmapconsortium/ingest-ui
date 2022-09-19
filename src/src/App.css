@@ -6,11 +6,13 @@
 }
 
 #content {
-  padding-bottom: 10px;
+  margin: 0 auto;
+  width:85%;
+  padding: 10px;
 }
 
 #body {
-  background-color: #f4f4f4;
+  background-color: #ebebeb;
 }
 
 .tooltip 
@@ -616,7 +618,7 @@ a.disabled {
 }
 /* Hide arrow icon in IE browsers */
 .select-css::-ms-expand {
-  display: none;
+  display: none!important;
 }
 /* Hover style */
 .select-css:hover {
@@ -653,6 +655,14 @@ a.disabled {
 .select-css:disabled:hover, .select-css[aria-disabled=true] {
   border-color: #aaa;
 }
+
+
+
+select#groups{
+  -webkit-appearance: auto!important;
+  appearance: auto!important;
+}
+
 
 .search-filter {
   background-color: white;
@@ -742,3 +752,84 @@ svg.invalid{
 /* .bulk-statustext{
   min-height:80px;
 } */
+
+
+.w3-top {
+  background-color: #daf0da;
+  z-index: 2;
+}
+
+#TissueForm .MuiFilledInput-root:first-child {
+  background:#e8e8e8;
+}
+
+
+/* To better align the buttons for the Class based forms */
+.buttonWrapRight{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  margin-bottom:auto;
+  margin-top:10px;
+}
+.buttonWrapLeft{
+  display:flex;
+  justify-content:flex-start;
+  gap: 0px;
+  flex-direction:column;
+  margin-bottom:auto;
+}
+
+.formSpacer .form-group{
+  margin-bottom: 0.5rem;
+}
+
+.expanded-form .form-group{
+  margin-bottom:20px;
+}
+.upload-slide-results div{
+  margin-right:10px;
+}
+/* Re-apply styles to badges that lost color/formatting between Material UI and MUI */
+
+.badge-info,
+.btn-info{
+  color: #fff;
+  background-color: #17a2b8;
+}
+
+.badge-neutral,
+.btn-neutral{
+  background-color:#424242;
+  color:white;
+}
+
+.badge-success,
+.badge-published,
+.badge-valid,
+.btn-success{
+  background-color:#0ecd3a;
+  color:white;
+}
+
+.badge-hold,
+.badge-dark {
+  background-color:#424242;
+  color:white;
+}
+
+.badge-danger {
+  background-color: rgb(220, 0, 78);
+  color:white;
+}
+
+.upload-slide-results{
+  padding:10px;
+  margin:10px;
+}
+
+.thead-dark th {
+  color: #fff;
+  background-color: #343a40;
+  border-color: #454d55;
+}

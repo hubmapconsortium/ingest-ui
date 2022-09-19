@@ -4,10 +4,6 @@ version: "3.7"
 services:
 
   ingest-ui:
-    build: ./ingest-ui
-    # Build the image with name and tag
-    # Exit with an error message containing err if unset or empty in the environment
-    image: ingest-ui:${INGEST_UI_VERSION:?err}
     hostname: ingest-ui
     container_name: ingest-ui
     healthcheck:
@@ -17,8 +13,11 @@ services:
       retries: 3
       start_period: 40s
     environment:
-      - HOST_GID=${HOST_GID:-1000}
-      - HOST_UID=${HOST_UID:-1000}
+      # UID and GID 1001 to match the hive user by default
+      - HOST_GID=${HOST_GID:-1001}
+      - HOST_UID=${HOST_UID:-1001}
+    init: true
+    restart: always
     volumes:
       # Mount the logging to container
       - "../log:/usr/src/app/log"
