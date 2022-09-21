@@ -281,7 +281,7 @@ export function App (props){
                 <Route index element={<SearchComponent />} />
                 <Route path='donor' element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                 <Route path='dataset' element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='sample' element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
+                <Route path='sample' element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
 
 {/* 
                   <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
