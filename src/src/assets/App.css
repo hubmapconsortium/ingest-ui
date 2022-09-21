@@ -770,7 +770,8 @@ svg.invalid{
 }
 
 .badge-hold,
-.badge-dark {
+.badge-dark,
+.badge-secondary {
   background-color:#424242;
   color:white;
 }
