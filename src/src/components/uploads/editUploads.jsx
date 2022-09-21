@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faExternalLinkAlt, faFolder}
+  faExternalLinkAlt}
   from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";

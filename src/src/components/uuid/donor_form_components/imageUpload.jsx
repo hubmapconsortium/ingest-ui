@@ -167,7 +167,7 @@ class ImageUpload extends Component {
                       onChange={this.handleImageFileChange}
                       ref={this.image_file}
                       disabled={this.state.image_file_name !== "" &&
-                                this.state.image_file_name !== ""}
+                                this.state.image_file_name !== "Choose a file"}
                                 // @TODO Can we nix the choose a file text?
                     />
                     <label className="custom-file-label" htmlFor="metadata">

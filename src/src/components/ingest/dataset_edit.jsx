@@ -15,8 +15,7 @@ import HIPPA from "../uuid/HIPPA.jsx";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
-  faExternalLinkAlt,
-  faFolder
+  faExternalLinkAlt
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
@@ -1047,7 +1046,6 @@ class DatasetEdit extends Component {
                         buttonSpinnerTarget:"", 
                         submitErrorStatus:statusText,
                         submitErrorResponse:response.err.response.data ,
-                        buttonSpinnerTarget:""
                       });
                     }
                 })
@@ -1730,7 +1728,7 @@ class DatasetEdit extends Component {
                 <span className="mx-1"> HuBMAP Dataset ID  {this.state.display_doi} </span>
               )}
                 
-              {!this.props.editingDataset || this.props.newForm && (
+              {(!this.props.editingDataset || this.props.newForm) && (
                 <span className="mx-1">Registering a Dataset  {this.state.display_doi} </span>
               )}
 
