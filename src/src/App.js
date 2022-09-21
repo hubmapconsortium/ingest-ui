@@ -3,11 +3,7 @@ import * as React from "react";
 import {useState, useEffect} from "react";
 import {
   useNavigate,
-  BrowserRouter as Router,
-  Link,
-  useParams,
   useLocation,
-  useSearchParams ,
   Routes,
   Route} from "react-router-dom";
 
@@ -137,11 +133,10 @@ export function App (props){
 
   // A custom hook that builds on useLocation to parse
 // the query string for you.
-function useQuery() {
-  const { search } = useLocation();
-  return React.useMemo(() => new URLSearchParams(search), [search]);
-}
-
+// function useQuery() {
+//   const { search } = useLocation();
+//   return React.useMemo(() => new URLSearchParams(search), [search]);
+// }
 
 
   function Logout(){
