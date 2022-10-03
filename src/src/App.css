@@ -833,3 +833,7 @@ svg.invalid{
   background-color: #343a40;
   border-color: #454d55;
 }
+
+.form-select .MuiSelect-icon{
+  display:none;
+}

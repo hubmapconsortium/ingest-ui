@@ -26,6 +26,7 @@ class CreateUploads extends Component {
       showNewUpload:true,
       formErrors: {
           title: "",
+          description:"",
           group: ""
         },
     };
@@ -155,6 +156,17 @@ class CreateUploads extends Component {
           formErrors: { ...prevState.formErrors, title: "valid" },
         }));
       }
+      
+      if (!validateRequired(this.state.inputValue_desc)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "invalid" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, description: "valid" },
+        }));
+      }
 
       if (!validateRequired(this.state.inputValue_group_uuid)) {
         this.setState((prevState) => ({
@@ -175,6 +187,10 @@ class CreateUploads extends Component {
 
 
   updateInputValue = (evt) => {
+    if(evt.target.name.length===0){ // We get an empty string back from validation
+      evt.target.value=null; 
+      console.debug("evt.target.value",evt.target.value);
+    }else{
     // console.log(evt.target.id+": "+evt.target.value+" | "+evt.target.value.length);
     if(evt.target.id==="Submission_Name"){
       // console.log('evt.target.id==="Submission_Name"');
@@ -192,8 +208,9 @@ class CreateUploads extends Component {
         inputValue_group_uuid: evt.target.value
       });
     }
+    
     this.validateForm();
-
+  }
   }
 
 
@@ -374,7 +391,7 @@ class CreateUploads extends Component {
                 <div className='form-group mb-4'>
                     <label
                       htmlFor='description'>
-                      Description 
+                      Description <span className='text-danger'>*</span>
                     </label>
                     <span className="px-2">
                         <FontAwesomeIcon
@@ -391,8 +408,6 @@ class CreateUploads extends Component {
                           <p>A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload.</p>
                         </ReactTooltip>
                       </span>
-                      <React.Fragment>
-                        <div>
                           <textarea
                             type='text'
                             name='description'
@@ -400,14 +415,13 @@ class CreateUploads extends Component {
                             cols='30'
                             rows='5'
                             className={
-                              "form-control "
+                              "form-control " +
+                              this.errorClass(this.state.formErrors.description)
                             }
                             placeholder='Description'
                             onChange={this.updateInputValue}
                             value={this.state.e_desc}
                           />
-                        </div>
-                      </React.Fragment>
                     </div>
 
                     <div className='form-group mb-1'>
