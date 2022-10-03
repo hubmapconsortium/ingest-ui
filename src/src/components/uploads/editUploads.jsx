@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
-  faExternalLinkAlt}
+  faExternalLinkAlt, faFolder}
   from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import ReactTooltip from "react-tooltip";
@@ -109,7 +109,7 @@ class EditUploads extends Component{
       globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
         formErrors: {
-          name: ""        ,
+          title: ""        ,
           description: ""        },
       },
       () => {
@@ -301,13 +301,18 @@ class EditUploads extends Component{
                      this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false, submitting_submission:false, button_save: false });
+                    this.handleSpinnerClear();
                   }
                 }).catch((error) => {
                   this.setState({ submit_error: true, submitting: false, submitting_submission:false, button_save: false, });
+                  this.handleSpinnerClear();
                   console.debug("SAVE error", error)
                 });
           } 
         }
+      }else{
+        console.debug("Form is not valid");
+        this.handleSpinnerClear();
       }
     });
   }
@@ -315,7 +320,7 @@ class EditUploads extends Component{
   handleSubmitUpload = (data) =>{
     this.setState({
       submitting_submission:true,
-      submitting: false,
+      submitting: true,
       button_submit: true,
     })
     ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -325,11 +330,13 @@ class EditUploads extends Component{
           this.props.onUpdated(response.results);
         } else {
           this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_submit: false, });
+          this.handleSpinnerClear();
         }
       })
       .catch((error) => {
         this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_submit: false, });
         console.debug("SUBMIT error", error)
+        this.handleSpinnerClear();
       });
       
   }
@@ -337,7 +344,7 @@ class EditUploads extends Component{
   handleReorganize = () => {
     this.setState({
       submitting_submission:true,
-      submitting: false,
+      submitting: true,
       button_reorganize: true,
     })
     ingest_api_reorganize_upload(this.props.editingUpload.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -352,6 +359,7 @@ class EditUploads extends Component{
       .catch((error) => {
         this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_reorganize: false, });
         console.debug("Reorganize error", error)
+        this.handleSpinnerClear();
       });
       
 
@@ -359,8 +367,9 @@ class EditUploads extends Component{
   
 
   handleValidateUpload = (i) => {
-    this.setState({ button_validate: true });
+    this.setState({ button_validate: true, submitting: true });
     this.validateForm().then((isValid) => {
+      
       if (isValid) {
         if (
           !this.props.editingUpload &&
@@ -393,12 +402,18 @@ class EditUploads extends Component{
                 console.debug(response.results);
                   if (response.status === 200) {
                     this.props.onUpdated(response.results);
+                    this.handleSpinnerClear();
                   } else {
                     this.setState({ submit_error: true, submitting: false });
+                    this.handleSpinnerClear();
                   }
             });
           } 
         }
+      }else{
+        this.handleSpinnerClear();
+        console.debug("Form is not valid");
+      
       }
     });
   };
@@ -440,21 +455,38 @@ class EditUploads extends Component{
             // if user selected Publish
             ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
+                  this.handleSpinnerClear();
                   if (response.status === 200) {
                     this.props.onUpdated(response.results);
+                    this.handleSpinnerClear();
                   } else {
                     this.setState({ submit_error: true, submitting: false, submitting_submission:false  });
+                    this.handleSpinnerClear();
                   }
             })
             .catch((error) => {
               console.debug("SUBMIT error", error);
+              this.handleSpinnerClear();
             });
           } 
         }
+      }else{
+        this.handleSpinnerClear();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
       }
     });
   };
 
+  handleSpinnerClear = () =>{
+    console.debug("handleSpinnerClear")
+    this.setState({
+      button_submit: false,
+      button_reorganize: false,
+      button_save: false,
+      button_validate: false,
+      submitting: false,
+      submitting_submission: false,
+    })
+  }
 
   handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -530,6 +562,7 @@ class EditUploads extends Component{
       <Button
         variant="contained"
         type='button'
+        disabled={this.state.submitting || this.state.submitting_submission}
         onClick={() => this.props.handleCancel()}>
         Cancel
       </Button>
@@ -695,7 +728,13 @@ renderReorganizeButton() {
           this.handleSave(i)
         } else 
         if (action === "create" || action === "validate"){
-          console.debug("SAVE")
+          this.setState({
+            button_validate: true,
+            submitting: true,
+          }, () => {
+            console.debug(" handleButtonClick ",i, action)
+          });
+          console.debug("Create / Validate")
           this.handleValidateUpload(i);
         }else if(action==="submit"){
           console.debug("SUB")
@@ -988,7 +1027,7 @@ renderReorganizeButton() {
                   id='title'
                   className={
                     "form-control " +
-                    this.errorClass(this.state.formErrors.name)
+                    this.errorClass(this.state.formErrors.title)
                   }
                   placeholder='Upload Title'
                   onChange={this.updateInputValue}
