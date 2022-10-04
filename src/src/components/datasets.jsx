@@ -31,16 +31,19 @@ export const RenderDataset = (props) => {
 
   useEffect(() => {
     var authSet = JSON.parse(localStorage.getItem("info"));
-    var primary = false;
+    
+    var primary ={primary:false}; 
+    // if(props.new){primary={"primary":true} }
 
-    if(props.new){primary=true }
-    console.debug("primary", primary);
-    search_api_get_assay_list({"primary": primary})
+    // Datatype might not be a primary one, butif it's not we're disabling the dropdown 
+    // so we add that one & it's fine if the other non-primares are secretly in the list or not 
+    // search_api_get_assay_list(primary)
+    search_api_get_assay_list(primary)
     .then((response) => {
       console.debug("fetchPrimaryDataTypes Response", response);
         let data = response.data;
         // console.debug(d);
-        var dt_dict = data.map((value, index) => { return value });
+        var dt_dict = data.map((value, index) => { return value })
         // console.debug("dt_dict", dt_dict);
         setDataTypeList(dt_dict);
         // setLoading(isLoading++);

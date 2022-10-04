@@ -23,7 +23,7 @@ import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import { get_assay_type } from '../../service/search_api';
+import { get_assay_type, get_primary_assays } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -88,7 +88,7 @@ class DatasetEdit extends Component {
     previous_revision_uuid: undefined,
     buttonSpinnerTarget: "",
     errorSnack:false,
-    
+    disableSelectDatatype:false,
     // Form Validation & processing
     has_other_datatype: false,
     submitErrorResponse:"",
@@ -105,7 +105,7 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
-    console.debug("updateStateDataTypeInfo");
+    console.debug("AAAAAAAAAAAAAAA updateStateDataTypeInfo");
     let data_types = null;
     let other_dt = undefined;
     console.debug("this.props", this.props);
@@ -114,27 +114,61 @@ class DatasetEdit extends Component {
       && this.props.editingDataset.data_types) {
         console.debug("EditingDataset datatype Found", this.props.editingDataset.data_types);
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
+        console.debug("data_type_options", data_type_options);
         other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
-        console.debug("data_types", data_types);
+        console.debug("@@@@@@@@@@@@@@ data_types", data_types, other_dt);
+        // here's we're checking if its in the list provided for the dropdown, which used to have primary And non
+        // Now we can only see the other vals in the select if we're primary,
+        // can just add the one non-primary and select it and only ever base seelxt pop on Primary vals
         if (other_dt) {
           console.debug("has Other DT", other_dt);
           data_types.push(other_dt);
+          this.setState({assay_type_primary: true});
+        }else{
+          this.setState({assay_type_primary: false});
         }
-        get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((resp) => {
-            console.debug("assay_type", resp);
-            if (resp.status === 200) {
-              if (resp.results) {
-                this.setState({
-                  assay_type_primary: resp.results.primary
-                });
-              }
-            }
+
+        // get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
+        //   .then((resp) => {
+        //     console.debug("assay_type", resp);
+        //     if (resp.status === 200) {
+        //       if (resp.results) {
+        //         this.setState({
+        //           assay_type_primary: resp.results.primary
+        //         });
+        //       }
+        //     }
+        // })
+        // .catch((err) => {
+        //   console.debug("ERR assay_type", err);
+        // }); 
+
+        get_primary_assays()
+        .then((resp) => {
+          console.debug("get_primary_assays", resp);
+          var primaries = resp.results;
+          const convertedArray = Object.entries(primaries).map(([key, value]) => ({value: key, label: value}));
+          console.debug(" |||||||||||||||||| convertedArray", convertedArray);
+
+
+          var result = primaries.map(primaries => ({ value: primaries.name }));
+          console.debug(" |||||||||||||||||| result", result);
+
+
+        // const totalCats = Object.values(primaries).reduce((acc, { name }) => acc + name, 0);
+          // var result = arr.map(primaries => ({ value: data.id, text: data.name }));
+
+          // var r = primaries.map(function(element, index, array) { /* … */ }, thisArg)
+          // var r = primaries.map(function(element, index, array) { /* … */ }, thisArg)
+
+          // var primaryCheck = resp.filter((elt) => elt.name === other_dt);
+
+          
         })
         .catch((err) => {
-          console.debug("ERR assay_type", err);
-        }); 
+          console.debug("ERR get_primary_assays", err);
+        })
        
       }
       this.setState({
@@ -215,6 +249,7 @@ class DatasetEdit extends Component {
 
 
     // Splits groups up into Data Providers and Permissions 
+    // @TODO move to services
     axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
@@ -247,7 +282,7 @@ class DatasetEdit extends Component {
         }
       });
 
-    // Sets up the Entity's info  
+    // Sets up the Entity's info  if we're not new here
     if (this.props.editingDataset && !this.props.newForm) {      //
       // let source_uuids;
       try {
@@ -313,6 +348,47 @@ class DatasetEdit extends Component {
             });
         }
       );
+       // Now tha we've got that all set, 
+      // Here's the hack that disables changing the datatype 
+      // if it's no longer a base primary type.  
+
+      // We already have this checked when checking assay_type_primary!
+      console.debug("!!!!!!!!!!!!!!! this.props.editingDataset.assay_type_primary",this.props.editingDataset.assay_type_primary);
+      if(this.props.editingDataset.datatype && this.props.dataTypeList.includes(this.props.editingDataset.datatype[0])){
+        console.debug("Primary Datatype is in the list");
+        this.setState({
+          disableSelectDatatype: false,
+        });
+
+      }else{
+        console.debug("Primary Datatype is NOT in the list");
+        this.setState({
+          disableSelectDatatype: true,
+        });
+
+      }
+
+
+
+      var primaryDTs ="";
+      get_primary_assays()
+        .then((res) => {
+          var primaryDTs = res.data;
+        })
+        .catch((err) => { 
+          console.debug("Error getting primary assays", err);
+        });
+
+      
+      // let primaryNames = primaryDTs.map((value, index) => { return value.name });
+      // // console.debug("primaryNames",primaryNames);
+      // var thisDT = "AF"; 
+
+      // var primInv = primaryDTs.find(({ name }) => name === thisDT);
+      // console.debug("looking for "+thisDT+" in primaryDTs",primInv);
+
+      
+     
     }
   }
 
@@ -398,7 +474,7 @@ class DatasetEdit extends Component {
         });
       }
     }
-  };
+  }; 
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
@@ -446,6 +522,7 @@ class DatasetEdit extends Component {
       //     is_protected: e.target.checked,
       //   });
       //   break;
+      
       case "other_dt":
         this.setState({ other_dt: value });
         break;
@@ -497,19 +574,12 @@ class DatasetEdit extends Component {
             data_types: data_types,
             has_other_datatype: value === "other",
           });
-         //console.log("other", this.state.has_other_datatype);
-         
-          
-          
+      
         } else {
           console.debug("value", value);
-          
-          // const data_types = this.state.data_types;
-          // data_types.clear();
-          // data_types.add(value);
+
           this.setState({
             has_other_datatype: false,
-            // data_types: data_types,
             selected_dt: value,
           });
 
@@ -1676,7 +1746,7 @@ class DatasetEdit extends Component {
             native
             name="dt_select"
             className="form-select" 
-            disabled={!this.state.writeable}
+            disabled={ (!this.state.writeable || !this.state.assay_type_primary) }
             value={this.state.selected_dt} 
             // defaultValue={selectedID} 
             // value={this.props.editingDataset.data_types} 

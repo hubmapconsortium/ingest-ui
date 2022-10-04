@@ -274,3 +274,26 @@ export function search_api_get_assay_list(params) {
          return {results: err.response}
       });
 };
+
+
+
+export function get_primary_assays(){ 
+  // the API endpont doesnt seem to care about the passed body,
+  // ad the primary factor's checked in the url itself
+  // no real time to correct site-wide, so new call I /know/ has primaries 
+  // to avoid struggling to finter/compare the results
+  console.debug(get_primary_assays)
+  return axios 
+  // primaryness NEEDS to be in the url, not a form body addon
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`, ) 
+      .then(res => {
+        let data = res.data;
+        let mapCheck = data.result.map((value, index) => { return value });
+        console.debug("API get_primary_assays data", data, mapCheck);
+        return {status: res.status, results: data.result}
+      })
+      .catch(err => {
+        console.debug("API get_primary_assays err", err);
+         return {results: err.response}
+      });
+};

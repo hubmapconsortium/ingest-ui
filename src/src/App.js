@@ -23,7 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
-import {search_api_get_assay_list} from "./service/search_api";
+import {search_api_get_assay_list,get_primary_assays} from "./service/search_api";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -90,7 +90,8 @@ export function App (props){
         setTimerStatus(false);
         console.debug("groupsToken",groupsToken);
 
-        search_api_get_assay_list({"primary": "false"})
+        // The Dataset Form for New entites loads through the Form
+        get_primary_assays()
         .then((response) => {
           console.debug("fetchPrimaryDataTypes Response", response);
             let data = response.data;
@@ -289,17 +290,14 @@ export function App (props){
                   <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
 
               </Route>
-
-              {/* <Route path="/new/sample"><Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} />  </Route> */}
-
               <Route path="/donors" element={<SearchComponent filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent filter_type="Sample" urlChange={urlChange} />} ></Route>
               <Route path="/datasets" element={<SearchComponent filter_type="Dataset" urlChange={urlChange} />} ></Route>
               <Route path="/uploads" element={<SearchComponent filter_type="uploads" urlChange={urlChange} />} ></Route>
-                                    
+
               <Route path="/donor/:uuid" element={<RenderDonor  handleCancel={handleCancel} status="view"/>} />
               <Route path="/sample/:uuid" element={<RenderSample handleCancel={handleCancel} status="view"/>} />
-              <Route path="/dataset/:uuid" element={<RenderDataset  handleCancel={handleCancel} status="view"/>} />
+              <Route path="/dataset/:uuid" element={<RenderDataset dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  handleCancel={handleCancel} status="view"/>} />
 
               {/* <Route path="/new/sample" element={<RenderSample status="new" />} /> */}
