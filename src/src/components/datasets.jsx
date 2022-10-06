@@ -31,48 +31,34 @@ export const RenderDataset = (props) => {
 
   useEffect(() => {
     var authSet = JSON.parse(localStorage.getItem("info"));
-    
-    var primary ={primary:false}; 
-    // if(props.new){primary={"primary":true} }
-
-    // Datatype might not be a primary one, butif it's not we're disabling the dropdown 
-    // so we add that one & it's fine if the other non-primares are secretly in the list or not 
-    // search_api_get_assay_list(primary)
-
+  
     function checkAssayType(dt){
-      search_api_get_assay_list()
+      console.debug("checkAssayType", dt);
+      search_api_get_assay_list()// the list call only gets primaries for now. 
       .then((response) => {
         let primaries = response.data;
-        console.debug("Primaries:", primaries, "dt:", dt);
-
-
-        if(primaries.includes(dt)){ // Are we primary? 
-          console.debug("*************8 PRIMARY DT");
+        console.debug("primaries", primaries, primaries.length);
+        const data_type_options = new Set(primaries.map((elt, idx) => {return elt.name.toLowerCase()}));
+        var isPrim = data_type_options.has(dt[0]);
+        console.debug("data_type_options", data_type_options, dt, isPrim);
+        console.debug("isPrim", isPrim);
+        if(isPrim){ // Are we primary? 
           let data = response.data;
           var dt_dict = data.map((value, index) => { return value })
           setDataTypeList(dt_dict);
           setIsLoadingDTList(false);
-
-
-
         }else{ /// Or not
-          console.debug("********* NOT PRIM");
           search_api_get_assay_set() // Getting the full lst now 
           .then((response) => {
             let newList = response.data;
             var new_dict = newList.result.map((value, index) => { return value })
             setDataTypeList(new_dict);
             setIsLoadingDTList(false);
-            console.debug("New Dict:", new_dict);
           })
           .catch((error) => {
             console.error(error);
-            setIsLoadingDTList(false);
-           
           })
         }
-          
-          
       })
       .catch(error => {
         console.debug("checkAssayType Error", error);
@@ -84,17 +70,13 @@ export const RenderDataset = (props) => {
     function setAssays(scope,dt){
       search_api_get_assay_list(scope)
       .then((response) => {
-        console.debug("fetchPrimaryDataTypes Response", response);
           let data = response.data;
-          console.debug("fetchPrimaryDataTypes Data", data, typeof data, response);
-          // console.debug(d);
           var dt_dict = data.map((value, index) => { return value })
           console.debug("dt_dict", dt_dict);
           setDataTypeList(dt_dict);
           setIsLoadingDTList(false);
       })
       .catch(error => {
-        console.debug("fetch DT list Response Error", error);
         passError(error.status, error.response );
         setIsLoadingDTList(false);
       });
@@ -107,9 +89,7 @@ export const RenderDataset = (props) => {
             if (response.status === 200) {
               setEntity(response.results);
               setIsLoadingEntity(false); 
-              console.debug("fetchEntity Response", response);
               var checkAssay = response.results.data_types;
-              console.debug("checkAssay", checkAssay);
               checkAssayType(checkAssay)
               
             }
@@ -117,20 +97,16 @@ export const RenderDataset = (props) => {
           })  
           .catch((error) => {
             setIsLoadingEntity(false);
-            console.debug("fetchData Response Error", error);
-            passError(error.status, error.response );
           }); 
     };
 
 
     if(!props.new){
-      console.debug("!props.new");
       fetchEntity(authSet);
     }else{
       // setLoading(isLoading+1);
       setIsLoadingEntity(false);
-      setAssays(primary);
-      console.debug("NEW FORM",props);
+      setAssays("primary");
     }
 
 
@@ -158,7 +134,6 @@ export const RenderDataset = (props) => {
   function passError(status, message) {
     console.debug("passError Error", status, message);
     // setIsLoadingEntity(false);
-    console.debug("errorHandler", errorHandler);
     setErrorHandler({
         status: status,
         message:message,
@@ -205,7 +180,6 @@ export const RenderDataset = (props) => {
         </div>
       )
     }else{
-      console.debug("SM", isLoadingEntity, isLoadingDTList);
       return (
         <div className="card-body ">
           <div className="loader">Loading...</div>

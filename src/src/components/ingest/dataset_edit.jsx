@@ -112,15 +112,9 @@ class DatasetEdit extends Component {
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
-        console.debug("EditingDataset datatype Found", this.props.editingDataset.data_types);
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
-        console.debug("data_type_options", data_type_options);
-
-
         var thisDtName = this.props.editingDataset.data_types[0]
-        console.debug("thisDtName", thisDtName);
         var isPrim = data_type_options.has(thisDtName);
-        console.debug("thisDtName",thisDtName, isPrim);
         if (isPrim)  {
           // alert("HAIL");
           this.setState({
@@ -135,7 +129,6 @@ class DatasetEdit extends Component {
 
         other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
-        console.debug("@@@@@@@@@@@@@@ data_types", data_types, other_dt);
         // here's we're checking if its in the list provided for the dropdown, which used to have primary And non
         // Now we can only see the other vals in the select if we're primary,
         // can just add the one non-primary and select it and only ever base seelxt pop on Primary vals
@@ -162,9 +155,6 @@ class DatasetEdit extends Component {
     
     componentDidMount() {
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
-      // console.debug("DATATYPELIST",this.props);
-      console.debug("newForm", this.props.newForm);
-
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
       var savedGeneticsStatus = undefined;
@@ -230,13 +220,11 @@ class DatasetEdit extends Component {
         config
       )
       .then((res) => {
-        console.debug("res.data.groups",res.data.groups);
         const groups = res.data.groups.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
         );
-        console.debug("groups",groups);
           //  We have both Data-Provider groups as well as non. 
           // The DP needs to be deliniated for the dropdown & assignments
           // the rest are for permissions
@@ -251,7 +239,6 @@ class DatasetEdit extends Component {
           // Rather than reload here, let's have a modal or such
           localStorage.setItem("isAuthenticated", false);
         }else if(err.status){
-         //console.debug("Err wo response", err.response);
           localStorage.setItem("isAuthenticated", false);
         }
       });
@@ -327,15 +314,12 @@ class DatasetEdit extends Component {
       // if it's no longer a base primary type.  
 
       // We already have this checked when checking assay_type_primary!
-      console.debug("!!!!!!!!!!!!!!! this.props.editingDataset.assay_type_primary",this.props.editingDataset.assay_type_primary);
       if(this.props.editingDataset.datatype && this.props.dataTypeList.includes(this.props.editingDataset.datatype[0])){
-        console.debug("Primary Datatype is in the list");
         this.setState({
           disableSelectDatatype: false,
         });
 
       }else{
-        console.debug("Primary Datatype is NOT in the list");
         this.setState({
           disableSelectDatatype: true,
         });
@@ -466,7 +450,7 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    console.debug('**name', name, id, value)
+    console.debug('INPUT:', name, id, value)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
@@ -515,14 +499,16 @@ class DatasetEdit extends Component {
         this.setState({ other_dt: value });
         break;
       case "dt_select":
-
+        console.debug("DT SELECT", value);
         var data_types = [];  
         data_types.push(value);
+        // data_types.push(value);
         this.setState({
           has_other_datatype: false,
           data_types: data_types,
           // selected_dt: value,
         });
+        console.debug("data_types", data_types);
           break;
       case "groups":
         this.setState({
@@ -1026,18 +1012,19 @@ class DatasetEdit extends Component {
           }
 
           // Lets make sure the data types array is unique
-          var uniqueDT = Array.from(new Set(data_types));
-          console.debug("Orig data_types", data_types);
-          console.debug("uniqueDT", uniqueDT);
-          this.setState({
-            data_types: uniqueDT,
-          })
+          // Wait why are we adding new set of all DTs ????
+          // var uniqueDT = Array.from(new Set(data_types));
+          // console.debug("Orig data_types", data_types);
+          // console.debug("uniqueDT", uniqueDT);
+          // this.setState({
+          //   data_types: uniqueDT,
+          // })
 
           // package the data up
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            data_types: uniqueDT,
+            data_types: this.state.data_types,
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
@@ -1680,12 +1667,6 @@ class DatasetEdit extends Component {
       // We set a secondary Full list in the state to be used in lieu of the prop
       var fullList = this.props.dataTypeList;
       console.debug("fullList", fullList);
-      // if(!this.state.assay_type_primary){
-      //   // Replace with the bigger list
-      //   fullList = this.state.allAssays;
-      // }
-      // console.debug("fullList", fullList);
-
       return (
         fullList.slice(min, max).map((val, idx) =>{
           return this.renderAssay(val, idx)
