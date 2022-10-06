@@ -23,7 +23,7 @@ import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import { get_assay_type } from '../../service/search_api';
+import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -88,7 +88,7 @@ class DatasetEdit extends Component {
     previous_revision_uuid: undefined,
     buttonSpinnerTarget: "",
     errorSnack:false,
-    
+    disableSelectDatatype:false,
     // Form Validation & processing
     has_other_datatype: false,
     submitErrorResponse:"",
@@ -105,37 +105,46 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
-    console.debug("updateStateDataTypeInfo");
+    console.debug("AAAAAAAAAAAAAAA updateStateDataTypeInfo");
     let data_types = null;
     let other_dt = undefined;
     console.debug("this.props", this.props);
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
-        console.debug("EditingDataset datatype Found", this.props.editingDataset.data_types);
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
+        var thisDtName = this.props.editingDataset.data_types[0]
+        var isPrim = data_type_options.has(thisDtName);
+        if (isPrim)  {
+          // alert("HAIL");
+          this.setState({
+            assay_type_primary: false
+          });
+        }else{
+          this.setState({
+            assay_type_primary: true
+          });
+        }
+
+
         other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
-        console.debug("data_types", data_types);
+        // here's we're checking if its in the list provided for the dropdown, which used to have primary And non
+        // Now we can only see the other vals in the select if we're primary,
+        // can just add the one non-primary and select it and only ever base seelxt pop on Primary vals
         if (other_dt) {
           console.debug("has Other DT", other_dt);
           data_types.push(other_dt);
+          this.setAssayList();
+          this.setState({
+            assay_type_primary: true
+          });
+        }else{
+          this.setState({
+            assay_type_primary: false
+          });
         }
-        get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((resp) => {
-            console.debug("assay_type", resp);
-            if (resp.status === 200) {
-              if (resp.results) {
-                this.setState({
-                  assay_type_primary: resp.results.primary
-                });
-              }
-            }
-        })
-        .catch((err) => {
-          console.debug("ERR assay_type", err);
-        }); 
-       
+
       }
       this.setState({
         data_types: new Set(data_types),
@@ -146,18 +155,6 @@ class DatasetEdit extends Component {
     
     componentDidMount() {
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
-      // console.debug("DATATYPELIST",this.props);
-      console.debug("newForm", this.props.newForm);
-      var selected = ""
-      if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
-        // Set DT Select by state so it behaves as "controlled"
-        selected = this.props.editingDataset.data_types[0].toLowerCase();
-        console.debug("SELECTED FORMATTED", selected);
-      }
-      this.setState({
-        selected_dt: selected,
-      })
-
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
       var savedGeneticsStatus = undefined;
@@ -168,6 +165,7 @@ class DatasetEdit extends Component {
           "Content-Type": "application/json",
         },
       };
+      
   
 
     // Fills in selectable Data Typw List  
@@ -215,19 +213,18 @@ class DatasetEdit extends Component {
 
 
     // Splits groups up into Data Providers and Permissions 
+    // @TODO move to services
     axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
         config
       )
       .then((res) => {
-        console.debug("res.data.groups",res.data.groups);
         const groups = res.data.groups.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
         );
-        console.debug("groups",groups);
           //  We have both Data-Provider groups as well as non. 
           // The DP needs to be deliniated for the dropdown & assignments
           // the rest are for permissions
@@ -242,12 +239,11 @@ class DatasetEdit extends Component {
           // Rather than reload here, let's have a modal or such
           localStorage.setItem("isAuthenticated", false);
         }else if(err.status){
-         //console.debug("Err wo response", err.response);
           localStorage.setItem("isAuthenticated", false);
         }
       });
 
-    // Sets up the Entity's info  
+    // Sets up the Entity's info  if we're not new here
     if (this.props.editingDataset && !this.props.newForm) {      //
       // let source_uuids;
       try {
@@ -313,7 +309,59 @@ class DatasetEdit extends Component {
             });
         }
       );
+       // Now tha we've got that all set, 
+      // Here's the hack that disables changing the datatype 
+      // if it's no longer a base primary type.  
+
+      // We already have this checked when checking assay_type_primary!
+      if(this.props.editingDataset.datatype && this.props.dataTypeList.includes(this.props.editingDataset.datatype[0])){
+        this.setState({
+          disableSelectDatatype: false,
+        });
+
+      }else{
+        this.setState({
+          disableSelectDatatype: true,
+        });
+
+      }
+
+        var selected = ""
+        if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
+          // Set DT Select by state so it behaves as "controlled"
+          selected = this.props.editingDataset.data_types[0].toLowerCase();
+          console.debug("SELECTED FORMATTED", selected);
+        }
+        this.setState({
+          selected_dt: selected,
+        })
+  
+
+      
+      // let primaryNames = primaryDTs.map((value, index) => { return value.name });
+      // // console.debug("primaryNames",primaryNames);
+      // var thisDT = "AF"; 
+
+      // var primInv = primaryDTs.find(({ name }) => name === thisDT);
+      // console.debug("looking for "+thisDT+" in primaryDTs",primInv);
+
+      
+     
     }
+  }
+
+  setAssayList(){
+    console.debug("setAssayList");
+    search_api_get_assay_set()
+    .then((res) => {
+      console.debug("Assay Set", res.data);
+      this.setState({
+        allAssays: res.data,
+      });
+    })
+    .catch((err) => {
+      console.debug("Error getting assay list", err);
+    })
   }
 
   componentWillUnmount() {
@@ -398,11 +446,11 @@ class DatasetEdit extends Component {
         });
       }
     }
-  };
+  }; 
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    console.debug('**name', name, id, value)
+    console.debug('INPUT:', name, id, value)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
@@ -446,18 +494,21 @@ class DatasetEdit extends Component {
       //     is_protected: e.target.checked,
       //   });
       //   break;
+      
       case "other_dt":
         this.setState({ other_dt: value });
         break;
       case "dt_select":
-
+        console.debug("DT SELECT", value);
         var data_types = [];  
         data_types.push(value);
+        // data_types.push(value);
         this.setState({
           has_other_datatype: false,
           data_types: data_types,
           // selected_dt: value,
         });
+        console.debug("data_types", data_types);
           break;
       case "groups":
         this.setState({
@@ -497,19 +548,12 @@ class DatasetEdit extends Component {
             data_types: data_types,
             has_other_datatype: value === "other",
           });
-         //console.log("other", this.state.has_other_datatype);
-         
-          
-          
+      
         } else {
           console.debug("value", value);
-          
-          // const data_types = this.state.data_types;
-          // data_types.clear();
-          // data_types.add(value);
+
           this.setState({
             has_other_datatype: false,
-            // data_types: data_types,
             selected_dt: value,
           });
 
@@ -968,18 +1012,19 @@ class DatasetEdit extends Component {
           }
 
           // Lets make sure the data types array is unique
-          var uniqueDT = Array.from(new Set(data_types));
-          console.debug("Orig data_types", data_types);
-          console.debug("uniqueDT", uniqueDT);
-          this.setState({
-            data_types: uniqueDT,
-          })
+          // Wait why are we adding new set of all DTs ????
+          // var uniqueDT = Array.from(new Set(data_types));
+          // console.debug("Orig data_types", data_types);
+          // console.debug("uniqueDT", uniqueDT);
+          // this.setState({
+          //   data_types: uniqueDT,
+          // })
 
           // package the data up
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            data_types: uniqueDT,
+            data_types: this.state.data_types,
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
@@ -1610,17 +1655,35 @@ class DatasetEdit extends Component {
    }
 
   renderAssayColumn(min, max) {
-    // console.debug("renderAssayColumn", min, max);
-	 return (
-		this.props.dataTypeList.slice(min, max).map((val, idx) =>
-								{return this.renderAssay(val, idx)})
-	       )
+    console.debug("renderAssayColumn", min, max);
+    // We need to hijack the select values if we're not primary
+    console.debug(this.state.assay_type_primary);
+    if(this.state.assay_type_primary) {
+      return (
+        this.props.dataTypeList.slice(min, max).map((val, idx) =>
+                    {return this.renderAssay(val, idx)})
+             )
+    }else{  
+      // We set a secondary Full list in the state to be used in lieu of the prop
+      var fullList = this.props.dataTypeList;
+      console.debug("fullList", fullList);
+      return (
+        fullList.slice(min, max).map((val, idx) =>{
+          return this.renderAssay(val, idx)
+        })
+      )
     }
-  renderAssay(val, idx) {
+
+	 
+    }
+
+
+  renderAssay(val) {
     // console.debug("renderAssay", val, idx);
     var lcName =val.name.toLowerCase();
     var idstr = 'dt_' + lcName.replace(' ','_');
     // var selectedDT = "";
+    // console.debug(this.state.selected_dt,lcName);
     if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
       console.debug("THIS ONE,", lcName);
       // selectedDT="selected";
@@ -1635,6 +1698,19 @@ class DatasetEdit extends Component {
       <li key={val}>{val}</li>
       )
   }
+
+  renderStringAssay(val) {
+    return (
+      {val}
+      )
+  }
+
+  renderDisabledNonprimaryDT(val) {
+    return (
+      <li key={val}>{val}</li>
+      )
+  }
+
 
   renderMultipleAssays() {
     var arr = Array.from(this.state.data_types)
@@ -1665,8 +1741,15 @@ class DatasetEdit extends Component {
           </>)
       }else{ 
          var selectedID = null;
+        //  var newList = this.props.daaTypeList;
+        //  console.debug("newList", newList);t
+
           if(this.props.editingDataset && this.props.editingDataset.data_types){
             console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
+            // If we're not in the list yet, add us!
+            if(!this.state.assay_type_primary){
+              console.debug("Not in the list yet, add us!");
+            }
             selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
           }
           console.debug("selectedID", selectedID);
@@ -1676,7 +1759,7 @@ class DatasetEdit extends Component {
             native
             name="dt_select"
             className="form-select" 
-            disabled={!this.state.writeable}
+            disabled={ (!this.state.writeable || !this.state.assay_type_primary) }
             value={this.state.selected_dt} 
             // defaultValue={selectedID} 
             // value={this.props.editingDataset.data_types} 

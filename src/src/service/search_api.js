@@ -232,7 +232,7 @@ export function search_api_search_group_list() {
   return groups;
 }
 
-export function get_assay_type(assay) { 
+export function  search_api_get_assay_type(assay) { 
   return axios 
     .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`)
       .then(res => {
@@ -262,7 +262,9 @@ export function search_api_get_assay_list(params) {
     primaryParam = { params: params };
   }
   return axios 
-    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,  primaryParam)
+    // .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`,  primaryParam)
+    // Only regards flag via url for some reason?
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`)
     .then(res => {
         let data = res.data;
         let dtListMapped = data.result.map((value, index) => { return value });
@@ -274,3 +276,34 @@ export function search_api_get_assay_list(params) {
          return {results: err.response}
       });
 };
+
+
+export function  search_api_get_assay_set(scope){ 
+  // Scope informs either Primary, Alt, or All
+  console.debug("search_api_get_assay_set", scope);
+  var target=""
+  switch (scope) {
+    case "primary":
+      target = "?primary=true"
+      break;
+    case "alt":
+        target = "?primary=false"
+        break;
+    default:
+      break;
+  }
+  return axios 
+  // primaryness NEEDS to be in the url, not a form body addon
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`+target, ) 
+      .then(res => {
+        let data = res.data;
+        let mapCheck = data.result.map((value, index) => { return value });
+        console.debug("API get_processed_assays data", data, mapCheck);
+        return {data}
+      })
+      .catch(err => {
+        console.debug("API get_processed_assays err", err);
+         return {results: err.response}
+      });
+};
+
