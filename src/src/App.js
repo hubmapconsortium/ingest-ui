@@ -23,7 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
-import {search_api_get_assay_list,get_primary_assays} from "./service/search_api";
+import {search_api_get_assay_list} from "./service/search_api";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -91,7 +91,7 @@ export function App (props){
         console.debug("groupsToken",groupsToken);
 
         // The Dataset Form for New entites loads through the Form
-        get_primary_assays()
+        search_api_get_assay_list()
         .then((response) => {
           console.debug("fetchPrimaryDataTypes Response", response);
             let data = response.data;

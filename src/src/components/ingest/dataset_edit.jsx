@@ -23,7 +23,7 @@ import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import { get_assay_type, get_primary_assays } from '../../service/search_api';
+import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -115,6 +115,24 @@ class DatasetEdit extends Component {
         console.debug("EditingDataset datatype Found", this.props.editingDataset.data_types);
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
         console.debug("data_type_options", data_type_options);
+
+
+        var thisDtName = this.props.editingDataset.data_types[0]
+        console.debug("thisDtName", thisDtName);
+        var isPrim = data_type_options.has(thisDtName);
+        console.debug("thisDtName",thisDtName, isPrim);
+        if (isPrim)  {
+          // alert("HAIL");
+          this.setState({
+            assay_type_primary: false
+          });
+        }else{
+          this.setState({
+            assay_type_primary: true
+          });
+        }
+
+
         other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
         console.debug("@@@@@@@@@@@@@@ data_types", data_types, other_dt);
@@ -124,52 +142,16 @@ class DatasetEdit extends Component {
         if (other_dt) {
           console.debug("has Other DT", other_dt);
           data_types.push(other_dt);
-          this.setState({assay_type_primary: true});
+          this.setAssayList();
+          this.setState({
+            assay_type_primary: true
+          });
         }else{
-          this.setState({assay_type_primary: false});
+          this.setState({
+            assay_type_primary: false
+          });
         }
 
-        // get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
-        //   .then((resp) => {
-        //     console.debug("assay_type", resp);
-        //     if (resp.status === 200) {
-        //       if (resp.results) {
-        //         this.setState({
-        //           assay_type_primary: resp.results.primary
-        //         });
-        //       }
-        //     }
-        // })
-        // .catch((err) => {
-        //   console.debug("ERR assay_type", err);
-        // }); 
-
-        get_primary_assays()
-        .then((resp) => {
-          console.debug("get_primary_assays", resp);
-          var primaries = resp.results;
-          const convertedArray = Object.entries(primaries).map(([key, value]) => ({value: key, label: value}));
-          console.debug(" |||||||||||||||||| convertedArray", convertedArray);
-
-
-          var result = primaries.map(primaries => ({ value: primaries.name }));
-          console.debug(" |||||||||||||||||| result", result);
-
-
-        // const totalCats = Object.values(primaries).reduce((acc, { name }) => acc + name, 0);
-          // var result = arr.map(primaries => ({ value: data.id, text: data.name }));
-
-          // var r = primaries.map(function(element, index, array) { /* … */ }, thisArg)
-          // var r = primaries.map(function(element, index, array) { /* … */ }, thisArg)
-
-          // var primaryCheck = resp.filter((elt) => elt.name === other_dt);
-
-          
-        })
-        .catch((err) => {
-          console.debug("ERR get_primary_assays", err);
-        })
-       
       }
       this.setState({
         data_types: new Set(data_types),
@@ -182,15 +164,6 @@ class DatasetEdit extends Component {
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // console.debug("DATATYPELIST",this.props);
       console.debug("newForm", this.props.newForm);
-      var selected = ""
-      if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
-        // Set DT Select by state so it behaves as "controlled"
-        selected = this.props.editingDataset.data_types[0].toLowerCase();
-        console.debug("SELECTED FORMATTED", selected);
-      }
-      this.setState({
-        selected_dt: selected,
-      })
 
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
@@ -202,6 +175,7 @@ class DatasetEdit extends Component {
           "Content-Type": "application/json",
         },
       };
+      
   
 
     // Fills in selectable Data Typw List  
@@ -368,16 +342,16 @@ class DatasetEdit extends Component {
 
       }
 
-
-
-      var primaryDTs ="";
-      get_primary_assays()
-        .then((res) => {
-          var primaryDTs = res.data;
+        var selected = ""
+        if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
+          // Set DT Select by state so it behaves as "controlled"
+          selected = this.props.editingDataset.data_types[0].toLowerCase();
+          console.debug("SELECTED FORMATTED", selected);
+        }
+        this.setState({
+          selected_dt: selected,
         })
-        .catch((err) => { 
-          console.debug("Error getting primary assays", err);
-        });
+  
 
       
       // let primaryNames = primaryDTs.map((value, index) => { return value.name });
@@ -390,6 +364,20 @@ class DatasetEdit extends Component {
       
      
     }
+  }
+
+  setAssayList(){
+    console.debug("setAssayList");
+    search_api_get_assay_set()
+    .then((res) => {
+      console.debug("Assay Set", res.data);
+      this.setState({
+        allAssays: res.data,
+      });
+    })
+    .catch((err) => {
+      console.debug("Error getting assay list", err);
+    })
   }
 
   componentWillUnmount() {
@@ -1680,17 +1668,41 @@ class DatasetEdit extends Component {
    }
 
   renderAssayColumn(min, max) {
-    // console.debug("renderAssayColumn", min, max);
-	 return (
-		this.props.dataTypeList.slice(min, max).map((val, idx) =>
-								{return this.renderAssay(val, idx)})
-	       )
+    console.debug("renderAssayColumn", min, max);
+    // We need to hijack the select values if we're not primary
+    console.debug(this.state.assay_type_primary);
+    if(this.state.assay_type_primary) {
+      return (
+        this.props.dataTypeList.slice(min, max).map((val, idx) =>
+                    {return this.renderAssay(val, idx)})
+             )
+    }else{  
+      // We set a secondary Full list in the state to be used in lieu of the prop
+      var fullList = this.props.dataTypeList;
+      console.debug("fullList", fullList);
+      // if(!this.state.assay_type_primary){
+      //   // Replace with the bigger list
+      //   fullList = this.state.allAssays;
+      // }
+      // console.debug("fullList", fullList);
+
+      return (
+        fullList.slice(min, max).map((val, idx) =>{
+          return this.renderAssay(val, idx)
+        })
+      )
     }
-  renderAssay(val, idx) {
+
+	 
+    }
+
+
+  renderAssay(val) {
     // console.debug("renderAssay", val, idx);
     var lcName =val.name.toLowerCase();
     var idstr = 'dt_' + lcName.replace(' ','_');
     // var selectedDT = "";
+    // console.debug(this.state.selected_dt,lcName);
     if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
       console.debug("THIS ONE,", lcName);
       // selectedDT="selected";
@@ -1705,6 +1717,19 @@ class DatasetEdit extends Component {
       <li key={val}>{val}</li>
       )
   }
+
+  renderStringAssay(val) {
+    return (
+      {val}
+      )
+  }
+
+  renderDisabledNonprimaryDT(val) {
+    return (
+      <li key={val}>{val}</li>
+      )
+  }
+
 
   renderMultipleAssays() {
     var arr = Array.from(this.state.data_types)
@@ -1735,8 +1760,15 @@ class DatasetEdit extends Component {
           </>)
       }else{ 
          var selectedID = null;
+        //  var newList = this.props.daaTypeList;
+        //  console.debug("newList", newList);t
+
           if(this.props.editingDataset && this.props.editingDataset.data_types){
             console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
+            // If we're not in the list yet, add us!
+            if(!this.state.assay_type_primary){
+              console.debug("Not in the list yet, add us!");
+            }
             selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
           }
           console.debug("selectedID", selectedID);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
-import { search_api_get_assay_list} from '../service/search_api';
+import { search_api_get_assay_list, search_api_get_assay_set } from '../service/search_api';
 import DatasetFormLegacy from "./ingest/dataset_edit";
 import {useNavigate} from "react-router-dom";
 
@@ -38,55 +38,104 @@ export const RenderDataset = (props) => {
     // Datatype might not be a primary one, butif it's not we're disabling the dropdown 
     // so we add that one & it's fine if the other non-primares are secretly in the list or not 
     // search_api_get_assay_list(primary)
-    search_api_get_assay_list(primary)
-    .then((response) => {
-      console.debug("fetchPrimaryDataTypes Response", response);
-        let data = response.data;
-        // console.debug(d);
-        var dt_dict = data.map((value, index) => { return value })
-        // console.debug("dt_dict", dt_dict);
-        setDataTypeList(dt_dict);
-        // setLoading(isLoading++);
+
+    function checkAssayType(dt){
+      search_api_get_assay_list()
+      .then((response) => {
+        let primaries = response.data;
+        console.debug("Primaries:", primaries, "dt:", dt);
+
+
+        if(primaries.includes(dt)){ // Are we primary? 
+          console.debug("*************8 PRIMARY DT");
+          let data = response.data;
+          var dt_dict = data.map((value, index) => { return value })
+          setDataTypeList(dt_dict);
+          setIsLoadingDTList(false);
+
+
+
+        }else{ /// Or not
+          console.debug("********* NOT PRIM");
+          search_api_get_assay_set() // Getting the full lst now 
+          .then((response) => {
+            let newList = response.data;
+            var new_dict = newList.result.map((value, index) => { return value })
+            setDataTypeList(new_dict);
+            setIsLoadingDTList(false);
+            console.debug("New Dict:", new_dict);
+          })
+          .catch((error) => {
+            console.error(error);
+            setIsLoadingDTList(false);
+           
+          })
+        }
+          
+          
+      })
+      .catch(error => {
+        console.debug("checkAssayType Error", error);
+        passError(error.status, error.response );
+      });
+    }
+
+
+    function setAssays(scope,dt){
+      search_api_get_assay_list(scope)
+      .then((response) => {
+        console.debug("fetchPrimaryDataTypes Response", response);
+          let data = response.data;
+          console.debug("fetchPrimaryDataTypes Data", data, typeof data, response);
+          // console.debug(d);
+          var dt_dict = data.map((value, index) => { return value })
+          console.debug("dt_dict", dt_dict);
+          setDataTypeList(dt_dict);
+          setIsLoadingDTList(false);
+      })
+      .catch(error => {
+        console.debug("fetch DT list Response Error", error);
+        passError(error.status, error.response );
         setIsLoadingDTList(false);
-    })
-    .catch(error => {
-      console.debug("fetch DT list Response Error", error);
-      passError(error.status, error.response );
-    });
+      });
+    }
+
+
+    function fetchEntity(authSet){
+      entity_api_get_entity(uuid, authSet.groups_token)
+        .then((response) => {
+            if (response.status === 200) {
+              setEntity(response.results);
+              setIsLoadingEntity(false); 
+              console.debug("fetchEntity Response", response);
+              var checkAssay = response.results.data_types;
+              console.debug("checkAssay", checkAssay);
+              checkAssayType(checkAssay)
+              
+            }
+            
+          })  
+          .catch((error) => {
+            setIsLoadingEntity(false);
+            console.debug("fetchData Response Error", error);
+            passError(error.status, error.response );
+          }); 
+    };
 
 
     if(!props.new){
       console.debug("!props.new");
-      function fetchEntity(authSet){
-        entity_api_get_entity(uuid, authSet.groups_token)
-          .then((response) => {
-              if (response.status === 200) {
-                setEntity(response.results);
-                setIsLoadingEntity(false); 
-                console.debug("fetchEntity Response", response);
-                //console.debug("entity_data", response.results);
-              }else{
-                // setLoading(isLoading--);
-                console.debug("Non 200 response!");
-                passError(response.status, response.results);
-              }
-              
-            })  
-            .catch((error) => {
-              setIsLoadingEntity(true);
-              console.debug("fetchData Response Error", error);
-              passError(error.status, error.response );
-            }); 
-      };
       fetchEntity(authSet);
     }else{
       // setLoading(isLoading+1);
       setIsLoadingEntity(false);
+      setAssays(primary);
       console.debug("NEW FORM",props);
     }
 
 
   }, [uuid, props]);
+  
 
   function handleCancel(){
     
@@ -138,6 +187,7 @@ export const RenderDataset = (props) => {
     //   );
     // }else 
     if (!isLoadingEntity && !isLoadingDTList ) {
+      console.debug("ISLOADING");
       // console.debug(isLoadingDTList, dataTypeList );
       // console.debug(isLoadingEntity, entity_data);
       // console.debug("BG");
@@ -155,7 +205,7 @@ export const RenderDataset = (props) => {
         </div>
       )
     }else{
-      console.debug("SM");
+      console.debug("SM", isLoadingEntity, isLoadingDTList);
       return (
         <div className="card-body ">
           <div className="loader">Loading...</div>
