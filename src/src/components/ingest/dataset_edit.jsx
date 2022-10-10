@@ -105,10 +105,10 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
-    console.debug("AAAAAAAAAAAAAAA updateStateDataTypeInfo");
+    // console.debug("updateStateDataTypeInfo");
     let data_types = null;
     let other_dt = undefined;
-    console.debug("this.props", this.props);
+    //console.debug("this.props", this.props);
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
@@ -133,7 +133,7 @@ class DatasetEdit extends Component {
         // Now we can only see the other vals in the select if we're primary,
         // can just add the one non-primary and select it and only ever base seelxt pop on Primary vals
         if (other_dt) {
-          console.debug("has Other DT", other_dt);
+          //console.debug("has Other DT", other_dt);
           data_types.push(other_dt);
           this.setAssayList();
           this.setState({
@@ -192,7 +192,7 @@ class DatasetEdit extends Component {
 
       // Figure out our permissions
       if (this.props.editingDataset) {
-        console.debug("Editing Dataset", this.props.editingDataset);
+        //console.debug("Editing Dataset", this.props.editingDataset);
         if (this.props.editingDataset.uuid)
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -330,7 +330,7 @@ class DatasetEdit extends Component {
         if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
           // Set DT Select by state so it behaves as "controlled"
           selected = this.props.editingDataset.data_types[0].toLowerCase();
-          console.debug("SELECTED FORMATTED", selected);
+          //console.debug("SELECTED FORMATTED", selected);
         }
         this.setState({
           selected_dt: selected,
@@ -351,16 +351,16 @@ class DatasetEdit extends Component {
   }
 
   setAssayList(){
-    console.debug("setAssayList");
+    //console.debug("setAssayList");
     search_api_get_assay_set()
     .then((res) => {
-      console.debug("Assay Set", res.data);
+      //console.debug("Assay Set", res.data);
       this.setState({
         allAssays: res.data,
       });
     })
     .catch((err) => {
-      console.debug("Error getting assay list", err);
+      //console.debug("Error getting assay list", err);
     })
   }
 
@@ -450,7 +450,7 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    console.debug('INPUT:', name, id, value)
+    //console.debug('INPUT:', name, id, value)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
@@ -499,7 +499,7 @@ class DatasetEdit extends Component {
         this.setState({ other_dt: value });
         break;
       case "dt_select":
-        console.debug("DT SELECT", value);
+        //console.debug("DT SELECT", value);
         var data_types = [];  
         data_types.push(value);
         // data_types.push(value);
@@ -508,7 +508,7 @@ class DatasetEdit extends Component {
           data_types: data_types,
           // selected_dt: value,
         });
-        console.debug("data_types", data_types);
+        //console.debug("data_types", data_types);
           break;
       case "groups":
         this.setState({
@@ -519,7 +519,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-     console.log('ping!', id);
+     //console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -550,7 +550,7 @@ class DatasetEdit extends Component {
           });
       
         } else {
-          console.debug("value", value);
+          //console.debug("value", value);
 
           this.setState({
             has_other_datatype: false,
@@ -942,9 +942,9 @@ class DatasetEdit extends Component {
   }
 
   handleButtonClick = (i, event) => {
-    console.debug("handleButtonClick", i);
+    //console.debug("handleButtonClick", i);
     if(event){
-      console.debug([event.target.name]);
+      //console.debug([event.target.name]);
     }
 
     this.setState({
@@ -973,8 +973,8 @@ class DatasetEdit extends Component {
     // this.setState({ data_types: data_types });
     //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
-    console.debug("GroupSelectShow", this.state.GroupSelectShow);
-    console.debug("editingDataset", this.props.editingDataset);
+    //console.debug("GroupSelectShow", this.state.GroupSelectShow);
+    //console.debug("editingDataset", this.props.editingDataset);
       if (isValid) {
         if (
           (!this.props.editingDataset || 
@@ -983,7 +983,7 @@ class DatasetEdit extends Component {
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
-          console.debug("showing Group Select!!");
+          //console.debug("showing Group Select!!");
           this.setState({ GroupSelectShow: true });
         } else {
 
@@ -1028,7 +1028,7 @@ class DatasetEdit extends Component {
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
-          console.debug("Compiled data: ", data);
+          //console.debug("Compiled data: ", data);
   
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
@@ -1050,14 +1050,14 @@ class DatasetEdit extends Component {
           };
          
           // @TODO: Should be using services for this instead of Axios
-          console.debug(" !this.props.newForm",  !this.props.newForm);
+          //console.debug(" !this.props.newForm",  !this.props.newForm);
           if (this.props.editingDataset && !this.props.newForm) {
 
-            console.debug("submitIntention is our status as passed into handleSubmit", submitIntention);
-            console.log("data is ", data)
+            //console.debug("submitIntention is our status as passed into handleSubmit", submitIntention);
+            //console.log("data is ", data)
             // if user selected Publish
             if (submitIntention === "published") { // From State? 
-              console.debug("about to publish with data ", data); 
+              //console.debug("about to publish with data ", data); 
               let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
               axios
                 .put(uri, JSON.stringify(data), config)
@@ -1065,7 +1065,7 @@ class DatasetEdit extends Component {
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
-                 console.error("published ERROR ", error)
+                 //console.error("published ERROR ", error)
                   // this.props.passError(error);
                   this.setState({ 
                     submit_error: true, 
@@ -1078,7 +1078,7 @@ class DatasetEdit extends Component {
               //console.log("data is ", data)
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
-                    console.debug("response is ", response, response.err.response);
+                    //console.debug("response is ", response, response.err.response);
                     if (response.status === 200) {
                       ////console.log(response.results);
                       this.props.onUpdated(response.results);
@@ -1095,7 +1095,7 @@ class DatasetEdit extends Component {
                     }
                 })
                 .catch((error) => {
-                    console.error("processing ERROR ", error)
+                    //console.error("processing ERROR ", error)
                     this.props.passError(error);
                     this.setState({ 
                       submit_error: true, 
@@ -1125,7 +1125,7 @@ class DatasetEdit extends Component {
                           }
                 }) 
                 .catch((error) => {
-                  console.error("else ERROR ", error)
+                  //console.error("else ERROR ", error)
                   this.props.passError(error);
                    this.setState({ 
                     submit_error: true, 
@@ -1176,7 +1176,7 @@ class DatasetEdit extends Component {
                       });
                     })
                     .catch((err) => {
-                      console.log('ERROR catch', err)
+                      //console.log('ERROR catch', err)
                       if (err.response && err.response.status === 401) {
                         localStorage.setItem("isAuthenticated", false);
                         window.location.reload();
@@ -1200,13 +1200,13 @@ class DatasetEdit extends Component {
                //console.debug("err", err)
                 this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
                   () => {
-                   console.debug("CATCH ", err) 
+                   //console.debug("CATCH ", err) 
                   });
               });
           }  //else
         }
       }else{
-        console.debug("Is Not Valid");
+        //console.debug("Is Not Valid");
         // console.debug("There was a problem handling your form. Please review the marked items and try again.");
         this.setState({ 
           submit_error: true, 
@@ -1297,7 +1297,7 @@ class DatasetEdit extends Component {
           } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
             emsg = "The selected data type doesn’t contain gene sequence information, please select No or change the data type."
           } 
-          console.debug('VALIDATE: emsg', emsg)
+          //console.debug('VALIDATE: emsg', emsg)
           
           this.setState((prevState) => ({
               formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },              
@@ -1314,7 +1314,7 @@ class DatasetEdit extends Component {
         });
         var errorSet = this.state.formErrors;
         var result = Object.keys(errorSet).find(e => errorSet[e].length);
-        console.debug('VALIDATE: result', result);
+        //console.debug('VALIDATE: result', result);
 
 
       }
@@ -1549,7 +1549,7 @@ class DatasetEdit extends Component {
                 this.setState({ 
                   buttonSpinnerTarget:which_button.toLowerCase()
                 },() => {  
-                  console.debug("Button State Saved, ",this.state.buttonSpinnerTarget);
+                  //console.debug("Button State Saved, ",this.state.buttonSpinnerTarget);
                 })
                 // console.debug("onClick", e); 
                 this.handleButtonClick(newstate)
@@ -1655,9 +1655,9 @@ class DatasetEdit extends Component {
    }
 
   renderAssayColumn(min, max) {
-    console.debug("renderAssayColumn", min, max);
+    //console.debug("renderAssayColumn", min, max);
     // We need to hijack the select values if we're not primary
-    console.debug(this.state.assay_type_primary);
+    //console.debug(this.state.assay_type_primary);
     if(this.state.assay_type_primary) {
       return (
         this.props.dataTypeList.slice(min, max).map((val, idx) =>
@@ -1666,7 +1666,7 @@ class DatasetEdit extends Component {
     }else{  
       // We set a secondary Full list in the state to be used in lieu of the prop
       var fullList = this.props.dataTypeList;
-      console.debug("fullList", fullList);
+      //console.debug("fullList", fullList);
       return (
         fullList.slice(min, max).map((val, idx) =>{
           return this.renderAssay(val, idx)
@@ -1685,7 +1685,7 @@ class DatasetEdit extends Component {
     // var selectedDT = "";
     // console.debug(this.state.selected_dt,lcName);
     if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
-      console.debug("THIS ONE,", lcName);
+      //console.debug("THIS ONE,", lcName);
       // selectedDT="selected";
     }
     return (
@@ -1725,14 +1725,14 @@ class DatasetEdit extends Component {
       var len = 0;
       var dtlistLen = this.props.dataTypeList.length;
       if(this.props.editingDataset && this.props.editingDataset.data_types) {
-        console.debug("this.props.editingDataset", this.props.editingDataset);
+        //console.debug("this.props.editingDataset", this.props.editingDataset);
         len = this.props.editingDataset.data_types.length;
       }else{
-        console.debug("no editingDataset");
+        //console.debug("no editingDataset");
       }
 
        if (len > 1) {
-        console.debug("Multiple DTs", len);
+        //console.debug("Multiple DTs", len);
         return (<>
           <ul>
             {this.renderMultipleAssays()}
@@ -1742,17 +1742,17 @@ class DatasetEdit extends Component {
       }else{ 
          var selectedID = null;
         //  var newList = this.props.daaTypeList;
-        //  console.debug("newList", newList);t
+        //  //console.debug("newList", newList);t
 
           if(this.props.editingDataset && this.props.editingDataset.data_types){
-            console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
+            //console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
             // If we're not in the list yet, add us!
             if(!this.state.assay_type_primary){
-              console.debug("Not in the list yet, add us!");
+              //console.debug("Not in the list yet, add us!");
             }
             selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
           }
-          console.debug("selectedID", selectedID);
+          //console.debug("selectedID", selectedID);
         // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
   	    return (<>
   		    <Select 
