@@ -4,6 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
+
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
@@ -14,8 +15,7 @@ import HIPPA from "../uuid/HIPPA.jsx";
 import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
-  faExternalLinkAlt,
-  faFolder
+  faExternalLinkAlt
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
@@ -23,7 +23,7 @@ import SearchComponent from "../search/SearchComponent";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
 import { entity_api_update_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import { get_assay_type } from '../../service/search_api';
+import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -35,6 +35,11 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
+import Box from '@material-ui/core/Box';
+
+
+import Select from '@material-ui/core/Select';
+
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
@@ -44,9 +49,9 @@ class DatasetEdit extends Component {
   state = {
    // The Entity Itself
    newForm: this.props.newForm,
-    contains_human_genetic_sequences: undefined,
-    // data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
-     data_types: this.props.dataTypeList,
+    data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
+    selected_dt:"",
+    //  data_types: this.props.dataTypeList,
     // data_types: new Set(),
     dataset_info: "",
     description: "",
@@ -83,11 +88,12 @@ class DatasetEdit extends Component {
     previous_revision_uuid: undefined,
     buttonSpinnerTarget: "",
     errorSnack:false,
-    
+    disableSelectDatatype:false,
     // Form Validation & processing
     has_other_datatype: false,
     submitErrorResponse:"",
     submitErrorStatus:"",
+    isValidData:true,
     formErrors: {
       contains_human_genetic_sequences:"",
       data_types: "",
@@ -99,27 +105,46 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
+    console.debug("AAAAAAAAAAAAAAA updateStateDataTypeInfo");
     let data_types = null;
     let other_dt = undefined;
+    console.debug("this.props", this.props);
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
+        var thisDtName = this.props.editingDataset.data_types[0]
+        var isPrim = data_type_options.has(thisDtName);
+        if (isPrim)  {
+          // alert("HAIL");
+          this.setState({
+            assay_type_primary: false
+          });
+        }else{
+          this.setState({
+            assay_type_primary: true
+          });
+        }
+
+
         other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
         data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
+        // here's we're checking if its in the list provided for the dropdown, which used to have primary And non
+        // Now we can only see the other vals in the select if we're primary,
+        // can just add the one non-primary and select it and only ever base seelxt pop on Primary vals
         if (other_dt) {
+          console.debug("has Other DT", other_dt);
           data_types.push(other_dt);
+          this.setAssayList();
+          this.setState({
+            assay_type_primary: true
+          });
+        }else{
+          this.setState({
+            assay_type_primary: false
+          });
         }
-        get_assay_type(other_dt, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((resp) => {
-          if (resp.status === 200) {
-            if (resp.results) {
-              this.setState({
-                assay_type_primary: resp.results.primary
-              });
-            }
-          }
-        }); 
+
       }
       this.setState({
         data_types: new Set(data_types),
@@ -130,8 +155,6 @@ class DatasetEdit extends Component {
     
     componentDidMount() {
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
-      // console.debug("DATATYPELIST",this.props);
-      console.debug("newForm", this.props.newForm);
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
       var savedGeneticsStatus = undefined;
@@ -142,6 +165,7 @@ class DatasetEdit extends Component {
           "Content-Type": "application/json",
         },
       };
+      
   
 
     // Fills in selectable Data Typw List  
@@ -189,19 +213,18 @@ class DatasetEdit extends Component {
 
 
     // Splits groups up into Data Providers and Permissions 
+    // @TODO move to services
     axios
       .get(
         `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
         config
       )
       .then((res) => {
-        console.debug("res.data.groups",res.data.groups);
         const groups = res.data.groups.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
         );
-        console.debug("groups",groups);
           //  We have both Data-Provider groups as well as non. 
           // The DP needs to be deliniated for the dropdown & assignments
           // the rest are for permissions
@@ -216,12 +239,11 @@ class DatasetEdit extends Component {
           // Rather than reload here, let's have a modal or such
           localStorage.setItem("isAuthenticated", false);
         }else if(err.status){
-         //console.debug("Err wo response", err.response);
           localStorage.setItem("isAuthenticated", false);
         }
       });
 
-    // Sets up the Entity's info  
+    // Sets up the Entity's info  if we're not new here
     if (this.props.editingDataset && !this.props.newForm) {      //
       // let source_uuids;
       try {
@@ -287,7 +309,59 @@ class DatasetEdit extends Component {
             });
         }
       );
+       // Now tha we've got that all set, 
+      // Here's the hack that disables changing the datatype 
+      // if it's no longer a base primary type.  
+
+      // We already have this checked when checking assay_type_primary!
+      if(this.props.editingDataset.datatype && this.props.dataTypeList.includes(this.props.editingDataset.datatype[0])){
+        this.setState({
+          disableSelectDatatype: false,
+        });
+
+      }else{
+        this.setState({
+          disableSelectDatatype: true,
+        });
+
+      }
+
+        var selected = ""
+        if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
+          // Set DT Select by state so it behaves as "controlled"
+          selected = this.props.editingDataset.data_types[0].toLowerCase();
+          console.debug("SELECTED FORMATTED", selected);
+        }
+        this.setState({
+          selected_dt: selected,
+        })
+  
+
+      
+      // let primaryNames = primaryDTs.map((value, index) => { return value.name });
+      // // console.debug("primaryNames",primaryNames);
+      // var thisDT = "AF"; 
+
+      // var primInv = primaryDTs.find(({ name }) => name === thisDT);
+      // console.debug("looking for "+thisDT+" in primaryDTs",primInv);
+
+      
+     
     }
+  }
+
+  setAssayList(){
+    console.debug("setAssayList");
+    search_api_get_assay_set()
+    .then((res) => {
+      console.debug("Assay Set", res.data);
+      this.setState({
+        allAssays: res.data,
+      });
+    })
+    .catch((err) => {
+      console.debug("Error getting assay list", err);
+    })
   }
 
   componentWillUnmount() {
@@ -372,11 +446,11 @@ class DatasetEdit extends Component {
         });
       }
     }
-  };
+  }; 
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    //console.debug('**name', name)
+    console.debug('INPUT:', name, id, value)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
@@ -420,9 +494,22 @@ class DatasetEdit extends Component {
       //     is_protected: e.target.checked,
       //   });
       //   break;
+      
       case "other_dt":
         this.setState({ other_dt: value });
         break;
+      case "dt_select":
+        console.debug("DT SELECT", value);
+        var data_types = [];  
+        data_types.push(value);
+        // data_types.push(value);
+        this.setState({
+          has_other_datatype: false,
+          data_types: data_types,
+          // selected_dt: value,
+        });
+        console.debug("data_types", data_types);
+          break;
       case "groups":
         this.setState({
           selected_group: value
@@ -432,7 +519,7 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-     //console.log('ping!', id);
+     console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -454,25 +541,20 @@ class DatasetEdit extends Component {
       } else {
         //////console.log(id, e.target.checked)
         if (value === "other") {
-          const data_types = this.state.data_types;
-          data_types.clear();
-          data_types.add(value);
+          // const data_types = this.state.data_types;
+          // data_types.clear();
+          // data_types.add(value);
           this.setState({
             data_types: data_types,
             has_other_datatype: value === "other",
           });
-         //console.log("other", this.state.has_other_datatype);
-         
-          
-          
+      
         } else {
+          console.debug("value", value);
 
-          const data_types = this.state.data_types;
-          data_types.clear();
-          data_types.add(value);
           this.setState({
             has_other_datatype: false,
-            data_types: data_types,
+            selected_dt: value,
           });
 
         }/*if (e.target.checked) {
@@ -596,11 +678,7 @@ class DatasetEdit extends Component {
               At least <strong>one source </strong>is required, but multiple may be specified.
             </p>
           </ReactTooltip>
-          {this.errorClass(this.state.formErrors.source_uuid_list) && (
-            <div className='alert alert-danger'>
-            At least one source is Required
-          </div>
-          )}
+
         <TableContainer 
           component={Paper} 
           style={{ maxHeight: 450 }}
@@ -657,22 +735,36 @@ class DatasetEdit extends Component {
                  
         {this.state.writeable && (
         <React.Fragment>
-          <div className="mt-2 text-right">
-            <Button
-              variant="contained"
-              type='button'
-              className='btn btn-secondary'
-              onClick={() => this.handleLookUpClick()} 
-              >
-              Add {this.props.newForm === true && (
-                "Another"
-                )} Source 
-              <FontAwesomeIcon
-                className='fa button-icon ml-2'
-                icon={faPlus}
-              />
-            </Button>
-          </div>
+          <Box className="mt-2 w-100" width="100%"  display="flex">
+            
+              <Box p={1} className="m-0  text-right" flexShrink={0}  >
+                <Button
+                  variant="contained"
+                  type='button'
+                  size="small"
+                  className='btn btn-neutral'
+                  onClick={() => this.handleLookUpClick()} 
+                  >
+                  Add {this.state.source_uuids && this.state.source_uuids.length>=1 && (
+                    "Another"
+                    )} Source 
+                  <FontAwesomeIcon
+                    className='fa button-icon m-2'
+                    icon={faPlus}
+                  />
+                </Button>
+              </Box>
+
+              <Box p={1} width="100%"   >
+              {this.errorClass(this.state.formErrors.source_uuid_list) && (
+                    <Alert severity="error" width="100% " >
+                      {this.state.formErrors.source_uuid_list}  {this.state.formErrors.source_uuid} 
+                    </Alert>
+                )}
+              </Box>
+              
+              {/*  */}
+          </Box>
         </React.Fragment>
         )}
       </div>
@@ -881,22 +973,36 @@ class DatasetEdit extends Component {
     // this.setState({ data_types: data_types });
     //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
-    
+    console.debug("GroupSelectShow", this.state.GroupSelectShow);
+    console.debug("editingDataset", this.props.editingDataset);
       if (isValid) {
         if (
-          !this.props.editingDataset &&
+          (!this.props.editingDataset || 
+            this.props.editingDataset.length<=0||
+            !this.props.editingDataset.uuid) &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
+          console.debug("showing Group Select!!");
           this.setState({ GroupSelectShow: true });
         } else {
+
+
+          console.debug("NO MODAL...",
+          "Editi Mode:",!this.props.editingDataset,
+          "| Dataset:",this.props.editingDataset,
+          "| length:",this.props.editingDataset.length,
+          "| & ",
+          this.state.groups.length, 
+          !this.state.GroupSelectShow
+           );
+
           this.setState({
             GroupSelectShow: false,
             submitting: true,
           });
-          this.setState({ submitting: true });
           const state_data_types = this.state.data_types;
-          state_data_types.delete("other");
+          // state_data_types.delete("other");
           let data_types = [...state_data_types];
           if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
             data_types = [
@@ -906,18 +1012,19 @@ class DatasetEdit extends Component {
           }
 
           // Lets make sure the data types array is unique
-          var uniqueDT = Array.from(new Set(data_types));
-          console.debug("Orig data_types", data_types);
-          console.debug("uniqueDT", uniqueDT);
-          this.setState({
-            data_types: uniqueDT,
-          })
+          // Wait why are we adding new set of all DTs ????
+          // var uniqueDT = Array.from(new Set(data_types));
+          // console.debug("Orig data_types", data_types);
+          // console.debug("uniqueDT", uniqueDT);
+          // this.setState({
+          //   data_types: uniqueDT,
+          // })
 
           // package the data up
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            data_types: uniqueDT,
+            data_types: this.state.data_types,
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
@@ -960,7 +1067,11 @@ class DatasetEdit extends Component {
                 .catch((error) => {
                  console.error("published ERROR ", error)
                   // this.props.passError(error);
-                  this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
+                  this.setState({ 
+                    submit_error: true, 
+                    submitting: false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"", });
                 });
             } else if (submitIntention === "processing") {
                ////console.log('Submit Dataset...');
@@ -979,14 +1090,19 @@ class DatasetEdit extends Component {
                         submitting: false,
                         buttonSpinnerTarget:"", 
                         submitErrorStatus:statusText,
-                        submitErrorResponse:response.err.response.data 
+                        submitErrorResponse:response.err.response.data ,
                       });
                     }
                 })
                 .catch((error) => {
-                  console.error("processing ERROR ", error)
-                  this.props.passError(error);
-                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error });
+                    console.error("processing ERROR ", error)
+                    this.props.passError(error);
+                    this.setState({ 
+                      submit_error: true, 
+                      submitting: false, 
+                      submitErrorResponse:error, 
+                      submitErrorStatus:error,
+                      buttonSpinnerTarget:"" });
                  });
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1001,13 +1117,21 @@ class DatasetEdit extends Component {
                             this.props.onUpdated(response.results);
                           } else {
                            //console.debug("ERROR ",response)
-                            this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.statusText });
+                            this.setState({ 
+                              submit_error: true, 
+                              submitting: false, 
+                              submitErrorResponse:response.results.statusText,
+                              buttonSpinnerTarget:"" });
                           }
                 }) 
                 .catch((error) => {
                   console.error("else ERROR ", error)
                   this.props.passError(error);
-                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:error.result.data });
+                   this.setState({ 
+                    submit_error: true, 
+                    submitting: false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"" });
                  });;
               }
           } else {  // new creations
@@ -1060,7 +1184,11 @@ class DatasetEdit extends Component {
                     });
                   } else {
                    //console.debug("Error response", response) 
-                    this.setState({ submit_error: true, submitting: false, submitErrorResponse:response.results.data.error} ,
+                    this.setState({ 
+                      submit_error: true, 
+                      submitting: false, 
+                      submitErrorResponse:response.results.data.error,
+                      buttonSpinnerTarget:""} ,
                       () => {
                        //console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
                       });
@@ -1070,15 +1198,24 @@ class DatasetEdit extends Component {
               })
               .catch((err) => {
                //console.debug("err", err)
-                this.setState({ submit_error: true, submitting: false, submitErrorResponse:err } ,
+                this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
                   () => {
-                   //console.debug("CATCH ", err) 
+                   console.debug("CATCH ", err) 
                   });
               });
           }  //else
         }
       }else{
-        Alert("There was a problem handling your form. Please review the marked items and try again.");
+        console.debug("Is Not Valid");
+        // console.debug("There was a problem handling your form. Please review the marked items and try again.");
+        this.setState({ 
+          submit_error: true, 
+          submitting: false, 
+          buttonSpinnerTarget:""
+          // submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again." 
+        });
+
+        // Alert("There was a problem handling your form. Please review the marked items and try again.");
       }
     });
   };
@@ -1104,7 +1241,7 @@ class DatasetEdit extends Component {
       
       if (!validateRequired(this.state.source_uuid_list)) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid_list: "required" },
+          formErrors: { ...prevState.formErrors, source_uuid_list: "At least one Source is required" },
         }));
         isValid = false;
         resolve(isValid);
@@ -1117,7 +1254,7 @@ class DatasetEdit extends Component {
         // });
       }
       
-      if (this.state.data_types && this.state.data_types.size === 0 || this.state.data_types === "") {
+      if (this.state.data_types && (this.state.data_types.size === 0 || this.state.data_types === "")) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, data_types: "required" },
         }));
@@ -1160,11 +1297,26 @@ class DatasetEdit extends Component {
           } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
             emsg = "The selected data type doesn’t contain gene sequence information, please select No or change the data type."
           } 
+          console.debug('VALIDATE: emsg', emsg)
+          
           this.setState((prevState) => ({
-              formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },
+              formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },              
           }));
      
           isValid = false;       
+      }
+      this.setState({ isValidData: isValid});
+      if(!isValid){
+        this.setState({ 
+          submit_error: true, 
+          submitting: false,  
+          buttonSpinnerTarget:""
+        });
+        var errorSet = this.state.formErrors;
+        var result = Object.keys(errorSet).find(e => errorSet[e].length);
+        console.debug('VALIDATE: result', result);
+
+
       }
       resolve(isValid);
     });
@@ -1503,17 +1655,41 @@ class DatasetEdit extends Component {
    }
 
   renderAssayColumn(min, max) {
-    // console.debug("renderAssayColumn", min, max);
-	 return (
-		this.props.dataTypeList.slice(min, max).map((val, idx) =>
-								{return this.renderAssay(val, idx)})
-	       )
+    console.debug("renderAssayColumn", min, max);
+    // We need to hijack the select values if we're not primary
+    console.debug(this.state.assay_type_primary);
+    if(this.state.assay_type_primary) {
+      return (
+        this.props.dataTypeList.slice(min, max).map((val, idx) =>
+                    {return this.renderAssay(val, idx)})
+             )
+    }else{  
+      // We set a secondary Full list in the state to be used in lieu of the prop
+      var fullList = this.props.dataTypeList;
+      console.debug("fullList", fullList);
+      return (
+        fullList.slice(min, max).map((val, idx) =>{
+          return this.renderAssay(val, idx)
+        })
+      )
     }
-  renderAssay(val, idx) {
+
+	 
+    }
+
+
+  renderAssay(val) {
     // console.debug("renderAssay", val, idx);
-    var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+    var lcName =val.name.toLowerCase();
+    var idstr = 'dt_' + lcName.replace(' ','_');
+    // var selectedDT = "";
+    // console.debug(this.state.selected_dt,lcName);
+    if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
+      console.debug("THIS ONE,", lcName);
+      // selectedDT="selected";
+    }
     return (
-      <option key={idstr} value={val.name} onChange={this.handleInputChange} id={idstr}>{val.description}</option>
+      <option key={idstr} value={lcName}  id={idstr}>{val.description}</option>
       )
   }
 
@@ -1522,6 +1698,19 @@ class DatasetEdit extends Component {
       <li key={val}>{val}</li>
       )
   }
+
+  renderStringAssay(val) {
+    return (
+      {val}
+      )
+  }
+
+  renderDisabledNonprimaryDT(val) {
+    return (
+      <li key={val}>{val}</li>
+      )
+  }
+
 
   renderMultipleAssays() {
     var arr = Array.from(this.state.data_types)
@@ -1533,24 +1722,54 @@ class DatasetEdit extends Component {
 
    
   renderAssayArray() {
-	    var len = this.props.dataTypeList.length;
+      var len = 0;
+      var dtlistLen = this.props.dataTypeList.length;
+      if(this.props.editingDataset && this.props.editingDataset.data_types) {
+        console.debug("this.props.editingDataset", this.props.editingDataset);
+        len = this.props.editingDataset.data_types.length;
+      }else{
+        console.debug("no editingDataset");
+      }
 
-       if (this.props.dataTypeList.size > 1) {
+       if (len > 1) {
+        console.debug("Multiple DTs", len);
         return (<>
-  
           <ul>
             {this.renderMultipleAssays()}
           </ul>
 
           </>)
       }else{ 
+         var selectedID = null;
+        //  var newList = this.props.daaTypeList;
+        //  console.debug("newList", newList);t
+
+          if(this.props.editingDataset && this.props.editingDataset.data_types){
+            console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
+            // If we're not in the list yet, add us!
+            if(!this.state.assay_type_primary){
+              console.debug("Not in the list yet, add us!");
+            }
+            selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
+          }
+          console.debug("selectedID", selectedID);
         // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
   	    return (<>
-  		    <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}>
+  		    <Select 
+            native
+            name="dt_select"
+            className="form-select" 
+            disabled={ (!this.state.writeable || !this.state.assay_type_primary) }
+            value={this.state.selected_dt} 
+            // defaultValue={selectedID} 
+            // value={this.props.editingDataset.data_types} 
+            id="dt_select" 
+            onChange={this.handleInputChange}>
+  		    {/* <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}> */}
             <option></option>
-            {this.renderAssayColumn(0, len)}
-            <option value="other">Other</option>
-          </select>
+            {this.renderAssayColumn(0, dtlistLen)}
+            {/* <option value="other">Other</option> */}
+          </Select>
           </> )
    
       }    
@@ -1586,10 +1805,16 @@ class DatasetEdit extends Component {
                 )}> 
                   {this.state.status}
               </span>
-
-              {this.props.editingDataset && (
+                
+                
+              {this.props.editingDataset && !this.props.newForm &&(
                 <span className="mx-1"> HuBMAP Dataset ID  {this.state.display_doi} </span>
               )}
+                
+              {(!this.props.editingDataset || this.props.newForm) && (
+                <span className="mx-1">Registering a Dataset  {this.state.display_doi} </span>
+              )}
+
               </h3>
               <p>
               <strong>
@@ -1612,7 +1837,7 @@ class DatasetEdit extends Component {
                       target='_blank'
                       rel='noopener noreferrer'
                     >
-                        <FontAwesomeIcon icon={faFolder} style={{ marginRight: "10px" }} data-tip data-for='folder_tooltip'/>To add or modify data files go to the data repository
+                        To add or modify data files go to the data repository
                       <FontAwesomeIcon icon={faExternalLinkAlt} style={{ marginLeft: "5px" }} />
                     </a>
                   )}
@@ -1655,6 +1880,7 @@ class DatasetEdit extends Component {
           
           <div className='form-group'>
               {this.renderSources()}
+              
               
               <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
                 <DialogContent>
@@ -1807,172 +2033,181 @@ class DatasetEdit extends Component {
               </div>
             )}
           </div>
-            <div className='form-group '>
-              <label
-                htmlFor='contains_human_genetic_sequences'
-                className='col-sm-2 col-form-label text-right '
-              >
-                Gene Sequences <span className='text-danger'> * </span>
-              </label>
-              
-               <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for='contains_human_genetic_sequences_tooltip'
-                  />
-                  <ReactTooltip
-                    id='contains_human_genetic_sequences_tooltip'
-                    place='top'
-                    type='info'
-                    effect='solid'
-                  >
+          
+          {/* <div className={ this.state.formErrors.contains_human_genetic_sequences.length>0 ? 'form-group alert alert-danger' : 'form-group' } >
+            <div className='formRowWrapper p-2'>   */}
+            <div className='form-group  '>  
+                <label
+                  htmlFor='contains_human_genetic_sequences'
+                  className='col-sm-2 col-form-label text-right '
+                >
+                  Gene Sequences <span className='text-danger'> * </span>
+                </label>
+                
+                <FontAwesomeIcon
+                      icon={faQuestionCircle}
+                      data-tip
+                      data-for='contains_human_genetic_sequences_tooltip'
+                    />
+                    <ReactTooltip
+                      id='contains_human_genetic_sequences_tooltip'
+                      place='top'
+                      type='info'
+                      effect='solid'
+                    >
 
-                    <p>Gene Sequences Tips</p>
-                  </ReactTooltip>
-              {this.props.editingDataset && (
-                <div className='col-sm-9'>
-                  <div className='form-check form-check-inline'>
-                    <input
-                      className='form-check-input'
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_no'
-                      value='no'
-                      // defaultChecked={true}
-                      checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      disabled={this.props.editingDataset}
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
-                      No
-                    </label>
-                  </div>
-                  <div className='form-check form-check-inline'>
-                    <input
-                      className='form-check-input'
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_yes'
-                      value='yes'
-                      checked={this.state.contains_human_genetic_sequences  === true && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      disabled={this.props.editingDataset}
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
-                      Yes
-                    </label>
-                  </div>
-                  <small id='PHIHelpBlock' className='form-text text-muted'>
-                    Will this data contain any human genomic sequence data?
-                  </small>
-                </div>
-              )}
-              {!this.props.editingDataset && (
-                <div className="col-sm-9 ">
-                  <div className='form-check form-check-inline'>
-                    <input 
-                      className={
-                        "form-check-input " +
-                        this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
-                      }
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_no'
-                      value='no'
-                      // defaultChecked={true}
-                      //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      //disabled={this.props.editingDataset}
-                      //required
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
-                      No
-                    </label>
-                  </div>
-                  <div className='form-check form-check-inline'>
-                    <input 
-                      className={
-                        "form-check-input " +
-                        this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
-                      }
-                      type='radio'
-                      name='contains_human_genetic_sequences'
-                      id='contains_human_genetic_sequences_yes'
-                      value='yes'
-                      //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
-                      onChange={this.handleInputChange}
-                      //disabled={this.props.editingDataset}
-                      //required
-                    />
-                    <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
-                      Yes
-                    </label>
-                  </div>
-                  <small id='PHIHelpBlock' className='form-text text-muted'>
-                    Will this data contain any human genomic sequence data?
-                  </small>
-                   { this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
-                      <div className='alert alert-danger'>
-                      
-                      {this.state.formErrors.contains_human_genetic_sequences}
+                      <p>Gene Sequences Tips</p>
+                    </ReactTooltip>
+                <div className="row">
+                  {this.props.editingDataset && (
+                    <div className='col-sm-9'>
+                      <div className='form-check form-check-inline'>
+                        <input
+                          className='form-check-input'
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_no'
+                          value='no'
+                          // defaultChecked={true}
+                          checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          disabled={!this.state.writeable}
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
+                          No
+                        </label>
+                      </div>
+                      <div className='form-check form-check-inline'>
+                        <input
+                          className='form-check-input'
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_yes'
+                          value='yes'
+                          checked={this.state.contains_human_genetic_sequences  === true && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          disabled={!this.state.writeable}
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
+                          Yes
+                        </label>
+                      </div>
+                      <small id='PHIHelpBlock' className='form-text text-muted'>
+                        Will this data contain any human genomic sequence data?
+                      </small>
                     </div>
-                   )}
-                 
-                </div>
-              )}
+                  )}
+                  {!this.props.editingDataset && (
+                    <div className="col-sm-9 ">
+                      <div className='form-check form-check-inline'>
+                        <input 
+                          className={
+                            "form-check-input " +
+                            this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
+                          }
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_no'
+                          value='no'
+                          // defaultChecked={true}
+                          //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          //disabled={this.props.editingDataset}
+                          //required
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
+                          No
+                        </label>
+                      </div>
+                      <div className='form-check form-check-inline'>
+                        <input 
+                          className={
+                            "form-check-input " +
+                            this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
+                          }
+                          type='radio'
+                          name='contains_human_genetic_sequences'
+                          id='contains_human_genetic_sequences_yes'
+                          value='yes'
+                          //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
+                          onChange={this.handleInputChange}
+                          //disabled={this.props.editingDataset}
+                          //required
+                        />
+                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
+                          Yes
+                        </label>
+                      </div>
+                      <small id='PHIHelpBlock' className='form-text text-muted'>
+                        Will this data contain any human genomic sequence data? TEST
+                      </small>
+                      
+                    
+                    </div>
+                  )}
 
-              {/*!this.state.writeable && (
-                <div className='col-sm-9 col-form-label'>
-                  <p>{this.state.contains_human_genetic_sequences}</p>
+                  {/*!this.state.writeable && (
+                    <div className='col-sm-9 col-form-label'>
+                      <p>{this.state.contains_human_genetic_sequences}</p>
+                    </div>
+                  )*/}
+                  {this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
+                        <Alert severity="error">
+                          {this.state.formErrors.contains_human_genetic_sequences}
+                        </Alert>
+                    )}
+                
                 </div>
-              )*/}
-            
+
+
             </div>
           
-          <div className='form-group '>
-            <label
-              htmlFor='description'
-              className='col col-form-label text-right'
-            >
-              Data Type <span className='text-danger'>* </span>
-            </label>
-            <span>
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                data-tip
-                data-for='datatype_tooltip'
-                style={{ marginLeft: "10px" }}
-              />
-              <ReactTooltip
-                id='datatype_tooltip'
-                place='top'
-                type='info'
-                effect='solid'
+          {/* <div className={ this.state.formErrors.contains_human_genetic_sequences.length>0 ? 'form-group alert alert-danger' : 'form-group' } >
+            <div className='formRowWrapper p-2'> */}
+            <div className= 'form-group'>
+              <label
+                htmlFor='dt_select'
+                className='col col-form-label text-right'
               >
-                <p>Data Type Tips</p>
-              </ReactTooltip>
-            </span>
-            {this.state.writeable&& (
-		          <React.Fragment>
-                
-                <div className='col-sm-12'>
-                      { this.renderAssayArray()}
-                </div>
-		
-                <div className='col-sm-12'>
-                {this.state.formErrors.data_types && (
-                  <div className='alert alert-danger'>
-                    At least one Data Type is Required.
+                Data Type <span className='text-danger'>* </span>
+              </label>
+              <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for='datatype_tooltip'
+                  style={{ marginLeft: "10px" }}
+                />
+                <ReactTooltip
+                  id='datatype_tooltip'
+                  place='top'
+                  type='info'
+                  effect='solid'
+                >
+                  <p>Data Type Tips</p>
+                </ReactTooltip>
+              </span>
+              {this.state.writeable&& (
+                <React.Fragment>
+                  
+                  <div className='col-sm-12'>
+                        { this.renderAssayArray()}
                   </div>
-                )}
-                </div>
-	             </React.Fragment>
-            )}
-            {!this.state.writeable && (
-                <div className='col-sm-12'>
-                      {true && this.renderAssayArray()}
-                </div>
-            )}
+      
+                  <div className='col-sm-12'>
+                  {this.state.formErrors.data_types && (
+                    <div className='alert alert-danger'>
+                      At least one Data Type is Required.
+                    </div>
+                  )}
+                  </div>
+                </React.Fragment>
+              )}
+              {!this.state.writeable && (
+                  <div className='col-sm-12'>
+                        {true && this.renderAssayArray()}
+                  </div>
+              )}
             
           </div>
  
@@ -2069,24 +2304,33 @@ class DatasetEdit extends Component {
               </div>
             </div>
           )}
-          {this.state.submit_error && (
-            <Alert severity="error">
-              {this.state.submitErrorResponse &&(
-                <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
+
+          
+          <div className='row'>
+
+            <div className="col-8">
+              {this.state.submit_error && (
+                <Alert severity="error" >
+                  {this.state.submitErrorResponse &&(
+                    <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
+                  )}
+                  Oops! Something went wrong. Please contact administrator for help. <br />
+                  {/* {this.state.submitErrorResponse || this.state.submitErrorStatus || this.state. &&( */}
+                    <>
+                      Details:  <strong>{this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
+                    </>
+                  {/* )} */}
+                </Alert>
               )}
-              Oops! Something went wrong. Please contact administrator for help. <br />
-              {this.state.submitErrorResponse &&(
-                <>
-                <strong>Details: {this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
-                </>
-              )}
-            </Alert>
-          )}
-          {this.renderButtons()}
+            </div>
+            <div className="col-4">  
+              {this.renderButtons()}
+            </div>
+          </div>
         </form>
         <GroupModal
           show={this.state.GroupSelectShow}
-          hide={this.hideGroupSelectModal}
+          // hide={this.hideGroupSelectModal}
           groups={this.state.groups}
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}

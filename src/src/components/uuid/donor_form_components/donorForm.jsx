@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import Divider from '@material-ui/core/Divider';
+import Box from '@mui/material/Box';
+
 import '../../../App.css';
 // import axios from "axios";
 import ImageUpload from "./imageUpload";
@@ -32,6 +35,8 @@ import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
 
 class DonorForm extends Component {
   state = {
+    // ? Why are we generating an ID here? Nothing exists in the DB yet assumedly, should be generated on db save?
+    // random is exploitable, and this info doesnt actually exists till saved
     form_id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
    // visit: "",
     lab: "",
@@ -487,11 +492,7 @@ class DonorForm extends Component {
     if (this.props.editingEntity) {
       if (this.state.readOnly) {
         return (
-          <div className="row">
-           <div className="col-sm-12">
-          <Divider />
-          </div>
-      
+         
             <div className="col-sm-12 text-right pads">
               <Button
                 type="button"
@@ -501,14 +502,10 @@ class DonorForm extends Component {
                 Cancel
               </Button>
             </div>
-          </div>
         );
       } else {
         return (
-          <div className="row">
-          <div className="col-sm-12">
-          <Divider />
-          </div>
+         
             <div className="col-md-12 text-right pads">
               <Button
                 type="submit"
@@ -533,16 +530,11 @@ class DonorForm extends Component {
                  Cancel
               </Button>
           </div>
-          </div>
         );
       }
     } else {
       return (
-        <div className="row">
-        <div className="col-sm-12">
-          <Divider />
-        </div>
-            <div className="col-md-12 text-right pads">
+          <div className="col-md-12 text-right pads">
             <Button
               type="submit"
               className="btn btn-primary mr-1"
@@ -567,7 +559,6 @@ class DonorForm extends Component {
               Cancel
             </Button>
           </div>
-        </div>
       );
     }
   }
@@ -687,6 +678,44 @@ class DonorForm extends Component {
     });
   };
 
+
+  renderButtonBar(){
+    return (
+      <div> 
+        <div className="col-sm-12 align-right">
+        <Divider />
+        </div>
+
+        <Box
+          sx={{
+            width: "100%",
+            justifyContent: 'flex-end',
+          display: 'flex',
+          '& > *': {
+              m: 1,
+            },
+          button:{
+            m:1,
+            align:'right',
+            float:'right',
+          },
+          
+          }}
+        >
+          <ButtonGroup 
+            component={Box} 
+            display="block !important"
+            orientation="horizontal">
+
+            {this.renderButtons()}
+           
+          </ButtonGroup>
+        </Box>
+      </div>
+    );
+} 
+
+
   render() {
     return (
       <React.Fragment>
@@ -713,41 +742,41 @@ class DonorForm extends Component {
           </div>
         )}
         
-        <div className="row">
-         <div
-              className="alert alert-danger col-sm-9 offset-sm-2"
-              role="alert"
-            >
-              <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
-              Protected Health Information. This includes the{" "}
-              <span
-                style={{ cursor: "pointer" }}
-                className="text-primary"
-                onClick={this.showModal}
-              >
-                18 identifiers specified by HIPAA
-              </span>
-            </div>
+         <div className="alert alert-danger col-sm-10 offset-sm-1"  role="alert"  >
+            <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
+            Protected Health Information. This includes the{" "}
+            <span
+              style={{ cursor: "pointer" }}
+              className="text-primary"
+              onClick={this.showModal}>
+              18 identifiers specified by HIPAA
+            </span>
+          </div>
             
           {this.props.editingEntity && (
-            <React.Fragment>
-              <div className="col-sm-5 offset-sm-2 portal-label">
-                  HuBMAP ID: {this.props.editingEntity.hubmap_id}
-              </div>
-              <div className="col-sm-4 text-right portal-label">
-              Submission ID: {this.props.editingEntity.submission_id}
-              </div>
-                <div className="col-sm-5 offset-sm-2 portal-label">
-                  Entered by: {this.state.author}
-              </div>
-              <div className="col-sm-4 text-right portal-label">
-                  Entry Date: {tsToDate(this.props.editingEntity.created_timestamp)}
-              </div>
-              
-            </React.Fragment>
+
+
+          <React.Fragment>
+          <div className="row">
+            <div className="col-sm-5 offset-sm-1 portal-label">
+                HuBMAP ID: {this.props.editingEntity.hubmap_id}
+            </div>
+            <div className="col-sm-5 text-right portal-label">
+            Submission ID: {this.props.editingEntity.submission_id}
+            </div>
+              <div className="col-sm-5 offset-sm-1 portal-label">
+                Entered by: {this.state.author}
+            </div>
+            <div className="col-sm-5 text-right portal-label">
+                Entry Date: {tsToDate(this.props.editingEntity.created_timestamp)}
+            </div>
+            </div>
+          </React.Fragment>
+
+            
           )}
          
-          <div className="col-sm-12 form-border">
+         
             <form onSubmit={this.handleSubmit} className="expanded-form">
              
               <div className="text-danger">
@@ -994,21 +1023,29 @@ class DonorForm extends Component {
                     Image
                   </label>
                 */}
+                {(this.state.images.length > 0 ) && (this.props.editingEntity) && (
+                      <div className="m-1">
+                        <FontAwesomeIcon icon={faImages} /> Attached Image(s)
+                        </div>
+                      )}
                   <div>
+                    
                     {!this.state.readOnly && (
                       <div>
                        
                           <Button
                             type="button"
                             onClick={this.handleAddImage}
-                            variant="outlined"                            data-tip
+                            variant="outlined"                            
+                            data-tip
                             data-for="add_image_tooltip"
+                            sx={{ mr: 1 }}
                           >
                             <FontAwesomeIcon
                               className="inline-icon"
                               icon={faPaperclip}
                               title="Uploaded images (multiple allowed)."
-                            />
+                            /> 
                             Add an Image File
                           </Button>
                          <small id="emailHelp" className="form-text text-muted"> 
@@ -1027,11 +1064,7 @@ class DonorForm extends Component {
                             </ReactTooltip>
                       </div>
                     )}
-                     {(this.state.images.length > 0) && (
-                      <div>
-                        <FontAwesomeIcon icon={faImages} /> Attached Image(s)
-                        </div>
-                      )}
+                     
                     {this.state.images.map(image => (
                       <ImageUpload
                         key={image.id}
@@ -1060,7 +1093,11 @@ class DonorForm extends Component {
                   help.
                 </div>
               )}
-              {this.renderButtons()}
+
+            <div className="row">
+              {this.renderButtonBar()}
+            </div>
+
                {this.props.editingEntity && 
                 this.props.editingEntity.data_access_level === 'public' && (
 
@@ -1070,8 +1107,7 @@ class DonorForm extends Component {
                 </React.Fragment>
               )}
             </form>
-          </div>
-        </div>
+
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
         <GroupModal
           show={this.state.GroupSelectShow}
@@ -1080,8 +1116,7 @@ class DonorForm extends Component {
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}
         />
-        
-      </React.Fragment>
+        </React.Fragment>
     );
   }
 }

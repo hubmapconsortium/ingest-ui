@@ -117,7 +117,7 @@ class ImageUpload extends Component {
   render() {
     const { uploadPercentage } = this.state;
     return (
-      <div className="card">
+      <div className="card mt-4">
         <div className="card-body">
           <div className="row">
            {!this.props.readOnly && (
@@ -126,14 +126,16 @@ class ImageUpload extends Component {
             </div>
             )}
             {!this.props.readOnly && (
-              <div className="col-sm-2 offset-sm-7 text-right">
+              <div className="col   text-right">
                 <button
                   type="button"
                   className="btn btn-danger btn-sm"
                   onClick={() => this.props.onDelete(this.props.id)}
                   data-tip
                   data-for="remove_image_tooltip"
+                  style={{float: "right"}}
                 >
+                  
                   <FontAwesomeIcon icon={faTimes} size="1x" />
                 </button>
                  <ReactTooltip
@@ -166,6 +168,7 @@ class ImageUpload extends Component {
                       ref={this.image_file}
                       disabled={this.state.image_file_name !== "" &&
                                 this.state.image_file_name !== "Choose a file"}
+                                // @TODO Can we nix the choose a file text?
                     />
                     <label className="custom-file-label" htmlFor="metadata">
                       {this.state.image_file_name}

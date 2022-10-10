@@ -2331,7 +2331,10 @@ handleAddImage = () => {
               (
                 <div className="form-group">
                   <label
-                    htmlFor="location">
+                    htmlFor="location"
+                    sx={{
+                      display: "inline-block",
+                    }}>
                     Sample Location {" "}<span>
                       <FontAwesomeIcon
                         icon={faQuestionCircle}
@@ -2348,16 +2351,19 @@ handleAddImage = () => {
                         <p>
                           Provide formatted location data from <br />
                           CCF Location Registration Tool for <br />
-            this sample.
-          </p>
+                          this sample.
+                        </p>
                       </ReactTooltip>
                     </span>
                 </label>
-                  <div className="col-sm-4 text-left">
+                  <div className="">
                     <Button
                       onClick={this.handleAddRUILocation}
                       variant="contained"
                       className="btn btn-primary btn-block"
+                      sx={{
+                        display: "inline-block"
+                      }}
                     >
                       Register Location
                   </Button>
@@ -2489,7 +2495,7 @@ handleAddImage = () => {
                     !this.state.multiple_id &&
                     !this.state.rui_check && this.state.RUI_ACTIVE && (
                       <React.Fragment>
-                        <div className="col-sm-4 text-center">
+                        <div className="">
                           <Button
                             type="button"
                             onClick={this.handleAddRUILocation}

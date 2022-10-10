@@ -212,21 +212,25 @@ class bulkCreation extends Component {
 
 
 handleFileGrab = e => {
-  if (e.target.files && e.target.files.length > 0) {
+  var grabbedFile = e.target.files[0];
+  // console.debug("handleFileGrab",grabbedFile);
+  var newName = grabbedFile.name.replace(/ /g, '_')
+  var newFile =  new File([grabbedFile], newName);
+  // console.debug("newFile",newFile);
+  // console.debug(newFile.name, newFile.length);
+  if (newFile && newFile.name.length > 0) {
     this.setState({
-      tsvFile: e.target.files[0]
+      tsvFile: newFile
     }, () => {   
-      console.debug("onFileChange",this.state.tsvFile);
-      console.debug(this.state.tsvFile);
-      console.debug(this.state.tsvFile.name, this.state.tsvFile.size );
+      // console.debug("onFileChange",this.state.tsvFile);
+      // console.debug(this.state.tsvFile);
+      // console.debug(this.state.tsvFile.name, this.state.tsvFile.size );
       this.handleNext();
     });
   }else{
     console.debug("No Data??");
   }
-  
 };
-    
 
 handleUpload= () =>{
   this.setState({
@@ -234,23 +238,23 @@ handleUpload= () =>{
     uploadTimer:"00:00"
   });
   if(!this.state.group_uuid || this.state.group_uuid.length <=0){
-    console.debug("Using Default Group: ",this.state.groups[0].uuid);
+    // console.debug("Using Default Group: ",this.state.groups[0].uuid);
     this.setState({
       // Grab the first one on in the select if they havent manually changed it
       group_uuid:this.state.groups[0].uuid,
     });
   }
   if( localStorage.getItem("info") !== null ){
-    console.debug("this.state.tsvFile", this.state.tsvFile);
+    // console.debug("this.state.tsvFile", this.state.tsvFile);
     const formData = new FormData()
     formData.append("file", this.state.tsvFile)
-    console.debug("Appended Form Data: ",formData, this.state.tsvFile);
+    // console.debug("Appended Form Data: ",formData, this.state.tsvFile);
     ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
 
-        console.debug("RESP", resp);
+        // console.debug("RESP", resp);
         if(resp.results && resp.results.temp_id){
-          console.debug("Temp ID: ",resp.results.temp_id);
+          // console.debug("Temp ID: ",resp.results.temp_id);
         }
         if (resp.status === 201) {
           this.setState({
@@ -401,7 +405,7 @@ handleRegister = () =>{
 
 
 parseUpload = () =>{
-  console.debug("parseUpload FILE", this.state.tsvFile);
+  // console.debug("parseUpload FILE", this.state.tsvFile);
   var config = {
     header: true,
     skipEmptyLines: true,
@@ -490,7 +494,7 @@ renderFileGrabber = () =>{
       <div className="text-center"> 
       <label>
         <input
-          accept=".tsv"
+          accept=".tsv, .csv"
           type="file"
           id="FileUploader"
           name="file"

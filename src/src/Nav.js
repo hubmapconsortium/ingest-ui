@@ -6,7 +6,7 @@ import { useNavigate} from "react-router-dom";
 
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -125,12 +125,12 @@ export const Navigation = (props) => {
                 <Button 
                   // className="ml-2"
                   id="IndividualButton"
+                  endIcon={<ArrowDropDownIcon />}
                   aria-controls={open_I ? 'IndividualMenu' : undefined}
                   aria-haspopup="true"
                   aria-expanded={open_I ? 'true' : undefined}
                   onClick={handleClick_I} >
-                    Individual
-                </Button>
+                    Individual</Button>
                   <Menu
                     id="IndividualMenu"
                     anchorEl={anchorEl_I}
@@ -164,12 +164,12 @@ export const Navigation = (props) => {
 
                   <Button 
                   id="BulkButton"
+                  endIcon={<ArrowDropDownIcon />}
                   aria-controls={open_B ? 'BulkMenu' : undefined}
                   aria-haspopup="true"
                   aria-expanded={open_B ? 'true' : undefined}
                   onClick={handleClick_B} >
-                    Bulk
-                </Button>
+                    Bulk</Button>
                   <Menu
                     id="BulkMenu"
                     anchorEl={anchorEl_B}
