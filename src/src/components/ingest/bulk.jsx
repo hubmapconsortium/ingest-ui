@@ -128,19 +128,20 @@ class bulkCreation extends Component {
   handleErrorCompiling = (data) =>{
     var errors = [];
     // console.debug("handleErrorCompiling",data, data.length);
-
+    console.debug("handleErrorCompiling",data);
     console.debug("LEN",data.err.response.data.data)
 
     //  If the error regards the first / fundamental structure of file, 
     //  it'll come back like this
     var coreError = data.err.response.data.data;
-
+    console.debug("coreError", coreError);
 
     // if(data.value && data.value.length > 0){
     if(coreError){
       
       
       for (const [key, value] of Object.entries(coreError)) {
+        console.debug("key", key, "value", value);
         // if(){
 
         // }
@@ -149,24 +150,22 @@ class bulkCreation extends Component {
         // console.debug("parsedVal",parsedVal,value);
         // console.debug("key",key);
         var errRow = {};
-        var cleanString = parsedVal.replace("Row Number: ", "");
-        // console.debug("cleanString",cleanString);
-        // console.debug(parsedVal.replace("Row Number: ", ""));
-        
-        var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
-        // var cleanErr =value;
-        // var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
-        // var cleanErr = cleanString.substring(cleanString.indexOf('.') + 1);
-        // console.debug(cleanErr);
-        // console.debug("cleanNum",cleanNum);
-        errRow.row = cleanNum;
-        // Everything before first space;
-        var errStr = parsedVal.slice(parsedVal.indexOf('.') + 1);
-        // var errStr = parsedVal.split(".").pop();
-        errRow.message = errStr;
 
-      console.debug("errRow",errRow);
-        errors.push(errRow);
+        if(parsedVal.includes("Row Number")){
+          var cleanString = parsedVal.replace("Row Number: ", "");
+          var cleanNum = cleanString.substr(0, cleanString.indexOf('.')); 
+          errRow.row = cleanNum;
+          var errStr = parsedVal.slice(parsedVal.indexOf('.') + 1);
+          errRow.message = errStr;
+          console.debug("errRow",errRow);
+          errors.push(errRow);
+        }else{
+          errRow.row = key;
+          errRow.message = value.error;
+          console.debug("value",value.error);
+          console.debug("errRow",errRow);
+          errors.push(errRow);
+        }
         // var cleanOth = cleanString.substr(2, cleanString.indexOf('.')); 
         // console.debug("errRow",errRow);
       }
@@ -198,9 +197,12 @@ class bulkCreation extends Component {
   };
 
   handleReset = () => {
-    this.setState({
-      activeStep: 0
-    })
+    window.location.reload();
+    // this.setState({
+    //   error_message:null,
+    //   success_message:null,
+    //   activeStep: 0
+    // })
   };
 
 
@@ -266,7 +268,7 @@ handleUpload= () =>{
           this.parseUpload(); // Table of file contents builds here
           this.handleNext();
         } else {
-          console.debug("ERROR", resp);
+          console.debug("handleUpload ERROR", resp);
           // Let's not Hijack the Parsed Error content
           // using the Parsed naming for what papaparse handles, so,
           //  Process Error maybe?
@@ -277,7 +279,7 @@ handleUpload= () =>{
           }else{
             parsedError=resp;
           }
-          console.debug("parsedError",parsedError);
+          console.debug("[[[[[[[[[[ parsedError",parsedError);
           this.handleErrorCompiling(parsedError); // Error Array's set in that not here
           this.setState({ 
             error_status: true, 
@@ -293,6 +295,7 @@ handleUpload= () =>{
         } 
       })
       .catch((error) => {
+        console.debug("handleUpload ERROR", error);
         this.setState({ 
           submit_error:error,
           error_status:true,
@@ -343,45 +346,53 @@ handleRegister = () =>{
             let respInfo = _.map(respData, (value, prop) => {
               return { "prop": prop, "value": value };
             });
+            console.debug("===== respInfo",respInfo);
             if( respInfo[1] && respInfo[1].value['error']){
-             console.debug("EERRRS DETECTED");
-             this.setState({ 
+            console.debug("EERRRS DETECTED");
+            this.setState({ 
               submit_error:"error",
               error_status:true,
+              success_message:null,
               error_message_detail: "Errors were found. Please review &amp; and try again",
               error_message:"Error" });
             console.debug("SUBMIT error", "error")
             this.setState({
               loading:false,
             });
-          }else{
-            var respToArray = Object.values(respData)
-            this.setState({
-              success_status:true,
-              alertStatus:"success",
-              success_message:this.props.bulkType+" Registered Successfully",
-              loading:false,
-              uploadedBulkFile:respInfo,
-              uploadedSources:respToArray,
-              complete: true,
-              registeredStatus:true
-              }, () => {   
-                // this.handleNext();
-                // console.debug("uploadedBulkFile",this.state.uploadedBulkFile);
-              });
-            }
+            }else{
+              console.debug("No RESP.results Detected");
+              var respToArray = Object.values(respData)
+              this.setState({
+                success_status:true,
+                alertStatus:"success",
+                success_message:this.props.bulkType+" Registered Successfully",
+                loading:false,
+                uploadedBulkFile:respInfo,
+                uploadedSources:respToArray,
+                complete: true,
+                registeredStatus:true
+                }, () => {   
+                  // this.handleNext();
+                  // console.debug("uploadedBulkFile",this.state.uploadedBulkFile);
+                });
+              }
            
           }
 
           
         } else {
-          console.debug("ERROR", resp);
+          // console.debug("ERROR", resp.status, resp, resp.err, resp.err.Error);
+          var respError = resp.err.response.data
+          console.debug("=====ERROR=====, respError", respError, respError.status, respError.data);
+          this.parseRegErrorFrame(resp);
           this.setState({ 
             error_status: true, 
             submit_error: true, 
             submitting: false, 
             loading:false,
-            response_status:resp});
+            error_message_detail: parseErrorMessage(respError.status),
+            success_message:null,
+            response_status:resp.Error});
           console.debug("DEBUG",this.state.error_message_detail);
           // this.setState({
           // }, () => {   
@@ -390,17 +401,61 @@ handleRegister = () =>{
         } 
       })
       .catch((error) => {
+        console.debug("SUBMIT error", error);
+        console.debug("======= response ", error.response);
         this.setState({ 
           submit_error:error,
           error_status:true,
           error_message_detail: parseErrorMessage(error),
-          error_message:"Error" });
-        console.debug("SUBMIT error", error)
-        this.setState({
           loading:false,
-        });
+          error_message:"Error" });
       });
   }
+}
+
+// Error responses are packaged differently than validation
+// parseUploadError = (errResp) => { 
+//   console.debug("parseUploadError",errResp);
+//   var errArray = errResp.err.response.data.data;
+// }
+
+
+parseRegErrorFrame = (errResp) => {
+  var parsedError;
+  
+  // console.debug("parseErrorFrame",errResp, errResp.err, errResp.err.response.data);
+  if(errResp.results && errResp.results.data && errResp.results.data.data){
+    // console.debug("NESTED from Upload");
+    parsedError = parseErrorMessage(errResp.results.data.data);
+  }else if(errResp.results && errResp.results.data){
+    // console.debug("NONNESTED from Validate");
+    parsedError = parseErrorMessage(errResp.results.data);
+  }else{
+    // console.debug("ODDFORMAT",errResp);
+    var regErrorSet = errResp.err.response.data
+    var errRows = regErrorSet.data;
+    var errMessage = regErrorSet.status;
+    console.debug("errRows",errRows, "errMessage",errMessage);
+    parsedError=errResp;
+  }
+  // console.debug("parsedError",parsedError);
+  // console.debug("++++++++",parsedError.err, parsedError.err.response, parsedError.err.response.data, parsedError.err.response.data.data);
+
+  this.handleErrorCompiling(parsedError); // Error Array's set in that not here
+  this.setState({ 
+    error_status: true, 
+    submit_error: true, 
+    error_message:errMessage,
+    success_message:null,
+    submitting: false,
+    response_status:errResp.Error
+  });
+  console.debug("DEBUG",this.state.error_message_detail);
+  this.setState({
+    loading:false,
+  }, () => {   
+    // this.handleNext();
+  });
 }
 
 
@@ -560,18 +615,36 @@ renderFileGrabber = () =>{
           )}
         {/* Err on its own Stepper pane?  */}
           {this.state.error_status === true&&(
-            <div className="text-left">
 
-              There were some problems validating your document. Please review &amp; resubmit.
-              <Button 
-                onClick={() => this.handleBack()}
-                className="btn-lg btn-block m-0  align-self-end"
-                style={{ padding: "12px" }} 
-                variant="contained" 
-                color="primary" >
-                Back
-              </Button>
+          <div className="mx-2">
+                        
+            <Typography 
+            variant="h6"
+            color="error">
+              {this.state.error_message_detail}
+            </Typography>
+
+            <Typography 
+              variant="caption" 
+              color="error">
+              There were some problems Registering your data. <br /> 
+              Please review &amp; resubmit.
+              
+            </Typography> 
+
+            <div className="row">
+            <Button 
+              onClick={() => this.handleReset()}
+              className="btn-lg btn-block m-0"
+              style={{ padding: "12px", float:"right" }} 
+              variant="contained" 
+              color="error" >
+              Restart
+            </Button>
             </div>
+
+          </div>
+
           )}
     
           
@@ -586,23 +659,20 @@ renderFileGrabber = () =>{
     return(
       <div>
 
-        <div className="d-flex flex-row">
 
-            {this.state.error_status && !this.state.loading &&(
-              <div>
-                {this.renderInvalidTable()}
-              </div>
-            )}
+        <div className="row">
+        {this.state.error_status && !this.state.loading &&(
+          <div>
+            {this.renderInvalidTable()}
+          </div>
+        )}
+        {!this.state.error_status && (
+          <div>
+            {this.renderPreviewTable()}
+          </div>
+        )}
 
-            {!this.state.error_status &&(
-              <div className="text-left">
-                  <h4 className="">{this.state.tsvFile.name} <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small></h4>
-              </div>
-            )}
-        </div>
-
-        <div className="d-flex flex-row">
-          {this.renderPreviewTable()}
+          
         </div>
         <div className="d-flex flex-row align-content-end align-items-end flex-row-reverse mt-2">
 
@@ -632,16 +702,48 @@ renderFileGrabber = () =>{
               </div>
             )}
 
-          {/* Text */}
-          {!this.state.complete && !this.state.loading &&(
+          {/* Errors */}
+
+          {this.state.error_message &&(
+            <div>
+              
+              <Typography 
+              variant="h6"
+              color="error">
+                {this.state.error_message_detail}
+              </Typography>
+
+              <Typography 
+                variant="caption" 
+                color="error">
+                There were some problems Registering your data. <br /> 
+                Please review &amp; resubmit.
+                
+              </Typography> 
+
+             
+              <Button 
+                onClick={() => this.handleReset()}
+                className="btn-lg btn-block m-0"
+                style={{ padding: "12px", float:"right" }} 
+                variant="contained" 
+                color="error" >
+                Restart
+              </Button>
+              
+            </div>
+          )}
+
+          {/* Successful */}
+          {!this.state.complete && !this.state.loading && !this.state.error_status &&(
             <Typography className="text-right p-2" >File successfully Uploaded </Typography>  
           )}
           {/* Processing */}
-          {!this.state.complete && this.state.loading === true &&(
+          {!this.state.complete && this.state.loading === true && !this.state.error_status &&(
             <Typography className="text-right p-2" > Process may take a few minutes. Do not leave or refresh this page. </Typography>
             )}
           {/* Complete */}
-          {this.state.complete === true && !this.state.loading &&(
+          {this.state.complete === true && !this.state.loading && !this.state.error_status &&(
             <Typography className="text-right p-2">Data Submitted Successfully!</Typography>
           )}
 
@@ -655,7 +757,6 @@ renderFileGrabber = () =>{
   renderTableBody = () =>{
     console.debug("this.state.uploadedSources",this.state.uploadedSources);
     if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
-      console.debug("this.state.uploadedSources",this.state.uploadedSources);
       console.debug("this.state.uploadedSources",this.state.uploadedSources);
       return(
         <TableBody>
