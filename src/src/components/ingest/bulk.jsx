@@ -197,9 +197,12 @@ class bulkCreation extends Component {
   };
 
   handleReset = () => {
-    this.setState({
-      activeStep: 0
-    })
+    window.location.reload();
+    // this.setState({
+    //   error_message:null,
+    //   success_message:null,
+    //   activeStep: 0
+    // })
   };
 
 
@@ -265,32 +268,30 @@ handleUpload= () =>{
           this.parseUpload(); // Table of file contents builds here
           this.handleNext();
         } else {
-          // There should be no more errors in 201s
-          // everything else should hit .catch
-          // console.debug("handleUpload ERROR", resp);
-          // // Let's not Hijack the Parsed Error content
-          // // using the Parsed naming for what papaparse handles, so,
-          // //  Process Error maybe?
-          // // and bundle up the errors here in their own data table
-          // var parsedError;
-          // if(resp.results && resp.results.data){
-          //   parsedError = parseErrorMessage(resp.results.data);
-          // }else{
-          //   parsedError=resp;
-          // }
-          // console.debug("[[[[[[[[[[ parsedError",parsedError);
-          // this.handleErrorCompiling(parsedError); // Error Array's set in that not here
-          // this.setState({ 
-          //   error_status: true, 
-          //   submit_error: true, 
-          //   submitting: false
-          // });
-          // console.debug("DEBUG",this.state.error_message_detail);
-          // this.setState({
-          //   loading:false,
-          // }, () => {   
-          //   // this.handleNext();
-          // });
+          console.debug("handleUpload ERROR", resp);
+          // Let's not Hijack the Parsed Error content
+          // using the Parsed naming for what papaparse handles, so,
+          //  Process Error maybe?
+          // and bundle up the errors here in their own data table
+          var parsedError;
+          if(resp.results && resp.results.data){
+            parsedError = parseErrorMessage(resp.results.data);
+          }else{
+            parsedError=resp;
+          }
+          console.debug("[[[[[[[[[[ parsedError",parsedError);
+          this.handleErrorCompiling(parsedError); // Error Array's set in that not here
+          this.setState({ 
+            error_status: true, 
+            submit_error: true, 
+            submitting: false
+          });
+          console.debug("DEBUG",this.state.error_message_detail);
+          this.setState({
+            loading:false,
+          }, () => {   
+            // this.handleNext();
+          });
         } 
       })
       .catch((error) => {
@@ -614,18 +615,36 @@ renderFileGrabber = () =>{
           )}
         {/* Err on its own Stepper pane?  */}
           {this.state.error_status === true&&(
-            <div className="text-left">
 
-              There were some problems validating your document. Please review &amp; resubmit.
-              <Button 
-                onClick={() => this.handleBack()}
-                className="btn-lg btn-block m-0  align-self-end"
-                style={{ padding: "12px" }} 
-                variant="contained" 
-                color="primary" >
-                Back
-              </Button>
+          <div className="mx-2">
+                        
+            <Typography 
+            variant="h6"
+            color="error">
+              {this.state.error_message_detail}
+            </Typography>
+
+            <Typography 
+              variant="caption" 
+              color="error">
+              There were some problems Registering your data. <br /> 
+              Please review &amp; resubmit.
+              
+            </Typography> 
+
+            <div className="row">
+            <Button 
+              onClick={() => this.handleReset()}
+              className="btn-lg btn-block m-0"
+              style={{ padding: "12px", float:"right" }} 
+              variant="contained" 
+              color="error" >
+              Restart
+            </Button>
             </div>
+
+          </div>
+
           )}
     
           
