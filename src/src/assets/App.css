@@ -557,8 +557,8 @@ ul.no-bullets {
 }
 
 ul {
-  height: 200px;
-  width: 1045px;
+  /* height: 200px;
+  width: 1045px; */
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
