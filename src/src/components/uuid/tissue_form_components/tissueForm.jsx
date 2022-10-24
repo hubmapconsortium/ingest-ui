@@ -21,7 +21,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {
   validateRequired,
-  validateProtocolIODOI
+  validateProtocolIODOI,
+  validateSingleProtocolIODOI
 //  validateFileType
 } from "../../../utils/validators";
 import { tsToDate } from "../../../utils/string_helper";
@@ -639,12 +640,18 @@ class TissueForm extends Component {
               protocol_url: "required"
             }
           }));
-        
         } else if (!validateProtocolIODOI(value)) {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
               protocol_url: "Please enter a valid protocols.io URL"
+            }
+          }));
+        } else if (!validateSingleProtocolIODOI(value)) {
+          this.setState(prevState => ({
+            formErrors: {
+              ...prevState.formErrors,
+              protocol_url: "Please enter only one  valid protocols.io URL"
             }
           }));
         } else {

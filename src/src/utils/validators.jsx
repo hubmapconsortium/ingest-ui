@@ -33,6 +33,21 @@ export function validateProtocolIODOI(value) {
   return patt1.test(value) || patt2.test(value);
 }
 
+export function validateSingleProtocolIODOI(value) {
+  // Only one, let's check for dupe domains & commas
+  if (value === undefined || value === "") return true;
+  if(value.includes(",")) return false;
+
+  let checkVal = "doi.org"
+  let count = value.split(checkVal).length - 1;
+  console.log("validateSingleProtocolIODOI", count); 
+  if(count>1){
+    return false;
+  }else{
+    return true;
+  }
+}
+
 export function validateFileType(file_type, allow_types) {
   if (!file_type) return true;
   if (allow_types.includes(file_type)) return true;
