@@ -24,6 +24,7 @@ import { tsToDate } from "../../../utils/string_helper";
 import {
   validateRequired,
   validateProtocolIODOI,
+  validateSingleProtocolIODOI
 //  validateFileType
 } from "../../../utils/validators";
 import ReactTooltip from "react-tooltip";
@@ -243,6 +244,13 @@ class DonorForm extends Component {
             formErrors: {
               ...prevState.formErrors,
               protocol_url: "Please enter a valid protocols.io DOI"
+            }
+          }));
+        } else if (!validateSingleProtocolIODOI(value)) {
+          this.setState(prevState => ({
+            formErrors: {
+              ...prevState.formErrors,
+              protocol_url: "Please enter only one valid protocols.io DOI"
             }
           }));
         } else {
