@@ -585,8 +585,20 @@ class TissueForm extends Component {
     const { name, value } = e.target;
   
     this.setDirty(true);
-
+    console.debug("name, value", name, value);
     switch (name) {
+      // case "lab":
+      //   this.setState({ lab: value });
+      //   if (validateRequired(value)) {
+      //     this.setState(prevState => ({
+      //       formErrors: { ...prevState.formErrors, lab: "required" }
+      //     }));
+      //   } else {
+      //     this.setState(prevState => ({
+      //       formErrors: { ...prevState.formErrors, lab: "" }
+      //     }));
+      //   }
+      //   break;
       case "lab":
         this.setState({ lab: value });
         if (validateRequired(value)) {
@@ -633,7 +645,9 @@ class TissueForm extends Component {
         break;
       case "protocol_url":
         this.setState({ protocol_url: value });
+        console.debug("protocol_url",this.state.protocol_url,validateSingleProtocolIODOI(this.state.protocol_url));
         if (!validateRequired(value)) {
+          console.debug(" ======= validateRequired");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -641,6 +655,7 @@ class TissueForm extends Component {
             }
           }));
         } else if (!validateProtocolIODOI(value)) {
+          console.debug(" ======= validateProtocolIODOI");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -648,13 +663,15 @@ class TissueForm extends Component {
             }
           }));
         } else if (!validateSingleProtocolIODOI(value)) {
+          console.debug(" ======= validateSingleProtocolIODOI");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol_url: "Please enter only one  valid protocols.io URL"
+              protocol_url: "Please enter only one valid protocols.io URL"
             }
           }));
         } else {
+          console.debug("Clearing ProURL Error?");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -1098,7 +1115,7 @@ handleAddImage = () => {
   };
 
   isSpecialOrganType = otype => {
-    console.debug("special org type", otype);
+    // console.debug("special org type", otype);
     return RUI_ORGAN_TYPES.includes(otype);
   }
 
@@ -1508,30 +1525,26 @@ handleAddImage = () => {
         }));
       }
 
-     if (!validateProtocolIODOI(this.state.protocol_url)) {
-              this.setState(prevState => ({
-                formErrors: {
-                  ...prevState.formErrors,
-                  protocol_url_DOI: "Please enter a valid protocols.io DOI"
-                }
-              }));
-              isValid = false;
-        } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, protocol_url: "" }
-          }));
-        }
 
       if (!validateRequired(this.state.protocol_url)) {
           this.setState(prevState => ({
             formErrors: { ...prevState.formErrors, protocol_url: "required" }
           }));
           isValid = false;
-        } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, protocol_url: "" }
-          }));
-        }
+        } else if (!validateProtocolIODOI(this.state.protocol_url) ||
+        !validateSingleProtocolIODOI(this.state.protocol_url)) {
+            this.setState(prevState => ({
+              formErrors: {
+                ...prevState.formErrors,
+                protocol_url_DOI: "Please enter one valid protocols.io DOI"
+              }
+            }));
+            isValid = false;
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, protocol_url: "" }
+        }));
+      }
 
       // if (!validateRequired(this.state.protocol_url)) {
       //   this.setState(prevState => ({
