@@ -608,7 +608,13 @@ class SearchComponent extends Component {
       // Clear keywords if we dont got em
       url.searchParams.delete('keywords');
     }
-
+    if (group && group !=="All Components") {
+      params["group"] = group;
+      url.searchParams.set('group',group);
+    }
+    if (group && group ==="All Components") {
+      url.searchParams.delete('group');
+    }
 
     console.debug('results_total  ', this.state.results_total);
     console.debug('From Page ', this.state.page);

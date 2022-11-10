@@ -583,30 +583,76 @@ class DonorForm extends Component {
         formErrors: { ...prevState.formErrors, identifying_name: "" }
       }));
     }
-    if (!validateProtocolIODOI(this.state.protocol_url)) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_url: "Please enter a valid protocols.io DOI"
-            }
-          }));
-          isValid = false;
+
+
+    // if (!validateProtocolIODOI(this.state.protocol_url)) {
+      //       this.setState(prevState => ({
+        //         formErrors: {
+    //           ...prevState.formErrors,
+    //           protocol_url: "Please enter a valid protocols.io DOI"
+    //         }
+    //       }));
+    //       isValid = false;
+    //     } else {
+    //       this.setState(prevState => ({
+    //         formErrors: { ...prevState.formErrors, protocol_url: "" }
+    //       }));
+    //     }
+    
+    // if (!validateRequired(this.state.protocol_url)) {
+      //     this.setState(prevState => ({
+    //       formErrors: { ...prevState.formErrors, protocol_url: "required" }
+    //     }));
+    //     isValid = false;
+    //   } else {
+    //     this.setState(prevState => ({
+    //       formErrors: { ...prevState.formErrors, protocol_url: "" }
+    //     }));
+    //   }
+    
+    
+    
+    console.debug("protocol_url",this.state.protocol_url,validateProtocolIODOI(this.state.protocol_url));
+    if (!validateRequired(this.state.protocol_url)) {
+      console.debug(" ======= validateRequired");
+      isValid = false;
+      this.setState(prevState => ({
+        formErrors: {
+          ...prevState.formErrors,
+          protocol_url: "required"
+        }
+      }));
+    } else if (!validateProtocolIODOI(this.state.protocol_url)) {
+      console.debug(" ======= validateProtocolIODOI");
+      isValid = false;
+      this.setState(prevState => ({
+        formErrors: {
+          ...prevState.formErrors,
+          protocol_url: "Please enter a valid protocols.io URL"
+        }
+      }));
+    } else if (!validateSingleProtocolIODOI(this.state.protocol_url)) {
+      console.debug(" ======= validateSingleProtocolIODOI");
+      isValid = false;
+      this.setState(prevState => ({
+        formErrors: {
+          ...prevState.formErrors,
+          protocol_url: "Please enter only one valid protocols.io URL"
+        }
+      }));
     } else {
       this.setState(prevState => ({
-        formErrors: { ...prevState.formErrors, protocol_url: "" }
+        formErrors: {
+          ...prevState.formErrors,
+          protocol_url: ""
+        }
       }));
     }
 
-  if (!validateRequired(this.state.protocol_url)) {
-      this.setState(prevState => ({
-        formErrors: { ...prevState.formErrors, protocol_url: "required" }
-      }));
-      isValid = false;
-    } else {
-      this.setState(prevState => ({
-        formErrors: { ...prevState.formErrors, protocol_url: "" }
-      }));
-    }
+
+
+
+
     // if (!this.props.editingEntity) {
 
     this.state.images.forEach((image, index) => {
