@@ -615,6 +615,7 @@ class DonorForm extends Component {
     console.debug("protocol_url",this.state.protocol_url,validateProtocolIODOI(this.state.protocol_url));
     if (!validateRequired(this.state.protocol_url)) {
       console.debug(" ======= validateRequired");
+      isValid = false;
       this.setState(prevState => ({
         formErrors: {
           ...prevState.formErrors,
@@ -623,6 +624,7 @@ class DonorForm extends Component {
       }));
     } else if (!validateProtocolIODOI(this.state.protocol_url)) {
       console.debug(" ======= validateProtocolIODOI");
+      isValid = false;
       this.setState(prevState => ({
         formErrors: {
           ...prevState.formErrors,
@@ -631,6 +633,7 @@ class DonorForm extends Component {
       }));
     } else if (!validateSingleProtocolIODOI(this.state.protocol_url)) {
       console.debug(" ======= validateSingleProtocolIODOI");
+      isValid = false;
       this.setState(prevState => ({
         formErrors: {
           ...prevState.formErrors,
