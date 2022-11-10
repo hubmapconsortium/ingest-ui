@@ -54,6 +54,7 @@ export function App (props){
   var [timerStatus, setTimerStatus] = useState(true);
   var [isLoading, setIsLoading] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
+  var [userGroups, setUserGroups] = useState({});
   let navigate = useNavigate();
   // const { sampleType, keywords } = useParams();
 
@@ -83,8 +84,10 @@ export function App (props){
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
         console.debug("ingest_api_users_groups", results);
+
       if (results && results.status === 200) { 
-        console.debug("LocalStorageAuth", results);
+        // console.debug("LocalStorageAuth", results);
+        setUserGroups(results.results);
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
         setAuthStatus(true);
         setTimerStatus(false);
@@ -198,8 +201,7 @@ export function App (props){
   }
 
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
-
- const { search } = useLocation();
+  const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const queryType = queryParams.get('sampleType');
   const queryKeyword = queryParams.get('keywords');
@@ -215,6 +217,7 @@ export function App (props){
         login={authStatus} 
         logout={Logout}
         app_info={ app_info_storage}
+        userGroups={userGroups}
         // uploadsDialogRender={uploadsDialogRender}
         onCreatedReditect={""}
       />       
