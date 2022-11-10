@@ -604,6 +604,9 @@ class SearchComponent extends Component {
     if (keywords) {
       params["keywords"] = keywords;
       url.searchParams.set('keywords',keywords);
+    }else{
+      // Clear keywords if we dont got em
+      url.searchParams.delete('keywords');
     }
     if (group && group !=="All Components") {
       params["group"] = group;
