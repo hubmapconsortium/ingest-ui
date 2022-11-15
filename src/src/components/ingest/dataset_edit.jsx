@@ -289,7 +289,7 @@ class DatasetEdit extends Component {
           });
           axios
             .get(
-              `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingDataset.uuid}`,
+              `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingDataset.uuid}/globus-url`,
               config
             )
             .then((res) => {
@@ -1163,7 +1163,7 @@ class DatasetEdit extends Component {
                       });
                      axios
                      .get(
-                      `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${response.results.uuid}`,
+                      `${process.env.REACT_APP_ENTITY_API_URL}/entities/${response.results.uuid}/globus-url`,
                       config
                     )
                     .then((res) => {

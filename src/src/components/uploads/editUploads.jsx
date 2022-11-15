@@ -188,7 +188,7 @@ class EditUploads extends Component{
 
         axios
           .get(
-            `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${this.props.editingUpload.uuid}`,
+            `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingUpload.uuid}/globus-url`,
             config
           )
           .then((res) => {
