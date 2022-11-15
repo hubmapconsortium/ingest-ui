@@ -149,7 +149,7 @@ export const Navigation = (props) => {
               />
             </a>
 
-              {props.login &&  userDataGroups[0] &&(
+              {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
                 <div className="d-inline">                
                 <span className="menu-bar-static-label mr-4">REGISTER NEW:</span>
                 
