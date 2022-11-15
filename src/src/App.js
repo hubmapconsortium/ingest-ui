@@ -24,6 +24,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
 import {search_api_get_assay_list} from "./service/search_api";
+import {DataProviders} from "./utils/userInfo";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -55,6 +56,7 @@ export function App (props){
   var [isLoading, setIsLoading] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
   var [userGroups, setUserGroups] = useState({});
+  var [userDataGroups, setUserDataGroups] = useState({});
   let navigate = useNavigate();
   // const { sampleType, keywords } = useParams();
 
@@ -83,11 +85,13 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results);
+        console.debug("ingest_api_users_groups", results.results.data);
 
       if (results && results.status === 200) { 
         // console.debug("LocalStorageAuth", results);
         setUserGroups(results.results);
+        var dataGroups = DataProviders(userGroups);
+        setUserDataGroups(results.results);
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
         setAuthStatus(true);
         setTimerStatus(false);
@@ -218,6 +222,7 @@ export function App (props){
         logout={Logout}
         app_info={ app_info_storage}
         userGroups={userGroups}
+        userDataGroups={userDataGroups}
         // uploadsDialogRender={uploadsDialogRender}
         onCreatedReditect={""}
       />       
