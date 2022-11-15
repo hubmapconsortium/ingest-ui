@@ -14,11 +14,14 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import UploadsForm from "./components/uploads/createUploads";
+import {DataProviders} from "./utils/userInfo";
 
 
 
 export const Navigation = (props) => {
-  const [userInfo, setUserInfo] = React.useState({email:""});
+  const [userInfo, setUserInfo] = React.useState();
+  const [userGroups, setUserGroups] = React.useState();
+  const [userDataGroups, setUserDataGroups] = React.useState([]);
   // const [authStatus, setAuthStatus] = React.useState(false);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
@@ -34,6 +37,35 @@ export const Navigation = (props) => {
   //console.debug("location", location);
     // setAuthStatus(props.login)
     setUserInfo(props.app_info);
+    setUserGroups(props.userGroups);
+    // console.debug("userInfo", userInfo);
+    setUserDataGroups([props.userDataGroups]);
+    // console.debug("===== props.userGroups",props.userGroups);
+    // @TODO: Consider moving all the User & User Group info into its own utils, 
+    //mdn Array.reduce;
+
+
+    
+    console.debug("userDataGroups", props.userDataGroups, props.userDataGroups.length);
+    // if(userGroups && userGroups.length > 0){
+    //   const dataGroups = DataProviders(userGroups);
+    //   console.log(dataGroups, userDataGroups, userDataGroups.length);
+    // }
+
+    
+
+    // props.userGroups.reduce((acc, group) => {
+    //   console.debug("group", group);
+    //   console.debug("acc", acc);
+    //   if(group.data_provider === "true"){
+    //     // setUserGroups(item);
+    //     console.debug("group", group);
+    //   }
+    //   // return acc;
+    //   console.debug("acc", acc);
+    // });
+
+
     if(location.pathname === "/new/data"){
     //console.debug("Setting uploadsDialog to true");
       setUploadsDialog(true);
@@ -102,6 +134,8 @@ export const Navigation = (props) => {
       </Dialog>
       <header id="header" className="navbar navbar-light">
         <nav className="container menu-bar" id="navMenu">
+
+        
           <div id="MenuLeft">
             <a className="navbar-brand" href="/">
               <img
@@ -114,8 +148,8 @@ export const Navigation = (props) => {
                 alt="HuBMAP logo"
               />
             </a>
-      
-              {props.login && (
+
+              {props.login &&  userDataGroups[0] &&(
                 <div className="d-inline">                
                 <span className="menu-bar-static-label mr-4">REGISTER NEW:</span>
                 
@@ -197,7 +231,8 @@ export const Navigation = (props) => {
 
                 </div>
               )}
-            </div>
+          </div>
+        
         <div id="MenuRight">
           {(userInfo) && userInfo.email && (
             <div className="float-right">
