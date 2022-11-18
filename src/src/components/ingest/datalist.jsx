@@ -292,7 +292,7 @@ handleChangePage = (event, newPage) => {
 
     axios
       .get(
-        `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${dataset_uuid}`,
+        `${process.env.REACT_APP_ENTITY_API_URL}/entities/${dataset_uuid}/globus-url`,
         config
       )
       .then((res) => {
