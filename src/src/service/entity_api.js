@@ -189,3 +189,21 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
         return {status: err.response.status, results: err.response.data}
       });
 };
+
+/*
+ * get Globus URL
+ * 
+ * return:  { status, results}
+ */
+export function entity_api_get_globus_url(uuid) { 
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url`;
+  return axios
+    .get(url)
+      .then((res) => {
+        console.debug("entity_api_get_globus_url", res);
+        return {status: res.status, results: res.data}
+      })
+      .catch((err) => {
+        return err;
+      });
+};

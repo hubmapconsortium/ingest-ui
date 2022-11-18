@@ -31,7 +31,8 @@ import { ingest_api_get_globus_url,
   ingest_api_reorganize_upload,
   ingest_api_all_user_groups } from '../../service/ingest_api';
 import {
-    entity_api_update_entity
+    entity_api_update_entity,
+    entity_api_get_globus_url
 } from '../../service/entity_api';
 import { DATA_ADMIN, DATA_CURATOR } from '../../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
@@ -192,6 +193,7 @@ class EditUploads extends Component{
             config
           )
           .then((res) => {
+            console.debug(res);
             this.setState({
               globus_path: res.data,
             });
