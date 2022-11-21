@@ -337,7 +337,8 @@ export function ingest_api_get_globus_url(uuid, auth) {
 
     return axios
       .get(
-        `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${uuid}`,
+        `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url/`,
+        // `${process.env.REACT_APP_ENTITY_API_URL}/entities/dataset/globus-url/${uuid}`,
         config
       )
       .then((res) => {
