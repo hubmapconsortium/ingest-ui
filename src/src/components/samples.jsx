@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import TissueFormLegacy from "./uuid/tissue_form_components/tissueForm";
+import {useNavigate} from "react-router-dom";
+
 // import {useNavigate} from "react-router-dom";
 
 
@@ -13,7 +15,7 @@ export const RenderSample = (props) => {
   // let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
   const { uuid } = useParams();
-  // console.debug("uuid,", uuid);
+  var navigate = useNavigate();
   var [entity_data, setEntity] = useState(null);
   var [isLoading, setLoading] = useState(true);
   var [errorHandler, setErrorHandler] = useState({
@@ -29,7 +31,15 @@ export const RenderSample = (props) => {
 
   useEffect(() => {
     if(loadFlag === false){ //@TODO: See Coments At loadFlag Definition
-      entity_api_get_entity(uuid, authSet.groups_token)
+      fetchEntity(uuid, authSet.groups_token);
+    }else{
+      console.debug("Loadflag True");
+    }
+    
+  }, [authSet, uuid, loadFlag]);
+
+  function fetchEntity(uuid, auth){
+    entity_api_get_entity(uuid, auth)
       .then((response) => {
           setLoadFlag(true);
           if (response.status === 200) {
@@ -43,11 +53,9 @@ export const RenderSample = (props) => {
         .catch((error) => {
           passError(error.status, error.results.error );
         });
-    }else{
-      console.debug("Loadflag True");
-    }
-    
-  }, [authSet, uuid, loadFlag]);
+      
+  };
+
 
   function handleCancel(){
     if(this.props && this.props.handleCancel){
@@ -57,7 +65,6 @@ export const RenderSample = (props) => {
       window.history.back();
     }
   };
-
 
   function passError(status, message) {
     console.debug("Error", status, message);
@@ -71,6 +78,14 @@ export const RenderSample = (props) => {
 
   function onUpdated(data){
     console.debug("onUpdated", data);
+  }
+
+  function handleChangeSamplePage(uuid){
+    console.debug("handleChangeSamplePage", uuid);
+    // setLoading(true);
+    fetchEntity(uuid, authSet.groups_token);
+    // navigate('/sample/'+uuid);
+    // window.location.reload();
   }
 
   
@@ -91,7 +106,12 @@ export const RenderSample = (props) => {
     }else{
       return (
         <div>
-          <TissueFormLegacy handleCancel={handleCancel} uuid={entity_data.uuid} onUpdated={onUpdated} editingEntity={entity_data} />
+          <TissueFormLegacy 
+          handleCancel={handleCancel} 
+          uuid={entity_data.uuid} 
+          onUpdated={onUpdated} 
+          editingEntity={entity_data}
+          handleChangeSamplePage={handleChangeSamplePage} />
         </div>
       )
     }
