@@ -11,6 +11,7 @@ import Snackbar from '@mui/material/Snackbar';
 //import SnackbarContent from '@material-ui/core/SnackbarContent';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
 // import IconButton from '@material-ui/core/IconButton';
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -134,6 +135,22 @@ class TissueForm extends Component {
     }
   };
 
+  handleChangeSample = (uuid) => {
+    this.setState({ loadWithin: true });
+    this.props.handleChangeSamplePage(uuid);  
+    
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(prevProps.editingEntity !== this.props.editingEntity){
+      this.setState({
+        editingEntity: this.props.editingEntity,
+        loadWithin:false
+      })
+    }else{
+      // console.debug("SAME PROP");
+    }
+  }
 
   handleRUIJson = (dataFromChild) => {
     this.setState({
@@ -212,7 +229,7 @@ class TissueForm extends Component {
             console.debug('editingEntity', param_uuid)
           }
         
-          console.debug('UUID', param_uuid)
+          // console.debug('UUID', param_uuid)
           entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
                 if (response.status === 200) {
@@ -463,6 +480,7 @@ class TissueForm extends Component {
   }
 
   handleMultiEdit(param_uuid) {
+    console.debug("handleMultiEdit", param_uuid);
     if (this.state.isDirty) {
 
       this.setState({ 
@@ -470,39 +488,43 @@ class TissueForm extends Component {
         });
    
     } else {
-      entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-        .then((response) => {
-            if (response.status === 200) {
-              let entity_data = response.results;
-              this.setState({
-                  editingEntity: entity_data
-              });
-              // check to see if user can edit
-              ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-                  .then((resp) => {
-                      if (resp.status === 200) {
-                        ////////console.debug('api_allowable_edit_states...');
-                        ////////console.debug(resp.results);
-                        let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-                        this.setState({
-                          readOnly: read_only_state,   // used for hidding UI components
-                          param_uuid: param_uuid , 
-                          show_snack: true,
-                          snackmessage: "Sample data was loaded",
-                          show_dirty_warning: false,
-                        }, () => {
-                          this.checkForRelatedGroupIds(entity_data);
-                          this.initialize();
-                        }
 
-                        );
+      // We're not reloading the view anymore, we want to pass the UUID up
+      // to our parent
+      this.handleChangeSample(param_uuid); 
+      // entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+      //   .then((response) => {
+      //       if (response.status === 200) {
+      //         let entity_data = response.results;
+      //         this.setState({
+      //             editingEntity: entity_data
+      //         });
+      //         // check to see if user can edit
+      //         ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+      //             .then((resp) => {
+      //                 if (resp.status === 200) {
+      //                   ////////console.debug('api_allowable_edit_states...');
+      //                   ////////console.debug(resp.results);
+      //                   let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
+      //                   this.setState({
+      //                     readOnly: read_only_state,   // used for hidding UI components
+      //                     param_uuid: param_uuid , 
+      //                     show_snack: true,
+      //                     snackmessage: "Sample data was loaded",
+      //                     show_dirty_warning: false,
+      //                   }, () => {
+      //                     this.checkForRelatedGroupIds(entity_data);
+      //                     this.initialize();
+      //                   }
+
+      //                   );
                        
-                      }         
-              });
-            }else{
-              console.debug("ERR response, ", response)
-            }
-      });
+      //                 }         
+      //         });
+      //       }else{
+      //         console.debug("ERR response, ", response)
+      //       }
+      // });
     }
   }
   // getEntity = (uuid) => {
@@ -1721,7 +1743,7 @@ handleAddImage = () => {
 
         {this.state.related_group_ids.length > 1
           && (
-          <div className="alert alert-primary col-sm-12" role="alert">
+            <div className="alert alert-primary col-sm-12 " role="alert">
             {this.state.editingMultiWarning}{" "}
             <p>Click below to expand and view the groups list. Then select an Sample ID to edit the sample data.  Press the update button to save your changes.</p>
             <Accordion>
@@ -1731,35 +1753,51 @@ handleAddImage = () => {
                   id="panel1a-header"
                 >Sample Group List
               </AccordionSummary>
-              <AccordionDetails>
-              <div className="row">
-               <div className='idlist'>
+              <AccordionDetails className="idlist">
                 
-                  <ul>
+                  <ul className="">
                     { this.state.related_group_ids.length > 0 && this.state.related_group_ids.map((item, index) => {
                       if (item.uuid === this.state.editingEntity.uuid) {
                         return (
-                          <li key={item.submission_id}>
-                             <Button type="button" className="btn btn-link disabled">{`${item.submission_id}`}</Button>
+                          <li key={item.submission_id} className="active">
+                             <Button 
+                              type="button"
+                              className="btn btn-link">
+                                {`${item.submission_id}`}
+                            </Button>
                           </li>
                           );
                       } else {
                         return (
+                          <>
                           <li key={item.submission_id}>
-                          <Button type="button" className="btn btn-link" onClick={(e) => this.handleMultiEdit(item.uuid, e)}>{`${item.submission_id}`}</Button>
+                          <Button 
+                            type="button"
+                            className="btn btn-link" 
+                            onClick={(e) => this.handleMultiEdit(item.uuid, e)}>
+                              {`${item.submission_id}`}
+                            </Button>
                           </li>
+                          </>
                          );
                       }
         
                       })
                     }
                     </ul>
-                </div>
-                </div>
               </AccordionDetails>
             </Accordion>
           </div>   
         )}
+        
+
+        {this.state.loadWithin && (
+          <LinearProgress />
+        )}
+        {/* {!this.state.loadWithin && (
+        <span>NOT Loadin</span>
+        )} */}
+
         <div className="col-sm-12 pads">
           {this.state.editingEntity && 
             this.state.editingEntity.data_access_level === 'public' && 
