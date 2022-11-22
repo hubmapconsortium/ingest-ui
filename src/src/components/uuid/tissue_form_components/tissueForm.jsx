@@ -1721,7 +1721,7 @@ handleAddImage = () => {
 
         {this.state.related_group_ids.length > 1
           && (
-          <div className="alert alert-primary col-sm-12" role="alert">
+          <div className="alert alert-primary col-sm-12 " role="alert">
             {this.state.editingMultiWarning}{" "}
             <p>Click below to expand and view the groups list. Then select an Sample ID to edit the sample data.  Press the update button to save your changes.</p>
             <Accordion>
@@ -1731,31 +1731,29 @@ handleAddImage = () => {
                   id="panel1a-header"
                 >Sample Group List
               </AccordionSummary>
-              <AccordionDetails>
-              <div className="row">
-               <div className='idlist'>
+              <AccordionDetails className="idlist">
                 
-                  <ul>
+                  <ul className="">
                     { this.state.related_group_ids.length > 0 && this.state.related_group_ids.map((item, index) => {
                       if (item.uuid === this.state.editingEntity.uuid) {
                         return (
-                          <li key={item.submission_id}>
-                             <Button type="button" className="btn btn-link disabled">{`${item.submission_id}`}</Button>
+                          <li key={item.submission_id} className="active">
+                             <Button type="button" className="btn btn-link">{`${item.submission_id}`}</Button>
                           </li>
                           );
                       } else {
                         return (
+                          <>
                           <li key={item.submission_id}>
                           <Button type="button" className="btn btn-link" onClick={(e) => this.handleMultiEdit(item.uuid, e)}>{`${item.submission_id}`}</Button>
                           </li>
+                          </>
                          );
                       }
         
                       })
                     }
                     </ul>
-                </div>
-                </div>
               </AccordionDetails>
             </Accordion>
           </div>   
