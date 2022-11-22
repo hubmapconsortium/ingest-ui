@@ -33,7 +33,6 @@ export const RenderSample = (props) => {
     if(loadFlag === false){ //@TODO: See Coments At loadFlag Definition
       fetchEntity(uuid, authSet.groups_token);
     }else{
-      console.debug("Loadflag True");
     }
     
   }, [authSet, uuid, loadFlag]);
@@ -44,7 +43,7 @@ export const RenderSample = (props) => {
           setLoadFlag(true);
           if (response.status === 200) {
             setEntity(response.results);
-            console.debug("entity_data", response.results);
+            // console.debug("entity_data", response.results);
             setLoading(false);
           } else {  
             passError(response.status, response.message);
@@ -81,11 +80,7 @@ export const RenderSample = (props) => {
   }
 
   function handleChangeSamplePage(uuid){
-    console.debug("handleChangeSamplePage", uuid);
-    // setLoading(true);
     fetchEntity(uuid, authSet.groups_token);
-    // navigate('/sample/'+uuid);
-    // window.location.reload();
   }
 
   

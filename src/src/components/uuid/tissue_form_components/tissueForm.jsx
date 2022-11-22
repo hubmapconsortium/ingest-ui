@@ -137,23 +137,18 @@ class TissueForm extends Component {
 
   handleChangeSample = (uuid) => {
     this.setState({ loadWithin: true });
-    console.debug("handleChangeSample", uuid);
     this.props.handleChangeSamplePage(uuid);  
     
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.debug("TISSUE componentDidUpdate", this.props, this.state);
-    console.debug("PROPS", this.props.editingEntity, prevProps.editingEntity);
     if(prevProps.editingEntity !== this.props.editingEntity){
-      console.debug("NEW PROP");
-      console.debug("componentDidUpdate",this.props.editingEntity);
       this.setState({
         editingEntity: this.props.editingEntity,
         loadWithin:false
       })
     }else{
-      console.debug("SAME PROP");
+      // console.debug("SAME PROP");
     }
   }
 
@@ -1765,14 +1760,23 @@ handleAddImage = () => {
                       if (item.uuid === this.state.editingEntity.uuid) {
                         return (
                           <li key={item.submission_id} className="active">
-                             <Button type="button" className="btn btn-link">{`${item.submission_id}`}</Button>
+                             <Button 
+                              type="button"
+                              className="btn btn-link">
+                                {`${item.submission_id}`}
+                            </Button>
                           </li>
                           );
                       } else {
                         return (
                           <>
                           <li key={item.submission_id}>
-                          <Button type="button" className="btn btn-link" onClick={(e) => this.handleMultiEdit(item.uuid, e)}>{`${item.submission_id}`}</Button>
+                          <Button 
+                            type="button"
+                            className="btn btn-link" 
+                            onClick={(e) => this.handleMultiEdit(item.uuid, e)}>
+                              {`${item.submission_id}`}
+                            </Button>
                           </li>
                           </>
                          );
