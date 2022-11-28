@@ -1020,11 +1020,15 @@ class DatasetEdit extends Component {
           //   data_types: uniqueDT,
           // })
 
+
+          // Can't stringify a set within json
+          var dataTypeArray = Array.from(this.state.data_types);
+
           // package the data up
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            data_types: this.state.data_types,
+            data_types: dataTypeArray,
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
