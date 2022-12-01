@@ -197,7 +197,7 @@ class DatasetEdit extends Component {
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
-          if (resp.status === 200) {
+          if (resp.status < 300) {
             //console.log('edit states...', resp.results);    
             this.setState({
               writeable: resp.results.has_write_priv,
@@ -1083,7 +1083,7 @@ class DatasetEdit extends Component {
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     //console.debug("response is ", response, response.err.response);
-                    if (response.status === 200) {
+                    if (response.status < 300) {
                       ////console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
@@ -1111,7 +1111,7 @@ class DatasetEdit extends Component {
               } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
-                          if (response.status === 200) {
+                          if (response.status < 300) {
                             this.setState({ 
                               submit_error: false, 
                               submitting: false, 
@@ -1158,7 +1158,7 @@ class DatasetEdit extends Component {
               // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
-                  if (response.status === 200) {
+                  if (response.status < 300) {
                    //console.log('create Dataset...', response.results);
                      this.setState({
                         //globus_path: res.data.globus_directory_url_path,
