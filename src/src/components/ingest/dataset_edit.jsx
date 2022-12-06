@@ -12,7 +12,7 @@ import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
-// import axios from "axios";
+
 import { validateRequired } from "../../utils/validators";
 import {
   faExternalLinkAlt

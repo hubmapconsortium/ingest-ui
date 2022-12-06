@@ -5,7 +5,7 @@ import Divider from '@material-ui/core/Divider';
 import Box from '@mui/material/Box';
 
 import '../../../App.css';
-// import axios from "axios";
+
 import ImageUpload from "./imageUpload";
 //import MetadataUpload from "../metadataUpload";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
