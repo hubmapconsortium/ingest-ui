@@ -12,7 +12,7 @@ import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
-import axios from "axios";
+// import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import {
   faExternalLinkAlt
@@ -20,8 +20,12 @@ import {
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
-import { ingest_api_allowable_edit_states, ingest_api_create_dataset, ingest_api_dataset_submit } from '../../service/ingest_api';
-import { entity_api_update_entity } from '../../service/entity_api';
+import { ingest_api_allowable_edit_states, 
+    ingest_api_create_dataset, 
+    ingest_api_dataset_submit, 
+    ingest_api_dataset_publish,
+    ingest_api_users_groups } from '../../service/ingest_api';
+import { entity_api_update_entity, entity_api_get_globus_url } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
 import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
@@ -43,7 +47,6 @@ import Select from '@material-ui/core/Select';
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
-
 
 class DatasetEdit extends Component {
   state = {
@@ -158,6 +161,7 @@ class DatasetEdit extends Component {
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
       var savedGeneticsStatus = undefined;
+      const auth = JSON.parse(localStorage.getItem("info")).groups_token;
       const config = {
         headers: {
           Authorization:
@@ -172,24 +176,6 @@ class DatasetEdit extends Component {
     // Now from Wrapper/Props
       this.updateStateDataTypeInfo();
     
-
-    // axios
-    //   .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`, 
-	  //  {headers: {"Content-Type": "application/json"},
-	  //   params: {"primary": "true"}})
-    //   .then((response) => {
-	  //        let data = response.data;
-    //        var dt_dict = data.result.map((value, index) => { return value });
-	  //        this.setState({
-    //         data_type_dicts: dt_dict
-    //        },() => {  
-    //         this.updateStateDataTypeInfo();
-    //       })
-    //   })
-    //   .catch(error => {
-	  //        return Promise.reject(error);
-    //   });
-
       // Figure out our permissions
       if (this.props.editingDataset) {
         //console.debug("Editing Dataset", this.props.editingDataset);
@@ -214,11 +200,11 @@ class DatasetEdit extends Component {
 
     // Splits groups up into Data Providers and Permissions 
     // @TODO move to services
-    axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-        config
-      )
+    // .get( 
+    //   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+    //   config
+    //   )
+    ingest_api_users_groups(auth)
       .then((res) => {
         const groups = res.data.groups.filter(
           // It filters our read only, but what about other permissions like admin? 
@@ -287,11 +273,12 @@ class DatasetEdit extends Component {
           this.setState({
             badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
           });
-          axios
-            .get(
-              `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingDataset.uuid}/globus-url`,
-              config
-            )
+          // axios
+          //   .get(
+          //     `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingDataset.uuid}/globus-url`,
+          //     config
+          //   )
+          entity_api_get_globus_url(this.props.editingDataset.uuid)
             .then((res) => {
               this.setState({
                 globus_path: res.data,
@@ -774,20 +761,20 @@ class DatasetEdit extends Component {
     
   }
 
-  getUuidList = (new_uuid_list) => {
-    //this.setState({uuid_list: new_uuid_list});
-  //console.log('**getUuidList', new_uuid_list)
-    this.setState(
-      {
-        source_uuid: this.getSourceAncestor(new_uuid_list),
-        source_uuid_list: new_uuid_list,
-        LookUpShow: false,
-      },
-      () => {
-        this.validateUUID();
-      }
-    );
-  };
+  // getUuidList = (new_uuid_list) => {
+  //   //this.setState({uuid_list: new_uuid_list});
+  // //console.log('**getUuidList', new_uuid_list)
+  //   this.setState(
+  //     {
+  //       source_uuid: this.getSourceAncestor(new_uuid_list),
+  //       source_uuid_list: new_uuid_list,
+  //       LookUpShow: false,
+  //     },
+  //     () => {
+  //       this.validateUUID(); // Only place this is called, wrapper func depricated?
+  //     }
+  //   );
+  // };
 
   handleAddNewCollection = () => {
     this.setState({
@@ -795,46 +782,46 @@ class DatasetEdit extends Component {
     });
   };
 
-  hideAddCollectionModal = (collection) => {
-    this.setState({
-      AddCollectionShow: false,
-    });
+  // hideAddCollectionModal = (collection) => {
+  //   this.setState({
+  //     AddCollectionShow: false,
+  //   });
 
-    if (collection.label) {
-      const config = {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-          "Content-Type": "application/json",
-        },
-      };
+  //   if (collection.label) {
+  //     const config = {
+  //       headers: {
+  //         Authorization:
+  //           "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
+  //         "Content-Type": "application/json",
+  //       },
+  //     };
 
-      axios
-        .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
-        .then((res) => {
-          this.setState(
-            {
-              collections: res.data.collections,
-            },
-            () => {
-              const ret = this.state.collections.filter((c) => {
-                return c.label
-                  .toLowerCase()
-                  .includes(collection.label.toLowerCase());
-              });
-              this.setState({ collection: ret[0] });
-            }
-          );
-        })
-        .catch((err) => {
-          if (err.response === undefined) {
-          } else if (err.response.status === 401) {
-            localStorage.setItem("isAuthenticated", false);
-            window.location.reload();
-          }
-        });
-    }
-  };
+  //     axios
+  //       .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
+  //       .then((res) => {
+  //         this.setState(
+  //           {
+  //             collections: res.data.collections,
+  //           },
+  //           () => {
+  //             const ret = this.state.collections.filter((c) => {
+  //               return c.label
+  //                 .toLowerCase()
+  //                 .includes(collection.label.toLowerCase());
+  //             });
+  //             this.setState({ collection: ret[0] });
+  //           }
+  //         );
+  //       })
+  //       .catch((err) => {
+  //         if (err.response === undefined) {
+  //         } else if (err.response.status === 401) {
+  //           localStorage.setItem("isAuthenticated", false);
+  //           window.location.reload();
+  //         }
+  //       });
+  //   }
+  // };
 
   handleClickOutside = (e) => {
     this.setState({
@@ -842,91 +829,91 @@ class DatasetEdit extends Component {
     });
   };
 
-  validateUUID = () => {
-    let isValid = true;
-    const uuid = this.state.source_uuid_list[0].hubmap_id
-      ? this.state.source_uuid_list[0].hubmap_id
-      : this.state.source_uuid_list[0];
-    const uuid_type = this.state.source_uuid_list[0].datatype
-      ? this.state.source_uuid_list[0].datatype
-      : "";
-    //const uuid_type = "Not dataset";
-    const url_path = uuid_type === "Dataset" ? "datasets" : "specimens";
-    const url_server =
-      uuid_type === "Dataset"
-        ? process.env.REACT_APP_DATAINGEST_API_URL
-        : process.env.REACT_APP_SPECIMEN_API_URL;
+  // validateUUID = () => {
+  //   let isValid = true;
+  //   const uuid = this.state.source_uuid_list[0].hubmap_id
+  //     ? this.state.source_uuid_list[0].hubmap_id
+  //     : this.state.source_uuid_list[0];
+  //   const uuid_type = this.state.source_uuid_list[0].datatype
+  //     ? this.state.source_uuid_list[0].datatype
+  //     : "";
+  //   //const uuid_type = "Not dataset";
+  //   const url_path = uuid_type === "Dataset" ? "datasets" : "specimens";
+  //   const url_server =
+  //     uuid_type === "Dataset"
+  //       ? process.env.REACT_APP_DATAINGEST_API_URL
+  //       : process.env.REACT_APP_SPECIMEN_API_URL;
 
-    // const patt = new RegExp("^.{3}-.{4}-.{3}$");
-    // if (patt.test(uuid)) {
-    this.setState({
-      validatingUUID: true,
-    });
-    if (true) {
-      const config = {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-          "Content-Type": "multipart/form-data",
-        },
-      };
+  //   // const patt = new RegExp("^.{3}-.{4}-.{3}$");
+  //   // if (patt.test(uuid)) {
+  //   this.setState({
+  //     validatingUUID: true,
+  //   });
+  //   if (true) {
+  //     const config = {
+  //       headers: {
+  //         Authorization:
+  //           "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
+  //         "Content-Type": "multipart/form-data",
+  //       },
+  //     };
 
-      return axios
-        .get(`${url_server}/${url_path}/${uuid}`, config)
-        .then((res) => {
-          if (res.data) {
-            if (
-              res.data.specimen &&
-              res.data.specimen.entitytype === "Dataset"
-            ) {
-              res.data.dataset = res.data.specimen;
-              res.data.specimen = null;
-            }
-            this.setState((prevState) => ({
-              source_entity: res.data,
-              formErrors: { ...prevState.formErrors, source_uuid: "valid" },
-            }));
-            return isValid;
-          } else {
-            this.setState((prevState) => ({
-              source_entity: null,
-              formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-            }));
-            isValid = false;
-            Alert("The Source UUID does not exist.");
-            return isValid;
-          }
-        })
-        .catch((err) => {
-         //console.debug("Err Caught in validateUUID catch for then Catch")
-          this.setState((prevState) => ({
-            submitErrorResponse:err,
-            source_entity: null,
-            formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-          }));
-          isValid = false;
+  //     return axios
+  //       .get(`${url_server}/${url_path}/${uuid}`, config)
+  //       .then((res) => {
+  //         if (res.data) {
+  //           if (
+  //             res.data.specimen &&
+  //             res.data.specimen.entitytype === "Dataset"
+  //           ) {
+  //             res.data.dataset = res.data.specimen;
+  //             res.data.specimen = null;
+  //           }
+  //           this.setState((prevState) => ({
+  //             source_entity: res.data,
+  //             formErrors: { ...prevState.formErrors, source_uuid: "valid" },
+  //           }));
+  //           return isValid;
+  //         } else {
+  //           this.setState((prevState) => ({
+  //             source_entity: null,
+  //             formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
+  //           }));
+  //           isValid = false;
+  //           Alert("The Source UUID does not exist.");
+  //           return isValid;
+  //         }
+  //       })
+  //       .catch((err) => {
+  //        //console.debug("Err Caught in validateUUID catch for then Catch")
+  //         this.setState((prevState) => ({
+  //           submitErrorResponse:err,
+  //           source_entity: null,
+  //           formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
+  //         }));
+  //         isValid = false;
           
-          Alert("The Source UUID does not exist.");
-          return isValid;
-        })
-        .then(() => {
-          this.setState({
-            validatingUUID: false,
-          });
-          return isValid;
-        });
-    } else {
-     //console.debug("Err Caught in validateUUID Return")
-      this.setState((prevState) => ({
-        formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-      }));
-      isValid = false;
-      Alert("The Source UUID is invalid.");
-      return new Promise((resolve, reject) => {
-        resolve(false);
-      });
-    }
-  };
+  //         Alert("The Source UUID does not exist.");
+  //         return isValid;
+  //       })
+  //       .then(() => {
+  //         this.setState({
+  //           validatingUUID: false,
+  //         });
+  //         return isValid;
+  //       });
+  //   } else {
+  //    //console.debug("Err Caught in validateUUID Return")
+  //     this.setState((prevState) => ({
+  //       formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
+  //     }));
+  //     isValid = false;
+  //     Alert("The Source UUID is invalid.");
+  //     return new Promise((resolve, reject) => {
+  //       resolve(false);
+  //     });
+  //   }
+  // };
 
   handleCancel = () => {
     if(this.props && this.props.handleCancel){
@@ -1062,9 +1049,11 @@ class DatasetEdit extends Component {
             // if user selected Publish
             if (submitIntention === "published") { // From State? 
               //console.debug("about to publish with data ", data); 
-              let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
-              axios
-                .put(uri, JSON.stringify(data), config)
+              // let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
+              // axios
+              //   .put(uri, JSON.stringify(data), config)
+
+                ingest_api_dataset_publish(this.props.editingDataset.uuid, this.JSON.stringify(data),  config)
                 .then((res) => {
                   this.props.onUpdated(res.data);
                 })
@@ -1165,11 +1154,12 @@ class DatasetEdit extends Component {
                         display_doi: response.results.display_doi,
                         //doi: res.data.doi,
                       });
-                     axios
-                     .get(
-                      `${process.env.REACT_APP_ENTITY_API_URL}/entities/${response.results.uuid}/globus-url`,
-                      config
-                    )
+                    //  axios
+                    //  .get(
+                    //   `${process.env.REACT_APP_ENTITY_API_URL}/entities/${response.results.uuid}/globus-url`,
+                    //   config
+                    // )
+                    entity_api_get_globus_url(response.results.uuid)
                     .then((res) => {
                       this.setState({
                         globus_path: res.data,

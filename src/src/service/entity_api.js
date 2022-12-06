@@ -159,8 +159,6 @@ export function entity_api_update_multiple_entities(data, auth) {
       });
 };
 
-
-
 /*
  * get ancestor-organs for the specified Entity 
  * 

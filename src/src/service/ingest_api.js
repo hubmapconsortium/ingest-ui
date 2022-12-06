@@ -9,9 +9,6 @@ import FormData from "form-data"
  * User Groups only those data provider groups are return
  *
  */
-
-
-
 export function ingest_api_users_groups(auth) { 
    const options = {
       headers: {
@@ -158,8 +155,38 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
       });
 };
 
+
 /* 
- * submit a dataset
+ * Publish a dataset
+ *
+ */
+export function ingest_api_dataset_publish(uuid, data, auth) { 
+  console.debug("ingest_api_dataset_submit", data);
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/publish`;
+        
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+        ////console.debug(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {err, msg:"ingest_api_dataset_submit" };
+      });
+};
+
+
+/* 
+ * Derived dataset
  *
  */
 export function ingest_api_derived_dataset(uuid, data, auth) { 
@@ -171,7 +198,7 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
       }
     };
 
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`; // @TODO: Derived? 
         
   return axios 
      .put(url, data, options)
@@ -260,7 +287,6 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
         return {err, msg:"ingest_api_users_groups_bulk_entities_register" };
      });
 };
-
 
 /* gets a list of associated IDS if the entity has multiple records. 
    these are multi-labs records
@@ -351,9 +377,37 @@ export function ingest_api_get_globus_url(uuid, auth) {
 
 
 
+/* 
+ * Create New Upload
+ *
+ */
+export function ingest_api_create_upload(data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+    
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`;
+//console.debug(data);
+  return axios 
+     .post(url, data, options)
+      .then(res => {
+        ////console.debug(res);
+          let results = res.data;
+      
+        return {status: res.status, results: results}
+      })
+      .catch(err => {
+        return {err, msg:"ingest_api_submit_upload" }
+      });
+};
+
 
 /* 
- * Submit
+ * Submit Uploads
  *
  */
 export function ingest_api_submit_upload(uuid, data, auth) { 
@@ -381,9 +435,8 @@ export function ingest_api_submit_upload(uuid, data, auth) {
 };
 
 
-
 /* 
- * Validate
+ * Validate Upload
  *
  */
 export function ingest_api_validate_upload(uuid, data, auth) { 

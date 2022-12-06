@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
-import axios from "axios";
+// import axios from "axios";
 import { validateRequired } from "../../utils/validators";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -187,11 +187,12 @@ class EditUploads extends Component{
 
         //validation_message
 
-        axios
-          .get(
-            `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingUpload.uuid}/globus-url`,
-            config
-          )
+        // axios
+        //   .get(
+        //     `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingUpload.uuid}/globus-url`,
+        //     config
+        //   )
+        entity_api_get_globus_url(this.props.editingUpload.uuid)
           .then((res) => {
             console.debug(res);
             this.setState({

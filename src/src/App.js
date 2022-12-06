@@ -85,7 +85,7 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results.results.data);
+        console.debug("ingest_api_users_groups", results.results);
 
       if (results && results.status === 200) { 
         // console.debug("LocalStorageAuth", results);
