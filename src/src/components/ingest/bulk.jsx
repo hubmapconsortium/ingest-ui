@@ -25,6 +25,7 @@ import {ingest_api_bulk_entities_upload,
         ingest_api_bulk_entities_register,
         ingest_api_users_groups} from '../../service/ingest_api';
 import { Box } from "@mui/system";
+import { Link } from "@material-ui/core";
 
 
 class bulkCreation extends Component {
@@ -1019,6 +1020,7 @@ renderFileGrabber = () =>{
     var targetBranch ="master";
     var targetFile = (this.props.bulkType).slice(0, -1).toLowerCase()
     const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/"+targetBranch+"/src/src/assets/Documents/example-"+targetFile+"-registrations.tsv"
+    const docs ="https://software.docs.hubmapconsortium.org/bulk-registration/"+this.props.bulkType.toLowerCase().slice(0, -1)+"-bulk-reg.html"
     return (
       <>
         <div className="col-sm-12">
@@ -1043,7 +1045,11 @@ renderFileGrabber = () =>{
               </Typography>
             <div className="">
               <h4>{toTitleCase(this.props.bulkType).slice(0, -1)} Information Upload</h4>
-              <Typography className="d-inline-block " style={{ display: "inline-block"  }} >To bulk register multiple {this.props.bulkType.toLowerCase()} at one time, upload a tsv file here in the format specified by this example file. <br /> Include one line per {this.props.bulkType.toLowerCase().slice(0, -1)} to register. {toTitleCase(this.props.bulkType).slice(0, -1)} metadata must be provided separately.</Typography> 
+              <Typography className="d-inline-block " style={{ display: "inline-block"  }} >
+                To bulk register multiple {this.props.bulkType.toLowerCase()} at one time, upload a tsv file here in the format specified by this example file. <br /> Include one line per {this.props.bulkType.toLowerCase().slice(0, -1)} to register. {toTitleCase(this.props.bulkType).slice(0, -1)} metadata must be provided separately. <br />
+                See the <Link href={docs} target="new">{toTitleCase(this.props.bulkType).slice(0, -1)} Bulk Registration</Link> page for further details.
+              </Typography> 
+
               </div> 
             </div>
             
