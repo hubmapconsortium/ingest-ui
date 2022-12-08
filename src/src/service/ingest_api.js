@@ -38,6 +38,27 @@ export function ingest_api_users_groups(auth) {
  });
 }
 
+
+
+/*
+ * Upload a file
+ *
+ */
+export function ingest_api_file_upload(data, options) { 
+  return axios 
+  .get(
+    `${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
+    .then(res => {
+      console.debug("ingest_api_file_upload", res);
+      return {status: res.status, results: res}
+    })
+    .catch(err => {
+        console.debug("ingest_api_file_upload ERR", err);
+        return {status: err.response.status, results: err.response}
+      });
+}
+
+
 /*
  * User Groups ALL groups are return
  *
