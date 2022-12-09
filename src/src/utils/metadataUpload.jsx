@@ -3,6 +3,7 @@ import ReactTooltip from "react-tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
+import {ingest_api_file_upload} from "../service"
 
 class MetadataUpload extends Component {
   state = {
@@ -56,7 +57,9 @@ class MetadataUpload extends Component {
                   }
                 }
               };
-                axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
+
+                // axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
+              ingest_api_file_upload(data, options)
                 .then(res => {
                   console.log('handleMetadataFileChange', res.data)
                   this.setState({ uploadPercentage: 100 }, () => {
