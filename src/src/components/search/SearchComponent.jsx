@@ -71,10 +71,10 @@ class SearchComponent extends Component {
   }
 
   componentDidMount() {    
-    console.debug("packagedQuery", this.props.packagedQuery);
+    // console.debug("packagedQuery", this.props.packagedQuery);
 
     if(this.props.packagedQuery){
-      console.debug("Bundled Parameters", this.props.packagedQuery);
+      // console.debug("Bundled Parameters", this.props.packagedQuery);
       //  sample_type =this.props.packagedQuery.sampleType
       // keywords =this.props.packagedQuery.keywords
       this.setState({
@@ -96,10 +96,10 @@ class SearchComponent extends Component {
     this.setState({
       fieldSet: resultFieldSet()
     },function(){ 
-      console.debug("FieldSetState",this.state.fieldSet);
+      // console.debug("FieldSetState",this.state.fieldSet);
     })
 
-    console.debug("SEARCH componentDidMount")
+    // console.debug("SEARCH componentDidMount")
     var euuid;
     var type
     // If we can switch to Query string for url, would be nice
@@ -112,7 +112,7 @@ class SearchComponent extends Component {
     this.setState({
       fieldSet: resultFieldSet()
     },function(){ 
-      console.debug("FieldSetState",this.state.fieldSet);
+      // console.debug("FieldSetState",this.state.fieldSet);
     })
 
     //@TODO: Look into using the query/search functionality the search-api uses instead of all..... this
@@ -121,12 +121,12 @@ class SearchComponent extends Component {
     type = urlPart[3];
     euuid = urlPart[4];
     if(euuid && this.props.modeset!=="Source"){
-      console.debug("Loadingfrom URL");
+      // console.debug("Loadingfrom URL");
       this.handleLoadEntity(euuid)
     }
  
 
-    console.debug("modecheck ",this.props.modecheck);
+    //console.debug("modecheck ",this.props.modecheck);
     if(this.props.editNewEntity){
         this.setState({
           loading:false,
@@ -139,15 +139,15 @@ class SearchComponent extends Component {
       var lastSegment = (urlsplit[3]);
       euuid = urlsplit[4];
 
-      console.debug("URLAMAGIC", urlProp, urlsplit, lastSegment, euuid );
+      // console.debug("URLAMAGIC", urlProp, urlsplit, lastSegment, euuid );
     //  console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
-        console.debug("NEW FROM R ", this.props.modecheck)
+        // console.debug("NEW FROM R ", this.props.modecheck)
         if(this.props.modecheck === "Source" ){
-          console.debug("modecheck Source");
+          // console.debug("modecheck Source");
           this.handleShowSearch(true);
         }else{
-          console.debug("modecheck NOT");
+          // console.debug("modecheck NOT");
           this.handleShowSearch(false);
         }
        
@@ -168,7 +168,7 @@ class SearchComponent extends Component {
         },function(){ 
 
 
-          console.debug("euuid",euuid);
+          //console.debug("euuid",euuid);
           this.setFilterType();
           if(euuid && euuid !== "new"){
             var params = {
@@ -179,26 +179,26 @@ class SearchComponent extends Component {
             // this.handleSearchClick();
             this.handleTableCellClick(params);
           }else{
-            console.log("No UUID in URL");
+            // console.log("No UUID in URL");
             this.handleSearchClick();
           }
         });
       }else if(window.location.href.includes("/undefined")){
         // We're running without filter props passed or URL routing 
-        console.log("Undefined?!")
+        //console.log("Undefined?!")
         this.handleClearFilter();
 
         this.handleUrlChange("");
        
       }else{
         // We're running without filter props passed or URL routing 
-        console.log("No Props Or URL, Clear Filter")
+        //console.log("No Props Or URL, Clear Filter")
         // this.handleClearFilter();
         // Can't just clear filter, new Props through URL could be setting search vals
 
       }
     }else if (this.props.match ){ // Ok so we're getting props match eveen w/o, lets switch to search? 
-      console.debug("this.props.match",this.props.match);
+      //console.debug("this.props.match",this.props.match);
       type = this.props.match.params.type;
       euuid = this.props.match.params.uuid;
       if(type !== "new"){
@@ -209,7 +209,7 @@ class SearchComponent extends Component {
           loading: false
         },function(){ 
           if(euuid){
-            console.log("UUID PROVIDED: "+euuid);
+            //console.log("UUID PROVIDED: "+euuid);
             var params = {
               row:{
                 uuid:euuid
@@ -223,7 +223,7 @@ class SearchComponent extends Component {
           }
         }); 
       }else if(this.props.search){
-        console.log("Props Search",this.props.search);
+        //console.log("Props Search",this.props.search);
       }
       else{
         this.setState({
@@ -239,7 +239,7 @@ class SearchComponent extends Component {
       if(this.props.location.search){
         // * Replacing with parameters passed in from wrapper app above, 
         // * see bundledParameters
-        console.debug("this.props.location.search",this.props.location.search);
+        //console.debug("this.props.location.search",this.props.location.search);
         //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
         //@TODO TOO: Uh using would make the URL cacophony way more streamlined! 
         // Hooks into search_api.js :O 
@@ -248,20 +248,20 @@ class SearchComponent extends Component {
 
 
         var searchQueryType = searchParams.has('sampleType')
-        console.debug("searchQueryType", searchQueryType);
+        //console.debug("searchQueryType", searchQueryType);
         if(searchQueryType){
           var searchType = searchParams.get('sampleType');
-          console.debug("searchType", searchType);
+          //console.debug("searchType", searchType);
           this.setState({
             sampleType: searchType
           });
         }
         
         var searchQueryKeyword = searchParams.has('keywords')
-        console.debug("searchQueryKeyword", searchQueryKeyword);
+        //console.debug("searchQueryKeyword", searchQueryKeyword);
         if(searchQueryKeyword){
           var searchKeyword = searchParams.get('keywords');
-          console.debug("searchKeyword", searchKeyword);
+          //console.debug("searchKeyword", searchKeyword);
           this.setState({
             keywords: searchKeyword
           });
@@ -272,7 +272,7 @@ class SearchComponent extends Component {
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results);
+        //console.debug("ingest_api_users_groups", results);
 
       if (results && results.status && results.status === 200) { 
         this.setState({
@@ -294,6 +294,7 @@ class SearchComponent extends Component {
   }
 
   const config = {
+   
     headers: {
       Authorization:
         "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
@@ -329,7 +330,7 @@ class SearchComponent extends Component {
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
         }else{
-          console.debug("Error getting user groups", err);
+          //console.debug("Error getting user groups", err);
         }
       });
   }
@@ -372,7 +373,7 @@ class SearchComponent extends Component {
     // console.debug(this.state.show_search);
     // console.debug(prevState, this.state);
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
-      console.debug("prevProps.editNewEntity !== this.props.editNewEntity", this.props.editNewEntity)
+      //console.debug("prevProps.editNewEntity !== this.props.editNewEntity", this.props.editNewEntity)
       this.setState({
         editingEntity: this.props.editNewEntity,
         editForm: true,
@@ -383,13 +384,13 @@ class SearchComponent extends Component {
     }
     
     if (prevProps.showSearch !== this.props.showSearch) {
-      console.log("UPDATE this.props.showSearch");
+      //console.log("UPDATE this.props.showSearch");
       this.setState({
         show_search: this.props.showSearch
         });
     }
 
-//    console.debug("San Check",prevState.editEntity !== this.state.editEntity, this.state.editEntity)
+//    //console.debug("San Check",prevState.editEntity !== this.state.editEntity, this.state.editEntity)
     if (prevState.editEntity !== this.state.editEntity && (!this.state.editEntity || this.state.editEntity === null)) {
       // console.debug("Saved, Time to Reload Search", this.state.editNewEntity)
       this.setState({
@@ -398,14 +399,14 @@ class SearchComponent extends Component {
         show_search: true,
         showSearch: true
         }, () => {   
-          console.debug("Saved State set state settled")
+          //console.debug("Saved State set state settled")
       });
     }
     
   }
 
   handleSingularty  = (target, size) => {
-     console.debug("handleSingularty target: ",target);
+     //console.debug("handleSingularty target: ",target);
     if(target === 'uploads'){
       return "uploads" // Is always plural in our system
     }
@@ -418,10 +419,10 @@ class SearchComponent extends Component {
       }
     }else{ // we wanna singularize
       if(target.slice(-1) === "s"){
-        console.debug('here 1', target.slice(0, -1))
+        //console.debug('here 1', target.slice(0, -1))
         return (target.slice(0, -1))  //.toLowerCase()
       }else{
-        console.debug('here 2', target)
+        //console.debug('here 2', target)
         return target;
       }
     } 
@@ -429,7 +430,7 @@ class SearchComponent extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    console.debug('handleInputChange', name, value);
+    //console.debug('handleInputChange', name, value);
     switch (name) {
       case "group":
         this.setState({ group: value });
@@ -528,12 +529,12 @@ class SearchComponent extends Component {
   }
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
-    console.debug("handleSearchClick")
+    //console.debug("handleSearchClick")
     var group = this.state.group;
     var sample_type = this.state.sampleType;
     var sampleType = this.state.sampleType;
     var keywords = this.state.keywords;
-    console.debug("handleSearchClick", group, sampleType, keywords)
+    //console.debug("handleSearchClick", group, sampleType, keywords)
     
 
     var url = new URL(window.location);
@@ -616,10 +617,10 @@ class SearchComponent extends Component {
       url.searchParams.delete('group');
     }
 
-    console.debug('results_total  ', this.state.results_total);
-    console.debug('From Page ', this.state.page);
-    console.debug('From Page size', this.state.pageSize);
-    console.debug("this.state.page", this.state.page);
+    //console.debug('results_total  ', this.state.results_total);
+    //console.debug('From Page ', this.state.page);
+    //console.debug('From Page size', this.state.pageSize);
+    //console.debug("this.state.page", this.state.page);
     if(this.state.page !== 0 ){
       this.setState({
         table_loading:true, 
@@ -633,7 +634,7 @@ class SearchComponent extends Component {
       loading: true,
       filtered: true
     },() => {
-      console.debug("SEARCHCOM this.state.pageSize", this.state.pageSize);
+      //console.debug("SEARCHCOM this.state.pageSize", this.state.pageSize);
       api_search2(params, JSON.parse(localStorage.getItem("info")).groups_token, 
           (this.state.page*this.state.pageSize), this.state.pageSize, this.state.fieldSet)
       .then((response) => {
@@ -645,7 +646,7 @@ class SearchComponent extends Component {
             ////console.debug("which_cols_def: ", which_cols_def);
           }else if(response.total <= 0 ){
             
-              console.log("0 results not mid-load");
+              //console.log("0 results not mid-load");
             }
           
         this.setState({
@@ -656,11 +657,11 @@ class SearchComponent extends Component {
           table_loading:false, 
         });
       }else{
-        console.debug("Error on Search ", response)
+        //console.debug("Error on Search ", response)
         var errStringMSG = ""
         var errString = response.results.data.error.root_cause[0].type+" | "+response.results.data.error.root_cause[0].reason
         typeof errString.type === 'string' ? errStringMSG = "Error on Search" : errStringMSG = errString
-        console.debug("errString",errStringMSG);
+        //console.debug("errString",errStringMSG);
         this.setState({
           errorState:true,
           error: errStringMSG
@@ -688,8 +689,8 @@ class SearchComponent extends Component {
   }
 
   handleUrlChange = (targetPath) =>{
-    console.debug("handleURL Change:");
-    console.debug("handleUrlChange "+targetPath)
+    //console.debug("handleURL Change:");
+    //console.debug("handleUrlChange "+targetPath)
     if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
       targetPath = ""
     }
@@ -697,7 +698,7 @@ class SearchComponent extends Component {
       loading: false
     })
     if(targetPath!=="----" && targetPath!=="undefined" && targetPath.length>0){
-      console.debug("Changing to "+targetPath);
+      //console.debug("Changing to "+targetPath);
       this.props.urlChange(targetPath);
       // this.props.onPageChange(targetPath);
     }
@@ -719,7 +720,7 @@ class SearchComponent extends Component {
   // }
 
   handlePageChange = (page) => {
-    console.debug('Page changed', page)
+    //console.debug('Page changed', page)
     this.setState({
           page: page,
           table_loading:true, 
@@ -737,7 +738,7 @@ class SearchComponent extends Component {
 
   handleSearchButtonClick = (event) => {
     event.preventDefault();
-    console.debug("handleSearchButtonClick")
+    //console.debug("handleSearchButtonClick")
     this.setState({
           datarows: [],
           loading: true,
@@ -775,14 +776,14 @@ class SearchComponent extends Component {
   
   onUpdated = data => {
     //this.filterEntity();
-    console.debug("onUpdated SC", data)
+    //console.debug("onUpdated SC", data)
     this.setState({
       updateSuccess: true,
       editingEntity: data,
       show_search: false,
       loading: false
     }, () => {   
-      console.debug("onUpdated state", this.state)
+      //console.debug("onUpdated state", this.state)
       // this.handleSearchClick();
       this.cancelEdit();
       // ONLY works for functional components and all oura are class components
@@ -797,7 +798,7 @@ class SearchComponent extends Component {
       this.setState({ 
         editingEntity: this.props.editNewEntity
       });
-      console.debug("EditNewEntity")
+      //console.debug("EditNewEntity")
     }
     
     //this.props.onCancel();
@@ -819,14 +820,14 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
-    console.debug("handleTableCellClick");
-    console.debug(params);
+    //console.debug("handleTableCellClick");
+    //console.debug(params);
     
     if(params.field === 'uuid') return; // skip this field
 
     if (params.hasOwnProperty('row')) {
     // ////console.debug('CELL CLICK: entity', params.row.entity_type);
-    console.debug('Local CELL CLICK: uuid', params.row.uuid, params.row);
+    //console.debug('Local CELL CLICK: uuid', params.row.uuid, params.row);
       var typeText = (params.row.entity_type).toLowerCase();
     this.props.urlChange( typeText+"/"+params.row.uuid);
 
@@ -969,8 +970,8 @@ class SearchComponent extends Component {
 
 
   renderEditForm  = () => {
-    console.debug("START rendereditForm",this.state)
-    console.debug("Render Modecheck",this.props, this.props.modecheck)
+    //console.debug("START rendereditForm",this.state)
+    //console.debug("Render Modecheck",this.props, this.props.modecheck)
         /* We're controlling the forms & other components from the outer App wrapping, not within the SearchComponent Itself Anymore */
 
     // if (this.state.editingEntity && !this.props.modeCheck) {

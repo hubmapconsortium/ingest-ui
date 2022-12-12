@@ -85,7 +85,7 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results.results.data);
+        // console.debug("ingest_api_users_groups", results.results.data);
 
       if (results && results.status === 200) { 
         // console.debug("LocalStorageAuth", results);
@@ -95,19 +95,19 @@ export function App (props){
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
         setAuthStatus(true);
         setTimerStatus(false);
-        console.debug("groupsToken",groupsToken);
+        // console.debug("groupsToken",groupsToken);
 
         // The Dataset Form for New entites loads through the Form
         search_api_get_assay_list()
         .then((response) => {
-          console.debug("fetchPrimaryDataTypes Response", response);
+          // console.debug("fetchPrimaryDataTypes Response", response);
             let data = response.data;
             setDataTypeList(data);
             setIsLoading(false)
-            console.debug("isLoading", isLoading);  
+            // console.debug("isLoading", isLoading);  
         })
         .catch(error => {
-          console.debug("fetch DT list Response Error", error);
+          // console.debug("fetch DT list Response Error", error);
           setIsLoading(false)
           // return error;
           // passError(error.status, error.response );
@@ -116,7 +116,7 @@ export function App (props){
 
 
       } else if (results && results.status === 401) {
-        console.debug("LocalStorageAuth", results);
+        // console.debug("LocalStorageAuth", results);
         setGroupsToken(null);
         setAuthStatus(false);
         setTimerStatus(false);
@@ -130,7 +130,7 @@ export function App (props){
         
     });
     }catch {
-      console.debug("LocalStorageAuth", "CATCh No LocalStorage");
+      // console.debug("LocalStorageAuth", "CATCh No LocalStorage");
       setTimerStatus(false);
       setIsLoading(false)
     }
@@ -170,7 +170,7 @@ export function App (props){
 
   const onClose = (event, reason) => {
       // setLoginDialogRender(true)
-      console.debug("onClose ", event, reason);
+      // console.debug("onClose ", event, reason);
       navigate("/");
       // setLoginDialogRender(false);
     
@@ -179,14 +179,14 @@ export function App (props){
 
   const onCloseLogin = (event, reason) => {
       // setLoginDialogRender(true)
-      console.debug("onCloseLogin ", event, reason);
+      // console.debug("onCloseLogin ", event, reason);
       navigate("/");
       setLoginDialogRender(false);
     
   }
 
   function CallLoginDialog(){
-    console.debug("CallLoginDialog Open");
+    // console.debug("CallLoginDialog Open");
     setLoginDialogRender(true);
   }
 
@@ -200,7 +200,7 @@ export function App (props){
   
   function urlChange(target) {
     var lowerTarget = target.toLowerCase();
-    console.debug("urlChange", target, lowerTarget);
+    // console.debug("urlChange", target, lowerTarget);
     navigate(lowerTarget,  { replace: true });
   }
 
