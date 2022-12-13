@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import axios from "axios";
+
 import Divider from '@material-ui/core/Divider';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 import { validateRequired } from "../../utils/validators";
 import ReactTooltip from "react-tooltip";
-import { ingest_api_users_groups } from '../../service/ingest_api';
+import { ingest_api_users_groups, ingest_api_create_upload } from '../../service/ingest_api';
 // function Alert(props: AlertProps) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
@@ -57,24 +57,26 @@ class CreateUploads extends Component {
         description: this.state.inputValue_desc, // Just till I can solve unexpected key error
         group_uuid:this.state.inputValue_group_uuid 
       };
-      const config = {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-          "Content-Type": "application/json"
-        }
-      }
-      axios
-        .post(
-          `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`,
-          JSON.stringify(data),
-          config
-        )
+      // const auth = JSON.parse(localStorage.getItem("info")).groups_token;
+      // const config = {
+      //   headers: {
+      //     Authorization:
+      //       "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
+      //     "Content-Type": "application/json"
+      //   }
+      // }
+      // axios
+      //   .post(
+      //     `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`,
+      //     JSON.stringify(data),
+      //     config
+      //   )
+      ingest_api_create_upload(data, JSON.parse(localStorage.getItem("info")).groups_token)
         .then(response => {
           console.debug("response: ", response);
           if (response.status === 200) {
             console.debug(response.data);
-            this.props.onCreated(response.data);            
+            this.props.onCreated(response);            
           } else {
             this.setState({ 
               submit_error: true, 
