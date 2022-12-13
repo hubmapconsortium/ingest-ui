@@ -46,7 +46,7 @@ export const Navigation = (props) => {
 
 
     
-    console.debug("userDataGroups", props.userDataGroups, props.userDataGroups.length);
+    // console.debug("userDataGroups", props.userDataGroups, props.userDataGroups.length);
     // if(userGroups && userGroups.length > 0){
     //   const dataGroups = DataProviders(userGroups);
     //   console.log(dataGroups, userDataGroups, userDataGroups.length);
@@ -103,7 +103,8 @@ export const Navigation = (props) => {
 
   const onCreated = (data) => {
     console.debug("onCreated");
-    console.debug("data", data);
+    // console.debug("data", data.uuid, data.results.uuid);
+    // navigate("/Upload/"+data.uuid);
     navigate("/Upload/"+data.results.uuid);
     setUploadsDialog(false);
   };
