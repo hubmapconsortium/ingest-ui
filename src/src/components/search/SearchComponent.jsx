@@ -2,7 +2,7 @@ import React, { Component  } from "react";
 // import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 // import { DataGrid } from '@material-ui/data-grid';
-import axios from "axios";
+
 
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
@@ -15,7 +15,7 @@ import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
 
-import { ingest_api_users_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
+import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
 import { RenderError } from '../../utils/errorAlert'
 
@@ -301,13 +301,14 @@ class SearchComponent extends Component {
       "Content-Type": "application/json"
     }
   };
-  axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-        config
-      )
+  // axios
+  //     .get(
+  //       `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+  //       config
+  //     )
+  ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
       .then((res) => {
-        //console.debug("groups RES: ", res);
+        console.debug("groups RES: ", res);
         // const display_names = res.data.groups
         //   .filter((g) => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID)
         //   .map((g) => {
@@ -316,7 +317,7 @@ class SearchComponent extends Component {
         // this.setState({
         //   groups: display_names,
         // });
-        const groups = res.data.groups.filter(
+        const groups = res.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
 

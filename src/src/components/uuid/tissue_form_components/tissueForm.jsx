@@ -13,7 +13,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 // import IconButton from '@material-ui/core/IconButton';
-import axios from "axios";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -51,7 +51,7 @@ import { entity_api_get_entity,
     entity_api_create_multiple_entities, 
     entity_api_get_entity_ancestor 
 } from '../../../service/entity_api';
-import { ingest_api_allowable_edit_states } from '../../../service/ingest_api';
+import { ingest_api_allowable_edit_states, ingest_api_all_user_groups, ingest_api_get_associated_ids } from '../../../service/ingest_api';
 // import { useHistory } from "react-router-dom";
 
 class TissueForm extends Component {
@@ -177,20 +177,21 @@ class TissueForm extends Component {
     // let history = this.props.history;
     // //////console.debug('HISTORY', history)
     console.debug('PROPS', this.props);
-    const config = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-        "Content-Type": "application/json"
-      }
-    };
-
+    
     // THIS NEEDS MOVED TO CAPTURE AT THE START OF THE SESSION
-    axios
-      .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
-        config
-      )
+    // const config = {
+    //   headers: {
+    //     Authorization:
+    //       "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
+    //     "Content-Type": "application/json"
+    //   }
+    // };
+    // axios
+    //   .get(
+    //     `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+    //     config
+    //   )
+    ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token) // @TODO Multiple places that use this do filtering after, just grab "ingest_api_users_groups" instead? 
       .then(res => {
         console.debug("res.data.groups",res.data.groups);
         const groups = res.data.groups.filter(
@@ -408,11 +409,12 @@ class TissueForm extends Component {
           }
       };
 
-        axios
-          .get(
-            `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${entity.uuid}/ingest-group-ids`,
-            config
-          )
+        // axios
+        //   .get(
+        //     `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${entity.uuid}/ingest-group-ids`,
+        //     config
+        //   )
+        ingest_api_get_associated_ids(entity.uuid,  JSON.parse(localStorage.getItem("info")).groups_token)
           .then(res => {
             if (res.data.ingest_group_ids.length > 0) {
               //////console.debug("pre siblingid_list", res.data.ingest_group_ids);

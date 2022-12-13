@@ -102,9 +102,10 @@ export const Navigation = (props) => {
   };
 
   const onCreated = (data) => {
-    // console.debug("onCreated");
-    // console.debug("data", data);
-    navigate("/Upload/"+data.uuid);
+    console.debug("onCreated");
+    // console.debug("data", data.uuid, data.results.uuid);
+    // navigate("/Upload/"+data.uuid);
+    navigate("/Upload/"+data.results.uuid);
     setUploadsDialog(false);
   };
   
