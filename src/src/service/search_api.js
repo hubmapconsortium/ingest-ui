@@ -255,7 +255,7 @@ export function  search_api_get_assay_type(assay) {
 
 
 export function search_api_get_assay_list(params) { 
-  console.debug("search_api_get_assay_list", params);
+  // console.debug("search_api_get_assay_list", params);
   // So the api defaults to primary even if False is passed as ?primary=false
   var primaryParam = {};
   if(params){
@@ -268,11 +268,11 @@ export function search_api_get_assay_list(params) {
     .then(res => {
         let data = res.data;
         let dtListMapped = data.result.map((value, index) => { return value });
-        console.debug("search_api_get_assay_list", dtListMapped);
+        // console.debug("search_api_get_assay_list", dtListMapped);
         return {status: res.status, data: dtListMapped}
       })
       .catch(err => {
-        console.debug("search_api_get_assay_list", err.response);
+        // console.debug("search_api_get_assay_list", err.response);
          return {results: err.response}
       });
 };
@@ -280,7 +280,7 @@ export function search_api_get_assay_list(params) {
 
 export function  search_api_get_assay_set(scope){ 
   // Scope informs either Primary, Alt, or All
-  console.debug("search_api_get_assay_set", scope);
+  // console.debug("search_api_get_assay_set", scope);
   var target=""
   switch (scope) {
     case "primary":

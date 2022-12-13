@@ -22,7 +22,7 @@ export function ingest_api_users_groups(auth) {
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
  .then(res => {
-  console.debug("ingest_api_users_groups", res);
+  // console.debug("ingest_api_users_groups", res);
   const group_list = res.data.groups
           .filter(g => g.data_provider)
           .map(g => {
@@ -32,7 +32,7 @@ export function ingest_api_users_groups(auth) {
     return {status: res.status, results: group_list}
  })
  .catch(err => {
-   console.debug("ingest_api_users_groups ERR", err);
+  //  console.debug("ingest_api_users_groups ERR", err);
       return {status: err.response.status, results: err.response}
     // HandleError(err, msg:"ingest_api_users_groups");
  });

@@ -115,17 +115,17 @@ class DatasetEdit extends Component {
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
+
         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
         var thisDtName = this.props.editingDataset.data_types[0]
         var isPrim = data_type_options.has(thisDtName);
         if (isPrim)  {
-          // alert("HAIL");
           this.setState({
-            assay_type_primary: false
+            assay_type_primary: true 
           });
         }else{
           this.setState({
-            assay_type_primary: true
+            assay_type_primary: false
           });
         }
 
@@ -437,7 +437,7 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    //console.debug('INPUT:', name, id, value)
+    // console.debug('INPUT:', name, id, value)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
@@ -483,10 +483,11 @@ class DatasetEdit extends Component {
       //   break;
       
       case "other_dt":
+        console.debug("OTHER DT", value);
         this.setState({ other_dt: value });
         break;
       case "dt_select":
-        //console.debug("DT SELECT", value);
+        console.debug("DT SELECT", value);
         var data_types = [];  
         data_types.push(value);
         // data_types.push(value);
@@ -1010,7 +1011,7 @@ class DatasetEdit extends Component {
 
           // Can't stringify a set within json
           var dataTypeArray = Array.from(this.state.data_types);
-
+          console.debug("data_types", dataTypeArray);
           // package the data up
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
@@ -1019,7 +1020,7 @@ class DatasetEdit extends Component {
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
-          //console.debug("Compiled data: ", data);
+          console.debug("Compiled data: ", data);
   
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
@@ -1674,16 +1675,19 @@ class DatasetEdit extends Component {
 
   renderAssay(val) {
     // console.debug("renderAssay", val, idx);
-    var lcName =val.name.toLowerCase();
-    var idstr = 'dt_' + lcName.replace(' ','_');
-    // var selectedDT = "";
-    // console.debug(this.state.selected_dt,lcName);
-    if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
-      //console.debug("THIS ONE,", lcName);
-      // selectedDT="selected";
-    }
+    // var lcName =val.name.toLowerCase();
+    // var fcName =val.name;
+    // // console.debug("Selected and Actual fcNames", this.state.selected_dt, fcName);
+    // // var idstr = 'dt_' + lcName.replace(' ','_');
+    // var idstr = 'dt_' + val.name.replace(' ','_');
+    // // var selectedDT = "";
+    // // console.debug(this.state.selected_dt,lcName);
+    // // if(this.state.selected_dt.length > 0 && lcName === this.state.selected_dt.toLowerCase()) {
+    // //   // console.debug("THIS ONE,", lcName);
+    // //   // selectedDT="selected";
+    // // }
     return (
-      <option key={idstr} value={lcName}  id={idstr}>{val.description}</option>
+      <option key={val.name} value={val.name} id={val.name}>{val.description}</option>
       )
   }
 
@@ -1744,7 +1748,8 @@ class DatasetEdit extends Component {
             if(!this.state.assay_type_primary){
               //console.debug("Not in the list yet, add us!");
             }
-            selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
+            // selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
+            selectedID = this.props.editingDataset.data_types[0];
           }
           //console.debug("selectedID", selectedID);
         // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
@@ -1754,8 +1759,8 @@ class DatasetEdit extends Component {
             name="dt_select"
             className="form-select" 
             disabled={ (!this.state.writeable || !this.state.assay_type_primary) }
-            value={this.state.selected_dt} 
-            // defaultValue={selectedID} 
+            // value={selectedID} 
+            defaultValue={selectedID} 
             // value={this.props.editingDataset.data_types} 
             id="dt_select" 
             onChange={this.handleInputChange}>
