@@ -78,10 +78,27 @@ export const RenderDataset = (props) => {
         }
       })
       .catch(error => {
-        // console.debug("checkAssayType Error", error);
+        console.debug("checkAssayType Error", error);
         passError(error.status, error.response );
       });
     }
+
+
+    function setAssays(scope,dt){
+      search_api_get_assay_list(scope)
+      .then((response) => {
+          let data = response.data;
+          var dt_dict = data.map((value, index) => { return value })
+          console.debug("dt_dict", dt_dict);
+          setDataTypeList(dt_dict);
+          setIsLoadingDTList(false);
+      })
+      .catch(error => {
+        passError(error.status, error.response );
+        setIsLoadingDTList(false);
+      });
+    }
+
 
     function fetchEntity(authSet){
       // console.log("fetchEntity", uuid);
@@ -92,8 +109,7 @@ export const RenderDataset = (props) => {
               setEntity(response.results);
               // console.debug("fetchEntity", response.results);
               setIsLoadingEntity(false); 
-              checkAssay = response.results.data_types;
-              setEntityDT(checkAssay);
+              var checkAssay = response.results.data_types;
               checkAssayType(checkAssay)
               // console.log("entity_data", entity_data.data_types);
               // previousValue.current = entity_data.data_types;
@@ -116,6 +132,8 @@ export const RenderDataset = (props) => {
       // console.debug("props.new", props.new);
       fetchEntity(authSet);
     }else{
+      // the NEW route loads the forms through the legacy Forms loader,
+      // not here
       // console.debug("props.new", props.new);
       // setLoading(isLoading+1);
       setIsLoadingEntity(false);
