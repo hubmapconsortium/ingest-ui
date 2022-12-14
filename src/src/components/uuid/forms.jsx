@@ -189,6 +189,8 @@ class Forms extends Component {
   }
 
   renderForm() {
+    // We're only using the form loader for New forms, 
+    // Edit/View forms use updated wrappers 
     console.debug("this.props", this.props);
     // var dataTypesList = this.fetchPrimaryDataTypes();
     if (this.state.createSuccess) {

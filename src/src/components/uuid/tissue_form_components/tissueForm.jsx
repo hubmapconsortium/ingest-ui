@@ -28,7 +28,7 @@ import {
   validateSingleProtocolIODOI
 //  validateFileType
 } from "../../../utils/validators";
-import { tsToDate } from "../../../utils/string_helper";
+import { tsToDate, toTitleCase } from "../../../utils/string_helper";
 import check from './check25.jpg';
 //import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
@@ -39,7 +39,7 @@ import ReactTooltip from "react-tooltip";
 import SearchComponent from "../../search/SearchComponent";
 //import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
-import { SAMPLE_TYPES, TISSUE_TYPES, ORGAN_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
+import { SAMPLE_TYPES, SAMPLE_CATEGORIES,TISSUE_TYPES, ORGAN_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
 //import LabIDsModa7l from "../labIdsModal";
@@ -67,6 +67,8 @@ class TissueForm extends Component {
     specimen_type_other: "",
     source_uuid: "",
     source_uuid_list: "",
+    sample_category:[],
+    sample_category_library:SAMPLE_TYPES,
     ancestor_organ: "",
     organ: "",
     organ_other: "",
@@ -121,6 +123,7 @@ class TissueForm extends Component {
       protocol_url_DOI: "",
       specimen_type: "",
       specimen_type_other: "",
+      sample_category:"",
       organ: "",
       organ_other: "",
       visit: "",
@@ -347,27 +350,24 @@ class TissueForm extends Component {
 
         this.setState(
           {
-            source_uuid: this.getID(),
-            source_entity: this.state.editingEntity.direct_ancestor,
-            source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
             author: this.state.editingEntity.created_by_user_email,
+            organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
+            visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
             lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id ? this.state.editingEntity.lab_tissue_sample_id : "",
-            rui_location: JSON.stringify(this.state.editingEntity.rui_location, null, 3) || "",
-            rui_check: JSON.stringify(this.state.editingEntity.rui_location, null, 3) ? true : false,
-            // protocols: protocols_json,
+            description: this.state.editingEntity.description ? this.state.editingEntity.description : "",
             protocol_url: this.state.editingEntity.protocol_url,
-            // protocol_file_name: getFileNameOnPath(
-            //   this.state.editingEntity.properties.protocol_file
-            // ),
             entity_type: this.state.editingEntity.entity_type,
             specimen_type: this.state.editingEntity.specimen_type, // this.determineSpecimenType(),
             specimen_type_other: this.state.editingEntity.specimen_type_other,
-            organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
-            visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
-            description: this.state.editingEntity.description ? this.state.editingEntity.description : "",
+            sample_category:this.state.editingEntity.sample_category,
+            rui_location: JSON.stringify(this.state.editingEntity.rui_location, null, 3) || "",
+            rui_check: JSON.stringify(this.state.editingEntity.rui_location, null, 3) ? true : false,
             images: image_list,
             metadatas: metadata_list,
-            thumbnail: thumbnail_list
+            thumbnail: thumbnail_list,
+            source_uuid: this.getID(),
+            source_entity: this.state.editingEntity.direct_ancestor,
+            source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
           } );
 
         this.getSourceAncestorOrgan(this.state.editingEntity);
@@ -379,6 +379,7 @@ class TissueForm extends Component {
           this.setState(
             {
               specimen_type: this.props.specimenType,
+              source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
               source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
@@ -457,10 +458,7 @@ class TissueForm extends Component {
 
               this.setState({
                   editingMultiWarning: `This sample is part of a group of ${res.data.ingest_group_ids.length} other 
-                   ${flattenSampleType(SAMPLE_TYPES)[
-                    entity.specimen_type
-                    ]
-                  } samples, ranging from ${first_lab_id} through ${last_lab_id}`,
+                   ${ entity.sample_category } samples, ranging from ${first_lab_id} through ${last_lab_id}`,
                   //entities: this.props.editingEntities,
                   related_group_ids: res.data.ingest_group_ids
                   //multiple_id: true
@@ -474,7 +472,7 @@ class TissueForm extends Component {
           })
           .catch(err => {
             if (err.response === undefined) {
-            } else if (err.response.status === 401) {
+            } else if (err.response.status === 401) { // @TODO: Try moving all the auth checkins out of the forms
               localStorage.setItem("isAuthenticated", false);
               window.location.reload();
             }
@@ -609,6 +607,7 @@ class TissueForm extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
+    console.debug("name, value", [name, value]);
   
     this.setDirty(true);
     console.debug("name, value", name, value);
@@ -706,31 +705,43 @@ class TissueForm extends Component {
           }));
         }
         break;
-      case "specimen_type":
-        this.setState({ specimen_type: value });
+      // case "specimen_type":
+      //   this.setState({ specimen_type: value });
+      //   if (!validateRequired(value)) {
+      //     this.setState(prevState => ({
+      //       formErrors: { ...prevState.formErrors, specimen_type: "required" }
+      //     }));
+      //   } else if (value === "other") {
+      //     this.setState(prevState => ({
+      //       formErrors: {
+      //         ...prevState.formErrors,
+      //         specimen_type_other: ""
+      //       }
+      //     }));
+      //   } else {
+      //     if (value !== "organ") {
+      //       //this.setState({ organ: "" });
+      //     } else {
+      //       this.setState({
+      //         multiple_id: false,
+      //         sample_count: ""
+      //       });
+      //     }
+      //     this.setState(prevState => ({
+      //       specimen_type_other: "",
+      //       formErrors: { ...prevState.formErrors, specimen_type: "" }
+      //     }));
+      //   }
+      //   break;
+      case "sample_category":
+        this.setState({ sample_category: value });
         if (!validateRequired(value)) {
           this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, specimen_type: "required" }
-          }));
-        } else if (value === "other") {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              specimen_type_other: ""
-            }
+            formErrors: { ...prevState.formErrors, sample_category: "required" }
           }));
         } else {
-          if (value !== "organ") {
-            //this.setState({ organ: "" });
-          } else {
-            this.setState({
-              multiple_id: false,
-              sample_count: ""
-            });
-          }
           this.setState(prevState => ({
-            specimen_type_other: "",
-            formErrors: { ...prevState.formErrors, specimen_type: "" }
+            formErrors: { ...prevState.formErrors, sample_category: "" }
           }));
         }
         break;
@@ -791,18 +802,18 @@ class TissueForm extends Component {
         break;
       case "organ_other":
         this.setState({ organ_other: value });
-        if (!validateRequired(value)) {
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              organ_other: "required"
-            }
-          }));
-        } else {
-          this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, organ_other: "" }
-          }));
-        }
+        // if (!validateRequired(value)) {
+        //   this.setState(prevState => ({
+        //     formErrors: {
+        //       ...prevState.formErrors,
+        //       organ_other: "required"
+        //     }
+        //   }));
+        // } else {
+        //   this.setState(prevState => ({
+        //     formErrors: { ...prevState.formErrors, organ_other: "" }
+        //   }));
+        // }
         break;
       case "visit":
         this.setState({ visit: value });
@@ -1186,8 +1197,9 @@ handleAddImage = () => {
           let data = {
   
             protocol_url: this.state.protocol_url,
-            specimen_type: this.state.specimen_type,
-            specimen_type_other: this.state.specimen_type_other,
+            // specimen_type: this.state.specimen_type,
+            // specimen_type_other: this.state.specimen_type_other,
+            sample_category: this.state.sample_category,
             direct_ancestor_uuid: this.state.source_uuid_list,
             organ_other: this.state.organ_other,
             visit: this.state.visit,
@@ -1489,36 +1501,36 @@ handleAddImage = () => {
     return new Promise((resolve, reject) => {
       let isValid = true;
 
-      if (!validateRequired(this.state.specimen_type)) {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, specimen_type: "required" }
-        }));
-        isValid = false;
-      } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, specimen_type: "" }
-        }));
-      }
+      // if (!validateRequired(this.state.specimen_type)) {
+      //   this.setState(prevState => ({
+      //     formErrors: { ...prevState.formErrors, specimen_type: "required" }
+      //   }));
+      //   isValid = false;
+      // } else {
+      //   this.setState(prevState => ({
+      //     formErrors: { ...prevState.formErrors, specimen_type: "" }
+      //   }));
+      // }
+
+      // if (
+      //   this.state.specimen_type === "other" &&
+      //   !validateRequired(this.state.specimen_type_other)
+      // ) {
+      //   this.setState(prevState => ({
+      //     formErrors: {
+      //       ...prevState.formErrors,
+      //       specimen_type_other: "required"
+      //     }
+      //   }));
+      //   isValid = false;
+      // } else {
+      //   this.setState(prevState => ({
+      //     formErrors: { ...prevState.formErrors, specimen_type_other: "" }
+      //   }));
+      // }
 
       if (
-        this.state.specimen_type === "other" &&
-        !validateRequired(this.state.specimen_type_other)
-      ) {
-        this.setState(prevState => ({
-          formErrors: {
-            ...prevState.formErrors,
-            specimen_type_other: "required"
-          }
-        }));
-        isValid = false;
-      } else {
-        this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, specimen_type_other: "" }
-        }));
-      }
-
-      if (
-        this.state.specimen_type === "organ" &&
+        this.state.sample_category === "organ" &&
         !validateRequired(this.state.organ)
       ) {
         this.setState(prevState => ({
@@ -1937,7 +1949,7 @@ handleAddImage = () => {
                       <div className="row">
                         <div className="col-sm-6">
                           <b>Source Type:</b>{" "}
-                          {this.state.source_entity.specimen_type
+                          {this.state.source_entity.sample_category
                             ? flattenSampleType(SAMPLE_TYPES)[
                             this.state.source_entity.specimen_type
                             ]
@@ -1989,54 +2001,64 @@ handleAddImage = () => {
             )}
             <div className="form-group">
               <label
-                htmlFor="specimen_type">
-                Tissue Sample Type <span className="text-danger">*</span>  <FontAwesomeIcon
+                htmlFor="sample_category">
+                Sample Category <span className="text-danger">*</span>  <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for="specimen_type_tooltip"
+                  data-for="sample_category_tooltip"
                 />
                 <ReactTooltip
-                  id="specimen_type_tooltip"
+                  id="sample_category_tooltip"
                   className={"tooltip"}
                   place="top"
                   type="info"
                   effect="solid"
                 >
-                  <p>The type of specimen.</p>
+                  <p>The category of sample.</p>
                 </ReactTooltip>
               </label>
               {!this.state.readOnly && (
                 <React.Fragment>
                   <div>
                     <select
-                      name="specimen_type"
-                      id="specimen_type"
+                      name="sample_category"
+                      id="sample_category"
                       className={
                         "form-control " +
-                        this.errorClass(this.state.formErrors.specimen_type)
+                        this.errorClass(this.state.formErrors.sample_category)
                       }
                       onChange={this.handleInputChange}
-                      value={this.state.specimen_type}
+                      value={this.state.sample_category}
                     >
-                      <option value="">----</option>
-                      {TISSUE_TYPES[this.state.source_entity_type].map((optgs, index) => {
-                        return (
-                          <optgroup
-                            key={index}
-                            label="____________________________________________________________"
-                          >
+                      {
+                      //@TODO Cant seem to programatically list the options?
+                    }
+                      <option value="">Select Category</option>
+                      <option value="block" id="block">Block</option>
+                      <option value="organ" id="organ">Organ</option>
+                      <option value="section" id="section">Section</option>
+                      <option value="suspension" id="suspension">Suspension</option>
+
+                      {/* {SAMPLE_CATEGORIES.forEach((opt, index) => {
+                        console.debug("opt", opt);
+                        <option key={opt} value={opt}> {opt}</option>   ;
+                      })}
+                       */}
+                       {/* {[this.state.sample_category_library].map((optgs, index) => {
+                        console.debug("optgs", optgs);
+                       
                             {Object.entries(optgs).map(op => {
+                              console.debug("op", op);
                                 return (
-                                  <option key={op[0]} value={op[0]}>
+                                  <option key={op[1]} value={op[1]}>
                                     {op[1]}
                                   </option>
                                 );
                               
                             })}
-                          </optgroup>
-                        );
-                      })}
-
+                         
+                      })} */}
+                     
                        {/*TISSUE_TYPES[this.state.editingEntity.entity_type].map((optgs, index) => {
                         return (
                           <optgroup
@@ -2071,7 +2093,7 @@ handleAddImage = () => {
                     </select>
                   </div>
 
-                  <div className="col-sm-3">
+                  {/* <div className="col-sm-3">
                     {this.state.specimen_type === "other" && (
                       <input
                         type="text"
@@ -2088,15 +2110,21 @@ handleAddImage = () => {
                         value={this.state.specimen_type_other}
                       />
                     )}
-                  </div>
+                  </div> */}
                 </React.Fragment>
               )}
               {this.state.readOnly && (
                 <React.Fragment>
             
                   <div className="col-sm-3">
-                   <input type="text" readOnly className="form-control" id="_readonly_specimen_type" 
-                   value={flattenSampleType(SAMPLE_TYPES)[this.state.specimen_type]}></input>
+                   <input 
+                    readOnly 
+                    type="text" 
+                    className="form-control" 
+                    id="_readonly_sample_category"
+                   value={toTitleCase(this.state.sample_category)}>
+                    
+                   </input>
                     <p>
                       {this.state.specimen_type_other &&
                         " - " + this.state.specimen_type_other}
@@ -2107,7 +2135,7 @@ handleAddImage = () => {
               )}
             
             </div>
-            {this.state.specimen_type === "organ" && (
+            {this.state.sample_category === "organ" && (
               <div className="form-group row">
                 <label
                   htmlFor="organ"
