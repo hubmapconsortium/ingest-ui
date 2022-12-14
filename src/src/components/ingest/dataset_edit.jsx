@@ -206,7 +206,9 @@ class DatasetEdit extends Component {
     //   )
     ingest_api_users_groups(auth)
       .then((res) => {
-        const groups = res.data.groups.filter(
+        // console.debug("Groups", res.results);
+        // const groups = res.data.groups.filter(
+        const groups = res.results.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
@@ -961,7 +963,7 @@ class DatasetEdit extends Component {
     // this.setState({ data_types: data_types });
     //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
-    //console.debug("GroupSelectShow", this.state.GroupSelectShow);
+    console.debug("GroupSelectShow", this.state.GroupSelectShow);
     //console.debug("editingDataset", this.props.editingDataset);
       if (isValid) {
         if (
