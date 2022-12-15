@@ -1207,8 +1207,9 @@ handleAddImage = () => {
             description: this.state.description,
           };
 
-          if (this.state.specimen_type === 'organ') {
+          if (this.state.sample_category === 'organ') {
             data["organ"] = this.state.organ;
+
           }
 
           // only add these fields if user didn't check multiples
@@ -2199,7 +2200,7 @@ handleAddImage = () => {
                 )}
               </div>
             )}
-            {["organ", "biopsy", "blood"].includes(this.state.specimen_type) &&
+            {["organ", "biopsy", "blood"].includes(this.state.sample_category) &&
               (!this.state.readOnly || this.state.visit !== undefined) && (
                 <div className="form-group">
                   <label
