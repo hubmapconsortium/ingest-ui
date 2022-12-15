@@ -322,7 +322,7 @@ class SearchComponent extends Component {
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
 
-        //console.debug(groups);
+        console.debug("GROUPS",groups);
         this.setState({
           groups: groups
         });

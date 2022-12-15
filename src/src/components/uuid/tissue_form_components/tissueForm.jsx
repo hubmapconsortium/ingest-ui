@@ -196,8 +196,9 @@ class TissueForm extends Component {
     //   )
     ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token) // @TODO Multiple places that use this do filtering after, just grab "ingest_api_users_groups" instead? 
       .then(res => {
-        console.debug("res.data.groups",res.data.groups);
-        const groups = res.data.groups.filter(
+        console.debug("TISSUE res",res, res.results);
+        console.debug("TISSUE    res.data.groups",res.results);
+        const groups = res.results.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
@@ -1197,7 +1198,7 @@ handleAddImage = () => {
           let data = {
   
             protocol_url: this.state.protocol_url,
-            // specimen_type: this.state.specimen_type,
+            specimen_type: "other",
             // specimen_type_other: this.state.specimen_type_other,
             sample_category: this.state.sample_category,
             direct_ancestor_uuid: this.state.source_uuid_list,
