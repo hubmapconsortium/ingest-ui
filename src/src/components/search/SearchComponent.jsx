@@ -10,7 +10,7 @@ import Box from '@mui/material/Box';
 import Typography  from '@mui/material/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
-import { SAMPLE_TYPES, ORGAN_TYPES } from "../../constants";
+import { SAMPLE_TYPES, ORGAN_TYPES, ENTITY_TYPES } from "../../constants";
 
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
@@ -18,6 +18,7 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPL
 import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
 import { RenderError } from '../../utils/errorAlert'
+import { toTitleCase } from '../../utils/string_helper'
 
 // import 'url-search-params-polyfill';
 
@@ -321,7 +322,7 @@ class SearchComponent extends Component {
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
 
-        //console.debug(groups);
+        console.debug("GROUPS",groups);
         this.setState({
           groups: groups
         });
@@ -436,8 +437,8 @@ class SearchComponent extends Component {
       case "group":
         this.setState({ group: value });
         break;
-      case "sampleType":
-        this.setState({ sampleType: value });        
+      case "sampleCategory":
+        this.setState({ sampleCategory: value });        
         break;
       case "keywords":
         this.setState({ keywords: value });
@@ -505,29 +506,43 @@ class SearchComponent extends Component {
   //   return combinedList
   // }
 
-  combinedTypeOptions = () => {
-    var combinedList = [];
+  // combinedTypeOptions = () => {
+  //   var combinedList = [];
 
-    // this is NOT the best way to do this.
-    // the index numbers match the elements in SAMPLE_TYPES
-    combinedList.push(SAMPLE_TYPES[0])
-    combinedList.push(SAMPLE_TYPES[1])
-    combinedList.push(SAMPLE_TYPES[2])
-    combinedList.push(SAMPLE_TYPES[3])
-    combinedList.push(SAMPLE_TYPES[4])
-    // insert organs in between
+  //   // this is NOT the best way to do this.
+  //   // the index numbers match the elements in SAMPLE_TYPES
+  //   combinedList.push(SAMPLE_TYPES[0])
+  //   combinedList.push(SAMPLE_TYPES[1])
+  //   combinedList.push(SAMPLE_TYPES[2])
+  //   combinedList.push(SAMPLE_TYPES[3])
+  //   combinedList.push(SAMPLE_TYPES[4])
+  //   // insert organs in between
+  //   var organs = {}
+  //   for (let k in ORGAN_TYPES) {
+  //      organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + ORGAN_TYPES[k]
+  //   }
+  //   combinedList.push(organs)
+  //   combinedList.push(SAMPLE_TYPES[5])
+  //   combinedList.push(SAMPLE_TYPES[6])
+  //   combinedList.push(SAMPLE_TYPES[7])
+  //   combinedList.push(SAMPLE_TYPES[8])
+
+  //   return combinedList
+  // }
+
+  combinedTypeOptions = () => {
+    // Simplified to handle replacement of Types with Categories
+    var combinedList = [];
+    combinedList.push(ENTITY_TYPES)
+    combinedList.push(SAMPLE_TYPES)
     var organs = {}
     for (let k in ORGAN_TYPES) {
        organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + ORGAN_TYPES[k]
     }
     combinedList.push(organs)
-    combinedList.push(SAMPLE_TYPES[5])
-    combinedList.push(SAMPLE_TYPES[6])
-    combinedList.push(SAMPLE_TYPES[7])
-    combinedList.push(SAMPLE_TYPES[8])
-
     return combinedList
   }
+
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
     //console.debug("handleSearchClick")
@@ -1156,7 +1171,7 @@ renderInfoPanel() {
                           //ref={this.sampleType}
                           value={this.state.sampleType}
                         >
-                          <option value="">----</option>
+                          <option value=""></option>
                           {this.state.entity_type_list.map((optgs, index) => {
                             return (
                               <optgroup
@@ -1166,7 +1181,7 @@ renderInfoPanel() {
                                 {Object.entries(optgs).map(op => {
                                   return (
                                     <option key={op[0]} value={op[0]}>
-                                      {op[1]}
+                                      {toTitleCase(op[1])}
                                     </option>
                                   );
                                 })}

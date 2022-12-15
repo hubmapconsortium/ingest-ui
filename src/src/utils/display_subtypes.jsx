@@ -8,7 +8,7 @@
 // Dataset: the display names linked to the values in data_types as a comma separated list
 
 
-import { SAMPLE_TYPES } from "../utils/constants";
+import { SAMPLE_TYPES } from "../constants";
 
 var organs = {
     //Manually Copied from Search API's 
