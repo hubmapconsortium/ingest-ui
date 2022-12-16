@@ -56,25 +56,25 @@ export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * s
 //   { other: "Other" }
 // ];
 
-export const ENTITY_TYPES = [ // Use this instead of Types
-  "donor",
-  "sample",
-  "dataset",
-  "uploads",
-  "organ",
-]
+export const ENTITY_TYPES = { // Use this instead of Types
+  donor: "Donor" ,
+  sample: "Sample",
+  dataset: "Dataset", 
+  Upload: "Data Upload"
+}
+
 export const SAMPLE_TYPES = [ // Move requests for this into categories
-  "organ",
-  "block",
-  "section",
-  "suspension"
+{ organ: "Organ" },
+{ block: "Block"},
+{ section: "Section"}, 
+{ suspension: "Suspension"},
 ]
-export const SAMPLE_CATEGORIES = [ // Use this instead of Types
-  "organ",
-  "block",
-  "section",
-  "suspension"
-]
+export const SAMPLE_CATEGORIES = { // Use this instead of Types
+   organ: "Organ",
+   block: "Block",
+   section: "Section", 
+   suspension: "Suspension",
+}
 
 
 // These ones show on the Create new Donor/Sample page
