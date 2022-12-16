@@ -54,7 +54,7 @@ class SearchComponent extends Component {
       keywords: "",
       last_keyword: "",
       loading: false,
-      modeCheck:"", //@TODO: Patch for loadingsearch within dataset edits, We should move this
+      modecheck:"", //@TODO: Patch for loadingsearch within dataset edits, We should move this
       page: 0,
       pageSize: 100,
       results_total: 0,
@@ -151,13 +151,13 @@ class SearchComponent extends Component {
       console.debug("URLAMAGIC", urlProp, urlsplit, lastSegment, euuid );
     //  console.debug(lastSegment, euuid)
       if(window.location.href.includes("/new")){
-        // console.debug("NEW FROM R ", this.props.modecheck)
+        console.debug("NEW FROM R ", this.props.modecheck)
         if(this.props.modecheck === "Source" ){
           // console.debug("modecheck Source");
-          this.handleShowSearch(true);
+          // this.handleShowSearch(true);
         }else{
           // console.debug("modecheck NOT");
-          this.handleShowSearch(false);
+          // this.handleShowSearch(false);
         }
        
       }else if( !this.props.modecheck && 
@@ -228,7 +228,7 @@ class SearchComponent extends Component {
             this.handleTableCellClick(params);
           }else{
             // console.log("No UUID in URL");
-            this.handleSearchClick();
+            // this.handleSearchClick();
           }
         }); 
       }else if(this.props.search){
@@ -287,6 +287,7 @@ class SearchComponent extends Component {
         this.setState({
           isAuthenticated: true
         }, () => {
+          console.debug("isAuthenticated setFilterType");
           this.setFilterType();
         });
       } else if (results && results.status &&  results.status === 401) {
@@ -488,33 +489,39 @@ class SearchComponent extends Component {
 
     var new_filter_list = [];
 
-    //console.debug('FILTER TYPES', SAMPLE_TYPES)
-    //console.debug('FILTER TYPES', this.props.filter_type)
-    if (this.props.filter_type) {
-      if (this.props.filter_type === 'Dataset') {
-        SAMPLE_TYPES.forEach((type)=>{
-          if (!type.donor) {
-            new_filter_list.push(type)
-          }
-        });
-        this.setState({
-          entity_type_list: new_filter_list
-        })
-      } else if (this.props.filter_type === 'Sample') {
-            SAMPLE_TYPES.forEach((type)=>{
-                if (!type.dataset) {
-                  new_filter_list.push(type)
-                }
-              });
-            this.setState({
-              entity_type_list: new_filter_list
-            })
-      }
-    } else {
-      this.setState({
-        entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
-      })
-    }
+    this.setState({
+      entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
+    })
+
+    // //console.debug('FILTER TYPES', SAMPLE_TYPES)
+    // console.debug('FILTER TYPES', this.props.filter_type)
+    // if (this.props.filter_type) {
+    //   // if (this.props.filter_type === 'Dataset') {
+    //   //   SAMPLE_TYPES.forEach((type)=>{
+    //   //     if (!type.donor) {
+    //   //       new_filter_list.push(type)
+    //   //     }
+    //   //   });
+    //   //   this.setState({
+    //   //     entity_type_list: new_filter_list
+    //   //   })
+    //   // } else 
+    //   if (this.props.filter_type === 'Sample') {
+    //     console.debug('FILTER TYPES SAMPLE', SAMPLE_CATEGORIES);
+    //         SAMPLE_CATEGORIES.forEach((type)=>{
+    //             if (!type.dataset) {
+    //               new_filter_list.push(type)
+    //             }
+    //           });
+    //         this.setState({
+    //           entity_type_list: new_filter_list
+    //         })
+    //   }
+    // } else {
+    //   this.setState({
+    //     entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
+    //   })
+    // }
 
 
   } 
@@ -579,7 +586,7 @@ class SearchComponent extends Component {
 
   handleSearchClick = () => {
     //this.setState({ loading: true, filtered: true, page: 0 });
-    //console.debug("handleSearchClick")
+    console.debug("handleSearchClick")
     // var group = this.state.group;
     // var sample_type = this.state.entityType;
     // var entityType = this.state.entityType;
@@ -630,25 +637,27 @@ class SearchComponent extends Component {
   //     params["group"] = group;
   // }
 
+    console.debug("this.props.modecheck",this.props.modecheck);
     let params = {};
     var url = new URL(window.location);
     if (keywords) {
       params["keywords"] = keywords;
-      url.searchParams.set('keywords',keywords);
+      if(!this.props.modecheck){url.searchParams.set('keywords',keywords);}
     }else{
       url.searchParams.delete('keywords');
     }
 
     if (group && group !=="All Components") {
       params["group_uuid"] = group;
-      url.searchParams.set('group',group);
+      if(!this.props.modecheck){url.searchParams.set('group',group);}
+      // url.searchParams.set('group',group);
     }else{
       url.searchParams.delete('group');
     }
 
     if (entityType && entityType !== '----') {
-      console.debug("ISAN ENTITYTYPE");
-      url.searchParams.set('entityType',entityType);
+      console.debug("ISAN ENTITYTYPE");      
+      if(!this.props.modecheck){url.searchParams.set('entityType',entityType);}
       if (ORGAN_TYPES.hasOwnProperty(entityType)) {
         console.debug("ISAN ORGAN TYPE");
         params["organ"] = entityType;
@@ -663,6 +672,10 @@ class SearchComponent extends Component {
       url.searchParams.delete('entityType');
     }
     console.debug("params", params);
+
+    // if(this.props.modecheck==='Source'){
+    //   url.searchParams.delete('entityType');
+    // }
 
     // if (entityType) {
     //   params["entity_type"] = toTitleCase(entityType);
@@ -744,8 +757,8 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) =>{
     //console.debug("handleURL Change:");
-    //console.debug("handleUrlChange "+targetPath)
-    if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
+    console.debug("handleUrlChange "+targetPath)
+    if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modecheck!=="Source" ){
       targetPath = ""
     }
     this.setState({
@@ -759,7 +772,7 @@ class SearchComponent extends Component {
   }
   // handleUrlChange = (targetPath) =>{
   //   console.debug("handleUrlChange "+targetPath)
-  //   if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modeCheck!=="Source" ){
+  //   if( (!targetPath || targetPath === undefined || targetPath === "") && this.state.modecheck!=="Source" ){
   //     targetPath = ""
   //   }
   //   this.setState({
@@ -793,7 +806,7 @@ class SearchComponent extends Component {
 
   handleSearchButtonClick = (event) => {
     event.preventDefault();
-    //console.debug("handleSearchButtonClick")
+    console.debug("handleSearchButtonClick", event)
     this.setState({
           datarows: [],
           loading: true,
@@ -875,7 +888,7 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
-    //console.debug("handleTableCellClick");
+    console.debug("handleTableCellClick", params);
     //console.debug(params);
     
     if(params.field === 'uuid') return; // skip this field
@@ -1031,10 +1044,10 @@ class SearchComponent extends Component {
 
   renderEditForm  = () => {
     //console.debug("START rendereditForm",this.state)
-    //console.debug("Render Modecheck",this.props, this.props.modecheck)
+    //console.debug("Render modecheck",this.props, this.props.modecheck)
         /* We're controlling the forms & other components from the outer App wrapping, not within the SearchComponent Itself Anymore */
 
-    // if (this.state.editingEntity && !this.props.modeCheck) {
+    // if (this.state.editingEntity && !this.props.modecheck) {
     //   console.debug("editingEntity: ", this.state.editingEntity)
     //    // Loads in for editing things, not new things
     //   const dataType = this.state.editingEntity.entity_type;
@@ -1216,6 +1229,9 @@ renderInfoPanel() {
                           value={this.state.search_filters.entityType}
                         >
                           <option value=""></option>
+
+                          
+
                           {this.state.entity_type_list.map((optgs, index) => {
                             return (
                               <optgroup
@@ -1234,6 +1250,8 @@ renderInfoPanel() {
                               </optgroup>
                             );
                           })}
+
+
                         </select>
                   </Grid>
                   <Grid item xs={12}>
