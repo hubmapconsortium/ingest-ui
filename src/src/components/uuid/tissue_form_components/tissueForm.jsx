@@ -179,7 +179,7 @@ class TissueForm extends Component {
 
     // let history = this.props.history;
     // //////console.debug('HISTORY', history)
-    console.debug('PROPS', this.props);
+  //console.debug('PROPS', this.props);
     
     // THIS NEEDS MOVED TO CAPTURE AT THE START OF THE SESSION
     // const config = {
@@ -196,15 +196,15 @@ class TissueForm extends Component {
     //   )
     ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token) // @TODO Multiple places that use this do filtering after, just grab "ingest_api_users_groups" instead? 
       .then(res => {
-        console.debug("TISSUE res",res, res.results);
-        console.debug("TISSUE    res.data.groups",res.results);
+      //console.debug("TISSUE res",res, res.results);
+      //console.debug("TISSUE    res.data.groups",res.results);
         const groups = res.results.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
 
         );
-        console.debug("groups",groups);
+      //console.debug("groups",groups);
         //  We have both Data-Provider groups as well as non. 
         // The DP needs to be deliniated for the dropdown & assignments
         // the rest are for permissions
@@ -228,10 +228,10 @@ class TissueForm extends Component {
           let param_uuid = ""
           try {
             param_uuid = this.props.match.params.uuid
-            console.debug('Param match', param_uuid)
+          //console.debug('Param match', param_uuid)
           } catch {
             param_uuid = this.props.editingEntity.uuid;
-            console.debug('editingEntity', param_uuid)
+          //console.debug('editingEntity', param_uuid)
           }
         
           // console.debug('UUID', param_uuid)
@@ -239,7 +239,7 @@ class TissueForm extends Component {
             .then((response) => {
                 if (response.status === 200) {
                   let entity_data = response.results;
-                  console.debug('Got results', entity_data)
+                //console.debug('Got results', entity_data)
                   // check to see if user can edit
                   ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((resp) => {
@@ -481,7 +481,7 @@ class TissueForm extends Component {
   }
 
   handleMultiEdit(param_uuid) {
-    console.debug("handleMultiEdit", param_uuid);
+  //console.debug("handleMultiEdit", param_uuid);
     if (this.state.isDirty) {
 
       this.setState({ 
@@ -523,7 +523,7 @@ class TissueForm extends Component {
       //                 }         
       //         });
       //       }else{
-      //         console.debug("ERR response, ", response)
+      //       //console.debug("ERR response, ", response)
       //       }
       // });
     }
@@ -559,7 +559,7 @@ class TissueForm extends Component {
                //////console.debug('Entity ancestors...', response.results);
               if (response.results.length > 0) {
                   
-                  console.debug('Entity ancestors...', response.results);
+                //console.debug('Entity ancestors...', response.results);
                   this.setState({
                     source_entity: response.results[0],
                     ancestor_organ: response.results[0].organ   // use "top" ancestor organ
@@ -608,10 +608,10 @@ class TissueForm extends Component {
 
   handleInputChange = e => {
     const { name, value } = e.target;
-    console.debug("name, value", [name, value]);
+  //console.debug("name, value", [name, value]);
   
     this.setDirty(true);
-    console.debug("name, value", name, value);
+  //console.debug("name, value", name, value);
     switch (name) {
       // case "lab":
       //   this.setState({ lab: value });
@@ -671,9 +671,9 @@ class TissueForm extends Component {
         break;
       case "protocol_url":
         this.setState({ protocol_url: value });
-        console.debug("protocol_url",this.state.protocol_url,validateSingleProtocolIODOI(this.state.protocol_url));
+      //console.debug("protocol_url",this.state.protocol_url,validateSingleProtocolIODOI(this.state.protocol_url));
         if (!validateRequired(value)) {
-          console.debug(" ======= validateRequired");
+        //console.debug(" ======= validateRequired");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -681,7 +681,7 @@ class TissueForm extends Component {
             }
           }));
         } else if (!validateProtocolIODOI(value)) {
-          console.debug(" ======= validateProtocolIODOI");
+        //console.debug(" ======= validateProtocolIODOI");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -689,7 +689,7 @@ class TissueForm extends Component {
             }
           }));
         } else if (!validateSingleProtocolIODOI(value)) {
-          console.debug(" ======= validateSingleProtocolIODOI");
+        //console.debug(" ======= validateSingleProtocolIODOI");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -697,7 +697,7 @@ class TissueForm extends Component {
             }
           }));
         } else {
-          console.debug("Clearing ProURL Error?");
+        //console.debug("Clearing ProURL Error?");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -832,7 +832,7 @@ class TissueForm extends Component {
       //   });
       //   break;
       case "groups":
-        console.debug("handleInputChange groups Value: ",value);
+      //console.debug("handleInputChange groups Value: ",value);
         this.setState({
           selected_group: value
         });
@@ -1033,7 +1033,7 @@ class TissueForm extends Component {
 
   validateThumbnailFile = id => {
   //   // const file_name = this.state.thumbnail.map(m => {
-  //   //   console.debug('validateThumbnailFile', m.file_name)
+  //   // //console.debug('validateThumbnailFile', m.file_name)
   //   //   return m.file_name;
   //   // })
 
@@ -1349,7 +1349,7 @@ handleAddImage = () => {
                     this.setState({ submit_error: true, submitting: false, isDirty: false });
                     this.setDirty(false);
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                    console.debug("update Entity Fail", response)
+                  //console.debug("update Entity Fail", response)
 
                   }
       
@@ -1358,15 +1358,15 @@ handleAddImage = () => {
             //////console.debug('selected group', this.state.selected_group);
             
             if (this.state.selected_group && this.state.selected_group.length > 0) {
-                console.debug("Selected_group", this.state.selected_group);
+              //console.debug("Selected_group", this.state.selected_group);
                 data["group_uuid"] = this.state.selected_group; 
             } else {
               // If none selected, we need to pick a default BUT
               // It must be from the data providers, not permissions
-              console.debug("UN Selected_group", this.state.selected_group);              
+            //console.debug("UN Selected_group", this.state.selected_group);              
               data["group_uuid"] = this.state.groups_dataprovider[0].uuid; // consider the first users group        
             }
-            console.debug("data[\"group_uuid\"]",data["group_uuid"]);
+          //console.debug("data[\"group_uuid\"]",data["group_uuid"]);
             if (this.state.sample_count < 1) {
                 //console.debug("Create a new Entity....", this.state.sample_count)
                 entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1400,7 +1400,7 @@ handleAddImage = () => {
           }
         }
       }else{
-        console.debug("NotValid!", this.state.formErrors)
+      //console.debug("NotValid!", this.state.formErrors)
       }
     });
   };
@@ -1650,7 +1650,7 @@ handleAddImage = () => {
   }
 
   handleLookUpClick = () => {
-//    console.debug('source_uuid', this.state.source_uuid)
+//  //console.debug('source_uuid', this.state.source_uuid)
     //console.debug('lookUpCancelled', this.state.lookUpCancelled)
 
     if (!this.state.lookUpCancelled) {
@@ -1708,8 +1708,8 @@ handleAddImage = () => {
           } else {
               ancestor_organ = selection.row.organ;  // use the direct ancestor
           }
-          console.debug('here setting state vars', ancestor_organ)
-          console.debug(selection.row)
+        //console.debug('here setting state vars', ancestor_organ)
+        //console.debug(selection.row)
           this.setState({
             source_uuid: selection.row.hubmap_id,
             source_entity: selection.row,
@@ -1718,7 +1718,10 @@ handleAddImage = () => {
             organ: ancestor_organ,
             ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
             sex: this.getGender(selection.row)
+          }, () => {
+            console.debug('source_entity_type', this.state.source_entity_type);
           });
+          
           this.cancelLookUpModal();
         });
     }
@@ -2036,21 +2039,29 @@ handleAddImage = () => {
                       //@TODO Cant seem to programatically list the options?
                     }
                       <option value="">Select Category</option>
-                      <option value="block" id="block">Block</option>
-                      <option value="organ" id="organ">Organ</option>
-                      <option value="section" id="section">Section</option>
-                      <option value="suspension" id="suspension">Suspension</option>
+                      
+                      source_entity_type
+                      {this.state.source_entity_type==="Donor" && (
+                        <option value="organ" id="organ">Organ</option>
+                      )}
+                      {this.state.source_entity_type!="Donor" && (
+                        <>
+                        <option value="block" id="block">Block</option>
+                        <option value="section" id="section">Section</option>
+                        <option value="suspension" id="suspension">Suspension</option>
+                        </>
+                      )}
 
                       {/* {SAMPLE_CATEGORIES.forEach((opt, index) => {
-                        console.debug("opt", opt);
+                      //console.debug("opt", opt);
                         <option key={opt} value={opt}> {opt}</option>   ;
                       })}
                        */}
                        {/* {[this.state.sample_category_library].map((optgs, index) => {
-                        console.debug("optgs", optgs);
+                      //console.debug("optgs", optgs);
                        
                             {Object.entries(optgs).map(op => {
-                              console.debug("op", op);
+                            //console.debug("op", op);
                                 return (
                                   <option key={op[1]} value={op[1]}>
                                     {op[1]}
