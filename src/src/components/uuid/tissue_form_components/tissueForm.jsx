@@ -193,14 +193,15 @@ class TissueForm extends Component {
     //   )
     ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token) // @TODO Multiple places that use this do filtering after, just grab "ingest_api_users_groups" instead? 
       .then(res => {
-        console.debug("res.data.groups",res.data.groups);
-        const groups = res.data.groups.filter(
+        console.debug("ingest_api_all_user_groups res",res);
+        console.debug("res.data.groups",res.results);
+        const groups = res.results.filter(
           // It filters our read only, but what about other permissions like admin? 
           // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
 
         );
-        console.debug("groups",groups);
+        console.debug("ingest_api_all_user_groups groups",groups);
         //  We have both Data-Provider groups as well as non. 
         // The DP needs to be deliniated for the dropdown & assignments
         // the rest are for permissions
@@ -210,6 +211,7 @@ class TissueForm extends Component {
         });
       })
       .catch(err => {
+        console.debug("ERRORingest_api_all_user_groups ", err);
         if (err.response === undefined) {
         } else if (err.response.status === 401) {
           localStorage.setItem("isAuthenticated", false);
