@@ -34,7 +34,7 @@ export const COLUMN_DEF_SAMPLE = [
     { field: 'sample_category', headerName: 'Category',
       renderCell: (params: ValueFormatterParams) => (
         <React.Fragment>
-          {params.value}                        
+          {toTitleCase(params.value)}                        
         </React.Fragment>
       )},
     { field: 'group_name', headerName: 'Group Name', width: 250},
