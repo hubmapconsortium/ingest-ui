@@ -1198,7 +1198,7 @@ handleAddImage = () => {
           let data = {
   
             protocol_url: this.state.protocol_url,
-            specimen_type: "other",
+            // specimen_type: "other",
             // specimen_type_other: this.state.specimen_type_other,
             sample_category: this.state.sample_category,
             direct_ancestor_uuid: this.state.source_uuid_list,
@@ -2180,7 +2180,7 @@ handleAddImage = () => {
                       </select>
                     </div>
                     {this.state.organ === "OT" && (
-                      <div className="col-sm-3">
+                      <div className="col-sm-3">  
                         <input
                           type="text"
                           name="organ_other"
