@@ -31,18 +31,20 @@ export const COLUMN_DEF_SAMPLE = [
 	    width: 173,
 	    valueGetter: getLabId
   	}, 
-    { field: 'sample_category', headerName: 'Category',
-      renderCell: (params: ValueFormatterParams) => (
-        <React.Fragment>
-          {toTitleCase(params.value)}                        
-        </React.Fragment>
-      )},
+    { field: 'display_subtype', headerName: 'Type', width: 200},
+    // { field: 'sample_category', headerName: 'Category',
+    //   renderCell: (params: ValueFormatterParams) => (
+    //     <React.Fragment>
+    //       {toTitleCase(params.value)}                        
+    //     </React.Fragment>
+    //   )},
     { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
   	{ field: 'lab_donor_id', headerName: 'LABID', hide: true},
   	{ field: 'lab_tissue_sample_id', headerName: 'LABID', hide: true},
   	{ field: 'entity_type', headerName: 'Type', hide: true },
+    { field: 'specimen_type', headerName: 'Specimen Type', hide: true},
  ];
 
 // DATASET COLUMNS
