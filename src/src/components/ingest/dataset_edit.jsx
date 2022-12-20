@@ -116,37 +116,38 @@ class DatasetEdit extends Component {
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
 
-        const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
-        var thisDtName = this.props.editingDataset.data_types[0]
-        var isPrim = data_type_options.has(thisDtName);
-        if (isPrim)  {
-          this.setState({
-            assay_type_primary: true 
-          });
-        }else{
-          this.setState({
-            assay_type_primary: false
-          });
-        }
+        // const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
+        // var thisDtName = this.props.editingDataset.data_types[0]
+        // var isPrim = data_type_options.has(thisDtName);
+        // if (isPrim)  {
+        //   this.setState({
+        //     assay_type_primary: true 
+        //   });
+        // }else{
+        //   this.setState({
+        //     assay_type_primary: false
+        //   });
+        // }
 
 
-        other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
-        data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
-        // here's we're checking if its in the list provided for the dropdown, which used to have primary And non
-        // Now we can only see the other vals in the select if we're primary,
-        // can just add the one non-primary and select it and only ever base seelxt pop on Primary vals
-        if (other_dt) {
-          //console.debug("has Other DT", other_dt);
-          data_types.push(other_dt);
-          this.setAssayList();
-          this.setState({
-            assay_type_primary: true
-          });
-        }else{
-          this.setState({
-            assay_type_primary: false
-          });
-        }
+        // other_dt = this.props.editingDataset.data_types.filter((dt) => !data_type_options.has(dt))[0];
+        // data_types = this.props.editingDataset.data_types.filter((dt) => data_type_options.has(dt));
+        // console.debug("data_types", data_types, "other_dt", other_dt);
+        // // here's we're checking if its in the list provided for the dropdown, which used to have primary And non
+        // // Now we can only see the other vals in the select if we're primary,
+        // // can just add the one non-primary and select it and only ever base seelxt pop on Primary vals
+        // if (other_dt) {
+        //   //console.debug("has Other DT", other_dt);
+        //   data_types.push(other_dt);
+        //   this.setAssayList();
+        //   this.setState({
+        //     assay_type_primary: true
+        //   });
+        // }else{
+        //   this.setState({
+        //     assay_type_primary: false
+        //   });
+        // }
 
       }
       this.setState({
@@ -174,7 +175,7 @@ class DatasetEdit extends Component {
 
     // Fills in selectable Data Typw List  
     // Now from Wrapper/Props
-      this.updateStateDataTypeInfo();
+      // this.updateStateDataTypeInfo();
     
       // Figure out our permissions
       if (this.props.editingDataset) {
@@ -302,8 +303,15 @@ class DatasetEdit extends Component {
       // Here's the hack that disables changing the datatype 
       // if it's no longer a base primary type.  
 
+      console.debug("this.props.editingDataset.data_types", this.props.editingDataset.data_types[0], this.props.dataTypeList);
+      // console.debug("this.props.editingDataset.datatype", this.props.editingDataset.datatype, this.props.dataTypeList.includes(this.props.editingDataset.datatype[0]));
       // We already have this checked when checking assay_type_primary!
-      if(this.props.editingDataset.datatype && this.props.dataTypeList.includes(this.props.editingDataset.datatype[0])){
+      console.debug("ANSWERIS",this.props.dataTypeList.includes(this.props.editingDataset.data_types[0]))
+      let primaryNames = this.props.dataTypeList.map((value, index) => { return value.name });
+      var dtype = this.props.editingDataset.data_types[0];
+        console.debug("primaryNames.includes(dtype)", primaryNames.includes(dtype));
+
+      if(this.props.editingDataset.data_types && primaryNames.includes(dtype)){
         this.setState({
           disableSelectDatatype: false,
         });
@@ -1760,7 +1768,7 @@ class DatasetEdit extends Component {
             native
             name="dt_select"
             className="form-select" 
-            disabled={ (!this.state.writeable || !this.state.assay_type_primary) }
+            disabled={ (!this.state.writeable || !this.state.assay_type_primary) || this.state.disableSelectDatatype }
             // value={selectedID} 
             defaultValue={selectedID} 
             // value={this.props.editingDataset.data_types} 

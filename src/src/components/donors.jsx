@@ -14,7 +14,6 @@ export const RenderDonor = (props) => {
   //console.debug("Rendering from NEWER Route, not Legacy Route");
 //console.debug("RenderSearchComponent", props);
   // let navigate = useNavigate();
-  var authSet = JSON.parse(localStorage.getItem("info"));
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
   // var [uuid, setUUID] = useState("");
@@ -23,29 +22,34 @@ export const RenderDonor = (props) => {
     message: "",
     isError: null 
   });
-
-  // Using the Set State here throws us into an Endless re-render :(
-  // setUUID(useParams())
-  const { uuid } = useParams();
   
-  useEffect(() => {
+  // Using the Set State here throws us into an Endless re-render :(
+    // setUUID(useParams())
+    
+    const { uuid } = useParams();
+    useEffect(() => {
+    var authSet = JSON.parse(localStorage.getItem("info"));
+    console.debug("useEffect",props);
     entity_api_get_entity(uuid, authSet.groups_token)
       .then((response) => {
+        console.debug("useEffect entity_api_get_entity", response);
           if (response.status === 200) {
             setEntity(response.results);
             //console.debug("entity_data", response.results);
             setLoading(false);
           } else {
+            console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
             passError(response.status, response.message);
           }
         })
         .catch((error) => {
+          console.debug("entity_api_get_entity ERROR", error);
           passError(error.status, error.results.error );
         });
-  }, [authSet, uuid]);
+  }, [uuid]);
 
   function onUpdated(data){
-    //console.debug("onUpdated", data);
+    console.debug("onUpdated", data);
   }
 
 
