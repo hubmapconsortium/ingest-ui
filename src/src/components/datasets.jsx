@@ -15,6 +15,9 @@ export const RenderDataset = (props) => {
   let navigate = useNavigate();
   var [entity_data, setEntity] = useState(null);
   var [entityDT, setEntityDT] = useState([""]);
+  var [dtl_all, setDtl_all] = useState([""]);
+  var [dtl_primary, setDtl_primary] = useState([""]);
+  var [dtl_status, setDtl_status] = useState([""]);
   var [isLoadingEntity, setIsLoadingEntity] = useState(true);
   var [isLoadingDTList, setIsLoadingDTList] = useState(true);
   var [dataTypeList, setDataTypeList] = useState();
@@ -47,55 +50,35 @@ export const RenderDataset = (props) => {
     var authSet = JSON.parse(localStorage.getItem("info"));
     
   
-    function checkAssayType(dt){
+    function checkAssayType(dtype){
       // console.debug("checkAssayType", dt);
-      search_api_get_assay_list()// the list call only gets primaries for now. 
+      search_api_get_assay_set("primary")// the list call only gets primaries for now. 
       .then((response) => {
-        let primaries = response.data;
-        // console.debug("primaries", primaries, primaries.length);
-        // const data_type_options = new Set(primaries.map((elt, idx) => {return elt.name.toLowerCase()}));
-        const data_type_options = new Set(primaries.map((elt, idx) => {return elt.name}));
-        var isPrim = data_type_options.has(dt[0]);
-        // console.debug("data_type_options", data_type_options, dt, isPrim);
-        // console.debug(dt);
-        // console.debug("isPrim", isPrim);
-        if(isPrim){ // Are we primary? 
-          let data = response.data;
-          var dt_dict = data.map((value, index) => { return value })
-          setDataTypeList(dt_dict);
-          setIsLoadingDTList(false);
-        }else{ /// Or not
-          search_api_get_assay_set() // Getting the full lst now 
+        // console.debug("checkAssayType PRIM", response.data.result);
+        let primaries = response.data.result ;
+        var primarySet = primaries.map((elt, idx) => {return elt.name});
+        var primaryStatus = primarySet.includes(dtype[0])
+        setDataTypeList(primaries);
+        setDtl_primary(primaries);
+        setDtl_status( primarySet.includes(dtype[0]));
+        // console.debug("checkAssayType", dtype, dtype[0], primaryStatus, primarySet);
+        search_api_get_assay_set()// the list call only gets primaries for now. 
           .then((response) => {
-            let newList = response.data;
-            var new_dict = newList.result.map((value, index) => { return value })
-            setDataTypeList(new_dict);
+            let allDTs = response.data.result;
+            // console.debug("checkkAssayType ALL", allDTs);
+            // var allDTSet = new Set(primaries.map((elt, idx) => {return elt.name}));
+            setDtl_all(allDTs);
+            // setDataTypeList(allDTs);
             setIsLoadingDTList(false);
           })
-          .catch((error) => {
-            console.error(error);
-          })
-        }
+          .catch(error => {
+            console.debug("checkAssayType Error", error);
+            passError(error.status, error.response );
+          });
       })
       .catch(error => {
-        console.debug("checkAssayType Error", error);
+        console.debug("checkAssayType Primary Error", error);
         passError(error.status, error.response );
-      });
-    }
-
-
-    function setAssays(scope,dt){
-      search_api_get_assay_list(scope)
-      .then((response) => {
-          let data = response.data;
-          var dt_dict = data.map((value, index) => { return value })
-          console.debug("dt_dict", dt_dict);
-          // setDataTypeList(dt_dict);
-          setIsLoadingDTList(false);
-      })
-      .catch(error => {
-        passError(error.status, error.response );
-        setIsLoadingDTList(false);
       });
     }
 
@@ -111,14 +94,6 @@ export const RenderDataset = (props) => {
               setIsLoadingEntity(false); 
               var checkAssay = response.results.data_types;
               checkAssayType(checkAssay)
-              // console.log("entity_data", entity_data.data_types);
-              // previousValue.current = entity_data.data_types;
-              // if(entity_data.data_types !== previousValue.current){
-              //   // previousValue.current = entity_data.data_types;
-              //   console.log("previousValue.current", entity_data.data_type, previousValue.current);
-              //   // checkAssayType(checkAssay)
-
-              // }
             }
             
           })  
@@ -142,11 +117,11 @@ export const RenderDataset = (props) => {
     
    
 
-  }, [uuid, props]);
+  }, [uuid]);
   
 
   function handleCancel(){
-    
+
     if(this.props && this.props.handleCancel){
       // How is this happening???
      this.props.handleCancel();
@@ -161,18 +136,19 @@ export const RenderDataset = (props) => {
     navigate('../')
   }
 
-
-
+  
+  
   function passError(status, message) {
     // console.debug("passError Error", status, message);
     // setIsLoadingEntity(false);
     setErrorHandler({
-        status: status,
-        message:message,
-        isError: true 
-      })
-    }
-
+      status: status,
+      message:message,
+      isError: true 
+    })
+  }
+  
+  
     // if (!isLoading && errorHandler.isError === true){
     // if (!isLoading && errorHandler.isError === true){
     //   console.error("ERR HANDLER ", errorHandler);
@@ -199,6 +175,7 @@ export const RenderDataset = (props) => {
       // console.debug("BG");
       // console.debug("DTLIST", this.props.dataTypeList);
       //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
+      console.debug("Loaded!", dtl_status, dtl_primary, dtl_all);
       return ( 
         <div>
           <DatasetFormLegacy 
@@ -207,6 +184,9 @@ export const RenderDataset = (props) => {
           editingDataset={entity_data} 
           passError={passError} 
           dataTypeList={dataTypeList} 
+          dtl_primary={dtl_primary} 
+          dtl_all={dtl_all} 
+          dtl_status={dtl_status} 
           />
         </div>
       )

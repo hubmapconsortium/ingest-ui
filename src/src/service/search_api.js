@@ -124,13 +124,13 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
 //  console.debug(fields);
 
 
-let boolQuery = "";
-console.debug("Fields", fields);
-  if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
-    boolQuery = esb.queryStringQuery(fields["keywords"])
-      .fields(ES_SEARCHABLE_WILDCARDS)
+  let boolQuery = "";
+  console.debug("Fields", fields);
+    if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
+      boolQuery = esb.queryStringQuery(fields["keywords"])
+        .fields(ES_SEARCHABLE_WILDCARDS)
 
-  } else {
+    } else {
 
       boolQuery = esb.boolQuery();
 
@@ -304,6 +304,21 @@ export function  search_api_get_assay_set(scope){
       })
       .catch(err => {
         console.debug("API get_processed_assays err", err);
+         return {results: err.response}
+      });
+};
+
+
+
+export function search_api_get_assay_primaries() { 
+  return axios 
+    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`)
+    .then(res => {
+        let data = res.data;
+        let dtListMapped = data.result.map((value, index) => { return value });
+        return {status: res.status, data: dtListMapped}
+      })
+      .catch(err => {
          return {results: err.response}
       });
 };
