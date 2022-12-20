@@ -2,6 +2,7 @@ export function validateRequired(value) {
   console.debug(typeof value);
   console.debug("VALUE",value);
   if (typeof value === "string") {
+    // console.debug("trim", (value.trim()!==""));
     return value.trim() !== "";
   } else if (typeof value === "object") {
     console.debug("value length: ",value.length);

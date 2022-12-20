@@ -133,9 +133,15 @@ class DatasetEdit extends Component {
       document.addEventListener("click", this.handleClickOutside);
       this.setAssayLists();
       var savedGeneticsStatus = undefined;
-      const auth = "";
+      try {
+        var auth = JSON.parse(localStorage.getItem("info")).groups_token;
+      } catch {
+       console.debug("LOCALSTROAGE Parse Fai")
+       var auth = "";
+      }
+
       if (localStorage.getItem("info")){
-        const auth = JSON.parse(localStorage.getItem("info")).groups_token;
+        
         const config = {
           headers: {
             Authorization:
@@ -144,6 +150,7 @@ class DatasetEdit extends Component {
           },
         };
       }else{
+        console.debug("No Auth Token");
         localStorage.setItem("isAuthenticated", false);
       }
       
@@ -176,12 +183,16 @@ class DatasetEdit extends Component {
 
     ingest_api_users_groups(auth)
       .then((res) => {
+        console.debug("groups", res.results);
         const groups = res.results.filter(
           g => g.data_provider === true
         );
+        console.debug("groups", groups);
         this.setState({
           groups: groups,
           groups_dataprovider: groups,
+        },() => {
+          console.debug("groups_dataprovider", this.state.groups_dataprovider);
         });
       })
       .catch((err) => {
@@ -1631,8 +1642,8 @@ class DatasetEdit extends Component {
 
   renderAssayColumn(min, max) {
     // Hijacking Select options based on Primary DT status
-    console.debug(this.props.dtl_status);
-    if(this.props.dtl_status) { // true = primary dt, set options to primary
+    // console.debug(this.props.dtl_status);
+    if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
       return (
         this.props.dtl_primary.slice(min, max).map((val, idx) =>
                     {return this.renderAssay(val, idx)})
@@ -1687,6 +1698,9 @@ class DatasetEdit extends Component {
       var len = 0;
       // var dtlistLen = this.props.dataTypeList.length;
       var dtlistLen = this.state.dataTypeDropdown.length;
+      if(this.props.newForm){
+        dtlistLen = this.props.dtl_primary.length;
+      }
       if(this.props.editingDataset && this.props.editingDataset.data_types) {
         //console.debug("this.props.editingDataset", this.props.editingDataset);
         len = this.props.editingDataset.data_types.length;
