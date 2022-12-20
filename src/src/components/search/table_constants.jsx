@@ -1,7 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
-
+import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 
@@ -30,22 +30,21 @@ export const COLUMN_DEF_SAMPLE = [
 	    sortable: false,
 	    width: 173,
 	    valueGetter: getLabId
-  	}, { field: 'display_subtype', headerName: 'Type', width: 200},
-	// {
-	//     field: "computed_submission_type",
-	//     headerName: "Type",
-	//     //description: "This column has a value getter and is not sortable.",
-	//     sortable: false,
-	//     width: 190,
-	//     valueGetter: getSampleType
- //  	},   
+  	}, 
+    { field: 'display_subtype', headerName: 'Type', width: 200},
+    // { field: 'sample_category', headerName: 'Category',
+    //   renderCell: (params: ValueFormatterParams) => (
+    //     <React.Fragment>
+    //       {toTitleCase(params.value)}                        
+    //     </React.Fragment>
+    //   )},
     { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
   	{ field: 'lab_donor_id', headerName: 'LABID', hide: true},
   	{ field: 'lab_tissue_sample_id', headerName: 'LABID', hide: true},
   	{ field: 'entity_type', headerName: 'Type', hide: true },
-	{ field: 'specimen_type', headerName: 'Specimen Type', hide: true},
+    { field: 'specimen_type', headerName: 'Specimen Type', hide: true},
  ];
 
 // DATASET COLUMNS
@@ -118,14 +117,17 @@ export const COLUMN_DEF_UPLOADS = [
 //   return params.getValue('entity_type');
 // }
 
-function getLabId(params: ValueGetterParams) {
+function prettyCase(string){
+  // return toTitleCase(string)
+  return "YES "+toTitleCase(string)
+}
 
+function getLabId(params: ValueGetterParams) {
  // console.debug('params:', params.row)
   try {
     return params.row['lab_donor_id'] || params.row['lab_tissue_sample_id'] || params.row['lab_dataset_id']
   } catch { }
 return ""
-
 //	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
 }
 

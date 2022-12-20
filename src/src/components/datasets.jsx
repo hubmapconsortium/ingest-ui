@@ -90,7 +90,7 @@ export const RenderDataset = (props) => {
           let data = response.data;
           var dt_dict = data.map((value, index) => { return value })
           console.debug("dt_dict", dt_dict);
-          setDataTypeList(dt_dict);
+          // setDataTypeList(dt_dict);
           setIsLoadingDTList(false);
       })
       .catch(error => {

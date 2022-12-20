@@ -445,7 +445,7 @@ class DonorForm extends Component {
       
 
         if (this.props.editingEntity) {
-          //console.debug("Updating Entity....")
+          console.debug("Updating Entity....")
           entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {

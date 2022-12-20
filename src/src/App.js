@@ -207,9 +207,11 @@ export function App (props){
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
-  const queryType = queryParams.get('sampleType');
+  const queryType = queryParams.get('entityType');
   const queryKeyword = queryParams.get('keywords');
-  var bundledParameters = {sampleType: queryType, keywords: queryKeyword};
+  const queryGroup = queryParams.get('group');
+
+  var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
 
 //console.debug("props", props);

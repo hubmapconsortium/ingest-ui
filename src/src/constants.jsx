@@ -2,55 +2,80 @@
 // These ones show on the main Search/Filter page
 // export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
 export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
-export const SAMPLE_TYPES = [
-  { donor: "Donor" },
-  { sample: "Sample"},
-  { dataset: "Dataset"}, 
-  { uploads: "Data Upload"},
-  { organ: "Organ"},
-  {
-    biopsy: "Biopsy",
-    cell_lysate: "Cell lysate",
-    ffpe_block: "FFPE block",
-    pfa_fixed_frozen_oct_block: "PFA Fixed frozen OCT block",
-    fixed_tissue_piece: "Fixed tissue piece",
-    flash_frozen_liquid_nitrogen: "Flash frozen, liquid nitrogen",
-    formalin_fixed_oct_block: "Formalin fixed OCT block",
-    fresh_frozen_tissue: "Fresh frozen tissue",
-    fresh_frozen_oct_block: "Fresh frozen oct block",
-    fresh_tissue: "Fresh tissue",
-    frozen_cell_pellet_buffy_coat: "Frozen cell pellet (Buffy coat)",
-    module: "Module",
-    pbmc: "PBMC",
-    plasma: "Plasma",
-    nuclei_rnalater: "Nuclei RNAlater",
-    organ_piece: "Organ Piece",
-    rnalater_treated_and_stored: "RNAlater treated and stored",
-    segment: "Segment",
-    serum: "Serum",
-    single_cell_cryopreserved: "Single cell cryopreserved",
-    tissue_lysate: "Tissue lysate"
-  },
-  {
-    clarity_hydrogel: "CLARITY hydrogel",
-    cryosections_curls_from_fresh_frozen_oct:
-      "Cryosections/curls from fresh frozen OCT",
-    cryosections_curls_rnalater: "Cryosectinos/curls RNAlater",
-    ffpe_slide: "FFPE slide",
-    fixed_frozen_section_slide: "Fixed Frozen section slide",
-    fresh_frozen_section_slide: "Fresh Frozen section slide",
-    fresh_frozen_tissue_section: "Fresh Frozen Tissue Section"
-  },
-  {
-    gdna: "gDNA",
-    nuclei: "Nuclei",
-    protein: "Protein",
-    rna_total: "RNA, total",
-    ran_poly_a_enriched: "RNA, poly-A enriched",
-    sequence_library:"Sequence Library"
-  },
-  { other: "Other" }
-];
+// DEPRICATED, using Sample Categories instead
+
+// Keeping the Types name here for now for smoother changeover,
+// @TODO: better naming to reflect this change
+// export const SAMPLE_TYPES = [
+//   { donor: "Donor" },
+//   { sample: "Sample"},
+//   { dataset: "Dataset"}, 
+//   { uploads: "Data Upload"},
+//   { organ: "Organ"},
+//   {
+//     biopsy: "Biopsy",
+//     cell_lysate: "Cell lysate",
+//     ffpe_block: "FFPE block",
+//     pfa_fixed_frozen_oct_block: "PFA Fixed frozen OCT block",
+//     fixed_tissue_piece: "Fixed tissue piece",
+//     flash_frozen_liquid_nitrogen: "Flash frozen, liquid nitrogen",
+//     formalin_fixed_oct_block: "Formalin fixed OCT block",
+//     fresh_frozen_tissue: "Fresh frozen tissue",
+//     fresh_frozen_oct_block: "Fresh frozen oct block",
+//     fresh_tissue: "Fresh tissue",
+//     frozen_cell_pellet_buffy_coat: "Frozen cell pellet (Buffy coat)",
+//     module: "Module",
+//     pbmc: "PBMC",
+//     plasma: "Plasma",
+//     nuclei_rnalater: "Nuclei RNAlater",
+//     organ_piece: "Organ Piece",
+//     rnalater_treated_and_stored: "RNAlater treated and stored",
+//     segment: "Segment",
+//     serum: "Serum",
+//     single_cell_cryopreserved: "Single cell cryopreserved",
+//     tissue_lysate: "Tissue lysate"
+//   },
+//   {
+//     clarity_hydrogel: "CLARITY hydrogel",
+//     cryosections_curls_from_fresh_frozen_oct:
+//       "Cryosections/curls from fresh frozen OCT",
+//     cryosections_curls_rnalater: "Cryosectinos/curls RNAlater",
+//     ffpe_slide: "FFPE slide",
+//     fixed_frozen_section_slide: "Fixed Frozen section slide",
+//     fresh_frozen_section_slide: "Fresh Frozen section slide",
+//     fresh_frozen_tissue_section: "Fresh Frozen Tissue Section"
+//   },
+//   {
+//     gdna: "gDNA",
+//     nuclei: "Nuclei",
+//     protein: "Protein",
+//     rna_total: "RNA, total",
+//     ran_poly_a_enriched: "RNA, poly-A enriched",
+//     sequence_library:"Sequence Library"
+//   },
+//   { other: "Other" }
+// ];
+
+export const ENTITY_TYPES = { // Use this instead of Types
+  donor: "Donor" ,
+  sample: "Sample",
+  dataset: "Dataset", 
+  Upload: "Data Upload"
+}
+
+export const SAMPLE_TYPES = [ // Move requests for this into categories
+{ organ: "Organ" },
+{ block: "Block"},
+{ section: "Section"}, 
+{ suspension: "Suspension"},
+]
+export const SAMPLE_CATEGORIES = { // Use this instead of Types
+   organ: "Organ",
+   block: "Block",
+   section: "Section", 
+   suspension: "Suspension",
+}
+
 
 // These ones show on the Create new Donor/Sample page
 export const TISSUE_TYPES = {

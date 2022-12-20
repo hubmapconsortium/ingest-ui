@@ -148,9 +148,10 @@ console.debug("Fields", fields);
         } 
 
         // was specimen types selected
-        if (fields["specimen_type"]) {
-          if (fields["specimen_type"] !== 'donor') {
-            boolQuery.must(esb.matchQuery("specimen_type.keyword", fields["specimen_type"]));
+        if (fields["sample_category"]) {
+          console.debug("sample_category", fields["sample_category"]);
+          if (fields["sample_category"] !== 'donor') {
+            boolQuery.must(esb.matchQuery("sample_category.keyword", fields["sample_category"]));
           } else {
             boolQuery.must(esb.matchQuery("entity_type.keyword", 'Donor'));
           }
