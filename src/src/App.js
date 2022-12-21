@@ -23,7 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
-import {search_api_get_assay_list} from "./service/search_api";
+import {search_api_get_assay_list, search_api_get_assay_set} from "./service/search_api";
 import {DataProviders} from "./utils/userInfo";
 
 // import {ErrBox} from "../utils/ui_elements";
@@ -55,6 +55,8 @@ export function App (props){
   var [timerStatus, setTimerStatus] = useState(true);
   var [isLoading, setIsLoading] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
+  var [dataTypeListAll, setDataTypeListAll] = useState({});
+  var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   let navigate = useNavigate();
@@ -95,23 +97,32 @@ export function App (props){
         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
         setAuthStatus(true);
         setTimerStatus(false);
-        // console.debug("groupsToken",groupsToken);
 
-        // The Dataset Form for New entites loads through the Form
-        search_api_get_assay_list()
+        // console.debug("groupsToken",groupsToken);
+        search_api_get_assay_set("primary") // @TODO: Apply to dataset wrapper too? 
         .then((response) => {
-          // console.debug("fetchPrimaryDataTypes Response", response);
-            let data = response.data;
-            setDataTypeList(data);
-            setIsLoading(false)
-            // console.debug("isLoading", isLoading);  
+            let dtypes = response.data.result;
+            setDataTypeList(dtypes);
+            setDataTypeListPrimary(dtypes);
+            // setIsLoading(false)
+            search_api_get_assay_set()
+              .then((response) => {
+                  let dataAll = response.data.result;
+                  setDataTypeListAll(dataAll);
+                  setIsLoading(false)
+              })
+              .catch(error => {
+                console.debug("fetch DT list Response Error", error);
+                setIsLoading(false)
+              });
         })
         .catch(error => {
-          // console.debug("fetch DT list Response Error", error);
+          console.debug("fetch DT list Response Error", error);
           setIsLoading(false)
-          // return error;
-          // passError(error.status, error.response );
         });
+
+        // The Dataset Form for New entites loads through the Form
+       
         // return dt_dict;
 
 
@@ -291,7 +302,7 @@ export function App (props){
               <Route path="/new">
                 <Route index element={<SearchComponent />} />
                 <Route path='donor' element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                <Route path='dataset' element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='dataset' element={<Forms formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='sample' element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
 
 {/* 

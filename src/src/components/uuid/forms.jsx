@@ -75,16 +75,35 @@ class Forms extends Component {
   UNSAFE_componentWillMount() {
     console.debug("UNSAFE_componentWillMount");
     // console.debug("dtlist",this.props.dataTypeList);
-    var DTList = this.props.dataTypeList;
-    console.debug("prepDatatypes", this.prepDatatypes(), DTList);
+    // search_api_get_assay_set()
+    //   .then((response) => {
+    //     let allDTs = response.data.result;
+    //     var DTList = this.props.dataTypeList;
+    //     console.debug("prepDatatypes", this.prepDatatypes(), DTList);
+    //     this.setState({
+    //       dataTypeList: allDTs
+    //     }, () => {   
+    //       console.debug("FORMS UNSAFE_componentWillMount", this.state);
+    //     });
+    //   })
+    //   .catch(error => {
+    //     console.debug("fetch DT list Response Error", error);
+    //     // passError(error.status, error.response );
+    //     return error;
+      
+    //   })
 
+
+    var DTList = this.props.dtl_primary;
+    console.debug("unsafeCOMPONENTWILLMOUNT", DTList);
+    
     this.setState({
       formType: this.props.formType,
         open: true,
         dataTypeList: DTList
     }, () => {   
-     this.setState({ isLoading: false });
-     console.debug("FORMS componentWillMount", this.state);
+    this.setState({ isLoading: false });
+    console.debug("FORMS componentWillMount", this.state);
     });
   }
 
@@ -230,6 +249,7 @@ class Forms extends Component {
       );
     } else if (this.props.formType === "dataset"  ) {
       console.debug("NEW DATASET");
+      
         return (
          <DatasetEdit
             dataTypeList={this.props.dataTypeList}
@@ -237,6 +257,9 @@ class Forms extends Component {
             onReturn={this.props.handleCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}
             newForm={true}
+            dtl_primary={this.props.dtl_primary}
+            dtl_all={this.props.dtl_all}
+            dtl_status={false}
             editingDataset="{}"
           />
           
