@@ -612,20 +612,9 @@ class TissueForm extends Component {
   //console.debug("name, value", [name, value]);
   
     this.setDirty(true);
-  //console.debug("name, value", name, value);
+    console.debug("name, value", name, value);
     switch (name) {
-      // case "lab":
-      //   this.setState({ lab: value });
-      //   if (validateRequired(value)) {
-      //     this.setState(prevState => ({
-      //       formErrors: { ...prevState.formErrors, lab: "required" }
-      //     }));
-      //   } else {
-      //     this.setState(prevState => ({
-      //       formErrors: { ...prevState.formErrors, lab: "" }
-      //     }));
-      //   }
-      //   break;
+
       case "lab":
         this.setState({ lab: value });
         if (validateRequired(value)) {
@@ -672,9 +661,7 @@ class TissueForm extends Component {
         break;
       case "protocol_url":
         this.setState({ protocol_url: value });
-      //console.debug("protocol_url",this.state.protocol_url,validateSingleProtocolIODOI(this.state.protocol_url));
         if (!validateRequired(value)) {
-        //console.debug(" ======= validateRequired");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -698,48 +685,23 @@ class TissueForm extends Component {
             }
           }));
         } else {
-        //console.debug("Clearing ProURL Error?");
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol_url: ""
+              protocol_url: "required"
             }
           }));
         }
         break;
-      // case "specimen_type":
-      //   this.setState({ specimen_type: value });
-      //   if (!validateRequired(value)) {
-      //     this.setState(prevState => ({
-      //       formErrors: { ...prevState.formErrors, specimen_type: "required" }
-      //     }));
-      //   } else if (value === "other") {
-      //     this.setState(prevState => ({
-      //       formErrors: {
-      //         ...prevState.formErrors,
-      //         specimen_type_other: ""
-      //       }
-      //     }));
-      //   } else {
-      //     if (value !== "organ") {
-      //       //this.setState({ organ: "" });
-      //     } else {
-      //       this.setState({
-      //         multiple_id: false,
-      //         sample_count: ""
-      //       });
-      //     }
-      //     this.setState(prevState => ({
-      //       specimen_type_other: "",
-      //       formErrors: { ...prevState.formErrors, specimen_type: "" }
-      //     }));
-      //   }
-      //   break;
       case "sample_category":
         this.setState({ sample_category: value });
+        
         if (!validateRequired(value)) {
+          console.debug("req!!");
           this.setState(prevState => ({
-            formErrors: { ...prevState.formErrors, sample_category: "required" }
+            formErrors: { 
+              ...prevState.formErrors, 
+              sample_category: "required" }
           }));
         } else {
           this.setState(prevState => ({
@@ -747,6 +709,7 @@ class TissueForm extends Component {
           }));
         }
         break;
+
       case "specimen_type_other":
         this.setState({ specimen_type_other: value });
         if (!validateRequired(value)) {
@@ -762,25 +725,7 @@ class TissueForm extends Component {
           }));
         }
         break;
-      //case "source_uuid":
-        //this.setState({ source_uuid: value });
-        // // const patt = new RegExp("^[^-]{3}$|^[^-]{3}-[^-]{4}$");
-        // // if (patt.test(value)) {
-        // //   this.setState({ source_uuid: value + "-" });
-        // // }
-        // if (!validateRequired(value)) {
-        //   this.setState(prevState => ({
-        //     formErrors: {
-        //       ...prevState.formErrors,
-        //       source_uuid: "required"
-        //     }
-        //   }));
-        // } else {
-        //   this.setState(prevState => ({
-        //     formErrors: { ...prevState.formErrors, source_uuid: "" }
-        //   }));
-        // }
-       // break;
+      
       case "organ":
         this.setState({ organ: value });
         if (!validateRequired(value)) {
@@ -1504,34 +1449,6 @@ handleAddImage = () => {
     return new Promise((resolve, reject) => {
       let isValid = true;
 
-      // if (!validateRequired(this.state.specimen_type)) {
-      //   this.setState(prevState => ({
-      //     formErrors: { ...prevState.formErrors, specimen_type: "required" }
-      //   }));
-      //   isValid = false;
-      // } else {
-      //   this.setState(prevState => ({
-      //     formErrors: { ...prevState.formErrors, specimen_type: "" }
-      //   }));
-      // }
-
-      // if (
-      //   this.state.specimen_type === "other" &&
-      //   !validateRequired(this.state.specimen_type_other)
-      // ) {
-      //   this.setState(prevState => ({
-      //     formErrors: {
-      //       ...prevState.formErrors,
-      //       specimen_type_other: "required"
-      //     }
-      //   }));
-      //   isValid = false;
-      // } else {
-      //   this.setState(prevState => ({
-      //     formErrors: { ...prevState.formErrors, specimen_type_other: "" }
-      //   }));
-      // }
-
       if (
         this.state.sample_category === "organ" &&
         !validateRequired(this.state.organ)
@@ -1586,29 +1503,18 @@ handleAddImage = () => {
           formErrors: { ...prevState.formErrors, protocol_url: "" }
         }));
       }
+      if (!validateRequired(this.state.sample_category)) {
+          this.setState(prevState => ({
+            formErrors: { ...prevState.formErrors, sample_category: "required" }
+          }));
+          isValid = false;
+      } else {
+        this.setState(prevState => ({
+          formErrors: { ...prevState.formErrors, sample_category: "" }
+        }));
+      }
 
-      // if (!validateRequired(this.state.protocol_url)) {
-      //   this.setState(prevState => ({
-      //       formErrors: {
-      //         ...prevState.formErrors,
-      //         protocol_url: "required"
-      //       }
-      //     }));
-      //     isValid = false;
-      // } else if (!validateProtocolIODOI(this.state.protocol_url)) {
-      //     this.setState(prevState => ({
-      //       formErrors: {
-      //         ...prevState.formErrors,
-      //         protocol_url: "Please enter a valid protocols.io DOI"
-      //       }
-      //     }));
-      //     isValid = false;
-
-      // } else {
-      //   this.setState(prevState => ({
-      //     formErrors: { ...prevState.formErrors, protocol_url: "" }
-      //   }));
-      // }
+  
       
       if (this.state.sample_count < 1) { // only validate if we are not doing multiples
       // validate the images
@@ -2040,8 +1946,6 @@ handleAddImage = () => {
                       //@TODO Cant seem to programatically list the options?
                     }
                       <option value="">Select Category</option>
-                      
-                      source_entity_type
                       {this.state.source_entity_type==="Donor" && (
                         <option value="organ" id="organ">Organ</option>
                       )}
@@ -2053,57 +1957,7 @@ handleAddImage = () => {
                         </>
                       )}
 
-                      {/* {SAMPLE_CATEGORIES.forEach((opt, index) => {
-                      //console.debug("opt", opt);
-                        <option key={opt} value={opt}> {opt}</option>   ;
-                      })}
-                       */}
-                       {/* {[this.state.sample_category_library].map((optgs, index) => {
-                      //console.debug("optgs", optgs);
-                       
-                            {Object.entries(optgs).map(op => {
-                            //console.debug("op", op);
-                                return (
-                                  <option key={op[1]} value={op[1]}>
-                                    {op[1]}
-                                  </option>
-                                );
-                              
-                            })}
-                         
-                      })} */}
-                     
-                       {/*TISSUE_TYPES[this.state.editingEntity.entity_type].map((optgs, index) => {
-                        return (
-                          <optgroup
-                            key={index}
-                            label="____________________________________________________________"
-                          >
-                            {Object.entries(optgs).map(op => {
-                              if (op[0] === "organ") {
-                                if (
-                                  this.state.source_entity &&
-                                  this.state.source_entity.entity_type === "Donor"
-                                ) {
-                                  return (
-                                    <option key={op[0]} value={op[0]}>
-                                      {op[1]}
-                                    </option>
-                                  );
-                                } else {
-                                  return null;
-                                }
-                              } else {
-                                return (
-                                  <option key={op[0]} value={op[0]}>
-                                    {op[1]}
-                                  </option>
-                                );
-                              }
-                            })}
-                          </optgroup>
-                        );
-                      })*/}
+                    
                     </select>
                   </div>
 
@@ -2136,12 +1990,11 @@ handleAddImage = () => {
                     type="text" 
                     className="form-control" 
                     id="_readonly_sample_category"
-                   value={toTitleCase(this.state.sample_category)}>
+                   value={(this.state.sample_category)}>
                     
                    </input>
                     <p>
-                      {this.state.specimen_type_other &&
-                        " - " + this.state.specimen_type_other}
+                      {(this.state.sample_category)}
                     </p>
                     </div>
                   
