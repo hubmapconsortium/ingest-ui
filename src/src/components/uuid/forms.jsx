@@ -95,7 +95,7 @@ class Forms extends Component {
 
 
     var DTList = this.props.dtl_primary;
-    console.debug("unsafeCOMPONENTWILLMOUNT", DTList);
+    // console.debug("unsafeCOMPONENTWILLMOUNT", DTList);
     
     this.setState({
       formType: this.props.formType,
@@ -198,7 +198,7 @@ class Forms extends Component {
   };
 
   onChangeGlobusLink(newLink, newDataset) {
-    console.debug(newDataset)
+    console.debug(newDataset, newLink)
     const {name, display_doi, doi} = newDataset;
     this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi, createSuccess: true});
   }

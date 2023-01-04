@@ -76,14 +76,32 @@ class EditUploads extends Component{
 
     console.debug(this.props.editingUpload);
     // let history = this.props.history;
-    const config = {
+    const groupsAuth = JSON.parse(localStorage.getItem("info")).groups_token;
+    const config = { // Nix this and use the one in the service
       headers: {
         Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
+          "Bearer " + groupsAuth,
         "Content-Type": "application/json",
       },
     };
     let entity_data = this.props.editingUpload;
+    entity_api_get_globus_url(this.props.editingUpload.uuid, groupsAuth)
+          .then((res) => {
+            console.debug("GLOBURL", res, res.results);
+            this.setState({
+              globus_path: res.results,
+            });
+          })
+          .catch((err) => {
+            this.setState({
+              globus_path: " ",
+              globus_path_tips: "Globus URL Unavailable",
+            });
+            if (err.response && err.response.status === 401) {
+              localStorage.setItem("isAuthenticated", false);
+              window.location.reload();
+            }
+          });
     
 
     this.setState({
@@ -192,23 +210,8 @@ class EditUploads extends Component{
         //     `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingUpload.uuid}/globus-url`,
         //     config
         //   )
-        entity_api_get_globus_url(this.props.editingUpload.uuid)
-          .then((res) => {
-            console.debug(res);
-            this.setState({
-              globus_path: res.data,
-            });
-          })
-          .catch((err) => {
-            this.setState({
-              globus_path: "",
-              globus_path_tips: "Globus URL Unavailable",
-            });
-            if (err.response && err.response.status === 401) {
-              localStorage.setItem("isAuthenticated", false);
-              window.location.reload();
-            }
-          });
+        // console.debug("GLOBUS URL", groupsAuth);
+        
       });
 
       this.setState({
@@ -978,14 +981,13 @@ renderReorganizeButton() {
               <p>
                     <strong>
                       <big>
-
                         {this.state.globus_path && (
 
                           <a
                             href={this.state.globus_path}
                             target='_blank'
                             rel='noopener noreferrer'
-                          >
+                          >   
                               {/* <FontAwesomeIcon icon={faExternalLinkAlt}
                                 style={{marginRight: "5px"}} 
                                 data-tip data-for='folder_tooltip' 
