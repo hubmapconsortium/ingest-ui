@@ -193,10 +193,19 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
  * 
  * return:  { status, results}
  */
-export function entity_api_get_globus_url(uuid) { 
+export function entity_api_get_globus_url(uuid, auth) { 
+  console.debug("entity_api_get_globus_url", auth);
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url`;
+  const options = {
+    headers: {
+      Authorization:
+        "Bearer " + auth,
+      "Content-Type": "application/json"
+    }
+  };
+
   return axios
-    .get(url)
+    .get(url, options)
       .then((res) => {
         console.debug("entity_api_get_globus_url", res);
         return {status: res.status, results: res.data}

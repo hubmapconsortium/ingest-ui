@@ -51,7 +51,7 @@ import Select from '@material-ui/core/Select';
 class DatasetEdit extends Component {
   state = {
    // The Entity Itself
-   newForm: this.props.newForm,
+    newForm: this.props.newForm,
     data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
     dtl_primary:[],
     dtl_all:[],
@@ -63,7 +63,7 @@ class DatasetEdit extends Component {
     dataTypeDropdown: [],
     display_doi: "",
     editingSource:[],
-    globus_path: "",
+    // globus_path: "",
     source_uuid_list: [],
     source_uuid_type: "",
     source_uuid: undefined,
@@ -78,6 +78,7 @@ class DatasetEdit extends Component {
     has_admin_priv: false,
     has_submit_priv: false,
     has_publish_priv: false,
+    groupsToken:"",
     
     // Data that sets the scene
     assay_type_primary: true,
@@ -135,20 +136,24 @@ class DatasetEdit extends Component {
       var savedGeneticsStatus = undefined;
       try {
         var auth = JSON.parse(localStorage.getItem("info")).groups_token;
+        this.setState({groupsToken:auth});
       } catch {
-       console.debug("LOCALSTROAGE Parse Fai")
+       console.debug("LOCALSTROAGE Parse Fail")
        var auth = "";
       }
 
       if (localStorage.getItem("info")){
-        
-        const config = {
+        // @TODO: Evaluate best practices, pass token to Service from within form
+        // Or consider another method for token/service auth handling
+        // Configs should /only/ assembed in the service using the passed token for now
+        const config = { 
           headers: {
             Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
             "Content-Type": "application/json",
           },
         };
+        
       }else{
         console.debug("No Auth Token");
         localStorage.setItem("isAuthenticated", false);
@@ -229,7 +234,8 @@ class DatasetEdit extends Component {
           display_doi: this.props.editingDataset.hubmap_id,
           //doi: this.props.editingDataset.entity_doi,
           lab_dataset_id: this.props.editingDataset.lab_dataset_id,
-          globus_path: "", //this.props.editingDataset.properties.globus_directory_url_path,
+          // globus_path: this.props.editingDataset.globus_directory_url_path,
+          // globus_path: "", //this.props.editingDataset.properties.globus_directory_url_path,
           source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
           source_uuid_list:this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors),
           source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
@@ -254,10 +260,11 @@ class DatasetEdit extends Component {
           //     `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingDataset.uuid}/globus-url`,
           //     config
           //   )
-          entity_api_get_globus_url(this.props.editingDataset.uuid)
+          entity_api_get_globus_url(this.props.editingDataset.uuid, this.state.groupsToken)
             .then((res) => {
+              console.debug("globus_url", res.results);
               this.setState({
-                globus_path: res.data,
+                globus_path: res.results,
               });
             })
             .catch((err) => {
@@ -1151,14 +1158,15 @@ class DatasetEdit extends Component {
                     //   `${process.env.REACT_APP_ENTITY_API_URL}/entities/${response.results.uuid}/globus-url`,
                     //   config
                     // )
-                    entity_api_get_globus_url(response.results.uuid)
+                    entity_api_get_globus_url(response.results.uuid, this.state.groupsToken)
                     .then((res) => {
+                      console.debug('globus_path RES', res.results);
                       this.setState({
-                        globus_path: res.data,
+                        globus_path: res.results,
                       }, () => {
-                       //console.debug('globus_path', res.data)
-                        this.props.onCreated({entity: response.results, globus_path: res.data}); // set as an entity for the Results
-                        this.onChangeGlobusURL();
+                       console.debug('globus_path', res.results)
+                        this.props.onCreated({entity: response.results, globus_path: res.results}); // set as an entity for the Results
+                        this.onChangeGlobusURL(response.results, res.results);
                       });
                     })
                     .catch((err) => {
@@ -1595,6 +1603,9 @@ class DatasetEdit extends Component {
   }
 
   onChangeGlobusURL() {
+    // REMEMBER the props from the new wrapper / Forms
+    // Differs from Main wrapper
+    console.debug("onChangeGlobusURL", this.state.globus_path);
     this.props.changeLink(this.state.globus_path, {
       name: this.state.lab_dataset_id,
       display_doi: this.state.display_doi,
