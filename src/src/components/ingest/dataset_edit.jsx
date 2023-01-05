@@ -4,6 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
 
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -69,6 +70,7 @@ class DatasetEdit extends Component {
     source_uuid: undefined,
     source_uuids: [],
     status: "NEW",
+    upload:[],
     writeable: true,
     // editingSourceIndex:0,  
     // name: "",
@@ -942,6 +944,14 @@ class DatasetEdit extends Component {
       this.handleSubmit(i);
     })
   };
+
+  handleDatasetSelect = (e) => {
+    console.debug("handleDatasetSelect", e);
+    e.preventDefault();
+    // @TODO Better process standardizing route navigation between forms 
+    window.history.pushState( null,"", "/upload/"+this.props.editingDataset.upload.uuid);
+    window.location.reload()
+  }
 
   handleSubmit = (submitIntention) => {
 
@@ -1849,10 +1859,31 @@ class DatasetEdit extends Component {
         >
           18 identifiers specified by HIPAA
         </span>
-        .
+        
       </div>
-           
-          </div>  
+
+      {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
+        <Box sx={{ display: 'flex'}} >
+          <Box  sx={{ width:"100%" }}><strong>This Dataset is contained in the data Upload </strong> 
+            <Button 
+              variant="text"
+              // fullWidth
+              // to='/datasets/{this.props.editingDataset.upload.uuid}' 
+              onClick={this.handleDatasetSelect}>  
+              {this.props.editingDataset.upload.hubmap_id}
+            </Button>
+          {/* </Box> */}
+          </Box>
+          {/* <Box  sx={{ flexShrink: 1}}>   */}
+         
+        </Box>
+        
+
+    )}
+      
+        
+
+    </div>  
 
 
               
@@ -2125,7 +2156,7 @@ class DatasetEdit extends Component {
                         </label>
                       </div>
                       <small id='PHIHelpBlock' className='form-text text-muted'>
-                        Will this data contain any human genomic sequence data? TEST
+                        Will this data contain any human genomic sequence data? 
                       </small>
                       
                     
