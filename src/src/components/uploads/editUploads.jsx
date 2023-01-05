@@ -807,12 +807,12 @@ renderReorganizeButton() {
   handleDatasetCellSelection = (row,column,event) =>{ 
     console.log("handleDatasetCellSelection");
     console.debug(row,column,event);
-    console.debug("/datasets/"+row.uuid);
+    console.debug("/dataset/"+row.uuid);
 
       window.history.pushState(
         null,
         "", 
-        "/datasets/"+row.uuid);
+        "/dataset/"+row.uuid);
       window.location.reload()
   
 }
