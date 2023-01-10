@@ -143,7 +143,7 @@ class bulkCreation extends Component {
       
       for (const [key, value] of Object.entries(coreError)) {
         console.debug("key", key, "value", value);
-        // if(){
+        // if(){ 
 
         // }
         console.log("ROW __________________",`${key}: ${value}`);
@@ -161,9 +161,10 @@ class bulkCreation extends Component {
           console.debug("errRow",errRow);
           errors.push(errRow);
         }else{
-          errRow.row = key;
-          errRow.message = value.error;
-          console.debug("value",value.error);
+          // errRow.row = key;
+          errRow.row = "N/A";
+          errRow.message = value;
+          console.debug("value",value);
           console.debug("errRow",errRow);
           errors.push(errRow);
         }
