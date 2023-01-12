@@ -5,6 +5,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
+import Grid from '@mui/material/Grid';
 
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -1467,7 +1468,7 @@ class DatasetEdit extends Component {
     if (this.state.writeable === false) {            
       return (
             <div className="buttonWrapRight">
-                {this.cancelButton()}
+                {this.cancelButton()} 
             </div>
           )
     } else {
@@ -1513,6 +1514,42 @@ class DatasetEdit extends Component {
           )
       }      
     }
+  }
+
+  renderNewVersionButtons() {
+    return (
+      <Alert severity="info" sx={{ width: 1 }}>
+
+
+      <Grid container columns={2} spacing={2}>
+        <Grid item xs={2}>
+          This is The <strong>Latest Version</strong>. <Link variant="text">Create a New Version</Link>
+        </Grid>
+
+        <Grid item>
+        <Button
+            type='button'
+            variant="contained"
+            fullWidth
+            onClick={() => this.handleCancel()}>
+            Previous
+        </Button>
+        </Grid>
+        <Grid item>
+        <Button
+            type='button'
+            variant="contained"
+            fullWidth
+            disabled
+            onClick={() => this.handleCancel()}>
+            Next
+        </Button>
+        </Grid>
+      </Grid>
+
+  
+      </Alert>
+    )
   }
 
   // Cancel button
@@ -1849,18 +1886,21 @@ class DatasetEdit extends Component {
           <div className='col-md-6'>
           
           
-          <div className='alert alert-danger' role='alert'>
-        <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
-        data containing any of the{" "}
-        <span
-          style={{ cursor: "pointer" }}
-          className='text-primary'
-          onClick={this.showModal}
-        >
-          18 identifiers specified by HIPAA
-        </span>
-        
-      </div>
+            
+          <Alert severity="error" className='alert alert-danger' role='alert'>
+          <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
+          data containing any of the{" "}
+          <span
+            style={{ cursor: "pointer" }}
+            className='text-primary'
+            onClick={this.showModal}
+          >
+            18 identifiers specified by HIPAA
+          </span>
+        </Alert>
+
+
+        {this.renderNewVersionButtons()}
 
       {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
         <Box sx={{ display: 'flex'}} >
@@ -2322,7 +2362,6 @@ class DatasetEdit extends Component {
             </div>
           )}
 
-          
           <div className='row'>
 
             <div className="col-8">
