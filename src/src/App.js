@@ -20,6 +20,18 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Collapse from '@mui/material/Collapse';
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {  faExclamationTriangle}
+  from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
@@ -45,6 +57,7 @@ import {RenderBulk} from "./components/bulk";
 // The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
+import  Box  from '@mui/material/Box';
 
 
 export function App (props){
@@ -214,6 +227,7 @@ export function App (props){
     // console.debug("urlChange", target, lowerTarget);
     navigate(lowerTarget,  { replace: true });
   }
+  
 
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
@@ -221,9 +235,18 @@ export function App (props){
   const queryType = queryParams.get('entityType');
   const queryKeyword = queryParams.get('keywords');
   const queryGroup = queryParams.get('group');
+  var [errorInfo,setErrorInfo] = useState("");
+  var [errorShow,setErrorShow] = useState(true);
 
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
+function reportError (error){
+  var errString = JSON.stringify(error);
+  setErrorInfo(error)
+  setErrorShow(errString);
+  
+  
+}
 
 //console.debug("props", props);
   return (
@@ -239,12 +262,65 @@ export function App (props){
         // uploadsDialogRender={uploadsDialogRender}
         onCreatedReditect={""}
       />       
+      
       <Timer logout={Logout}/>
-      <div id="content" className="container">
-        {timerStatus &&(
 
-            <LinearProgress />
-        )}
+      <div id="content" className="container">
+
+      <Drawer 
+        sx={{
+          color: 'white',
+          height:150   ,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {           
+            height: 150,
+            boxSizing: 'border-box',
+          },
+        }}
+        variant="temporary"
+        className="alert-danger"
+        anchor='bottom'
+        open={errorShow}>
+
+        <Box  sx={{ 
+          width: '100%', 
+          padding: 1, 
+          backgroundColor:'#dc3545', 
+          color:"#fff",
+            '& span, h5': {           
+            display: 'inline-block',
+            padding: "0 5px 0 0 ",
+          }, }}>
+          <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+        </Box>
+
+        <Box sx={{ width: '100%', height:'100%', padding: 1, backgroundColor:'white', color:"#dc3545", }}>
+          <Typography variant="body2" gutterBottom>
+            There's been an error handling the current task. Please try again later. If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:">help@someoneplease.com</a>
+          </Typography>
+
+          
+        </Box>
+
+        <Box sx={{ width: '100%',  padding: 1, backgroundColor:'#fff', color:"#dc3545", }}>
+        <Typography variant="body2"gutterBottom>
+                Error Details:
+              </Typography>
+              <Typography variant="caption">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+                malesuada lacus ex, sit amet blandit leo lobortis eget.
+              </Typography>
+
+
+        </Box>
+
+
+      </Drawer>
+
+
+      {timerStatus &&(
+        <LinearProgress />
+      )}
 
         { !authStatus && !isLoading && (
           <React.Fragment>
@@ -294,6 +370,7 @@ export function App (props){
 
           {authStatus && !timerStatus && !isLoading &&(
           <Paper className="px-5 py-4">
+
 
           <Routes>
               <Route index element={<SearchComponent entity_type='' packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
