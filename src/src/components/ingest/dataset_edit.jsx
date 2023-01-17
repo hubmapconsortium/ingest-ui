@@ -6,6 +6,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
+import Pagination from '@mui/material/Pagination';
 
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -1518,37 +1519,17 @@ class DatasetEdit extends Component {
 
   renderNewVersionButtons() {
     return (
-      <Alert severity="info" sx={{ width: 1 }}>
-
-
-      <Grid container columns={2} spacing={2}>
-        <Grid item xs={2}>
-          This is The <strong>Latest Version</strong>. <Link variant="text">Create a New Version</Link>
-        </Grid>
-
-        <Grid item>
-        <Button
-            type='button'
-            variant="contained"
-            fullWidth
-            onClick={() => this.handleCancel()}>
-            Previous
-        </Button>
-        </Grid>
-        <Grid item>
-        <Button
-            type='button'
-            variant="contained"
-            fullWidth
-            disabled
-            onClick={() => this.handleCancel()}>
-            Next
-        </Button>
-        </Grid>
-      </Grid>
-
-  
-      </Alert>
+      <Box  sx={{width:"50%"}}>
+         This is The <strong>4th Version</strong> of 10. < br/>
+        <Button variant="contained">Create a New Version</Button> 
+      </Box>
+    )
+  }
+  renderVersionNav() {
+    return (
+      <Box  sx={{width:"50%"}}>
+         This is The <strong>4th Version</strong> of 10. < br/> View <Link>Previous </Link> or <Link>Next</Link> Versions. < br/>
+      </Box>
     )
   }
 
@@ -1898,9 +1879,13 @@ class DatasetEdit extends Component {
             18 identifiers specified by HIPAA
           </span>
         </Alert>
+        
+
+        {this.renderVersionNav()}
+
+        
 
 
-        {this.renderNewVersionButtons()}
 
       {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
         <Box sx={{ display: 'flex'}} >
@@ -2365,6 +2350,8 @@ class DatasetEdit extends Component {
           <div className='row'>
 
             <div className="col-8">
+
+        {this.renderNewVersionButtons()}
               {this.state.submit_error && (
                 <Alert severity="error" >
                   {this.state.submitErrorResponse &&(
