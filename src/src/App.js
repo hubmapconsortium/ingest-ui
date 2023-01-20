@@ -21,6 +21,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
+import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 
 import Accordion from '@mui/material/Accordion';
@@ -28,6 +29,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  faExclamationTriangle}
@@ -37,6 +39,7 @@ import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
 import {search_api_get_assay_list, search_api_get_assay_set} from "./service/search_api";
 import {DataProviders} from "./utils/userInfo";
+import {BuildError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -58,6 +61,7 @@ import {RenderBulk} from "./components/bulk";
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 import  Box  from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 
 
 export function App (props){
@@ -235,17 +239,21 @@ export function App (props){
   const queryType = queryParams.get('entityType');
   const queryKeyword = queryParams.get('keywords');
   const queryGroup = queryParams.get('group');
+  var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
-  var [errorShow,setErrorShow] = useState(true);
+  var [errorInfoShow,setErrorInfoShow] = useState(false);
 
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
 function reportError (error){
-  var errString = JSON.stringify(error);
-  setErrorInfo(error)
-  setErrorShow(errString);
-  
-  
+  console.error("reportError", error);
+  // var errJsonString = JSON.stringify();
+  // var errObjectString = error.toString();
+  // setErrorInfo(errObjectString)
+  var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
+  console.debug("reportError", errString);
+  setErrorInfo(errString);
+  setErrorShow(true);
 }
 
 //console.debug("props", props);
@@ -295,23 +303,33 @@ function reportError (error){
         </Box>
 
         <Box sx={{ width: '100%', height:'100%', padding: 1, backgroundColor:'white', color:"#dc3545", }}>
-          <Typography variant="body2" gutterBottom>
-            There's been an error handling the current task. Please try again later. If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:">help@someoneplease.com</a>
-          </Typography>
+
+          <Grid container>
+
+            <Grid item xs={7}>
+              <Typography variant="body2" gutterBottom>
+                There's been an error handling the current task. Please try again later. <br />
+                If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:">help@someoneplease.com</a>
+              </Typography>
+            </Grid>
+
+            <Grid item xs={5}>
+
+              <Typography variant="body2"gutterBottom>
+                Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
+              </Typography>
+              <Collapse in={errorInfoShow}>
+                <Typography variant="caption">
+                  {errorInfo}
+                </Typography>
+              </Collapse>
+
+            </Grid>
+
+          </Grid>
+         
 
           
-        </Box>
-
-        <Box sx={{ width: '100%',  padding: 1, backgroundColor:'#fff', color:"#dc3545", }}>
-        <Typography variant="body2"gutterBottom>
-                Error Details:
-              </Typography>
-              <Typography variant="caption">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-                malesuada lacus ex, sit amet blandit leo lobortis eget.
-              </Typography>
-
-
         </Box>
 
 
@@ -373,14 +391,14 @@ function reportError (error){
 
 
           <Routes>
-              <Route index element={<SearchComponent entity_type='' packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
-              <Route path="/" element={ <SearchComponent entity_type=' ' packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
+              <Route index element={<SearchComponent entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+              <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/login" element={<Login />} />
               <Route path="/new">
                 <Route index element={<SearchComponent />} />
-                <Route path='donor' element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                <Route path='dataset' element={<Forms formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='sample' element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
 
 {/* 
                   <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
@@ -388,20 +406,20 @@ function reportError (error){
                   <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
 
               </Route>
-              <Route path="/donors" element={<SearchComponent filter_type="donors" urlChange={urlChange}/>} ></Route>
-              <Route path="/samples" element={<SearchComponent filter_type="Sample" urlChange={urlChange} />} ></Route>
-              <Route path="/datasets" element={<SearchComponent filter_type="Dataset" urlChange={urlChange} />} ></Route>
-              <Route path="/uploads" element={<SearchComponent filter_type="uploads" urlChange={urlChange} />} ></Route>
+              <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
+              <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
+              <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
+              <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange} />} ></Route>
 
-              <Route path="/donor/:uuid" element={<RenderDonor  handleCancel={handleCancel} status="view"/>} />
-              <Route path="/sample/:uuid" element={<RenderSample handleCancel={handleCancel} status="view"/>} />
-              <Route path="/dataset/:uuid" element={<RenderDataset dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/upload/:uuid" element={<RenderUpload  handleCancel={handleCancel} status="view"/>} />
+              <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
 
               {/* <Route path="/new/sample" element={<RenderSample status="new" />} /> */}
               {/* <Route path="/new/dataset" element={<RenderDataset status="new" />} /> */}
-              <Route path="/bulk/donors" exact element={<RenderBulk bulkType="donors" />} />
-              <Route path="/bulk/samples" element={<RenderBulk bulkType="samples" />} />
+              <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
+              <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
               {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
               {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
               {/* <Forms formType={this.state.formType} handleCancel={this.handleClose} /> */}

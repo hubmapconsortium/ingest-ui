@@ -161,6 +161,7 @@ class DatasetEdit extends Component {
         localStorage.setItem("isAuthenticated", false);
       }
       
+      this.props.reportError("NOPE");
   
 
     // Fills in selectable Data Typw List  
@@ -204,7 +205,7 @@ class DatasetEdit extends Component {
       })
       .catch((err) => {
         if (err.response && err.response.status === 401) {
-          this.props.passError(err);
+          this.props.reportError(err);
           // Rather than reload here, let's have a modal or such
           localStorage.setItem("isAuthenticated", false);
         }else if(err.status){
@@ -1068,7 +1069,7 @@ class DatasetEdit extends Component {
                 })
                 .catch((error) => {
                  //console.error("published ERROR ", error)
-                  // this.props.passError(error);
+                  // this.props.reportError(error);
                   this.setState({ 
                     submit_error: true, 
                     submitting: false, 
@@ -1086,7 +1087,7 @@ class DatasetEdit extends Component {
                       this.props.onUpdated(response.results);
                     } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
                      var statusText = response.err.response.status+" "+response.err.response.statusText;
-                    //  this.props.passError(statusText, response.err.response.data );
+                    //  this.props.reportError(statusText, response.err.response.data );
                       this.setState({ 
                         submit_error: true, 
                         submitting: false,
@@ -1098,7 +1099,7 @@ class DatasetEdit extends Component {
                 })
                 .catch((error) => {
                     //console.error("processing ERROR ", error)
-                    this.props.passError(error);
+                    this.props.reportError(error);
                     this.setState({ 
                       submit_error: true, 
                       submitting: false, 
@@ -1128,7 +1129,7 @@ class DatasetEdit extends Component {
                 }) 
                 .catch((error) => {
                   //console.error("else ERROR ", error)
-                  this.props.passError(error);
+                  this.props.reportError(error);
                    this.setState({ 
                     submit_error: true, 
                     submitting: false, 

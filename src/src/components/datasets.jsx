@@ -73,12 +73,12 @@ export const RenderDataset = (props) => {
           })
           .catch(error => {
             console.debug("checkAssayType Error", error);
-            passError(error.status, error.response );
+            props.reportError(error.status, error.response );
           });
       })
       .catch(error => {
         console.debug("checkAssayType Primary Error", error);
-        passError(error.status, error.response );
+        reportError(error.status, error.response );
       });
     }
 
@@ -137,18 +137,6 @@ export const RenderDataset = (props) => {
   }
 
   
-  
-  function passError(status, message) {
-    // console.debug("passError Error", status, message);
-    // setIsLoadingEntity(false);
-    setErrorHandler({
-      status: status,
-      message:message,
-      isError: true 
-    })
-  }
-  
-  
     // if (!isLoading && errorHandler.isError === true){
     // if (!isLoading && errorHandler.isError === true){
     //   console.error("ERR HANDLER ", errorHandler);
@@ -179,10 +167,10 @@ export const RenderDataset = (props) => {
       return ( 
         <div>
           <DatasetFormLegacy 
+          reportError={props.reportError} 
           onUpdated={onUpdated} 
           handleCancel={handleCancel} 
           editingDataset={entity_data} 
-          passError={passError} 
           dataTypeList={dataTypeList} 
           dtl_primary={dtl_primary} 
           dtl_all={dtl_all} 
