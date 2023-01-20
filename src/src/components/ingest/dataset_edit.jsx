@@ -101,6 +101,8 @@ class DatasetEdit extends Component {
     errorSnack:false,
     disableSelectDatatype:false,
     // Form Validation & processing
+    newVersion:false,
+    previous_revision_uuid: undefined,
     has_other_datatype: false,
     submitErrorResponse:"",
     submitErrorStatus:"",
@@ -764,6 +766,13 @@ class DatasetEdit extends Component {
     
   }
 
+  handleNewVersion = () => {
+    this.setState({
+      newVersion:true
+    });
+    this.handleSubmit("newversion");
+  };
+
   // getUuidList = (new_uuid_list) => {
   //   //this.setState({uuid_list: new_uuid_list});
   // //console.log('**getUuidList', new_uuid_list)
@@ -1009,16 +1018,6 @@ class DatasetEdit extends Component {
             ];
           }
 
-          // Lets make sure the data types array is unique
-          // Wait why are we adding new set of all DTs ????
-          // var uniqueDT = Array.from(new Set(data_types));
-          // console.debug("Orig data_types", data_types);
-          // console.debug("uniqueDT", uniqueDT);
-          // this.setState({
-          //   data_types: uniqueDT,
-          // })
-
-
           // Can't stringify a set within json
           var dataTypeArray = Array.from(this.state.data_types);
           console.debug("data_types", dataTypeArray);
@@ -1030,6 +1029,7 @@ class DatasetEdit extends Component {
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
+          
           console.debug("Compiled data: ", data);
   
           // get the Source ancestor
@@ -1050,15 +1050,89 @@ class DatasetEdit extends Component {
                 JSON.parse(localStorage.getItem("info")).groups_token
             },
           };
-         
-          // @TODO: Should be using services for this instead of Axios
-          //console.debug(" !this.props.newForm",  !this.props.newForm);
-          if (this.props.editingDataset && !this.props.newForm) {
 
+
+          if (this.props.editingDataset && !this.props.newForm) {
             //console.debug("submitIntention is our status as passed into handleSubmit", submitIntention);
             //console.log("data is ", data)
+            // If we';re making a new Version
+            if (submitIntention === "newversion") {
+              console.debug("Making a new version");
+              // @TODO: Basically repeates what's in the Create fucntionality, 
+              // and the previous_revision_uuid is added  
+              data.previous_revision_uuid = this.props.editingDataset.uuid;
+
+              if (this.state.lab_dataset_id) {
+                data["lab_dataset_id"] = this.state.lab_dataset_id;
+              }
+              // the group info on a create, check for the defaults
+                if (this.state.selected_group && this.state.selected_group.length > 0) {
+                  data["group_uuid"] = this.state.selected_group;
+                } else {
+                  // If none selected, we need to pick a default BUT
+                  // It must be from the data provviders, not permissions
+                  data["group_uuid"] = this.state.groups_dataprovider[0].uuid; 
+                  // data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+                }
+  
+               //console.log('DATASET TO SAVE', JSON.stringify(data))
+                // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                 ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                  .then((response) => {
+                    if (response.status < 300) {
+                     //console.log('create Dataset...', response.results);
+                       this.setState({
+                          //globus_path: res.data.globus_directory_url_path,
+                          display_doi: response.results.display_doi,
+                          //doi: res.data.doi,
+                        });
+                      //  axios
+                      //  .get(
+                      //   `${process.env.REACT_APP_ENTITY_API_URL}/entities/${response.results.uuid}/globus-url`,
+                      //   config
+                      // )
+                      entity_api_get_globus_url(response.results.uuid, this.state.groupsToken)
+                      .then((res) => {
+                        this.setState({
+                          globus_path: res.results,
+                        }, () => {
+                         console.debug('globus_path', res.results)
+
+                          this.props.onCreated({entity: response.results, globus_path: res.results}); // set as an entity for the Results
+                          this.onChangeGlobusURL(response.results, res.results);
+                        });
+                      })
+                      .catch((err) => {
+                        //console.log('ERROR catch', err)
+                        if (err.response && err.response.status === 401) {
+                          localStorage.setItem("isAuthenticated", false);
+                          // window.location.reload();
+                        }
+                      });
+                    } else {
+                     //console.debug("Error response", response) 
+                      this.setState({ 
+                        submit_error: true, 
+                        submitting: false, 
+                        submitErrorResponse:response.results.data.error,
+                        buttonSpinnerTarget:""} ,
+                        () => {
+                         console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
+                        });
+                     
+                    }
+                  
+                })
+                .catch((err) => {
+                 //console.debug("err", err)
+                  this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
+                    () => {
+                     //console.debug("CATCH ", err) 
+                    });
+                });
+            }
             // if user selected Publish
-            if (submitIntention === "published") { // From State? 
+            else if (submitIntention === "published") { // From State? 
               //console.debug("about to publish with data ", data); 
               // let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
               // axios
@@ -1108,7 +1182,7 @@ class DatasetEdit extends Component {
                       submitErrorStatus:error,
                       buttonSpinnerTarget:"" });
                  });
-              } else { // just update
+            } else { // just update
                     entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status < 300) {
@@ -1520,14 +1594,23 @@ class DatasetEdit extends Component {
   renderNewVersionButtons() {
     return (
       <Box  sx={{width:"50%"}}>
-        <Button variant="contained">Create a New Version</Button> 
+        <Button variant="contained" onClick={() => this.handleNewVersion()}>Create a New Version</Button> 
       </Box>
     )
   }
   renderVersionNav() {
+
+    var next = "";
+    var prev = "";
+    if(this.props.editingDataset.next_revision_uuid){
+      next = 'View <Link> Next </Link> version'
+    }
+    if(this.props.editingDataset.next_revision_uuid){
+      prev= 'View <Link> Previous </Link> version'
+    }
     return (
       <Box  sx={{width:"50%"}}>
-         View <Link>Previous </Link> or <Link>Next</Link> Versions.
+         {next} | {prev}
       </Box>
     )
   }
@@ -1629,11 +1712,24 @@ class DatasetEdit extends Component {
     return error.length === 0 ? "" : "is-invalid";
   }
 
+  onChangeGlobusLink(newLink, newDataset) {
+    console.debug(newDataset, newLink)
+    const {name, display_doi, doi} = newDataset;
+    this.setState({
+      
+      globus_url: newLink,
+       name: name, 
+       display_doi: display_doi, 
+       doi: doi, 
+       createSuccess: true});
+  }
+
+
   onChangeGlobusURL() {
     // REMEMBER the props from the new wrapper / Forms
     // Differs from Main wrapper
     console.debug("onChangeGlobusURL", this.state.globus_path);
-    this.props.changeLink(this.state.globus_path, {
+    this.props.changeLink(this.state.globus_path, { 
       name: this.state.lab_dataset_id,
       display_doi: this.state.display_doi,
       doi: this.state.doi,
@@ -1880,7 +1976,7 @@ class DatasetEdit extends Component {
         </Alert>
         
 
-        {/*this.renderVersionNav()*/}
+        {this.renderVersionNav()}
 
         
 
@@ -2350,7 +2446,7 @@ class DatasetEdit extends Component {
 
             <div className="col-8">
 
-        {/*this.renderNewVersionButtons()*/}
+        {this.renderNewVersionButtons()}
               {this.state.submit_error && (
                 <Alert severity="error" >
                   {this.state.submitErrorResponse &&(
