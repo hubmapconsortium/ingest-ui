@@ -1520,7 +1520,6 @@ class DatasetEdit extends Component {
   renderNewVersionButtons() {
     return (
       <Box  sx={{width:"50%"}}>
-         This is The <strong>4th Version</strong> of 10. < br/>
         <Button variant="contained">Create a New Version</Button> 
       </Box>
     )
@@ -1528,7 +1527,7 @@ class DatasetEdit extends Component {
   renderVersionNav() {
     return (
       <Box  sx={{width:"50%"}}>
-         This is The <strong>4th Version</strong> of 10. < br/> View <Link>Previous </Link> or <Link>Next</Link> Versions. < br/>
+         View <Link>Previous </Link> or <Link>Next</Link> Versions.
       </Box>
     )
   }
@@ -1881,7 +1880,7 @@ class DatasetEdit extends Component {
         </Alert>
         
 
-        {this.renderVersionNav()}
+        {/*this.renderVersionNav()*/}
 
         
 
@@ -2351,7 +2350,7 @@ class DatasetEdit extends Component {
 
             <div className="col-8">
 
-        {this.renderNewVersionButtons()}
+        {/*this.renderNewVersionButtons()*/}
               {this.state.submit_error && (
                 <Alert severity="error" >
                   {this.state.submitErrorResponse &&(
