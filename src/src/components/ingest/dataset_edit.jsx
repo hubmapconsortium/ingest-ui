@@ -773,6 +773,18 @@ class DatasetEdit extends Component {
     this.handleSubmit("newversion");
   };
 
+  handleVersionNavigate = (direction) => {
+    console.debug("handleVersionNavigate", direction);
+    // e.preventDefault();
+    // var direction = "next";
+    // @TODO Better process standardizing route navigation between forms 
+    if(direction==='next'){
+      window.history.pushState( null,"", "/dataset/"+this.props.editingDataset.next_revision_uuid);
+    }else{
+      window.history.pushState( null,"", "/dataset/"+this.props.editingDataset.previous_revision_uuid);
+    }
+    window.location.reload()
+  }
   // getUuidList = (new_uuid_list) => {
   //   //this.setState({uuid_list: new_uuid_list});
   // //console.log('**getUuidList', new_uuid_list)
@@ -963,6 +975,8 @@ class DatasetEdit extends Component {
     window.history.pushState( null,"", "/upload/"+this.props.editingDataset.upload.uuid);
     window.location.reload()
   }
+
+  
 
   handleSubmit = (submitIntention) => {
 
@@ -1426,6 +1440,14 @@ class DatasetEdit extends Component {
     return ""
   }
 
+
+  // only handles one selection at this time
+  getSourceAncestorTypes(type){
+    // Give it the type we're looking for
+    var ancestorTypes = this.props.editingDataset.direct_ancestors.map((ancestor) => ancestor.entity_type);
+    return ancestorTypes.includes(type)
+  }
+
     // only handles one selection at this time
   getSourceAncestorEntity(source_uuids){
     try {
@@ -1552,6 +1574,7 @@ class DatasetEdit extends Component {
               this.state.status.toUpperCase())) {
         return (
             <div className="buttonWrapRight">
+            
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
@@ -1571,6 +1594,7 @@ class DatasetEdit extends Component {
       if (this.state.status.toUpperCase() === 'PUBLISHED') {
         return (
             <div className="buttonWrapRight">
+                {this.renderNewVersionButtons()}
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
@@ -1592,28 +1616,53 @@ class DatasetEdit extends Component {
   }
 
   renderNewVersionButtons() {
-    return (
-      <Box  sx={{width:"50%"}}>
-        <Button variant="contained" onClick={() => this.handleNewVersion()}>Create a New Version</Button> 
-      </Box>
-    )
+    console.debug("renderNewVersionButtons", this.props.editingDataset.direct_ancestors);
+    /*the entity pointed to for at least one dataset.direct_ancestory_uuids is of type sample (ancestor.entity_type == 'Source')
+    dataset.status == 'Published'
+    user has write access for the dataset.group_uuid/group_name
+    dataset.next_revision_uuid is null (or missing altogether)*/
+    var sampleSource = this.getSourceAncestorTypes("Sample");  
+    var datasetStatus = this.props.editingDataset.status === "Published";
+    var writability = this.state.writeable;
+    var latestVersion = this.props.editingDataset.next_revision_uuid === null;
+    console.debug("renderNewVersionButtons", 
+    "sampleSource: "+sampleSource, 
+    "datasetStatus: "+datasetStatus, 
+    "writability: "+writability, 
+    "latestVersion: "+latestVersion);
+    if(sampleSource){
+      return (<Button variant="contained" onClick={() => this.handleNewVersion()}>Create a New Version</Button> )
+    } 
   }
   renderVersionNav() {
 
     var next = "";
     var prev = "";
-    if(this.props.editingDataset.next_revision_uuid){
-      next = 'View <Link> Next </Link> version'
-    }
-    if(this.props.editingDataset.next_revision_uuid){
-      prev= 'View <Link> Previous </Link> version'
-    }
+    // if(this.props.editingDataset.next_revision_uuid){
+    //   next = 'View '+<Link> Next </Link>} version
+    // }
+    // if(this.props.editingDataset.next_revision_uuid){
+    //   prev= 'View <Link> Previous </Link> version'
+    // }
+    
     return (
-      <Box  sx={{width:"50%"}}>
-         {next} | {prev}
+      <Box sx={{width:"50%"}}>
+        {this.props.editingDataset.next_revision_uuid  && (
+          <Button 
+          variant="text"
+          onClick={() => this.handleVersionNavigate('next')}>  
+          View Next Version
+        </Button>
+        )}
+        {this.props.editingDataset.previous_revision_uuid  && (
+            <Button 
+            variant="text"
+            onClick={() => this.handleVersionNavigate('prev')}>  
+            View previous Version
+          </Button>
+        )}
       </Box>
-    )
-  }
+    )}
 
   // Cancel button
   cancelButton() {
@@ -2446,7 +2495,7 @@ class DatasetEdit extends Component {
 
             <div className="col-8">
 
-        {this.renderNewVersionButtons()}
+       
               {this.state.submit_error && (
                 <Alert severity="error" >
                   {this.state.submitErrorResponse &&(
@@ -2461,7 +2510,9 @@ class DatasetEdit extends Component {
                 </Alert>
               )}
             </div>
-            <div className="col-4">  
+            <div className="col-4"> 
+            
+            {this.renderNewVersionButtons()} 
               {this.renderButtons()}
             </div>
           </div>
