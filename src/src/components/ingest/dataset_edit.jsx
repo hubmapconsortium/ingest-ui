@@ -1594,7 +1594,7 @@ class DatasetEdit extends Component {
       if (this.state.status.toUpperCase() === 'PUBLISHED') {
         return (
             <div className="buttonWrapRight">
-                {this.renderNewVersionButtons()}
+                {/* {this.renderNewVersionButtons()} */}
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
@@ -1625,15 +1625,20 @@ class DatasetEdit extends Component {
     var datasetStatus = this.props.editingDataset.status === "Published";
     var writability = this.state.writeable;
     var latestVersion = this.props.editingDataset.next_revision_uuid === null;
-    console.debug("renderNewVersionButtons", 
-    "sampleSource: "+sampleSource, 
-    "datasetStatus: "+datasetStatus, 
-    "writability: "+writability, 
-    "latestVersion: "+latestVersion);
+    console.debug(
+      "renderNewVersionButtons", 
+      "sampleSource: "+sampleSource, 
+      "datasetStatus: "+datasetStatus, 
+      "writability: "+writability, 
+      "latestVersion: "+latestVersion);
     if(sampleSource){
-      return (<Button variant="contained" onClick={() => this.handleNewVersion()}>Create a New Version</Button> )
+      // return (<Button variant="contained" onClick={() => this.handleNewVersion()}>Create a New Version</Button> )
+      return (<></> );
     } 
   }
+
+
+
   renderVersionNav() {
 
     var next = "";
@@ -2512,7 +2517,7 @@ class DatasetEdit extends Component {
             </div>
             <div className="col-4"> 
             
-            {this.renderNewVersionButtons()} 
+            {/* {this.renderNewVersionButtons()}  */}
               {this.renderButtons()}
             </div>
           </div>
