@@ -51,7 +51,6 @@ export function App (props){
   // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
-  var [regStatus, setRegStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
   var [isLoading, setIsLoading] = useState(true);
@@ -88,30 +87,16 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results);
-        
-        if(results && results.results.data === "User is not a member of group HuBMAP-read"){
-          setAuthStatus(true);
-          setRegStatus(false);
-          setIsLoading(false);
-        }
+        console.debug("ingest_api_users_groups", results.results);
 
-        if (results && results.status === 200) { 
-          // console.debug("LocalStorageAuth", results);
-          setUserGroups(results.results);
-          var dataGroups = DataProviders(userGroups);
-          setUserDataGroups(results.results);
-          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-          setTimerStatus(false);
-          setAuthStatus(true);
-
-          if(!userDataGroups || userDataGroups.length === 0){
-            setRegStatus(false);
-            setIsLoading(false);
-          }else{
-            setRegStatus(true);
-          }
-          
+      if (results && results.status === 200) { 
+        // console.debug("LocalStorageAuth", results);
+        setUserGroups(results.results);
+        var dataGroups = DataProviders(userGroups);
+        setUserDataGroups(results.results);
+        setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+        setAuthStatus(true);
+        setTimerStatus(false);
 
         // console.debug("groupsToken",groupsToken);
         search_api_get_assay_set("primary") // @TODO: Apply to dataset wrapper too? 
@@ -256,7 +241,7 @@ export function App (props){
       />       
       <Timer logout={Logout}/>
       <div id="content" className="container">
-        {isLoading &&(
+        {timerStatus &&(
 
             <LinearProgress />
         )}
@@ -305,15 +290,7 @@ export function App (props){
 
         )}
 
-     
-          {authStatus && !regStatus && (
-            <div className="row">
-              <div className="alert alert-danger col-sm-12 text-center">
-                <br />
-                You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-              </div>
-            </div>
-          )}
+       
 
           {authStatus && !timerStatus && !isLoading &&(
           <Paper className="px-5 py-4">

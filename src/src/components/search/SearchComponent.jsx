@@ -1228,7 +1228,7 @@ renderInfoPanel() {
                           //ref={this.entityType}
                           value={this.state.search_filters.entityType}
                         >
-                          <option value="---"></option>
+                          <option value=""></option>
 
                           
 
