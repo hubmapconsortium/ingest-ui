@@ -320,7 +320,7 @@ function reportError (error){
             <Grid item xs={7}>
               <Typography variant="body2" gutterBottom>
                 There's been an error handling the current task. Please try again later. <br />
-                If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:">help@someoneplease.com</a>
+                If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
               </Typography>
             </Grid>
 
