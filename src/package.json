@@ -1,6 +1,6 @@
 {
   "name": "ingest-ui",
-  "version": "2.3.10",
+  "version": "2.3.11",
   "private": true,
   "homepage": ".",
   "dependencies": {

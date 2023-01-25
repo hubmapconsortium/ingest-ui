@@ -69,6 +69,7 @@ export function App (props){
   // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
+  var [regStatus, setRegStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
   var [isLoading, setIsLoading] = useState(true);
@@ -105,39 +106,44 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results.results);
+        console.debug("ingest_api_users_groups", results);
+        
+        if(results && results.results.data === "User is not a member of group HuBMAP-read"){
+          setAuthStatus(true);
+          setRegStatus(false);
+          setIsLoading(false);
+        }
 
-      if (results && results.status === 200) { 
-        // console.debug("LocalStorageAuth", results);
-        setUserGroups(results.results);
-        var dataGroups = DataProviders(userGroups);
-        setUserDataGroups(results.results);
-        setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-        setAuthStatus(true);
-        setTimerStatus(false);
-
-        // console.debug("groupsToken",groupsToken);
-        search_api_get_assay_set("primary") // @TODO: Apply to dataset wrapper too? 
-        .then((response) => {
-            let dtypes = response.data.result;
-            setDataTypeList(dtypes);
-            setDataTypeListPrimary(dtypes);
-            // setIsLoading(false)
-            search_api_get_assay_set()
-              .then((response) => {
-                  let dataAll = response.data.result;
-                  setDataTypeListAll(dataAll);
+        if (results && results.status === 200) { 
+          // console.debug("LocalStorageAuth", results);
+          setUserGroups(results.results);
+          if(userDataGroups && userDataGroups.length> 0){setRegStatus(true);}
+          setUserDataGroups(results.results);
+          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+          setTimerStatus(false);
+          setAuthStatus(true);
+          search_api_get_assay_set("primary") 
+          .then((response) => {
+            console.debug("search_api_get_assay_set");
+              let dtypes = response.data.result;
+              setDataTypeList(dtypes);
+              setDataTypeListPrimary(dtypes);
+              // setIsLoading(false)
+              search_api_get_assay_set()
+                .then((response) => {
+                    let dataAll = response.data.result;
+                    setDataTypeListAll(dataAll);
+                    setIsLoading(false)
+                })
+                .catch(error => {
+                  console.debug("fetch DT list Response Error", error);
                   setIsLoading(false)
-              })
-              .catch(error => {
-                console.debug("fetch DT list Response Error", error);
-                setIsLoading(false)
-              });
-        })
-        .catch(error => {
-          console.debug("fetch DT list Response Error", error);
-          setIsLoading(false)
-        });
+                });
+          })
+          .catch(error => {
+            console.debug("fetch DT list Response Error", error);
+            setIsLoading(false)
+          });
 
         // The Dataset Form for New entites loads through the Form
        
@@ -148,6 +154,7 @@ export function App (props){
         // console.debug("LocalStorageAuth", results);
         setGroupsToken(null);
         setAuthStatus(false);
+        setRegStatus(false);
         setTimerStatus(false);
         setIsLoading(false);
         if(localStorage.getItem("isHubmapUser")){
@@ -277,7 +284,6 @@ function reportError (error){
       <Timer logout={Logout}/>
 
       <div id="content" className="container">
-
       <Drawer 
         sx={{
           color: 'white',
@@ -347,7 +353,7 @@ function reportError (error){
       </Drawer>
 
 
-      {timerStatus &&(
+      {isLoading &&(
         <LinearProgress />
       )}
 
@@ -395,7 +401,15 @@ function reportError (error){
 
         )}
 
-       
+     
+          {authStatus && !regStatus && (
+            <div className="row">
+              <div className="alert alert-danger col-sm-12 text-center">
+                <br />
+                You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
+              </div>
+            </div>
+          )}
 
           {authStatus && !timerStatus && !isLoading &&(
           <Paper className="px-5 py-4">
