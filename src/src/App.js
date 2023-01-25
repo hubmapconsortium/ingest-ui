@@ -30,6 +30,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  faExclamationTriangle}
@@ -246,6 +247,8 @@ export function App (props){
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
 function reportError (error){
+  // TO CALL:
+   // this.props.reportError("message");
   console.error("reportError", error);
   // var errJsonString = JSON.stringify();
   // var errObjectString = error.toString();
@@ -290,6 +293,7 @@ function reportError (error){
         anchor='bottom'
         open={errorShow}>
 
+
         <Box  sx={{ 
           width: '100%', 
           padding: 1, 
@@ -299,7 +303,14 @@ function reportError (error){
             display: 'inline-block',
             padding: "0 5px 0 0 ",
           }, }}>
-          <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+            <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+            <IconButton
+              sx={{ position: 'absolute', right: 8, top: 4, color: 'white' }}
+              aria-label="close drawer"
+              onClick= {()=> setErrorShow(false)}
+              edge="start">
+              <CloseIcon />
+            </IconButton>
         </Box>
 
         <Box sx={{ width: '100%', height:'100%', padding: 1, backgroundColor:'white', color:"#dc3545", }}>

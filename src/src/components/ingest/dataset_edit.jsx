@@ -161,7 +161,7 @@ class DatasetEdit extends Component {
         localStorage.setItem("isAuthenticated", false);
       }
       
-      this.props.reportError("NOPE");
+      // this.props.reportError("NOPE");
   
 
     // Fills in selectable Data Typw List  
