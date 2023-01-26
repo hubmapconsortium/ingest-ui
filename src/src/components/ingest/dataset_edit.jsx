@@ -197,7 +197,7 @@ class DatasetEdit extends Component {
 
               ingest_api_allowable_edit_states_statusless(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((resp) => {
-                  console.debug("allowable_edit_states_statusless", resp);
+                  // console.debug("allowable_edit_states_statusless", resp);
                   this.setState({has_version_priv: resp.results.has_write_priv});
                 })
                 .catch((err) => {
@@ -238,8 +238,8 @@ class DatasetEdit extends Component {
 
     // Sets up the Entity's info  if we're not new here
     if (this.props.editingDataset && !this.props.newForm) {      //
-      console.debug("Editing Dataset", this.props.editingDataset);
-      console.debug("newForm Dataset", this.props.newForm);
+      // console.debug("Editing Dataset", this.props.editingDataset);
+      // console.debug("newForm Dataset", this.props.newForm);
       // let source_uuids;
       try {
         // use only the first direct ancestor
@@ -1467,7 +1467,7 @@ class DatasetEdit extends Component {
   getSourceAncestorTypes(type){
     // Give it the type we're looking for
     var ancestorTypes = this.props.editingDataset.direct_ancestors.map((ancestor) => ancestor.entity_type);
-    console.debug("ancestorTypes", ancestorTypes);
+    // console.debug("ancestorTypes", ancestorTypes);
     return ancestorTypes.includes(type)
   }
 
@@ -1589,7 +1589,7 @@ class DatasetEdit extends Component {
   }
 
   renderButtons() {
-    console.debug("renderButtons",this.state.has_version_priv);
+    // console.debug("renderButtons",this.state.has_version_priv);
 
     if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
             && this.state.previous_revision_uuid === undefined 
@@ -2549,7 +2549,6 @@ class DatasetEdit extends Component {
           )}
 
           <div className='row'>
-          
                 <div className="col-8">
                   {this.state.submit_error && (
                     <Alert severity="error" >
@@ -2557,22 +2556,15 @@ class DatasetEdit extends Component {
                         <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
                       )}
                       Oops! Something went wrong. Please contact administrator for help. <br />
-                      {/* {this.state.submitErrorResponse || this.state.submitErrorStatus || this.state. &&( */}
-                        <>
-                          Details:  <strong>{this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
-                        </>
-                      {/* )} */}
+                      Details:  <strong>{this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
                     </Alert>
                   )}
                 </div>
                 <div className="col-4"> 
                   {this.renderButtons()}
                 </div>
-
           </div>
         </form>
-
-
 
         <GroupModal
           show={this.state.GroupSelectShow}
