@@ -84,12 +84,12 @@ export const RenderDataset = (props) => {
           })
           .catch(error => {
             console.debug("checkAssayType Error", error);
-            passError(error.status, error.response );
+            props.reportError(error.status, error.response );
           });
       })
       .catch(error => {
         console.debug("checkAssayType Primary Error", error);
-        passError(error.status, error.response );
+        reportError(error.status, error.response );
       });
     }
 
@@ -206,12 +206,12 @@ export const RenderDataset = (props) => {
         <div>
           {renderSuccessDialog()}
           <DatasetFormLegacy 
+          reportError={props.reportError} 
           changeLink={onChangeGlobusLink}
           onUpdated={onUpdated} 
           onCreated={onCreated}
           handleCancel={handleCancel} 
           editingDataset={entity_data} 
-          passError={passError} 
           dataTypeList={dataTypeList} 
           dtl_primary={dtl_primary} 
           dtl_all={dtl_all} 
