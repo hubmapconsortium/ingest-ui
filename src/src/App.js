@@ -70,6 +70,7 @@ export function App (props){
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [authStatus, setAuthStatus] = useState(false);
   var [regStatus, setRegStatus] = useState(false);
+  var [unregStatus, setUnegStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
   var [isLoading, setIsLoading] = useState(true);
@@ -111,6 +112,7 @@ export function App (props){
         if(results && results.results.data === "User is not a member of group HuBMAP-read"){
           setAuthStatus(true);
           setRegStatus(false);
+          setUnegStatus(true);
           setIsLoading(false);
         }
 
@@ -402,7 +404,7 @@ function reportError (error){
         )}
 
      
-          {authStatus && !regStatus && (
+          {unregStatus && (
             <div className="row">
               <div className="alert alert-danger col-sm-12 text-center">
                 <br />
