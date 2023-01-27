@@ -8,11 +8,22 @@ import { useLocation } from 'react-router'
 
 
 
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import Result from "./uuid/result";
+
+
 export const RenderDataset = (props) => {
   //console.debug("Rendering from NEWER Route, not Legacy Route");
   //console.debug("RenderSearchComponent", props);
   const previousValue = useRef(null);
   let navigate = useNavigate();
+
+  var [newEntity, setNewEntity] = useState(null);
+  var [newResult, setNewResult] = useState(null);
+  var [newVersionShow, setNewVersionShow] = useState(false);
+  var [globusLink, setGlobusLink] = useState(null);
+
   var [entity_data, setEntity] = useState(null);
   var [entityDT, setEntityDT] = useState([""]);
   var [dtl_all, setDtl_all] = useState([""]);
@@ -136,39 +147,69 @@ export const RenderDataset = (props) => {
     navigate('../')
   }
 
-  
-    // if (!isLoading && errorHandler.isError === true){
-    // if (!isLoading && errorHandler.isError === true){
-    //   console.error("ERR HANDLER ", errorHandler);
-    //   // @TODO dont duplicate this use of the dataset form import, 
-    //   return (
-    //     <>
-    //       <div>
-    //         <DatasetFormLegacy 
-    //         onUpdated={onUpdated} 
-    //         handleCancel={handleCancel} 
-    //         editingDataset={entity_data} 
-    //         passError={passError} 
-    //         dataTypeList={dataTypeList} 
-    //         />
+  function onClose(data){
+    navigate("/");  
+}
 
-    //       </div>
-    //       {/* <ErrBox err={errorHandler} /> */}
-    //     </>
-    //   );
-    // }else 
+  function onCreated(data) {
+    // @TODO: Originally lived in the Forms wrapper which wrapped all New forms
+    // New Versioning uses the Edit view, however. We need to eventually unwrap 
+    // all the NEW form wrapping stuff
+
+      console.debug(' onCreated:', data);
+      //  globus = data.globus_path
+      setNewEntity(data.entity);
+      setNewResult(data);
+      setGlobusLink(data.globus_path);
+      setNewVersionShow(true);
+     
+  }
+
+  function onChangeGlobusLink(newLink, newDataset) {
+    console.debug(newDataset, newLink)
+    const {name, display_doi, doi} = newDataset;
+    // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi, createSuccess: true});
+  }
+
+  function renderSuccessDialog(){
+    if (newVersionShow) {
+      // const {name, display_doi, doi} = newEntity;
+      return (
+        <Dialog aria-labelledby="result-dialog" open={newVersionShow} maxWidth="xs">
+        <DialogContent>
+        <Result
+          result={newResult}
+          onReturn={onClose}
+          handleCancel={handleCancel}
+          entity={newEntity}
+        />
+        </DialogContent>
+        </Dialog>
+      );
+    }
+  }
+  
+  function passError(status, message) {
+    // console.debug("passError Error", status, message);
+    // setIsLoadingEntity(false);
+    setErrorHandler({
+      status: status,
+      message:message,
+      isError: true 
+    })
+  }
+  
+  
     if (!isLoadingEntity && !isLoadingDTList ) {
-      // console.debug(isLoadingDTList, dataTypeList );
-      // console.debug(isLoadingEntity, entity_data);
-      // console.debug("BG");
-      // console.debug("DTLIST", this.props.dataTypeList);
-      //console.debug("!isLoading", !isLoading, "errorHandler", errorHandler);
       console.debug("Loaded!", dtl_status, dtl_primary, dtl_all);
       return ( 
         <div>
+          {renderSuccessDialog()}
           <DatasetFormLegacy 
           reportError={props.reportError} 
+          changeLink={onChangeGlobusLink}
           onUpdated={onUpdated} 
+          onCreated={onCreated}
           handleCancel={handleCancel} 
           editingDataset={entity_data} 
           dataTypeList={dataTypeList} 
