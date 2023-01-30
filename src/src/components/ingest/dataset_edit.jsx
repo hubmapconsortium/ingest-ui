@@ -369,8 +369,8 @@ class DatasetEdit extends Component {
       // var primInv = primaryDTs.find(({ name }) => name === thisDT);
       // console.debug("looking for "+thisDT+" in primaryDTs",primInv);
 
+      // this.props.reportError("NOPE");
       
-     
     }
   }
 

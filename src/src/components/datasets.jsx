@@ -213,7 +213,7 @@ export const RenderDataset = (props) => {
           onCreated={onCreated}
           handleCancel={handleCancel} 
           editingDataset={entity_data} 
-          passError={passError} 
+          reportError={props.reportError} 
           dataTypeList={dataTypeList} 
           dtl_primary={dtl_primary} 
           dtl_all={dtl_all} 
