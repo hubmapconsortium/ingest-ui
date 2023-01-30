@@ -25,6 +25,7 @@ export const RenderDataset = (props) => {
   var [globusLink, setGlobusLink] = useState(null);
 
   var [entity_data, setEntity] = useState(null);
+  var [authToken, setAuthToken] = useState(null);
   var [entityDT, setEntityDT] = useState([""]);
   var [dtl_all, setDtl_all] = useState([""]);
   var [dtl_primary, setDtl_primary] = useState([""]);
@@ -59,7 +60,7 @@ export const RenderDataset = (props) => {
     
     // console.debug("useEffect", uuid, props);
     var authSet = JSON.parse(localStorage.getItem("info"));
-    
+    setAuthToken(authSet);
   
     function checkAssayType(dtype){
       // console.debug("checkAssayType", dt);
@@ -206,12 +207,13 @@ export const RenderDataset = (props) => {
         <div>
           {renderSuccessDialog()}
           <DatasetFormLegacy 
-          reportError={props.reportError} 
+          authToken={authToken}
           changeLink={onChangeGlobusLink}
           onUpdated={onUpdated} 
           onCreated={onCreated}
           handleCancel={handleCancel} 
           editingDataset={entity_data} 
+          passError={passError} 
           dataTypeList={dataTypeList} 
           dtl_primary={dtl_primary} 
           dtl_all={dtl_all} 
