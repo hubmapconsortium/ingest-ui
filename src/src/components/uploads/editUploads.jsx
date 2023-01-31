@@ -75,7 +75,6 @@ class EditUploads extends Component{
   componentDidMount() {
 
     console.debug(this.props.editingUpload);
-    // let history = this.props.history;
     const groupsAuth = JSON.parse(localStorage.getItem("info")).groups_token;
     const config = { // Nix this and use the one in the service
       headers: {
@@ -203,14 +202,6 @@ class EditUploads extends Component{
             break;
         }
 
-        //validation_message
-
-        // axios
-        //   .get(
-        //     `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingUpload.uuid}/globus-url`,
-        //     config
-        //   )
-        // console.debug("GLOBUS URL", groupsAuth);
         
       });
 
@@ -251,9 +242,6 @@ class EditUploads extends Component{
           data_curator: curator,
           data_group_editor: group_editor
         });
-        // console.debug('admin', admin)
-        // console.debug('curator', curator)
-        // console.debug('data grp', group_editor)
       }
     })
 
@@ -707,12 +695,7 @@ renderReorganizeButton() {
   }
   
   componentDidUpdate(prevProps) { 
-    // console.log("componentDidUpdate");
-    // console.log(prevProps);
-    // Typical usage (don't forget to compare props):
-    // console.debug(this.props.editingUpload.datasets);
     if (this.props.targetUUID !== prevProps.targetUUID) {
-      // this.getUpload(this.props.targetUUID);
     }
   }
 
@@ -1107,15 +1090,6 @@ renderReorganizeButton() {
               Oops! Something went wrong. Please contact administrator for help.
             </div>
           )}
-
-
-            {/*  this shouldnt happen! Success redirects to home */}
-          {/* {this.state.submit_success && (
-            <div className='alert alert-success col-sm-12' role='alert'>
-              Changes saved Successfully.
-            </div>
-          )} */}
-
 
           </div>
           </div>

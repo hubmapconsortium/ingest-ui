@@ -57,20 +57,7 @@ class CreateUploads extends Component {
         description: this.state.inputValue_desc, // Just till I can solve unexpected key error
         group_uuid:this.state.inputValue_group_uuid 
       };
-      // const auth = JSON.parse(localStorage.getItem("info")).groups_token;
-      // const config = {
-      //   headers: {
-      //     Authorization:
-      //       "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-      //     "Content-Type": "application/json"
-      //   }
-      // }
-      // axios
-      //   .post(
-      //     `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`,
-      //     JSON.stringify(data),
-      //     config
-      //   )
+
       ingest_api_create_upload(data, JSON.parse(localStorage.getItem("info")).groups_token)
         .then(response => {
           console.debug("response: ", response);
@@ -130,22 +117,6 @@ class CreateUploads extends Component {
     });
   };
 
-
-  // validateInput(input,label){
-  //   if (!validateRequired(input)) {
-  //     this.setState((prevState) => ({
-  //       formErrors: { ...prevState.formErrors, label: "invalid" },
-  //     }));
-  //     isValid = false;
-  //   } else {
-  //     this.setState((prevState) => ({
-  //       formErrors: { ...prevState.formErrors, label: "valid" },
-  //     }));
-  //   }
-
-  // }
-
-
   validateForm() {
       let isValid = true;
       if (!validateRequired(this.state.inputValue_title)) {
@@ -193,19 +164,15 @@ class CreateUploads extends Component {
       evt.target.value=null; 
       console.debug("evt.target.value",evt.target.value);
     }else{
-    // console.log(evt.target.id+": "+evt.target.value+" | "+evt.target.value.length);
     if(evt.target.id==="Submission_Name"){
-      // console.log('evt.target.id==="Submission_Name"');
       this.setState({
         inputValue_title: evt.target.value
       });
     }else if(evt.target.id==="Submission_Desc"){
-      // console.log('evt.target.id==="Submission_Desc"');
       this.setState({
         inputValue_desc: evt.target.value
       });
     }else if(evt.target.id==="Submission_Group"){
-      // console.log('evt.target.id==="Submission_Group"');
       this.setState({
         inputValue_group_uuid: evt.target.value
       });
@@ -255,12 +222,10 @@ class CreateUploads extends Component {
       const groups = results.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
-        // return groups;
         this.setState({ 
           groups: groups,
           inputValue_group_uuid: groups[0].uuid
         });
-        
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
           window.location.reload();
@@ -282,8 +247,6 @@ class CreateUploads extends Component {
               this.errorClass(this.state.formErrors.group)
             }
             onChange={this.updateInputValue}
-            // size="small"
-            // margin="dense"
           >
             {this.state.groups.map(g => {
               return <option key={g.uuid} value={g.uuid}>{g.displayname}</option>;

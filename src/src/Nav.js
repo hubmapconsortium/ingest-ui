@@ -98,29 +98,20 @@ export const Navigation = (props) => {
 
   const onClose = () => {
     setUploadsDialog(false);
-  //console.debug("onClose");
   };
 
   const onCreated = (data) => {
     console.debug("onCreated");
-    // console.debug("data", data.uuid, data.results.uuid);
-    // navigate("/Upload/"+data.uuid);
     navigate("/Upload/"+data.results.uuid);
     setUploadsDialog(false);
   };
   
   function logout(e) {
-  //console.debug("Logging out");
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
     
   };
-  // const NavTo = (path, type) => {
-  // //console.debug("NavTo", path, type);
-  //   navigate('/'+path+'/'+type);
-  // }
-
     return(
       <div>
       <Dialog
@@ -140,9 +131,7 @@ export const Navigation = (props) => {
           <div id="MenuLeft">
             <a className="navbar-brand" href="/">
               <img
-                //src="https://hubmapconsortium.org/wp-content/uploads/2019/01/HuBMAP-Retina-Logo-Color-300x110.png"
                 src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                //width="300"
                 height="40"
                 className="d-inline-block align-top"
                 id="MenuLogo"
@@ -153,12 +142,8 @@ export const Navigation = (props) => {
               {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
                 <div className="d-inline">                
                 <span className="menu-bar-static-label mr-4">REGISTER NEW:</span>
-                
-
-
 
                 <Button 
-                  // className="ml-2"
                   id="IndividualButton"
                   endIcon={<ArrowDropDownIcon />}
                   aria-controls={open_I ? 'IndividualMenu' : undefined}

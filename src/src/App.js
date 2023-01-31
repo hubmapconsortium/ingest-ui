@@ -80,17 +80,7 @@ export function App (props){
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   let navigate = useNavigate();
-  // const { sampleType, keywords } = useParams();
 
-  
-    
-
-//   function LocalStorageAuth(){
-
-    
-// }
-
-  
 
   useEffect(() => {
     
@@ -147,10 +137,6 @@ export function App (props){
             setIsLoading(false)
           });
 
-        // The Dataset Form for New entites loads through the Form
-       
-        // return dt_dict;
-
 
       } else if (results && results.status === 401) {
         // console.debug("LocalStorageAuth", results);
@@ -168,7 +154,6 @@ export function App (props){
         
     });
     }catch {
-      // console.debug("LocalStorageAuth", "CATCh No LocalStorage");
       setTimerStatus(false);
       setIsLoading(false)
     }
@@ -176,69 +161,34 @@ export function App (props){
 
   }, [groupsToken, isLoading]);
   
-
-  // A custom hook that builds on useLocation to parse
-// the query string for you.
-// function useQuery() {
-//   const { search } = useLocation();
-//   return React.useMemo(() => new URLSearchParams(search), [search]);
-// }
-
-
   function Logout(){
-  //console.debug("Logging out");
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
   };
-
-  
-  // function onChangeGlobusLink(newLink, newDataset){
-  //   // const {name, display_doi, doi} = newDataset;
-  //   // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi});
-  // };
-
-
 
   function handleCancel(){
     window.history.back();  
   }
 
 
-
   const onClose = (event, reason) => {
-      // setLoginDialogRender(true)
-      // console.debug("onClose ", event, reason);
       navigate("/");
-      // setLoginDialogRender(false);
-    
   }
 
 
   const onCloseLogin = (event, reason) => {
-      // setLoginDialogRender(true)
-      // console.debug("onCloseLogin ", event, reason);
       navigate("/");
       setLoginDialogRender(false);
     
   }
 
   function CallLoginDialog(){
-    // console.debug("CallLoginDialog Open");
     setLoginDialogRender(true);
   }
-
-  // function CallUploadsDialog(){
-  // //console.debug("CallUploadsDialog uploadsDialogRender");
-  //   setUploadsDialogRender(true);
-  // }
- 
-
- 
   
   function urlChange(target) {
     var lowerTarget = target.toLowerCase();
-    // console.debug("urlChange", target, lowerTarget);
     navigate(lowerTarget,  { replace: true });
   }
   
@@ -256,19 +206,13 @@ export function App (props){
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
 function reportError (error){
-  // TO CALL:
-   // this.props.reportError("message");
   console.error("reportError", error);
-  // var errJsonString = JSON.stringify();
-  // var errObjectString = error.toString();
-  // setErrorInfo(errObjectString)
   var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
   console.debug("reportError", errString);
   setErrorInfo(errString);
   setErrorShow(true);
 }
 
-//console.debug("props", props);
   return (
     <div className="App">
       
@@ -279,7 +223,6 @@ function reportError (error){
         app_info={ app_info_storage}
         userGroups={userGroups}
         userDataGroups={userDataGroups}
-        // uploadsDialogRender={uploadsDialogRender}
         onCreatedReditect={""}
       />       
       
@@ -427,11 +370,6 @@ function reportError (error){
                 <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
 
-{/* 
-                  <Route path="/new/donor" element={ <Forms formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                  <Route path="/new/dataset" element={<Forms formType='dataset' dataTypeList={dataTypeList} new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                  <Route path="/new/sample" element={<Forms formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> */}
-
               </Route>
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
@@ -443,23 +381,16 @@ function reportError (error){
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
 
-              {/* <Route path="/new/sample" element={<RenderSample status="new" />} /> */}
-              {/* <Route path="/new/dataset" element={<RenderDataset status="new" />} /> */}
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
-              {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
-              {/* <Route path="/new/data" element={<SearchComponent uploadsDialog="true" CallUploadsDialog={CallUploadsDialog} changeLink={onChangeGlobusLink} />} /> */}
-              {/* <Forms formType={this.state.formType} handleCancel={this.handleClose} /> */}
-             
-          </Routes>
 
+          </Routes>
 
           </Paper>
           )}
   </div>
   </div>
   );
-  // return html;
   
 }
       
