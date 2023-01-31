@@ -173,14 +173,7 @@ class DatasetEdit extends Component {
       }
 
    
-      
-      // this.props.reportError("NOPE");
-  
 
-    // Fills in selectable Data Typw List  
-    // Now from Wrapper/Props
-      // this.updateStateDataTypeInfo();
-    
       // Figure out our permissions
       if (this.props.editingDataset) {
         //console.debug("Editing Dataset", this.props.editingDataset);
@@ -593,22 +586,9 @@ class DatasetEdit extends Component {
             selected_dt: value,
           });
 
-        }/*if (e.target.checked) {
-          const data_types = this.state.data_types;
-          data_types.add(name);
-          this.setState({
-            data_types: data_types,
-          });
-        } else {
-          const data_types = this.state.data_types;
-          data_types.delete(name);
-          this.setState({
-            data_types: data_types,
-          });
-        }*/
+        }
       
       }
-      //////console.log('data_types', this.state.data_types)
     }
   };
 
@@ -829,20 +809,6 @@ class DatasetEdit extends Component {
     }
     window.location.reload()
   }
-  // getUuidList = (new_uuid_list) => {
-  //   //this.setState({uuid_list: new_uuid_list});
-  // //console.log('**getUuidList', new_uuid_list)
-  //   this.setState(
-  //     {
-  //       source_uuid: this.getSourceAncestor(new_uuid_list),
-  //       source_uuid_list: new_uuid_list,
-  //       LookUpShow: false,
-  //     },
-  //     () => {
-  //       this.validateUUID(); // Only place this is called, wrapper func depricated?
-  //     }
-  //   );
-  // };
 
   handleAddNewCollection = () => {
     this.setState({
@@ -850,138 +816,12 @@ class DatasetEdit extends Component {
     });
   };
 
-  // hideAddCollectionModal = (collection) => {
-  //   this.setState({
-  //     AddCollectionShow: false,
-  //   });
-
-  //   if (collection.label) {
-  //     const config = {
-  //       headers: {
-  //         Authorization:
-  //           "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-  //         "Content-Type": "application/json",
-  //       },
-  //     };
-
-  //     axios
-  //       .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
-  //       .then((res) => {
-  //         this.setState(
-  //           {
-  //             collections: res.data.collections,
-  //           },
-  //           () => {
-  //             const ret = this.state.collections.filter((c) => {
-  //               return c.label
-  //                 .toLowerCase()
-  //                 .includes(collection.label.toLowerCase());
-  //             });
-  //             this.setState({ collection: ret[0] });
-  //           }
-  //         );
-  //       })
-  //       .catch((err) => {
-  //         if (err.response === undefined) {
-  //         } else if (err.response.status === 401) {
-  //           localStorage.setItem("isAuthenticated", false);
-  //           window.location.reload();
-  //         }
-  //       });
-  //   }
-  // };
-
   handleClickOutside = (e) => {
     this.setState({
       showCollectionsDropDown: false,
     });
   };
 
-  // validateUUID = () => {
-  //   let isValid = true;
-  //   const uuid = this.state.source_uuid_list[0].hubmap_id
-  //     ? this.state.source_uuid_list[0].hubmap_id
-  //     : this.state.source_uuid_list[0];
-  //   const uuid_type = this.state.source_uuid_list[0].datatype
-  //     ? this.state.source_uuid_list[0].datatype
-  //     : "";
-  //   //const uuid_type = "Not dataset";
-  //   const url_path = uuid_type === "Dataset" ? "datasets" : "specimens";
-  //   const url_server =
-  //     uuid_type === "Dataset"
-  //       ? process.env.REACT_APP_DATAINGEST_API_URL
-  //       : process.env.REACT_APP_SPECIMEN_API_URL;
-
-  //   // const patt = new RegExp("^.{3}-.{4}-.{3}$");
-  //   // if (patt.test(uuid)) {
-  //   this.setState({
-  //     validatingUUID: true,
-  //   });
-  //   if (true) {
-  //     const config = {
-  //       headers: {
-  //         Authorization:
-  //           "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //     };
-
-  //     return axios
-  //       .get(`${url_server}/${url_path}/${uuid}`, config)
-  //       .then((res) => {
-  //         if (res.data) {
-  //           if (
-  //             res.data.specimen &&
-  //             res.data.specimen.entitytype === "Dataset"
-  //           ) {
-  //             res.data.dataset = res.data.specimen;
-  //             res.data.specimen = null;
-  //           }
-  //           this.setState((prevState) => ({
-  //             source_entity: res.data,
-  //             formErrors: { ...prevState.formErrors, source_uuid: "valid" },
-  //           }));
-  //           return isValid;
-  //         } else {
-  //           this.setState((prevState) => ({
-  //             source_entity: null,
-  //             formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-  //           }));
-  //           isValid = false;
-  //           Alert("The Source UUID does not exist.");
-  //           return isValid;
-  //         }
-  //       })
-  //       .catch((err) => {
-  //        //console.debug("Err Caught in validateUUID catch for then Catch")
-  //         this.setState((prevState) => ({
-  //           submitErrorResponse:err,
-  //           source_entity: null,
-  //           formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-  //         }));
-  //         isValid = false;
-          
-  //         Alert("The Source UUID does not exist.");
-  //         return isValid;
-  //       })
-  //       .then(() => {
-  //         this.setState({
-  //           validatingUUID: false,
-  //         });
-  //         return isValid;
-  //       });
-  //   } else {
-  //    //console.debug("Err Caught in validateUUID Return")
-  //     this.setState((prevState) => ({
-  //       formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-  //     }));
-  //     isValid = false;
-  //     Alert("The Source UUID is invalid.");
-  //     return new Promise((resolve, reject) => {
-  //       resolve(false);
-  //     });
-  //   }
-  // };
 
   handleCancel = () => {
     if(this.props && this.props.handleCancel){
@@ -1024,22 +864,9 @@ class DatasetEdit extends Component {
 
   handleSubmit = (submitIntention) => {
 
-    // const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
-    // const data_types = this.state.data_types;
-    // const other_dt = Array.from(data_types).filter(
-    //   (dt) => !data_type_options.has(dt)
-    //   )[0];
-    // data_types.delete(other_dt);
-    // // //////console.log('submit: data_types',data_types)
-    // if (this.state.other_dt) {
-    //   data_types.add(this.state.other_dt);
-    // }
-    
-    // this.setState({ data_types: data_types });
-    //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
     console.debug("GroupSelectShow", this.state.GroupSelectShow);
-    //console.debug("editingDataset", this.props.editingDataset);
+    //console.debug(editingDataset", this.props.editingDataset);
       if (isValid) {
         if (
           (!this.props.editingDataset || 
@@ -1361,22 +1188,7 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-     //console.debug("data_types", this.state.data_types);
-      // if (!validateRequired(this.state.lab_dataset_id)) {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "required" },
-      //   }));
-      //   isValid = false;
-      //   resolve(isValid);
-      // } else {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "" },
-      //   }));
-      //   // this.validateUUID().then((res) => {
-      //   //   resolve(isValid && res);
-      //   // });
-      // }
-      
+     
       if (!validateRequired(this.state.source_uuid_list)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, source_uuid_list: "At least one Source is required" },
@@ -1594,18 +1406,6 @@ class DatasetEdit extends Component {
 
   renderButtonOverlay(){
     return ( // @TODO: Improved form-bottom Control Overlay?
-      // <Box className="buttonActiveOverlay" sx={{
-      //   backgroundColor: 'rgba(0,0,0,0.8)',
-      //   color: 'white',
-      //   position: 'relative',
-      //   height: '80px',
-      //   bottom:'80px',
-      //   borderBottomRightRadius: '4px',
-      //   borderBottomLeftRadius: '4px'
-      // }}>
-      //   Processing, Pleaese Wait...
-      // <CircularProgress color="inherit" />
-      // </Box>
       <></>
     )
   }
@@ -1717,12 +1517,6 @@ class DatasetEdit extends Component {
 
     var next = "";
     var prev = "";
-    // if(this.props.editingDataset.next_revision_uuid){
-    //   next = 'View '+<Link> Next </Link>} version
-    // }
-    // if(this.props.editingDataset.next_revision_uuid){
-    //   prev= 'View <Link> Previous </Link> version'
-    // }
     
     return (
       <Box sx={{width:"50%"}}>
@@ -1869,18 +1663,6 @@ class DatasetEdit extends Component {
          )
     }
 
-  // renderOneAssay(val, idx) {
-	 //   let idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
-
-	 //   return (<div className='form-group form-check'>
-		//                 <input type='checkbox' className='form-check-input' name={val.name} id={idstr} key={idstr}
-		//                     onChange={this.handleInputChange} checked={this.isAssayCheckSet(val.name)}
-		//                 />
-		//                 <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
-		//                 </div>
-	 //       )
-  //   }
-
   isAssayCheckSet(assay) {
     ////console.log('isAssayCheckSet',assay)
     try {    
@@ -1971,18 +1753,7 @@ class DatasetEdit extends Component {
 
           </>)
       }else{ 
-        //  var selectedID = null;
-        //   if(this.props.editingDataset && this.props.editingDataset.data_types){
-        //     //console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
-        //     // If we're not in the list yet, add us!
-        //     // if(!this.state.assay_type_primary){
-        //     //   //console.debug("Not in the list yet, add us!");
-        //     // }
-        //     // selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
-        //     selectedID = this.props.editingDataset.data_types[0];
-        //   }
-          // console.debug("selectedID", selectedID);
-        // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
+       
   	    return (<>
   		    <Select 
             native

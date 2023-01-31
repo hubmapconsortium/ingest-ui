@@ -494,62 +494,10 @@ class TissueForm extends Component {
       // We're not reloading the view anymore, we want to pass the UUID up
       // to our parent
       this.handleChangeSample(param_uuid); 
-      // entity_api_get_entity(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-      //   .then((response) => {
-      //       if (response.status === 200) {
-      //         let entity_data = response.results;
-      //         this.setState({
-      //             editingEntity: entity_data
-      //         });
-      //         // check to see if user can edit
-      //         ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-      //             .then((resp) => {
-      //                 if (resp.status === 200) {
-      //                   ////////console.debug('api_allowable_edit_states...');
-      //                   ////////console.debug(resp.results);
-      //                   let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-      //                   this.setState({
-      //                     readOnly: read_only_state,   // used for hidding UI components
-      //                     param_uuid: param_uuid , 
-      //                     show_snack: true,
-      //                     snackmessage: "Sample data was loaded",
-      //                     show_dirty_warning: false,
-      //                   }, () => {
-      //                     this.checkForRelatedGroupIds(entity_data);
-      //                     this.initialize();
-      //                   }
-
-      //                   );
-                       
-      //                 }         
-      //         });
-      //       }else{
-      //       //console.debug("ERR response, ", response)
-      //       }
-      // });
+     
     }
   }
-  // getEntity = (uuid) => {
-      
-  //     entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-  //     .then((response) => {
-  //       if (response.status === 200) {
-  //         let entity_data = response.results;
-
-  //         // check to see if user can edit
-  //         ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-  //           .then((resp) => {
-  //           if (resp.status === 200) {
-  //             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-  //             this.setState({
-  //               editingEntity: entity_data,
-  //               readOnly: read_only_state   // used for hidding UI components
-  //               });
-  //           }
-  //         });
-  //       }
-  //     });
-  //   };
+  
 
   getSourceAncestorOrgan(entity) {
     //var ancestor_organ = ""
@@ -994,17 +942,6 @@ class TissueForm extends Component {
    }
 
 
-  // Seemingly replaced by the other handleAddImage so commenting for now
-
-  // handleAddImage = () => {
-  //   let newId = 1;
-  //   if (this.state.images.length > 0) {
-  //     newId = this.state.images[this.state.images.length - 1].id + 1;
-  //   }
-  //   this.setState({
-  //     images: [...this.state.images, { id: newId, ref: React.createRef() }]
-  //   });
-  // };
 
   handleAddMetadata = () => {
     let newId = 1;
@@ -2553,46 +2490,7 @@ handleAddImage = () => {
               </div>
             </div>
             {/*}
-            <div className="form-group">
-              <label
-                htmlFor="metadata">
-                Metadata <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="metadata_tooltip"
-                />
-                <ReactTooltip
-                  id="metadata_tooltip"
-                  place="top"
-                  type="info"
-                  effect="solid"
-                >
-                  <p>
-                    Metadata describing the specimen. <br />
-                      This could be typed in (or copy/pasted) or an uploaded file
-                      such as a spreadsheet.
-                    </p>
-                </ReactTooltip>
-                </label>
-              {!this.state.readOnly && (
-                <div>
-                  <textarea
-                    name="metadata"
-                    id="metadata"
-                    cols="30"
-                    rows="5"
-                    className="form-control"
-                    value={this.state.metadata}
-                    onChange={this.handleInputChange}
-                  />
-                </div>
-              )}
-              {this.state.readOnly && (
-                <div className="col-sm-9 col-form-label">
-                  <p>{this.state.metadata}</p>
-                </div>
-              )}
-            </div>
+           
           */}
             <div className="buttonWrapLeft">
             
