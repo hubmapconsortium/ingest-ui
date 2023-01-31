@@ -14,8 +14,6 @@ import Result from "./uuid/result";
 
 
 export const RenderDataset = (props) => {
-  //console.debug("Rendering from NEWER Route, not Legacy Route");
-  //console.debug("RenderSearchComponent", props);
   const previousValue = useRef(null);
   let navigate = useNavigate();
 
@@ -45,42 +43,26 @@ export const RenderDataset = (props) => {
   // setUUID(useParams())
   const { uuid } = useParams();
 
-  // componentDidUpdate(prevProps) {
-  //   // // Typical usage (don't forget to compare props):
-  //   // if (this.props.userID !== prevProps.userID) {
-  //   //   console.log("componentDidUpdate", this.props.userID, prevProps.userID);
-  //   // }
-  // }
-
-
-
 
   var checkAssay = [];
   useEffect(() => {
     
-    // console.debug("useEffect", uuid, props);
     var authSet = JSON.parse(localStorage.getItem("info"));
     setAuthToken(authSet);
   
     function checkAssayType(dtype){
-      // console.debug("checkAssayType", dt);
       search_api_get_assay_set("primary")// the list call only gets primaries for now. 
       .then((response) => {
-        // console.debug("checkAssayType PRIM", response.data.result);
         let primaries = response.data.result ;
         var primarySet = primaries.map((elt, idx) => {return elt.name});
         var primaryStatus = primarySet.includes(dtype[0])
         setDataTypeList(primaries);
         setDtl_primary(primaries);
         setDtl_status( primarySet.includes(dtype[0]));
-        // console.debug("checkAssayType", dtype, dtype[0], primaryStatus, primarySet);
         search_api_get_assay_set()// the list call only gets primaries for now. 
           .then((response) => {
             let allDTs = response.data.result;
-            // console.debug("checkkAssayType ALL", allDTs);
-            // var allDTSet = new Set(primaries.map((elt, idx) => {return elt.name}));
             setDtl_all(allDTs);
-            // setDataTypeList(allDTs);
             setIsLoadingDTList(false);
           })
           .catch(error => {
@@ -96,13 +78,11 @@ export const RenderDataset = (props) => {
 
 
     function fetchEntity(authSet){
-      // console.log("fetchEntity", uuid);
       entity_api_get_entity(uuid, authSet.groups_token)
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
               setEntity(response.results);
-              // console.debug("fetchEntity", response.results);
               setIsLoadingEntity(false); 
               var checkAssay = response.results.data_types;
               checkAssayType(checkAssay)
@@ -116,15 +96,12 @@ export const RenderDataset = (props) => {
 
 
     if(!props.new){
-      // console.debug("props.new", props.new);
+     
       fetchEntity(authSet);
     }else{
       // the NEW route loads the forms through the legacy Forms loader,
       // not here
-      // console.debug("props.new", props.new);
-      // setLoading(isLoading+1);
       setIsLoadingEntity(false);
-      // setAssays("primary");
     }
     
    
@@ -144,7 +121,6 @@ export const RenderDataset = (props) => {
 
   function onUpdated(data){
     // Return to home search once finished here
-    //console.debug("onUpdated", data);
     navigate('../')
   }
 
@@ -156,9 +132,7 @@ export const RenderDataset = (props) => {
     // @TODO: Originally lived in the Forms wrapper which wrapped all New forms
     // New Versioning uses the Edit view, however. We need to eventually unwrap 
     // all the NEW form wrapping stuff
-
       console.debug(' onCreated:', data);
-      //  globus = data.globus_path
       setNewEntity(data.entity);
       setNewResult(data);
       setGlobusLink(data.globus_path);
@@ -169,12 +143,10 @@ export const RenderDataset = (props) => {
   function onChangeGlobusLink(newLink, newDataset) {
     console.debug(newDataset, newLink)
     const {name, display_doi, doi} = newDataset;
-    // this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi, createSuccess: true});
   }
 
   function renderSuccessDialog(){
     if (newVersionShow) {
-      // const {name, display_doi, doi} = newEntity;
       return (
         <Dialog aria-labelledby="result-dialog" open={newVersionShow} maxWidth="xs">
         <DialogContent>
@@ -191,8 +163,6 @@ export const RenderDataset = (props) => {
   }
   
   function passError(status, message) {
-    // console.debug("passError Error", status, message);
-    // setIsLoadingEntity(false);
     setErrorHandler({
       status: status,
       message:message,
@@ -222,7 +192,6 @@ export const RenderDataset = (props) => {
         </div>
       )
     }else{
-      // console.debug("ISLOADING");
       return (
         <div className="card-body ">
           <div className="loader">Loading...</div>

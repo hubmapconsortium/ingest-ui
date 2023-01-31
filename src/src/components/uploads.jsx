@@ -12,12 +12,9 @@ import {useNavigate} from "react-router-dom";
 
 export const RenderUpload = (props) => {
 
-  // console.debug("Rendering from NEWER Route, not Legacy Route");
-  // console.debug("RenderUpload", props);
   let navigate = useNavigate();
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
-  // var [uuid, setUUID] = useState("");
   var [errorHandler] = useState({
     status: "",
     message: "",
@@ -51,7 +48,6 @@ export const RenderUpload = (props) => {
 
 
   function handleCancel(){
-    // this.props.handleCancel();
     window.history.back()
   }
 
