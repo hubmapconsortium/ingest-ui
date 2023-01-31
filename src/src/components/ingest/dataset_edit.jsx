@@ -33,7 +33,7 @@ import { ingest_api_allowable_edit_states,
     ingest_api_dataset_publish,
     ingest_api_users_groups, 
     ingest_api_allowable_edit_states_statusless} from '../../service/ingest_api';
-import { entity_api_update_entity, entity_api_get_globus_url } from '../../service/entity_api';
+import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
 import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
@@ -102,12 +102,13 @@ class DatasetEdit extends Component {
     lookUpCancelled: false,
     LookUpShow: false,
     other_dt: "",
-    previous_revision_uuid: undefined,
     buttonSpinnerTarget: "",
     errorSnack:false,
     disableSelectDatatype:false,
     // Form Validation & processing
     newVersion:false,
+    previousHID: undefined,
+    nextHID: undefined,
     previous_revision_uuid: undefined,
     has_other_datatype: false,
     submitErrorResponse:"",
@@ -339,8 +340,27 @@ class DatasetEdit extends Component {
         this.setState({
           selected_dt: selected,
         })
-  
 
+
+        // Sets the Hubmap ID labels for Previous and Next version Buttons  
+        if(this.props.editingDataset.next_revision_uuid){
+          entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((response) => {
+            this.setState({nextHID: response.results.hubmap_id})
+          })
+          .catch((error) => {
+            console.debug("fetchHubID Error", error);
+          })   
+        }
+        if(this.props.editingDataset.previous_revision_uuid){
+          entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((response) => {
+            this.setState({prevHID: response.results.hubmap_id})
+          })
+          .catch((error) => {
+            console.debug("fetchHubID Error", error);
+          })   
+        }
       
       // let primaryNames = primaryDTs.map((value, index) => { return value.name });
       // // console.debug("primaryNames",primaryNames);
@@ -349,8 +369,8 @@ class DatasetEdit extends Component {
       // var primInv = primaryDTs.find(({ name }) => name === thisDT);
       // console.debug("looking for "+thisDT+" in primaryDTs",primInv);
 
+      // this.props.reportError("NOPE");
       
-     
     }
   }
 
@@ -377,6 +397,7 @@ class DatasetEdit extends Component {
       console.debug("Error getting Primary assay set", err);
     })
   }
+
 
   componentWillUnmount() {
     document.removeEventListener("click", this.handleClickOutside, true);
@@ -1706,18 +1727,10 @@ class DatasetEdit extends Component {
     return (
       <Box sx={{width:"50%"}}>
         {this.props.editingDataset.next_revision_uuid  && (
-          <Button 
-          variant="text"
-          onClick={() => this.handleVersionNavigate('next')}>  
-          View Next Version
-        </Button>
+          <>Next Version: <Button variant="text" onClick={() => this.handleVersionNavigate('next')}>   {this.state.nextHID}</Button></>
         )}
         {this.props.editingDataset.previous_revision_uuid  && (
-            <Button 
-            variant="text"
-            onClick={() => this.handleVersionNavigate('prev')}>  
-            View previous Version
-          </Button>
+          <>Previous Version: <Button variant="text" onClick={() => this.handleVersionNavigate('prev')}>{this.state.prevHID}</Button></>
         )}
       </Box>
     )}
