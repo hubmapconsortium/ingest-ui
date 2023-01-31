@@ -32,42 +32,12 @@ export const Navigation = (props) => {
   let navigate = useNavigate();
 
   useEffect(() => {
-  //console.debug("props", props);
-  //console.debug("props.appInfo", props.app_info);
-  //console.debug("location", location);
-    // setAuthStatus(props.login)
     setUserInfo(props.app_info);
     setUserGroups(props.userGroups);
-    // console.debug("userInfo", userInfo);
     setUserDataGroups([props.userDataGroups]);
-    // console.debug("===== props.userGroups",props.userGroups);
     // @TODO: Consider moving all the User & User Group info into its own utils, 
-    //mdn Array.reduce;
-
-
-    
-    // console.debug("userDataGroups", props.userDataGroups, props.userDataGroups.length);
-    // if(userGroups && userGroups.length > 0){
-    //   const dataGroups = DataProviders(userGroups);
-    //   console.log(dataGroups, userDataGroups, userDataGroups.length);
-    // }
-
-    
-
-    // props.userGroups.reduce((acc, group) => {
-    //   console.debug("group", group);
-    //   console.debug("acc", acc);
-    //   if(group.data_provider === "true"){
-    //     // setUserGroups(item);
-    //     console.debug("group", group);
-    //   }
-    //   // return acc;
-    //   console.debug("acc", acc);
-    // });
-
 
     if(location.pathname === "/new/data"){
-    //console.debug("Setting uploadsDialog to true");
       setUploadsDialog(true);
     }
   }, [props, props.app_info, location]);
@@ -75,18 +45,14 @@ export const Navigation = (props) => {
 
 
   const handleClick_I = (event) => {
-    console.debug("HandleClick", event );
     setAnchorEl_I(event.currentTarget);
-    // setAnchorEl_I(!anchorEl_I);
   };
 
   const handleClick_B = (event) => {
-  //console.debug("HandleClick", event );
     setAnchorEl_B(event.currentTarget);
   };
   
   const handleClose = () => {
-  //console.debug("HandleClose", e);
     setAnchorEl_I();
     setAnchorEl_B();
   };
@@ -101,7 +67,6 @@ export const Navigation = (props) => {
   };
 
   const onCreated = (data) => {
-    console.debug("onCreated");
     navigate("/Upload/"+data.results.uuid);
     setUploadsDialog(false);
   };
