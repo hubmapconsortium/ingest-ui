@@ -36,9 +36,9 @@ class CreateUploads extends Component {
 
   componentDidMount() {
     var tgl = this.getUserGroups();
-    console.log(tgl);
-    console.debug(this.state);
-    console.debug(this.props);
+    
+    
+    
   }
 
   
@@ -46,9 +46,9 @@ class CreateUploads extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    console.log(this.validateForm());
+    
     if (this.validateForm()) {
-      console.log("IS VALID")
+      
       this.setState({
         processingUpload: true
       });
@@ -60,9 +60,9 @@ class CreateUploads extends Component {
 
       ingest_api_create_upload(data, JSON.parse(localStorage.getItem("info")).groups_token)
         .then(response => {
-          console.debug("response: ", response);
+          
           if (response.status === 200) {
-            console.debug(response.data);
+            
             this.props.onCreated(response);            
           } else {
             this.setState({ 
@@ -71,20 +71,20 @@ class CreateUploads extends Component {
               processingUpload:false,
               errorMessage:response,
             });
-            console.debug("NON 200: "+response.status);
-            console.debug(response);
+            
+            
           }
         })
         .catch(error => {
-          console.log("Uploads FOlder Created NOT OK!");
-          console.debug(error);
+          
+          
           var err ="";
           if(error.response){
             err = error.response.data.error;
-            console.log(err);
+            
           }else{
             err = error;
-            console.log(error);
+            
           }
           this.setState({ 
             submit_error: true, 
@@ -95,7 +95,7 @@ class CreateUploads extends Component {
           
         });
       }else{
-        console.log("IS INVALID")
+        
       };
   };
 
@@ -107,7 +107,7 @@ class CreateUploads extends Component {
 
 
   cancelEdit = () => {
-    console.debug("form js cancelEdit!!");
+    
     this.setState({ 
       creatingNewSubmission: false, 
       editingSubmission: null ,
@@ -151,7 +151,7 @@ class CreateUploads extends Component {
           formErrors: { ...prevState.formErrors, group: "valid" },
         }));
       }
-      console.log(this.state.formErrors);
+      
       return isValid;
   }
 
@@ -162,7 +162,7 @@ class CreateUploads extends Component {
   updateInputValue = (evt) => {
     if(evt.target.name.length===0){ // We get an empty string back from validation
       evt.target.value=null; 
-      console.debug("evt.target.value",evt.target.value);
+      
     }else{
     if(evt.target.id==="Submission_Name"){
       this.setState({

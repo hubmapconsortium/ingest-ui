@@ -74,7 +74,7 @@ class EditUploads extends Component{
 
   componentDidMount() {
 
-    console.debug(this.props.editingUpload);
+    
     const groupsAuth = JSON.parse(localStorage.getItem("info")).groups_token;
     const config = { // Nix this and use the one in the service
       headers: {
@@ -86,7 +86,7 @@ class EditUploads extends Component{
     let entity_data = this.props.editingUpload;
     entity_api_get_globus_url(this.props.editingUpload.uuid, groupsAuth)
           .then((res) => {
-            console.debug("GLOBURL", res, res.results);
+            
             this.setState({
               globus_path: res.results,
             });
@@ -139,7 +139,7 @@ class EditUploads extends Component{
         // Unless these are a different Badge not RE status but another state? 
         switch (this.state.status.toUpperCase()) {
           case "NEW":
-            console.debug("WRITEABLE");
+            
             this.setState({
               validation_message_style:null,
               badge_class: "badge-purple",
@@ -147,7 +147,7 @@ class EditUploads extends Component{
             });
           break;
           case "ERROR":
-            console.debug("WRITEABLE");
+            
             this.setState({
               validation_message_style:"error",
               badge_class: "badge-danger",
@@ -155,7 +155,7 @@ class EditUploads extends Component{
             });
           break;
           case "INVALID":
-            console.debug("WRITEABLE");
+            
             this.setState({
               validation_message_style:"warning",
               badge_class: "badge-danger",
@@ -163,7 +163,7 @@ class EditUploads extends Component{
             });
           break;
           case "VALID":
-            console.debug("NOT WRITEABLE");
+            
             this.setState({
               validation_message_style:null,
               badge_class: "badge-success",
@@ -171,7 +171,7 @@ class EditUploads extends Component{
             });
           break;
           case "PROCESSING":
-            console.debug("NOT WRITEABLE");
+            
             this.setState({
               validation_message_style:null,
               badge_class: "badge-secondary",
@@ -179,7 +179,7 @@ class EditUploads extends Component{
             });
             break;
           case "REORGANIZED":
-            console.debug("NOT WRITEABLE");
+            
             this.setState({
               validation_message_style:null,
               badge_class: "badge-info",
@@ -188,7 +188,7 @@ class EditUploads extends Component{
             });
             break;
           case "SUBMITTED":
-            console.debug("WRITEABLE");
+            
             this.setState({
               validation_message_style:null,
               badge_class: "badge-info",
@@ -201,7 +201,6 @@ class EditUploads extends Component{
           default:
             break;
         }
-
         
       });
 
@@ -209,10 +208,6 @@ class EditUploads extends Component{
           datarows: this.state.datasets, // Object.values(response.results)
           results_total:  this.state.datasets.length,
           column_def: COLUMN_DEF_DATASET})
-
-    
-    console.debug(this.state);
-    console.debug(this.props.editingUpload);
     
   };
 
@@ -259,7 +254,7 @@ class EditUploads extends Component{
 
   showConfirmModal = () => {
     this.setState({ confirmModal: true });
-    // console.debug(this.state)
+    // 
   };
 
   hideConfirmModal = () => {
@@ -300,12 +295,12 @@ class EditUploads extends Component{
                 }).catch((error) => {
                   this.setState({ submit_error: true, submitting: false, submitting_submission:false, button_save: false, });
                   this.handleSpinnerClear();
-                  console.debug("SAVE error", error)
+                  
                 });
           } 
         }
       }else{
-        console.debug("Form is not valid");
+        
         this.handleSpinnerClear();
       }
     });
@@ -319,7 +314,7 @@ class EditUploads extends Component{
     })
     ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
-        console.debug(response.results);
+        
         if (response.status === 200) {
           this.props.onUpdated(response.results);
         } else {
@@ -329,7 +324,7 @@ class EditUploads extends Component{
       })
       .catch((error) => {
         this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_submit: false, });
-        console.debug("SUBMIT error", error)
+        
         this.handleSpinnerClear();
       });
       
@@ -343,7 +338,7 @@ class EditUploads extends Component{
     })
     ingest_api_reorganize_upload(this.props.editingUpload.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
-        console.debug(response.results);
+        
         if (response.status === 200) {
           this.props.onUpdated(response.results);
         } else {
@@ -352,7 +347,7 @@ class EditUploads extends Component{
       })
       .catch((error) => {
         this.setState({ submit_error: true, submitting: false, submitting_submission:false,button_reorganize: false, });
-        console.debug("Reorganize error", error)
+        
         this.handleSpinnerClear();
       });
       
@@ -378,7 +373,6 @@ class EditUploads extends Component{
           });
           this.setState({ submitting: true });
 
-
           // package the data up
           let data = {
             title: this.state.title,
@@ -387,13 +381,11 @@ class EditUploads extends Component{
   
 
           if (this.props.editingUpload) {
-
-            console.debug(JSON.stringify(data));
-            console.debug(JSON.parse(localStorage.getItem("info")));
+            
             // if user selected Publish
             ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
-                console.debug(response.results);
+                
                   if (response.status === 200) {
                     this.props.onUpdated(response.results);
                     this.handleSpinnerClear();
@@ -406,8 +398,6 @@ class EditUploads extends Component{
         }
       }else{
         this.handleSpinnerClear();
-        console.debug("Form is not valid");
-      
       }
     });
   };
@@ -418,7 +408,7 @@ class EditUploads extends Component{
       submitting_submission: true,
       button_submit: true,  
     });
-    console.debug("handleValidateUploadSubmission")
+    
     this.validateForm().then((isValid) => {
       if (isValid) {
         if (
@@ -434,7 +424,6 @@ class EditUploads extends Component{
           });
          
 
-
           // package the data up
           let data = {
             title: this.state.title,
@@ -443,9 +432,6 @@ class EditUploads extends Component{
   
 
           if (this.props.editingUpload) {
-
-            console.debug(JSON.stringify(data));
-            console.debug(JSON.parse(localStorage.getItem("info")));
             // if user selected Publish
             ingest_api_submit_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
@@ -459,7 +445,7 @@ class EditUploads extends Component{
                   }
             })
             .catch((error) => {
-              console.debug("SUBMIT error", error);
+              
               this.handleSpinnerClear();
             });
           } 
@@ -471,7 +457,7 @@ class EditUploads extends Component{
   };
 
   handleSpinnerClear = () =>{
-    console.debug("handleSpinnerClear")
+    
     this.setState({
       button_submit: false,
       button_reorganize: false,
@@ -510,15 +496,15 @@ class EditUploads extends Component{
 
 
   highlightInvalidDatasets(){
-      console.log("highlightInvalidDatasets");
+      
       var matches = document.querySelectorAll("div[data-value='invalid']");
-      console.log(matches);
+      
       matches.forEach(function(item) {
           item.parentElement.classList.add("invalidDatset");
-          console.log("INVALID item");
-          console.log(item);
+          
+          
       });
-      console.log("END highlightInvalidDatasets");
+      
   } 
 
 
@@ -700,7 +686,7 @@ renderReorganizeButton() {
   }
 
   handleUrlChange = (targetPath) =>{
-    console.debug("handleUrlChange "+targetPath)
+    
       window.history.replaceState(
         null,
         "", 
@@ -711,7 +697,7 @@ renderReorganizeButton() {
     this.setState({
       new_status: i
     }, () => {
-      console.debug("handleButtonClick ",i, action)
+      
       if(action){
         if(action === "save") {
           this.handleSave(i)
@@ -721,12 +707,12 @@ renderReorganizeButton() {
             button_validate: true,
             submitting: true,
           }, () => {
-            console.debug(" handleButtonClick ",i, action)
+            
           });
-          console.debug("Create / Validate")
+          
           this.handleValidateUpload(i);
         }else if(action==="submit"){
-          console.debug("SUB")
+          
         this.handleValidateUploadSubmission(i);
         } else if (action === "reorganize") {
           this.handleReorganize();
@@ -740,7 +726,7 @@ renderReorganizeButton() {
   fetchGlobusURL = (uploads_uuid) => {  
     ingest_api_get_globus_url(uploads_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
-        console.debug('ingest_api_get_globus_url', resp)
+        
       if (resp.status === 200) {
         window.open(resp.results, "_blank");
       }
@@ -751,7 +737,7 @@ renderReorganizeButton() {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-      console.debug(validateRequired(this.state.title), validateRequired(this.state.description));
+      
 
       if (!validateRequired(this.state.title)) {
         this.setState((prevState) => ({
@@ -788,9 +774,9 @@ renderReorganizeButton() {
         });
   }
   handleDatasetCellSelection = (row,column,event) =>{ 
-    console.log("handleDatasetCellSelection");
-    console.debug(row,column,event);
-    console.debug("/dataset/"+row.uuid);
+    
+    
+    
 
       window.history.pushState(
         null,
@@ -802,14 +788,14 @@ renderReorganizeButton() {
 
 
   errorClass(error) {
-    console.debug(error);
+    
     if (error && error === "valid" ) return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
   }
 
 
   updateInputValue = (evt) => {
-    console.debug(evt.target.id, evt.target.value);
+    
     if(evt.target.id==="title"){
       this.setState({
         title: evt.target.value
@@ -839,8 +825,8 @@ renderReorganizeButton() {
       // @TODO: use the Datatables used elsewhere across the site 
       var compiledCollection = [];
       for (var i in datasetCollection){
-        console.debug(datasetCollection[i].lab_dataset_id)
-        console.debug("/datasets/"+datasetCollection[i].uuid)
+        
+        
         compiledCollection.push({
           hubmap_id: datasetCollection[i].hubmap_id,
           lab_dataset_id:  datasetCollection[i].lab_dataset_id,
