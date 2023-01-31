@@ -135,7 +135,6 @@ class Forms extends Component {
   }
 
   onCreateNext = e => {
-    console.log('onCreateNext', e)
 //    let ancestor = e
     this.setState({
       createSuccess: false,
