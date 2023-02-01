@@ -120,6 +120,38 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
       });
 };
 
+/*
+ * Get whether a user can update the selected entity data Regardless of Current Status
+ * 
+ * return:  { status, results}
+ */
+export function ingest_api_allowable_edit_states_statusless(uuid, auth) { 
+  //console.debug(uuid, auth);
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`;
+        
+  return axios 
+    .get(url,options)
+      .then(res => {
+        //console.debug("res");
+        //console.debug(res);
+          //let results = res.data.has_write;
+      
+        return {status: res.status, results: res.data}
+      })
+      .catch(err => {
+        return{err, msg:"ingest_api_allowable_edit_states?ignore-publication-status=true"}
+      
+      });
+};
+
 /* 
  * create a dataset
  *
