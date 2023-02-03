@@ -1,0 +1,2 @@
+donor_lab_id	donor_selection_protocol	donor_description	organ_type	organ_protocol	sample_lab_id	block_protocol	block_thumbnail	block_description	block_preservation	block_thickness	block_thickness_unit	block_diameter	block_diameter_unit	block_disc_number	block_quadrant	block_sections	section_thickness	section_thickness_unit
+DON530	dx.doi.org/10.17504/protocols.io.eq2lyp5nelx9/v2	W/M/56	PA	10.17504/protocols.io.eq2lyp5nelx9	PE-1A	10.17504/protocols.io.eq2lyp5nelx9/v2	1-PE.png	Head, formalin fixed paraffin embedded (PE), disc 1 quadrant A	PE	5	mm	25	mm	1	A	300	.025	mm
