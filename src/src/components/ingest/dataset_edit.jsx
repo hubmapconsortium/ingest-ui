@@ -125,10 +125,8 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
-    // console.debug("updateStateDataTypeInfo");
     let data_types = null;
     let other_dt = undefined;
-    //console.debug("this.props", this.props);
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
       && this.props.editingDataset.data_types) {
@@ -151,7 +149,7 @@ class DatasetEdit extends Component {
         var auth = JSON.parse(localStorage.getItem("info")).groups_token;
         this.setState({groupsToken:auth});
       } catch {
-       console.debug("LOCALSTROAGE Parse Fail")
+       
        var auth = "";
       }
 
@@ -166,30 +164,21 @@ class DatasetEdit extends Component {
             "Content-Type": "application/json",
           },
         };
-        
       }else{
-        console.debug("No Auth Token");
+        
         localStorage.setItem("isAuthenticated", false);
       }
 
    
-      
-      // this.props.reportError("NOPE");
-  
 
-    // Fills in selectable Data Typw List  
-    // Now from Wrapper/Props
-      // this.updateStateDataTypeInfo();
-    
       // Figure out our permissions
       if (this.props.editingDataset) {
-        //console.debug("Editing Dataset", this.props.editingDataset);
         if (this.props.editingDataset.uuid)
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
           if (resp.status < 300) {
-            //console.log('edit states...', resp.results);    
+            //
             this.setState({
               writeable: resp.results.has_write_priv,
               has_submit_priv: resp.results.has_submit_priv,
@@ -199,11 +188,11 @@ class DatasetEdit extends Component {
 
               ingest_api_allowable_edit_states_statusless(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((resp) => {
-                  // console.debug("allowable_edit_states_statusless", resp);
+                  // 
                   this.setState({has_version_priv: resp.results.has_write_priv});
                 })
                 .catch((err) => {
-                  console.debug("error",err);
+                  
                 });   
           }
           
@@ -211,21 +200,21 @@ class DatasetEdit extends Component {
 
        
       }else{
-      //console.debug("No editingDataset Prop, Must be a New Form")
+      //
       }
 
     ingest_api_users_groups(auth)
       .then((res) => {
-        console.debug("groups", res.results);
+        
         const groups = res.results.filter(
           g => g.data_provider === true
         );
-        console.debug("groups", groups);
+        
         this.setState({
           groups: groups,
           groups_dataprovider: groups,
         },() => {
-          console.debug("groups_dataprovider", this.state.groups_dataprovider);
+          
         });
       })
       .catch((err) => {
@@ -239,17 +228,13 @@ class DatasetEdit extends Component {
       });
 
     // Sets up the Entity's info  if we're not new here
-    if (this.props.editingDataset && !this.props.newForm) {      //
-      // console.debug("Editing Dataset", this.props.editingDataset);
-      // console.debug("newForm Dataset", this.props.newForm);
-      // let source_uuids;
+    if (this.props.editingDataset && !this.props.newForm) {      
       try {
         // use only the first direct ancestor
          this.setState({
           source_uuids: this.props.editingDataset.direct_ancestors
         });
       } catch {
-       //console.debug("editingDataset Prop Not Found")
       }
 
       if(this.props.editingDataset ==='' ){
@@ -262,10 +247,7 @@ class DatasetEdit extends Component {
         {
           status: this.props.editingDataset.hasOwnProperty('status') ? this.props.editingDataset.status.toUpperCase() : "NEW",
           display_doi: this.props.editingDataset.hubmap_id,
-          //doi: this.props.editingDataset.entity_doi,
           lab_dataset_id: this.props.editingDataset.lab_dataset_id,
-          // globus_path: this.props.editingDataset.globus_directory_url_path,
-          // globus_path: "", //this.props.editingDataset.properties.globus_directory_url_path,
           source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
           source_uuid_list:this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors),
           source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
@@ -285,14 +267,9 @@ class DatasetEdit extends Component {
           this.setState({
             badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
           });
-          // axios
-          //   .get(
-          //     `${process.env.REACT_APP_ENTITY_API_URL}/entities/${this.props.editingDataset.uuid}/globus-url`,
-          //     config
-          //   )
           entity_api_get_globus_url(this.props.editingDataset.uuid, this.state.groupsToken)
             .then((res) => {
-              console.debug("globus_url", res.results);
+              
               this.setState({
                 globus_path: res.results,
               });
@@ -312,10 +289,8 @@ class DatasetEdit extends Component {
        // Now tha we've got that all set, 
       // Here's the hack that disables changing the datatype 
       // if it's no longer a base primary type.  
-
-
       var dtlStatus = this.props.dtl_status;
-      console.debug("dtlStatus", dtlStatus);
+      
       if(dtlStatus){
         // We are primary type, only priamries in Dropdown
         this.setState({
@@ -328,18 +303,16 @@ class DatasetEdit extends Component {
           disableSelectDatatype: true,
           dataTypeDropdown:this.props.dtl_all
         });
-
       }
-
-        var selected = ""
-        if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
-          // Set DT Select by state so it behaves as "controlled"
-          selected = this.props.editingDataset.data_types[0];
-          //console.debug("SELECTED FORMATTED", selected);
-        }
-        this.setState({
-          selected_dt: selected,
-        })
+      var selected = ""
+      if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
+        // Set DT Select by state so it behaves as "controlled"
+        selected = this.props.editingDataset.data_types[0];
+        //
+      }
+      this.setState({
+        selected_dt: selected,
+      })
 
 
         // Sets the Hubmap ID labels for Previous and Next version Buttons  
@@ -349,7 +322,7 @@ class DatasetEdit extends Component {
             this.setState({nextHID: response.results.hubmap_id})
           })
           .catch((error) => {
-            console.debug("fetchHubID Error", error);
+            
           })   
         }
         if(this.props.editingDataset.previous_revision_uuid){
@@ -358,43 +331,33 @@ class DatasetEdit extends Component {
             this.setState({prevHID: response.results.hubmap_id})
           })
           .catch((error) => {
-            console.debug("fetchHubID Error", error);
+            
           })   
         }
-      
-      // let primaryNames = primaryDTs.map((value, index) => { return value.name });
-      // // console.debug("primaryNames",primaryNames);
-      // var thisDT = "AF"; 
-
-      // var primInv = primaryDTs.find(({ name }) => name === thisDT);
-      // console.debug("looking for "+thisDT+" in primaryDTs",primInv);
-
-      // this.props.reportError("NOPE");
-      
+    
     }
   }
 
   setAssayLists(){
-    //console.debug("setAssayList");
     search_api_get_assay_set()
     .then((res) => {
-      console.debug("Assay Set", res);
+      
       this.setState({
         dtl_all: res.data.result.map((value, index) => { return value.name })
       });
     })
     .catch((err) => {
-      console.debug("Error getting ALL assay set", err);
+      
     })
     search_api_get_assay_set("primary")
     .then((res) => {
-      console.debug("Assay Set", res);
+      
       this.setState({
         dtl_primary: res.data.result.map((value, index) => { return value.name })
       });
     })
     .catch((err) => {
-      console.debug("Error getting Primary assay set", err);
+      
     })
   }
 
@@ -420,10 +383,6 @@ class DatasetEdit extends Component {
   };
 
   showConfirmDialog(row,index) {
-   //console.debug("ShowConfDia")
-
-   //console.debug("row", row)
-   //console.debug("row index", index)
     this.setState({ 
         confirmDialog: true,
         editingSource: row,
@@ -445,7 +404,6 @@ class DatasetEdit extends Component {
   };
 
   handleLookUpClick = () => {
-   //console.debug('IM HERE TRYING TO SHOW THE DIALOG', this.state.lookUpCancelled, this.state.LookUpShow)
     if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
@@ -457,14 +415,12 @@ class DatasetEdit extends Component {
   };
 
   hideLookUpModal = () => {
-    //////console.debug('IM HERE TRYING TO HIDE THE DIALOG')
     this.setState({
       LookUpShow: false
     });
   };
 
   cancelLookUpModal = () => {
-    //////console.debug('IM HERE TRYING TO HIDE THE DIALOG')
     this.setState({
       LookUpShow: false,
       lookUpCancelled: true
@@ -485,19 +441,12 @@ class DatasetEdit extends Component {
 
   handleInputChange = (e) => {
     const { id, name, value } = e.target;
-    // console.debug('INPUT:', name, id, value)
     switch (name) {
       case "lab_dataset_id":
         this.setState({
           lab_dataset_id: value,
         });
-        //console.debug('*** lab_dataset_id', value)
         break;
-      // case "source_uuid":
-      //   this.setState({
-      //     source_uuid: value,
-      //   });
-      //   break;
       case "contains_human_genetic_sequences":  
         let gene_seq = undefined; 
         if (value === 'yes') {
@@ -524,18 +473,12 @@ class DatasetEdit extends Component {
           new_status: value,
         });
         break;
-      // case "is_protected":
-      //   this.setState({
-      //     is_protected: e.target.checked,
-      //   });
-      //   break;
-      
       case "other_dt":
-        console.debug("OTHER DT", value);
+        
         this.setState({ other_dt: value });
         break;
       case "dt_select":
-        console.debug("DT SELECT", value);
+        
         var data_types = [];  
         data_types.push(value);
         // data_types.push(value);
@@ -544,7 +487,7 @@ class DatasetEdit extends Component {
           data_types: data_types,
           selected_dt: value,
         });
-        console.debug("data_types", data_types);
+        
           break;
       case "groups":
         this.setState({
@@ -555,7 +498,6 @@ class DatasetEdit extends Component {
         break;
     }
     if (id.startsWith("dt")) {
-     //console.log('ping!', id);
       if (id === "dt_other") {
         const data_types = this.state.data_types;
         this.setState({
@@ -575,40 +517,21 @@ class DatasetEdit extends Component {
             });
         }
       } else {
-        //////console.log(id, e.target.checked)
         if (value === "other") {
-          // const data_types = this.state.data_types;
-          // data_types.clear();
-          // data_types.add(value);
           this.setState({
             data_types: data_types,
             has_other_datatype: value === "other",
           });
       
         } else {
-          //console.debug("value", value);
-
           this.setState({
             has_other_datatype: false,
             selected_dt: value,
           });
 
-        }/*if (e.target.checked) {
-          const data_types = this.state.data_types;
-          data_types.add(name);
-          this.setState({
-            data_types: data_types,
-          });
-        } else {
-          const data_types = this.state.data_types;
-          data_types.delete(name);
-          this.setState({
-            data_types: data_types,
-          });
-        }*/
+        }
       
       }
-      //////console.log('data_types', this.state.data_types)
     }
   };
 
@@ -652,8 +575,6 @@ class DatasetEdit extends Component {
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
-    
-   //console.debug("handleSelectClick",this.state.selectedSource,  selection.uuid, this.state.selectedSource !== selection.uuid, selection);
       if(this.state.selectedSource !== selection.row.uuid){
         this.setState({
           selectedSource: selection.row.uuid
@@ -668,24 +589,20 @@ class DatasetEdit extends Component {
           LookUpShow: false
         });
         this.hideLookUpModal();
-        // this.cancelLookUpModal();
       });
     }else{
-     //console.debug("Not adding to slist; already added");
+     //
     }
   };
 
   sourceRemover = (row) => {
-   //console.debug("Removing Source ",row.uuid)
     var slist=this.state.source_uuid_list;
     slist =  slist.filter(source => source.uuid !== row.uuid)
       this.setState( {
         source_uuid_list: slist,
         slist: slist,
       } ,() => {
-       //console.log("NEW LIST ",this.state.source_uuid_list);
         // this.hideConfirmDialog();
-        
       });
   }
 
@@ -693,7 +610,6 @@ class DatasetEdit extends Component {
     if(this.state.source_uuid_list ||  this.props.newForm===false){
       return (
         <div className="w-100">
-          
           <label htmlFor='source_uuid_list'>
             Source(s) <span className='text-danger px-2'>*</span>
           </label>
@@ -818,9 +734,7 @@ class DatasetEdit extends Component {
   };
 
   handleVersionNavigate = (direction) => {
-    console.debug("handleVersionNavigate", direction);
-    // e.preventDefault();
-    // var direction = "next";
+    
     // @TODO Better process standardizing route navigation between forms 
     if(direction==='next'){
       window.history.pushState( null,"", "/dataset/"+this.props.editingDataset.next_revision_uuid);
@@ -829,20 +743,6 @@ class DatasetEdit extends Component {
     }
     window.location.reload()
   }
-  // getUuidList = (new_uuid_list) => {
-  //   //this.setState({uuid_list: new_uuid_list});
-  // //console.log('**getUuidList', new_uuid_list)
-  //   this.setState(
-  //     {
-  //       source_uuid: this.getSourceAncestor(new_uuid_list),
-  //       source_uuid_list: new_uuid_list,
-  //       LookUpShow: false,
-  //     },
-  //     () => {
-  //       this.validateUUID(); // Only place this is called, wrapper func depricated?
-  //     }
-  //   );
-  // };
 
   handleAddNewCollection = () => {
     this.setState({
@@ -850,138 +750,12 @@ class DatasetEdit extends Component {
     });
   };
 
-  // hideAddCollectionModal = (collection) => {
-  //   this.setState({
-  //     AddCollectionShow: false,
-  //   });
-
-  //   if (collection.label) {
-  //     const config = {
-  //       headers: {
-  //         Authorization:
-  //           "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-  //         "Content-Type": "application/json",
-  //       },
-  //     };
-
-  //     axios
-  //       .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections`, config)
-  //       .then((res) => {
-  //         this.setState(
-  //           {
-  //             collections: res.data.collections,
-  //           },
-  //           () => {
-  //             const ret = this.state.collections.filter((c) => {
-  //               return c.label
-  //                 .toLowerCase()
-  //                 .includes(collection.label.toLowerCase());
-  //             });
-  //             this.setState({ collection: ret[0] });
-  //           }
-  //         );
-  //       })
-  //       .catch((err) => {
-  //         if (err.response === undefined) {
-  //         } else if (err.response.status === 401) {
-  //           localStorage.setItem("isAuthenticated", false);
-  //           window.location.reload();
-  //         }
-  //       });
-  //   }
-  // };
-
   handleClickOutside = (e) => {
     this.setState({
       showCollectionsDropDown: false,
     });
   };
 
-  // validateUUID = () => {
-  //   let isValid = true;
-  //   const uuid = this.state.source_uuid_list[0].hubmap_id
-  //     ? this.state.source_uuid_list[0].hubmap_id
-  //     : this.state.source_uuid_list[0];
-  //   const uuid_type = this.state.source_uuid_list[0].datatype
-  //     ? this.state.source_uuid_list[0].datatype
-  //     : "";
-  //   //const uuid_type = "Not dataset";
-  //   const url_path = uuid_type === "Dataset" ? "datasets" : "specimens";
-  //   const url_server =
-  //     uuid_type === "Dataset"
-  //       ? process.env.REACT_APP_DATAINGEST_API_URL
-  //       : process.env.REACT_APP_SPECIMEN_API_URL;
-
-  //   // const patt = new RegExp("^.{3}-.{4}-.{3}$");
-  //   // if (patt.test(uuid)) {
-  //   this.setState({
-  //     validatingUUID: true,
-  //   });
-  //   if (true) {
-  //     const config = {
-  //       headers: {
-  //         Authorization:
-  //           "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //     };
-
-  //     return axios
-  //       .get(`${url_server}/${url_path}/${uuid}`, config)
-  //       .then((res) => {
-  //         if (res.data) {
-  //           if (
-  //             res.data.specimen &&
-  //             res.data.specimen.entitytype === "Dataset"
-  //           ) {
-  //             res.data.dataset = res.data.specimen;
-  //             res.data.specimen = null;
-  //           }
-  //           this.setState((prevState) => ({
-  //             source_entity: res.data,
-  //             formErrors: { ...prevState.formErrors, source_uuid: "valid" },
-  //           }));
-  //           return isValid;
-  //         } else {
-  //           this.setState((prevState) => ({
-  //             source_entity: null,
-  //             formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-  //           }));
-  //           isValid = false;
-  //           Alert("The Source UUID does not exist.");
-  //           return isValid;
-  //         }
-  //       })
-  //       .catch((err) => {
-  //        //console.debug("Err Caught in validateUUID catch for then Catch")
-  //         this.setState((prevState) => ({
-  //           submitErrorResponse:err,
-  //           source_entity: null,
-  //           formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-  //         }));
-  //         isValid = false;
-          
-  //         Alert("The Source UUID does not exist.");
-  //         return isValid;
-  //       })
-  //       .then(() => {
-  //         this.setState({
-  //           validatingUUID: false,
-  //         });
-  //         return isValid;
-  //       });
-  //   } else {
-  //    //console.debug("Err Caught in validateUUID Return")
-  //     this.setState((prevState) => ({
-  //       formErrors: { ...prevState.formErrors, source_uuid: "invalid" },
-  //     }));
-  //     isValid = false;
-  //     Alert("The Source UUID is invalid.");
-  //     return new Promise((resolve, reject) => {
-  //       resolve(false);
-  //     });
-  //   }
-  // };
 
   handleCancel = () => {
     if(this.props && this.props.handleCancel){
@@ -997,9 +771,7 @@ class DatasetEdit extends Component {
   }
 
   handleButtonClick = (i, event) => {
-    //console.debug("handleButtonClick", i);
     if(event){
-      //console.debug([event.target.name]);
     }
 
     this.setState({
@@ -1013,7 +785,7 @@ class DatasetEdit extends Component {
   };
 
   handleDatasetSelect = (e) => {
-    console.debug("handleDatasetSelect", e);
+    
     e.preventDefault();
     // @TODO Better process standardizing route navigation between forms 
     window.history.pushState( null,"", "/upload/"+this.props.editingDataset.upload.uuid);
@@ -1024,22 +796,8 @@ class DatasetEdit extends Component {
 
   handleSubmit = (submitIntention) => {
 
-    // const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
-    // const data_types = this.state.data_types;
-    // const other_dt = Array.from(data_types).filter(
-    //   (dt) => !data_type_options.has(dt)
-    //   )[0];
-    // data_types.delete(other_dt);
-    // // //////console.log('submit: data_types',data_types)
-    // if (this.state.other_dt) {
-    //   data_types.add(this.state.other_dt);
-    // }
-    
-    // this.setState({ data_types: data_types });
-    //////console.log('submit: moving to validateForm')
     this.validateForm().then((isValid) => {
-    console.debug("GroupSelectShow", this.state.GroupSelectShow);
-    //console.debug("editingDataset", this.props.editingDataset);
+    
       if (isValid) {
         if (
           (!this.props.editingDataset || 
@@ -1048,26 +806,14 @@ class DatasetEdit extends Component {
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
-          //console.debug("showing Group Select!!");
           this.setState({ GroupSelectShow: true });
         } else {
-
-
-          console.debug("NO MODAL...",
-          "Editi Mode:",!this.props.editingDataset,
-          "| Dataset:",this.props.editingDataset,
-          "| length:",this.props.editingDataset.length,
-          "| & ",
-          this.state.groups.length, 
-          !this.state.GroupSelectShow
-           );
 
           this.setState({
             GroupSelectShow: false,
             submitting: true,
           });
           const state_data_types = this.state.data_types;
-          // state_data_types.delete("other");
           let data_types = [...state_data_types];
           if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
             data_types = [
@@ -1078,7 +824,7 @@ class DatasetEdit extends Component {
 
           // Can't stringify a set within json
           var dataTypeArray = Array.from(this.state.data_types);
-          console.debug("data_types", dataTypeArray);
+          
           // package the data up
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
@@ -1088,7 +834,7 @@ class DatasetEdit extends Component {
             dataset_info: this.state.dataset_info,
           };
           
-          console.debug("Compiled data: ", data);
+          
   
           // get the Source ancestor
           if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
@@ -1099,8 +845,6 @@ class DatasetEdit extends Component {
               data["direct_ancestor_uuids"] = direct_ancestor_uuid;
             }
           }
-          // var formData = new FormData();
-          // formData.append("data", JSON.stringify(data));
           const config = {
             headers: {
               Authorization:
@@ -1111,11 +855,9 @@ class DatasetEdit extends Component {
 
 
           if (this.props.editingDataset && !this.props.newForm) {
-            //console.debug("submitIntention is our status as passed into handleSubmit", submitIntention);
-            //console.log("data is ", data)
             // If we';re making a new Version
             if (submitIntention === "newversion") {
-              console.debug("Making a new version");
+              
               // @TODO: Basically repeates what's in the Create fucntionality, 
               // and the previous_revision_uuid is added  
               data.previous_revision_uuid = this.props.editingDataset.uuid;
@@ -1130,79 +872,58 @@ class DatasetEdit extends Component {
                   // If none selected, we need to pick a default BUT
                   // It must be from the data provviders, not permissions
                   data["group_uuid"] = this.state.groups_dataprovider[0].uuid; 
-                  // data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
                 }
-  
-               //console.log('DATASET TO SAVE', JSON.stringify(data))
-                // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+            
                  ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status < 300) {
-                     //console.log('create Dataset...', response.results);
+                     //
                        this.setState({
-                          //globus_path: res.data.globus_directory_url_path,
                           display_doi: response.results.display_doi,
-                          //doi: res.data.doi,
                         });
-                      //  axios
-                      //  .get(
-                      //   `${process.env.REACT_APP_ENTITY_API_URL}/entities/${response.results.uuid}/globus-url`,
-                      //   config
-                      // )
+
                       entity_api_get_globus_url(response.results.uuid, this.state.groupsToken)
                       .then((res) => {
                         this.setState({
                           globus_path: res.results,
                         }, () => {
-                         console.debug('globus_path', res.results)
-
                           this.props.onCreated({entity: response.results, globus_path: res.results}); // set as an entity for the Results
                           this.onChangeGlobusURL(response.results, res.results);
                         });
                       })
                       .catch((err) => {
-                        //console.log('ERROR catch', err)
+                        //
                         if (err.response && err.response.status === 401) {
                           localStorage.setItem("isAuthenticated", false);
-                          // window.location.reload();
                         }
                       });
                     } else {
-                     //console.debug("Error response", response) 
                       this.setState({ 
                         submit_error: true, 
                         submitting: false, 
                         submitErrorResponse:response.results.data.error,
                         buttonSpinnerTarget:""} ,
                         () => {
-                         console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
+                         
                         });
                      
                     }
                   
                 })
                 .catch((err) => {
-                 //console.debug("err", err)
                   this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
                     () => {
-                     //console.debug("CATCH ", err) 
+                     //
                     });
                 });
             }
             // if user selected Publish
             else if (submitIntention === "published") { // From State? 
-              //console.debug("about to publish with data ", data); 
-              // let uri = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${this.props.editingDataset.uuid}/publish`;
-              // axios
-              //   .put(uri, JSON.stringify(data), config)
-
                 ingest_api_dataset_publish(this.props.editingDataset.uuid, this.JSON.stringify(data),  config)
                 .then((res) => {
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
-                 //console.error("published ERROR ", error)
-                  // this.props.reportError(error);
                   this.setState({ 
                     submit_error: true, 
                     submitting: false, 
@@ -1210,17 +931,13 @@ class DatasetEdit extends Component {
                     buttonSpinnerTarget:"", });
                 });
             } else if (submitIntention === "processing") {
-               ////console.log('Submit Dataset...');
-              //console.log("data is ", data)
+
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
-                    //console.debug("response is ", response, response.err.response);
                     if (response.status < 300) {
-                      ////console.log(response.results);
                       this.props.onUpdated(response.results);
                     } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
                      var statusText = response.err.response.status+" "+response.err.response.statusText;
-                    //  this.props.reportError(statusText, response.err.response.data );
                       this.setState({ 
                         submit_error: true, 
                         submitting: false,
@@ -1231,7 +948,6 @@ class DatasetEdit extends Component {
                     }
                 })
                 .catch((error) => {
-                    //console.error("processing ERROR ", error)
                     this.props.reportError(error);
                     this.setState({ 
                       submit_error: true, 
@@ -1248,11 +964,8 @@ class DatasetEdit extends Component {
                               submit_error: false, 
                               submitting: false, 
                               });
-                            ////console.log('Update Dataset...');
-                             ////console.log(response.results);
                             this.props.onUpdated(response.results);
                           } else {
-                           //console.debug("ERROR ",response)
                             this.setState({ 
                               submit_error: true, 
                               submitting: false, 
@@ -1261,7 +974,6 @@ class DatasetEdit extends Component {
                           }
                 }) 
                 .catch((error) => {
-                  //console.error("else ERROR ", error)
                   this.props.reportError(error);
                    this.setState({ 
                     submit_error: true, 
@@ -1275,84 +987,68 @@ class DatasetEdit extends Component {
             if (this.state.lab_dataset_id) {
               data["lab_dataset_id"] = this.state.lab_dataset_id;
             }
-
             // the group info on a create, check for the defaults
               if (this.state.selected_group && this.state.selected_group.length > 0) {
                 data["group_uuid"] = this.state.selected_group;
               } else {
                 // If none selected, we need to pick a default BUT
                 // It must be from the data provviders, not permissions
-                data["group_uuid"] = this.state.groups_dataprovider[0].uuid; 
-                // data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
+                data["group_uuid"] = this.state.groups_dataprovider[0].uuid;    
               }
 
-             //console.log('DATASET TO SAVE', JSON.stringify(data))
-              // api_create_entity("dataset", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status < 300) {
-                   //console.log('create Dataset...', response.results);
+                   //
                      this.setState({
-                        //globus_path: res.data.globus_directory_url_path,
                         display_doi: response.results.display_doi,
-                        //doi: res.data.doi,
                       });
-                    //  axios
-                    //  .get(
-                    //   `${process.env.REACT_APP_ENTITY_API_URL}/entities/${response.results.uuid}/globus-url`,
-                    //   config
-                    // )
                     entity_api_get_globus_url(response.results.uuid, this.state.groupsToken)
                     .then((res) => {
-                      console.debug('globus_path RES', res.results);
+                      
                       this.setState({
                         globus_path: res.results,
                       }, () => {
-                       console.debug('globus_path', res.results)
+                       
                         this.props.onCreated({entity: response.results, globus_path: res.results}); // set as an entity for the Results
                         this.onChangeGlobusURL(response.results, res.results);
                       });
                     })
                     .catch((err) => {
-                      //console.log('ERROR catch', err)
                       if (err.response && err.response.status === 401) {
                         localStorage.setItem("isAuthenticated", false);
                         window.location.reload();
                       }
                     });
                   } else {
-                   //console.debug("Error response", response) 
                     this.setState({ 
                       submit_error: true, 
                       submitting: false, 
                       submitErrorResponse:response.results.data.error,
                       buttonSpinnerTarget:""} ,
                       () => {
-                       //console.debug("this.state.submitErrorResponse", this.state.submitErrorResponse) 
+                       //
                       });
                    
                   }
                 
               })
               .catch((err) => {
-               //console.debug("err", err)
                 this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
                   () => {
-                   //console.debug("CATCH ", err) 
+                   //
                   });
               });
-          }  //else
+          }  
         }
       }else{
-        //console.debug("Is Not Valid");
-        // console.debug("There was a problem handling your form. Please review the marked items and try again.");
+        //
         this.setState({ 
           submit_error: true, 
           submitting: false, 
           buttonSpinnerTarget:""
           // submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again." 
         });
-
         // Alert("There was a problem handling your form. Please review the marked items and try again.");
       }
     });
@@ -1361,22 +1057,6 @@ class DatasetEdit extends Component {
   validateForm() {
     return new Promise((resolve, reject) => {
       let isValid = true;
-     //console.debug("data_types", this.state.data_types);
-      // if (!validateRequired(this.state.lab_dataset_id)) {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "required" },
-      //   }));
-      //   isValid = false;
-      //   resolve(isValid);
-      // } else {
-      //   this.setState((prevState) => ({
-      //     formErrors: { ...prevState.formErrors, lab_dataset_id: "" },
-      //   }));
-      //   // this.validateUUID().then((res) => {
-      //   //   resolve(isValid && res);
-      //   // });
-      // }
-      
       if (!validateRequired(this.state.source_uuid_list)) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, source_uuid_list: "At least one Source is required" },
@@ -1387,9 +1067,7 @@ class DatasetEdit extends Component {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, source_uuid_list: "" },
         }));
-        // this.validateUUID().then((res) => {
-        //   resolve(isValid && res);
-        // });
+
       }
       
       if (this.state.data_types && (this.state.data_types.size === 0 || this.state.data_types === "")) {
@@ -1419,7 +1097,6 @@ class DatasetEdit extends Component {
       // do a check to on the data type to see what if it normally contains pii
       let pii_check = this.assay_contains_pii(this.state.data_types);
 
-     //console.debug('VALIDATE: pii_check', pii_check)
       if (this.state.contains_human_genetic_sequences === true && pii_check === true) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
@@ -1435,8 +1112,6 @@ class DatasetEdit extends Component {
           } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
             emsg = "The selected data type doesn’t contain gene sequence information, please select No or change the data type."
           } 
-          //console.debug('VALIDATE: emsg', emsg)
-          
           this.setState((prevState) => ({
               formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },              
           }));
@@ -1452,9 +1127,6 @@ class DatasetEdit extends Component {
         });
         var errorSet = this.state.formErrors;
         var result = Object.keys(errorSet).find(e => errorSet[e].length);
-        //console.debug('VALIDATE: result', result);
-
-
       }
       resolve(isValid);
     });
@@ -1462,14 +1134,13 @@ class DatasetEdit extends Component {
 
   assembleSourceAncestorData(source_uuids){
     for (var i = 0; i < source_uuids.length; i++) {
-      //console.debug("LOOPUING ASAD");
       var dst = generateDisplaySubtype(source_uuids[i]);
       source_uuids[i].display_subtype=dst;
     }
   try {
     return source_uuids
   } catch {
-   //console.debug("getSourceAncestory Not Found?! ",source_uuids)
+   //
   }
  
 }
@@ -1479,7 +1150,7 @@ class DatasetEdit extends Component {
     try {
       return source_uuids[0].hubmap_id;  // just get the first one
     } catch {
-     //console.debug("getSourceAncestory Not Found?! ",source_uuids)
+     //
     }
     return ""
   }
@@ -1489,7 +1160,7 @@ class DatasetEdit extends Component {
   getSourceAncestorTypes(type){
     // Give it the type we're looking for
     var ancestorTypes = this.props.editingDataset.direct_ancestors.map((ancestor) => ancestor.entity_type);
-    // console.debug("ancestorTypes", ancestorTypes);
+    // 
     return ancestorTypes.includes(type)
   }
 
@@ -1498,17 +1169,15 @@ class DatasetEdit extends Component {
     try {
       return source_uuids[0];  // just get the first one
     } catch {
-     //console.debug("getSourceAncestorEntity Not Found?! ",source_uuids)
+     //
     }
     return ""
   }
 
   //note: this code assumes that source_uuids is a sorted list or a single value
   generateDisplaySourceId(source_uuids) {
-    // console.debug("~~~~~~~~~~` generateDisplaySourceId", source_uuids);
     //check if the source_uuids represents a list or a single value
     if (source_uuids.length > 1) {
-     //console.debug("source_uuids.length > 1")
       //is_subset is a flag indicating if the source_uuid list is
       //a consecutive set of values (ex: 1-5) or a subset of values (ex: 1,3,5)
       var is_subset = "";
@@ -1553,8 +1222,6 @@ class DatasetEdit extends Component {
       let last_lab_id = source_uuids[source_uuids.length - 1].hubmap_id
         ? source_uuids[source_uuids.length - 1].hubmap_id
         : source_uuids[source_uuids.length - 1];
-      //let first_lab_id = source_uuids[0];
-      //let last_lab_id = source_uuids[source_uuids.length - 1];
       let id_common_part = first_lab_id.substring(
         0,
         first_lab_id.lastIndexOf("-") + 1
@@ -1594,24 +1261,11 @@ class DatasetEdit extends Component {
 
   renderButtonOverlay(){
     return ( // @TODO: Improved form-bottom Control Overlay?
-      // <Box className="buttonActiveOverlay" sx={{
-      //   backgroundColor: 'rgba(0,0,0,0.8)',
-      //   color: 'white',
-      //   position: 'relative',
-      //   height: '80px',
-      //   bottom:'80px',
-      //   borderBottomRightRadius: '4px',
-      //   borderBottomLeftRadius: '4px'
-      // }}>
-      //   Processing, Pleaese Wait...
-      // <CircularProgress color="inherit" />
-      // </Box>
       <></>
     )
   }
 
   renderButtons() {
-    // console.debug("renderButtons",this.state.has_version_priv);
 
     if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
             && this.state.previous_revision_uuid === undefined 
@@ -1678,7 +1332,6 @@ class DatasetEdit extends Component {
   }
 
   renderNewVersionButtons() {
-    // console.debug("renderNewVersionButtons", this.props.editingDataset.direct_ancestors);
     /*the entity pointed to for at least one dataset.direct_ancestory_uuids is of type sample (ancestor.entity_type == 'Source')
     dataset.status == 'Published'
     user has write access for the dataset.group_uuid/group_name
@@ -1688,12 +1341,6 @@ class DatasetEdit extends Component {
     var datasetStatus = this.props.editingDataset.status === "Published";
     var writability = this.state.has_version_priv;
     var latestVersion = (!this.props.editingDataset.next_revision_uuid  ||  this.props.editingDataset.next_revision_uuid === undefined);
-    console.debug(
-      "renderNewVersionButtons", 
-      "sampleSource: "+sampleSource, 
-      "datasetStatus: "+datasetStatus, 
-      "writability: "+writability, // Version priv w/o statut, not standard writeability w/status
-      "latestVersion: "+latestVersion);
     if(sampleSource && datasetStatus && writability && latestVersion){
     // if(true===true){
       return (
@@ -1707,7 +1354,6 @@ class DatasetEdit extends Component {
           )}
           {!this.state.submitting && "New Version"}         
         </Button> )
-      // return (<></> );
     } 
   }
 
@@ -1717,12 +1363,6 @@ class DatasetEdit extends Component {
 
     var next = "";
     var prev = "";
-    // if(this.props.editingDataset.next_revision_uuid){
-    //   next = 'View '+<Link> Next </Link>} version
-    // }
-    // if(this.props.editingDataset.next_revision_uuid){
-    //   prev= 'View <Link> Previous </Link> version'
-    // }
     
     return (
       <Box sx={{width:"50%"}}>
@@ -1752,30 +1392,20 @@ class DatasetEdit extends Component {
 
   // General button
   aButton(newstate, which_button, event) {
-    // console.debug("aButton", newstate, which_button);
     return (<React.Fragment>
       <div >
         <Button
           type='button'
           name={"button-" + which_button}
           variant="contained"
-          // className='btn btn-info btn-block'
           disabled={this.state.submitting}
-          // onClick={(e) =>
-          //   this.handleButtonClick(newstate)
-          // }
           onClick={ 
             (e) => {
-              // console.debug("buttonOnclick from aButton Factory");
-              // console.debug("which_button.toLowerCase()", which_button.toLowerCase());
-                  // e.preventDefault();
-                // var thisButton = which_button;
                 this.setState({ 
                   buttonSpinnerTarget:which_button.toLowerCase()
                 },() => {  
-                  //console.debug("Button State Saved, ",this.state.buttonSpinnerTarget);
+                  //
                 })
-                // console.debug("onClick", e); 
                 this.handleButtonClick(newstate)
             }
         }
@@ -1798,13 +1428,11 @@ class DatasetEdit extends Component {
   }
 
   reprocessButton() {
-    // console.debug("reprocessButton");
     return (<React.Fragment>
       <div >
         <Button
           variant="contained"
           type='button'
-          // className='btn btn-warning btn-block'
           disabled={this.state.submitting}
           onClick={() =>
             this.handleReprocess()
@@ -1833,7 +1461,7 @@ class DatasetEdit extends Component {
   }
 
   onChangeGlobusLink(newLink, newDataset) {
-    console.debug(newDataset, newLink)
+    
     const {name, display_doi, doi} = newDataset;
     this.setState({
       
@@ -1848,7 +1476,7 @@ class DatasetEdit extends Component {
   onChangeGlobusURL() {
     // REMEMBER the props from the new wrapper / Forms
     // Differs from Main wrapper
-    console.debug("onChangeGlobusURL", this.state.globus_path);
+    
     this.props.changeLink(this.state.globus_path, { 
       name: this.state.lab_dataset_id,
       display_doi: this.state.display_doi,
@@ -1869,20 +1497,8 @@ class DatasetEdit extends Component {
          )
     }
 
-  // renderOneAssay(val, idx) {
-	 //   let idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
-
-	 //   return (<div className='form-group form-check'>
-		//                 <input type='checkbox' className='form-check-input' name={val.name} id={idstr} key={idstr}
-		//                     onChange={this.handleInputChange} checked={this.isAssayCheckSet(val.name)}
-		//                 />
-		//                 <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
-		//                 </div>
-	 //       )
-  //   }
-
   isAssayCheckSet(assay) {
-    ////console.log('isAssayCheckSet',assay)
+    ////
     try {    
       if (this.props.editingDataset.data_types) {
         return this.props.editingDataset.data_types.includes(assay);
@@ -1896,7 +1512,6 @@ class DatasetEdit extends Component {
 
   renderAssayColumn(min, max) {
     // Hijacking Select options based on Primary DT status
-    // console.debug(this.props.dtl_status);
     if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
       return (
         this.props.dtl_primary.slice(min, max).map((val, idx) =>
@@ -1950,20 +1565,17 @@ class DatasetEdit extends Component {
    
   renderAssayArray() {
       var len = 0;
-      // var dtlistLen = this.props.dataTypeList.length;
       var dtlistLen = this.state.dataTypeDropdown.length;
       if(this.props.newForm){
         dtlistLen = this.props.dtl_primary.length;
       }
       if(this.props.editingDataset && this.props.editingDataset.data_types) {
-        //console.debug("this.props.editingDataset", this.props.editingDataset);
         len = this.props.editingDataset.data_types.length;
       }else{
         //console.debug("no editingDataset");
       }
 
        if (len > 1) {
-        //console.debug("Multiple DTs", len);
         return (<>
           <ul>
             {this.renderMultipleAssays()}
@@ -1971,18 +1583,7 @@ class DatasetEdit extends Component {
 
           </>)
       }else{ 
-        //  var selectedID = null;
-        //   if(this.props.editingDataset && this.props.editingDataset.data_types){
-        //     //console.debug("this.props.editingDataset.data_types[0]", this.props.editingDataset.data_types[0]);
-        //     // If we're not in the list yet, add us!
-        //     // if(!this.state.assay_type_primary){
-        //     //   //console.debug("Not in the list yet, add us!");
-        //     // }
-        //     // selectedID = 'dt_' + this.props.editingDataset.data_types[0].toLowerCase().replace(' ','_');
-        //     selectedID = this.props.editingDataset.data_types[0];
-        //   }
-          // console.debug("selectedID", selectedID);
-        // console.debug("this.sate.data_types.values().next().value", this.state.data_types.values().next().value);
+       
   	    return (<>
   		    <Select 
             native
@@ -1990,14 +1591,10 @@ class DatasetEdit extends Component {
             className="form-select" 
             disabled={ (!this.state.writeable || !this.state.assay_type_primary) || this.state.disableSelectDatatype }
             value={this.state.selected_dt} 
-            // defaultValue={this.state.selected_dt} 
-            // value={this.props.editingDataset.data_types} 
             id="dt_select" 
             onChange={this.handleInputChange}>
-  		    {/* <select className="form-select" value={this.props.dataTypeList.values().next().value} id="dt_select" onChange={this.handleInputChange}> */}
             <option></option>
             {this.renderAssayColumn(0, dtlistLen)}
-            {/* <option value="other">Other</option> */}
           </Select>
           </> )
    
@@ -2006,12 +1603,9 @@ class DatasetEdit extends Component {
    
   assay_contains_pii(assay) {
     let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
-   //console.debug('assay_contains_pii', assay_val)
     for (let i in this.props.dataTypeList) {
       let e = this.props.dataTypeList[i]
-
       if (e['name'] === assay_val) {
-       //console.debug('assay_contains_pii?', e['contains-pii'])
           return e['contains-pii']
       }
     }
@@ -2057,10 +1651,7 @@ class DatasetEdit extends Component {
 
               <p>
               <strong>
-                {/* <big> */}
-                  
                   {this.state.globus_path && (
-
                     <a
                       href={this.state.globus_path}
                       target='_blank'
@@ -2070,15 +1661,12 @@ class DatasetEdit extends Component {
                       <FontAwesomeIcon icon={faExternalLinkAlt} style={{ marginLeft: "5px" }} />
                     </a>
                   )}
-                  
-                {/* </big> */}
               </strong>
             </p> 
 
 
          
           </div>
-
           <div className='col-md-6'>
           
           
@@ -2107,28 +1695,17 @@ class DatasetEdit extends Component {
           <Box  sx={{ width:"100%" }}><strong>This Dataset is contained in the data Upload </strong> 
             <Button 
               variant="text"
-              // fullWidth
-              // to='/datasets/{this.props.editingDataset.upload.uuid}' 
               onClick={this.handleDatasetSelect}>  
               {this.props.editingDataset.upload.hubmap_id}
             </Button>
-          {/* </Box> */}
           </Box>
-          {/* <Box  sx={{ flexShrink: 1}}>   */}
-         
         </Box>
-        
-
     )}
       
         
 
     </div>  
-
-
-              
           </div>
-
 
           <div className='row'>
                   
@@ -2137,7 +1714,6 @@ class DatasetEdit extends Component {
           
           <div className='form-group'>
               {this.renderSources()}
-              
               
               <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
                 <DialogContent>
@@ -2189,11 +1765,7 @@ class DatasetEdit extends Component {
                   value={this.state.lab_dataset_id}
                 />
             )}
-            {/* {this.errorClass(this.state.formErrors.source_uuid_list) && (
-              <div className='alert alert-danger'>
-              Lab Name or ID is Required
-            </div>
-            )} */}
+
             {!this.state.writeable && (
               <div className='col-sm-9 col-form-label'>
                 <p>{this.state.lab_dataset_id}</p>
@@ -2291,8 +1863,7 @@ class DatasetEdit extends Component {
             )}
           </div>
           
-          {/* <div className={ this.state.formErrors.contains_human_genetic_sequences.length>0 ? 'form-group alert alert-danger' : 'form-group' } >
-            <div className='formRowWrapper p-2'>   */}
+        
             <div className='form-group  '>  
                 <label
                   htmlFor='contains_human_genetic_sequences'
@@ -2325,7 +1896,6 @@ class DatasetEdit extends Component {
                           name='contains_human_genetic_sequences'
                           id='contains_human_genetic_sequences_no'
                           value='no'
-                          // defaultChecked={true}
                           checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
                           onChange={this.handleInputChange}
                           disabled={!this.state.writeable}
@@ -2366,11 +1936,7 @@ class DatasetEdit extends Component {
                           name='contains_human_genetic_sequences'
                           id='contains_human_genetic_sequences_no'
                           value='no'
-                          // defaultChecked={true}
-                          //checked={this.state.contains_human_genetic_sequences == false && this.props.editingDataset}
                           onChange={this.handleInputChange}
-                          //disabled={this.props.editingDataset}
-                          //required
                         />
                         <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
                           No
@@ -2386,10 +1952,7 @@ class DatasetEdit extends Component {
                           name='contains_human_genetic_sequences'
                           id='contains_human_genetic_sequences_yes'
                           value='yes'
-                          //checked={this.state.contains_human_genetic_sequences  == true && this.props.editingDataset}
                           onChange={this.handleInputChange}
-                          //disabled={this.props.editingDataset}
-                          //required
                         />
                         <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
                           Yes
@@ -2402,12 +1965,6 @@ class DatasetEdit extends Component {
                     
                     </div>
                   )}
-
-                  {/*!this.state.writeable && (
-                    <div className='col-sm-9 col-form-label'>
-                      <p>{this.state.contains_human_genetic_sequences}</p>
-                    </div>
-                  )*/}
                   {this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
                         <Alert severity="error">
                           {this.state.formErrors.contains_human_genetic_sequences}
@@ -2416,11 +1973,7 @@ class DatasetEdit extends Component {
                 
                 </div>
 
-
             </div>
-          
-          {/* <div className={ this.state.formErrors.contains_human_genetic_sequences.length>0 ? 'form-group alert alert-danger' : 'form-group' } >
-            <div className='formRowWrapper p-2'> */}
             <div className= 'form-group'>
               <label
                 htmlFor='dt_select'
@@ -2582,7 +2135,6 @@ class DatasetEdit extends Component {
 
         <GroupModal
           show={this.state.GroupSelectShow}
-          // hide={this.hideGroupSelectModal}
           groups={this.state.groups}
           submit={this.handleSubmit}
           handleInputChange={this.handleInputChange}

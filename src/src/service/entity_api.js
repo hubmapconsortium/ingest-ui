@@ -13,13 +13,10 @@ export function entity_api_get_entity(uuid, auth) {
         "Content-Type": "application/json"
       }
     };
-
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`;
-        
   return axios 
     .get(url,options)
       .then(res => {
-        //console.debug(res);
           let results = res.data;
           return {status: res.status, results: results}
       })
@@ -31,7 +28,6 @@ export function entity_api_get_entity(uuid, auth) {
           console.debug("entity_api_get_entity no response");
           return err;
         }
-        
       });
 };
 
@@ -54,7 +50,6 @@ export function entity_api_update_entity(uuid, data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-        //console.debug(res);
           let results = res.data;
       
         return {status: res.status, results: results}
@@ -88,9 +83,7 @@ export function entity_api_create_entity(entitytype, data, auth) {
   return axios 
      .post(url, data, options)
       .then(res => {
-        //console.debug(res);
           let results = res.data;
-      
         return {status: res.status, results: results}
       })
       .catch((err) => {
@@ -112,11 +105,9 @@ export function entity_api_create_multiple_entities(count, data, auth) {
     };
 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/multiple-samples/${count}`;
-        
   return axios 
      .post(url, data, options)
       .then(res => {
-        //console.debug(res);
           let results = res.data;
           let fin = [];
            results.forEach( element => {
@@ -149,9 +140,7 @@ export function entity_api_update_multiple_entities(data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-        //console.debug(res);
-          let results = res.data;
-         
+        let results = res.data;
         return {status: res.status, results: results}
       })
       .catch(err => {
@@ -172,15 +161,12 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
         "Content-Type": "application/json"
       }
     };
-
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`;
-        
   return axios 
     .get(url,options)
       .then(res => {
         console.debug(res);
-          let results = res.data;
-      
+        let results = res.data;
         return {status: res.status, results: results}
       })
       .catch(err => {
@@ -203,7 +189,6 @@ export function entity_api_get_globus_url(uuid, auth) {
       "Content-Type": "application/json"
     }
   };
-
   return axios
     .get(url, options)
       .then((res) => {

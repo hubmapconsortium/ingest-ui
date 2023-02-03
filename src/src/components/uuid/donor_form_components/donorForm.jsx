@@ -51,29 +51,19 @@ class DonorForm extends Component {
     readOnly: false,
     GroupSelectShow: false,
     images: [],
-    //metadatas: [],
-    // new_metadatas: [],
-    // deleted_metadatas: [],
     new_images: [],
     deleted_images: [],
- //   protocol_file_name: "Choose a file",
-//    metadata_file_name: "Choose a file",
 
     groups: [],
     groups_dataprovider: [],
     selected_group: null,
 
     formErrors: {
-   //   visit: "",
       lab: "",
       lab_donor_id: "",
       identifying_name: "",
       protocol_url: "",
-     // protocol_file: "",
       description: "",
-     // metadata_file: "",
-     // open_consent: false,
-     // metadatas: "",
       images: "",
     },
   };
@@ -81,42 +71,34 @@ class DonorForm extends Component {
   constructor(props) {
     super(props);
     // create a ref to store the file Input DOM element
-    //this.protocolFile = React.createRef();
     this.protocol_url = React.createRef();
   }
 
   UNSAFE_componentWillMount() {
 
    ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-      console.debug("ingest_api_users_groups", results);
+      
       if (results.status === 200) { 
-        console.debug("results", results);
-      // const groups = results.results.filter(
-      //     g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-      //   );
-        // this.setState({
-        //   groups: results.results
-        // });
+        
         var resultGroups = [];
-        console.debug("HAVE results",results);
+        
         
         if (results.results && results.results.length > 0) {
           resultGroups = results.results;
-          console.debug("HAVE Doube results.results ",results.results);
+          
         }else if (results.data && results.data.length > 0) {
           resultGroups = results.data.groups;
-          console.debug("HAVE data with Groups ",results.data.groups);
+          
         }else{
           resultGroups = results.groups;
-          console.debug("NO data just Groups ",results.groups);
+          
         }
-        console.debug("resultGroups", resultGroups);
+        
         const groups = resultGroups.filter(
           // It filters our read only, but what about other permissions like admin? 
-          // g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
           g => g.data_provider === true
         );
-        console.debug("groups",groups);
+        
           //  We have both Data-Provider groups as well as non. 
           // The DP needs to be deliniated for the dropdown & assignments
           // the rest are for permissions
@@ -124,7 +106,7 @@ class DonorForm extends Component {
           groups: groups,
           groups_dataprovider: groups,
         }, () => {
-          console.debug("SET STATE TO GROUPS ", this.state.groups_dataprovider);
+          
         });
       } else if (results.status === 401) {
           localStorage.setItem("isAuthenticated", false);
@@ -134,24 +116,17 @@ class DonorForm extends Component {
 
 
     if (this.props.editingEntity) {
-      //const pf = this.props.editingEntity.protocol_file;
- //     const mf = this.props.editingEntity.portal_metadata_upload_files;
       let images = this.props.editingEntity.image_files;
 
       this.setState({
         author: this.props.editingEntity.created_by_user_email,
-        //visit: this.props.editingEntity.properties.visit,
         lab_donor_id: this.props.editingEntity.lab_donor_id,
         identifying_name: this.props.editingEntity.label,
         protocol_url: this.props.editingEntity.protocol_url,
-      //  protocol_file_name: pf && getFileNameOnPath(pf),
         description: this.props.editingEntity.description,
-       // metadata_file_name: mf && getFileNameOnPath(mf)
-
       });
 
       const image_list = [];
-      //const metadata_list = [];
       try {
         images.forEach((image, index) => {
           image_list.push({
@@ -163,14 +138,7 @@ class DonorForm extends Component {
           });
         });
       } catch {}
-      // metadatas.forEach((metadata, index) => {
-      //   metadata_list.push({
-      //     id: index + 1,
-      //     ref: React.createRef(),
-      //     file_name: getFileNameOnPath(metadata.filepath)
-      //   });
-      // });
-      // this.setState({ images: image_list, metadatas: metadata_list });
+    
       this.setState({ images: image_list});
     }
 
@@ -180,21 +148,12 @@ class DonorForm extends Component {
           ingest_api_allowable_edit_states(param_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
               .then((resp) => {
                   if (resp.status === 200) {
-                    console.debug('api_allowable_edit_states...', resp.results);
-                    ////////console.debug(resp.results);
+                    
                     const read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
-                    console.debug('HAS has_write_priv', read_only_state)
+                    
                     this.setState({
                       readOnly: read_only_state,   // used for hidding UI components
-                    }
-                    // , () => {
-                    //   this.checkForRelatedGroupIds(entity_data);
-                    //   this.initialize();
-                   
-                    //   //console.debug('readOnly', this.state.readOnly);
-                    // }
-
-                    );
+                    });
                    
                   }         
           });
@@ -264,26 +223,12 @@ class DonorForm extends Component {
         break;
       case "description":
         this.setState({ description: value });
-        break;
-      // case "metadata_file":
-      //   this.setState({ metadata_file: e.target.files[0] });
-      //   this.setState({
-      //     metadata_file_name: e.target.files[0] && e.target.files[0].name
-      //   });
-      //   break;
-      // case "visit":
-      //   this.setState({ visit: value });
-      //   break;
+        break;     
       case "groups":
         this.setState({
           selected_group: value
         });
         break;
-	 //  case "open_consent":
-		// this.setState({
-		//   open_consent: e.target.checked
-		// });
-		// break;
       default:
         break;
     }
@@ -307,9 +252,7 @@ class DonorForm extends Component {
     const new_images = this.state.new_images.filter(dm => dm !== deleted_image.file_name);
     let deleted_images = [...this.state.deleted_images];
 
-    //console.debug('deleted image', deleted_image)
     if (new_images.length === this.state.new_images.length){
-      //deleted_images.push(deleted_image.file_name);
       deleted_images.push(deleted_image.file_uuid);
     }
     const images = this.state.images.filter(i => i.id !== id);
@@ -324,11 +267,8 @@ class DonorForm extends Component {
     switch (type) {
       case "image": {
         const i = this.state.images.findIndex(i => i.id === id);
-        //console.debug('image', id)
         let images = [...this.state.images];
-        //console.debug('images', images)
         images[i].file_name = images[i].ref.current.image_file.current.files[0].name;
-        //console.debug('images file data', images[i].ref.current.image_file.current.files)
         let new_images = [...this.state.new_images];
         new_images.push(images[i].file_name);
         return new Promise((resolve, reject) => {
@@ -400,7 +340,6 @@ class DonorForm extends Component {
         if (this.state.images.length > 0) {
           let image_files_to_add = [];
           let existing_image_files_to_update = [];
-        ////console.debug('submit images', this.state.images)
         this.state.images.forEach(i => {
 
             // if a file has a non-blank temp_file_id then assume it a new image 
@@ -437,20 +376,11 @@ class DonorForm extends Component {
           data['image_files_to_remove'] = this.state.deleted_images
         }
 
-        // "image_files_to_add": [{"temp_file_id":"5hcg4ksj6cxkw2cgpmp5", "description":"this is a test file"}]}
-        //formData.append("data", JSON.stringify(data));
-
-        //console.debug("SUBMMITED data")
-        //console.debug(data)
-      
-
         if (this.props.editingEntity) {
-          console.debug("Updating Entity....")
+          
           entity_api_update_entity(this.props.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    //console.debug('Update Entity...');
-                    //console.debug(response.results);
                     this.props.onUpdated(response.results);
                   } else {
                     this.setState({ submit_error: true, submitting: false });
@@ -459,29 +389,17 @@ class DonorForm extends Component {
               });
         } else {
 
-          console.log("Creating Entity....", data);;
-            // if (this.state.selected_group && this.state.selected_group.length > 0) {
-            //   data["group_uuid"] = this.state.selected_group;
-            // } else {
-            //   data["group_uuid"] = this.state.groups[0].uuid; // consider the first users group        
-            // }
+            
           if (this.state.selected_group && this.state.selected_group.length > 0) {
-              console.debug("Selected_group", this.state.selected_group);
               data["group_uuid"] = this.state.selected_group; 
           } else {
             // If none selected, we need to pick a default BUT
-            // It must be from the data provviders, not permissions
-            console.debug("UN Selected_group", this.state.selected_group);              
+            // It must be from the data provviders, not permissions 
             data["group_uuid"] = this.state.groups_dataprovider[0].uuid; // consider the first users group        
           }
-          console.debug("data[\"group_uuid\"]",data["group_uuid"]);
-
-            //console.debug("Create a new Entity....group uuid", data["group_uuid"])
             entity_api_create_entity("donor", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                  .then((response) => {
                   if (response.status === 200) {
-                    //console.debug('create Entity...');
-                    //console.debug(response.results);
                     this.props.onCreated({new_samples: [], entity: response.results});
                   } else {
                     this.setState({ submit_error: true, submitting: false });
@@ -584,37 +502,9 @@ class DonorForm extends Component {
       }));
     }
 
-
-    // if (!validateProtocolIODOI(this.state.protocol_url)) {
-      //       this.setState(prevState => ({
-        //         formErrors: {
-    //           ...prevState.formErrors,
-    //           protocol_url: "Please enter a valid protocols.io DOI"
-    //         }
-    //       }));
-    //       isValid = false;
-    //     } else {
-    //       this.setState(prevState => ({
-    //         formErrors: { ...prevState.formErrors, protocol_url: "" }
-    //       }));
-    //     }
-    
-    // if (!validateRequired(this.state.protocol_url)) {
-      //     this.setState(prevState => ({
-    //       formErrors: { ...prevState.formErrors, protocol_url: "required" }
-    //     }));
-    //     isValid = false;
-    //   } else {
-    //     this.setState(prevState => ({
-    //       formErrors: { ...prevState.formErrors, protocol_url: "" }
-    //     }));
-    //   }
     
     
-    
-    console.debug("protocol_url",this.state.protocol_url,validateProtocolIODOI(this.state.protocol_url));
     if (!validateRequired(this.state.protocol_url)) {
-      console.debug(" ======= validateRequired");
       isValid = false;
       this.setState(prevState => ({
         formErrors: {
@@ -623,7 +513,6 @@ class DonorForm extends Component {
         }
       }));
     } else if (!validateProtocolIODOI(this.state.protocol_url)) {
-      console.debug(" ======= validateProtocolIODOI");
       isValid = false;
       this.setState(prevState => ({
         formErrors: {
@@ -632,7 +521,6 @@ class DonorForm extends Component {
         }
       }));
     } else if (!validateSingleProtocolIODOI(this.state.protocol_url)) {
-      console.debug(" ======= validateSingleProtocolIODOI");
       isValid = false;
       this.setState(prevState => ({
         formErrors: {
@@ -657,12 +545,10 @@ class DonorForm extends Component {
 
     this.state.images.forEach((image, index) => {
       if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-        //console.debug('image invalid', image.file_name)
         isValid = false;
         image.ref.current.validate();
       }
       if (!validateRequired(image.ref.current.image_file_description.current.value)) {
-         //console.debug('descr missing')
         isValid = false;
         image.ref.current.validate();
       }
@@ -671,49 +557,8 @@ class DonorForm extends Component {
 
     const hasImageDuplicates = new Set(this.state.images).size !== this.state.images.length
     if (hasImageDuplicates) {
-       // image["error"] = "Duplicated file name is not allowed.";
         isValid = false;
     }
-
-
-    // const usedFileName = new Set();
-    // this.state.images.forEach((image, index) => {
-    //   usedFileName.add(image.file_name);
-    //   //console.debug('image check for dups', image)
-    //   if (image.ref.current.image_file.current.files[0]) {
-    //     if (usedFileName.has(image.ref.current.image_file.current.files[0].name)) {
-    //       image["error"] = "Duplicated file name is not allowed.";
-    //       isValid = false;
-    //     }
-    //   }
-    // });
-
-    // if (!this.props.editingEntity) {
-    //   // Creating Donor
-    //   this.state.metadatas.forEach((metadata, index) => {
-    //     if (
-    //       !validateRequired(metadata.ref.current.metadata_file.current.value)
-    //     ) {
-    //       isValid = false;
-    //       metadata.ref.current.validate();
-    //     }
-    //   });
-    // }
-
-    // this.state.metadatas.forEach((metadata, index) => {
-    //   usedFileName.add(metadata.file_name);
-
-    //   if (metadata.ref.current.metadata_file.current.files[0]) {
-    //     if (
-    //       usedFileName.has(
-    //         metadata.ref.current.metadata_file.current.files[0].name
-    //       )
-    //     ) {
-    //       metadata["error"] = "Duplicated file name is not allowed.";
-    //       isValid = false;
-    //     }
-    //   }
-    // });
 
     return isValid;
   }
@@ -1072,11 +917,6 @@ class DonorForm extends Component {
              
               {(!this.state.readOnly || this.state.images.length > 0) && (
                 <div className="form-group">
-                  {/*<label
-                    htmlFor="image">
-                    Image
-                  </label>
-                */}
                 {(this.state.images.length > 0 ) && (this.props.editingEntity) && (
                       <div className="m-1">
                         <FontAwesomeIcon icon={faImages} /> Attached Image(s)

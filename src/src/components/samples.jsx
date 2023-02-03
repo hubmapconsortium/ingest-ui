@@ -4,12 +4,6 @@ import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import TissueFormLegacy from "./uuid/tissue_form_components/tissueForm";
 import {useNavigate} from "react-router-dom";
-
-// import {useNavigate} from "react-router-dom";
-
-
-
-
 export const RenderSample = (props) => {
   console.debug("Rendering from NEWER Route, not Legacy Route");
   // let navigate = useNavigate();
@@ -34,16 +28,13 @@ export const RenderSample = (props) => {
       fetchEntity(uuid, authSet.groups_token);
     }else{
     }
-    
   }, [authSet, uuid, loadFlag]);
-
   function fetchEntity(uuid, auth){
     entity_api_get_entity(uuid, auth)
       .then((response) => {
           setLoadFlag(true);
           if (response.status === 200) {
             setEntity(response.results);
-            // console.debug("entity_data", response.results);
             setLoading(false);
           } else {  
             passError(response.status, response.message);
@@ -58,7 +49,6 @@ export const RenderSample = (props) => {
 
   function handleCancel(){
     if(this.props && this.props.handleCancel){
-      
      this.props.handleCancel();
     }else{
       window.history.back();
@@ -82,32 +72,26 @@ export const RenderSample = (props) => {
   function handleChangeSamplePage(uuid){
     fetchEntity(uuid, authSet.groups_token);
   }
-
-  
-    if (!isLoading && errorHandler.isError === true){
+  if (!isLoading && errorHandler.isError === true){
+    return (
+      <ErrBox err={errorHandler} />
+    );
+  }else if (isLoading) {
       return (
-        <ErrBox err={errorHandler} />
-      );
-    }else if (isLoading) {
-      // console.debug("Samples Loading");
-      // console.debug(props);
-      // console.debug(entity_data);
-      // console.debug(errorHandler);
-        return (
-          <div className="card-body ">
-            <div className="loader">Loading...</div>
-          </div>
-        );
-    }else{
-      return (
-        <div>
-          <TissueFormLegacy 
-          handleCancel={handleCancel} 
-          uuid={entity_data.uuid} 
-          onUpdated={onUpdated} 
-          editingEntity={entity_data}
-          handleChangeSamplePage={handleChangeSamplePage} />
+        <div className="card-body ">
+          <div className="loader">Loading...</div>
         </div>
-      )
-    }
+      );
+  }else{
+    return (
+      <div>
+        <TissueFormLegacy 
+        handleCancel={handleCancel} 
+        uuid={entity_data.uuid} 
+        onUpdated={onUpdated} 
+        editingEntity={entity_data}
+        handleChangeSamplePage={handleChangeSamplePage} />
+      </div>
+    )
   }
+}
