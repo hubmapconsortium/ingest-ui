@@ -30,38 +30,15 @@ class Forms extends Component {
       formType: e.target.value.toLowerCase(),
       createSuccess: false
     });
-    console.debug("handleFormTypeChange ",this.state);
+    
   };
 
  handleDirty = (isDirty) => {
     this.setState({
       isDirty: isDirty
     });
-    console.debug('Forms:isDirty', isDirty);
+    
   }
-
-  // fetchPrimaryDataTypes = () =>{
-  //   search_api_get_assay_list({"primary": "true"})
-  //     .then((response) => {
-  //       console.debug("fetchPrimaryDataTypes Response", response);
-  //         let data = response.data;
-  //         var dt_dict = data.result.map((value, index) => { return value });
-  //         console.debug("dt_dict", dt_dict);
-          
-  //       this.setState({
-  //         dataTypesList: dt_dict
-  //       });
-
-  //       // setDataTypeList(dt_dict);
-  //       // setLoading(false);
-  //       return dt_dict;
-  //     })
-  //     .catch(error => {
-  //       console.debug("fetch DT list Response Error", error);
-  //       // passError(error.status, error.response );
-  //       return error;
-  //     });
-  // };
 
   prepDatatypes= () =>{
 
@@ -73,29 +50,7 @@ class Forms extends Component {
 
  
   UNSAFE_componentWillMount() {
-    console.debug("UNSAFE_componentWillMount");
-    // console.debug("dtlist",this.props.dataTypeList);
-    // search_api_get_assay_set()
-    //   .then((response) => {
-    //     let allDTs = response.data.result;
-    //     var DTList = this.props.dataTypeList;
-    //     console.debug("prepDatatypes", this.prepDatatypes(), DTList);
-    //     this.setState({
-    //       dataTypeList: allDTs
-    //     }, () => {   
-    //       console.debug("FORMS UNSAFE_componentWillMount", this.state);
-    //     });
-    //   })
-    //   .catch(error => {
-    //     console.debug("fetch DT list Response Error", error);
-    //     // passError(error.status, error.response );
-    //     return error;
-      
-    //   })
-
-
     var DTList = this.props.dtl_primary;
-    // console.debug("unsafeCOMPONENTWILLMOUNT", DTList);
     
     this.setState({
       formType: this.props.formType,
@@ -103,12 +58,10 @@ class Forms extends Component {
         dataTypeList: DTList
     }, () => {   
     this.setState({ isLoading: false });
-    console.debug("FORMS componentWillMount", this.state);
     });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.debug("FORMS componentDidUpdate");
     if (prevProps.formType !== this.props.formType) {
       this.setState({
         editForm: true,      
@@ -118,7 +71,7 @@ class Forms extends Component {
         anchorEl: null,
         formType: this.props.formType,
       });
-      console.debug("forms handleFormTypeChange ",this.props.formType,this.state);
+      
       // this.handleUrlChange("new/"+target);
     }
   };
@@ -126,7 +79,7 @@ class Forms extends Component {
 
 
   onCreated = data => {
-    console.debug('FORMS onCreated:', data);
+    
     if (data["new_samples"]) {  // means that we need to show a larger screen
       this.setState({
         result_dialog_size: "xl"
@@ -143,12 +96,12 @@ class Forms extends Component {
   };
 
   handleSingularty  = (target, size) => {
-    // console.debug("handleSingularty target: ",target);
+    // 
     if(target === 'uploads'){
       return "uploads" // Is always plural in our system
     }
     if(size === "plural"){
-      // console.debug(target.slice(-1));
+      // 
       if(target.slice(-1) === "s"){
         return target.toLowerCase();
       }else{
@@ -165,7 +118,7 @@ class Forms extends Component {
 
 
   handleUrlChange = (targetPath) =>{
-    console.debug("handleUrlChange "+targetPath)
+    
     var targetPathString = ""
     if(targetPath && targetPath !== undefined){
       targetPathString = targetPath
@@ -182,7 +135,6 @@ class Forms extends Component {
   }
 
   onCreateNext = e => {
-    console.log('onCreateNext', e)
 //    let ancestor = e
     this.setState({
       createSuccess: false,
@@ -198,20 +150,18 @@ class Forms extends Component {
   };
 
   onChangeGlobusLink(newLink, newDataset) {
-    console.debug(newDataset, newLink)
+    
     const {name, display_doi, doi} = newDataset;
     this.setState({globus_url: newLink, name: name, display_doi: display_doi, doi: doi, createSuccess: true});
   }
 
   handleClose = () => {
-    console.debug('CLOSED');
+    
   }
 
   renderForm() {
     // We're only using the form loader for New forms, 
     // Edit/View forms use updated wrappers 
-    console.debug("this.props", this.props);
-    // var dataTypesList = this.fetchPrimaryDataTypes();
     if (this.state.createSuccess) {
       return (
         <Dialog aria-labelledby="result-dialog" open={this.state.showSuccessDialog} maxWidth={this.state.result_dialog_size}>
@@ -248,7 +198,7 @@ class Forms extends Component {
         />
       );
     } else if (this.props.formType === "dataset"  ) {
-      console.debug("NEW DATASET");
+      
       
         return (
          <DatasetEdit
@@ -264,17 +214,6 @@ class Forms extends Component {
           />
           
         )
-    // } else if (this.state.formType === "dataset") {
-      
-        // return (
-        // //  <UploadsForm  // Loads from a dialog in app.js
-        // //     handleCancel={this.props.handleCancel}
-        // //     uuid={this.state.uuid}
-        // //     //onUpdated={this.handleDatasetUpdated}
-        // //     onCreated={this.onCreated}
-        // //     changeLink={this.onChangeGlobusLink.bind(this)}
-        // //   />
-        // )
     } else {
       return null;
     }
@@ -286,7 +225,6 @@ class Forms extends Component {
 
       {this.state.isLoading && (
         <>Loading</>
-        // <span>  LOADING </span>
       )}
 
       {!this.state.isLoading && (
@@ -296,14 +234,9 @@ class Forms extends Component {
       {this.state.showDatasetResultsDialog && ( // for results of a new Dataset
           <NewDatasetModal
             show={this.state.showDatasetResultsDialog}
-            //hide={this.hideNewDatasetModal}
-            //select={this.handleSelectClick}
             parent="dataset"
             globus_directory_url_path={this.state.globus_url}
             entity={this.state.entity}
-            //name={this.state.editingDataset.description}
-            //display_doi={this.state.editingDataset.display_doi}
-            //doi={this.state.doi}
             onDismiss={() => this.setState({ showDatasetResultsDialog: false, editingDataset: null })}
          />
          )}

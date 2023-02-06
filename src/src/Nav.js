@@ -32,42 +32,12 @@ export const Navigation = (props) => {
   let navigate = useNavigate();
 
   useEffect(() => {
-  //console.debug("props", props);
-  //console.debug("props.appInfo", props.app_info);
-  //console.debug("location", location);
-    // setAuthStatus(props.login)
     setUserInfo(props.app_info);
     setUserGroups(props.userGroups);
-    // console.debug("userInfo", userInfo);
     setUserDataGroups([props.userDataGroups]);
-    // console.debug("===== props.userGroups",props.userGroups);
     // @TODO: Consider moving all the User & User Group info into its own utils, 
-    //mdn Array.reduce;
-
-
-    
-    // console.debug("userDataGroups", props.userDataGroups, props.userDataGroups.length);
-    // if(userGroups && userGroups.length > 0){
-    //   const dataGroups = DataProviders(userGroups);
-    //   console.log(dataGroups, userDataGroups, userDataGroups.length);
-    // }
-
-    
-
-    // props.userGroups.reduce((acc, group) => {
-    //   console.debug("group", group);
-    //   console.debug("acc", acc);
-    //   if(group.data_provider === "true"){
-    //     // setUserGroups(item);
-    //     console.debug("group", group);
-    //   }
-    //   // return acc;
-    //   console.debug("acc", acc);
-    // });
-
 
     if(location.pathname === "/new/data"){
-    //console.debug("Setting uploadsDialog to true");
       setUploadsDialog(true);
     }
   }, [props, props.app_info, location]);
@@ -75,18 +45,14 @@ export const Navigation = (props) => {
 
 
   const handleClick_I = (event) => {
-    console.debug("HandleClick", event );
     setAnchorEl_I(event.currentTarget);
-    // setAnchorEl_I(!anchorEl_I);
   };
 
   const handleClick_B = (event) => {
-  //console.debug("HandleClick", event );
     setAnchorEl_B(event.currentTarget);
   };
   
   const handleClose = () => {
-  //console.debug("HandleClose", e);
     setAnchorEl_I();
     setAnchorEl_B();
   };
@@ -98,29 +64,19 @@ export const Navigation = (props) => {
 
   const onClose = () => {
     setUploadsDialog(false);
-  //console.debug("onClose");
   };
 
   const onCreated = (data) => {
-    console.debug("onCreated");
-    // console.debug("data", data.uuid, data.results.uuid);
-    // navigate("/Upload/"+data.uuid);
     navigate("/Upload/"+data.results.uuid);
     setUploadsDialog(false);
   };
   
   function logout(e) {
-  //console.debug("Logging out");
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
     
   };
-  // const NavTo = (path, type) => {
-  // //console.debug("NavTo", path, type);
-  //   navigate('/'+path+'/'+type);
-  // }
-
     return(
       <div>
       <Dialog
@@ -140,9 +96,7 @@ export const Navigation = (props) => {
           <div id="MenuLeft">
             <a className="navbar-brand" href="/">
               <img
-                //src="https://hubmapconsortium.org/wp-content/uploads/2019/01/HuBMAP-Retina-Logo-Color-300x110.png"
                 src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                //width="300"
                 height="40"
                 className="d-inline-block align-top"
                 id="MenuLogo"
@@ -153,12 +107,8 @@ export const Navigation = (props) => {
               {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
                 <div className="d-inline">                
                 <span className="menu-bar-static-label mr-4">REGISTER NEW:</span>
-                
-
-
 
                 <Button 
-                  // className="ml-2"
                   id="IndividualButton"
                   endIcon={<ArrowDropDownIcon />}
                   aria-controls={open_I ? 'IndividualMenu' : undefined}

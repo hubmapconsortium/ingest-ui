@@ -44,22 +44,16 @@ console.log('error message', l)
 }
 
 export function toTitleCase(str) {
-//console.debug('toTitleCase', str)
   if(str){
     try { 
       let strLowerCase = str.toLowerCase();
-    //console.debug('toTitleCase', strLowerCase)
       let wordArr = strLowerCase.split(" ").map(function(currentValue) {
-      // console.debug("currentValue", currentValue)
-      // console.debug(currentValue, currentValue[0]);
       if(currentValue[0]){
         return currentValue[0].toUpperCase() + currentValue.substring(1); 
       }else{
         return currentValue.toUpperCase(); 
       }
-      //console.debug("currentValue.charAt(0)", currentValue.charAt(0)) 
       });
-    // console.debug('toTitleCase', wordArr.join(" "));
       return wordArr.join(" ");
     }catch(error) {
       console.debug("toTitleCase ERR ",error);
@@ -81,7 +75,6 @@ export function toSingular(str) {
     }else{
       return str.toLowerCase();}
   }catch(error) {
-  //console.debug("toSingular ERR ",error);
     return error
   }
 }
@@ -94,7 +87,6 @@ export function toPlural(str) {
       return (str+"s");
     }
  }catch(error) {
- //console.debug("toPlural ERR ",error);
    return error
  }
 

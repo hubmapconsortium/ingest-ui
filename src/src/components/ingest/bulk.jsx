@@ -73,21 +73,13 @@ class bulkCreation extends Component {
   componentDidMount() {
     // If we just return from the group getting function and set state here,
     // State setting tries to happen before the groupset data can populate
-    // var groupSet = this.getUserGroups();
-    // this.setState({ 
-    //   groups: groupSet.groups,
-    //   inputValue_group_uuid: groupSet.inputValue_group_uuid
-    // });
-
     console.debug("BULK MOUNTED");
-
     var userGroups = this.getUserGroups();
     console.debug("componentDidMount");
     console.debug("groups", userGroups); // Grabbing them on mount to populate in the state
     console.debug(this.state);
     console.debug(this.props);
     console.debug(this.props.bulkType);
-    // var fileUpload = React.findDOMNode('input');
   }
 
 
@@ -128,7 +120,6 @@ class bulkCreation extends Component {
 
   handleErrorCompiling = (data) =>{
     var errors = [];
-    // console.debug("handleErrorCompiling",data, data.length);
     console.debug("handleErrorCompiling",data);
     console.debug("LEN",data.err.response.data.data)
 
@@ -136,20 +127,12 @@ class bulkCreation extends Component {
     //  it'll come back like this
     var coreError = data.err.response.data.data;
     console.debug("coreError", coreError);
-
-    // if(data.value && data.value.length > 0){
     if(coreError){
-      
-      
       for (const [key, value] of Object.entries(coreError)) {
         console.debug("key", key, "value", value);
-        // if(){ 
 
-        // }
         console.log("ROW __________________",`${key}: ${value}`);
         var parsedVal = value.toString();   
-        // console.debug("parsedVal",parsedVal,value);
-        // console.debug("key",key);
         var errRow = {};
 
         if(parsedVal.includes("Row Number")){
@@ -161,15 +144,12 @@ class bulkCreation extends Component {
           console.debug("errRow",errRow);
           errors.push(errRow);
         }else{
-          // errRow.row = key;
           errRow.row = "N/A";
           errRow.message = value;
           console.debug("value",value);
           console.debug("errRow",errRow);
           errors.push(errRow);
         }
-        // var cleanOth = cleanString.substr(2, cleanString.indexOf('.')); 
-        // console.debug("errRow",errRow);
       }
     }
       console.debug("errors",errors);
@@ -200,11 +180,6 @@ class bulkCreation extends Component {
 
   handleReset = () => {
     window.location.reload();
-    // this.setState({
-    //   error_message:null,
-    //   success_message:null,
-    //   activeStep: 0
-    // })
   };
 
 
@@ -217,18 +192,12 @@ class bulkCreation extends Component {
 
 handleFileGrab = e => {
   var grabbedFile = e.target.files[0];
-  // console.debug("handleFileGrab",grabbedFile);
   var newName = grabbedFile.name.replace(/ /g, '_')
   var newFile =  new File([grabbedFile], newName);
-  // console.debug("newFile",newFile);
-  // console.debug(newFile.name, newFile.length);
   if (newFile && newFile.name.length > 0) {
     this.setState({
       tsvFile: newFile
     }, () => {   
-      // console.debug("onFileChange",this.state.tsvFile);
-      // console.debug(this.state.tsvFile);
-      // console.debug(this.state.tsvFile.name, this.state.tsvFile.size );
       this.handleNext();
     });
   }else{
@@ -242,23 +211,17 @@ handleUpload= () =>{
     uploadTimer:"00:00"
   });
   if(!this.state.group_uuid || this.state.group_uuid.length <=0){
-    // console.debug("Using Default Group: ",this.state.groups[0].uuid);
     this.setState({
       // Grab the first one on in the select if they havent manually changed it
       group_uuid:this.state.groups[0].uuid,
     });
   }
   if( localStorage.getItem("info") !== null ){
-    // console.debug("this.state.tsvFile", this.state.tsvFile);
     const formData = new FormData()
     formData.append("file", this.state.tsvFile)
-    // console.debug("Appended Form Data: ",formData, this.state.tsvFile);
     ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
-
-        // console.debug("RESP", resp);
         if(resp.results && resp.results.temp_id){
-          // console.debug("Temp ID: ",resp.results.temp_id);
         }
         if (resp.status === 201) {
           this.setState({
@@ -292,7 +255,6 @@ handleUpload= () =>{
           this.setState({
             loading:false,
           }, () => {   
-            // this.handleNext();
           });
         } 
       })
@@ -374,8 +336,6 @@ handleRegister = () =>{
                 complete: true,
                 registeredStatus:true
                 }, () => {   
-                  // this.handleNext();
-                  // console.debug("uploadedBulkFile",this.state.uploadedBulkFile);
                 });
               }
            
@@ -383,7 +343,6 @@ handleRegister = () =>{
 
           
         } else {
-          // console.debug("ERROR", resp.status, resp, resp.err, resp.err.Error);
           var respError = resp.err.response.data
           console.debug("=====ERROR=====, respError", respError, respError.status, respError.data);
           this.parseRegErrorFrame(resp);
@@ -396,10 +355,6 @@ handleRegister = () =>{
             success_message:null,
             response_status:resp.Error});
           console.debug("DEBUG",this.state.error_message_detail);
-          // this.setState({
-          // }, () => {   
-          //   // this.handleNext();
-          // });
         } 
       })
       .catch((error) => {
@@ -415,34 +370,21 @@ handleRegister = () =>{
   }
 }
 
-// Error responses are packaged differently than validation
-// parseUploadError = (errResp) => { 
-//   console.debug("parseUploadError",errResp);
-//   var errArray = errResp.err.response.data.data;
-// }
-
 
 parseRegErrorFrame = (errResp) => {
   var parsedError;
   
-  // console.debug("parseErrorFrame",errResp, errResp.err, errResp.err.response.data);
   if(errResp.results && errResp.results.data && errResp.results.data.data){
-    // console.debug("NESTED from Upload");
     parsedError = parseErrorMessage(errResp.results.data.data);
   }else if(errResp.results && errResp.results.data){
-    // console.debug("NONNESTED from Validate");
     parsedError = parseErrorMessage(errResp.results.data);
   }else{
-    // console.debug("ODDFORMAT",errResp);
     var regErrorSet = errResp.err.response.data
     var errRows = regErrorSet.data;
     var errMessage = regErrorSet.status;
     console.debug("errRows",errRows, "errMessage",errMessage);
     parsedError=errResp;
   }
-  // console.debug("parsedError",parsedError);
-  // console.debug("++++++++",parsedError.err, parsedError.err.response, parsedError.err.response.data, parsedError.err.response.data.data);
-
   this.handleErrorCompiling(parsedError); // Error Array's set in that not here
   this.setState({ 
     error_status: true, 
@@ -456,13 +398,11 @@ parseRegErrorFrame = (errResp) => {
   this.setState({
     loading:false,
   }, () => {   
-    // this.handleNext();
   });
 }
 
 
 parseUpload = () =>{
-  // console.debug("parseUpload FILE", this.state.tsvFile);
   var config = {
     header: true,
     skipEmptyLines: true,
@@ -482,7 +422,6 @@ parseResults = (results) =>{
 }
 
 resetSteps(){
-  // setActiveStep(step);
   // Rather than send to step 1, let's refresh like the auth does,
   // so we can make sure we got a clean n clear state
   window.location.reload();
@@ -644,13 +583,8 @@ renderFileGrabber = () =>{
               Restart
             </Button>
             </div>
-
           </div>
-
           )}
-    
-          
-          
         </div>
       </div>
     )
@@ -660,8 +594,6 @@ renderFileGrabber = () =>{
   renderRegisterSlide = () =>{
     return(
       <div>
-
-
         <div className="row">
         {this.state.error_status && !this.state.loading &&(
           <div>
@@ -673,8 +605,6 @@ renderFileGrabber = () =>{
             {this.renderPreviewTable()}
           </div>
         )}
-
-          
         </div>
         <div className="d-flex flex-row align-content-end align-items-end flex-row-reverse mt-2">
 
@@ -767,7 +697,6 @@ renderFileGrabber = () =>{
               {this.state.registeredStatus === true && (
                 <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
               )}
-              {/* <TableCell  className="" scope="row"> {row.source_id ? row.source_id : row.direct_ancestor.hubmap_id}</TableCell> */}
               <TableCell  className="" scope="row"> {row.lab_id ? row.lab_id : row.lab_tissue_sample_id}</TableCell>
               <TableCell  className="" scope="row"> {row.sample_type ? row.sample_type : row.specimen_type}</TableCell>
               <TableCell  className="" scope="row"> {row.organ_type ? row.organ_type : ""}</TableCell>
@@ -855,9 +784,6 @@ renderFileGrabber = () =>{
 
 
   renderInvalidTable = () =>{
-    // var headCells = [
-    //   { id: 'error_' },
-    // ];
     return(
             <TableContainer 
               component={Paper} 
@@ -894,7 +820,6 @@ renderFileGrabber = () =>{
 
   renderInvalidMark = (err) =>{
     return(
-      // <span>{err}</span>
       <Tooltip title={"Error:"+err} aria-label="error message">
         <ErrorIcon className="invalid" />
       </Tooltip>
@@ -1028,7 +953,6 @@ renderFileGrabber = () =>{
             <div className=" d-flex ">
             <Typography className="mr-3 d-inline-block"> 
               <Button 
-                // onClick={() => this.handleDownload()}
                 href={exampleFile}
                 download
                 target="_blank "
