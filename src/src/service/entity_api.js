@@ -21,13 +21,7 @@ export function entity_api_get_entity(uuid, auth) {
           return {status: res.status, results: results}
       })
       .catch(err => {
-        if(err.response){
-          console.debug("entity_api_get_entity have response");
-          return {status: err.response.status, results: err.response.data}
-        }else{ 
-          console.debug("entity_api_get_entity no response");
-          return err;
-        }
+        throw new Error(err);
       });
 };
 
@@ -51,17 +45,10 @@ export function entity_api_update_entity(uuid, data, auth) {
      .put(url, data, options)
       .then(res => {
           let results = res.data;
-      
         return {status: res.status, results: results}
       })
       .catch(err => {
-        var response = "";
-        if(err.response){
-          response =  {status: err.response.status, results: err.response.data}
-        }else{
-          response = err
-        }
-        return response
+        throw new Error(err);
       });
 };
 
@@ -87,7 +74,8 @@ export function entity_api_create_entity(entitytype, data, auth) {
         return {status: res.status, results: results}
       })
       .catch((err) => {
-        return {status: err.response.status, results: err.response.data}
+        console.debug("entity_api_create_entity error", err);
+        throw new Error(err);
       });
 };
 
@@ -117,7 +105,7 @@ export function entity_api_create_multiple_entities(count, data, auth) {
         return {status: res.status, results: fin}
       })
       .catch(err => {
-        return {status: err.response.status, results: err.response.data}
+        throw new Error(err);
       });
 };
 
@@ -144,7 +132,7 @@ export function entity_api_update_multiple_entities(data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: err.response.status, results: err.response.data}
+        throw new Error(err);
       });
 };
 
@@ -170,7 +158,7 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: err.response.status, results: err.response.data}
+        throw new Error(err);
       });
 };
 
@@ -196,6 +184,6 @@ export function entity_api_get_globus_url(uuid, auth) {
         return {status: res.status, results: res.data}
       })
       .catch((err) => {
-        return err;
+        throw new Error(err);
       });
 };
