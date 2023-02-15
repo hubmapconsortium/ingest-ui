@@ -31,7 +31,7 @@ export function ingest_api_users_groups(auth) {
     return {status: res.status, results: group_list}
  })
  .catch(err => {
-      return {status: err.response.status, results: err.response}
+        throw new Error(err);
  });
 }
 
@@ -50,8 +50,7 @@ export function ingest_api_file_upload(data, options) {
       return {status: res.status, results: res}
     })
     .catch(err => {
-        console.debug("ingest_api_file_upload ERR", err);
-        return {status: err.response.status, results: err.response}
+        throw new Error(err);
       });
 }
 
@@ -77,7 +76,7 @@ export function ingest_api_all_user_groups(auth) {
     return {status: res.status, results: group_list}
  })
  .catch(err => {
-    return {status: err.response.status, results: err.response}
+        throw new Error(err);
  });
 }
 
@@ -101,7 +100,7 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
         return {status: res.status, results: res.data}
       })
       .catch(err => {
-        return{err, msg:"ingest_api_allowable_edit_states"}
+        throw new Error(err);
       });
 };
 
@@ -125,7 +124,7 @@ export function ingest_api_allowable_edit_states_statusless(uuid, auth) {
         return {status: res.status, results: res.data}
       })
       .catch(err => {
-        return{err, msg:"ingest_api_allowable_edit_states?ignore-publication-status=true"}
+        throw new Error(err);
       });
 };
 
@@ -147,11 +146,10 @@ export function ingest_api_create_dataset(data, auth) {
      .post(url, data, options)
       .then(res => {
           let results = res.data;
-      
-        return {status: res.status, results: results}
+          return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: 500, results: err.response}
+        throw new Error(err);
       });
 };
 
@@ -177,7 +175,7 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_dataset_submit" };
+        throw new Error(err);
       });
 };
 
@@ -205,7 +203,7 @@ export function ingest_api_dataset_publish(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_dataset_submit" };
+        throw new Error(err);
       });
 };
 
@@ -233,7 +231,7 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_derived_dataset" };
+        throw new Error(err);
      });
 };
 
@@ -274,7 +272,7 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_bulk_entities_upload" }
+        throw new Error(err);
      });
 };
 
@@ -306,7 +304,7 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_users_groups_bulk_entities_register" };
+        throw new Error(err);
      });
 };
 
@@ -361,7 +359,7 @@ export function ingest_api_get_associated_ids(uuid, auth) {
           return {status: res.status, results: res.data.ingest_group_ids}
         })
         .catch(err => {
-          return {err, msg:"ingest_api_get_associated_ids"}
+        throw new Error(err);
         });
 }
 
@@ -383,7 +381,7 @@ export function ingest_api_get_globus_url(uuid, auth) {
         return {status: 200, results: res.data}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_get_globus_url"}
+        throw new Error(err);
       });
 }
 
@@ -410,7 +408,7 @@ export function ingest_api_create_upload(data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_submit_upload" }
+        throw new Error(err);
       });
 };
 
@@ -436,7 +434,7 @@ export function ingest_api_submit_upload(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_submit_upload" }
+        throw new Error(err);
       });
 };
 
@@ -463,7 +461,7 @@ export function ingest_api_validate_upload(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {err, msg:"ingest_api_validate_upload" }
+        throw new Error(err);
       });
 };
 
@@ -487,10 +485,9 @@ export function ingest_api_reorganize_upload(uuid, auth) {
      .put(url, data, options)
       .then(res => {
           let results = res.data;
-      
         return {status: res.status, results: results}
       })
       .catch(err => {
-        return {status: 500, results: err.response}
+        throw new Error(err);
       });
 };
