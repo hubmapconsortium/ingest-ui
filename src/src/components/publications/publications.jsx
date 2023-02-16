@@ -1,18 +1,11 @@
-import React, { Component } from "react";
+import React from "react";
 
+export const PublicationForm = (props) => {
 
-class PublicationForm extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
+      return (
+        <div> Hiya~! </div>
+      )
+    
   }
+  
 
-  render() {
-    return (
-      <div> Hiya~! </div>
-      );
-  }
-}
-
-export default PublicationForm;

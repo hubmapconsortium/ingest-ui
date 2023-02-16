@@ -21,12 +21,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
-import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
@@ -38,8 +34,7 @@ import {  faExclamationTriangle}
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
-import {search_api_get_assay_list, search_api_get_assay_set} from "./service/search_api";
-import {DataProviders} from "./utils/userInfo";
+import {search_api_get_assay_set} from "./service/search_api";
 import {BuildError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
@@ -54,6 +49,7 @@ import {RenderDonor} from "./components/donors";
 import {RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
 import {RenderUpload} from "./components/uploads";
+import {RenderPub} from "./components/publications";
 
 // Bulky
 import {RenderBulk} from "./components/bulk";
@@ -369,6 +365,7 @@ function reportError (error){
                 <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                 <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='publication' element={<RenderPub reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
 
               </Route>
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -380,6 +377,7 @@ function reportError (error){
               <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/publication/:uuid" element={<RenderPub  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />

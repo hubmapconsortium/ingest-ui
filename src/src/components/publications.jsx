@@ -1,6 +1,6 @@
 import React from "react";
-import PublicationForm from "./publications/publication";
-export const RenderPubs = (props) => {
+import {PublicationForm} from "./publications/publications";
+export const RenderPub = (props) => {
   function handleCancel(){
     if(this.props.handleCancel){
      this.props.handleCancel();
