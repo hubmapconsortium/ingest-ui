@@ -173,6 +173,7 @@ class DatasetEdit extends Component {
 
       // Figure out our permissions
       if (this.props.editingDataset) {
+        console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
         if (this.props.editingDataset.uuid)
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)

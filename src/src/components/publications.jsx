@@ -3,6 +3,7 @@ import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import { search_api_get_assay_list, search_api_get_assay_set } from '../service/search_api';
 import PublicationFormLegacy from "./ingest/publications_edit";
+import {PublicationForm} from "./publications/publications";
 import {useNavigate} from "react-router-dom";
 import { useLocation } from 'react-router'
 
@@ -29,7 +30,7 @@ export const RenderPublication = (props) => {
   var [dtl_primary, setDtl_primary] = useState([""]);
   var [dtl_status, setDtl_status] = useState([""]);
   var [isLoadingEntity, setIsLoadingEntity] = useState(true);
-  var [isLoadingDTList, setIsLoadingDTList] = useState(true);
+  var [isLoadingDTList, setIsLoadingDTList] = useState(1);
   var [dataTypeList, setDataTypeList] = useState();
   // var [uuid, setUUID] = useState("");
   var [errorHandler, setErrorHandler] = useState({
@@ -51,24 +52,17 @@ export const RenderPublication = (props) => {
     setAuthToken(authSet);
   
     function checkAssayType(dtype){
+      // These'll likely be changing and it's causing off behavior for publications
+      //  Nuking for now
       search_api_get_assay_set("primary")// the list call only gets primaries for now. 
       .then((response) => {
-        let primaries = response.data.result ;
-        var primarySet = primaries.map((elt, idx) => {return elt.name});
-        var primaryStatus = primarySet.includes(dtype[0])
-        setDataTypeList(primaries);
-        setDtl_primary(primaries);
-        setDtl_status( primarySet.includes(dtype[0]));
-        search_api_get_assay_set()// the list call only gets primaries for now. 
-          .then((response) => {
-            let allDTs = response.data.result;
-            setDtl_all(allDTs);
-            setIsLoadingDTList(false);
-          })
-          .catch(error => {
-            console.debug("checkAssayType Error", error);
-            props.reportError(error );
-          });
+        console.debug("checkAssayType Primary", response);
+        setDataTypeList(response.data.result);
+        setDtl_primary(response.data.result);
+        setDtl_all(response.data.result);
+        setDtl_status(true);
+        setIsLoadingDTList(0);
+
       })
       .catch(error => {
         console.debug("checkAssayType Primary Error", error);
@@ -78,10 +72,11 @@ export const RenderPublication = (props) => {
 
 
     function fetchEntity(authSet){
-      entity_api_get_entity('a119ccf25cb3e09127fe9919186f71b9', authSet.groups_token)
+      entity_api_get_entity('e0ad1f9099d99214668ee72afbbb11bb', authSet.groups_token)
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
+              console.debug("fetchEntity", response.results);
               setEntity(response.results);
               setIsLoadingEntity(false); 
               var checkAssay = response.results.data_types;
@@ -171,7 +166,7 @@ export const RenderPublication = (props) => {
   }
   
   
-    if (!isLoadingEntity && !isLoadingDTList ) {
+    if (!isLoadingEntity && isLoadingDTList<1 ) {
       console.debug("Loaded!", dtl_status, dtl_primary, dtl_all);
       return ( 
         <div>
@@ -187,11 +182,12 @@ export const RenderPublication = (props) => {
           dataTypeList={dataTypeList} 
           dtl_primary={dtl_primary} 
           dtl_all={dtl_all} 
-          dtl_status={dtl_status} 
+          dtl_status={true} 
           />
         </div>
       )
     }else{
+      console.debug("Loading...", isLoadingEntity, isLoadingDTList);
       return (
         <div className="card-body ">
           <div className="loader">Loading...</div>

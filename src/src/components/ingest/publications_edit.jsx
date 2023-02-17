@@ -4,13 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
-import Grid from '@mui/material/Grid';
-import Pagination from '@mui/material/Pagination';
-import LinearProgress from '@mui/material/LinearProgress';
 
-import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -35,7 +29,7 @@ import { ingest_api_allowable_edit_states,
     ingest_api_allowable_edit_states_statusless} from '../../service/ingest_api';
 import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
+import {  search_api_get_assay_set } from '../../service/search_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -56,11 +50,11 @@ import Select from '@material-ui/core/Select';
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
 // }
 
-class DatasetEdit extends Component {
+class PublicationEdit extends Component {
   state = {
    // The Entity Itself
     newForm: this.props.newForm,
-    data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
+    data_types: this.props.editingPublication ? this.props.editingPublication.data_types : {},
     dtl_primary:[],
     dtl_all:[],
     selected_dt:"",
@@ -127,19 +121,20 @@ class DatasetEdit extends Component {
   updateStateDataTypeInfo() {
     let data_types = null;
     let other_dt = undefined;
-    if (this.props.hasOwnProperty('editingDataset')
-      && this.props.editingDataset
-      && this.props.editingDataset.data_types) {
+    if (this.props.hasOwnProperty('editingPublication')
+      && this.props.editingPublication
+      && this.props.editingPublication.data_types) {
       }
 
       this.setState({
-        data_types: new Set(this.props.editingDataset.data_types),
+        data_types: new Set(this.props.editingPublication.data_types),
         has_other_datatype: other_dt !== undefined,
         other_dt: other_dt,
       });
     }
     
     componentDidMount() {
+      console.debug("PublicationEdit: componentDidMount");
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
@@ -150,7 +145,6 @@ class DatasetEdit extends Component {
         this.setState({groupsToken:auth});
       } catch {
        
-       var auth = "";
       }
 
       if (localStorage.getItem("info")){
@@ -172,10 +166,10 @@ class DatasetEdit extends Component {
    
 
       // Figure out our permissions
-      if (this.props.editingDataset) {
-        if (this.props.editingDataset.uuid)
+      if (this.props.editingPublication) {
+        if (this.props.editingPublication.uuid)
         // check to see which buttons to enable
-        ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+        ingest_api_allowable_edit_states(this.props.editingPublication.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
           if (resp.status < 300) {
             //
@@ -186,7 +180,7 @@ class DatasetEdit extends Component {
               has_admin_priv: resp.results.has_admin_priv
               });
 
-              ingest_api_allowable_edit_states_statusless(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+              ingest_api_allowable_edit_states_statusless(this.props.editingPublication.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((resp) => {
                   // 
                   this.setState({has_version_priv: resp.results.has_write_priv});
@@ -228,46 +222,46 @@ class DatasetEdit extends Component {
       });
 
     // Sets up the Entity's info  if we're not new here
-    if (this.props.editingDataset && !this.props.newForm) {      
+    if (this.props.editingPublication && !this.props.newForm) {      
       try {
         // use only the first direct ancestor
          this.setState({
-          source_uuids: this.props.editingDataset.direct_ancestors
+          source_uuids: this.props.editingPublication.direct_ancestors
         });
       } catch {
       }
 
-      if(this.props.editingDataset ==='' ){
+      if(this.props.editingPublication ==='' ){
         savedGeneticsStatus = undefined;
       }else{
-        savedGeneticsStatus = this.props.editingDataset.contains_human_genetic_sequences;
+        savedGeneticsStatus = this.props.editingPublication.contains_human_genetic_sequences;
       }
 
       this.setState(
         {
-          status: this.props.editingDataset.hasOwnProperty('status') ? this.props.editingDataset.status.toUpperCase() : "NEW",
-          display_doi: this.props.editingDataset.hubmap_id,
-          lab_dataset_id: this.props.editingDataset.lab_dataset_id,
-          source_uuid: this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
-          source_uuid_list:this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors),
-          source_entity: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
-          slist: this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
+          status: this.props.editingPublication.hasOwnProperty('status') ? this.props.editingPublication.status.toUpperCase() : "NEW",
+          display_doi: this.props.editingPublication.hubmap_id,
+          lab_dataset_id: this.props.editingPublication.lab_dataset_id,
+          source_uuid: this.getSourceAncestor(this.props.editingPublication.direct_ancestors),
+          source_uuid_list:this.assembleSourceAncestorData(this.props.editingPublication.direct_ancestors),
+          source_entity: this.getSourceAncestorEntity(this.props.editingPublication.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
+          slist: this.getSourceAncestorEntity(this.props.editingPublication.direct_ancestors),
           contains_human_genetic_sequences: savedGeneticsStatus,
-          description: this.props.editingDataset.description,
-          dataset_info: this.props.editingDataset.dataset_info,
-          previous_revision_uuid: this.props.editingDataset.hasOwnProperty('previous_revision_uuid') ? this.props.editingDataset.previous_revision_uuid : undefined,
+          description: this.props.editingPublication.description,
+          dataset_info: this.props.editingPublication.dataset_info,
+          previous_revision_uuid: this.props.editingPublication.hasOwnProperty('previous_revision_uuid') ? this.props.editingPublication.previous_revision_uuid : undefined,
           errorMsgShow:
-            this.props.editingDataset.status.toLowerCase() ===
-              "error" && this.props.editingDataset.message
+            this.props.editingPublication.status.toLowerCase() ===
+              "error" && this.props.editingPublication.message
               ? true
               : false,
-          statusErrorMsg: this.props.editingDataset.message,
+          statusErrorMsg: this.props.editingPublication.message,
         },
         () => {
           this.setState({
             badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
           });
-          entity_api_get_globus_url(this.props.editingDataset.uuid, this.state.groupsToken)
+          entity_api_get_globus_url(this.props.editingPublication.uuid, this.state.groupsToken)
             .then((res) => {
               
               this.setState({
@@ -305,9 +299,9 @@ class DatasetEdit extends Component {
         });
       }
       var selected = ""
-      if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
+      if(this.props.editingPublication  && this.props.editingPublication.data_types && this.props.editingPublication.data_types.length === 1){
         // Set DT Select by state so it behaves as "controlled"
-        selected = this.props.editingDataset.data_types[0];
+        selected = this.props.editingPublication.data_types[0];
         //
       }
       this.setState({
@@ -316,8 +310,8 @@ class DatasetEdit extends Component {
 
 
         // Sets the Hubmap ID labels for Previous and Next version Buttons  
-        if(this.props.editingDataset.next_revision_uuid){
-          entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+        if(this.props.editingPublication.next_revision_uuid){
+          entity_api_get_entity(this.props.editingPublication.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
             this.setState({nextHID: response.results.hubmap_id})
           })
@@ -325,8 +319,8 @@ class DatasetEdit extends Component {
             
           })   
         }
-        if(this.props.editingDataset.previous_revision_uuid){
-          entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+        if(this.props.editingPublication.previous_revision_uuid){
+          entity_api_get_entity(this.props.editingPublication.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
             this.setState({prevHID: response.results.hubmap_id})
           })
@@ -637,7 +631,7 @@ class DatasetEdit extends Component {
           className={
             this.errorClass(this.state.formErrors.source_uuid_list)
           }>
-        <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
+        <Table aria-label="Associated Publications" size="small" className="table table-striped table-hover mb-0">
           <TableHead className="thead-dark font-size-sm">
             <TableRow className="   " >
               <TableCell> Source ID</TableCell>
@@ -720,7 +714,7 @@ class DatasetEdit extends Component {
         </React.Fragment>
         )}
       </div>
-    )}else if(this.state.writeable && this.state.editingDataset){
+    )}else if(this.state.writeable && this.state.editingPublication){
 
     }
     
@@ -737,9 +731,9 @@ class DatasetEdit extends Component {
     
     // @TODO Better process standardizing route navigation between forms 
     if(direction==='next'){
-      window.history.pushState( null,"", "/dataset/"+this.props.editingDataset.next_revision_uuid);
+      window.history.pushState( null,"", "/dataset/"+this.props.editingPublication.next_revision_uuid);
     }else{
-      window.history.pushState( null,"", "/dataset/"+this.props.editingDataset.previous_revision_uuid);
+      window.history.pushState( null,"", "/dataset/"+this.props.editingPublication.previous_revision_uuid);
     }
     window.location.reload()
   }
@@ -784,11 +778,11 @@ class DatasetEdit extends Component {
     })
   };
 
-  handleDatasetSelect = (e) => {
+  handlePublicationSelect = (e) => {
     
     e.preventDefault();
     // @TODO Better process standardizing route navigation between forms 
-    window.history.pushState( null,"", "/upload/"+this.props.editingDataset.upload.uuid);
+    window.history.pushState( null,"", "/upload/"+this.props.editingPublication.upload.uuid);
     window.location.reload()
   }
 
@@ -800,9 +794,9 @@ class DatasetEdit extends Component {
     
       if (isValid) {
         if (
-          (!this.props.editingDataset || 
-            this.props.editingDataset.length<=0||
-            !this.props.editingDataset.uuid) &&
+          (!this.props.editingPublication || 
+            this.props.editingPublication.length<=0||
+            !this.props.editingPublication.uuid) &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
@@ -854,13 +848,13 @@ class DatasetEdit extends Component {
           };
 
 
-          if (this.props.editingDataset && !this.props.newForm) {
+          if (this.props.editingPublication && !this.props.newForm) {
             // If we';re making a new Version
             if (submitIntention === "newversion") {
               
               // @TODO: Basically repeates what's in the Create fucntionality, 
               // and the previous_revision_uuid is added  
-              data.previous_revision_uuid = this.props.editingDataset.uuid;
+              data.previous_revision_uuid = this.props.editingPublication.uuid;
 
               if (this.state.lab_dataset_id) {
                 data["lab_dataset_id"] = this.state.lab_dataset_id;
@@ -919,7 +913,7 @@ class DatasetEdit extends Component {
             }
             // if user selected Publish
             else if (submitIntention === "published") { // From State? 
-                ingest_api_dataset_publish(this.props.editingDataset.uuid, this.JSON.stringify(data),  config)
+                ingest_api_dataset_publish(this.props.editingPublication.uuid, this.JSON.stringify(data),  config)
                 .then((res) => {
                   this.props.onUpdated(res.data);
                 })
@@ -932,7 +926,7 @@ class DatasetEdit extends Component {
                 });
             } else if (submitIntention === "processing") {
 
-                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                ingest_api_dataset_submit(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status < 300) {
                       this.props.onUpdated(response.results);
@@ -957,7 +951,7 @@ class DatasetEdit extends Component {
                       buttonSpinnerTarget:"" });
                  });
             } else { // just update
-                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                    entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((response) => {
                           if (response.status < 300) {
                             this.setState({ 
@@ -1159,7 +1153,7 @@ class DatasetEdit extends Component {
   // only handles one selection at this time
   getSourceAncestorTypes(type){
     // Give it the type we're looking for
-    var ancestorTypes = this.props.editingDataset.direct_ancestors.map((ancestor) => ancestor.entity_type);
+    var ancestorTypes = this.props.editingPublication.direct_ancestors.map((ancestor) => ancestor.entity_type);
     // 
     return ancestorTypes.includes(type)
   }
@@ -1338,9 +1332,9 @@ class DatasetEdit extends Component {
     dataset.next_revision_uuid is null (or missing altogether)*/
   
     var sampleSource = this.getSourceAncestorTypes("Sample");  
-    var datasetStatus = this.props.editingDataset.status === "Published";
+    var datasetStatus = this.props.editingPublication.status === "Published";
     var writability = this.state.has_version_priv;
-    var latestVersion = (!this.props.editingDataset.next_revision_uuid  ||  this.props.editingDataset.next_revision_uuid === undefined);
+    var latestVersion = (!this.props.editingPublication.next_revision_uuid  ||  this.props.editingPublication.next_revision_uuid === undefined);
     if(sampleSource && datasetStatus && writability && latestVersion){
     // if(true===true){
       return (
@@ -1366,10 +1360,10 @@ class DatasetEdit extends Component {
     
     return (
       <Box sx={{width:"50%"}}>
-        {this.props.editingDataset.next_revision_uuid  && (
+        {this.props.editingPublication.next_revision_uuid  && (
           <>Next Version: <Button variant="text" onClick={() => this.handleVersionNavigate('next')}>   {this.state.nextHID}</Button></>
         )}
-        {this.props.editingDataset.previous_revision_uuid  && (
+        {this.props.editingPublication.previous_revision_uuid  && (
           <>Previous Version: <Button variant="text" onClick={() => this.handleVersionNavigate('prev')}>{this.state.prevHID}</Button></>
         )}
       </Box>
@@ -1460,9 +1454,9 @@ class DatasetEdit extends Component {
     return error.length === 0 ? "" : "is-invalid";
   }
 
-  onChangeGlobusLink(newLink, newDataset) {
+  onChangeGlobusLink(newLink, newPublication) {
     
-    const {name, display_doi, doi} = newDataset;
+    const {name, display_doi, doi} = newPublication;
     this.setState({
       
       globus_url: newLink,
@@ -1500,8 +1494,8 @@ class DatasetEdit extends Component {
   isAssayCheckSet(assay) {
     ////
     try {    
-      if (this.props.editingDataset.data_types) {
-        return this.props.editingDataset.data_types.includes(assay);
+      if (this.props.editingPublication.data_types) {
+        return this.props.editingPublication.data_types.includes(assay);
       } else{
         return false
       }
@@ -1569,10 +1563,10 @@ class DatasetEdit extends Component {
       if(this.props.newForm){
         dtlistLen = this.props.dtl_primary.length;
       }
-      if(this.props.editingDataset && this.props.editingDataset.data_types) {
-        len = this.props.editingDataset.data_types.length;
+      if(this.props.editingPublication && this.props.editingPublication.data_types) {
+        len = this.props.editingPublication.data_types.length;
       }else{
-        //console.debug("no editingDataset");
+        //console.debug("no editingPublication");
       }
 
        if (len > 1) {
@@ -1624,18 +1618,18 @@ class DatasetEdit extends Component {
                 style={{ cursor: "pointer" }}
                 onClick={() =>
                   this.showErrorMsgModal(
-                    this.props.editingDataset.pipeline_message
+                    this.props.editingPublication.pipeline_message
                 )}> 
                   {this.state.status}
               </span>
                 
                 
-              {this.props.editingDataset && !this.props.newForm &&(
-                <span className="mx-1"> HuBMAP Dataset ID  {this.state.display_doi} </span>
+              {this.props.editingPublication && !this.props.newForm &&(
+                <span className="mx-1"> HuBMAP Publication ID  {this.state.display_doi} </span>
               )}
                 
-              {(!this.props.editingDataset || this.props.newForm) && (
-                <span className="mx-1">Registering a Dataset  {this.state.display_doi} </span>
+              {(!this.props.editingPublication || this.props.newForm) && (
+                <span className="mx-1">Registering a Publication  {this.state.display_doi} </span>
               )}
 
               </h3>
@@ -1643,8 +1637,8 @@ class DatasetEdit extends Component {
               <strong>
                   <big>
 
-                    {this.props.editingDataset &&
-                      this.props.editingDataset.title}
+                    {this.props.editingPublication &&
+                      this.props.editingPublication.title}
                   </big>
                 </strong>
               </p>
@@ -1690,13 +1684,13 @@ class DatasetEdit extends Component {
 
 
 
-      {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
+      {this.props.editingPublication && this.props.editingPublication.upload && this.props.editingPublication.upload.uuid  && (
         <Box sx={{ display: 'flex'}} >
-          <Box  sx={{ width:"100%" }}><strong>This Dataset is contained in the data Upload </strong> 
+          <Box  sx={{ width:"100%" }}><strong>This Publication is contained in the data Upload </strong> 
             <Button 
               variant="text"
-              onClick={this.handleDatasetSelect}>  
-              {this.props.editingDataset.upload.hubmap_id}
+              onClick={this.handlePublicationSelect}>  
+              {this.props.editingPublication.upload.hubmap_id}
             </Button>
           </Box>
         </Box>
@@ -1719,8 +1713,8 @@ class DatasetEdit extends Component {
                 <DialogContent>
                   <SearchComponent
                     select={this.handleSelectClick}
-                    custom_title="Search for a Source ID for your Dataset"
-                    filter_type="Dataset"
+                    custom_title="Search for a Source ID for your Publication"
+                    filter_type="Publication"
                     modecheck="Source"
                   />
                 </DialogContent>  
@@ -1887,7 +1881,7 @@ class DatasetEdit extends Component {
                       <p>Gene Sequences Tips</p>
                     </ReactTooltip>
                 <div className="row">
-                  {this.props.editingDataset && (
+                  {this.props.editingPublication && (
                     <div className='col-sm-9'>
                       <div className='form-check form-check-inline'>
                         <input
@@ -1896,7 +1890,7 @@ class DatasetEdit extends Component {
                           name='contains_human_genetic_sequences'
                           id='contains_human_genetic_sequences_no'
                           value='no'
-                          checked={this.state.contains_human_genetic_sequences === false && this.props.editingDataset}
+                          checked={this.state.contains_human_genetic_sequences === false && this.props.editingPublication}
                           onChange={this.handleInputChange}
                           disabled={!this.state.writeable}
                         />
@@ -1911,7 +1905,7 @@ class DatasetEdit extends Component {
                           name='contains_human_genetic_sequences'
                           id='contains_human_genetic_sequences_yes'
                           value='yes'
-                          checked={this.state.contains_human_genetic_sequences  === true && this.props.editingDataset}
+                          checked={this.state.contains_human_genetic_sequences  === true && this.props.editingPublication}
                           onChange={this.handleInputChange}
                           disabled={!this.state.writeable}
                         />
@@ -1924,7 +1918,7 @@ class DatasetEdit extends Component {
                       </small>
                     </div>
                   )}
-                  {!this.props.editingDataset && (
+                  {!this.props.editingPublication && (
                     <div className="col-sm-9 ">
                       <div className='form-check form-check-inline'>
                         <input 
@@ -1974,52 +1968,7 @@ class DatasetEdit extends Component {
                 </div>
 
             </div>
-            <div className= 'form-group'>
-              <label
-                htmlFor='dt_select'
-                className='col col-form-label text-right'
-              >
-                Data Type <span className='text-danger'>* </span>
-              </label>
-              <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='datatype_tooltip'
-                  style={{ marginLeft: "10px" }}
-                />
-                <ReactTooltip
-                  id='datatype_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>Data Type Tips</p>
-                </ReactTooltip>
-              </span>
-              {this.state.writeable&& (
-                <React.Fragment>
-                  
-                  <div className='col-sm-12'>
-                        { this.renderAssayArray()}
-                  </div>
-      
-                  <div className='col-sm-12'>
-                  {this.state.formErrors.data_types && (
-                    <div className='alert alert-danger'>
-                      At least one Data Type is Required.
-                    </div>
-                  )}
-                  </div>
-                </React.Fragment>
-              )}
-              {!this.state.writeable && (
-                  <div className='col-sm-12'>
-                        {true && this.renderAssayArray()}
-                  </div>
-              )}
-            
-          </div>
+
  
           {this.state.assay_metadata_status !== undefined && (
             <div className='form-group row'>
@@ -2098,7 +2047,7 @@ class DatasetEdit extends Component {
                 htmlFor='dataset_sign_off_status'
                 className='col-sm-2 col-form-label text-right'
               >
-                Dataset Sign Off Status
+                Publication Sign Off Status
               </label>
               <div className='col-sm-9 my-auto'>
                 {this.state.dataset_sign_off_status === 0 && (
@@ -2147,8 +2096,8 @@ class DatasetEdit extends Component {
           <div className='row'>
             <div className='col-sm-12 text-center alert'>
               <h4>
-                {(this.props.editingDataset && this.props.editingDataset.status &&
-                  this.props.editingDataset.status.toUpperCase()) ||
+                {(this.props.editingPublication && this.props.editingPublication.status &&
+                  this.props.editingPublication.status.toUpperCase()) ||
                   "STATUS"}
               </h4>
               <div
@@ -2162,4 +2111,4 @@ class DatasetEdit extends Component {
   }
 }
 
-export default DatasetEdit;
+export default PublicationEdit;
