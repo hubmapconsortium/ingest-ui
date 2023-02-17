@@ -49,7 +49,7 @@ import {RenderDonor} from "./components/donors";
 import {RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
 import {RenderUpload} from "./components/uploads";
-import {RenderPub} from "./components/publications";
+import {RenderPublication} from "./components/publications";
 
 // Bulky
 import {RenderBulk} from "./components/bulk";
@@ -365,7 +365,7 @@ function reportError (error){
                 <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                 <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='publication' element={<RenderPub reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='publication' element={<RenderPublication reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
 
               </Route>
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -377,7 +377,7 @@ function reportError (error){
               <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/publication/:uuid" element={<RenderPub  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/publication/:uuid" element={<RenderPublication  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
