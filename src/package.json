@@ -21,6 +21,7 @@
     "axios-hooks": "^3.0.0",
     "bootstrap": "^5.2.0-beta1",
     "elastic-builder": "^2.16.0",
+    "formik": "^2.2.9",
     "pretty-bytes": "^5.6.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -30,7 +31,8 @@
     "react-select": "^5.2.1",
     "react-tooltip": "4.2.13",
     "url-search-params-polyfill": "^8.1.1",
-    "util": "^0.12.4"
+    "util": "^0.12.4",
+    "yup": "^1.0.0"
   },
   "devDependencies": {
     "react-scripts": "^5.0.1"

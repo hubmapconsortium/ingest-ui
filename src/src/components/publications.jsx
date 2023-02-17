@@ -9,12 +9,12 @@ export const RenderPub = (props) => {
     }
   };
 
-      return (
-        <div>
-          <PublicationForm  handleCancel={handleCancel} />
-        </div>
-      )
-    
-  }
+  return (
+    <div>
+      <PublicationForm  handleCancel={handleCancel} />
+    </div>
+  )
   
+}
+
 
