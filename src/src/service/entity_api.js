@@ -20,8 +20,8 @@ export function entity_api_get_entity(uuid, auth) {
           let results = res.data;
           return {status: res.status, results: results}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -47,8 +47,8 @@ export function entity_api_update_entity(uuid, data, auth) {
           let results = res.data;
         return {status: res.status, results: results}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -73,9 +73,9 @@ export function entity_api_create_entity(entitytype, data, auth) {
           let results = res.data;
         return {status: res.status, results: results}
       })
-      .catch((err) => {
-        console.debug("entity_api_create_entity error", err);
-        throw new Error(err);
+      .catch((error) => {
+        console.debug("entity_api_create_entity error", error);
+        return {error}
       });
 };
 
@@ -104,8 +104,8 @@ export function entity_api_create_multiple_entities(count, data, auth) {
             });
         return {status: res.status, results: fin}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -131,8 +131,8 @@ export function entity_api_update_multiple_entities(data, auth) {
         let results = res.data;
         return {status: res.status, results: results}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -157,8 +157,8 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
         let results = res.data;
         return {status: res.status, results: results}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -183,7 +183,7 @@ export function entity_api_get_globus_url(uuid, auth) {
         console.debug("entity_api_get_globus_url", res);
         return {status: res.status, results: res.data}
       })
-      .catch((err) => {
-        throw new Error(err);
+      .catch((error) => {
+        return {error}
       });
 };
