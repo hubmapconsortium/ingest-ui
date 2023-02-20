@@ -30,7 +30,7 @@ export function api_validate_token(auth) {
         return {status: res.status}
       })
       .catch(err => {
-        return {status: err.response.status, results: err.response.data}
+        throw new Error(err);
       });
 };
 
@@ -71,7 +71,7 @@ export function api_search(params, auth) {
       return { status: res.status, results: entities }
     })
     .catch(err => {
-      return { status: 500, results: err.response }
+      throw new Error(err);
     });
 };
 
@@ -101,8 +101,7 @@ export function api_search2(params, auth, from, size, fields) {
         return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
       .catch(err => {
-        console.debug("API api_search2 err", err);
-         return {status: 500, results: err.response}
+        throw new Error(err);
       });
 };
 
@@ -202,7 +201,7 @@ export function  search_api_get_assay_type(assay) {
         return {status: res.status, results: found_dt}
       })
       .catch(err => {
-         return {results: err.response}
+        throw new Error(err);
       });
 };
 
@@ -222,7 +221,7 @@ export function search_api_get_assay_list(params) {
         return {status: res.status, data: dtListMapped}
       })
       .catch(err => {
-         return {results: err.response}
+        throw new Error(err);
       });
 };
 
@@ -250,8 +249,7 @@ export function  search_api_get_assay_set(scope){
         return {data}
       })
       .catch(err => {
-        console.debug("API get_processed_assays err", err);
-         return {results: err.response}
+        throw new Error(err);
       });
 };
 
@@ -266,7 +264,7 @@ export function search_api_get_assay_primaries() {
         return {status: res.status, data: dtListMapped}
       })
       .catch(err => {
-         return {results: err.response}
+        throw new Error(err);
       });
 };
 

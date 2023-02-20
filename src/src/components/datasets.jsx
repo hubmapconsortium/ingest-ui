@@ -67,17 +67,18 @@ export const RenderDataset = (props) => {
           })
           .catch(error => {
             console.debug("checkAssayType Error", error);
-            props.reportError(error.status, error.response );
+            props.reportError(error);
           });
       })
       .catch(error => {
         console.debug("checkAssayType Primary Error", error);
-        reportError(error.status, error.response );
+        props.reportError(error);
       });
     }
 
 
     function fetchEntity(authSet){
+      console.debug("fetchEntity", uuid, authSet.groups_token);
       entity_api_get_entity(uuid, authSet.groups_token)
         .then((response) => {
           console.debug("fetchEntity RESP", response);
@@ -90,15 +91,18 @@ export const RenderDataset = (props) => {
             
           })  
           .catch((error) => {
+            console.debug("fetchEntity Error", error);
+            props.reportError(error);
             setIsLoadingEntity(false);
           }); 
     };
 
 
     if(!props.new){
-     
+     console.debug("Not New");
       fetchEntity(authSet);
     }else{
+      console.debug("new");
       // the NEW route loads the forms through the legacy Forms loader,
       // not here
       setIsLoadingEntity(false);

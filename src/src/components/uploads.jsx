@@ -38,11 +38,12 @@ export const RenderUpload = (props) => {
           }else{
             console.debug(response.status, response.results.error);
             // passError(response.status, response.results.error );
+            return(response.status, response.results.error );
           }
         })
         .catch((error) => {
           console.debug(error);
-          // passError(error.status, error.results.error );
+          return(error.status, error.results.error );
         });
   },  [uuid]);
 
