@@ -29,8 +29,8 @@ export function api_validate_token(auth) {
       .then(res => {
         return {status: res.status}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -70,8 +70,8 @@ export function api_search(params, auth) {
 
       return { status: res.status, results: entities }
     })
-    .catch(err => {
-      throw new Error(err);
+    .catch(error => {
+      return {error}
     });
 };
 
@@ -100,8 +100,8 @@ export function api_search2(params, auth, from, size, fields) {
           });
         return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -200,8 +200,8 @@ export function  search_api_get_assay_type(assay) {
         console.debug(found_dt);
         return {status: res.status, results: found_dt}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -220,8 +220,8 @@ export function search_api_get_assay_list(params) {
         let dtListMapped = data.result.map((value, index) => { return value });
         return {status: res.status, data: dtListMapped}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -248,8 +248,8 @@ export function  search_api_get_assay_set(scope){
         console.debug("API get_processed_assays data", data, mapCheck);
         return {data}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -263,8 +263,8 @@ export function search_api_get_assay_primaries() {
         let dtListMapped = data.result.map((value, index) => { return value });
         return {status: res.status, data: dtListMapped}
       })
-      .catch(err => {
-        throw new Error(err);
+      .catch(error => {
+        return {error}
       });
 };
 
