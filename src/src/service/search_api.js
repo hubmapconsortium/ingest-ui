@@ -29,8 +29,8 @@ export function api_validate_token(auth) {
       .then(res => {
         return {status: res.status}
       })
-      .catch(err => {
-        return {status: err.response.status, results: err.response.data}
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -70,8 +70,8 @@ export function api_search(params, auth) {
 
       return { status: res.status, results: entities }
     })
-    .catch(err => {
-      return { status: 500, results: err.response }
+    .catch(error => {
+      return {error}
     });
 };
 
@@ -100,9 +100,8 @@ export function api_search2(params, auth, from, size, fields) {
           });
         return {status: res.status, results: entities, total: res.data.hits.total.value}
       })
-      .catch(err => {
-        console.debug("API api_search2 err", err);
-         return {status: 500, results: err.response}
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -201,8 +200,8 @@ export function  search_api_get_assay_type(assay) {
         console.debug(found_dt);
         return {status: res.status, results: found_dt}
       })
-      .catch(err => {
-         return {results: err.response}
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -221,8 +220,8 @@ export function search_api_get_assay_list(params) {
         let dtListMapped = data.result.map((value, index) => { return value });
         return {status: res.status, data: dtListMapped}
       })
-      .catch(err => {
-         return {results: err.response}
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -249,9 +248,8 @@ export function  search_api_get_assay_set(scope){
         console.debug("API get_processed_assays data", data, mapCheck);
         return {data}
       })
-      .catch(err => {
-        console.debug("API get_processed_assays err", err);
-         return {results: err.response}
+      .catch(error => {
+        return {error}
       });
 };
 
@@ -265,8 +263,8 @@ export function search_api_get_assay_primaries() {
         let dtListMapped = data.result.map((value, index) => { return value });
         return {status: res.status, data: dtListMapped}
       })
-      .catch(err => {
-         return {results: err.response}
+      .catch(error => {
+        return {error}
       });
 };
 

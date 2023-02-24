@@ -202,7 +202,7 @@ export function App (props){
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
 function reportError (error){
-  console.error("reportError", error);
+  console.error("!!!reportError", error);
   var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
   console.debug("reportError", errString);
   setErrorInfo(errString);

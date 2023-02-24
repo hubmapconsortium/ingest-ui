@@ -318,21 +318,25 @@ class DatasetEdit extends Component {
 
         // Sets the Hubmap ID labels for Previous and Next version Buttons  
         if(this.props.editingDataset.next_revision_uuid){
+          console.debug("next_revision_uuid",this.props.editingDataset.next_revision_uuid);
           entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
             this.setState({nextHID: response.results.hubmap_id})
           })
           .catch((error) => {
-            
+            console.debug("next_revision_uuid",error);
+            this.props.reportError(error);
           })   
         }
         if(this.props.editingDataset.previous_revision_uuid){
+          console.debug("prev_revision_uuid",this.props.editingDataset.previous_revision_uuid);
           entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
             this.setState({prevHID: response.results.hubmap_id})
           })
           .catch((error) => {
-            
+            console.debug("porev",error);
+            this.props.reportError(error);
           })   
         }
     
