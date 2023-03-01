@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
-import { search_api_get_assay_list, search_api_get_assay_set } from '../service/search_api';
+import { search_api_get_assay_set } from '../service/search_api';
 import PublicationFormLegacy from "./ingest/publications_edit";
-import {PublicationForm} from "./publications/publications";
 import {useNavigate} from "react-router-dom";
 import { useLocation } from 'react-router'
 
@@ -12,6 +11,30 @@ import { useLocation } from 'react-router'
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import Result from "./uuid/result";
+
+
+/*
+title: string, required-- this overrides the title field in Dataset which is auto-calculated
+  The title of the paper
+publication_date: date, required
+  The date of publication
+publication_doi: string as standard DOI format (##.#####/[alpha-numberic-string]), not-required
+  The DOI of the publication
+publication_url: string as standard URL format (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]), required
+  The URL at the publishers server for print/pre-print
+publication_venue, string, required
+  The venue of the publication, journal, conference, preprint server, etc...
+volume, integer, not-required
+  The volume number of a journal that it was published in
+issue, integer, not-required
+  The issue number of the journal that it was published in
+pages_or_article_num, string, e.g., “23”, “23-49”, “e1003424”, not-required
+  The pages or the aricle number in the publication journal
+publication_status, boolean, required
+  A boolean representing if the publication has been published yet or not.  (Published in the target/venue journal/proceeding/etc.. NOT published in the sense of Dataset publication)
+*/
+
+
 
 
 export const RenderPublication = (props) => {
@@ -38,6 +61,7 @@ export const RenderPublication = (props) => {
     message: "",
     isError: null 
   });
+  
 
   const location = useLocation()
   // Using the Set State here throws us into an Endless re-render :(
@@ -72,7 +96,7 @@ export const RenderPublication = (props) => {
 
 
     function fetchEntity(authSet){
-      entity_api_get_entity('e0ad1f9099d99214668ee72afbbb11bb', authSet.groups_token)
+      entity_api_get_entity('719941ea11a51ee4fc0e9d2fee0a9d62', authSet.groups_token)
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
@@ -137,7 +161,7 @@ export const RenderPublication = (props) => {
 
   function onChangeGlobusLink(newLink, newPublication) {
     console.debug(newPublication, newLink)
-    const {name, display_doi, doi} = newPublication;
+    // const {name, display_doi, doi} = newPublication;
   }
 
   function renderSuccessDialog(){

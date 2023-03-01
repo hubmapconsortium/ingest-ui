@@ -60,7 +60,8 @@ export const ENTITY_TYPES = { // Use this instead of Types
   donor: "Donor" ,
   sample: "Sample",
   dataset: "Dataset", 
-  Upload: "Data Upload"
+  Upload: "Data Upload",
+  publication: "Publication"
 }
 
 export const SAMPLE_TYPES = [ // Move requests for this into categories

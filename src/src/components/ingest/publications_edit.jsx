@@ -1,50 +1,60 @@
 import React, { Component } from "react";
-import Paper from '@material-ui/core/Paper';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import Button from '@mui/material/Button';
-
-
-import '../../App.css';
+import Paper from "@material-ui/core/Paper";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import Button from "@mui/material/Button";
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import "../../App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import {
+  faQuestionCircle,
+  faSpinner,
+  faTrash,
+  faPlus,
+  faUserShield,
+} from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 
 import { validateRequired } from "../../utils/validators";
-import {
-  faExternalLinkAlt
-} from "@fortawesome/free-solid-svg-icons";
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
-import { ingest_api_allowable_edit_states, 
-    ingest_api_create_dataset, 
-    ingest_api_dataset_submit, 
-    ingest_api_dataset_publish,
-    ingest_api_users_groups, 
-    ingest_api_allowable_edit_states_statusless} from '../../service/ingest_api';
-import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
+import {
+  ingest_api_allowable_edit_states,
+  ingest_api_create_dataset,
+  ingest_api_dataset_submit,
+  ingest_api_dataset_publish,
+  ingest_api_users_groups,
+  ingest_api_allowable_edit_states_statusless,
+} from "../../service/ingest_api";
+import {
+  entity_api_update_entity,
+  entity_api_get_globus_url,
+  entity_api_get_entity,
+} from "../../service/entity_api";
 //import { withRouter } from 'react-router-dom';
-import {  search_api_get_assay_set } from '../../service/search_api';
+import { search_api_get_assay_set } from "../../service/search_api";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
-import { Alert, AlertTitle } from '@material-ui/lab';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import { Alert, AlertTitle } from "@material-ui/lab";
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableHead from "@material-ui/core/TableHead";
+import TableRow from "@material-ui/core/TableRow";
 
-import Box from '@material-ui/core/Box';
+import Box from "@material-ui/core/Box";
 
-
-import Select from '@material-ui/core/Select';
+import Select from "@material-ui/core/Select";
+import Result from '../uuid/result';
 
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -52,207 +62,223 @@ import Select from '@material-ui/core/Select';
 
 class PublicationEdit extends Component {
   state = {
-   // The Entity Itself
+    // The Entity Itself
     newForm: this.props.newForm,
-    data_types: this.props.editingPublication ? this.props.editingPublication.data_types : {},
-    dtl_primary:[],
-    dtl_all:[],
-    selected_dt:"",
-    //  data_types: this.props.dataTypeList,
-    // data_types: new Set(),
+    data_types:["publication"],
+    dtl_primary: [],
+    dtl_all: [],
+    selected_dt: "",
     dataset_info: "",
     description: "",
     dataTypeDropdown: [],
     display_doi: "",
-    editingSource:[],
-    // globus_path: "",
+    editingSource: [],
     source_uuid_list: [],
     source_uuid_type: "",
     source_uuid: undefined,
     source_uuids: [],
     status: "NEW",
-    upload:[],
-    writeable: true,
-    // editingSourceIndex:0,  
-    // name: "",
-    
+    upload: [],
+    writeable: false, //Should Prob default secure
+
+    editingPublication: this.props.editingPublication ? this.props.editingPublication: {},
+
     // User Privs & Info
     groups: [],
     has_admin_priv: false,
     has_submit_priv: false,
     has_publish_priv: false,
     has_version_priv: false,
-    groupsToken:"",
-    
+    groupsToken: "",
+
     // Data that sets the scene
     assay_type_primary: true,
     data_type_dicts: this.props.dataTypeList,
-    slist:[], 
-    
-    // Page States 
+    slist: [],
+
+    // Page States
     badge_class: "badge-purple",
-    groups_dataprovider:[],
+    groups_dataprovider: [],
     GroupSelectShow: false,
     lookUpCancelled: false,
     LookUpShow: false,
     other_dt: "",
     buttonSpinnerTarget: "",
-    errorSnack:false,
-    disableSelectDatatype:false,
+    errorSnack: false,
+    disableSelectDatatype: false,
     // Form Validation & processing
-    newVersion:false,
+    newVersion: false,
     previousHID: undefined,
     nextHID: undefined,
     previous_revision_uuid: undefined,
     has_other_datatype: false,
-    submitErrorResponse:"",
-    submitErrorStatus:"",
-    isValidData:true,
+    submitErrorResponse: "",
+    submitErrorStatus: "",
+    isValidData: true,
     formErrors: {
-      contains_human_genetic_sequences:"",
-      data_types: "",
       lab_dataset_id: "",
-      other_dt: "",
-      source_uuid_list:"",
+      source_uuid_list: "",
       source_uuid: "",
+      publication_date: "",
+      publication_doi: "",
+      publication_url: "",
     },
   };
 
   updateStateDataTypeInfo() {
     let data_types = null;
     let other_dt = undefined;
-    if (this.props.hasOwnProperty('editingPublication')
-      && this.props.editingPublication
-      && this.props.editingPublication.data_types) {
-      }
-
-      this.setState({
-        data_types: new Set(this.props.editingPublication.data_types),
-        has_other_datatype: other_dt !== undefined,
-        other_dt: other_dt,
-      });
+    if (
+      this.props.hasOwnProperty("editingPublication") &&
+      this.props.editingPublication &&
+      this.props.editingPublication.data_types
+    ) {
     }
-    
-    componentDidMount() {
-      console.debug("PublicationEdit: componentDidMount");
-      // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
-      // Modal state as flag for add/remove? 
-      document.addEventListener("click", this.handleClickOutside);
-      this.setAssayLists();
-      var savedGeneticsStatus = undefined;
-      try {
-        var auth = JSON.parse(localStorage.getItem("info")).groups_token;
-        this.setState({groupsToken:auth});
-      } catch {
-       
-      }
 
-      if (localStorage.getItem("info")){
-        // @TODO: Evaluate best practices, pass token to Service from within form
-        // Or consider another method for token/service auth handling
-        // Configs should /only/ assembed in the service using the passed token for now
-        const config = { 
-          headers: {
-            Authorization:
+    this.setState({
+      data_types: new Set(this.props.editingPublication.data_types),
+      has_other_datatype: other_dt !== undefined,
+      other_dt: other_dt,
+    });
+  }
+
+  componentDidMount() {
+    console.debug("PublicationEdit: componentDidMount");
+    // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
+    // Modal state as flag for add/remove?
+    document.addEventListener("click", this.handleClickOutside);
+    this.setAssayLists();
+    var savedGeneticsStatus = undefined;
+    try {
+      var auth = JSON.parse(localStorage.getItem("info")).groups_token;
+      this.setState({ groupsToken: auth });
+    } catch {}
+
+    if (localStorage.getItem("info")) {
+      // @TODO: Evaluate best practices, pass token to Service from within form
+      // Or consider another method for token/service auth handling
+      // Configs should /only/ assembed in the service using the passed token for now
+      const config = {
+        headers: {
+          Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-            "Content-Type": "application/json",
-          },
-        };
-      }else{
-        
-        localStorage.setItem("isAuthenticated", false);
-      }
+          "Content-Type": "application/json",
+        },
+      };
+    } else {
+      localStorage.setItem("isAuthenticated", false);
+    }
 
-   
-
-      // Figure out our permissions
-      if (this.props.editingPublication) {
-        if (this.props.editingPublication.uuid)
+    // Figure out our permissions
+    // console.debug("CHECK PERM", this.props.editingPublication, this.props.editingPublication.uuid);
+    if (this.props.editingPublication) {
+      if (this.props.editingPublication.uuid)
+      // console.debug("Checking Permissions");
         // check to see which buttons to enable
-        ingest_api_allowable_edit_states(this.props.editingPublication.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((resp) => {
+        ingest_api_allowable_edit_states(
+          this.props.editingPublication.uuid,
+          JSON.parse(localStorage.getItem("info")).groups_token
+        ).then((resp) => {
+          console.debug("Write Check", resp);
           if (resp.status < 300) {
-            //
             this.setState({
               writeable: resp.results.has_write_priv,
+              has_write_priv: resp.results.has_write_priv,
               has_submit_priv: resp.results.has_submit_priv,
               has_publish_priv: resp.results.has_publish_priv,
-              has_admin_priv: resp.results.has_admin_priv
+              has_admin_priv: resp.results.has_admin_priv,
+            });
+
+            ingest_api_allowable_edit_states_statusless(
+              this.props.editingPublication.uuid,
+              JSON.parse(localStorage.getItem("info")).groups_token
+            )
+              .then((resp) => {
+                //
+                this.setState({
+                  has_version_priv: resp.results.has_write_priv,
+                });
+              })
+              .catch((err) => {
+                this.props.reportError(err);
               });
-
-              ingest_api_allowable_edit_states_statusless(this.props.editingPublication.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-                .then((resp) => {
-                  // 
-                  this.setState({has_version_priv: resp.results.has_write_priv});
-                })
-                .catch((err) => {
-                  
-                });   
           }
-          
+        })
+        .catch((err) => {	
+          console.debug("Error Checking Permissions", err);
         });
-
-       
-      }else{
+    } else {
       //
-      }
+    }
 
     ingest_api_users_groups(auth)
       .then((res) => {
-        
-        const groups = res.results.filter(
-          g => g.data_provider === true
+        const groups = res.results.filter((g) => g.data_provider === true);
+
+        this.setState(
+          {
+            groups: groups,
+            groups_dataprovider: groups,
+          },
+          () => {}
         );
-        
-        this.setState({
-          groups: groups,
-          groups_dataprovider: groups,
-        },() => {
-          
-        });
       })
       .catch((err) => {
         if (err.response && err.response.status === 401) {
           this.props.reportError(err);
           // Rather than reload here, let's have a modal or such
           localStorage.setItem("isAuthenticated", false);
-        }else if(err.status){
+        } else if (err.status) {
           localStorage.setItem("isAuthenticated", false);
         }
       });
 
     // Sets up the Entity's info  if we're not new here
-    if (this.props.editingPublication && !this.props.newForm) {      
+    if (this.props.editingPublication && !this.props.newForm) {
       try {
         // use only the first direct ancestor
-         this.setState({
-          source_uuids: this.props.editingPublication.direct_ancestors
+        this.setState({
+          source_uuids: this.props.editingPublication.direct_ancestors,
         });
-      } catch {
-      }
+      } catch {}
 
-      if(this.props.editingPublication ==='' ){
+      if (this.props.editingPublication === "") {
         savedGeneticsStatus = undefined;
-      }else{
-        savedGeneticsStatus = this.props.editingPublication.contains_human_genetic_sequences;
+      } else {
+        savedGeneticsStatus =
+          this.props.editingPublication.contains_human_genetic_sequences;
       }
 
       this.setState(
         {
-          status: this.props.editingPublication.hasOwnProperty('status') ? this.props.editingPublication.status.toUpperCase() : "NEW",
+          status: this.props.editingPublication.hasOwnProperty("status")
+            ? this.props.editingPublication.status.toUpperCase()
+            : "NEW",
           display_doi: this.props.editingPublication.hubmap_id,
           lab_dataset_id: this.props.editingPublication.lab_dataset_id,
-          source_uuid: this.getSourceAncestor(this.props.editingPublication.direct_ancestors),
-          source_uuid_list:this.assembleSourceAncestorData(this.props.editingPublication.direct_ancestors),
-          source_entity: this.getSourceAncestorEntity(this.props.editingPublication.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
-          slist: this.getSourceAncestorEntity(this.props.editingPublication.direct_ancestors),
+          source_uuid: this.getSourceAncestor(
+            this.props.editingPublication.direct_ancestors
+          ),
+          source_uuid_list: this.assembleSourceAncestorData(
+            this.props.editingPublication.direct_ancestors
+          ),
+          source_entity: this.getSourceAncestorEntity(
+            this.props.editingPublication.direct_ancestors
+          ), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
+          slist: this.getSourceAncestorEntity(
+            this.props.editingPublication.direct_ancestors
+          ),
           contains_human_genetic_sequences: savedGeneticsStatus,
           description: this.props.editingPublication.description,
           dataset_info: this.props.editingPublication.dataset_info,
-          previous_revision_uuid: this.props.editingPublication.hasOwnProperty('previous_revision_uuid') ? this.props.editingPublication.previous_revision_uuid : undefined,
+          previous_revision_uuid: this.props.editingPublication.hasOwnProperty(
+            "previous_revision_uuid"
+          )
+            ? this.props.editingPublication.previous_revision_uuid
+            : undefined,
           errorMsgShow:
-            this.props.editingPublication.status.toLowerCase() ===
-              "error" && this.props.editingPublication.message
+            this.props.editingPublication.status.toLowerCase() === "error" &&
+            this.props.editingPublication.message
               ? true
               : false,
           statusErrorMsg: this.props.editingPublication.message,
@@ -261,9 +287,11 @@ class PublicationEdit extends Component {
           this.setState({
             badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
           });
-          entity_api_get_globus_url(this.props.editingPublication.uuid, this.state.groupsToken)
+          entity_api_get_globus_url(
+            this.props.editingPublication.uuid,
+            this.state.groupsToken
+          )
             .then((res) => {
-              
               this.setState({
                 globus_path: res.results,
               });
@@ -280,81 +308,82 @@ class PublicationEdit extends Component {
             });
         }
       );
-       // Now tha we've got that all set, 
-      // Here's the hack that disables changing the datatype 
-      // if it's no longer a base primary type.  
+      // Now tha we've got that all set,
+      // Here's the hack that disables changing the datatype
+      // if it's no longer a base primary type.
       var dtlStatus = this.props.dtl_status;
-      
-      if(dtlStatus){
+
+      if (dtlStatus) {
         // We are primary type, only priamries in Dropdown
         this.setState({
           disableSelectDatatype: false,
-          dataTypeDropdown:this.props.dtl_primary
+          dataTypeDropdown: this.props.dtl_primary,
         });
-      }else{
+      } else {
         // Not primary type, uneditable dropdown should contain all
         this.setState({
           disableSelectDatatype: true,
-          dataTypeDropdown:this.props.dtl_all
+          dataTypeDropdown: this.props.dtl_all,
         });
       }
-      var selected = ""
-      if(this.props.editingPublication  && this.props.editingPublication.data_types && this.props.editingPublication.data_types.length === 1){
+      var selected = "";
+      if (
+        this.props.editingPublication &&
+        this.props.editingPublication.data_types &&
+        this.props.editingPublication.data_types.length === 1
+      ) {
         // Set DT Select by state so it behaves as "controlled"
         selected = this.props.editingPublication.data_types[0];
         //
       }
       this.setState({
         selected_dt: selected,
-      })
+      });
 
-
-        // Sets the Hubmap ID labels for Previous and Next version Buttons  
-        if(this.props.editingPublication.next_revision_uuid){
-          entity_api_get_entity(this.props.editingPublication.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+      // Sets the Hubmap ID labels for Previous and Next version Buttons
+      if (this.props.editingPublication.next_revision_uuid) {
+        entity_api_get_entity(
+          this.props.editingPublication.next_revision_uuid,
+          JSON.parse(localStorage.getItem("info")).groups_token
+        )
           .then((response) => {
-            this.setState({nextHID: response.results.hubmap_id})
+            this.setState({ nextHID: response.results.hubmap_id });
           })
-          .catch((error) => {
-            
-          })   
-        }
-        if(this.props.editingPublication.previous_revision_uuid){
-          entity_api_get_entity(this.props.editingPublication.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+          .catch((error) => {});
+      }
+      if (this.props.editingPublication.previous_revision_uuid) {
+        entity_api_get_entity(
+          this.props.editingPublication.previous_revision_uuid,
+          JSON.parse(localStorage.getItem("info")).groups_token
+        )
           .then((response) => {
-            this.setState({prevHID: response.results.hubmap_id})
+            this.setState({ prevHID: response.results.hubmap_id });
           })
-          .catch((error) => {
-            
-          })   
-        }
-    
+          .catch((error) => {});
+      }
     }
   }
 
-  setAssayLists(){
+  setAssayLists() {
     search_api_get_assay_set()
-    .then((res) => {
-      
-      this.setState({
-        dtl_all: res.data.result.map((value, index) => { return value.name })
-      });
-    })
-    .catch((err) => {
-      
-    })
+      .then((res) => {
+        this.setState({
+          dtl_all: res.data.result.map((value, index) => {
+            return value.name;
+          }),
+        });
+      })
+      .catch((err) => {});
     search_api_get_assay_set("primary")
-    .then((res) => {
-      
-      this.setState({
-        dtl_primary: res.data.result.map((value, index) => { return value.name })
-      });
-    })
-    .catch((err) => {
-      
-    })
+      .then((res) => {
+        this.setState({
+          dtl_primary: res.data.result.map((value, index) => {
+            return value.name;
+          }),
+        });
+      })
+      .catch((err) => {});
   }
-
 
   componentWillUnmount() {
     document.removeEventListener("click", this.handleClickOutside, true);
@@ -376,48 +405,48 @@ class PublicationEdit extends Component {
     this.setState({ errorMsgShow: false });
   };
 
-  showConfirmDialog(row,index) {
-    this.setState({ 
-        confirmDialog: true,
-        editingSource: row,
-        editingSourceIndex: index
+  showConfirmDialog(row, index) {
+    this.setState({
+      confirmDialog: true,
+      editingSource: row,
+      editingSourceIndex: index,
     });
-  };
+  }
 
   hideConfirmDialog = () => {
-    this.setState({ 
-        confirmDialog: false ,
-        editingSource: []
+    this.setState({
+      confirmDialog: false,
+      editingSource: [],
     });
   };
 
   hideGroupSelectModal = () => {
     this.setState({
-      GroupSelectShow: false
+      GroupSelectShow: false,
     });
   };
 
   handleLookUpClick = () => {
     if (!this.state.lookUpCancelled) {
       this.setState({
-        LookUpShow: true
+        LookUpShow: true,
       });
     }
-     this.setState({
-        lookUpCancelled: false
-      });
+    this.setState({
+      lookUpCancelled: false,
+    });
   };
 
   hideLookUpModal = () => {
     this.setState({
-      LookUpShow: false
+      LookUpShow: false,
     });
   };
 
   cancelLookUpModal = () => {
     this.setState({
       LookUpShow: false,
-      lookUpCancelled: true
+      lookUpCancelled: true,
     });
   };
 
@@ -431,102 +460,66 @@ class PublicationEdit extends Component {
         });
       }
     }
-  }; 
+  };
+
+  handleDateChange = (date) => {
+    this.setState({
+      publication_date: date,
+    });
+  };
 
   handleInputChange = (e) => {
-    const { id, name, value } = e.target;
-    switch (name) {
-      case "lab_dataset_id":
-        this.setState({
-          lab_dataset_id: value,
-        });
-        break;
-      case "contains_human_genetic_sequences":  
-        let gene_seq = undefined; 
-        if (value === 'yes') {
-          gene_seq = true;
-        } else if(value === 'no'){
-          gene_seq = false;
-        }
-        this.setState({
-          contains_human_genetic_sequences: gene_seq,  // need to convert to a boolean
-        });
-        break;
-      case "description":
-        this.setState({
-          description: value,
-        });
-        break;
-      case "dataset_info":
-        this.setState({
-          dataset_info: value,
-        });
-      break;
-      case "status":
-        this.setState({
-          new_status: value,
-        });
-        break;
-      case "other_dt":
-        
-        this.setState({ other_dt: value });
-        break;
-      case "dt_select":
-        
-        var data_types = [];  
-        data_types.push(value);
-        // data_types.push(value);
-        this.setState({
-          has_other_datatype: false,
-          data_types: data_types,
-          selected_dt: value,
-        });
-        
-          break;
-      case "groups":
-        this.setState({
-          selected_group: value
-        });
-        break;
-      default:
-        break;
-    }
-    if (id.startsWith("dt")) {
-      if (id === "dt_other") {
-        const data_types = this.state.data_types;
-        this.setState({
-          data_types: data_types,
-          has_other_datatype: e.target.checked,
-        });
-        if (!e.target.checked) {
-	         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
-            const data_types = this.state.data_types;
-            const other_dt = Array.from(data_types).filter(
-              (dt) => !data_type_options.has(dt)
-              )[0];
-            data_types.delete(other_dt);
-            this.setState({
-              data_types: data_types,
-              other_dt: "",
-            });
-        }
-      } else {
-        if (value === "other") {
-          this.setState({
-            data_types: data_types,
-            has_other_datatype: value === "other",
-          });
-      
-        } else {
-          this.setState({
-            has_other_datatype: false,
-            selected_dt: value,
-          });
+    var { id, name, value } = e.target;
 
-        }
-      
+    console.debug("handleInputChange", id, name, value, e);
+
+    this.setState(prev => ({
+      editingPublication: {
+        ...prev.editingPublication,
+        [id]: value
       }
-    }
+    }))
+
+    // switch (name) {
+    //   case "lab_dataset_id":
+    //     this.setState({
+    //       lab_dataset_id: value,
+    //     });
+    //     break;
+    //   case "description":
+    //     this.setState({
+    //       description: value,
+    //     });
+    //     break;
+    //   case "publication_venue":
+    //     this.setState({
+    //       publication_venue: value,
+    //     });
+    //     break;
+    //   case "publication_date":
+    //     this.setState({
+    //       publication_date: value,
+    //     });
+    //     break;
+    //   case "publication_doi":
+    //     this.setState({
+    //       publication_doi: value,
+    //     });
+    //     break;
+    //   case "publication_status":
+    //     this.setState({
+    //       publication_status: value,
+    //     });
+    //     break;
+    //   case "publication_url":
+    //     this.setState({
+    //       publication_url: value,
+    //     });
+    //     break;
+    //   default:
+    //     break;
+    // }
+    
   };
 
   handleInputFocus = (e) => {
@@ -569,174 +562,210 @@ class PublicationEdit extends Component {
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
-      if(this.state.selectedSource !== selection.row.uuid){
-        this.setState({
-          selectedSource: selection.row.uuid
-        } ,() => {    
-        var slist=this.state.source_uuid_list;
-        slist.push(selection.row);
-        this.setState({
-          source_uuid: selection.row.hubmap_id, 
-          source_uuid_list: slist,
-          slist: slist,
-          source_entity:selection.row,  // save the entire entity to use for information
-          LookUpShow: false
-        });
-        this.hideLookUpModal();
-      });
-    }else{
-     //
+    if (this.state.selectedSource !== selection.row.uuid) {
+      this.setState(
+        {
+          selectedSource: selection.row.uuid,
+        },
+        () => {
+          var slist = this.state.source_uuid_list;
+          slist.push(selection.row);
+          this.setState({
+            source_uuid: selection.row.hubmap_id,
+            source_uuid_list: slist,
+            slist: slist,
+            source_entity: selection.row, // save the entire entity to use for information
+            LookUpShow: false,
+          });
+          this.hideLookUpModal();
+        }
+      );
+    } else {
+      //
     }
   };
 
   sourceRemover = (row) => {
-    var slist=this.state.source_uuid_list;
-    slist =  slist.filter(source => source.uuid !== row.uuid)
-      this.setState( {
+    var slist = this.state.source_uuid_list;
+    slist = slist.filter((source) => source.uuid !== row.uuid);
+    this.setState(
+      {
         source_uuid_list: slist,
         slist: slist,
-      } ,() => {
+      },
+      () => {
         // this.hideConfirmDialog();
-      });
-  }
+      }
+    );
+  };
 
   renderSources = () => {
-    if(this.state.source_uuid_list ||  this.props.newForm===false){
+    if (this.state.source_uuid_list || this.props.newForm === false) {
       return (
         <div className="w-100">
-          <label htmlFor='source_uuid_list'>
-            Source(s) <span className='text-danger px-2'>*</span>
+          <label htmlFor="source_uuid_list">
+            Source(s) <span className="text-danger px-2">*</span>
           </label>
           <FontAwesomeIcon
             icon={faQuestionCircle}
             data-tip
-            data-for='source_uuid_tooltip'
+            data-for="source_uuid_tooltip"
           />
           <ReactTooltip
-            id='source_uuid_tooltip'
-            className='zindex-tooltip'
-            place='right'
-            type='info'
-            effect='solid'
-          >
+            id="source_uuid_tooltip"
+            className="zindex-tooltip"
+            place="right"
+            type="info"
+            effect="solid">
             <p>
-              The source tissue samples or data from which this data was derived.  <br />
-              At least <strong>one source </strong>is required, but multiple may be specified.
+              The source tissue samples or data from which this data was
+              derived. <br />
+              At least <strong>one source </strong>is required, but multiple may
+              be specified.
             </p>
           </ReactTooltip>
 
-        <TableContainer 
-          component={Paper} 
-          style={{ maxHeight: 450 }}
-          className={
-            this.errorClass(this.state.formErrors.source_uuid_list)
-          }>
-        <Table aria-label="Associated Publications" size="small" className="table table-striped table-hover mb-0">
-          <TableHead className="thead-dark font-size-sm">
-            <TableRow className="   " >
-              <TableCell> Source ID</TableCell>
-              <TableCell component="th">Submission ID</TableCell>
-              <TableCell component="th">Subtype</TableCell>
-              <TableCell component="th">Group Name</TableCell>
-              <TableCell component="th">Status</TableCell>
-              <TableCell component="th" align="right">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {this.state.source_uuid_list.map((row, index) => (
-              <TableRow 
-                key={(row.hubmap_id+""+index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
-                // onClick={() => this.handleSourceCellSelection(row)}
-                className="row-selection"
-                >
-                <TableCell  className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                <TableCell  className="clicky-cell" scope="row"> {row.submission_id && ( row.submission_id)} </TableCell>
-                <TableCell  className="clicky-cell" scope="row">{row.display_subtype}</TableCell>
-                <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
-                <TableCell  className="clicky-cell" scope="row">{row.status && (
-                    <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
-                )}</TableCell>
-                <TableCell  className="clicky-cell" align="right" scope="row"> 
-                {this.state.writeable && (
-                  <React.Fragment>
+          <TableContainer
+            component={Paper}
+            style={{ maxHeight: 450 }}
+            className={this.errorClass(this.state.formErrors.source_uuid_list)}>
+            <Table
+              aria-label="Associated Publications"
+              size="small"
+              className="table table-striped table-hover mb-0">
+              <TableHead className="thead-dark font-size-sm">
+                <TableRow className="   ">
+                  <TableCell> Source ID</TableCell>
+                  <TableCell component="th">Submission ID</TableCell>
+                  <TableCell component="th">Subtype</TableCell>
+                  <TableCell component="th">Group Name</TableCell>
+                  <TableCell component="th">Status</TableCell>
+                  <TableCell component="th" align="right">
+                    Action
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {this.state.source_uuid_list.map((row, index) => (
+                  <TableRow
+                    key={row.hubmap_id + "" + index} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to
+                    // onClick={() => this.handleSourceCellSelection(row)}
+                    className="row-selection">
+                    <TableCell className="clicky-cell" scope="row">
+                      {row.hubmap_id}
+                    </TableCell>
+                    <TableCell className="clicky-cell" scope="row">
+                      {" "}
+                      {row.submission_id && row.submission_id}{" "}
+                    </TableCell>
+                    <TableCell className="clicky-cell" scope="row">
+                      {row.display_subtype}
+                    </TableCell>
+                    <TableCell className="clicky-cell" scope="row">
+                      {row.group_name}
+                    </TableCell>
+                    <TableCell className="clicky-cell" scope="row">
+                      {row.status && (
+                        <span
+                          className={
+                            "w-100 badge " +
+                            getPublishStatusColor(row.status, row.uuid)
+                          }>
+                          {" "}
+                          {row.status}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell
+                      className="clicky-cell"
+                      align="right"
+                      scope="row">
+                      {this.state.writeable && (
+                        <React.Fragment>
+                          <FontAwesomeIcon
+                            className="inline-icon interaction-icon "
+                            icon={faTrash}
+                            color="red"
+                            onClick={() => this.sourceRemover(row, index)}
+                          />
+                        </React.Fragment>
+                      )}
+                      {!this.state.writeable && (
+                        <small className="text-muted">N/A</small>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {this.state.writeable && (
+            <React.Fragment>
+              <Box className="mt-2 w-100" width="100%" display="flex">
+                <Box p={1} className="m-0  text-right" flexShrink={0}>
+                  <Button
+                    variant="contained"
+                    type="button"
+                    size="small"
+                    className="btn btn-neutral"
+                    onClick={() => this.handleLookUpClick()}>
+                    Add{" "}
+                    {this.state.source_uuids &&
+                      this.state.source_uuids.length >= 1 &&
+                      "Another"}{" "}
+                    Source
                     <FontAwesomeIcon
-                      className='inline-icon interaction-icon '
-                      icon={faTrash}
-                      color="red"  
-                      onClick={() => this.sourceRemover(row,index)}
+                      className="fa button-icon m-2"
+                      icon={faPlus}
                     />
-                  </React.Fragment>
-                  )}
-                  {!this.state.writeable && (
-                  <small className="text-muted">N/A</small>
-                  )}
-                
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        </TableContainer>
-        
-                 
-        {this.state.writeable && (
-        <React.Fragment>
-          <Box className="mt-2 w-100" width="100%"  display="flex">
-            
-              <Box p={1} className="m-0  text-right" flexShrink={0}  >
-                <Button
-                  variant="contained"
-                  type='button'
-                  size="small"
-                  className='btn btn-neutral'
-                  onClick={() => this.handleLookUpClick()} 
-                  >
-                  Add {this.state.source_uuids && this.state.source_uuids.length>=1 && (
-                    "Another"
-                    )} Source 
-                  <FontAwesomeIcon
-                    className='fa button-icon m-2'
-                    icon={faPlus}
-                  />
-                </Button>
-              </Box>
+                  </Button>
+                </Box>
 
-              <Box p={1} width="100%"   >
-              {this.errorClass(this.state.formErrors.source_uuid_list) && (
-                    <Alert severity="error" width="100% " >
-                      {this.state.formErrors.source_uuid_list}  {this.state.formErrors.source_uuid} 
+                <Box p={1} width="100%">
+                  {this.errorClass(this.state.formErrors.source_uuid_list) && (
+                    <Alert severity="error" width="100% ">
+                      {this.state.formErrors.source_uuid_list}{" "}
+                      {this.state.formErrors.source_uuid}
                     </Alert>
-                )}
-              </Box>
-              
-              {/*  */}
-          </Box>
-        </React.Fragment>
-        )}
-      </div>
-    )}else if(this.state.writeable && this.state.editingPublication){
+                  )}
+                </Box>
 
+                {/*  */}
+              </Box>
+            </React.Fragment>
+          )}
+        </div>
+      );
+    } else if (this.state.writeable && this.state.editingPublication) {
     }
-    
-  }
+  };
 
   handleNewVersion = () => {
     this.setState({
-      newVersion:true
+      newVersion: true,
+      buttonSpinnerTarget: "version",
     });
     this.handleSubmit("newversion");
   };
 
   handleVersionNavigate = (direction) => {
-    
-    // @TODO Better process standardizing route navigation between forms 
-    if(direction==='next'){
-      window.history.pushState( null,"", "/dataset/"+this.props.editingPublication.next_revision_uuid);
-    }else{
-      window.history.pushState( null,"", "/dataset/"+this.props.editingPublication.previous_revision_uuid);
+    // @TODO Better process standardizing route navigation between forms
+    if (direction === "next") {
+      window.history.pushState(
+        null,
+        "",
+        "/publication/" + this.props.editingPublication.next_revision_uuid
+      );
+    } else {
+      window.history.pushState(
+        null,
+        "",
+        "/publication/" + this.props.editingPublication.previous_revision_uuid
+      );
     }
-    window.location.reload()
-  }
+    window.location.reload();
+  };
 
   handleAddNewCollection = () => {
     this.setState({
@@ -750,90 +779,97 @@ class PublicationEdit extends Component {
     });
   };
 
-
   handleCancel = () => {
-    if(this.props && this.props.handleCancel){
+    if (this.props && this.props.handleCancel) {
       // How is this happening???
-     this.props.handleCancel();
-    }else{
+      this.props.handleCancel();
+    } else {
       window.history.back();
     }
-  }
+  };
 
   handleReprocess = () => {
-    Alert("Reprocessing feature not implemented")
-  }
+    Alert("Reprocessing feature not implemented");
+  };
 
   handleButtonClick = (i, event) => {
-    if(event){
+    console.debug("handleButtonClick", i, event);
+    if (event) {
     }
-
-    this.setState({
-      new_status: i,
-      buttonState:{
-        i:true
+    this.setState(
+      {
+        new_status: i,
+        buttonState: {
+          i: true,
+        },
+      },
+      () => {
+        this.handleSubmit(i);
       }
-    }, () => {
-      this.handleSubmit(i);
-    })
+    );
   };
 
   handlePublicationSelect = (e) => {
-    
     e.preventDefault();
-    // @TODO Better process standardizing route navigation between forms 
-    window.history.pushState( null,"", "/upload/"+this.props.editingPublication.upload.uuid);
-    window.location.reload()
-  }
-
-  
+    // @TODO Better process standardizing route navigation between forms
+    window.history.pushState(
+      null,
+      "",
+      "/upload/" + this.props.editingPublication.upload.uuid
+    );
+    window.location.reload();
+  };
 
   handleSubmit = (submitIntention) => {
+    
+    this.setState({ 
+      submitting: true,
+      buttonSpinnerTarget: submitIntention, 
+    });
 
     this.validateForm().then((isValid) => {
-    
       if (isValid) {
         if (
-          (!this.props.editingPublication || 
-            this.props.editingPublication.length<=0||
+          (!this.props.editingPublication ||
+            this.props.editingPublication.length <= 0 ||
             !this.props.editingPublication.uuid) &&
           this.state.groups.length > 1 &&
           !this.state.GroupSelectShow
         ) {
           this.setState({ GroupSelectShow: true });
         } else {
-
           this.setState({
             GroupSelectShow: false,
             submitting: true,
           });
-          const state_data_types = this.state.data_types;
-          let data_types = [...state_data_types];
-          if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
-            data_types = [
-              ...data_types,
-              this.state.other_dt.replace(/'/g, "\\'"),
-            ];
-          }
 
-          // Can't stringify a set within json
-          var dataTypeArray = Array.from(this.state.data_types);
-          
+          var pubVal = false;
+          if(this.state.editingPublication.publication_status === 'on'){pubVal = true}
+        
           // package the data up
           let data = {
-            lab_dataset_id: this.state.lab_dataset_id,
-            contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
-            data_types: dataTypeArray,
-            description: this.state.description,
-            dataset_info: this.state.dataset_info,
+            lab_dataset_id: this.state.editingPublication.lab_dataset_id,
+            data_types: ["publication"],
+            description: this.state.editingPublication.description,
+            title:this.state.editingPublication.title,
+            publication_venue:this.state.editingPublication.publication_venue,
+            publication_date:this.state.editingPublication.publication_date,
+            publication_doi:this.state.editingPublication.publication_doi,
+            publication_status:pubVal,
+            publication_url:this.state.editingPublication.publication_url,
+            issue:this.state.editingPublication.issue,
+            volume:this.state.editingPublication.volume,
+            pageOrArticle:this.state.editingPublication.pageOrArticle,
           };
-          
-          
-  
+          console.debug("data", data);
+          // throw new Error("TESTIME");
           // get the Source ancestor
-          if (this.state.source_uuid_list && this.state.source_uuid_list.length > 0) {
+          if (
+            this.state.source_uuid_list &&
+            this.state.source_uuid_list.length > 0
+          ) {
             let direct_ancestor_uuid = this.state.source_uuid_list.map((su) => {
-                          return su.uuid || su.source_uuid;
+              return su.uuid || su.source_uuid;
             });
             if (direct_ancestor_uuid) {
               data["direct_ancestor_uuids"] = direct_ancestor_uuid;
@@ -843,170 +879,227 @@ class PublicationEdit extends Component {
             headers: {
               Authorization:
                 "Bearer " +
-                JSON.parse(localStorage.getItem("info")).groups_token
+                JSON.parse(localStorage.getItem("info")).groups_token,
             },
           };
-
 
           if (this.props.editingPublication && !this.props.newForm) {
             // If we';re making a new Version
             if (submitIntention === "newversion") {
-              
-              // @TODO: Basically repeates what's in the Create fucntionality, 
-              // and the previous_revision_uuid is added  
+              // @TODO: Basically repeates what's in the Create fucntionality,
+              // and the previous_revision_uuid is added
               data.previous_revision_uuid = this.props.editingPublication.uuid;
 
               if (this.state.lab_dataset_id) {
                 data["lab_dataset_id"] = this.state.lab_dataset_id;
               }
               // the group info on a create, check for the defaults
-                if (this.state.selected_group && this.state.selected_group.length > 0) {
-                  data["group_uuid"] = this.state.selected_group;
-                } else {
-                  // If none selected, we need to pick a default BUT
-                  // It must be from the data provviders, not permissions
-                  data["group_uuid"] = this.state.groups_dataprovider[0].uuid; 
-                }
-            
-                 ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                  .then((response) => {
-                    if (response.status < 300) {
-                     //
-                       this.setState({
-                          display_doi: response.results.display_doi,
-                        });
+              if (
+                this.state.selected_group &&
+                this.state.selected_group.length > 0
+              ) {
+                data["group_uuid"] = this.state.selected_group;
+              } else {
+                // If none selected, we need to pick a default BUT
+                // It must be from the data provviders, not permissions
+                data["group_uuid"] = this.state.groups_dataprovider[0].uuid;
+              }
 
-                      entity_api_get_globus_url(response.results.uuid, this.state.groupsToken)
-                      .then((res) => {
-                        this.setState({
+              ingest_api_create_dataset(
+                JSON.stringify(data),
+                JSON.parse(localStorage.getItem("info")).groups_token
+              )
+              .then((response) => {
+                if (response.status < 300) {
+                  //
+                  this.setState({
+                    display_doi: response.results.display_doi,
+                  });
+
+                  entity_api_get_globus_url(
+                    response.results.uuid,
+                    this.state.groupsToken
+                  )
+                    .then((res) => {
+                      this.setState(
+                        {
                           globus_path: res.results,
-                        }, () => {
-                          this.props.onCreated({entity: response.results, globus_path: res.results}); // set as an entity for the Results
-                          this.onChangeGlobusURL(response.results, res.results);
-                        });
-                      })
-                      .catch((err) => {
-                        //
-                        if (err.response && err.response.status === 401) {
-                          localStorage.setItem("isAuthenticated", false);
-                        }
-                      });
-                    } else {
-                      this.setState({ 
-                        submit_error: true, 
-                        submitting: false, 
-                        submitErrorResponse:response.results.data.error,
-                        buttonSpinnerTarget:""} ,
+                        },
                         () => {
-                         
-                        });
-                     
-                    }
-                  
-                })
-                .catch((err) => {
-                  this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
-                    () => {
-                     //
+                          this.props.onCreated({
+                            entity: response.results,
+                            globus_path: res.results,
+                          }); // set as an entity for the Results
+                          this.onChangeGlobusURL(
+                            response.results,
+                            res.results
+                          );
+                        }
+                      );
+                    })
+                    .catch((err) => {
+                      //
+                      if (err.response && err.response.status === 401) {
+                        localStorage.setItem("isAuthenticated", false);
+                      }
                     });
-                });
+                } else {
+                  this.setState(
+                    {
+                      submit_error: true,
+                      submitting: false,
+                      submitErrorResponse: response.results.data.error,
+                      buttonSpinnerTarget: "",
+                    },
+                    () => {}
+                  );
+                }
+              })
+              .catch((err) => {
+                this.setState(
+                  {
+                    submit_error: true,
+                    submitting: false,
+                    submitErrorResponse: err,
+                    buttonSpinnerTarget: "",
+                  },
+                  () => {
+                    //
+                  }
+                );
+              });
             }
             // if user selected Publish
-            else if (submitIntention === "published") { // From State? 
-                ingest_api_dataset_publish(this.props.editingPublication.uuid, this.JSON.stringify(data),  config)
+            else if (submitIntention === "published") {
+              // From State?
+              ingest_api_dataset_publish(
+                this.props.editingPublication.uuid,
+                this.JSON.stringify(data),
+                config
+              )
                 .then((res) => {
                   this.props.onUpdated(res.data);
                 })
                 .catch((error) => {
-                  this.setState({ 
-                    submit_error: true, 
-                    submitting: false, 
-                    submitErrorResponse:error.result.data,
-                    buttonSpinnerTarget:"", });
+                  this.setState({
+                    submit_error: true,
+                    submitting: false,
+                    submitErrorResponse: error.result.data,
+                    buttonSpinnerTarget: "",
+                  });
                 });
             } else if (submitIntention === "processing") {
-
-                ingest_api_dataset_submit(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                  .then((response) => {
-                    if (response.status < 300) {
-                      this.props.onUpdated(response.results);
-                    } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
-                     var statusText = response.err.response.status+" "+response.err.response.statusText;
-                      this.setState({ 
-                        submit_error: true, 
-                        submitting: false,
-                        buttonSpinnerTarget:"", 
-                        submitErrorStatus:statusText,
-                        submitErrorResponse:response.err.response.data ,
-                      });
-                    }
+              ingest_api_dataset_submit(
+                this.props.editingPublication.uuid,
+                JSON.stringify(data),
+                JSON.parse(localStorage.getItem("info")).groups_token
+              )
+                .then((response) => {
+                  if (response.status < 300) {
+                    this.props.onUpdated(response.results);
+                  } else {
+                    // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200
+                    var statusText =
+                      response.err.response.status +
+                      " " +
+                      response.err.response.statusText;
+                    this.setState({
+                      submit_error: true,
+                      submitting: false,
+                      buttonSpinnerTarget: "",
+                      submitErrorStatus: statusText,
+                      submitErrorResponse: response.err.response.data,
+                    });
+                  }
                 })
                 .catch((error) => {
-                    this.props.reportError(error);
-                    this.setState({ 
-                      submit_error: true, 
-                      submitting: false, 
-                      submitErrorResponse:error, 
-                      submitErrorStatus:error,
-                      buttonSpinnerTarget:"" });
-                 });
-            } else { // just update
-                    entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                      .then((response) => {
-                          if (response.status < 300) {
-                            this.setState({ 
-                              submit_error: false, 
-                              submitting: false, 
-                              });
-                            this.props.onUpdated(response.results);
-                          } else {
-                            this.setState({ 
-                              submit_error: true, 
-                              submitting: false, 
-                              submitErrorResponse:response.results.statusText,
-                              buttonSpinnerTarget:"" });
-                          }
-                }) 
+                  this.props.reportError(error);
+                  this.setState({
+                    submit_error: true,
+                    submitting: false,
+                    submitErrorResponse: error,
+                    submitErrorStatus: error,
+                    buttonSpinnerTarget: "",
+                  });
+                });
+            } else {
+              // just update
+              entity_api_update_entity(
+                this.props.editingPublication.uuid,
+                JSON.stringify(data),
+                JSON.parse(localStorage.getItem("info")).groups_token
+              )
+                .then((response) => {
+                  if (response.status < 300) {
+                    this.setState({
+                      submit_error: false,
+                      submitting: false,
+                    });
+                    this.props.onUpdated(response.results);
+                  } else {
+                    this.setState({
+                      submit_error: true,
+                      submitting: false,
+                      submitErrorResponse: response.results.statusText,
+                      buttonSpinnerTarget: "",
+                    });
+                  }
+                })
                 .catch((error) => {
                   this.props.reportError(error);
-                   this.setState({ 
-                    submit_error: true, 
-                    submitting: false, 
-                    submitErrorResponse:error.result.data,
-                    buttonSpinnerTarget:"" });
-                 });;
-              }
-          } else {  // new creations
+                  this.setState({
+                    submit_error: true,
+                    submitting: false,
+                    submitErrorResponse: error.result.data,
+                    buttonSpinnerTarget: "",
+                  });
+                });
+            }
+          } else {
+            // new creations
 
             if (this.state.lab_dataset_id) {
               data["lab_dataset_id"] = this.state.lab_dataset_id;
             }
             // the group info on a create, check for the defaults
-              if (this.state.selected_group && this.state.selected_group.length > 0) {
-                data["group_uuid"] = this.state.selected_group;
-              } else {
-                // If none selected, we need to pick a default BUT
-                // It must be from the data provviders, not permissions
-                data["group_uuid"] = this.state.groups_dataprovider[0].uuid;    
-              }
+            if (
+              this.state.selected_group &&
+              this.state.selected_group.length > 0
+            ) {
+              data["group_uuid"] = this.state.selected_group;
+            } else {
+              // If none selected, we need to pick a default BUT
+              // It must be from the data provviders, not permissions
+              data["group_uuid"] = this.state.groups_dataprovider[0].uuid;
+            }
 
-               ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                .then((response) => {
-                  if (response.status < 300) {
-                   //
-                     this.setState({
-                        display_doi: response.results.display_doi,
-                      });
-                    entity_api_get_globus_url(response.results.uuid, this.state.groupsToken)
+            ingest_api_create_dataset(
+              JSON.stringify(data),
+              JSON.parse(localStorage.getItem("info")).groups_token
+            )
+              .then((response) => {
+                if (response.status < 300) {
+                  //
+                  this.setState({
+                    display_doi: response.results.display_doi,
+                  });
+                  entity_api_get_globus_url(
+                    response.results.uuid,
+                    this.state.groupsToken
+                  )
                     .then((res) => {
-                      
-                      this.setState({
-                        globus_path: res.results,
-                      }, () => {
-                       
-                        this.props.onCreated({entity: response.results, globus_path: res.results}); // set as an entity for the Results
-                        this.onChangeGlobusURL(response.results, res.results);
-                      });
+                      this.setState(
+                        {
+                          globus_path: res.results,
+                        },
+                        () => {
+                          this.props.onCreated({
+                            entity: response.results,
+                            globus_path: res.results,
+                          }); // set as an entity for the Results
+                          this.onChangeGlobusURL(response.results, res.results);
+                        }
+                      );
                     })
                     .catch((err) => {
                       if (err.response && err.response.status === 401) {
@@ -1014,69 +1107,85 @@ class PublicationEdit extends Component {
                         window.location.reload();
                       }
                     });
-                  } else {
-                    this.setState({ 
-                      submit_error: true, 
-                      submitting: false, 
-                      submitErrorResponse:response.results.data.error,
-                      buttonSpinnerTarget:""} ,
-                      () => {
-                       //
-                      });
-                   
-                  }
-                
+                } else {
+                  this.setState(
+                    {
+                      submit_error: true,
+                      submitting: false,
+                      submitErrorResponse: response.results.data.error,
+                      buttonSpinnerTarget: "",
+                    },
+                    () => {
+                      //
+                    }
+                  );
+                }
               })
               .catch((err) => {
-                this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
+                this.setState(
+                  {
+                    submit_error: true,
+                    submitting: false,
+                    submitErrorResponse: err,
+                    buttonSpinnerTarget: "",
+                  },
                   () => {
-                   //
-                  });
+                    //
+                  }
+                );
               });
-          }  
+          }
         }
-      }else{
+      } else {
         //
-        this.setState({ 
-          submit_error: true, 
-          submitting: false, 
-          buttonSpinnerTarget:""
-          // submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again." 
+        this.setState({
+          submit_error: true,
+          submitting: false,
+          buttonSpinnerTarget: "",
+          // submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again."
         });
         // Alert("There was a problem handling your form. Please review the marked items and try again.");
       }
     });
   };
 
+  validateProcessor(stateKey) { //data_types
+
+    // var StateName = "ERIS";
+    // var stateTarget = this.state[StateName]
+    // console.debug("validateProcessor", StateName, stateTarget);
+
+    if(this.state[stateKey] && (!validateRequired(this.state[stateKey]))) {
+      this.setState((prevState) => ({
+        formErrors: { ...prevState.formErrors, [stateKey]: "This Field is Required" },
+      }));
+      return false;
+    } else {
+      this.setState((prevState) => ({
+        formErrors: { ...prevState.formErrors, [stateKey]: "" },
+      }));
+      return true;
+    }
+  
+  }
+
   validateForm() {
     return new Promise((resolve, reject) => {
-      let isValid = true;
-      if (!validateRequired(this.state.source_uuid_list)) {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid_list: "At least one Source is required" },
-        }));
-        isValid = false;
-        resolve(isValid);
-      } else {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, source_uuid_list: "" },
-        }));
+      let isValid =   true;
 
-      }
-      
-      if (this.state.data_types && (this.state.data_types.size === 0 || this.state.data_types === "")) {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, data_types: "required" },
-        }));
-        isValid = false;
-        resolve(isValid);
-      } else {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, data_types: "" },
-        }));
-      }
+      var requiredFields = ["source_uuid_list", "data_types","publication_venue","publication_status" ,"publication_date","publication_url" ];
+      requiredFields.forEach((field) => {
+        if(this.validateProcessor(field) ===  false) {
+          isValid = false;
+          resolve(isValid);
+        }
+      });
 
-      if (this.state.has_other_datatype && !validateRequired(this.state.other_dt)) {
+
+      if (
+        this.state.has_other_datatype &&
+        !validateRequired(this.state.other_dt)
+      ) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, other_dt: "required" },
         }));
@@ -1091,81 +1200,104 @@ class PublicationEdit extends Component {
       // do a check to on the data type to see what if it normally contains pii
       let pii_check = this.assay_contains_pii(this.state.data_types);
 
-      if (this.state.contains_human_genetic_sequences === true && pii_check === true) {
+      if (
+        this.state.contains_human_genetic_sequences === true &&
+        pii_check === true
+      ) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
+          formErrors: {
+            ...prevState.formErrors,
+            contains_human_genetic_sequences: "",
+          },
         }));
-      } else if(this.state.contains_human_genetic_sequences === false && pii_check === false){
+      } else if (
+        this.state.contains_human_genetic_sequences === false &&
+        pii_check === false
+      ) {
         this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
+          formErrors: {
+            ...prevState.formErrors,
+            contains_human_genetic_sequences: "",
+          },
         }));
       } else {
-          let emsg = "Human Genetic Sequences is required"
-          if (this.state.contains_human_genetic_sequences === false && pii_check === true) {
-            emsg = "The selected data type contains gene sequence information, please select Yes or change the data type."
-          } else if (this.state.contains_human_genetic_sequences === true && pii_check === false) {
-            emsg = "The selected data type doesn’t contain gene sequence information, please select No or change the data type."
-          } 
-          this.setState((prevState) => ({
-              formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: emsg },              
-          }));
-     
-          isValid = false;       
+        let emsg = "Human Genetic Sequences is required";
+        if (
+          this.state.contains_human_genetic_sequences === false &&
+          pii_check === true
+        ) {
+          emsg =
+            "The selected data type contains gene sequence information, please select Yes or change the data type.";
+        } else if (
+          this.state.contains_human_genetic_sequences === true &&
+          pii_check === false
+        ) {
+          emsg =
+            "The selected data type doesn’t contain gene sequence information, please select No or change the data type.";
+        }
+        this.setState((prevState) => ({
+          formErrors: {
+            ...prevState.formErrors,
+            contains_human_genetic_sequences: emsg,
+          },
+        }));
+
+        isValid = false;
       }
-      this.setState({ isValidData: isValid});
-      if(!isValid){
-        this.setState({ 
-          submit_error: true, 
-          submitting: false,  
-          buttonSpinnerTarget:""
+      this.setState({ isValidData: isValid });
+      if (!isValid) {
+        this.setState({
+          submit_error: true,
+          submitting: false,
+          buttonSpinnerTarget: "",
         });
         var errorSet = this.state.formErrors;
-        var result = Object.keys(errorSet).find(e => errorSet[e].length);
+        var result = Object.keys(errorSet).find((e) => errorSet[e].length);
       }
       resolve(isValid);
     });
   }
 
-  assembleSourceAncestorData(source_uuids){
+  assembleSourceAncestorData(source_uuids) {
     for (var i = 0; i < source_uuids.length; i++) {
       var dst = generateDisplaySubtype(source_uuids[i]);
-      source_uuids[i].display_subtype=dst;
+      source_uuids[i].display_subtype = dst;
     }
-  try {
-    return source_uuids
-  } catch {
-   //
-  }
- 
-}
-
-  // only handles one selection at this time
-  getSourceAncestor(source_uuids){
     try {
-      return source_uuids[0].hubmap_id;  // just get the first one
+      return source_uuids;
     } catch {
-     //
+      //
     }
-    return ""
   }
 
+  // only handles one selection at this time
+  getSourceAncestor(source_uuids) {
+    try {
+      return source_uuids[0].hubmap_id; // just get the first one
+    } catch {
+      //
+    }
+    return "";
+  }
 
   // only handles one selection at this time
-  getSourceAncestorTypes(type){
+  getSourceAncestorTypes(type) {
     // Give it the type we're looking for
-    var ancestorTypes = this.props.editingPublication.direct_ancestors.map((ancestor) => ancestor.entity_type);
-    // 
-    return ancestorTypes.includes(type)
+    var ancestorTypes = this.props.editingPublication.direct_ancestors.map(
+      (ancestor) => ancestor.entity_type
+    );
+    //
+    return ancestorTypes.includes(type);
   }
 
-    // only handles one selection at this time
-  getSourceAncestorEntity(source_uuids){
+  // only handles one selection at this time
+  getSourceAncestorEntity(source_uuids) {
     try {
-      return source_uuids[0];  // just get the first one
+      return source_uuids[0]; // just get the first one
     } catch {
-     //
+      //
     }
-    return ""
+    return "";
   }
 
   //note: this code assumes that source_uuids is a sorted list or a single value
@@ -1241,11 +1373,7 @@ class PublicationEdit extends Component {
       return display_source_id;
       //in this case there is only one value
     } else {
-      if (
-        source_uuids &&
-        source_uuids[0] &&
-        source_uuids[0].hubmap_id
-      ) {
+      if (source_uuids && source_uuids[0] && source_uuids[0].hubmap_id) {
         return source_uuids[0].hubmap_id;
       } else {
         return source_uuids[0];
@@ -1253,76 +1381,35 @@ class PublicationEdit extends Component {
     }
   }
 
-  renderButtonOverlay(){
-    return ( // @TODO: Improved form-bottom Control Overlay?
-      <></>
-    )
+  renderButtonOverlay() {
+    return (
+      // @TODO: Improved form-bottom Control Overlay?
+      // <Backdrop
+      //   sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      //   open={true}
+      // />
+      <div className="overlay"></div>
+    );
   }
 
   renderButtons() {
+    var latestCheck = !this.props.editingPublication.next_revision_uuid ||this.props.editingPublication.next_revision_uuid === undefined;
+    var writeCheck = this.state.has_write_priv
+    var versCheck = this.state.has_version_priv
+    var pubCheck = true // this.props.editingPublication.status === "Published"
 
-    if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
-            && this.state.previous_revision_uuid === undefined 
-            && this.state.status.toUpperCase() === "PUBLISHED") {
-         return (
-           <div className="buttonWrapRight">
-                {this.reprocessButton()}
-                {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.cancelButton()}
-            </div>
-          )
-    }
-            
-    if (this.state.writeable === false && this.state.has_version_priv === false){            
-      return (
-            <div className="buttonWrapRight">
-                {this.cancelButton()} 
-            </div>
-          )
-    } else {
-
-      if (["NEW", "INVALID", "REOPENED", "ERROR"].includes( 
-              this.state.status.toUpperCase())) {
-        return (
-            <div className="buttonWrapRight">
-                {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.state.has_submit_priv && (
-                  this.aButton("processing", "Submit"))
-                }
-                {this.cancelButton()}
-            </div>
-          )
-      }
-      if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
-        return (
-            <div className="buttonWrapRight">
-                {this.aButton("published", "Publish")}
-                {this.cancelButton()}
-            </div>
-          )
-      }   
-      if (this.state.status.toUpperCase() === 'PUBLISHED' ) {
-        return (
-            <div className="buttonWrapRight">
-                {this.renderNewVersionButtons()}
-                {this.aButton("reopened", "Reopen")}
-                {this.aButton("unpublished", "UnPublish")}
-                {this.cancelButton()}
-            </div>
-          )
-      } 
-      if (this.state.status.toUpperCase() === 'QA') {
-        return (
-            <div className="buttonWrapRight">
-                {this.aButton("hold", "Hold")}
-                {this.aButton("reopened", "Reopen")}
-                {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
-                {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.cancelButton()}
-            </div>
-          )
-      }      
-    }
+    return (
+      <div className="buttonWrapRight">
+        {this.renderButtonOverlay()}
+        {pubCheck && versCheck && latestCheck && (
+          <>{this.renderNewVersionButtons()}</>
+        )}
+        {pubCheck && writeCheck && (
+           <>{this.saveButton()}</>
+        )}
+        {this.cancelButton()}
+      </div>
+    );
   }
 
   renderNewVersionButtons() {
@@ -1330,313 +1417,349 @@ class PublicationEdit extends Component {
     dataset.status == 'Published'
     user has write access for the dataset.group_uuid/group_name
     dataset.next_revision_uuid is null (or missing altogether)*/
-  
-    var sampleSource = this.getSourceAncestorTypes("Sample");  
-    var datasetStatus = this.props.editingPublication.status === "Published";
-    var writability = this.state.has_version_priv;
-    var latestVersion = (!this.props.editingPublication.next_revision_uuid  ||  this.props.editingPublication.next_revision_uuid === undefined);
-    if(sampleSource && datasetStatus && writability && latestVersion){
-    // if(true===true){
+    // var sampleSource = this.getSourceAncestorTypes("Sample"); // Pubs only have dataset ancestors 
+    // var datasetStatus = this.props.editingPublication.status === "Published";
+    // var writability = true;
+    // var writability = this.state.has_version_priv;
+    // var latestVersion =
+    //   !this.props.editingPublication.next_revision_uuid ||
+    //   this.props.editingPublication.next_revision_uuid === undefined;
+    // if (datasetStatus && writability && latestVersion) {
+
+
+    // Checking before even calling this function now
       return (
-        <Button variant="contained" sx={{minWidth:"130px"}} onClick={() => this.handleNewVersion()}> 
-          {this.state.submitting && (
-            <FontAwesomeIcon
-              className='inline-icon'
-              icon={faSpinner}
-              spin
-            />
+        <Button
+          variant="contained"
+          sx={{ minWidth: "130px" }}
+          onClick={() => this.handleNewVersion()}>
+          {this.state.submitting && this.state.buttonSpinnerTarget==="newversion"(
+            <FontAwesomeIcon className="inline-icon" icon={faSpinner} spin />
           )}
-          {!this.state.submitting && "New Version"}         
-        </Button> )
-    } 
+          {!this.state.submitting && (
+            <>New Version</>
+          )}
+        </Button>
+      );
+    // }
   }
 
-
-
   renderVersionNav() {
-
     var next = "";
     var prev = "";
-    
+
     return (
-      <Box sx={{width:"50%"}}>
-        {this.props.editingPublication.next_revision_uuid  && (
-          <>Next Version: <Button variant="text" onClick={() => this.handleVersionNavigate('next')}>   {this.state.nextHID}</Button></>
+      <Box sx={{ width: "50%" }}>
+        {this.props.editingPublication.next_revision_uuid && (
+          <>
+            -+Next Version:{" "}
+            <Button
+              variant="text"
+              onClick={() => this.handleVersionNavigate("next")}>
+              {" "}
+              {this.state.nextHID}
+            </Button>
+          </>
         )}
-        {this.props.editingPublication.previous_revision_uuid  && (
-          <>Previous Version: <Button variant="text" onClick={() => this.handleVersionNavigate('prev')}>{this.state.prevHID}</Button></>
+        {this.props.editingPublication.previous_revision_uuid && (
+          <>
+            Previous Version:{" "}
+            <Button
+              variant="text"
+              onClick={() => this.handleVersionNavigate("prev")}>
+              {this.state.prevHID}
+            </Button>
+          </>
         )}
       </Box>
-    )}
+    );
+  }
 
   // Cancel button
   cancelButton() {
-    return(<React.Fragment>
-        <div >
-          <Button
-              type='button'
-              variant="outlined"
-              onClick={() => this.handleCancel()}>
-              Cancel
-          </Button>
-      </div>
-       </React.Fragment>
-      )
+    return (
+      <Button
+        type="button"
+        variant="outlined"
+        onClick={() => this.handleCancel()}>
+        Cancel
+      </Button>
+    );
+  }
+
+  // Save button
+  saveButton() {
+    return (
+      <Button
+        type="button"
+        variant="contained"
+        onClick={() => this.handleSubmit("save")}>
+        {this.state.buttonSpinnerTarget === "save" && (
+          <span>
+            <FontAwesomeIcon icon={faSpinner} spin />
+          </span>
+        )}
+        {this.state.buttonSpinnerTarget !=="save" &&
+         <>Save</>
+        }
+
+
+      </Button>
+    );
   }
 
   // General button
   aButton(newstate, which_button, event) {
-    return (<React.Fragment>
-      <div >
-        <Button
-          type='button'
-          name={"button-" + which_button}
-          variant="contained"
-          disabled={this.state.submitting}
-          onClick={ 
-            (e) => {
-                this.setState({ 
-                  buttonSpinnerTarget:which_button.toLowerCase()
-                },() => {  
+    return (
+      <React.Fragment>
+        <div>
+          <Button
+            type="button"
+            name={"button-" + which_button}
+            variant="contained"
+            disabled={this.state.submitting}
+            onClick={(e) => {
+              this.setState(
+                {
+                  buttonSpinnerTarget: which_button.toLowerCase(),
+                },
+                () => {
                   //
-                })
-                this.handleButtonClick(newstate)
-            }
-        }
-          data-status={newstate.toLowerCase()} 
-          // data-status={this.state.status.toLowerCase()} This just grabs what the current state is, not the goal state passed in? 
-        >
-          {this.state.buttonSpinnerTarget===which_button.toLowerCase()  && (
-            <span>              
-              <FontAwesomeIcon
-                icon={faSpinner}
-                spin
-                />
-            </span>
-          )}
-          {this.state.buttonSpinnerTarget!==which_button.toLowerCase()&& which_button}
-        </Button>
+                }
+              );
+              this.handleButtonClick(newstate);
+            }}
+            data-status={newstate.toLowerCase()}
+            // data-status={this.state.status.toLowerCase()} This just grabs what the current state is, not the goal state passed in?
+          >
+            {this.state.buttonSpinnerTarget === which_button.toLowerCase() && (
+              <span>
+                <FontAwesomeIcon icon={faSpinner} spin />
+              </span>
+            )}
+            {this.state.buttonSpinnerTarget !== which_button.toLowerCase() &&
+              which_button}
+          </Button>
         </div>
-        </React.Fragment>
-      )
+      </React.Fragment>
+    );
   }
 
   reprocessButton() {
-    return (<React.Fragment>
-      <div >
-        <Button
-          variant="contained"
-          type='button'
-          disabled={this.state.submitting}
-          onClick={() =>
-            this.handleReprocess()
-          }
-          data-status={this.state.status.toLowerCase()}
-        >
-          {this.state.submitting && (
-            <FontAwesomeIcon
-              className='inline-icon'
-              icon={faSpinner}
-              spin
-            />
-          )}
-          {!this.state.submitting && "Reprocess"}
-        </Button>
+    return (
+      <React.Fragment>
+        <div>
+          <Button
+            variant="contained"
+            type="button"
+            disabled={this.state.submitting}
+            onClick={() => this.handleReprocess()}
+            data-status={this.state.status.toLowerCase()}>
+            {this.state.submitting && (
+              <FontAwesomeIcon className="inline-icon" icon={faSpinner} spin />
+            )}
+            {!this.state.submitting && "Reprocess"}
+          </Button>
         </div>
-        </React.Fragment>
-      )
+      </React.Fragment>
+    );
   }
 
-
-
   errorClass(error) {
+    // console.debug("errorClass", error);
     if (error === "valid") return "is-valid";
-    return error.length === 0 ? "" : "is-invalid";
+    if (error === "invalid") return "is-invalid";
+    if (error && error.length && error.length === 0) return "is-invalid";
+
+    // return error.length === 0 ? "" : "is-invalid";
   }
 
   onChangeGlobusLink(newLink, newPublication) {
-    
-    const {name, display_doi, doi} = newPublication;
+    const { name, display_doi, doi } = newPublication;
     this.setState({
-      
       globus_url: newLink,
-       name: name, 
-       display_doi: display_doi, 
-       doi: doi, 
-       createSuccess: true});
+      name: name,
+      display_doi: display_doi,
+      doi: doi,
+      createSuccess: true,
+    });
   }
-
 
   onChangeGlobusURL() {
     // REMEMBER the props from the new wrapper / Forms
     // Differs from Main wrapper
-    
-    this.props.changeLink(this.state.globus_path, { 
+
+    this.props.changeLink(this.state.globus_path, {
       name: this.state.lab_dataset_id,
       display_doi: this.state.display_doi,
       doi: this.state.doi,
     });
   }
 
- renderOneAssay(val, idx) {
-  var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+  renderOneAssay(val, idx) {
+    var idstr = "dt_" + val.name.toLowerCase().replace(" ", "_");
 
-  return (<div className='form-group form-check' key={idstr}>
-    <input type='radio' className='form-check-input' name={val.name} key={idstr} id={idstr}
-
-    onChange={this.handleInputChange} checked={this.state.data_types.has(val.name)}
-    />
-    <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
-    </div>
-         )
-    }
+    return (
+      <div className="form-group form-check" key={idstr}>
+        <input
+          type="radio"
+          className="form-check-input"
+          name={val.name}
+          key={idstr}
+          id={idstr}
+          onChange={this.handleInputChange}
+          checked={this.state.data_types.has(val.name)}
+        />
+        <label className="form-check-label" htmlFor={idstr}>
+          {val.description}
+        </label>
+      </div>
+    );
+  }
 
   isAssayCheckSet(assay) {
-    ////
-    try {    
+    try {
       if (this.props.editingPublication.data_types) {
         return this.props.editingPublication.data_types.includes(assay);
-      } else{
-        return false
+      } else {
+        return false;
       }
     } catch {
-      return ("Error");
-     }
-   }
+      return "Error";
+    }
+  }
 
   renderAssayColumn(min, max) {
     // Hijacking Select options based on Primary DT status
-    if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
-      return (
-        this.props.dtl_primary.slice(min, max).map((val, idx) =>
-                    {return this.renderAssay(val, idx)})
-             )
-    }else{  // false = Not primary DT, set options to full
-      return (
-        this.props.dtl_all.slice(min, max).map((val, idx) =>{
-          return this.renderAssay(val, idx)
-        })
-      )
+    if (this.props.dtl_status || this.props.newForm) {
+      // true = primary dt, set options to primary
+      return this.props.dtl_primary.slice(min, max).map((val, idx) => {
+        return this.renderAssay(val, idx);
+      });
+    } else {
+      // false = Not primary DT, set options to full
+      return this.props.dtl_all.slice(min, max).map((val, idx) => {
+        return this.renderAssay(val, idx);
+      });
     }
-
-	 
-    }
-
+  }
 
   renderAssay(val) {
     return (
-      <option key={val.name} value={val.name} id={val.name}>{val.description}</option>
-      )
+      <option key={val.name} value={val.name} id={val.name}>
+        {val.description}
+      </option>
+    );
   }
 
   renderListAssay(val) {
-    return (
-      <li key={val}>{val}</li>
-      )
+    return <li key={val}>{val}</li>;
   }
 
   renderStringAssay(val) {
-    return (
-      {val}
-      )
+    return { val };
   }
 
   renderDisabledNonprimaryDT(val) {
-    return (
-      <li key={val}>{val}</li>
-      )
+    return <li key={val}>{val}</li>;
   }
 
-
   renderMultipleAssays() {
-    var arr = Array.from(this.state.data_types)
-    return (
-      arr.map((val) =>
-          {return this.renderListAssay(val)})
-         )
+    var arr = Array.from(this.state.data_types);
+    return arr.map((val) => {
+      return this.renderListAssay(val);
+    });
+  }
+
+  renderAssayArray() {
+    var len = 0;
+    var dtlistLen = this.state.dataTypeDropdown.length;
+    if (this.props.newForm) {
+      dtlistLen = this.props.dtl_primary.length;
+    }
+    if (
+      this.props.editingPublication &&
+      this.props.editingPublication.data_types
+    ) {
+      len = this.props.editingPublication.data_types.length;
+    } else {
+      //console.debug("no editingPublication");
     }
 
-   
-  renderAssayArray() {
-      var len = 0;
-      var dtlistLen = this.state.dataTypeDropdown.length;
-      if(this.props.newForm){
-        dtlistLen = this.props.dtl_primary.length;
-      }
-      if(this.props.editingPublication && this.props.editingPublication.data_types) {
-        len = this.props.editingPublication.data_types.length;
-      }else{
-        //console.debug("no editingPublication");
-      }
-
-       if (len > 1) {
-        return (<>
-          <ul>
-            {this.renderMultipleAssays()}
-          </ul>
-
-          </>)
-      }else{ 
-       
-  	    return (<>
-  		    <Select 
+    if (len > 1) {
+      return (
+        <>
+          <ul>{this.renderMultipleAssays()}</ul>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Select
             native
             name="dt_select"
-            className="form-select" 
-            disabled={ (!this.state.writeable || !this.state.assay_type_primary) || this.state.disableSelectDatatype }
-            value={this.state.selected_dt} 
-            id="dt_select" 
+            className="form-select"
+            disabled={
+              !this.state.writeable ||
+              !this.state.assay_type_primary ||
+              this.state.disableSelectDatatype
+            }
+            value={this.state.selected_dt}
+            id="dt_select"
             onChange={this.handleInputChange}>
             <option></option>
             {this.renderAssayColumn(0, dtlistLen)}
           </Select>
-          </> )
-   
-      }    
+        </>
+      );
     }
-   
+  }
+
   assay_contains_pii(assay) {
-    let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
+    let assay_val = [...assay.values()][0]; // only one assay can now be selected, the Set() is older code
     for (let i in this.props.dataTypeList) {
-      let e = this.props.dataTypeList[i]
-      if (e['name'] === assay_val) {
-          return e['contains-pii']
+      let e = this.props.dataTypeList[i];
+      if (e["name"] === assay_val) {
+        return e["contains-pii"];
       }
     }
-    return false
+    return false;
   }
 
   render() {
     return (
       <React.Fragment>
         <form className="expanded-form">
-          <div className='row'>
-          <div className='col-md-6'>
-            <h3>
-              <span
-                className={"badge " + this.state.badge_class}
-                style={{ cursor: "pointer" }}
-                onClick={() =>
-                  this.showErrorMsgModal(
-                    this.props.editingPublication.pipeline_message
-                )}> 
+          <div className="row">
+            <div className="col-md-6">
+              <h3>
+                <span
+                  className={"badge " + this.state.badge_class}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    this.showErrorMsgModal(
+                      this.props.editingPublication.pipeline_message
+                    )
+                  }>
                   {this.state.status}
-              </span>
-                
-                
-              {this.props.editingPublication && !this.props.newForm &&(
-                <span className="mx-1"> HuBMAP Publication ID  {this.state.display_doi} </span>
-              )}
-                
-              {(!this.props.editingPublication || this.props.newForm) && (
-                <span className="mx-1">Registering a Publication  {this.state.display_doi} </span>
-              )}
+                </span>
 
+                {this.props.editingPublication && !this.props.newForm && (
+                  <span className="mx-1">
+                    {" "}
+                    HuBMAP Publication ID {this.state.display_doi}{" "}
+                  </span>
+                )}
+
+                {(!this.props.editingPublication || this.props.newForm) && (
+                  <span className="mx-1">
+                    Registering a Publication {this.state.display_doi}{" "}
+                  </span>
+                )}
               </h3>
               <p>
-              <strong>
+                <strong>
                   <big>
-
                     {this.props.editingPublication &&
                       this.props.editingPublication.title}
                   </big>
@@ -1644,441 +1767,624 @@ class PublicationEdit extends Component {
               </p>
 
               <p>
-              <strong>
+                <strong>
                   {this.state.globus_path && (
                     <a
                       href={this.state.globus_path}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                        To add or modify data files go to the data repository
-                      <FontAwesomeIcon icon={faExternalLinkAlt} style={{ marginLeft: "5px" }} />
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      To add or modify data files go to the data repository
+                      <FontAwesomeIcon
+                        icon={faExternalLinkAlt}
+                        style={{ marginLeft: "5px" }}
+                      />
                     </a>
                   )}
-              </strong>
-            </p> 
-
-
-         
-          </div>
-          <div className='col-md-6'>
-          
-          
-            
-          <Alert severity="error" className='alert alert-danger' role='alert'>
-          <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
-          data containing any of the{" "}
-          <span
-            style={{ cursor: "pointer" }}
-            className='text-primary'
-            onClick={this.showModal}
-          >
-            18 identifiers specified by HIPAA
-          </span>
-        </Alert>
-        
-
-        {this.renderVersionNav()}
-
-        
-
-
-
-      {this.props.editingPublication && this.props.editingPublication.upload && this.props.editingPublication.upload.uuid  && (
-        <Box sx={{ display: 'flex'}} >
-          <Box  sx={{ width:"100%" }}><strong>This Publication is contained in the data Upload </strong> 
-            <Button 
-              variant="text"
-              onClick={this.handlePublicationSelect}>  
-              {this.props.editingPublication.upload.hubmap_id}
-            </Button>
-          </Box>
-        </Box>
-    )}
-      
-        
-
-    </div>  
-          </div>
-
-          <div className='row'>
-                  
-          </div>
-
-          
-          <div className='form-group'>
-              {this.renderSources()}
-              
-              <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
-                <DialogContent>
-                  <SearchComponent
-                    select={this.handleSelectClick}
-                    custom_title="Search for a Source ID for your Publication"
-                    filter_type="Publication"
-                    modecheck="Source"
-                  />
-                </DialogContent>  
-                <DialogActions>
-                  <Button onClick={this.cancelLookUpModal} variant="contained" color="primary">
-                    Close
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                </strong>
+              </p>
             </div>
+            <div className="col-md-6">
+              <Alert
+                severity="error"
+                className="alert alert-danger"
+                role="alert">
+                <FontAwesomeIcon icon={faUserShield} /> - Do not upload any data
+                containing any of the{" "}
+                <span
+                  style={{ cursor: "pointer" }}
+                  className="text-primary"
+                  onClick={this.showModal}>
+                  18 identifiers specified by HIPAA
+                </span>
+              </Alert>
 
-          <div className='form-group'>
-            <label htmlFor='lab_dataset_id'>
-              Lab Name or ID
-            </label>
-              <span className="px-2">
+              {this.renderVersionNav()}
+
+              {this.props.editingPublication &&
+                this.props.editingPublication.upload &&
+                this.props.editingPublication.upload.uuid && (
+                  <Box sx={{ display: "flex" }}>
+                    <Box sx={{ width: "100%" }}>
+                      <strong>
+                        This Publication is contained in the data Upload{" "}
+                      </strong>
+                      <Button
+                        variant="text"
+                        onClick={this.handlePublicationSelect}>
+                        {this.props.editingPublication.upload.hubmap_id}
+                      </Button>
+                    </Box>
+                  </Box>
+                )}
+            </div>
+          </div>
+
+          <div className="row"></div>
+
+          <div className="form-group">
+            {this.renderSources()}
+
+            <Dialog
+              fullWidth={true}
+              maxWidth="lg"
+              onClose={this.hideLookUpModal}
+              aria-labelledby="source-lookup-dialog"
+              open={this.state.LookUpShow ? this.state.LookUpShow : false}>
+              <DialogContent>
+                <SearchComponent
+                  select={this.handleSelectClick}
+                  custom_title="Search for a Source ID for your Publication"
+                  filter_type="Publication"
+                  modecheck="Source"
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={this.cancelLookUpModal}
+                  variant="contained"
+                  color="primary">
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </div>
+
+          {/* tITLE */}
+          <div className="form-gropup mb-4">
+            <label htmlFor="title">
+              Title<span className="text-danger">*</span>
+              <span>
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for='lab_dataset_id_tooltip'
+                  data-for="title"
                 />
                 <ReactTooltip
-                  id='lab_dataset_id_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>Lab Name or ID</p>
+                  id="title_tooltip"
+                  className={"tooltip"}
+                  place="top"
+                  type="info"
+                  effect="solid">
+                  <p>DOI</p>
                 </ReactTooltip>
-                </span>
-            {this.state.writeable && (
+              </span>
+            </label>
+            {!this.state.readOnly && (
+              <div>
                 <input
-                  type='text'
-                  name='lab_dataset_id'
-                  id='lab_dataset_id'
+                  ref={this.state.editingPublication.title}
+                  type="text"
+                  name="title"
+                  id="title"
                   className={
                     "form-control " +
-                    this.errorClass(this.state.formErrors.lab_dataset_id)
+                    this.errorClass(this.state.formErrors.title) +
+                    " "
                   }
-                  placeholder='Lab Name or ID'
                   onChange={this.handleInputChange}
-                  value={this.state.lab_dataset_id}
+                  value={this.state.editingPublication.title}
+                  placeholder="Title"
                 />
+              </div>
             )}
-
-            {!this.state.writeable && (
-              <div className='col-sm-9 col-form-label'>
-                <p>{this.state.lab_dataset_id}</p>
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  id="title"
+                  value={this.state.editingPublication.title}></input>
               </div>
             )}
           </div>
 
-
-            <div className='form-group'>
-            <label
-              htmlFor='description'>
-              Description 
-            </label>
-            <span className="px-2">
+          {/* Venue */}
+          <div className="form-gropup mb-4">
+            <label htmlFor="publication_venue">
+              Venue <span className="text-danger">*</span>
+              <span>
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for='description_tooltip'
+                  data-for="publication_venue"
                 />
                 <ReactTooltip
-                  id='description_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>Description Tips</p>
+                  id="publication_venue_tooltip"
+                  className={"tooltip"}
+                  place="top"
+                  type="info"
+                  effect="solid">
+                  <p>Venue</p>
                 </ReactTooltip>
               </span>
+            </label>
+            {!this.state.readOnly && (
+              <div>
+                <input
+                  ref={this.state.editingPublication.publication_venue}
+                  type="text"
+                  name="publication_venue"
+                  id="publication_venue"
+                  className={
+                    "form-control " +
+                    this.errorClass(this.state.formErrors.publication_venue) +
+                    " "
+                  }
+                  onChange={this.handleInputChange}
+                  // value={this.state.editingPublication.publication_venue}
+                  placeholder="Venue"
+                />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  name="publication_venue"
+                  id="publication_venue"
+                  value={this.state.editingPublication.publication_venue}></input>
+              </div>
+            )}
+          </div>
+
+          {/* Pub Date */}
+          <div className="form-gropup mb-4">
+            <label htmlFor="publication_date">
+              Publication Date <span className="text-danger">*</span>
+              
+              <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="publication_date"
+                />
+                <ReactTooltip
+                  id="publication_date_tooltip"
+                  className={"tooltip"}
+                  place="top"
+                  type="info"
+                  effect="solid">
+                  <p>Date Of Publication</p>
+                </ReactTooltip>
+              </span>
+            </label>
+            {!this.state.readOnly && (
+              <div>
+                {/* <DatePicker selected={this.props.editingPublication.publication_date} onChange={(date) => this.handleDateChange(date)} /> */}
+                {/* <DatePicker 
+                    name="publication_date"
+                    id="publication_date"
+                    className={ "form-control " + this.errorClass(this.state.formErrors.publication_date) +" "}
+                    onChange={this.handleInputChange}/> */}
+                <input
+                  ref={this.publication_date}
+                  type="text"
+                  name="publication_date"
+                  id="publication_date"
+                  className={
+                    "form-control " +
+                    this.errorClass(this.state.formErrors.publication_date) +
+                    " "
+                  }
+                  onChange={this.handleInputChange}
+                  value={this.state.editingPublication.publication_date}
+                  placeholder="Publication Date"
+                />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  id="publication_date"
+                  value={
+                    this.props.editingPublication.publication_date
+                  }></input>
+              </div>
+            )}
+          </div>
+
+          {/* Pub DOI */}
+          <div className="form-gropup mb-4">
+            <label htmlFor="publication_doi">
+              Publication DOI <span className="text-danger">*</span>
+              
+              <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="publication_doi"
+                />
+                <ReactTooltip
+                  id="publication_doi_tooltip"
+                  className={"tooltip"}
+                  place="top"
+                  type="info"
+                  effect="solid">
+                  <p>DOI</p>
+                </ReactTooltip>
+              </span>
+            </label>
+            {!this.state.readOnly && (
+              <div>
+                <input
+                  ref={this.props.editingPublication.publication_doi}
+                  type="text"
+                  name="publication_doi"
+                  id="publication_doi"
+                  className={
+                    "form-control " +
+                    this.errorClass(this.state.formErrors.publication_doi) +
+                    " "
+                  }
+                  onChange={this.handleInputChange}
+                  value={this.state.editingPublication.publication_doi}
+                  placeholder="Publication DOI"
+                />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  id="publication_doi"
+                  value={this.state.editingPublication.publication_doi}></input>
+              </div>
+            )}
+          </div>
+
+          {/* pub URL */}
+          <div className="form-gropup mb-4">
+            <label htmlFor="publication_status">
+              Has this Publication been Published? <span className="text-danger">*</span>
+              <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="publication_status"
+                />
+                <ReactTooltip
+                  id="publication_status_tooltip"
+                  className={"tooltip"}
+                  place="top"
+                  type="info"
+                  effect="solid">
+                  <p>Is this publication Published?</p>
+                </ReactTooltip>
+              </span>
+            </label>
+            {!this.state.readOnly && (
+              <div className="col-1">
+                <FormControlLabel control={
+                  <Checkbox
+                    required
+                    value={this.state.editingPublication.publication_status}
+                    inputRef={this.props.editingPublication.publication_status}
+                    inputProps={{ 'aria-label': 'publication_status' }}
+                    className={"form-control " +this.errorClass(this.state.formErrors.publication_status) }
+                    onChange={this.handleInputChange}
+                    name="publication_status"
+                    id="publication_status"
+                    />} 
+                  label="Yes" />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <FormControlLabel control={
+                  <Checkbox
+                    required
+                    disabled
+                    value={this.state.editingPublication.publication_status}
+                    inputRef={this.props.editingPublication.publication_status}
+                    inputProps={{ 'aria-label': 'publication_status' }}
+                    className={"form-control " +this.errorClass(this.state.formErrors.publication_status) }
+                    onChange={this.handleInputChange}
+                    name="publication_status"
+                    id="publication_status"
+                    />} 
+                  label="Yes" />
+              </div>
+            )}
+          </div>
+          
+          {/* pub URL */}
+          <div className="form-gropup mb-4">
+            <label htmlFor="publication_url">
+              Publication URL <span className="text-danger">*</span>
+              <span>
+                <FontAwesomeIcon
+                  icon={faQuestionCircle}
+                  data-tip
+                  data-for="publication_url"
+                />
+                <ReactTooltip
+                  id="publication_url_tooltip"
+                  className={"tooltip"}
+                  place="top"
+                  type="info"
+                  effect="solid">
+                  <p>The URL at the publishers server for print/pre-print</p>
+                </ReactTooltip>
+              </span>
+            </label>
+            {!this.state.readOnly && (
+              <div>
+                <input
+                  ref={this.props.editingPublication.publication_url}
+                  type="text"
+                  name="publication_url"
+                  id="publication_url"
+                  className={"form-control " +this.errorClass(this.state.formErrors.publication_url) }
+                  onChange={this.handleInputChange}
+                  value={this.state.editingPublication.publication_url}
+                  placeholder="Publication URL"
+                />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  id="publication_url"
+                  value={this.state.editingPublication.publication_url}></input>
+              </div>
+            )}
+          </div>
+
+          {/* Issue  */}
+          <div className="form-group mb-4">
+            <label htmlFor="issue">
+              Issue{" "}
+              <FontAwesomeIcon
+                icon={faQuestionCircle}
+                data-tip
+                data-for="issue_tooltip"
+              />
+              <ReactTooltip
+                id="issue_tooltip"
+                className={"tooltip"}
+                place="top"
+                type="info"
+                effect="solid">
+                <p>issue.</p>
+              </ReactTooltip>
+            </label>
+            {!this.state.readOnly && (
+              <div>
+                <textarea
+                  name="issue"
+                  id="issue"
+                  cols="5"
+                  rows="1"
+                  className="form-control"
+                  value={this.state.editingPublication.issue}
+                  onChange={this.handleInputChange}
+                />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  id="static_issue"
+                  value={this.state.editingPublication.issue}></input>
+              </div>
+            )}
+          </div>
+
+          {/* Volume  */}
+          <div className="form-group mb-4">
+            <label htmlFor="volume">
+              Volume{" "}
+              <FontAwesomeIcon
+                icon={faQuestionCircle}
+                data-tip
+                data-for="volume_tooltip"
+              />
+              <ReactTooltip
+                id="volume_tooltip"
+                className={"tooltip"}
+                place="top"
+                type="info"
+                effect="solid">
+                <p>volume.</p>
+              </ReactTooltip>
+            </label>
+            {!this.state.readOnly && (
+              <div>
+                <textarea
+                  name="volume"
+                  id="volume"
+                  cols="5"
+                  rows="1"
+                  className="form-control"
+                  value={this.state.editingPublication.volume}
+                  onChange={this.handleInputChange}
+                />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  id="static_volume"
+                  value={this.state.editingPublication.volume}></input>
+              </div>
+            )}
+          </div>
+
+          {/* PageOrArticle  */}
+          <div className="form-group mb-4">
+            <label htmlFor="pageOrArticle">
+              Page Or Article #{" "}
+              <FontAwesomeIcon
+                icon={faQuestionCircle}
+                data-tip
+                data-for="pageOrArticle_tooltip"
+              />
+              <ReactTooltip
+                id="pageOrArticle_tooltip"
+                className={"tooltip"}
+                place="top"
+                type="info"
+                effect="solid">
+                <p>The pages or the aricle number in the publication journal</p>
+              </ReactTooltip>
+            </label>
+            {!this.state.readOnly && (
+              <div>
+                <textarea
+                  name="pageOrArticle"
+                  id="pageOrArticle"
+                  cols="5"
+                  rows="1"
+                  className="form-control"
+                  value={this.state.editingPublication.pageOrArticle}
+                  onChange={this.handleInputChange}
+                />
+              </div>
+            )}
+            {this.state.readOnly && (
+              <div>
+                <input
+                  type="text"
+                  readOnly
+                  className="form-control"
+                  id="static_volume"
+                  value={this.state.editingPublication.volume}></input>
+              </div>
+            )}
+          </div>
+
+          {/* Lab name or ID */}
+          <div className="form-group">
+            <label htmlFor="lab_dataset_id">Lab Name or ID</label>
+            <span className="px-2">
+              <FontAwesomeIcon
+                icon={faQuestionCircle}
+                data-tip
+                data-for="lab_dataset_id_tooltip"
+              />
+              <ReactTooltip
+                id="lab_dataset_id_tooltip"
+                place="top"
+                type="info"
+                effect="solid">
+                <p>Lab Name or ID</p>
+              </ReactTooltip>
+            </span>
+            {this.state.writeable && (
+              <input
+                type="text"
+                name="lab_dataset_id"
+                id="lab_dataset_id"
+                className={
+                  "form-control " +
+                  this.errorClass(this.state.formErrors.lab_dataset_id)
+                }
+                placeholder="Lab Name or ID"
+                onChange={this.handleInputChange}
+                value={this.state.lab_dataset_id}
+              />
+            )}
+            {!this.state.writeable && (
+              <div className="col-sm-9 col-form-label">
+                <p>{this.state.lab_dataset_id}</p>
+              </div>
+            )}
+          </div>
+            
+          {/* Description / Abstract */}
+          <div className="form-group">
+            <label htmlFor="description">Abstract</label>
+            <span className="px-2">
+              <FontAwesomeIcon
+                icon={faQuestionCircle}
+                data-tip
+                data-for="description_tooltip"
+              />
+              <ReactTooltip
+                id="description_tooltip"
+                place="top"
+                type="info"
+                effect="solid">
+                <p>Description Tips</p>
+              </ReactTooltip>
+            </span>
             {this.state.writeable && (
               <React.Fragment>
                 <div>
                   <textarea
-                    type='text'
-                    name='description'
-                    id='description'
-                    cols='30'
-                    rows='5'
-                    className='form-control'
-                    placeholder='Description'
+                    type="text"
+                    name="description"
+                    id="description"
+                    cols="30"
+                    rows="5"
+                    className="form-control"
+                    placeholder="Description"
                     onChange={this.handleInputChange}
-                    value={this.state.description}
+                    value={this.state.editingPublication.description}
                   />
                 </div>
               </React.Fragment>
             )}
             {!this.state.writeable && (
-              <div className='col-sm-12 col-form-label'>
-                <p>{this.state.description}</p>
-              </div>
-            )}
-           
-          </div>
-          <div className="form-group">
-            <label
-              htmlFor='additional-info'>
-              Additional Information
-            </label>
-            <span className="px-2">
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for='description_tooltip'
-                />
-                <ReactTooltip
-                  id='description_tooltip'
-                  place='top'
-                  type='info'
-                  effect='solid'
-                >
-                  <p>Add information here which can be used to find this data, 
-                  including lab specific (non-PHI) identifiers.</p>
-                </ReactTooltip>
-              </span>
-              {this.state.writeable && (
-                <React.Fragment>
-                  <div>
-                    <textarea
-                      type='text'
-                      name='dataset_info'
-                      id='dataset_info'
-                      cols='30'
-                      rows='5'
-                      className='form-control'
-                      placeholder='Additional Info'
-                      onChange={this.handleInputChange}
-                      value={this.state.dataset_info}
-                    />
-                  </div>
-                </React.Fragment>
-              )}
-              {!this.state.writeable && (
-              <div className='col-sm-12 col-form-label'>
-                <p>{this.state.dataset_info}</p>
+              <div className="col-sm-12 col-form-label">
+                <p>{this.props.editingPublication.description}</p>
               </div>
             )}
           </div>
-          
+
         
-            <div className='form-group  '>  
-                <label
-                  htmlFor='contains_human_genetic_sequences'
-                  className='col-sm-2 col-form-label text-right '
-                >
-                  Gene Sequences <span className='text-danger'> * </span>
-                </label>
-                
-                <FontAwesomeIcon
-                      icon={faQuestionCircle}
-                      data-tip
-                      data-for='contains_human_genetic_sequences_tooltip'
-                    />
-                    <ReactTooltip
-                      id='contains_human_genetic_sequences_tooltip'
-                      place='top'
-                      type='info'
-                      effect='solid'
-                    >
-
-                      <p>Gene Sequences Tips</p>
-                    </ReactTooltip>
-                <div className="row">
-                  {this.props.editingPublication && (
-                    <div className='col-sm-9'>
-                      <div className='form-check form-check-inline'>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='contains_human_genetic_sequences'
-                          id='contains_human_genetic_sequences_no'
-                          value='no'
-                          checked={this.state.contains_human_genetic_sequences === false && this.props.editingPublication}
-                          onChange={this.handleInputChange}
-                          disabled={!this.state.writeable}
-                        />
-                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
-                          No
-                        </label>
-                      </div>
-                      <div className='form-check form-check-inline'>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='contains_human_genetic_sequences'
-                          id='contains_human_genetic_sequences_yes'
-                          value='yes'
-                          checked={this.state.contains_human_genetic_sequences  === true && this.props.editingPublication}
-                          onChange={this.handleInputChange}
-                          disabled={!this.state.writeable}
-                        />
-                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
-                          Yes
-                        </label>
-                      </div>
-                      <small id='PHIHelpBlock' className='form-text text-muted'>
-                        Will this data contain any human genomic sequence data?
-                      </small>
-                    </div>
+          <div className="row">
+            <div className="col-8">
+              {this.state.submit_error && (
+                <Alert severity="error">
+                  {this.state.submitErrorResponse && (
+                    <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
                   )}
-                  {!this.props.editingPublication && (
-                    <div className="col-sm-9 ">
-                      <div className='form-check form-check-inline'>
-                        <input 
-                          className={
-                            "form-check-input " +
-                            this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
-                          }
-                          type='radio'
-                          name='contains_human_genetic_sequences'
-                          id='contains_human_genetic_sequences_no'
-                          value='no'
-                          onChange={this.handleInputChange}
-                        />
-                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_no'>
-                          No
-                        </label>
-                      </div>
-                      <div className='form-check form-check-inline'>
-                        <input 
-                          className={
-                            "form-check-input " +
-                            this.errorClass(this.state.formErrors.contains_human_genetic_sequences)
-                          }
-                          type='radio'
-                          name='contains_human_genetic_sequences'
-                          id='contains_human_genetic_sequences_yes'
-                          value='yes'
-                          onChange={this.handleInputChange}
-                        />
-                        <label className='form-check-label' htmlFor='contains_human_genetic_sequences_yes'>
-                          Yes
-                        </label>
-                      </div>
-                      <small id='PHIHelpBlock' className='form-text text-muted'>
-                        Will this data contain any human genomic sequence data? 
-                      </small>
-                      
-                    
-                    </div>
-                  )}
-                  {this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
-                        <Alert severity="error">
-                          {this.state.formErrors.contains_human_genetic_sequences}
-                        </Alert>
-                    )}
-                
-                </div>
-
+                  Oops! Something went wrong. Please contact administrator for
+                  help. <br />
+                  Details: <strong>{this.state.submitErrorStatus} </strong>{" "}
+                  {this.state.submitErrorResponse}
+                </Alert>
+              )}
             </div>
-
- 
-          {this.state.assay_metadata_status !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='assay_metadata_status'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Assay Metadata Status
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.assay_metadata_status === 0 && (
-                  <span className='badge badge-secondary'>No metadata</span>
-                )}
-                {this.state.assay_metadata_status === 1 && (
-                  <span className='badge badge-primary'>Metadata provided</span>
-                )}
-                {this.state.assay_metadata_status === 2 && (
-                  <span className='badge badge-primary'>Metadata curated</span>
-                )}
-              </div>
-            </div>
-          )}
-          {this.state.data_metric_availability !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='data_metric_availability'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Data Metric Availability
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.data_metric_availability === 0 && (
-                  <span className='badge badge-secondary'>
-                    No quality metrics are available
-                  </span>
-                )}
-                {this.state.data_metric_availability === 1 && (
-                  <span className='badge badge-primary'>
-                    Quality metrics are available
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-          {this.state.data_processing_level !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='data_processing_level'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Data Proccessing Level
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.data_processing_level === 0 && (
-                  <span className='badge badge-secondary'>
-                    Uploaded data. No standardized processing has been performed
-                    by the HIVE.
-                  </span>
-                )}
-                {this.state.data_processing_level === 1 && (
-                  <span className='badge badge-primary'>
-                    Processing has been performed with a standard HIVE pipeline.
-                  </span>
-                )}
-                {this.state.data_processing_level === 2 && (
-                  <span className='badge badge-primary'>
-                    Additional processing has been performed.
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-          {this.state.dataset_sign_off_status !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='dataset_sign_off_status'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Publication Sign Off Status
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.dataset_sign_off_status === 0 && (
-                  <span className='badge badge-secondary'>
-                    Expert has not signed off on the data
-                  </span>
-                )}
-                {this.state.dataset_sign_off_status === 1 && (
-                  <span className='badge badge-primary'>
-                    Expert has signed off on the data
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className='row'>
-                <div className="col-8">
-                  {this.state.submit_error && (
-                    <Alert severity="error" >
-                      {this.state.submitErrorResponse &&(
-                        <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
-                      )}
-                      Oops! Something went wrong. Please contact administrator for help. <br />
-                      Details:  <strong>{this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
-                    </Alert>
-                  )}
-                </div>
-                <div className="col-4"> 
-                  {this.renderButtons()}
-                </div>
+            <div className="col-4">{this.renderButtons()}</div>
           </div>
         </form>
 
@@ -2091,18 +2397,19 @@ class PublicationEdit extends Component {
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
         <Modal
           show={this.state.errorMsgShow}
-          handleClose={this.hideErrorMsgModal}
-        >
-          <div className='row'>
-            <div className='col-sm-12 text-center alert'>
+          handleClose={this.hideErrorMsgModal}>
+          <div className="row">
+            <div className="col-sm-12 text-center alert">
               <h4>
-                {(this.props.editingPublication && this.props.editingPublication.status &&
+                {(this.props.editingPublication &&
+                  this.props.editingPublication.status &&
                   this.props.editingPublication.status.toUpperCase()) ||
                   "STATUS"}
               </h4>
               <div
-                dangerouslySetInnerHTML={{ __html: this.state.statusErrorMsg }}
-              ></div>
+                dangerouslySetInnerHTML={{
+                  __html: this.state.statusErrorMsg,
+                }}></div>
             </div>
           </div>
         </Modal>

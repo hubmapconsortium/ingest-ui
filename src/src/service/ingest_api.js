@@ -100,7 +100,12 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
         return {status: res.status, results: res.data}
       })
       .catch(error => {
-        return {error}
+        console.debug("ingest_api_allowable_edit_states", error, error.response);
+        if(error.response){
+          return {status: error.response.status, results: error.response.data}
+        }else{
+          return {error}
+        }
       });
 };
 
