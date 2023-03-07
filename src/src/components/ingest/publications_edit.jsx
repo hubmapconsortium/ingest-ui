@@ -117,10 +117,22 @@ class PublicationEdit extends Component {
     submitErrorStatus: "",
     isValidData: true,
     formErrors: {
+      title:"",
       lab_dataset_id: "",
       source_uuid_list: "",
       source_uuid: "",
       publication_date: "",
+      publication_doi: "",
+      publication_venue: "",
+      publication_url: "",
+    },
+    validationStatus: {
+      title:"",
+      lab_dataset_id: "",
+      source_uuid_list: "",
+      source_uuid: "",
+      publication_date: "",
+      publication_venue: "",
       publication_doi: "",
       publication_url: "",
     },
@@ -245,71 +257,70 @@ class PublicationEdit extends Component {
       } catch {}
 
       if (this.props.editingPublication === "") {
-        savedGeneticsStatus = undefined;
+        savedGeneticsStatus = false;
       } else {
-        savedGeneticsStatus =
-          this.props.editingPublication.contains_human_genetic_sequences;
+        savedGeneticsStatus =false
       }
 
-      // this.setState(
-      //   {
-      //     status: this.props.editingPublication.hasOwnProperty("status")
-      //       ? this.props.editingPublication.status.toUpperCase()
-      //       : "NEW",
-      //     display_doi: this.props.editingPublication.hubmap_id,
-      //     lab_dataset_id: this.props.editingPublication.lab_dataset_id,
-      //     source_uuid: this.getSourceAncestor(
-      //       this.props.editingPublication.direct_ancestors
-      //     ),
-      //     source_uuid_list: this.assembleSourceAncestorData(
-      //       this.props.editingPublication.direct_ancestors
-      //     ),
-      //     source_entity: this.getSourceAncestorEntity(
-      //       this.props.editingPublication.direct_ancestors
-      //     ), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
-      //     slist: this.getSourceAncestorEntity(
-      //       this.props.editingPublication.direct_ancestors
-      //     ),
-      //     contains_human_genetic_sequences: savedGeneticsStatus,
-      //     description: this.props.editingPublication.description,
-      //     dataset_info: this.props.editingPublication.dataset_info,
-      //     previous_revision_uuid: this.props.editingPublication.hasOwnProperty(
-      //       "previous_revision_uuid"
-      //     )
-      //       ? this.props.editingPublication.previous_revision_uuid
-      //       : undefined,
-      //     errorMsgShow:
-      //       this.props.editingPublication.status.toLowerCase() === "error" &&
-      //       this.props.editingPublication.message
-      //         ? true
-      //         : false,
-      //     statusErrorMsg: this.props.editingPublication.message,
-      //   },
-      //   () => {
-      //     this.setState({
-      //       badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
-      //     });
-      //     entity_api_get_globus_url(
-      //       this.props.editingPublication.uuid,
-      //       this.state.groupsToken
-      //     )
-      //       .then((res) => {
-      //         this.setState({
-      //           globus_path: res.results,
-      //         });
-      //       })
-      //       .catch((err) => {
-      //         this.setState({
-      //           globus_path: "",
-      //           globus_path_tips: "Globus URL Unavailable",
-      //         });
-      //         if (err.response && err.response.status === 401) {
-      //           localStorage.setItem("isAuthenticated", false);
-      //           window.location.reload();
-      //         }
-      //       });
-      //   }
-      // );
+      this.setState(
+        {
+          status: this.props.editingPublication.hasOwnProperty("status")
+            ? this.props.editingPublication.status.toUpperCase()
+            : "NEW",
+          display_doi: this.props.editingPublication.hubmap_id,
+          lab_dataset_id: this.props.editingPublication.lab_dataset_id,
+          source_uuid: this.getSourceAncestor(
+            this.props.editingPublication.direct_ancestors
+          ),
+          source_uuid_list: this.assembleSourceAncestorData(
+            this.props.editingPublication.direct_ancestors
+          ),
+          source_entity: this.getSourceAncestorEntity(
+            this.props.editingPublication.direct_ancestors
+          ), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
+          slist: this.getSourceAncestorEntity(
+            this.props.editingPublication.direct_ancestors
+          ),
+          contains_human_genetic_sequences: savedGeneticsStatus,
+          description: this.props.editingPublication.description,
+          dataset_info: this.props.editingPublication.dataset_info,
+          previous_revision_uuid: this.props.editingPublication.hasOwnProperty(
+            "previous_revision_uuid"
+          )
+            ? this.props.editingPublication.previous_revision_uuid
+            : undefined,
+          errorMsgShow:
+            this.props.editingPublication.status.toLowerCase() === "error" &&
+            this.props.editingPublication.message
+              ? true
+              : false,
+          statusErrorMsg: this.props.editingPublication.message,
+        },
+        () => {
+          this.setState({
+            badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
+          });
+          entity_api_get_globus_url(
+            this.props.editingPublication.uuid,
+            this.state.groupsToken
+          )
+            .then((res) => {
+              this.setState({
+                globus_path: res.results,
+              });
+            })
+            .catch((err) => {
+              this.setState({
+                globus_path: "",
+                globus_path_tips: "Globus URL Unavailable",
+              });
+              if (err.response && err.response.status === 401) {
+                localStorage.setItem("isAuthenticated", false);
+                window.location.reload();
+              }
+            });
+        }
+      );
       // Now tha we've got that all set,
       // Here's the hack that disables changing the datatype
       // if it's no longer a base primary type.
@@ -468,6 +479,17 @@ class PublicationEdit extends Component {
     this.setState({
       publication_date: date,
     });
+  };
+
+  handlePublicationStatus = (status) => {
+    console.debug("handlePublicationStatus",status);
+    this.setState(prev => ({
+      editingPublication: {
+        ...prev.editingPublication,
+        publication_status: status
+      }
+    }))
+    
   };
 
   handleInputChange = (e) => {
@@ -1046,7 +1068,8 @@ class PublicationEdit extends Component {
                     this.setState({
                       submit_error: true,
                       submitting: false,
-                      submitErrorResponse: response.results.statusText,
+                      submitErrorResponse: response,
+                      // submitErrorResponse: response.results.statusText,
                       buttonSpinnerTarget: "",
                     });
                   }
@@ -1164,14 +1187,19 @@ class PublicationEdit extends Component {
     // var stateTarget = this.state[StateName]
     // console.debug("validateProcessor", StateName, stateTarget);
 
-    if(this.state[stateKey] && (!validateRequired(this.state[stateKey]))) {
-      console.debug("validateProcessor", stateKey, this.state[stateKey]);
+    console.debug("validateProcessor", stateKey, this.state.editingPublication[stateKey]);
+    // console.debug(validateRequired(this.state.editingPublication[stateKey]));
+    if(!this.state.editingPublication[stateKey] || this.state.editingPublication[stateKey].length ===0) {
+      console.debug("invalid",  stateKey, this.state.editingPublication[stateKey]);
       this.setState((prevState) => ({
-        formErrors: { ...prevState.formErrors, [stateKey]: "This Field is Required" },
+        validationStatus:  { ...prevState.validationStatus, [stateKey]: "Field is Required" },
+        formErrors: { ...prevState.formErrors, [stateKey]: "invalid" },
       }));
       return false;
     } else {
+      console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
       this.setState((prevState) => ({
+        validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
         formErrors: { ...prevState.formErrors, [stateKey]: "" },
       }));
       return true;
@@ -1183,7 +1211,8 @@ class PublicationEdit extends Component {
     
     return new Promise((resolve, reject) => {
       let isValid =   true;
-      var requiredFields = ["source_uuid_list", "publication_venue","publication_status" ,"publication_date","publication_url" ];
+
+      var requiredFields = ["title","publication_venue","publication_status" ,"publication_date","publication_url" ];
       requiredFields.forEach((field) => {
         if(this.validateProcessor(field) ===  false) {
           isValid = false;
@@ -1191,9 +1220,32 @@ class PublicationEdit extends Component {
         }
       });
       
+      if(this.state.source_uuid_list.length === 0) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, source_uuid_list:"is-invalid" },
+        }));
+        isValid = false;
+        resolve(isValid);
+      }
+       
+      
       var intFields = ["issue", "volume"];
       intFields.forEach((field) => {
-        console.debug("intFields", field, this.state[field]);
+        console.debug("intFields", field, this.state.editingPublication[field]);
+        console.debug(isNaN(this.state.editingPublication[field]));
+        if(isNaN(this.state.editingPublication[field])) {
+          this.setState((prevState) => ({
+            formErrors: { ...prevState.formErrors, [field]: "is-invalid" },
+          }));
+          isValid = false;
+          resolve(isValid);
+        }else{
+          this.setState((prevState) => ({
+            formErrors: { ...prevState.formErrors, [field]: "" },
+          }));
+        }
+
+        
       });
       
       this.setState({ isValidData: isValid });
@@ -1202,9 +1254,13 @@ class PublicationEdit extends Component {
           submit_error: true,
           submitting: false,
           buttonSpinnerTarget: "",
+          submitErrorResponse:toString(this.state.validationStatus),
         });
-        var errorSet = this.state.formErrors;
+        var errorSet = this.state.validationStatus;
+        console.debug("errorSet", errorSet);
         var result = Object.keys(errorSet).find((e) => errorSet[e].length);
+        console.debug("result", result);
+        
       }
       resolve(isValid);
     });
@@ -1517,9 +1573,9 @@ class PublicationEdit extends Component {
   }
 
   errorClass(error) {
-    // console.debug("errorClass", error);
+    console.debug("errorClass", error);
     if (error === "valid") return "is-valid";
-    if (error === "invalid") return "is-invalid";
+    if (error === "invalid" || error === "is-invalid") return "is-invalid";
     if (error && error.length && error.length === 0) return "is-invalid";
 
     // return error.length === 0 ? "" : "is-invalid";
@@ -1698,13 +1754,13 @@ class PublicationEdit extends Component {
                 {this.props.editingPublication && !this.props.newForm && (
                   <span className="mx-1">
                     {" "}
-                    HuBMAP Publication ID {this.state.display_doi}{" "}
+                    HuBMAP Publication ID {this.state.editingPublication.hubmap_id}{" "}
                   </span>
                 )}
 
                 {(!this.props.editingPublication || this.props.newForm) && (
                   <span className="mx-1">
-                    Registering a Publication {this.state.display_doi}{" "}
+                    Registering a Publication 
                   </span>
                 )}
               </h3>
@@ -1875,6 +1931,7 @@ class PublicationEdit extends Component {
             {!this.state.readOnly && (
               <div>
                 <input
+                  helperText={this.state.validationStatus.publication_venue}
                   ref={this.state.editingPublication.publication_venue}
                   type="text"
                   name="publication_venue"
@@ -1885,7 +1942,7 @@ class PublicationEdit extends Component {
                     " "
                   }
                   onChange={this.handleInputChange}
-                  // value={this.state.editingPublication.publication_venue}
+                  value={this.state.editingPublication.publication_venue}
                   placeholder="Venue"
                 />
               </div>
@@ -2043,9 +2100,10 @@ class PublicationEdit extends Component {
                           type='radio'
                           name='publication_status'
                           id='publication_status_no'
-                          value={false}
+                          // value={false}
                           checked={this.state.editingPublication.publication_status === false   }
-                          onChange={this.handleInputChange}
+                          onChange={() => this.handlePublicationStatus(false)}
+                          // onChange={this.handlePublicationStatus(false)}
                           disabled={!this.state.writeable}
                         />
                         <label className='form-check-label' htmlFor='publication_status_no'>
@@ -2058,9 +2116,9 @@ class PublicationEdit extends Component {
                           type='radio'
                           name='publication_status'
                           id='publication_status_yes'
-                          value={true}
+                          // value={true}
                           checked={this.state.editingPublication.publication_status  === true   }
-                          onChange={this.handleInputChange}
+                          onChange={() => this.handlePublicationStatus(true)}
                           disabled={!this.state.writeable}
                         />
                         <label className='form-check-label' htmlFor='publication_status_yes'>
@@ -2175,7 +2233,7 @@ class PublicationEdit extends Component {
                   id="issue"
                   cols="5"
                   rows="1"
-                  className="form-control"
+                  className={"form-control " +this.errorClass(this.state.formErrors.issue) }
                   value={this.state.editingPublication.issue}
                   onChange={this.handleInputChange}
                 />
@@ -2218,7 +2276,7 @@ class PublicationEdit extends Component {
                   id="volume"
                   cols="5"
                   rows="1"
-                  className="form-control"
+                  className={"form-control " +this.errorClass(this.state.formErrors.volume) }
                   value={this.state.editingPublication.volume}
                   onChange={this.handleInputChange}
                 />
