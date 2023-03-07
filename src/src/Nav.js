@@ -145,6 +145,13 @@ export const Navigation = (props) => {
                       to="/new/dataset" >
                       Dataset
                     </MenuItem>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      onClick={handleClose}
+                      to="/new/publication" >
+                      Publication
+                    </MenuItem>
                   </Menu>
 
                   <Button 

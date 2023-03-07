@@ -173,6 +173,7 @@ class DatasetEdit extends Component {
 
       // Figure out our permissions
       if (this.props.editingDataset) {
+        console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
         if (this.props.editingDataset.uuid)
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -320,7 +321,11 @@ class DatasetEdit extends Component {
           console.debug("next_revision_uuid",this.props.editingDataset.next_revision_uuid);
           entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
-            this.setState({nextHID: response.results.hubmap_id})
+            if(response.hubmap_id){
+              this.setState({nextHID: response.results.hubmap_id})
+            }else{
+              console.debug("next_revision_uuid",response);
+            }
           })
           .catch((error) => {
             console.debug("next_revision_uuid",error);

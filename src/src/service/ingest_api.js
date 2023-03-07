@@ -31,8 +31,13 @@ export function ingest_api_users_groups(auth) {
     return {status: res.status, results: group_list}
  })
  .catch(error => {
-        return {error}
- });
+    console.debug("ingest_api_allowable_edit_states", error, error.response);
+    if(error.response){
+      return {status: error.response.status, results: error.response.data}
+    }else{
+      return {error}
+    }
+  });
 }
 
 
@@ -100,7 +105,12 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
         return {status: res.status, results: res.data}
       })
       .catch(error => {
-        return {error}
+        console.debug("ingest_api_allowable_edit_states", error, error.response);
+        if(error.response){
+          return {status: error.response.status, results: error.response.data}
+        }else{
+          return {error}
+        }
       });
 };
 
@@ -142,6 +152,31 @@ export function ingest_api_create_dataset(data, auth) {
     };
 
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`;
+  return axios 
+     .post(url, data, options)
+      .then(res => {
+          let results = res.data;
+          return {status: res.status, results: results}
+      })
+      .catch(error => {
+        return {error}
+      });
+};
+
+/* 
+ * create a dataset
+ *
+ */
+export function ingest_api_create_publication(data, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/publication`;
   return axios 
      .post(url, data, options)
       .then(res => {

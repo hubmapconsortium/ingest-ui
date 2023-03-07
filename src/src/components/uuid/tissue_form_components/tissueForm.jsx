@@ -13,7 +13,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 // import IconButton from '@material-ui/core/IconButton';
-
+import { DatePicker } from '@mui/x-date-pickers';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -62,7 +62,7 @@ class TissueForm extends Component {
     param_uuid: "",
     protocol_url: "",
     entity_type: "",
-    source_entity_type: "Donor",
+    source_entity_type: "",
     specimen_type: "",
     specimen_type_other: "",
     source_uuid: "",
@@ -89,6 +89,16 @@ class TissueForm extends Component {
     sample_count: "",
     protocol_file_name: "Choose a file",
     metadata_file_name: "Choose a file",
+
+    title:"",
+    publication_date:"",
+    publication_doi:"",
+    publication_url:"",
+    publication_venue:"",
+    volume:"",
+    issue:"",
+    pages_or_article_num:"",
+    publication_status:"",
 
     metadatas: [],
     images: [],
@@ -327,7 +337,7 @@ class TissueForm extends Component {
             organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
             visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
             lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id ? this.state.editingEntity.lab_tissue_sample_id : "",
-            description: this.state.editingEntity.description ? this.state.editingEntity.description : "",
+            description:[ (this.state.editingEntity.description ? this.state.editingEntity.description : ""), this.state.editingEntity.description[334435]],
             protocol_url: this.state.editingEntity.protocol_url,
             entity_type: this.state.editingEntity.entity_type,
             specimen_type: this.state.editingEntity.specimen_type, // this.determineSpecimenType(),
@@ -352,7 +362,6 @@ class TissueForm extends Component {
           this.setState(
             {
               specimen_type: this.props.specimenType,
-              source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
               source_uuid: this.props.sourceUUID,   // this is the hubmap_id, not the uuid
@@ -1575,6 +1584,8 @@ handleAddImage = () => {
           )}
      
           <form className="formSpacer expanded-form" onSubmit={this.handleSubmit}>
+            
+            
             <div className="form-group">
               <label htmlFor="source_uuid">
                 Source ID <span className="text-danger">*</span>  <FontAwesomeIcon
@@ -1699,14 +1710,7 @@ handleAddImage = () => {
                                 {this.state.source_entity.group_name}
                             </div>
                           )}
-                          {this.state.source_entity.description && (
-                            <div className="col-sm-12">
-                              <p>
-                                <b>Description: </b>{" "}
-                                {truncateString(this.state.source_entity.description, 230)}
-                              </p>
-                            </div>
-                          )}
+                          
 
                       </div>
                     </div>
@@ -1717,7 +1721,8 @@ handleAddImage = () => {
             <div className="form-group">
               <label
                 htmlFor="sample_category">
-                Sample Category <span className="text-danger">*</span>  <FontAwesomeIcon
+                Sample Category <span className="text-danger">*</span>  
+                <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
                   data-for="sample_category_tooltip"
@@ -1894,32 +1899,24 @@ handleAddImage = () => {
                   )}
                 </div>
               )}
-            <div className="form-group">
-              <label
-                htmlFor="protocol_url">
-                Preparation Protocol <span className="text-danger">*</span> <span className="text-danger inline-icon">
-                  <FontAwesomeIcon icon={faUserShield} />
-                </span>
+
+
+            <div className="form-gropup">
+              <label htmlFor="protocol_url">   Preparation Protocol <span className="text-danger">*</span> 
+              <span className="text-danger inline-icon"> <FontAwesomeIcon icon={faUserShield} /></span>
                 <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for="protocol_tooltip"
-                  />
+                  <FontAwesomeIcon icon={faQuestionCircle} data-tip data-for="protocol_tooltip"/>
                   <ReactTooltip
                     id="protocol_tooltip"
                     className={"tooltip"}
                     place="top"
                     type="info"
-                    effect="solid"
-                  >
-                    <p>
-                      The protocol used when procuring or 
+                    effect="solid">
+                    <p>The protocol used when procuring or 
                       preparing the tissue.
                       This must be provided as a 
                       protocols.io DOI URL
-                      see https://www.protocols.io/
-                      </p>
+                      see https://www.protocols.io/</p>
                   </ReactTooltip>
                 </span>
               </label>
@@ -1939,7 +1936,51 @@ handleAddImage = () => {
                     value={this.state.protocol_url}
                     placeholder="protocols.io DOI"
                   />
-                 
+                </div>
+              )}
+              {this.state.readOnly && (
+                <div><input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol_url}></input></div>
+              )}
+            </div>
+
+            <div className="form-gropup">
+              <label htmlFor="title">
+                Title <span className="text-danger">*</span> <span className="text-danger inline-icon">
+                  <FontAwesomeIcon icon={faUserShield} />
+                </span>
+                <span>
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="title_tooltip"
+                  />
+                  <ReactTooltip
+                    id="title_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>Title</p>
+                  </ReactTooltip>
+                </span>
+              </label>
+              {!this.state.readOnly && (
+                <div>
+                  <input
+                    ref={this.title}
+                    type="text"
+                    name="title"
+                    id="title"
+                    className={
+                      "form-control " +
+                      this.errorClass(this.state.formErrors.title) +" "+
+                      this.errorClass(this.state.formErrors.title_DOI)
+                    }
+                    onChange={this.handleInputChange}
+                    value={this.state.title}
+                    placeholder="Title"
+                  />
                 </div>
               )}
               {this.state.readOnly && (
@@ -1989,7 +2030,7 @@ handleAddImage = () => {
                           onChange={this.handleInputChange}
                         />
                       </div>
-                      { this.state.source_entity &&
+                      {this.state.source_entity &&
                           (this.isSpecialOrganType(this.state.organ)) && (
                           <div className="col-sm-4">
                             <small className='portal-label'>
@@ -1998,7 +2039,7 @@ handleAddImage = () => {
                           </small>
                           </div>
                         )}
-                      { this.state.source_entity &&
+                      {this.state.source_entity &&
                         (this.isSpecialOrganType(this.state.organ) !== true) && (
                           <div className="col-sm-4">
                             <small className='portal-label'>
@@ -2032,7 +2073,7 @@ handleAddImage = () => {
                       effect="solid"
                     >
                       <p>
-                        An identifier used by the lab to identify the specimen,
+                        An identifier used by the lab to identify ,
                         this can be an identifier from the system <br />
                         used to track the specimen in the lab. This field will
                         be entered by the user.
@@ -2062,6 +2103,243 @@ handleAddImage = () => {
                 </div>
               )
             }
+
+
+
+
+            {/* Pub Date */}
+            <div className="form-gropup">
+              <label htmlFor="publication_date">   Preparation Protocol <span className="text-danger">*</span> 
+              <span className="text-danger inline-icon"> <FontAwesomeIcon icon={faUserShield} /></span>
+                <span>
+                  <FontAwesomeIcon icon={faQuestionCircle} data-tip data-for="publication_date"/>
+                  <ReactTooltip
+                    id="publication_date_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid">
+                    <p>Date Of Publication</p>
+                  </ReactTooltip>
+                </span>
+              </label>
+              {!this.state.readOnly && (
+                <div>
+                  <DatePicker 
+                    name="publication_date"
+                    id="publication_date"
+                    className={ "form-control " + this.errorClass(this.state.formErrors.publication_date) +" "}
+                    onChange={this.handleInputChange}/>
+                  <input
+                    ref={this.publication_date}
+                    type="text"
+                    name="publication_date"
+                    id="publication_date"
+                    className={"form-control " + this.errorClass(this.state.formErrors.publication_date) +" "}
+                    onChange={this.handleInputChange}
+                    value={this.state.publication_date}
+                    placeholder="Publication Date"
+                  />
+                </div>
+              )}
+              {this.state.readOnly && (
+                <div><input type="text" readOnly className="form-control" id="publication_date" value={this.state.publication_date}></input></div>
+              )}
+            </div>
+
+            {/* Pub DOI */}
+            <div className="form-gropup">
+              <label htmlFor="publication_doi">   Preparation Protocol <span className="text-danger">*</span> 
+              <span className="text-danger inline-icon"> <FontAwesomeIcon icon={faUserShield} /></span>
+                <span>
+                  <FontAwesomeIcon icon={faQuestionCircle} data-tip data-for="publication_doi"/>
+                  <ReactTooltip
+                    id="publication_doi_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid">
+                    <p>Date Of Publication</p>
+                  </ReactTooltip>
+                </span>
+              </label>
+              {!this.state.readOnly && (
+                <div>
+                  <input
+                    ref={this.publication_doi}
+                    type="text"
+                    name="publication_doi"
+                    id="publication_doi"
+                    className={"form-control " + this.errorClass(this.state.formErrors.publication_doi) +" "}
+                    onChange={this.handleInputChange}
+                    value={this.state.publication_doi}
+                    placeholder="Publication Date"
+                  />
+                </div>
+              )}
+              {this.state.readOnly && (
+                <div><input type="text" readOnly className="form-control" id="publication_doi" value={this.state.publication_doi}></input></div>
+              )}
+            </div>
+
+            {/* pub URL */}
+            <div className="form-gropup">
+              <label htmlFor="publication_url">   Preparation Protocol <span className="text-danger">*</span> 
+              <span className="text-danger inline-icon"> <FontAwesomeIcon icon={faUserShield} /></span>
+                <span>
+                  <FontAwesomeIcon icon={faQuestionCircle} data-tip data-for="publication_url"/>
+                  <ReactTooltip
+                    id="publication_url_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid">
+                    <p>Date Of Publication</p>
+                  </ReactTooltip>
+                </span>
+              </label>
+              {!this.state.readOnly && (
+                <div>
+                  <input
+                    ref={this.publication_url}
+                    type="text"
+                    name="publication_url"
+                    id="publication_url"
+                    className={
+                      "form-control " +
+                      this.errorClass(this.state.formErrors.publication_url) +" "
+                    }
+                    onChange={this.handleInputChange}
+                    value={this.state.publication_url}
+                    placeholder="Publication Date"
+                  />
+                </div>
+              )}
+              {this.state.readOnly && (
+                <div><input type="text" readOnly className="form-control" id="publication_url" value={this.state.publication_url}></input></div>
+              )}
+            </div>
+
+            {/* abstract */}
+            <div className="form-group">
+                <label
+                  htmlFor="abstract">
+                  Abstract  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="abstract_tooltip"
+                  />
+                  <ReactTooltip
+                    id="abstract_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>A free text abstract.</p>
+                  </ReactTooltip>
+                  </label>
+                {!this.state.readOnly && (
+                  <div>
+                    <textarea
+                      name="abstract"
+                      id="abstract"
+                      cols="30"
+                      rows="5"
+                      className="form-control"
+                      value={this.state.abstract}
+                      onChange={this.handleInputChange}
+                    />
+                  </div>
+                )}
+                {this.state.readOnly && (
+                    <div>
+                       <input type="text" readOnly className="form-control" id="static_abstract" value={this.state.abstract}></input>
+                    </div>
+                )}
+                
+            </div>
+
+            {/* Issue  */}
+            <div className="form-group">
+                <label
+                  htmlFor="abstract">
+                  Abstract  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="issue_tooltip"
+                  />
+                  <ReactTooltip
+                    id="issue_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>A free text abstract.</p>
+                  </ReactTooltip>
+                  </label>
+                {!this.state.readOnly && (
+                  <div>
+                    <textarea
+                      name="abstr"
+                      id="abstr"
+                      cols="30"
+                      rows="5"
+                      className="form-control"
+                      value={this.state.abstr}
+                      onChange={this.handleInputChange}
+                    />
+                  </div>
+                )}
+                {this.state.readOnly && (
+                    <div>
+                       <input type="text" readOnly className="form-control" id="static_abstr" value={this.state.abstr}></input>
+                    </div>
+                )}
+                
+            </div>
+
+           {/* Issue  */}
+            <div className="form-group">
+                <label
+                  htmlFor="abstract">
+                  Abstract  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="abstract_tooltip"
+                  />
+                  <ReactTooltip
+                    id="abstr_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>A free text abstract.</p>
+                  </ReactTooltip>
+                  </label>
+                {!this.state.readOnly && (
+                  <div>
+                    <textarea
+                      name="abstr"
+                      id="abstr"
+                      cols="30"
+                      rows="5"
+                      className="form-control"
+                      value={this.state.abstr}
+                      onChange={this.handleInputChange}
+                    />
+                  </div>
+                )}
+                {this.state.readOnly && (
+                    <div>
+                       <input type="text" readOnly className="form-control" id="static_abstr" value={this.state.abstr}></input>
+                    </div>
+                )}
+                
+            </div>
+
 
             {!this.state.editingEntity &&
               !this.state.multiple_id &&
@@ -2181,7 +2459,7 @@ handleAddImage = () => {
                       </ReactTooltip>
                   </label>
                  
-                  { !this.state.readOnly &&
+                  {!this.state.readOnly &&
                     this.state.rui_check && this.state.RUI_ACTIVE &&(
                       <React.Fragment>
                        
@@ -2268,46 +2546,7 @@ handleAddImage = () => {
                   </div>
                 </div>
               )}
-            {(!this.state.readOnly || this.state.description !== undefined) && (
-              <div className="form-group">
-                <label
-                  htmlFor="description">
-                  Description  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for="description_tooltip"
-                  />
-                  <ReactTooltip
-                    id="description_tooltip"
-                    className={"tooltip"}
-                    place="top"
-                    type="info"
-                    effect="solid"
-                  >
-                    <p>A free text description of the specimen.</p>
-                  </ReactTooltip>
-                  </label>
-                {!this.state.readOnly && (
-                  <div>
-                    <textarea
-                      name="description"
-                      id="description"
-                      cols="30"
-                      rows="5"
-                      className="form-control"
-                      value={this.state.description}
-                      onChange={this.handleInputChange}
-                    />
-                  </div>
-                )}
-                {this.state.readOnly && (
-                    <div>
-                       <input type="text" readOnly className="form-control" id="static_description" value={this.state.description}></input>
-                    </div>
-                )}
-                
-              </div>
-            )}
+            {this.state.readOnly || this.state.abstract !== undefined && (
             <div className="form-group">
               <label
                 htmlFor="sample_metadata_status">
@@ -2328,12 +2567,12 @@ handleAddImage = () => {
                 )}
               </div>
             </div>
-            {/*}
-           
-          */}
-            <div className="buttonWrapLeft">
+          )}
+
+
+          <div className="buttonWrapLeft">
             
-                        {((!this.state.readOnly || this.state.metadatas.length > 0) && 
+          {((!this.state.readOnly || this.state.metadatas.length > 0) && 
               !this.state.multiple_id) && (
               <div className="form-group">
                 
@@ -2390,7 +2629,6 @@ handleAddImage = () => {
             {((!this.state.readOnly || this.state.images.length > 0) &&
               !this.state.multiple_id) && (
               <div className="form-group">
-               
                 <div>
                   {!this.state.readOnly && (
                     <div>
@@ -2542,46 +2780,45 @@ handleAddImage = () => {
         />
 
 
-         <Snackbar open={this.state.show_snack} 
-                      onClose={this.closeSnack}
-                      anchorOrigin={{
-                          vertical: 'top',
-                          horizontal: 'right',
-                      }}
-                      autoHideDuration={6000} 
-                      message={this.state.snackmessage}
-                      action={
-                            <React.Fragment>
-                              <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
-                                 <FontAwesomeIcon icon={faTimes} size="1x" />
-                              </IconButton>
-                            </React.Fragment>
-                          }
-            /> 
+        <Snackbar open={this.state.show_snack} 
+          onClose={this.closeSnack}
+          anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+          }}
+          autoHideDuration={6000} 
+          message={this.state.snackmessage}
+          action={
+                <React.Fragment>
+                  <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
+                      <FontAwesomeIcon icon={faTimes} size="1x" />
+                  </IconButton>
+                </React.Fragment>
+        }/> 
 
-            <Snackbar open={this.state.show_dirty_warning} 
-                      //onClose={this.closeSnack}
-                      anchorOrigin={{
-                          vertical: 'top',
-                          horizontal: 'center',
-                      }}
-                      //autoHideDuration={6000} 
-                      severity="warning"
-                      message={<span id="client-snackbar">You have made changes, please UPDATE to save.</span>}
-                      action={
-                        <React.Fragment>
-                         <Button 
-                          variant="contained"
-                          color="inherit" 
-                          size="small" 
-                          onClick={this.snackCancel}>
-                            Cancel Changes
-                        </Button>
-                        </React.Fragment>
-                      }
-                  >
+        <Snackbar open={this.state.show_dirty_warning} 
+                  //onClose={this.closeSnack}
+                  anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'center',
+                  }}
+                  //autoHideDuration={6000} 
+                  severity="warning"
+                  message={<span id="client-snackbar">You have made changes, please UPDATE to save.</span>}
+                  action={
+                    <React.Fragment>
+                      <Button 
+                      variant="contained"
+                      color="inherit" 
+                      size="small" 
+                      onClick={this.snackCancel}>
+                        Cancel Changes
+                    </Button>
+                    </React.Fragment>
+                  }
+              >
 
-            </Snackbar> 
+        </Snackbar> 
       </div>
     );
   }
