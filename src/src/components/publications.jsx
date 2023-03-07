@@ -86,17 +86,18 @@ export const RenderPublication = (props) => {
         setDtl_all(response.data.result);
         setDtl_status(true);
         setIsLoadingDTList(0);
-
-      })
+      }) 
       .catch(error => {
         console.debug("checkAssayType Primary Error", error);
         reportError(error );
       });
     }
+    
 
 
     function fetchEntity(authSet){
-      entity_api_get_entity('719941ea11a51ee4fc0e9d2fee0a9d62', authSet.groups_token)
+      console.debug("fetchEntity", uuid, authSet.groups_token);
+      entity_api_get_entity(uuid, authSet.groups_token)
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
@@ -109,6 +110,8 @@ export const RenderPublication = (props) => {
             
           })  
           .catch((error) => {
+            console.debug("fetchEntity Error", error);
+            reportError(error);
             setIsLoadingEntity(false);
           }); 
     };
@@ -119,7 +122,7 @@ export const RenderPublication = (props) => {
       fetchEntity(authSet);
     }else{
       // the NEW route loads the forms through the legacy Forms loader,
-      // not here
+      // not here // so that all shouldnt matter now
       setIsLoadingEntity(false);
     }
     

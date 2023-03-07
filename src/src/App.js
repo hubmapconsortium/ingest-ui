@@ -95,7 +95,7 @@ export function App (props){
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
         console.debug("ingest_api_users_groups", results);
         
-        if(results && results.results.data === "User is not a member of group HuBMAP-read"){
+        if(results && results.results && results.results.data && results.results.data === "User is not a member of group HuBMAP-read"){
           setAuthStatus(true);
           setRegStatus(false);
           setUnegStatus(true);
@@ -135,7 +135,7 @@ export function App (props){
 
 
       } else if (results && results.status === 401) {
-        // console.debug("LocalStorageAuth", results);
+        console.debug("LocalStorageAuth 401", results);
         setGroupsToken(null);
         setAuthStatus(false);
         setRegStatus(false);
@@ -365,7 +365,7 @@ function reportError (error){
                 <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                 <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='publication' element={<RenderPublication reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
 
               </Route>
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>

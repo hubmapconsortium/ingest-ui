@@ -27,7 +27,6 @@ import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import {
   ingest_api_allowable_edit_states,
-  ingest_api_create_dataset,
   ingest_api_dataset_submit,
   ingest_api_dataset_publish,
   ingest_api_users_groups,
@@ -36,6 +35,7 @@ import {
 import {
   entity_api_update_entity,
   entity_api_get_globus_url,
+  entity_api_create_entity,
   entity_api_get_entity,
 } from "../../service/entity_api";
 //import { withRouter } from 'react-router-dom';
@@ -62,6 +62,7 @@ import Result from '../uuid/result';
 
 class PublicationEdit extends Component {
   state = {
+    ERIS:"nooo",
     // The Entity Itself
     newForm: this.props.newForm,
     data_types:["publication"],
@@ -79,9 +80,9 @@ class PublicationEdit extends Component {
     source_uuids: [],
     status: "NEW",
     upload: [],
-    writeable: false, //Should Prob default secure
+    writeable: true, 
 
-    editingPublication: this.props.editingPublication ? this.props.editingPublication: {},
+    editingPublication: this.props.newForm ? {} : this.props.editingPublication,
 
     // User Privs & Info
     groups: [],
@@ -171,6 +172,7 @@ class PublicationEdit extends Component {
 
     // Figure out our permissions
     // console.debug("CHECK PERM", this.props.editingPublication, this.props.editingPublication.uuid);
+    console.debug("CHECK PERM", this.props.editingPublication, this.state.editingPublication);
     if (this.props.editingPublication) {
       if (this.props.editingPublication.uuid)
       // console.debug("Checking Permissions");
@@ -249,65 +251,65 @@ class PublicationEdit extends Component {
           this.props.editingPublication.contains_human_genetic_sequences;
       }
 
-      this.setState(
-        {
-          status: this.props.editingPublication.hasOwnProperty("status")
-            ? this.props.editingPublication.status.toUpperCase()
-            : "NEW",
-          display_doi: this.props.editingPublication.hubmap_id,
-          lab_dataset_id: this.props.editingPublication.lab_dataset_id,
-          source_uuid: this.getSourceAncestor(
-            this.props.editingPublication.direct_ancestors
-          ),
-          source_uuid_list: this.assembleSourceAncestorData(
-            this.props.editingPublication.direct_ancestors
-          ),
-          source_entity: this.getSourceAncestorEntity(
-            this.props.editingPublication.direct_ancestors
-          ), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
-          slist: this.getSourceAncestorEntity(
-            this.props.editingPublication.direct_ancestors
-          ),
-          contains_human_genetic_sequences: savedGeneticsStatus,
-          description: this.props.editingPublication.description,
-          dataset_info: this.props.editingPublication.dataset_info,
-          previous_revision_uuid: this.props.editingPublication.hasOwnProperty(
-            "previous_revision_uuid"
-          )
-            ? this.props.editingPublication.previous_revision_uuid
-            : undefined,
-          errorMsgShow:
-            this.props.editingPublication.status.toLowerCase() === "error" &&
-            this.props.editingPublication.message
-              ? true
-              : false,
-          statusErrorMsg: this.props.editingPublication.message,
-        },
-        () => {
-          this.setState({
-            badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
-          });
-          entity_api_get_globus_url(
-            this.props.editingPublication.uuid,
-            this.state.groupsToken
-          )
-            .then((res) => {
-              this.setState({
-                globus_path: res.results,
-              });
-            })
-            .catch((err) => {
-              this.setState({
-                globus_path: "",
-                globus_path_tips: "Globus URL Unavailable",
-              });
-              if (err.response && err.response.status === 401) {
-                localStorage.setItem("isAuthenticated", false);
-                window.location.reload();
-              }
-            });
-        }
-      );
+      // this.setState(
+      //   {
+      //     status: this.props.editingPublication.hasOwnProperty("status")
+      //       ? this.props.editingPublication.status.toUpperCase()
+      //       : "NEW",
+      //     display_doi: this.props.editingPublication.hubmap_id,
+      //     lab_dataset_id: this.props.editingPublication.lab_dataset_id,
+      //     source_uuid: this.getSourceAncestor(
+      //       this.props.editingPublication.direct_ancestors
+      //     ),
+      //     source_uuid_list: this.assembleSourceAncestorData(
+      //       this.props.editingPublication.direct_ancestors
+      //     ),
+      //     source_entity: this.getSourceAncestorEntity(
+      //       this.props.editingPublication.direct_ancestors
+      //     ), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
+      //     slist: this.getSourceAncestorEntity(
+      //       this.props.editingPublication.direct_ancestors
+      //     ),
+      //     contains_human_genetic_sequences: savedGeneticsStatus,
+      //     description: this.props.editingPublication.description,
+      //     dataset_info: this.props.editingPublication.dataset_info,
+      //     previous_revision_uuid: this.props.editingPublication.hasOwnProperty(
+      //       "previous_revision_uuid"
+      //     )
+      //       ? this.props.editingPublication.previous_revision_uuid
+      //       : undefined,
+      //     errorMsgShow:
+      //       this.props.editingPublication.status.toLowerCase() === "error" &&
+      //       this.props.editingPublication.message
+      //         ? true
+      //         : false,
+      //     statusErrorMsg: this.props.editingPublication.message,
+      //   },
+      //   () => {
+      //     this.setState({
+      //       badge_class: getPublishStatusColor(this.state.status.toUpperCase()),
+      //     });
+      //     entity_api_get_globus_url(
+      //       this.props.editingPublication.uuid,
+      //       this.state.groupsToken
+      //     )
+      //       .then((res) => {
+      //         this.setState({
+      //           globus_path: res.results,
+      //         });
+      //       })
+      //       .catch((err) => {
+      //         this.setState({
+      //           globus_path: "",
+      //           globus_path_tips: "Globus URL Unavailable",
+      //         });
+      //         if (err.response && err.response.status === 401) {
+      //           localStorage.setItem("isAuthenticated", false);
+      //           window.location.reload();
+      //         }
+      //       });
+      //   }
+      // );
       // Now tha we've got that all set,
       // Here's the hack that disables changing the datatype
       // if it's no longer a base primary type.
@@ -479,6 +481,7 @@ class PublicationEdit extends Component {
         [id]: value
       }
     }))
+    
 
     // switch (name) {
     //   case "lab_dataset_id":
@@ -844,7 +847,7 @@ class PublicationEdit extends Component {
           });
 
           var pubVal = false;
-          if(this.state.editingPublication.publication_status === 'on'){pubVal = true}
+          // if(this.state.editingPublication.publication_status === 'on'){pubVal = true}else{pubVal = false}
         
           // package the data up
           let data = {
@@ -855,11 +858,13 @@ class PublicationEdit extends Component {
             publication_venue:this.state.editingPublication.publication_venue,
             publication_date:this.state.editingPublication.publication_date,
             publication_doi:this.state.editingPublication.publication_doi,
-            publication_status:pubVal,
+            publication_status:this.state.editingPublication.publication_status,
+            // publication_status:pubVal,
             publication_url:this.state.editingPublication.publication_url,
-            issue:this.state.editingPublication.issue,
-            volume:this.state.editingPublication.volume,
-            pageOrArticle:this.state.editingPublication.pageOrArticle,
+            issue:parseInt(this.state.editingPublication.issue,),
+            volume:parseInt(this.state.editingPublication.volume,),
+            pages_or_article_num:this.state.editingPublication.pages_or_article_num,
+            contains_human_genetic_sequences:false //Holdover from Dataset
           };
           console.debug("data", data);
           // throw new Error("TESTIME");
@@ -905,7 +910,8 @@ class PublicationEdit extends Component {
                 data["group_uuid"] = this.state.groups_dataprovider[0].uuid;
               }
 
-              ingest_api_create_dataset(
+              entity_api_create_entity(
+                'publication',
                 JSON.stringify(data),
                 JSON.parse(localStorage.getItem("info")).groups_token
               )
@@ -1073,11 +1079,13 @@ class PublicationEdit extends Component {
               data["group_uuid"] = this.state.groups_dataprovider[0].uuid;
             }
 
-            ingest_api_create_dataset(
+            entity_api_create_entity(
+              'publication',
               JSON.stringify(data),
               JSON.parse(localStorage.getItem("info")).groups_token
             )
               .then((response) => {
+                console.debug("response", response);
                 if (response.status < 300) {
                   //
                   this.setState({
@@ -1131,6 +1139,7 @@ class PublicationEdit extends Component {
                   },
                   () => {
                     //
+                    this.props.reportError(err);
                   }
                 );
               });
@@ -1156,6 +1165,7 @@ class PublicationEdit extends Component {
     // console.debug("validateProcessor", StateName, stateTarget);
 
     if(this.state[stateKey] && (!validateRequired(this.state[stateKey]))) {
+      console.debug("validateProcessor", stateKey, this.state[stateKey]);
       this.setState((prevState) => ({
         formErrors: { ...prevState.formErrors, [stateKey]: "This Field is Required" },
       }));
@@ -1170,80 +1180,22 @@ class PublicationEdit extends Component {
   }
 
   validateForm() {
+    
     return new Promise((resolve, reject) => {
       let isValid =   true;
-
-      var requiredFields = ["source_uuid_list", "data_types","publication_venue","publication_status" ,"publication_date","publication_url" ];
+      var requiredFields = ["source_uuid_list", "publication_venue","publication_status" ,"publication_date","publication_url" ];
       requiredFields.forEach((field) => {
         if(this.validateProcessor(field) ===  false) {
           isValid = false;
           resolve(isValid);
         }
       });
-
-
-      if (
-        this.state.has_other_datatype &&
-        !validateRequired(this.state.other_dt)
-      ) {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, other_dt: "required" },
-        }));
-        isValid = false;
-        resolve(isValid);
-      } else {
-        this.setState((prevState) => ({
-          formErrors: { ...prevState.formErrors, other_dt: "" },
-        }));
-      }
-
-      // do a check to on the data type to see what if it normally contains pii
-      let pii_check = this.assay_contains_pii(this.state.data_types);
-
-      if (
-        this.state.contains_human_genetic_sequences === true &&
-        pii_check === true
-      ) {
-        this.setState((prevState) => ({
-          formErrors: {
-            ...prevState.formErrors,
-            contains_human_genetic_sequences: "",
-          },
-        }));
-      } else if (
-        this.state.contains_human_genetic_sequences === false &&
-        pii_check === false
-      ) {
-        this.setState((prevState) => ({
-          formErrors: {
-            ...prevState.formErrors,
-            contains_human_genetic_sequences: "",
-          },
-        }));
-      } else {
-        let emsg = "Human Genetic Sequences is required";
-        if (
-          this.state.contains_human_genetic_sequences === false &&
-          pii_check === true
-        ) {
-          emsg =
-            "The selected data type contains gene sequence information, please select Yes or change the data type.";
-        } else if (
-          this.state.contains_human_genetic_sequences === true &&
-          pii_check === false
-        ) {
-          emsg =
-            "The selected data type doesn’t contain gene sequence information, please select No or change the data type.";
-        }
-        this.setState((prevState) => ({
-          formErrors: {
-            ...prevState.formErrors,
-            contains_human_genetic_sequences: emsg,
-          },
-        }));
-
-        isValid = false;
-      }
+      
+      var intFields = ["issue", "volume"];
+      intFields.forEach((field) => {
+        console.debug("intFields", field, this.state[field]);
+      });
+      
       this.setState({ isValidData: isValid });
       if (!isValid) {
         this.setState({
@@ -1393,10 +1345,10 @@ class PublicationEdit extends Component {
   }
 
   renderButtons() {
-    var latestCheck = !this.props.editingPublication.next_revision_uuid ||this.props.editingPublication.next_revision_uuid === undefined;
+    var latestCheck = !this.state.editingPublication.next_revision_uuid ||this.state.editingPublication.next_revision_uuid === undefined;
     var writeCheck = this.state.has_write_priv
     var versCheck = this.state.has_version_priv
-    var pubCheck = true // this.props.editingPublication.status === "Published"
+    var pubCheck = this.state.editingPublication.status === "Published"
 
     return (
       <div className="buttonWrapRight">
@@ -1404,9 +1356,8 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
-        {pubCheck && writeCheck && (
-           <>{this.saveButton()}</>
-        )}
+        {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
+        {this.props.newForm && (<>{this.saveButton()}</>)}
         {this.cancelButton()}
       </div>
     );
@@ -1798,7 +1749,9 @@ class PublicationEdit extends Component {
                 </span>
               </Alert>
 
-              {this.renderVersionNav()}
+              {this.props.editingPublication &&(
+                <>{this.renderVersionNav()}</>
+              )}
 
               {this.props.editingPublication &&
                 this.props.editingPublication.upload &&
@@ -1991,7 +1944,7 @@ class PublicationEdit extends Component {
                   }
                   onChange={this.handleInputChange}
                   value={this.state.editingPublication.publication_date}
-                  placeholder="Publication Date"
+                  placeholder="YYYY-MM-DD"
                 />
               </div>
             )}
@@ -2001,7 +1954,7 @@ class PublicationEdit extends Component {
                   type="text"
                   readOnly
                   className="form-control"
-                  id="publication_date"
+                  id="yYYY-MM-DD"
                   value={
                     this.props.editingPublication.publication_date
                   }></input>
@@ -2033,7 +1986,7 @@ class PublicationEdit extends Component {
             {!this.state.readOnly && (
               <div>
                 <input
-                  ref={this.props.editingPublication.publication_doi}
+                  ref={this.state.editingPublication.publication_doi}
                   type="text"
                   name="publication_doi"
                   id="publication_doi"
@@ -2061,6 +2014,7 @@ class PublicationEdit extends Component {
           </div>
 
           {/* pub URL */}
+          
           <div className="form-gropup mb-4">
             <label htmlFor="publication_status">
               Has this Publication been Published? <span className="text-danger">*</span>
@@ -2081,20 +2035,55 @@ class PublicationEdit extends Component {
               </span>
             </label>
             {!this.state.readOnly && (
-              <div className="col-1">
-                <FormControlLabel control={
-                  <Checkbox
-                    required
-                    value={this.state.editingPublication.publication_status}
-                    inputRef={this.props.editingPublication.publication_status}
-                    inputProps={{ 'aria-label': 'publication_status' }}
-                    className={"form-control " +this.errorClass(this.state.formErrors.publication_status) }
-                    onChange={this.handleInputChange}
-                    name="publication_status"
-                    id="publication_status"
-                    />} 
-                  label="Yes" />
-              </div>
+
+              <div className='col-sm-9'>
+                      <div className='form-check form-check-inline'>
+                        <input
+                          className='form-check-input'
+                          type='radio'
+                          name='publication_status'
+                          id='publication_status_no'
+                          value={false}
+                          checked={this.state.editingPublication.publication_status === false   }
+                          onChange={this.handleInputChange}
+                          disabled={!this.state.writeable}
+                        />
+                        <label className='form-check-label' htmlFor='publication_status_no'>
+                          No
+                        </label>
+                      </div>
+                      <div className='form-check form-check-inline'>
+                        <input
+                          className='form-check-input'
+                          type='radio'
+                          name='publication_status'
+                          id='publication_status_yes'
+                          value={true}
+                          checked={this.state.editingPublication.publication_status  === true   }
+                          onChange={this.handleInputChange}
+                          disabled={!this.state.writeable}
+                        />
+                        <label className='form-check-label' htmlFor='publication_status_yes'>
+                          Yes
+                        </label>
+                      </div>
+                      {/* <small id='PHIHelpBlock' className='form-text text-muted'>
+                        Has this Publication been published?
+                      </small> */}
+                    </div>
+                // <FormControlLabel control={
+                //   <Checkbox
+                //     required
+                //     value={this.state.editingPublication.publication_status}
+                //     inputRef={this.props.editingPublication.publication_status}
+                //     inputProps={{ 'aria-label': 'publication_status' }}
+                //     className={"form-control " +this.errorClass(this.state.formErrors.publication_status) }
+                //     onChange={this.handleInputChange}
+                //     name="publication_status"
+                //     id="publication_status"
+                //     />} 
+                //   label="Yes" />
+              // </div>
             )}
             {this.state.readOnly && (
               <div>
@@ -2138,7 +2127,7 @@ class PublicationEdit extends Component {
             {!this.state.readOnly && (
               <div>
                 <input
-                  ref={this.props.editingPublication.publication_url}
+                  ref={this.state.editingPublication.publication_url}
                   type="text"
                   name="publication_url"
                   id="publication_url"
@@ -2247,17 +2236,17 @@ class PublicationEdit extends Component {
             )}
           </div>
 
-          {/* PageOrArticle  */}
+          {/* pages_or_article_num  */}
           <div className="form-group mb-4">
-            <label htmlFor="pageOrArticle">
+            <label htmlFor="pages_or_article_num">
               Page Or Article #{" "}
               <FontAwesomeIcon
                 icon={faQuestionCircle}
                 data-tip
-                data-for="pageOrArticle_tooltip"
+                data-for="pages_or_article_num_tooltip"
               />
               <ReactTooltip
-                id="pageOrArticle_tooltip"
+                id="pages_or_article_num_tooltip"
                 className={"tooltip"}
                 place="top"
                 type="info"
@@ -2268,12 +2257,12 @@ class PublicationEdit extends Component {
             {!this.state.readOnly && (
               <div>
                 <textarea
-                  name="pageOrArticle"
-                  id="pageOrArticle"
+                  name="pages_or_article_num"
+                  id="pages_or_article_num"
                   cols="5"
                   rows="1"
                   className="form-control"
-                  value={this.state.editingPublication.pageOrArticle}
+                  value={this.state.editingPublication.pages_or_article_num}
                   onChange={this.handleInputChange}
                 />
               </div>
