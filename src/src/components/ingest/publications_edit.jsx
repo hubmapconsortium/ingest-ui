@@ -12,6 +12,9 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Input from '@mui/material/Input';
 import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormLabel from '@mui/material/FormLabel';
 
 import "../../App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -33,6 +36,7 @@ import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import {
+  ingest_api_create_publication,
   ingest_api_create_dataset,
   ingest_api_allowable_edit_states,
   ingest_api_dataset_submit,
@@ -126,13 +130,18 @@ class PublicationEdit extends Component {
     isValidData: true,
     formErrors: {
       title:"",
-      lab_dataset_id: "",
-      source_uuid_list: "",
-      source_uuid: "",
-      publication_date: "",
-      publication_doi: "",
-      publication_venue: "",
-      publication_url: "",
+      issue:"",
+      volume:"",
+      pages_or_article_num:"",
+      description:"",
+      lab_dataset_id:"",
+      source_uuid_list:"",
+      source_uuid:"",
+      publication_date:"",
+      publication_venue:"",
+      publication_doi:"",
+      publication_url:"",
+      publication_status:"",
     },
     validationStatus: {
       title:"",
@@ -147,6 +156,22 @@ class PublicationEdit extends Component {
       publication_venue: "",
       publication_doi: "",
       publication_url: "",
+      publication_status: ""
+    },
+    fieldDescriptons: {
+      title:"The title of the publication",
+      issue:"The issue number of the journal that it was published in.",
+      volume:"The volume number of a journal that it was published in.",
+      pages_or_article_num:'The pages or the article number in the publication journal e.g., "23", "23-49", "e1003424.',
+      description:"Free text description of the publication",
+      lab_dataset_id: "A name or identifier used by the lab who is uploading the data to cross reference the data locally",
+      source_uuid_list: "",
+      source_uuid: "",
+      publication_date: "The date of publication",
+      publication_venue: "The venue of the publication, journal, conference, preprint server, etc...",
+      publication_doi: "The doi of the publication. (##.####/[alpha-numeric-string])",
+      publication_url: "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
+      publication_status: "if the publication has been published yet or not",
     },
   };
 
@@ -170,6 +195,8 @@ class PublicationEdit extends Component {
   componentDidMount() {
     console.debug("PublicationEdit: componentDidMount");
     // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
+
+    console.debug("this.state.validationStatus.publication_doi.length >0", this.state.validationStatus.publication_doi.length >0);
     // Modal state as flag for add/remove?
     document.addEventListener("click", this.handleClickOutside);
     this.setAssayLists();
@@ -505,14 +532,17 @@ class PublicationEdit extends Component {
   };
 
   handleInputChange = (e) => {
-    var { id, name, value } = e.target;
+    var { id, value, name } = e.target;
 
-    console.debug("handleInputChange", id, name, value, e);
+    console.debug("handleInputChange",name, id+": "+value);
+    // Strugglin to get the ID from the radio group
+    var checkName = (name==="publication_status") ? name : id;
 
     this.setState(prev => ({
       editingPublication: {
         ...prev.editingPublication,
-        [id]: value
+        [checkName]: value
+        // [id]: valCap
       }
     }))
     
@@ -1106,9 +1136,6 @@ class PublicationEdit extends Component {
           } else {
             // new creations
 
-            if (this.state.lab_dataset_id) {
-              data["lab_dataset_id"] = this.state.lab_dataset_id;
-            }
             // the group info on a create, check for the defaults
             if (
               this.state.selected_group &&
@@ -1121,7 +1148,7 @@ class PublicationEdit extends Component {
               data["group_uuid"] = this.state.groups_dataprovider[0].uuid;
             }
 
-            ingest_api_create_dataset(
+            ingest_api_create_publication(
               JSON.stringify(data),
               JSON.parse(localStorage.getItem("info")).groups_token
             )
@@ -1233,7 +1260,7 @@ class PublicationEdit extends Component {
     return new Promise((resolve, reject) => {
       let isValid =   true;
 
-      var requiredFields = ["title","publication_venue","publication_status" ,"publication_date","publication_url" ];
+      var requiredFields = ["title","publication_venue","publication_date","publication_url" ];
       requiredFields.forEach((field) => {
         if(this.validateProcessor(field) ===  false) {
           isValid = false;
@@ -1907,7 +1934,7 @@ class PublicationEdit extends Component {
               {/* <InputLabel shrink htmlFor="title">Title*</InputLabel> */}
               <TextField
                 label="Title"
-                helperText={"The Title of the Publication" }
+                helperText={this.state.fieldDescriptons.title }
                 variant="standard"
                 id="title"
                 name="title"
@@ -1930,7 +1957,7 @@ class PublicationEdit extends Component {
               disabled={this.state.readOnly}>
               <TextField
                 label="Venue"
-                helperText={"Venue Where Published" }
+                helperText={this.state.fieldDescriptons.publication_venue}
                 variant="standard"
                 id="publication_venue"
                 name="publication_venue"
@@ -2004,7 +2031,7 @@ class PublicationEdit extends Component {
               disabled={this.state.readOnly}>
               <TextField
                 label="Publication DOI"
-                helperText={'The protocol used. This can be supplied a DOI from http://protocols.io'  }
+                helperText={this.state.fieldDescriptons.publication_doi}
                 variant="standard"
                 id="publication_doi"
                 name="publication_doi"
@@ -2016,115 +2043,42 @@ class PublicationEdit extends Component {
                 <FormHelperText id="component-error-text"> {this.state.validationStatus.publication_doi}</FormHelperText>
               )}
             </FormControl>
-
-            
+              {this.state.validationStatus.publication_doi.length >0 && ( 
+                <FormHelperText id="component-error-text"> {this.state.validationStatus.publication_doi}</FormHelperText>
+              )}
           </div>
 
           {/* pub Status */}
   
           <div className="form-gropup mb-4">
-            <label htmlFor="publication_status">
-              Has this Publication been Published? <span className="text-danger">*</span>
-              <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="publication_status"
-                />
-                <ReactTooltip
-                  id="publication_status_tooltip"
-                  className={"tooltip"}
-                  place="top"
-                  type="info"
-                  effect="solid">
-                  <p>Is this publication Published?</p>
-                </ReactTooltip>
-              </span>
-            </label>
-           
-            {!this.state.readOnly && (
-              <div className='col-sm-9'>
-                <div className='form-check form-check-inline'>
-                  <input
-                    className='form-check-input'
-                    type='radio'
-                    name='publication_status'
-                    id='publication_status_no'
-                    // value={false}
-                    checked={this.state.editingPublication.publication_status === false   }
-                    onChange={() => this.handlePublicationStatus(false)}
-                    // onChange={this.handlePublicationStatus(false)}
-                    disabled={!this.state.writeable}
-                  />
-                  <label className='form-check-label' htmlFor='publication_status_no'>
-                    No
-                  </label>
-                </div>
-                <div className='form-check form-check-inline'>
-                  <input
-                    className='form-check-input'
-                    type='radio'
-                    name='publication_status'
-                    id='publication_status_yes'
-                    // value={true}
-                    checked={this.state.editingPublication.publication_status  === true   }
-                    onChange={() => this.handlePublicationStatus(true)}
-                    disabled={!this.state.writeable}
-                  />
-                  <label className='form-check-label' htmlFor='publication_status_yes'>
-                    Yes
-                  </label>
-                </div>
-                {/* <small id='PHIHelpBlock' className='form-text text-muted'>
-                  Has this Publication been published?
-                </small> */}
-              </div>
-              
-            )}
-            {this.state.readOnly && (
-              <div>
-                <FormControlLabel control={
-                  <Checkbox
-                    required
-                    disabled
-                    value={this.state.editingPublication.publication_status}
-                    inputRef={this.props.editingPublication.publication_status}
-                    inputProps={{ 'aria-label': 'publication_status' }}
-                    className={"form-control " +this.errorClass(this.state.formErrors.publication_status) }
-                    onChange={this.handleInputChange}
-                    name="publication_status"
-                    id="publication_status"
-                    />} 
-                  label="Yes" />
-              </div>
-            )}
+            <FormControl error={this.state.validationStatus.publication_status} >
+              <FormLabel id="publication_status">Has this Publication been Published?</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby="publication_status"
+                id="publication_status"
+                name="publication_status"
+                value={this.state.editingPublication.publication_status}
+                className={"form-control " +this.errorClass(this.state.formErrors.publication_status) +" "}
+                onChange={this.handleInputChange}>
+                <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                <FormControlLabel value={false} control={<Radio />} label="No" />
+              </RadioGroup>
+              {this.state.validationStatus.publication_doi.length >0 && ( 
+                <FormHelperText id="component-error-text"> {this.state.validationStatus.publication_status}</FormHelperText>
+              )}
+            </FormControl>
           </div>
           
           {/* pub URL */}
           <div className="form-gropup mb-4">
-            <label htmlFor="publication_url">
-              Publication URL <span className="text-danger">*</span>
-              <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="publication_url"
-                />
-                <ReactTooltip
-                  id="publication_url_tooltip"
-                  className={"tooltip"}
-                  place="top"
-                  type="info"
-                  effect="solid">
-                  <p>The URL at the publishers server for print/pre-print</p>
-                </ReactTooltip>
-              </span>
-            </label>
             <FormControl 
               fullWidth
               error={this.state.validationStatus.publication_url.length >0}
               disabled={this.state.readOnly}>
               <TextField
+                label="Publication URL"
+                helperText={this.state.fieldDescriptons.publication_url}
                 variant="standard"
                 id="publication_url"
                 name="publication_url"
@@ -2140,135 +2094,79 @@ class PublicationEdit extends Component {
 
           {/* Issue  */}
           <div className="form-group mb-4">
-            <label htmlFor="issue">
-              Issue{" "}
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                data-tip
-                data-for="issue_tooltip"
-              />
-              <ReactTooltip
-                id="issue_tooltip"
-                className={"tooltip"}
-                place="top"
-                type="info"
-                effect="solid">
-                <p>issue.</p>
-              </ReactTooltip>
-            </label>
-             <FormControl 
-              disabled={this.state.readOnly}
-              error={this.state.validationStatus.issue.length >0}>
+            <FormControl 
+              fullWidth
+              error={this.state.validationStatus.issue.length >0}
+              disabled={this.state.readOnly}>
               <TextField
+                label="Issue"
+                helperText={this.state.fieldDescriptons.issue}
                 variant="standard"
                 id="issue"
-                type="number"
                 name="issue"
                 className={"form-control " +this.errorClass(this.state.formErrors.issue) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.issue}
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
               />
               {this.state.validationStatus.issue.length >0 && ( 
                 <FormHelperText id="component-error-text"> {this.state.validationStatus.issue}</FormHelperText>
               )}
-            </FormControl>            
+            </FormControl>
           </div>
 
           {/* Volume  */}
           <div className="form-group mb-4">
-            <label htmlFor="volume">
-              Volume{" "}
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                data-tip
-                data-for="volume_tooltip"
-              />
-              <ReactTooltip
-                id="volume_tooltip"
-                className={"tooltip"}
-                place="top"
-                type="info"
-                effect="solid">
-                <p>volume.</p>
-              </ReactTooltip>
-            </label>
             <FormControl 
-              disabled={this.state.readOnly}
-              error={this.state.validationStatus.volume.length >0}>
-              <TextField
-                variant="standard"
-                id="volume"
-                type="number"
-                name="volume"
-                className={"form-control " +this.errorClass(this.state.formErrors.volume) +" "}
-                onChange={this.handleInputChange}
-                value={this.state.editingPublication.volume}
-              />
-              {this.state.validationStatus.volume.length >0 && ( 
-                <FormHelperText id="component-error-text"> {this.state.validationStatus.volume}</FormHelperText>
-              )}
-            </FormControl>
+                fullWidth
+                error={this.state.validationStatus.volume.length >0}
+                disabled={this.state.readOnly}>
+                <TextField
+                  label="Volume"
+                  helperText={this.state.fieldDescriptons.volume}
+                  variant="standard"
+                  id="volume"
+                  name="volume"
+                  className={"form-control " +this.errorClass(this.state.formErrors.volume) +" "}
+                  onChange={this.handleInputChange}
+                  value={this.state.editingPublication.volume}
+                />
+                {this.state.validationStatus.volume.length >0 && ( 
+                  <FormHelperText id="component-error-text"> {this.state.validationStatus.volume}</FormHelperText>
+                )}
+              </FormControl>
           </div>
 
           {/* pages_or_article_num  */}
           <div className="form-group mb-4">
-            <label htmlFor="pages_or_article_num">
-              Page Or Article #{" "}
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                data-tip
-                data-for="pages_or_article_num_tooltip"
-              />
-              <ReactTooltip
-                id="pages_or_article_num_tooltip"
-                className={"tooltip"}
-                place="top"
-                type="info"
-                effect="solid">
-                <p>The pages or the aricle number in the publication journal</p>
-              </ReactTooltip>
-            </label>
             <FormControl 
-              disabled={this.state.readOnly}
-              fullWidth
-              error={this.state.validationStatus.pages_or_article_num.length >0}>
-              <TextField
-                variant="standard"
-                id="pages_or_article_num"
-                name="pages_or_article_num"
-                className={"form-control " +this.errorClass(this.state.formErrors.pages_or_article_num) +" "}
-                onChange={this.handleInputChange}
-                value={this.state.editingPublication.pages_or_article_num}
-              />
-              {this.state.validationStatus.pages_or_article_num.length >0 && ( 
-                <FormHelperText id="component-error-text"> {this.state.validationStatus.pages_or_article_num}</FormHelperText>
-              )}
-            </FormControl>
+                fullWidth
+                error={this.state.validationStatus.pages_or_article_num.length >0}
+                disabled={this.state.readOnly}>
+                <TextField
+                  label="Pages or Article Number"
+                  helperText={this.state.fieldDescriptons.pages_or_article_num}
+                  variant="standard"
+                  id="pages_or_article_num"
+                  name="pages_or_article_num"
+                  className={"form-control " +this.errorClass(this.state.formErrors.pages_or_article_num) +" "}
+                  onChange={this.handleInputChange}
+                  value={this.state.editingPublication.pages_or_article_num}
+                />
+                {this.state.validationStatus.pages_or_article_num.length >0 && ( 
+                  <FormHelperText id="component-error-text"> {this.state.validationStatus.pages_or_article_num}</FormHelperText>
+                )}
+              </FormControl>         
           </div>
 
           {/* Lab name or ID */}
           <div className="form-group">
-            <label htmlFor="lab_dataset_id">Lab Name or ID</label>
-            <span className="px-2">
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                data-tip
-                data-for="lab_dataset_id_tooltip"
-              />
-              <ReactTooltip
-                id="lab_dataset_id_tooltip"
-                place="top"
-                type="info"
-                effect="solid">
-                <p>Lab Name or ID</p>
-              </ReactTooltip>
-            </span>
             <FormControl 
-              disabled={this.state.readOnly}
               fullWidth
-              error={this.state.validationStatus.lab_dataset_id.length >0}>
+              error={this.state.validationStatus.lab_dataset_id.length >0}
+              disabled={this.state.readOnly}>
               <TextField
+                label="Lab Name or ID"
+                helperText={this.state.fieldDescriptons.lab_dataset_id}
                 variant="standard"
                 id="lab_dataset_id"
                 name="lab_dataset_id"
@@ -2279,31 +2177,18 @@ class PublicationEdit extends Component {
               {this.state.validationStatus.lab_dataset_id.length >0 && ( 
                 <FormHelperText id="component-error-text"> {this.state.validationStatus.lab_dataset_id}</FormHelperText>
               )}
-            </FormControl>
+            </FormControl>  
           </div>
             
           {/* Description / Abstract */}
           <div className="form-group">
-            <label htmlFor="description">Abstract</label>
-            <span className="px-2">
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
-                data-tip
-                data-for="description_tooltip"
-              />
-              <ReactTooltip
-                id="description_tooltip"
-                place="top"
-                type="info"
-                effect="solid">
-                <p>Description Tips</p>
-              </ReactTooltip>
-            </span>
-            <FormControl 
-              disabled={this.state.readOnly}
+          <FormControl 
               fullWidth
-              error={this.state.validationStatus.description.length >0}>
+              error={this.state.validationStatus.description.length >0}
+              disabled={this.state.readOnly}>
               <TextField
+                label="Abstract"
+                helperText={this.state.fieldDescriptons.description}
                 variant="standard"
                 id="description"
                 name="description"
@@ -2314,7 +2199,7 @@ class PublicationEdit extends Component {
               {this.state.validationStatus.description.length >0 && ( 
                 <FormHelperText id="component-error-text"> {this.state.validationStatus.description}</FormHelperText>
               )}
-            </FormControl>
+            </FormControl>  
           </div>
 
         

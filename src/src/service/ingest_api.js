@@ -143,6 +143,7 @@ export function ingest_api_allowable_edit_states_statusless(uuid, auth) {
  *
  */
 export function ingest_api_create_dataset(data, auth) { 
+  console.debug("ingest_api_create_dataset", data);
   const options = {
       headers: {
         Authorization:
@@ -164,7 +165,7 @@ export function ingest_api_create_dataset(data, auth) {
 };
 
 /* 
- * create a dataset
+ * create a publication
  *
  */
 export function ingest_api_create_publication(data, auth) { 
@@ -176,7 +177,7 @@ export function ingest_api_create_publication(data, auth) {
       }
     };
 
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/publication`;
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/publication`;
   return axios 
      .post(url, data, options)
       .then(res => {
@@ -184,7 +185,11 @@ export function ingest_api_create_publication(data, auth) {
           return {status: res.status, results: results}
       })
       .catch(error => {
-        return {error}
+        if(error.response){
+          return {status: error.response.status, results: error.response.data}
+        }else{
+          return {error}
+        }
       });
 };
 
