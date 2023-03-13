@@ -149,7 +149,8 @@ export function App (props){
       }
         
     });
-    }catch {
+    }catch(error){
+      console.debug("LocalStorageAuth Error", error);
       setTimerStatus(false);
       setIsLoading(false)
     }
