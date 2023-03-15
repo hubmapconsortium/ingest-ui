@@ -863,3 +863,8 @@ svg.invalid{
 .form-select .MuiSelect-icon{
   display:none;
 }
+
+.component-error-text{
+  color:red!important;
+  margin-left:0px!important;
+}

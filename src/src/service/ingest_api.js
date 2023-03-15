@@ -177,7 +177,7 @@ export function ingest_api_create_publication(data, auth) {
       }
     };
 
-  let url = `${process.env.REACT_APP_ENTITY_API_URL}/publication`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/publications`;
   return axios 
      .post(url, data, options)
       .then(res => {

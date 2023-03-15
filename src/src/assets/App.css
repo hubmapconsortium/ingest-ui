@@ -791,3 +791,8 @@ svg.invalid{
   background-color: #343a40;
   border-color: #454d55;
 }
+
+.component-error-text{
+  color:red!important;
+  margin-left:0px!important;
+}
