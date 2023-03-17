@@ -694,9 +694,9 @@ class PublicationEdit extends Component {
           </ReactTooltip>
 
           <TableContainer
+            // className={this.errorClass(this.state.formErrors.source_uuid_list)}
             component={Paper}
-            style={{ maxHeight: 450 }}
-            className={this.errorClass(this.state.formErrors.source_uuid_list)}>
+            style={{ maxHeight: 450 }}>
             <Table
               aria-label="Associated Publications"
               size="small"
@@ -791,12 +791,18 @@ class PublicationEdit extends Component {
                 </Box>
 
                 <Box p={1} width="100%">
-                  {this.errorClass(this.state.formErrors.source_uuid_list) && (
+                  {this.state.validationStatus.source_uuid_list && this.state.validationStatus.source_uuid_list.length>0  && (
                     <Alert severity="error" width="100% ">
                       {this.state.formErrors.source_uuid_list}{" "}
                       {this.state.formErrors.source_uuid}
                     </Alert>
                   )}
+                  {/* {this.errorClass(this.state.formErrors.source_uuid_list) && (
+                    <Alert severity="error" width="100% ">
+                      {this.state.formErrors.source_uuid_list}{" "}
+                      {this.state.formErrors.source_uuid}
+                    </Alert>
+                  )} */}
                 </Box>
 
                 {/*  */}
@@ -917,7 +923,7 @@ class PublicationEdit extends Component {
           if(this.state.editingPublication.publication_status === 'true'){pubVal = true}else{pubVal = false}
         
           // package the data up
-          let data = {
+          var data = {
             lab_dataset_id: this.state.editingPublication.lab_dataset_id,
             data_types: ["publication"],
             description: this.state.editingPublication.description,
@@ -933,6 +939,9 @@ class PublicationEdit extends Component {
             pages_or_article_num:this.state.editingPublication.pages_or_article_num,
             contains_human_genetic_sequences:false //Holdover from Dataset
           };
+          if(isNaN(data.issue)){delete data.issue}
+          if(isNaN(data.volume)){delete data.volume}
+
           console.debug("data", data);
           // throw new Error("TESTIME");
           // get the Source ancestor
@@ -955,8 +964,9 @@ class PublicationEdit extends Component {
             },
           };
 
+          // Edits, not news
           if (this.props.editingPublication && !this.props.newForm) {
-            // If we';re making a new Version
+
             if (submitIntention === "newversion") {
               // @TODO: Basically repeates what's in the Create fucntionality,
               // and the previous_revision_uuid is added
@@ -1040,110 +1050,46 @@ class PublicationEdit extends Component {
                   }
                 );
               });
-
-
-            }
-            // if user selected Publish
-            else if (submitIntention === "published") {
-              // From State?
-              ingest_api_dataset_publish(
-                this.props.editingPublication.uuid,
-                this.JSON.stringify(data),
-                config
-              )
-                .then((res) => {
-                  this.props.onUpdated(res.data);
-                })
-                .catch((error) => {
-                  this.setState({
-                    submit_error: true,
-                    submitting: false,
-                    submitErrorResponse: error.result.data,
-                    buttonSpinnerTarget: "",
-                  });
-                });
             
-            
-            
-            }else if (submitIntention === "processing") {
-              ingest_api_dataset_submit(
-                this.props.editingPublication.uuid,
-                JSON.stringify(data),
-                JSON.parse(localStorage.getItem("info")).groups_token
-              )
-                .then((response) => {
-                  if (response.status < 300) {
-                    this.props.onUpdated(response.results);
-                  } else {
-                    // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200
-                    var statusText =
-                      response.err.response.status +
-                      " " +
-                      response.err.response.statusText;
-                    this.setState({
-                      submit_error: true,
-                      submitting: false,
-                      buttonSpinnerTarget: "",
-                      submitErrorStatus: statusText,
-                      submitErrorResponse: response.err.response.data,
-                    });
-                  }
-                })
-                .catch((error) => {
-                  this.props.reportError(error);
-                  this.setState({
-                    submit_error: true,
-                    submitting: false,
-                    submitErrorResponse: error,
-                    submitErrorStatus: error,
-                    buttonSpinnerTarget: "",
-                  });
-                });
-
-
-                
-            } else {
+            }else{
+              console.debug("UPDATING data", data);
               // just update
-              ingest_api_create_dataset(
-                this.props.editingPublication.uuid,
-                JSON.stringify(data),
-                JSON.parse(localStorage.getItem("info")).groups_token
-              )
+              entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
-                  if (response.status < 300) {
-                    this.setState({
-                      submit_error: false,
-                      submitting: false,
-                    });
-                    this.props.onUpdated(response.results);
-                  } else {
-                    this.setState({
-                      submit_error: true,
-                      submitting: false,
-                      submitErrorResponse: response,
-                      // submitErrorResponse: response.results.statusText,
-                      buttonSpinnerTarget: "",
-                    });
-                  }
-                })
+                  console.debug("entity_api_update_entity response", response);
+                    if (response.status < 300 ) {
+                      this.setState({ 
+                        submit_error: false, 
+                        submitting: false, 
+                        });
+                      this.props.onUpdated(response.results);
+                    } else {
+                      console.debug("entity_api_update_entity NONERR error", response);
+                      this.setState({ 
+                        submit_error: true, 
+                        submitting: false, 
+                        // submitErrorResponse:response.results.statusText,
+                        submitErrorResponse:response,
+                        buttonSpinnerTarget:"" });
+                    }
+                }) 
                 .catch((error) => {
+                    console.debug("entity_api_update_entity error", error);
                   this.props.reportError(error);
-                  this.setState({
-                    submit_error: true,
-                    submitting: false,
-                    submitErrorResponse: error.result.data,
-                    buttonSpinnerTarget: "",
+                    this.setState({ 
+                    submit_error: true, 
+                    submitting: false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"" });
                   });
-                });
             }
-          } else {
-            // new creations
 
+            
+
+          // New, not edits
+          }else{
             // the group info on a create, check for the defaults
-            if (
-              this.state.selected_group &&
-              this.state.selected_group.length > 0
-            ) {
+            if (this.state.selected_group &&this.state.selected_group.length > 0){
               data["group_uuid"] = this.state.selected_group;
             } else {
               // If none selected, we need to pick a default BUT
@@ -1168,7 +1114,7 @@ class PublicationEdit extends Component {
                     .then((res) => {
                       this.setState({
                           globus_path: res.results,
-                        },() => {
+                        },() => { 
                           this.props.onCreated({
                             entity: response.results,
                             globus_path: res.results,
@@ -1273,6 +1219,7 @@ class PublicationEdit extends Component {
       
       if(this.state.source_uuid_list.length === 0) {
         this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, source_uuid_list:"Please select at least one source" },
           formErrors: { ...prevState.formErrors, source_uuid_list:"is-invalid" },
         }));
         isValid = false;
@@ -1282,7 +1229,7 @@ class PublicationEdit extends Component {
       
       var intFields = ["issue", "volume"];
       intFields.forEach((field) => {
-        if(this.state.editingPublication[field].length >0 && isNaN(this.state.editingPublication[field])) {
+        if(this.state.editingPublication[field] && this.state.editingPublication[field].length >0 && isNaN(this.state.editingPublication[field])) {
           this.setState((prevState) => ({
             validationStatus:  { ...prevState.validationStatus, [field]: "Must be a Number" },
             formErrors: { ...prevState.formErrors, [field]: "is-invalid" },
@@ -1623,11 +1570,12 @@ class PublicationEdit extends Component {
     );
   }
 
-  errorClass(error) {
-    console.debug("errorClass", error);
+  errorClass(error, e) {
+    console.debug("errorClass", error, e);
     if (error === "valid") return "is-valid";
-    if (error === "invalid" || error === "is-invalid") return "is-invalid";
-    if (error && error.length && error.length === 0) return "is-invalid";
+    else if (error === "invalid" || error === "is-invalid") return "is-invalid";
+    else if (error && error.length && error.length === 0) return "is-invalid";
+    else return "";
 
     // return error.length === 0 ? "" : "is-invalid";
   }
@@ -1909,22 +1857,23 @@ class PublicationEdit extends Component {
             </Dialog>
           </div>
 
-          {/* tITLE */}
+          {/* tITLE */} 
+          {/* Only editable on New, not Save */}
           <div className="form-gropup mb-4">
            
             <FormControl 
-              fullWidth
-              disabled={this.state.readOnly}>
+              fullWidth>
               {/* <InputLabel shrink htmlFor="title">Title*</InputLabel> */}
               <TextField
                 required
+                disabled={!this.state.newForm}
                 error={this.state.validationStatus.title.length >0}
                 label="Title"
                 helperText={this.state.fieldDescriptons.title}
                 variant="standard"
                 id="title"
                 name="title"
-                className={"form-control " +this.errorClass(this.state.formErrors.title) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.title) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.title}
               />
@@ -1947,7 +1896,7 @@ class PublicationEdit extends Component {
                 variant="standard"
                 id="publication_venue"
                 name="publication_venue"
-                className={"form-control " +this.errorClass(this.state.formErrors.publication_venue) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.publication_venue) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.publication_venue}
               />
@@ -2022,7 +1971,7 @@ class PublicationEdit extends Component {
                 variant="standard"
                 id="publication_date"
                 name="publication_date"
-                className={"form-control " +this.errorClass(this.state.formErrors.publication_date) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.publication_date) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.publication_date}
               />
@@ -2044,7 +1993,7 @@ class PublicationEdit extends Component {
                 id="publication_status"
                 name="publication_status"
                 value={this.state.editingPublication.publication_status}
-                className={"form-control " +this.errorClass(this.state.formErrors.publication_status) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.publication_status) +" "}
                 onChange={this.handleInputChange}>
                 <FormControlLabel value={true} control={<Radio />} label="Yes" />
                 <FormControlLabel value={false} control={<Radio />} label="No" />
@@ -2068,7 +2017,7 @@ class PublicationEdit extends Component {
                 variant="standard"
                 id="publication_url"
                 name="publication_url"
-                className={"form-control " +this.errorClass(this.state.formErrors.publication_url) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.publication_url) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.publication_url}
               />
@@ -2090,7 +2039,7 @@ class PublicationEdit extends Component {
                 variant="standard"
                 id="publication_doi"
                 name="publication_doi"
-                className={"form-control " +this.errorClass(this.state.formErrors.publication_doi) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.publication_doi) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.publication_doi}
               />
@@ -2112,7 +2061,7 @@ class PublicationEdit extends Component {
                 variant="standard"
                 id="issue"
                 name="issue"
-                className={"form-control " +this.errorClass(this.state.formErrors.issue) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.issue) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.issue}
               />
@@ -2134,7 +2083,7 @@ class PublicationEdit extends Component {
                   variant="standard"
                   id="volume"
                   name="volume"
-                  className={"form-control " +this.errorClass(this.state.formErrors.volume) +" "}
+                  //className={"form-control " +this.errorClass(this.state.formErrors.volume) +" "}
                   onChange={this.handleInputChange}
                   value={this.state.editingPublication.volume}
                 />
@@ -2155,7 +2104,7 @@ class PublicationEdit extends Component {
                 variant="standard"
                 id="pages_or_article_num"
                 name="pages_or_article_num"
-                className={"form-control " +this.errorClass(this.state.formErrors.pages_or_article_num) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.pages_or_article_num) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.pages_or_article_num}
               />
@@ -2177,7 +2126,7 @@ class PublicationEdit extends Component {
                 variant="standard"
                 id="lab_dataset_id"
                 name="lab_dataset_id"
-                className={"form-control " +this.errorClass(this.state.formErrors.lab_dataset_id) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.lab_dataset_id) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.lab_dataset_id}
               />
@@ -2201,7 +2150,7 @@ class PublicationEdit extends Component {
                 name="description"
                 multiline
                 // rows={4}
-                className={"form-control " +this.errorClass(this.state.formErrors.description) +" "}
+                //className={"form-control " +this.errorClass(this.state.formErrors.description) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.description}
               />
@@ -2233,7 +2182,8 @@ class PublicationEdit extends Component {
         <GroupModal
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
-          submit={this.handleSubmit}
+          submit={this.handleSubmit} 
+          // submit={this.handleSubmit}  Modal only appears when theres no group, which only happens on new form. Intent is blank
           handleInputChange={this.handleInputChange}
         />
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
