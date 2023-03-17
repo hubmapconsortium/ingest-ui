@@ -1510,7 +1510,7 @@ class PublicationEdit extends Component {
       <Box sx={{ width: "50%" }}>
         {this.props.editingPublication.next_revision_uuid && (
           <>
-            -+Next Version:{" "}
+            Next Version:{" "}
             <Button
               variant="text"
               onClick={() => this.handleVersionNavigate("next")}>
@@ -2103,7 +2103,6 @@ class PublicationEdit extends Component {
           {/* Issue  */}
           <div className="form-group mb-4">
             <FormControl 
-              fullWidth
               disabled={this.state.readOnly}>
               <TextField
                 error={this.state.validationStatus.issue.length >0}
@@ -2126,7 +2125,6 @@ class PublicationEdit extends Component {
           {/* Volume  */}
           <div className="form-group mb-4">
             <FormControl 
-                fullWidth
                 disabled={this.state.readOnly}>
                 <TextField
                   label="Volume"
@@ -2149,7 +2147,6 @@ class PublicationEdit extends Component {
           {/* pages_or_article_num  */}
           <div className="form-group mb-4">
             <FormControl 
-              fullWidth
               disabled={this.state.readOnly}>
               <TextField
                 error={this.state.validationStatus.pages_or_article_num.length >0}
