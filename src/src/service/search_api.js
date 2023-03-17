@@ -249,7 +249,12 @@ export function  search_api_get_assay_set(scope){
         return {data}
       })
       .catch(error => {
-        return {error}
+        console.debug("search_api_get_assay_set", error, error.response);
+        if(error.response){
+          return {status: error.response.status, results: error.response.data}
+        }else{
+          return {error}
+        }
       });
 };
 

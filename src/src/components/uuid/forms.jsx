@@ -10,6 +10,7 @@ import DatasetEdit from "../ingest/dataset_edit";
 import Result from "./result";
 // import NewDatasetModal from "../../ingest/newDatasetModal";
 import NewDatasetModal from "../ingest/newDatasetModal";
+import PublicationEdit from '../ingest/publications_edit';
 
 
 class Forms extends Component { 
@@ -211,6 +212,23 @@ class Forms extends Component {
             dtl_all={this.props.dtl_all}
             dtl_status={false}
             editingDataset="{}"
+          />
+          
+        )
+    } else if (this.props.formType === "publication"  ) {
+      
+      
+        return (
+         <PublicationEdit
+            // dataTypeList={this.props.dataTypeList}
+            onCreated={this.onCreated}
+            onReturn={this.props.handleCancel}
+            changeLink={this.onChangeGlobusLink.bind(this)}
+            newForm={true}
+            // dtl_primary={this.props.dtl_primary}
+            // dtl_all={this.props.dtl_all}
+            // dtl_status={false}
+            // editingPublication="{}"
           />
           
         )

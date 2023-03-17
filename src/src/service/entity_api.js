@@ -6,6 +6,7 @@ import axios from "axios";
  * return:  { status, results}
  */
 export function entity_api_get_entity(uuid, auth) { 
+  console.debug("entity_api_get_entity", auth);
   const options = {
       headers: {
         Authorization:
@@ -21,7 +22,12 @@ export function entity_api_get_entity(uuid, auth) {
           return {status: res.status, results: results}
       })
       .catch(error => {
-        return {error}
+        console.debug("entity_api_get_entity", error, error.response);
+        if(error.response){
+          return {status: error.response.status, results: error.response.data}
+        }else{
+          return {error}
+        }
       });
 };
 
@@ -59,6 +65,7 @@ export function entity_api_update_entity(uuid, data, auth) {
 export function entity_api_create_entity(entitytype, data, auth) { 
   const options = {
       headers: {
+        'X-Hubmap-Application': 'ingest-api',
         Authorization:
           "Bearer " + auth,
         "Content-Type": "application/json"

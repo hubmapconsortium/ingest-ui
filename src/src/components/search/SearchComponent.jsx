@@ -439,6 +439,8 @@ class SearchComponent extends Component {
           which_cols_def = COLUMN_DEF_DATASET;
         } else if (colSet === 'upload' ) {
           which_cols_def = COLUMN_DEF_UPLOADS;
+        } else if (colSet === 'publication' ) {
+          which_cols_def = COLUMN_DEF_DATASET;
         } 
     }
 
