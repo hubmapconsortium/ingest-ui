@@ -36,7 +36,7 @@ export function entity_api_get_entity(uuid, auth) {
  *
  */
 export function entity_api_update_entity(uuid, data, auth) { 
-  console.debug("entity_api_update_entity", data);
+  // console.debug("entity_api_update_entity", data);
   const options = {
       headers: {
         Authorization:
@@ -54,7 +54,12 @@ export function entity_api_update_entity(uuid, data, auth) {
         return {status: res.status, results: results}
       })
       .catch(error => {
-        return {error}
+        console.debug("entity_api_update_entity Error", error, error.response);
+        if(error.response){
+          return error.response.data.error
+        }else{
+          return {error}
+        }
       });
 };
 
