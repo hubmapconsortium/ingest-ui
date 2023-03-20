@@ -1054,6 +1054,8 @@ class PublicationEdit extends Component {
             }else{
               console.debug("UPDATING data", data);
               // just update
+              // Title's immutable, in the state for rendering but strip before sending
+              if(!this.props.newForm){delete data.title}
               entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   console.debug("entity_api_update_entity response", response);
