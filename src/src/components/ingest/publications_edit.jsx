@@ -104,6 +104,7 @@ class PublicationEdit extends Component {
     has_publish_priv: false,
     has_version_priv: false,
     groupsToken: "",
+    writeable: false,
 
     // Data that sets the scene
     assay_type_primary: true,
@@ -221,6 +222,8 @@ class PublicationEdit extends Component {
     } else {
       localStorage.setItem("isAuthenticated", false);
     }
+
+    // Checking if we're published and thus should only be writeable
 
     // Figure out our permissions
     // console.debug("CHECK PERM", this.props.editingPublication, this.props.editingPublication.uuid);
@@ -1055,7 +1058,7 @@ class PublicationEdit extends Component {
               console.debug("UPDATING data", data);
               // just update
               // Title's immutable, in the state for rendering but strip before sending
-              if(!this.props.newForm){delete data.title}
+              // if(!this.props.newForm){delete data.title}
               entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   console.debug("entity_api_update_entity response", response);
@@ -1860,7 +1863,6 @@ class PublicationEdit extends Component {
           </div>
 
           {/* tITLE */} 
-          {/* Only editable on New, not Save */}
           <div className="form-gropup mb-4">
            
             <FormControl 
@@ -1868,7 +1870,7 @@ class PublicationEdit extends Component {
               {/* <InputLabel shrink htmlFor="title">Title*</InputLabel> */}
               <TextField
                 required
-                disabled={!this.state.newForm}
+                disabled={!this.state.writeable}
                 error={this.state.validationStatus.title.length >0}
                 label="Title"
                 helperText={this.state.fieldDescriptons.title}
@@ -1889,7 +1891,7 @@ class PublicationEdit extends Component {
           <div className="form-gropup mb-4">
             <FormControl 
               fullWidth
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 required
                 error={this.state.validationStatus.publication_venue.length >0}
@@ -1929,7 +1931,7 @@ class PublicationEdit extends Component {
                 </ReactTooltip>
               </span>
             </label>
-            {!this.state.readOnly && (
+            {!this.state.writeable && (
               <div>
                 <input
                   ref={this.publication_date}
@@ -1947,11 +1949,11 @@ class PublicationEdit extends Component {
                 />
               </div>
             )}
-            {this.state.readOnly && (
+            {this.state.writeable && (
               <div>
                 <input
                   type="text"
-                  readOnly
+                  writeable
                   className="form-control"
                   id="yYYY-MM-DD"
                   value={
@@ -1960,7 +1962,7 @@ class PublicationEdit extends Component {
               </div>
             )} */}
             <FormControl 
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 InputLabelProps={{ shrink: true }}
                 required
@@ -2010,7 +2012,7 @@ class PublicationEdit extends Component {
           <div className="form-gropup mb-4">
             <FormControl 
               fullWidth
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 required
                 error={this.state.validationStatus.publication_url.length >0}
@@ -2034,7 +2036,7 @@ class PublicationEdit extends Component {
             <FormControl 
               fullWidth
               error={this.state.validationStatus.publication_doi.length >0}
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 label="Publication DOI"
                 helperText={this.state.fieldDescriptons.publication_doi}
@@ -2054,7 +2056,7 @@ class PublicationEdit extends Component {
           {/* Issue  */}
           <div className="form-group mb-4">
             <FormControl 
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 error={this.state.validationStatus.issue.length >0}
                 label="Issue"
@@ -2076,7 +2078,7 @@ class PublicationEdit extends Component {
           {/* Volume  */}
           <div className="form-group mb-4">
             <FormControl 
-                disabled={this.state.readOnly}>
+                disabled={this.state.writeable}>
                 <TextField
                   label="Volume"
                   error={this.state.validationStatus.volume.length >0}
@@ -2098,7 +2100,7 @@ class PublicationEdit extends Component {
           {/* pages_or_article_num  */}
           <div className="form-group mb-4">
             <FormControl 
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 error={this.state.validationStatus.pages_or_article_num.length >0}
                 label="Pages or Article Number"
@@ -2121,7 +2123,7 @@ class PublicationEdit extends Component {
             <FormControl 
               fullWidth
               error={this.state.validationStatus.lab_dataset_id.length >0}
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 label="Lab Name or ID"
                 helperText={this.state.fieldDescriptons.lab_dataset_id}
@@ -2142,7 +2144,7 @@ class PublicationEdit extends Component {
           <div className="form-group">
           <FormControl 
               fullWidth
-              disabled={this.state.readOnly}>
+              disabled={this.state.writeable}>
               <TextField
                 error={this.state.validationStatus.description.length >0}
                 label="Abstract"
