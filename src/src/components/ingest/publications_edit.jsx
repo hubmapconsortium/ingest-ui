@@ -95,7 +95,9 @@ class PublicationEdit extends Component {
     upload: [],
     writeable: true, 
 
-    editingPublication: this.props.newForm ? {} : this.props.editingPublication,
+    editingPublication: this.props.newForm ? {
+      publication_status:undefined,
+    } : this.props.editingPublication,
 
     // User Privs & Info
     groups: [],
@@ -524,11 +526,13 @@ class PublicationEdit extends Component {
   };
 
   handlePublicationStatus = (status) => {
-    console.debug("handlePublicationStatus",status);
+    console.debug("handlePublicationStatus",status, typeof status);
+    var pubVal = false;
+    if(status === 'true'){pubVal = true}else{pubVal = false}
     this.setState(prev => ({
       editingPublication: {
         ...prev.editingPublication,
-        publication_status: status
+        publication_status: pubVal
       }
     }))
     
@@ -1192,22 +1196,22 @@ class PublicationEdit extends Component {
     // Handling Publication Status seperately since the 'False' Value gets caught in validation
     console.debug("validateProcessor", stateKey, this.state.editingPublication[stateKey]);
     // console.debug(validateRequired(this.state.editingPublication[stateKey]));
-    if(stateKey === "publication_status"){
-      if(this.state.editingPublication[stateKey].length ===0) {
-        this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
-          formErrors: { ...prevState.formErrors, [stateKey]: "is-invalid" },
-        }));
-        return false;
-      } else {
-        console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
-        this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
-          formErrors: { ...prevState.formErrors, [stateKey]: "" },
-        }));
-        return true;
-      }
-    }else{
+    // if(stateKey === "publication_status"){
+    //   if(this.state.editingPublication[stateKey].length ===0) {
+    //     this.setState((prevState) => ({
+    //       validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
+    //       formErrors: { ...prevState.formErrors, [stateKey]: "is-invalid" },
+    //     }));
+    //     return false;
+    //   } else {
+    //     console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
+    //     this.setState((prevState) => ({
+    //       validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
+    //       formErrors: { ...prevState.formErrors, [stateKey]: "" },
+    //     }));
+    //     return true;
+    //   }
+    // }else{
       if(!this.state.editingPublication[stateKey] || this.state.editingPublication[stateKey].length ===0) {
         this.setState((prevState) => ({
           validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
@@ -1222,7 +1226,7 @@ class PublicationEdit extends Component {
         }));
         return true;
       }
-    }
+    // }
   } 
 
   validateForm() {
@@ -1230,7 +1234,7 @@ class PublicationEdit extends Component {
     return new Promise((resolve, reject) => {
       let isValid =   true;
 
-      var requiredFields = ["title","publication_venue","publication_date","publication_url", "publication_status" ];
+      var requiredFields = ["title","publication_venue","publication_date","publication_url" ];
       var errorMsg = "Field is Required"
       requiredFields.forEach((field) => {
         if(this.validateProcessor(field, errorMsg) ===  false) {
@@ -1238,6 +1242,24 @@ class PublicationEdit extends Component {
           resolve(isValid);
         }
       });
+      // Because it can be False, pub status needs special handling
+      var pubstat = this.state.editingPublication.publication_status;
+      console.log("PUBSTAT",pubstat);
+      if(pubstat === undefined || pubstat === null || pubstat.length === 0){
+        console.debug("BADPUBSTAT");  
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, ['publication_status']: "Status is Required" },
+          formErrors: { ...prevState.formErrors, ["publication_status"]: "is-invalid" },
+        }));
+        isValid = false;
+        resolve(isValid);
+      }else{
+        console.debug("GOODPUBSTAT", pubstat);
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, ["publication_status"]: "" },
+          formErrors: { ...prevState.formErrors, ["publication_status"]: "" },
+        }));
+      }
       
       if(this.state.source_uuid_list.length === 0) {
         this.setState((prevState) => ({
@@ -1968,8 +1990,8 @@ class PublicationEdit extends Component {
                 value={this.state.editingPublication.publication_status}
                 //className={"form-control " +this.errorClass(this.state.formErrors.publication_status) +" "}
                 onChange={this.handleInputChange}>
-                <FormControlLabel value={true} disabled={!this.state.writeable} control={<Radio />} label="Yes" />
-                <FormControlLabel value={false} disabled={!this.state.writeable} control={<Radio />} label="No" />
+                <FormControlLabel value={true} error={this.state.validationStatus.publication_status} disabled={!this.state.writeable} control={<Radio />} label="Yes" />
+                <FormControlLabel value={false} error={this.state.validationStatus.publication_status} disabled={!this.state.writeable} control={<Radio />} label="No" />
               </RadioGroup>
               {this.state.validationStatus.publication_doi.length >0 && ( 
                 <FormHelperText className="component-error-text">{this.state.validationStatus.publication_status}</FormHelperText>
