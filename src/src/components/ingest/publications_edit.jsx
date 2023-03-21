@@ -104,7 +104,6 @@ class PublicationEdit extends Component {
     has_publish_priv: false,
     has_version_priv: false,
     groupsToken: "",
-    writeable: false,
 
     // Data that sets the scene
     assay_type_primary: true,
@@ -820,7 +819,7 @@ class PublicationEdit extends Component {
 
   handleNewVersion = () => {
     this.setState({
-      newVersion: true,
+      // newVersion: true,
       buttonSpinnerTarget: "version",
     });
     this.handleSubmit("newversion");
@@ -996,6 +995,7 @@ class PublicationEdit extends Component {
                 JSON.parse(localStorage.getItem("info")).groups_token
               )
               .then((response) => {
+                console.debug("NEWVERSION response", response);
                 if (response.status < 300) {
                   //
                   this.setState({
