@@ -900,7 +900,7 @@ class PublicationEdit extends Component {
     
     this.setState({ 
       submitting: true,
-      buttonSpinnerTarget: submitIntention, 
+      buttonSpinnerTarget: submitIntention.toLowerCase(), 
     });
 
     this.validateForm().then((isValid) => {
@@ -1188,25 +1188,42 @@ class PublicationEdit extends Component {
     // var StateName = "ERIS";
     // var stateTarget = this.state[StateName]
     // console.debug("validateProcessor", StateName, stateTarget);
-
+    // @TODO: DRY up
+    // Handling Publication Status seperately since the 'False' Value gets caught in validation
     console.debug("validateProcessor", stateKey, this.state.editingPublication[stateKey]);
     // console.debug(validateRequired(this.state.editingPublication[stateKey]));
-    if(!this.state.editingPublication[stateKey] || this.state.editingPublication[stateKey].length ===0) {
-      this.setState((prevState) => ({
-        validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
-        formErrors: { ...prevState.formErrors, [stateKey]: "is-invalid" },
-      }));
-      return false;
-    } else {
-      console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
-      this.setState((prevState) => ({
-        validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
-        formErrors: { ...prevState.formErrors, [stateKey]: "" },
-      }));
-      return true;
+    if(stateKey === "publication_status"){
+      if(this.state.editingPublication[stateKey].length ===0) {
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
+          formErrors: { ...prevState.formErrors, [stateKey]: "is-invalid" },
+        }));
+        return false;
+      } else {
+        console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
+          formErrors: { ...prevState.formErrors, [stateKey]: "" },
+        }));
+        return true;
+      }
+    }else{
+      if(!this.state.editingPublication[stateKey] || this.state.editingPublication[stateKey].length ===0) {
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
+          formErrors: { ...prevState.formErrors, [stateKey]: "is-invalid" },
+        }));
+        return false;
+      } else {
+        console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
+          formErrors: { ...prevState.formErrors, [stateKey]: "" },
+        }));
+        return true;
+      }
     }
-  
-  }
+  } 
 
   validateForm() {
     
@@ -1443,7 +1460,7 @@ class PublicationEdit extends Component {
           variant="contained"
           sx={{ minWidth: "130px" }}
           onClick={() => this.handleNewVersion()}>
-          {this.state.submitting && this.state.buttonSpinnerTarget==="newversion"(
+          {this.state.submitting && this.state.buttonSpinnerTarget==="newversion" && (
             <FontAwesomeIcon className="inline-icon" icon={faSpinner} spin />
           )}
           {!this.state.submitting && (
@@ -2136,7 +2153,8 @@ class PublicationEdit extends Component {
         <GroupModal
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
-          submit={this.handleSubmit} 
+          submit={() => this.handleSubmit("save")} // It'll only be askign which group pn create
+          // submit={this.handleSubmit} 
           // submit={this.handleSubmit}  Modal only appears when theres no group, which only happens on new form. Intent is blank
           handleInputChange={this.handleInputChange}
         />
