@@ -900,7 +900,7 @@ class PublicationEdit extends Component {
     
     this.setState({ 
       submitting: true,
-      buttonSpinnerTarget: submitIntention, 
+      buttonSpinnerTarget: submitIntention.toLowerCase(), 
     });
 
     this.validateForm().then((isValid) => {
@@ -2136,7 +2136,8 @@ class PublicationEdit extends Component {
         <GroupModal
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
-          submit={this.handleSubmit} 
+          submit={() => this.handleSubmit("save")} // It'll only be askign which group pn create
+          // submit={this.handleSubmit} 
           // submit={this.handleSubmit}  Modal only appears when theres no group, which only happens on new form. Intent is blank
           handleInputChange={this.handleInputChange}
         />
