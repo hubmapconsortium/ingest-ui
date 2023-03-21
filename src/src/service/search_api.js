@@ -122,7 +122,7 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
       // if no field criteria is sent just default to a 
       if (Object.keys(fields).length === 0 && fields.constructor === Object) {
           console.debug("full search")
-            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset OR Upload')); 
+            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset OR Upload OR Publication')); 
       } else {
         // was a group name selected
         if (fields["group_name"]) {
@@ -149,7 +149,7 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
                 boolQuery.must(esb.matchQuery("entity_type.keyword", fields["entity_type"]));
               }
             } else {
-               boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset OR Upload'));  // default everything ; this maybe temp
+               boolQuery.must(esb.matchQuery("entity_type", 'Donor OR Sample OR Dataset OR Upload OR Publication'));  // default everything ; this maybe temp
             }
         }
 
