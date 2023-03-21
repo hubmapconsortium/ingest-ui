@@ -1890,10 +1890,10 @@ class PublicationEdit extends Component {
           {/* Venue */}
           <div className="form-gropup mb-4">
             <FormControl 
-              fullWidth
-              disabled={this.state.writeable}>
+              fullWidth>
               <TextField
                 required
+                disabled={!this.state.writeable}
                 error={this.state.validationStatus.publication_venue.length >0}
                 label="Venue"
                 helperText={this.state.fieldDescriptons.publication_venue}
@@ -1912,60 +1912,11 @@ class PublicationEdit extends Component {
 
           {/* Pub Date */}
           <div className="form-gropup mb-4">
-            {/* <DatePicker  value={this.state.editingPublication.publication_date} onChange={(newValue) => this.handleInputChange(newValue)} /> */}
-            {/* <label htmlFor="publication_date">
-              Publication Date <span className="text-danger">*</span>
-              <span>
-                <FontAwesomeIcon
-                  icon={faQuestionCircle}
-                  data-tip
-                  data-for="publication_date"
-                />
-                <ReactTooltip
-                  id="publication_date_tooltip"
-                  className={"tooltip"}
-                  place="top"
-                  type="info"
-                  effect="solid">
-                  <p>Date Of Publication</p>
-                </ReactTooltip>
-              </span>
-            </label>
-            {!this.state.writeable && (
-              <div>
-                <input
-                  ref={this.publication_date}
-                  type="text"
-                  name="publication_date"
-                  id="publication_date"
-                  className={
-                    "form-control " +
-                    this.errorClass(this.state.formErrors.publication_date) +
-                    " "
-                  }
-                  onChange={this.handleInputChange}
-                  value={this.state.editingPublication.publication_date}
-                  placeholder="YYYY-MM-DD"
-                />
-              </div>
-            )}
-            {this.state.writeable && (
-              <div>
-                <input
-                  type="text"
-                  writeable
-                  className="form-control"
-                  id="yYYY-MM-DD"
-                  value={
-                    this.props.editingPublication.publication_date
-                  }></input>
-              </div>
-            )} */}
-            <FormControl 
-              disabled={this.state.writeable}>
+            <FormControl >
               <TextField
                 InputLabelProps={{ shrink: true }}
                 required
+                disabled={!this.state.writeable}
                 // pattern="\d{4}-\d{2}-\d{2}"
                 type="date"
                 placeholder="YYYY-MM-DD"
@@ -1992,6 +1943,7 @@ class PublicationEdit extends Component {
               <RadioGroup
                 row
                 required
+                disabled={!this.state.writeable}
                 error={this.state.validationStatus.publication_status}
                 aria-labelledby="publication_status"
                 id="publication_status"
@@ -1999,8 +1951,8 @@ class PublicationEdit extends Component {
                 value={this.state.editingPublication.publication_status}
                 //className={"form-control " +this.errorClass(this.state.formErrors.publication_status) +" "}
                 onChange={this.handleInputChange}>
-                <FormControlLabel value={true} control={<Radio />} label="Yes" />
-                <FormControlLabel value={false} control={<Radio />} label="No" />
+                <FormControlLabel value={true} disabled={!this.state.writeable} control={<Radio />} label="Yes" />
+                <FormControlLabel value={false} disabled={!this.state.writeable} control={<Radio />} label="No" />
               </RadioGroup>
               {this.state.validationStatus.publication_doi.length >0 && ( 
                 <FormHelperText className="component-error-text">{this.state.validationStatus.publication_status}</FormHelperText>
@@ -2010,11 +1962,10 @@ class PublicationEdit extends Component {
           
           {/* pub URL */}
           <div className="form-gropup mb-4">
-            <FormControl 
-              fullWidth
-              disabled={this.state.writeable}>
+            <FormControl fullWidth>
               <TextField
                 required
+                disabled={!this.state.writeable}
                 error={this.state.validationStatus.publication_url.length >0}
                 label="Publication URL"
                 helperText={this.state.fieldDescriptons.publication_url}
@@ -2035,9 +1986,9 @@ class PublicationEdit extends Component {
           <div className="form-gropup mb-4">
             <FormControl 
               fullWidth
-              error={this.state.validationStatus.publication_doi.length >0}
-              disabled={this.state.writeable}>
+              error={this.state.validationStatus.publication_doi.length >0}>
               <TextField
+                disabled={!this.state.writeable}
                 label="Publication DOI"
                 helperText={this.state.fieldDescriptons.publication_doi}
                 variant="standard"
@@ -2055,11 +2006,11 @@ class PublicationEdit extends Component {
 
           {/* Issue  */}
           <div className="form-group mb-4">
-            <FormControl 
-              disabled={this.state.writeable}>
+            <FormControl>
               <TextField
                 error={this.state.validationStatus.issue.length >0}
                 label="Issue"
+                disabled={!this.state.writeable}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                 helperText={this.state.fieldDescriptons.issue}
                 variant="standard"
@@ -2077,10 +2028,10 @@ class PublicationEdit extends Component {
 
           {/* Volume  */}
           <div className="form-group mb-4">
-            <FormControl 
-                disabled={this.state.writeable}>
+            <FormControl>
                 <TextField
                   label="Volume"
+                  disabled={!this.state.writeable}
                   error={this.state.validationStatus.volume.length >0}
                   inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                   helperText={this.state.fieldDescriptons.volume}
@@ -2099,9 +2050,9 @@ class PublicationEdit extends Component {
 
           {/* pages_or_article_num  */}
           <div className="form-group mb-4">
-            <FormControl 
-              disabled={this.state.writeable}>
+            <FormControl>
               <TextField
+                disabled={!this.state.writeable}
                 error={this.state.validationStatus.pages_or_article_num.length >0}
                 label="Pages or Article Number"
                 helperText={this.state.fieldDescriptons.pages_or_article_num}
@@ -2122,12 +2073,12 @@ class PublicationEdit extends Component {
           <div className="form-group">
             <FormControl 
               fullWidth
-              error={this.state.validationStatus.lab_dataset_id.length >0}
-              disabled={this.state.writeable}>
+              error={this.state.validationStatus.lab_dataset_id.length >0}>
               <TextField
                 label="Lab Name or ID"
                 helperText={this.state.fieldDescriptons.lab_dataset_id}
                 variant="standard"
+                disabled={!this.state.writeable}
                 id="lab_dataset_id"
                 name="lab_dataset_id"
                 //className={"form-control " +this.errorClass(this.state.formErrors.lab_dataset_id) +" "}
@@ -2142,12 +2093,11 @@ class PublicationEdit extends Component {
             
           {/* Description / Abstract */}
           <div className="form-group">
-          <FormControl 
-              fullWidth
-              disabled={this.state.writeable}>
+          <FormControl fullWidth>
               <TextField
                 error={this.state.validationStatus.description.length >0}
                 label="Abstract"
+                disabled={!this.state.writeable}
                 helperText={this.state.fieldDescriptons.description}
                 variant="standard"
                 id="description"
