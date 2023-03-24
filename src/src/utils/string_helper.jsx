@@ -23,6 +23,16 @@ export function naturalLanguageJoin(strArr) {
   return "";
 }
 
+
+// Camel Case & Strip Underscores
+export function humanize(str) {
+  var i, frags = str.split('_');
+  for (i=0; i<frags.length; i++) {
+    frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+  }
+  return frags.join(' ');
+}
+
 // convert a timestampe to human readble format for display puposes
 export function tsToDate(timestamp_ms) {
   
@@ -89,8 +99,10 @@ export function toPlural(str) {
  }catch(error) {
    return error
  }
+}
+
 
 
   
-}
+
 

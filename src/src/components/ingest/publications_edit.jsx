@@ -55,6 +55,8 @@ import {
 import { search_api_get_assay_set } from "../../service/search_api";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
+import { removeEmptyValues } from "../../utils/constants_helper";
+import { humanize } from "../../utils/string_helper";
 
 import { Alert, AlertTitle } from "@material-ui/lab";
 import Table from "@material-ui/core/Table";
@@ -131,13 +133,13 @@ class PublicationEdit extends Component {
     submitErrorResponse: "",
     submitErrorStatus: "",
     isValidData: true,
+    fieldString:"",
     formErrors: {
       title:"",
       issue:"",
       volume:"",
       pages_or_article_num:"",
       description:"",
-      lab_dataset_id:"",
       source_uuid_list:"",
       source_uuid:"",
       publication_date:"",
@@ -152,7 +154,6 @@ class PublicationEdit extends Component {
       volume:"",
       pages_or_article_num:"",
       description:"",
-      lab_dataset_id: "",
       source_uuid_list: "",
       source_uuid: "",
       publication_date: "",
@@ -167,7 +168,6 @@ class PublicationEdit extends Component {
       volume:"The volume number of a journal that it was published in.",
       pages_or_article_num:'The pages or the article number in the publication journal e.g., "23", "23-49", "e1003424.',
       description:"Free text description of the publication",
-      lab_dataset_id: "A name or identifier used by the lab who is uploading the data to cross reference the data locally",
       source_uuid_list: "",
       source_uuid: "",
       publication_date: "The date of publication",
@@ -222,6 +222,12 @@ class PublicationEdit extends Component {
       };
     } else {
       localStorage.setItem("isAuthenticated", false);
+    }
+
+
+    if(this.props.editingPublication){
+      console.table(this.props.editingPublication);
+      console.dir(this.props.editingPublication);
     }
 
     // Checking if we're published and thus should only be writeable
@@ -312,7 +318,6 @@ class PublicationEdit extends Component {
             ? this.props.editingPublication.status.toUpperCase()
             : "NEW",
           display_doi: this.props.editingPublication.hubmap_id,
-          lab_dataset_id: this.props.editingPublication.lab_dataset_id,
           source_uuid: this.getSourceAncestor(
             this.props.editingPublication.direct_ancestors
           ),
@@ -552,48 +557,6 @@ class PublicationEdit extends Component {
         // [id]: valCap
       }
     }))
-    
-
-    // switch (name) {
-    //   case "lab_dataset_id":
-    //     this.setState({
-    //       lab_dataset_id: value,
-    //     });
-    //     break;
-    //   case "description":
-    //     this.setState({
-    //       description: value,
-    //     });
-    //     break;
-    //   case "publication_venue":
-    //     this.setState({
-    //       publication_venue: value,
-    //     });
-    //     break;
-    //   case "publication_date":
-    //     this.setState({
-    //       publication_date: value,
-    //     });
-    //     break;
-    //   case "publication_doi":
-    //     this.setState({
-    //       publication_doi: value,
-    //     });
-    //     break;
-    //   case "publication_status":
-    //     this.setState({
-    //       publication_status: value,
-    //     });
-    //     break;
-    //   case "publication_url":
-    //     this.setState({
-    //       publication_url: value,
-    //     });
-    //     break;
-    //   default:
-    //     break;
-    // }
-    
   };
 
   handleInputFocus = (e) => {
@@ -643,14 +606,16 @@ class PublicationEdit extends Component {
         },
         () => {
           var slist = this.state.source_uuid_list;
-          slist.push(selection.row);
-          this.setState({
+          slist.push(selection.row);   
+          this.setState((prevState) => ({
             source_uuid: selection.row.hubmap_id,
             source_uuid_list: slist,
             slist: slist,
             source_entity: selection.row, // save the entire entity to use for information
             LookUpShow: false,
-          });
+            validationStatus:  { ...prevState.validationStatus, ['source_uuid_list']: "" },
+            formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },  
+          }));
           this.hideLookUpModal();
         }
       );
@@ -799,8 +764,7 @@ class PublicationEdit extends Component {
                 <Box p={1} width="100%">
                   {this.state.validationStatus.source_uuid_list && this.state.validationStatus.source_uuid_list.length>0  && (
                     <Alert severity="error" width="100% ">
-                      {this.state.formErrors.source_uuid_list}{" "}
-                      {this.state.formErrors.source_uuid}
+                      Invalid Source: At least one source must be added.
                     </Alert>
                   )}
                   {/* {this.errorClass(this.state.formErrors.source_uuid_list) && (
@@ -908,6 +872,21 @@ class PublicationEdit extends Component {
     });
 
     this.validateForm().then((isValid) => {
+      // For whatever reason getting the set of invalid fields just Does Not Function in the validateForm func
+      // Even though all of the data is there and dev tools SHOWS the state values,  everything else just ignores it because curses or whatever
+      if(!isValid){
+        var errorSet = removeEmptyValues(this.state.formErrors);
+        var result = Object.keys(errorSet);
+        console.debug("result",result);
+        var fieldString = "";
+        for (var r in result) {
+          var newString = humanize(result[r]);
+          fieldString = fieldString+newString+", ";
+        }
+        fieldString = fieldString.replace(/,\s*$/, "");
+        this.setState({ fieldString: fieldString}); 
+      }
+
       if (isValid) {
         if (
           (!this.props.editingPublication ||
@@ -930,7 +909,6 @@ class PublicationEdit extends Component {
         
           // package the data up
           var data = {
-            lab_dataset_id: this.state.editingPublication.lab_dataset_id,
             data_types: ["publication"],
             description: this.state.editingPublication.description,
             title:this.state.editingPublication.title,
@@ -978,9 +956,6 @@ class PublicationEdit extends Component {
               // and the previous_revision_uuid is added
               data.previous_revision_uuid = this.props.editingPublication.uuid;
 
-              if (this.state.lab_dataset_id) {
-                data["lab_dataset_id"] = this.state.lab_dataset_id;
-              }
               // the group info on a create, check for the defaults
               if (
                 this.state.selected_group &&
@@ -1180,38 +1155,15 @@ class PublicationEdit extends Component {
           submit_error: true,
           submitting: false,
           buttonSpinnerTarget: "",
-          // submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again."
+          submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again."
         });
         // Alert("There was a problem handling your form. Please review the marked items and try again.");
       }
     });
   };
 
-  validateProcessor(stateKey, errorMsg) { //data_types
-
-    // var StateName = "ERIS";
-    // var stateTarget = this.state[StateName]
-    // console.debug("validateProcessor", StateName, stateTarget);
-    // @TODO: DRY up
-    // Handling Publication Status seperately since the 'False' Value gets caught in validation
+  validateProcessor(stateKey, errorMsg) {
     console.debug("validateProcessor", stateKey, this.state.editingPublication[stateKey]);
-    // console.debug(validateRequired(this.state.editingPublication[stateKey]));
-    // if(stateKey === "publication_status"){
-    //   if(this.state.editingPublication[stateKey].length ===0) {
-    //     this.setState((prevState) => ({
-    //       validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
-    //       formErrors: { ...prevState.formErrors, [stateKey]: "is-invalid" },
-    //     }));
-    //     return false;
-    //   } else {
-    //     console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
-    //     this.setState((prevState) => ({
-    //       validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
-    //       formErrors: { ...prevState.formErrors, [stateKey]: "" },
-    //     }));
-    //     return true;
-    //   }
-    // }else{
       if(!this.state.editingPublication[stateKey] || this.state.editingPublication[stateKey].length ===0) {
         this.setState((prevState) => ({
           validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
@@ -1226,7 +1178,6 @@ class PublicationEdit extends Component {
         }));
         return true;
       }
-    // }
   } 
 
   validateForm() {
@@ -1234,6 +1185,7 @@ class PublicationEdit extends Component {
     return new Promise((resolve, reject) => {
       let isValid =   true;
 
+      // Check required fields
       var requiredFields = ["title","publication_venue","publication_date","publication_url" ];
       var errorMsg = "Field is Required"
       requiredFields.forEach((field) => {
@@ -1242,25 +1194,25 @@ class PublicationEdit extends Component {
           resolve(isValid);
         }
       });
+
       // Because it can be False, pub status needs special handling
       var pubstat = this.state.editingPublication.publication_status;
-      console.log("PUBSTAT",pubstat);
+      console.debug({pubstat});
       if(pubstat === undefined || pubstat === null || pubstat.length === 0){
-        console.debug("BADPUBSTAT");  
         this.setState((prevState) => ({
           validationStatus:  { ...prevState.validationStatus, ['publication_status']: "Status is Required" },
-          formErrors: { ...prevState.formErrors, ["publication_status"]: "is-invalid" },
+          formErrors: { ...prevState.formErrors, ['publication_status']: "is-invalid" },
         }));
         isValid = false;
         resolve(isValid);
       }else{
-        console.debug("GOODPUBSTAT", pubstat);
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, ["publication_status"]: "" },
-          formErrors: { ...prevState.formErrors, ["publication_status"]: "" },
+          validationStatus:  { ...prevState.validationStatus, ['publication_status']: "" },
+          formErrors: { ...prevState.formErrors, ['publication_status']: "" },
         }));
       }
       
+      // Check for  at least one Source 
       if(this.state.source_uuid_list.length === 0) {
         this.setState((prevState) => ({
           validationStatus:  { ...prevState.validationStatus, source_uuid_list:"Please select at least one source" },
@@ -1268,9 +1220,15 @@ class PublicationEdit extends Component {
         }));
         isValid = false;
         resolve(isValid);
+      }else{
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, ['source_uuid_list']: "" },
+          formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },
+        }));
       }
        
       
+      // Check Int values are ints
       var intFields = ["issue", "volume"];
       intFields.forEach((field) => {
         if(this.state.editingPublication[field] && this.state.editingPublication[field].length >0 && isNaN(this.state.editingPublication[field])) {
@@ -1290,6 +1248,7 @@ class PublicationEdit extends Component {
         
       });
       
+      // Not Resolved invalid, so clear validations
       this.setState({ isValidData: isValid });
       if (!isValid) {
         this.setState({
@@ -1298,12 +1257,8 @@ class PublicationEdit extends Component {
           buttonSpinnerTarget: "",
           submitErrorResponse:toString(this.state.validationStatus),
         });
-        var errorSet = this.state.validationStatus;
-        console.debug("errorSet", errorSet);
-        // var result = Object.keys(errorSet).find((e) => errorSet[e].length);
-        // console.debug("result", result);
-        
       }
+
       resolve(isValid);
     });
   }
@@ -1640,7 +1595,6 @@ class PublicationEdit extends Component {
     // Differs from Main wrapper
 
     this.props.changeLink(this.state.globus_path, {
-      name: this.state.lab_dataset_id,
       display_doi: this.state.display_doi,
       doi: this.state.doi,
     });
@@ -1976,9 +1930,14 @@ class PublicationEdit extends Component {
           </div>
 
           {/* pub Status */}
-          <div className="form-gropup mb-4">
-            <FormControl error={this.state.validationStatus.publication_status} >
-              <FormLabel id="publication_status">Has this Publication been Published?</FormLabel>
+          <div className={"form-gropup mb-4 "+this.state.formErrors.publication_status}>
+            <FormControl
+              error={this.state.validationStatus.publication_status}  >
+              <FormLabel 
+                id="publication_status"
+                error={this.state.validationStatus.publication_status}>
+                  Has this Publication been Published?
+              </FormLabel>
               <RadioGroup
                 row
                 required
@@ -1990,8 +1949,8 @@ class PublicationEdit extends Component {
                 value={this.state.editingPublication.publication_status}
                 //className={"form-control " +this.errorClass(this.state.formErrors.publication_status) +" "}
                 onChange={this.handleInputChange}>
-                <FormControlLabel value={true} error={this.state.validationStatus.publication_status} disabled={!this.state.writeable} control={<Radio />} label="Yes" />
-                <FormControlLabel value={false} error={this.state.validationStatus.publication_status} disabled={!this.state.writeable} control={<Radio />} label="No" />
+                <FormControlLabel value={true} className={""+this.state.formErrors.publication_status} error={this.state.validationStatus.publication_status} disabled={!this.state.writeable} control={<Radio />} label="Yes" />
+                <FormControlLabel value={false} className={""+this.state.formErrors.publication_status} error={this.state.validationStatus.publication_status} disabled={!this.state.writeable} control={<Radio />} label="No" />
               </RadioGroup>
               {this.state.validationStatus.publication_doi.length >0 && ( 
                 <FormHelperText className="component-error-text">{this.state.validationStatus.publication_status}</FormHelperText>
@@ -2108,28 +2067,6 @@ class PublicationEdit extends Component {
             </FormControl>         
           </div>
 
-          {/* Lab name or ID */}
-          <div className="form-group">
-            <FormControl 
-              fullWidth
-              error={this.state.validationStatus.lab_dataset_id.length >0}>
-              <TextField
-                label="Lab Name or ID"
-                helperText={this.state.fieldDescriptons.lab_dataset_id}
-                variant="standard"
-                disabled={!this.state.writeable}
-                id="lab_dataset_id"
-                name="lab_dataset_id"
-                //className={"form-control " +this.errorClass(this.state.formErrors.lab_dataset_id) +" "}
-                onChange={this.handleInputChange}
-                value={this.state.editingPublication.lab_dataset_id}
-              />
-              {this.state.validationStatus.lab_dataset_id.length >0 && ( 
-                <FormHelperText className="component-error-text"> {this.state.validationStatus.lab_dataset_id}</FormHelperText>
-              )}
-            </FormControl>  
-          </div>
-            
           {/* Description / Abstract */}
           <div className="form-group">
           <FormControl fullWidth>
@@ -2153,18 +2090,14 @@ class PublicationEdit extends Component {
             </FormControl>  
           </div>
 
-        
           <div className="row">
             <div className="col-8">
               {this.state.submit_error && (
                 <Alert severity="error">
                   {this.state.submitErrorResponse && (
                     <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
-                  )}
-                  Oops! Something went wrong. Please contact administrator for
-                  help. <br />
-                  Details: <strong>{this.state.submitErrorStatus} </strong>{" "}
-                  {this.state.submitErrorResponse}
+                  )} <strong>Details:</strong> The following fields are Invalid: {this.state.fieldString} {" "}
+                  
                 </Alert>
               )}
             </div>
