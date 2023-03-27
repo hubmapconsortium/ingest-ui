@@ -58,3 +58,5 @@ favorites.json
 *.lock
 *.~lock
 *.~lock.*
+
+.idea

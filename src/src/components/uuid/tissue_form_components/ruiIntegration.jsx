@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { ORGAN_TYPES, RUI_ORGAN_MAPPING } from "../../../constants.jsx";
+import { RUI_ORGAN_MAPPING } from "../../../constants.jsx";
+import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
 import "../../../App.css";
 
 
@@ -42,6 +43,15 @@ class RUIIntegration extends Component {
   componentDidMount() {
     console.log('RUI...', this.props)
 
+    ubkg_api_get_organ_type_set()
+      .then((res) => {
+        this.setState({organ_types: res}, () => {
+          console.log(this.state.organ_types);
+        }, () => {
+          console.log('ERROR: ubkg_api_get_organ_type_set')
+        });
+      });
+
     this.updateRUIConfig();
     this.updateDimensions();
     window.addEventListener("resize", this.updateDimensions.bind(this));
@@ -68,7 +78,7 @@ class RUIIntegration extends Component {
 
   updateRUIConfig() {
     const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
-    const organ_info = ORGAN_TYPES[this.props.organ].split("(");
+    const organ_info = this.state.organ_types[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
     const sex = this.props.sex;
