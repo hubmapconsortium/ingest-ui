@@ -11,7 +11,7 @@ import Typography  from '@mui/material/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 import { SAMPLE_TYPES, ORGAN_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
-import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
+import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_PUBLICATION, COLUMN_DEF_UPLOADS } from './table_constants';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
@@ -437,6 +437,8 @@ class SearchComponent extends Component {
           which_cols_def = COLUMN_DEF_SAMPLE;
         } else if (colSet === 'dataset') {
           which_cols_def = COLUMN_DEF_DATASET;
+        } else if (colSet === 'publication') {
+          which_cols_def = COLUMN_DEF_PUBLICATION;
         } else if (colSet === 'upload' ) {
           which_cols_def = COLUMN_DEF_UPLOADS;
         } else if (colSet === 'publication' ) {

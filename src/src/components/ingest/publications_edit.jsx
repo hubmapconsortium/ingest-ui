@@ -474,7 +474,6 @@ class PublicationEdit extends Component {
       editingSourceIndex: index,
     });
   }
-
   hideConfirmDialog = () => {
     this.setState({
       confirmDialog: false,
@@ -484,7 +483,10 @@ class PublicationEdit extends Component {
 
   hideGroupSelectModal = () => {
     this.setState({
+      LookUpShow: false,
       GroupSelectShow: false,
+      submitting: false,
+      buttonSpinnerTarget: "",
     });
   };
 
@@ -505,10 +507,10 @@ class PublicationEdit extends Component {
     });
   };
 
-  cancelLookUpModal = () => {
+  
+  cancelGroupModal = () => {
     this.setState({
-      LookUpShow: false,
-      lookUpCancelled: true,
+      GroupSelectShow: false,
     });
   };
 
@@ -823,7 +825,7 @@ class PublicationEdit extends Component {
     });
   };
 
-  handleCancel = () => {
+  handleCancelModal = () => {
     if (this.props && this.props.handleCancel) {
       // How is this happening???
       this.props.handleCancel();
@@ -1411,7 +1413,7 @@ class PublicationEdit extends Component {
         )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
         {this.props.newForm && (<>{this.saveButton()}</>)}
-        {this.cancelButton()}
+        {this.cancelModalButton()}
       </div>
     );
   }
@@ -1480,12 +1482,12 @@ class PublicationEdit extends Component {
   }
 
   // Cancel button
-  cancelButton() {
+  cancelModalButton() {
     return (
       <Button
         type="button"
         variant="outlined"
-        onClick={() => this.handleCancel()}>
+        onClick={() => this.handleCancelModal()}>
         Cancel
       </Button>
     );
@@ -2108,6 +2110,7 @@ class PublicationEdit extends Component {
         <GroupModal
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
+          hide={()=> this.hideGroupSelectModal()}
           submit={() => this.handleSubmit("save")} // It'll only be askign which group pn create
           // submit={this.handleSubmit} 
           // submit={this.handleSubmit}  Modal only appears when theres no group, which only happens on new form. Intent is blank
