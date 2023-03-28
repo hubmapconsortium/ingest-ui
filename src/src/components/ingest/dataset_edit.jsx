@@ -35,7 +35,7 @@ import { ingest_api_allowable_edit_states,
     ingest_api_allowable_edit_states_statusless} from '../../service/ingest_api';
 import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
+import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -348,7 +348,7 @@ class DatasetEdit extends Component {
   }
 
   setAssayLists(){
-    search_api_get_assay_set()
+    ubkg_api_get_assay_type_set()
     .then((res) => {
       
       this.setState({
@@ -358,7 +358,7 @@ class DatasetEdit extends Component {
     .catch((err) => {
       
     })
-    search_api_get_assay_set("primary")
+    ubkg_api_get_assay_type_set("primary")
     .then((res) => {
       
       this.setState({

@@ -19,7 +19,8 @@ import { ORGAN_TYPES } from "../constants";
  */
 export function ubkg_api_get_assay_type_set(scope) {
   console.debug("ubkg_api_get_assay_type_set", scope);
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype`;
+  //let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype`;
+  let url = '${process.env.REACT_APP_SEARCH_API_URL}/assaytype';
   // Note: scope == 'all' will not include the query parameter
   if (scope == 'primary') {
       url += '?primary=true'
