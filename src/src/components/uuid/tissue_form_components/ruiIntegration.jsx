@@ -78,7 +78,7 @@ class RUIIntegration extends Component {
 
   updateRUIConfig() {
     const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
-    const organ_info = this.state.organ_types[this.props.organ].split("(");
+    const organ_info = this.props.organList[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
     const sex = this.props.sex;
