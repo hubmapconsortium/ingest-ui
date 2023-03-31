@@ -1426,7 +1426,8 @@ class PublicationEdit extends Component {
   renderButtons() {
     var latestCheck = !this.state.editingPublication.next_revision_uuid ||this.state.editingPublication.next_revision_uuid === undefined;
     var writeCheck = this.state.has_write_priv
-    var subCheck = this.state.has_submit_priv
+    var adminCheck = this.state.has_admin_priv
+    // var subCheck = this.state.has_submit_priv // Not Working for Pubs yet (/ingest-api/issues/301)
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
     var newCheck = this.state.editingPublication.status === "New"
@@ -1441,7 +1442,7 @@ class PublicationEdit extends Component {
         )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
         {newFormCheck && (<>{this.saveButton()}</>)}
-        {subCheck && !newFormCheck && newCheck  && (<>{this.submitButton()}</>)}
+        {adminCheck && !newFormCheck && newCheck  && (<>{this.submitButton()}</>)}
         {this.cancelModalButton()}
       </div>
     );
