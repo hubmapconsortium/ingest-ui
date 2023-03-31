@@ -253,6 +253,11 @@ class PublicationEdit extends Component {
               has_admin_priv: resp.results.has_admin_priv,
             });
 
+            // const adminCheck = resp.filter(
+            //   g => g.data_provider === true
+            // );
+            // console.debug("Admin Check", adminCheck, resp);
+
             ingest_api_allowable_edit_states_statusless(
               this.props.editingPublication.uuid,
               JSON.parse(localStorage.getItem("info")).groups_token
@@ -1034,15 +1039,34 @@ class PublicationEdit extends Component {
                   }
                 );
               });
-            
+            }else if(submitIntention === "submit"){
+              ingest_api_dataset_submit(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                  .then((response) => {
+                    if (response.status < 300) {
+                      this.props.onUpdated(response.results);
+                    } else {
+                     var statusText = response.err.response.status+" "+response.err.response.statusText;
+                      this.setState({ 
+                        submit_error: true,
+                        submitting: false,
+                        submitErrorResponse: response.results.data.error,
+                        buttonSpinnerTarget: "",
+                      });
+                    }
+                })
+                .catch((error) => {
+                    this.props.reportError(error);
+                    this.setState({ 
+                      submit_error: true,
+                      submitting: false,
+                      submitErrorResponse: error,
+                      buttonSpinnerTarget: "",});
+                 });
             }else{
               console.debug("UPDATING data", data);
               // just update
-              // Title's immutable, in the state for rendering but strip before sending
-              // if(!this.props.newForm){delete data.title}
               entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
-                  console.debug("entity_api_update_entity response", response);
                     if (response.status < 300 ) {
                       this.setState({ 
                         submit_error: false, 
@@ -1402,8 +1426,12 @@ class PublicationEdit extends Component {
   renderButtons() {
     var latestCheck = !this.state.editingPublication.next_revision_uuid ||this.state.editingPublication.next_revision_uuid === undefined;
     var writeCheck = this.state.has_write_priv
+    var subCheck = this.state.has_submit_priv
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
+    var newCheck = this.state.editingPublication.status === "New"
+    var newFormCheck = this.props.newForm
+    console.table({latestCheck,writeCheck, subCheck, versCheck, pubCheck, newCheck, newFormCheck});
 
     return (
       <div className="buttonWrapRight">
@@ -1412,7 +1440,8 @@ class PublicationEdit extends Component {
           <>{this.renderNewVersionButtons()}</>
         )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
-        {this.props.newForm && (<>{this.saveButton()}</>)}
+        {newFormCheck && (<>{this.saveButton()}</>)}
+        {subCheck && !newFormCheck && newCheck  && (<>{this.submitButton()}</>)}
         {this.cancelModalButton()}
       </div>
     );
@@ -1507,12 +1536,29 @@ class PublicationEdit extends Component {
         )}
         {this.state.buttonSpinnerTarget !=="save" &&
          <>Save</>
-        }
-
-
+        } 
       </Button>
     );
   }
+
+  submitButton() {
+    return (
+      <Button
+        type="button"
+        variant="contained"
+        onClick={() => this.handleSubmit("save")}>
+        {this.state.buttonSpinnerTarget === "save" && (
+          <span>
+            <FontAwesomeIcon icon={faSpinner} spin />
+          </span>
+        )}
+        {this.state.buttonSpinnerTarget !=="submit" &&
+         <>Submit</>
+        }
+      </Button>
+    );
+  }
+
 
   // General button
   aButton(newstate, which_button, event) {
