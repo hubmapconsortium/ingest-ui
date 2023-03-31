@@ -1432,7 +1432,7 @@ class PublicationEdit extends Component {
     var pubCheck = this.state.editingPublication.status === "Published"
     var newCheck = this.state.editingPublication.status === "New"
     var newFormCheck = this.props.newForm
-    console.table({latestCheck,writeCheck, subCheck, versCheck, pubCheck, newCheck, newFormCheck});
+    console.table({latestCheck,writeCheck, adminCheck, versCheck, pubCheck, newCheck, newFormCheck});
 
     return (
       <div className="buttonWrapRight">
