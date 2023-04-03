@@ -1432,7 +1432,7 @@ class PublicationEdit extends Component {
     var pubCheck = this.state.editingPublication.status === "Published"
     var newCheck = this.state.editingPublication.status === "New"
     var newFormCheck = this.props.newForm
-    console.table({latestCheck,writeCheck, adminCheck, versCheck, pubCheck, newCheck, newFormCheck});
+    // console.table({latestCheck,writeCheck, adminCheck, versCheck, pubCheck, newCheck, newFormCheck});
 
     return (
       <div className="buttonWrapRight">
@@ -1891,6 +1891,9 @@ class PublicationEdit extends Component {
                   custom_title="Search for a Source ID for your Publication"
                   filter_type="Publication"
                   modecheck="Source"
+                  restrictions={{
+                    entityType : "dataset"
+                  }}
                 />
               </DialogContent>
               <DialogActions>
@@ -1981,10 +1984,10 @@ class PublicationEdit extends Component {
           {/* pub Status */}
           <div className={"form-gropup mb-4 "+this.state.formErrors.publication_status}>
             <FormControl
-              error={this.state.validationStatus.publication_status}  >
+              error={ this.state.validationStatus.publication_status.length>0 ? true : false}  >
               <FormLabel 
                 id="publication_status"
-                error={this.state.validationStatus.publication_status}>
+                error={ this.state.validationStatus.publication_status.length>0 ? true : false }>
                   Has this Publication been Published?
               </FormLabel>
               <RadioGroup
