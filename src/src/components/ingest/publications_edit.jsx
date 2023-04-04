@@ -1426,12 +1426,13 @@ class PublicationEdit extends Component {
   renderButtons() {
     var latestCheck = !this.state.editingPublication.next_revision_uuid ||this.state.editingPublication.next_revision_uuid === undefined;
     var writeCheck = this.state.has_write_priv
-    var subCheck = this.state.has_submit_priv
+    var adminCheck = this.state.has_admin_priv
+    // var subCheck = this.state.has_submit_priv // Not Working for Pubs yet (/ingest-api/issues/301)
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
     var newCheck = this.state.editingPublication.status === "New"
     var newFormCheck = this.props.newForm
-    console.table({latestCheck,writeCheck, subCheck, versCheck, pubCheck, newCheck, newFormCheck});
+    // console.table({latestCheck,writeCheck, adminCheck, versCheck, pubCheck, newCheck, newFormCheck});
 
     return (
       <div className="buttonWrapRight">
@@ -1441,7 +1442,7 @@ class PublicationEdit extends Component {
         )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
         {newFormCheck && (<>{this.saveButton()}</>)}
-        {subCheck && !newFormCheck && newCheck  && (<>{this.submitButton()}</>)}
+        {adminCheck && !newFormCheck && newCheck  && (<>{this.submitButton()}</>)}
         {this.cancelModalButton()}
       </div>
     );
@@ -1890,6 +1891,9 @@ class PublicationEdit extends Component {
                   custom_title="Search for a Source ID for your Publication"
                   filter_type="Publication"
                   modecheck="Source"
+                  restrictions={{
+                    entityType : "dataset"
+                  }}
                 />
               </DialogContent>
               <DialogActions>
@@ -1980,10 +1984,10 @@ class PublicationEdit extends Component {
           {/* pub Status */}
           <div className={"form-gropup mb-4 "+this.state.formErrors.publication_status}>
             <FormControl
-              error={this.state.validationStatus.publication_status}  >
+              error={ this.state.validationStatus.publication_status.length>0 ? true : false}  >
               <FormLabel 
                 id="publication_status"
-                error={this.state.validationStatus.publication_status}>
+                error={ this.state.validationStatus.publication_status.length>0 ? true : false }>
                   Has this Publication been Published?
               </FormLabel>
               <RadioGroup
