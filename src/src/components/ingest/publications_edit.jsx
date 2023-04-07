@@ -512,6 +512,12 @@ class PublicationEdit extends Component {
     });
   };
 
+  cancelLookUpModal = () => {
+    this.setState({
+      LookUpShow: false,
+      lookUpCancelled: true
+    });
+  };
   
   cancelGroupModal = () => {
     this.setState({
