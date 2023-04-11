@@ -1304,6 +1304,9 @@ class DatasetEdit extends Component {
                 {this.state.has_submit_priv && (
                   this.aButton("processing", "Submit"))
                 }
+                {this.state.has_write_priv && this.state.status.toUpperCase() === "NEW" && (
+                  this.aButton("submit", "Submit"))
+                }
                 {this.cancelButton()}
             </div>
           )
