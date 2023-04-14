@@ -39,6 +39,7 @@ export function entity_api_update_entity(uuid, data, auth) {
   // console.debug("entity_api_update_entity", data);
   const options = {
       headers: {
+        'X-Hubmap-Application': 'ingest-api',
         Authorization:
           "Bearer " + auth,
         "Content-Type": "application/json"
@@ -50,15 +51,16 @@ export function entity_api_update_entity(uuid, data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
+          console.debug("entity_api_update_entity", res);
           let results = res.data;
-        return {status: res.status, results: results}
+          return {status: res.status, results: results}
       })
       .catch(error => {
-        console.debug("entity_api_update_entity Error", error, error.response);
         if(error.response){
-          return error.response.data.error
+          console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
+          return {status: error.response.status, results: error.response.data}
         }else{
-          return {error}
+          return {error:error.response}
         }
       });
 };
