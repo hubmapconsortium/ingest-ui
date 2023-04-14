@@ -62,6 +62,7 @@ class SearchComponent extends Component {
       show_search: true,
       table_loading:false,
       updateSuccess: false,
+      restrictions:this.props.restrictions ? this.props.restrictions : {},
       search_filters:{
         entityType: "",
         keywords: "",
@@ -71,8 +72,17 @@ class SearchComponent extends Component {
   }
 
   componentDidMount() {    
+    console.debug("!!!SearchComponent: componentDidMount", this.state.restrictions, this.props.restrictions);
+    if(this.props.restrictions){
+      // So we can apply the object right to the state instead of do parse tango
+      var restrictedState = this.state.restrictions;
+      restrictedState.search_filters = this.state.restrictions;
+      this.setState(restrictedState,
+        function(){ 
+        this.handleSearchClick();
+      })
+    }
     if(this.props.packagedQuery){
-      
       this.setState({
         entityType: this.props.packagedQuery.entityType,
         keywords: this.props.packagedQuery.keywords,
@@ -890,6 +900,7 @@ renderInfoPanel() {
                           name="entityType"
                           id="entityType"
                           className="select-css"
+                          disabled={this.props.restrictions && this.props.restrictions.entityType ? true : false}
                           onChange={this.handleInputChange}
                           value={this.state.search_filters.entityType}
                         >
