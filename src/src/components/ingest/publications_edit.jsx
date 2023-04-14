@@ -1553,8 +1553,8 @@ class PublicationEdit extends Component {
       <Button
         type="button"
         variant="contained"
-        onClick={() => this.handleSubmit("save")}>
-        {this.state.buttonSpinnerTarget === "save" && (
+        onClick={() => this.handleSubmit("submit")}>
+        {this.state.buttonSpinnerTarget === "submit" && (
           <span>
             <FontAwesomeIcon icon={faSpinner} spin />
           </span>
