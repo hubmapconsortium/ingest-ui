@@ -1,5 +1,4 @@
 import axios from "axios";
-import { ORGAN_TYPES } from "../constants";
 
 /*
  * UBKG GET assaytype method
@@ -22,9 +21,9 @@ export function ubkg_api_get_assay_type_set(scope) {
   let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype`;
   // let url = `${process.env.REACT_APP_SEARCH_API_URL}/v3/assaytype`;
   // Note: scope == 'all' will not include the query parameter
-  if (scope == 'primary') {
+  if (scope === 'primary') {
       url += '?primary=true'
-  } else if (scope == 'alt') {
+  } else if (scope === 'alt') {
       url += '?primary=false'
   }
   return axios
@@ -55,7 +54,7 @@ export function ubkg_api_get_assay_type_set(scope) {
 export function ubkg_api_get_organ_type_set() {
   console.debug("ubkg_api_get_organ_type_set");
 
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/organtype/by-code`;
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code`;
   return axios
     .get(url)
       .then(res => {
