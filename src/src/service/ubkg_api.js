@@ -19,8 +19,8 @@ import { ORGAN_TYPES } from "../constants";
  */
 export function ubkg_api_get_assay_type_set(scope) {
   console.debug("ubkg_api_get_assay_type_set", scope);
-  //let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype`;
-  let url = `${process.env.REACT_APP_SEARCH_API_URL}/assaytype`;
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype`;
+  // let url = `${process.env.REACT_APP_SEARCH_API_URL}/v3/assaytype`;
   // Note: scope == 'all' will not include the query parameter
   if (scope == 'primary') {
       url += '?primary=true'
@@ -55,45 +55,20 @@ export function ubkg_api_get_assay_type_set(scope) {
 export function ubkg_api_get_organ_type_set() {
   console.debug("ubkg_api_get_organ_type_set");
 
-    // For testing, simulate the delay...
-  // return new Promise((resolve, reject) => {
-  //    setTimeout(() => {
-  //      resolve(ORGAN_TYPES);
-  //    }, 5000);
-  //  });
-
-  //let url = `${process.env.REACT_APP_UBKG_API_URL}/organtype/all`;
-  // return axios
-  //   .get(url)
-  //     .then(res => {
-  //         let data = res.data;
-  //         return data;
-  //     })
-  //     .catch(error => {
-  //       console.debug("ubkg_api_get_organ_type_set", error, error.response);
-  //       if(error.response){
-  //         return {status: error.response.status, results: error.response.data}
-  //       } else {
-  //         return {error}
-  //       }
-  //     });
-
-  let url = `${process.env.REACT_APP_SEARCH_API_URL}/assaytype`;
-  // Note: scope == 'all' will not include the query parameter
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/organtype/by-code`;
   return axios
     .get(url)
       .then(res => {
           let data = res.data;
-          let mapCheck = data.result.map((value, index) => { return value });
-          console.debug("API get_processed_assays data", data, mapCheck);
-          return ORGAN_TYPES;
+          return data;
       })
       .catch(error => {
-        console.debug("ubkg_api_get_assaytype", error, error.response);
+        console.debug("ubkg_api_get_organ_type_set", error, error.response);
         if(error.response){
           return {status: error.response.status, results: error.response.data}
         } else {
           return {error}
         }
       });
+
 };
