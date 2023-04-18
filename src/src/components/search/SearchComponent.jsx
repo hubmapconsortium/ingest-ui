@@ -488,21 +488,21 @@ class SearchComponent extends Component {
     if (entityType && entityType !== '----') {
       
       if(!this.props.modecheck){url.searchParams.set('entityType',entityType);}
-      if (ENTITY_TYPES.hasOwnProperty(entityType)) {
 
+      if (ENTITY_TYPES.hasOwnProperty(entityType)) {
         params["entity_type"] = toTitleCase(entityType);
+
       } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType)) {
-        
         params["sample_category"] = entityType;
-      } else { 
-        
+
+      } else {
         params["organ"] = entityType;
       }
-    }else{
-      url.searchParams.delete('entityType');
-    }
-    
 
+    } else {
+      url.searchParams.delete('entityType');
+
+    }
    
     if(this.state.page !== 0 ){
       this.setState({
