@@ -49,35 +49,67 @@ export const COLUMN_DEF_SAMPLE = [
 
 // DATASET COLUMNS
 export const COLUMN_DEF_DATASET = [
-  	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
-  	{ field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200},
-  	{ field: 'group_name', headerName: 'Group Name', width: 200},
-	{ field: 'created_by_user_email', headerName: 'Created By', width: 210},
-  { field: 'data_access_level', headerName: 'Access Level', width: 150},
-	{ field: 'status', headerName: 'Submission Status', width: 200,
-		renderCell: (params: ValueFormatterParams) => (
-			<span
-              style={{
-                width: "100px"
-              }}
-              className={"badge " + getPublishStatusColor(params.value,"NA")}>
-              {params.value}
-            </span>
-			)
-	},
-	
-	{ field: 'uuid', headerName: 'Data', width: 100,
-	renderCell: (params: ValueFormatterParams) => (
-		 <React.Fragment>
- 			<button
-              className='btn btn-link'
-              onClick={() => handleDataClick(params.value)}>
-            	<FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
-      </button>                         
-      </React.Fragment>
+  { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
+  { field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200},
+  { field: 'group_name', headerName: 'Group Name', width: 200},
+{ field: 'created_by_user_email', headerName: 'Created By', width: 210},
+{ field: 'data_access_level', headerName: 'Access Level', width: 150},
+{ field: 'status', headerName: 'Submission Status', width: 200,
+  renderCell: (params: ValueFormatterParams) => (
+    <span
+            style={{
+              width: "100px"
+            }}
+            className={"badge " + getPublishStatusColor(params.value,"NA")}>
+            {params.value}
+          </span>
     )
-	}
- ];
+},
+
+{ field: 'uuid', headerName: 'Data', width: 100,
+renderCell: (params: ValueFormatterParams) => (
+   <React.Fragment>
+     <button
+            className='btn btn-link'
+            onClick={() => handleDataClick(params.value)}>
+            <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+    </button>                         
+    </React.Fragment>
+  )
+}
+];
+
+
+// DATASET COLUMNS
+export const COLUMN_DEF_PUBLICATION = [
+  { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
+  { field: 'group_name', headerName: 'Group Name', width: 200},
+{ field: 'created_by_user_email', headerName: 'Created By', width: 210},
+{ field: 'data_access_level', headerName: 'Access Level', width: 150},
+{ field: 'status', headerName: 'Submission Status', width: 200,
+  renderCell: (params: ValueFormatterParams) => (
+    <span
+            style={{
+              width: "100px"
+            }}
+            className={"badge " + getPublishStatusColor(params.value,"NA")}>
+            {params.value}
+          </span>
+    )
+},
+
+{ field: 'uuid', headerName: 'Data', width: 100,
+renderCell: (params: ValueFormatterParams) => (
+   <React.Fragment>
+     <button
+            className='btn btn-link'
+            onClick={() => handleDataClick(params.value)}>
+            <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+    </button>                         
+    </React.Fragment>
+  )
+}
+];
 
 // UPLOADS COLUMNS
 export const COLUMN_DEF_UPLOADS = [

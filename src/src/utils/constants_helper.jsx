@@ -21,3 +21,16 @@ export function flattenSampleType(sample_types) {
 
 //   return sample_types_flatten;
 // }
+
+
+export function removeEmptyValues(object) {
+    var keys = Object.keys(object);
+    for (var i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var value = object[key];
+        if (value === null || value === undefined || value === '') {
+            delete object[key];
+        }
+    }
+  return object;
+}

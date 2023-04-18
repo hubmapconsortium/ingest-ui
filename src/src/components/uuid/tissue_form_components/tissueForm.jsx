@@ -1793,11 +1793,10 @@ handleAddImage = () => {
                     className="form-control" 
                     id="_readonly_sample_category"
                    value={(this.state.sample_category)}>
-                    
                    </input>
-                    <p>
+                    {/* <p>
                       {(this.state.sample_category)}
-                    </p>
+                    </p> */}
                     </div>
                   
                 </React.Fragment>
@@ -1916,7 +1915,7 @@ handleAddImage = () => {
               )}
 
 
-            <div className="form-gropup">
+            <div className="form-group">
               <label htmlFor="protocol_url">   Preparation Protocol <span className="text-danger">*</span> 
               <span className="text-danger inline-icon"> <FontAwesomeIcon icon={faUserShield} /></span>
                 <span>
@@ -1958,53 +1957,8 @@ handleAddImage = () => {
               )}
             </div>
 
-            <div className="form-gropup">
-              <label htmlFor="title">
-                Title <span className="text-danger">*</span> <span className="text-danger inline-icon">
-                  <FontAwesomeIcon icon={faUserShield} />
-                </span>
-                <span>
-                  <FontAwesomeIcon
-                    icon={faQuestionCircle}
-                    data-tip
-                    data-for="title_tooltip"
-                  />
-                  <ReactTooltip
-                    id="title_tooltip"
-                    className={"tooltip"}
-                    place="top"
-                    type="info"
-                    effect="solid"
-                  >
-                    <p>Title</p>
-                  </ReactTooltip>
-                </span>
-              </label>
-              {!this.state.readOnly && (
-                <div>
-                  <input
-                    ref={this.title}
-                    type="text"
-                    name="title"
-                    id="title"
-                    className={
-                      "form-control " +
-                      this.errorClass(this.state.formErrors.title) +" "+
-                      this.errorClass(this.state.formErrors.title_DOI)
-                    }
-                    onChange={this.handleInputChange}
-                    value={this.state.title}
-                    placeholder="Title"
-                  />
-                </div>
-              )}
-              {this.state.readOnly && (
-                <div>
-                    <input type="text" readOnly className="form-control" id="static_protocol" value={this.state.protocol_url}></input>
-                </div>
-              )}
             
-            </div>
+
             {
             !this.state.readOnly &&
               this.state.specimen_type !== "organ" &&
@@ -2118,6 +2072,44 @@ handleAddImage = () => {
                 </div>
               )
             }
+            {(!this.state.readOnly || this.state.description !== undefined) && (
+              <div className="form-group">
+                <label
+                  htmlFor="description">
+                  Description  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for="description_tooltip"
+                  />
+                  <ReactTooltip
+                    id="description_tooltip"
+                    className={"tooltip"}
+                    place="top"
+                    type="info"
+                    effect="solid"
+                  >
+                    <p>A free text description of the specimen.</p>
+                  </ReactTooltip>
+                  </label>
+                {!this.state.readOnly && (
+                  <div>
+                    <textarea
+                      name="description"
+                      id="description"
+                      className="form-control"
+                      value={this.state.description}
+                      onChange={this.handleInputChange}
+                    />
+                  </div>
+                )}
+                {this.state.readOnly && (
+                    <div>
+                       <input type="text" readOnly className="form-control" id="static_description" value={this.state.description}></input>
+                    </div>
+                )}
+                
+              </div>
+            )}
 
 
             {!this.state.editingEntity &&

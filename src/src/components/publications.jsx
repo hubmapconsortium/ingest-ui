@@ -131,14 +131,14 @@ export const RenderPublication = (props) => {
   }, [uuid]);
   
 
-  function handleCancel(){
-
-    if(this.props && this.props.handleCancel){
-      // How is this happening???
-     this.props.handleCancel();
-    }else{
-      window.history.back();
-    }
+  function handleCancelForm(){
+    window.history.back();
+    // if(this.props && this.props.handleCancel){
+    //   // How is this happening???
+    //  this.props.handleCancel();
+    // }else{
+    //   window.history.back();
+    // }
   };
 
   function onUpdated(data){
@@ -175,7 +175,7 @@ export const RenderPublication = (props) => {
         <Result
           result={newResult}
           onReturn={onClose}
-          handleCancel={handleCancel}
+          handleCancelForm={handleCancelForm}
           entity={newEntity}
         />
         </DialogContent>
@@ -203,7 +203,7 @@ export const RenderPublication = (props) => {
           changeLink={onChangeGlobusLink}
           onUpdated={onUpdated} 
           onCreated={onCreated}
-          handleCancel={handleCancel} 
+          handleCancelForm={handleCancelForm} 
           editingPublication={entity_data} 
           reportError={props.reportError} 
           dataTypeList={dataTypeList} 

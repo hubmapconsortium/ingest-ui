@@ -35,7 +35,7 @@ import {  faExclamationTriangle}
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
 import { ubkg_api_get_assay_type_set } from "./service/ubkg_api";
-import {BuildError} from "./utils/error_helper";
+import {BuildError, FormatError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -202,13 +202,19 @@ export function App (props){
 
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
-function reportError (error){
-  console.error("!!!reportError", error);
-  var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
-  console.debug("reportError", errString);
-  setErrorInfo(errString);
-  setErrorShow(true);
-}
+  function reportError (error){
+    console.debug("Type", typeof error);
+    typeof error === "string" ? setErrorInfo(error) : setErrorInfo(JSON.stringify(error));
+
+    // var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
+    // if(error.results){
+    //   errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
+    // }
+    var formatError = FormatError(error);
+    console.debug("reportError", error, formatError);
+    // setErrorInfo(errString);
+    setErrorShow(true);
+  }
 
   return (
     <div className="App">

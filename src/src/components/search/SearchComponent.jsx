@@ -9,10 +9,9 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography  from '@mui/material/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
-
 import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
 import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
-import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_UPLOADS } from './table_constants';
+import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_PUBLICATION, COLUMN_DEF_UPLOADS } from './table_constants';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
@@ -63,6 +62,7 @@ class SearchComponent extends Component {
       show_search: true,
       table_loading:false,
       updateSuccess: false,
+      restrictions:this.props.restrictions ? this.props.restrictions : {},
       search_filters:{
         entityType: "",
         keywords: "",
@@ -82,8 +82,18 @@ class SearchComponent extends Component {
         });
       });
 
+    console.debug("!!!SearchComponent: componentDidMount", this.state.restrictions, this.props.restrictions);
+    if(this.props.restrictions){
+      // So we can apply the object right to the state instead of do parse tango
+      var restrictedState = this.state.restrictions;
+      restrictedState.search_filters = this.state.restrictions;
+      this.setState(restrictedState,
+        function(){ 
+        this.handleSearchClick();
+      })
+    }
+
     if(this.props.packagedQuery){
-      
       this.setState({
         entityType: this.props.packagedQuery.entityType,
         keywords: this.props.packagedQuery.keywords,
@@ -448,6 +458,8 @@ class SearchComponent extends Component {
           which_cols_def = COLUMN_DEF_SAMPLE;
         } else if (colSet === 'dataset') {
           which_cols_def = COLUMN_DEF_DATASET;
+        } else if (colSet === 'publication') {
+          which_cols_def = COLUMN_DEF_PUBLICATION;
         } else if (colSet === 'upload' ) {
           which_cols_def = COLUMN_DEF_UPLOADS;
         } else if (colSet === 'publication' ) {
@@ -899,6 +911,7 @@ renderInfoPanel() {
                           name="entityType"
                           id="entityType"
                           className="select-css"
+                          disabled={this.props.restrictions && this.props.restrictions.entityType ? true : false}
                           onChange={this.handleInputChange}
                           value={this.state.search_filters.entityType}
                         >
