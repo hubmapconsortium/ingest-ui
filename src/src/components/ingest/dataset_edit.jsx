@@ -1408,11 +1408,14 @@ class DatasetEdit extends Component {
                   this.aButton("processing", "Process"))
                 }
                 {this.state.writeable && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
-                   <Button
-                   className="btn btn-primary mr-1"
-                   onClick={ () => this.showSubmitModal() }>
-                   Submit
-                 </Button>
+                    <div>
+                      <Button 
+                        className="btn btn-primary mr-1" 
+                        variant="contained"
+                        onClick={ () => this.showSubmitModal() }>
+                          Submit
+                      </Button>
+                    </div>
                 )}
                 {/* {this.state.has_write_priv && this.state.status.toUpperCase() === "NEW" && (
                   this.aButton("submit", "Submit"))
@@ -1514,10 +1517,8 @@ class DatasetEdit extends Component {
 
 
   renderVersionNav() {
-
     var next = "";
     var prev = "";
-    
     return (
       <Box sx={{width:"50%"}}>
         {this.props.editingDataset.next_revision_uuid  && (
