@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
-import { search_api_get_assay_list, search_api_get_assay_set } from '../service/search_api';
+import { ubkg_api_get_assay_type_set } from "../service/ubkg_api";
 import DatasetFormLegacy from "./ingest/dataset_edit";
 import {useNavigate} from "react-router-dom";
 import { useLocation } from 'react-router'
@@ -51,7 +51,7 @@ export const RenderDataset = (props) => {
     setAuthToken(authSet);
   
     function checkAssayType(dtype){
-      search_api_get_assay_set("primary")// the list call only gets primaries for now. 
+      ubkg_api_get_assay_type_set("primary")// the list call only gets primaries for now.
       .then((response) => {
         let primaries = response.data.result ;
         var primarySet = primaries.map((elt, idx) => {return elt.name});
@@ -59,7 +59,7 @@ export const RenderDataset = (props) => {
         setDataTypeList(primaries);
         setDtl_primary(primaries);
         setDtl_status( primarySet.includes(dtype[0]));
-        search_api_get_assay_set()// the list call only gets primaries for now. 
+        ubkg_api_get_assay_type_set()// the list call only gets primaries for now.
           .then((response) => {
             let allDTs = response.data.result;
             setDtl_all(allDTs);
