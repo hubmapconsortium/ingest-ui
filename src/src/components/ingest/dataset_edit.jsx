@@ -35,7 +35,7 @@ import { ingest_api_allowable_edit_states,
     ingest_api_allowable_edit_states_statusless} from '../../service/ingest_api';
 import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
+import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -96,6 +96,7 @@ class DatasetEdit extends Component {
     slist:[], 
     
     // Page States 
+    showSubmitModal:false,
     badge_class: "badge-purple",
     groups_dataprovider:[],
     GroupSelectShow: false,
@@ -140,6 +141,9 @@ class DatasetEdit extends Component {
     }
     
     componentDidMount() {
+      var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.assay_type_primary,this.state.status.toUpperCase(),this.props.newForm]
+      console.table({permChecks});
+
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
@@ -348,7 +352,7 @@ class DatasetEdit extends Component {
   }
 
   setAssayLists(){
-    search_api_get_assay_set()
+    ubkg_api_get_assay_type_set()
     .then((res) => {
       
       this.setState({
@@ -358,7 +362,7 @@ class DatasetEdit extends Component {
     .catch((err) => {
       
     })
-    search_api_get_assay_set("primary")
+    ubkg_api_get_assay_type_set("primary")
     .then((res) => {
       
       this.setState({
@@ -377,6 +381,10 @@ class DatasetEdit extends Component {
 
   showModal = () => {
     this.setState({ show: true });
+  };
+
+  showSubmitModal = () => {
+    this.setState({ showSubmitModal: true });
   };
 
   hideModal = () => {
@@ -409,6 +417,11 @@ class DatasetEdit extends Component {
   hideGroupSelectModal = () => {
     this.setState({
       GroupSelectShow: false
+    });
+  };
+  hideSubmitModal = () => {
+    this.setState({
+      showSubmitModal: false
     });
   };
 
@@ -939,20 +952,81 @@ class DatasetEdit extends Component {
                     submitErrorResponse:error.result.data,
                     buttonSpinnerTarget:"", });
                 });
-            } else if (submitIntention === "processing") {
+            } else if (submitIntention === "submit") {
+              this.setState({submit_error: true}, () => {
+                var dataSubmit = {
+                  "status": "Submitted"
+                }
+                // Dnt actually submit till we confrm in the modal.
+                entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(dataSubmit), JSON.parse(localStorage.getItem("info")).groups_token)
+                .then((response) => {
+                    if (response.status < 300) {
+                      this.setState({ 
+                        submit_error: false, 
+                        submitting: false, 
+                        });
+                      this.props.onUpdated(response.results);
+                    } else {
 
+                      var submitErrorResponse="Uncaptured Error";
+                      if(response.err && response.err.response.data ){
+                        submitErrorResponse = response.err.response.data 
+                      }
+                      if(response.error && response.error.response.data ){
+                        submitErrorResponse = response.error.response.data 
+                      }
+                      if(typeof response === "string"){
+                        submitErrorResponse = response;
+                      }
+                      this.setState({ 
+                        showSubmitModal:false,
+                        submit_error: true, 
+                        submitting: false, 
+                        submitErrorResponse:submitErrorResponse,
+                        buttonSpinnerTarget:"" }, () => {
+                          this.props.reportError();
+                        });
+                    }
+                }) 
+                .catch((error) => {
+                  this.props.reportError(error);
+                  this.setState({ 
+                    submit_error: true, 
+                    submitting: false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"" });
+                });
+              })
+
+            }else if (submitIntention === "processing") {
+              this.setState({submit_error: false}, () => {
+                // Dnt actually submit till we confrm in the modal.
+              })
                 ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status < 300) {
                       this.props.onUpdated(response.results);
                     } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
-                     var statusText = response.err.response.status+" "+response.err.response.statusText;
+                      var statusText = "";
+                      console.debug("err", response, response.error);
+                      if(response.err){
+                        statusText = response.err.response.statkus+" "+response.err.response.statusText;
+                      }else if(response.error){
+                        statusText = response.error.response.status+" "+response.error.response.statusText;
+                      }
+                      var submitErrorResponse="Uncaptured Error";
+                      if(response.err && response.err.response.data ){
+                        submitErrorResponse = response.err.response.data 
+                      }
+                      if(response.error && response.error.response.data ){
+                        submitErrorResponse = response.error.response.data 
+                      }
                       this.setState({ 
                         submit_error: true, 
                         submitting: false,
                         buttonSpinnerTarget:"", 
                         submitErrorStatus:statusText,
-                        submitErrorResponse:response.err.response.data ,
+                        submitErrorResponse:submitErrorResponse ,
                       });
                     }
                 })
@@ -966,30 +1040,30 @@ class DatasetEdit extends Component {
                       buttonSpinnerTarget:"" });
                  });
             } else { // just update
-                    entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                      .then((response) => {
-                          if (response.status < 300) {
-                            this.setState({ 
-                              submit_error: false, 
-                              submitting: false, 
-                              });
-                            this.props.onUpdated(response.results);
-                          } else {
-                            this.setState({ 
-                              submit_error: true, 
-                              submitting: false, 
-                              submitErrorResponse:response.results.statusText,
-                              buttonSpinnerTarget:"" });
-                          }
-                }) 
-                .catch((error) => {
-                  this.props.reportError(error);
-                   this.setState({ 
-                    submit_error: true, 
-                    submitting: false, 
-                    submitErrorResponse:error.result.data,
-                    buttonSpinnerTarget:"" });
-                 });;
+                  entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                    .then((response) => {
+                        if (response.status < 300) {
+                          this.setState({ 
+                            submit_error: false, 
+                            submitting: false, 
+                            });
+                          this.props.onUpdated(response.results);
+                        } else {
+                          this.setState({ 
+                            submit_error: true, 
+                            submitting: false, 
+                            submitErrorResponse:response.results.statusText,
+                            buttonSpinnerTarget:"" });
+                        }
+              }) 
+              .catch((error) => {
+                this.props.reportError(error);
+                  this.setState({ 
+                  submit_error: true, 
+                  submitting: false, 
+                  submitErrorResponse:error.result.data,
+                  buttonSpinnerTarget:"" });
+                });;
               }
           } else {  // new creations
 
@@ -1060,11 +1134,20 @@ class DatasetEdit extends Component {
         });
         // Alert("There was a problem handling your form. Please review the marked items and try again.");
       }
-    });
-  };
+    })
+    .catch((err) => {
+      console.debug("validateForm err", err);
+      this.setState({ submit_error: true, submitting: false, submitErrorResponse:err, buttonSpinnerTarget:"" } ,
+        () => {
+         //
+        });
+    }); 
+  }
 
   validateForm() {
+    console.debug("validateForm");
     return new Promise((resolve, reject) => {
+      
       let isValid = true;
       if (!validateRequired(this.state.source_uuid_list)) {
         this.setState((prevState) => ({
@@ -1076,8 +1159,8 @@ class DatasetEdit extends Component {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, source_uuid_list: "" },
         }));
-
       }
+      console.debug("validateForm 2", isValid);
       
       if (this.state.data_types && (this.state.data_types.size === 0 || this.state.data_types === "")) {
         this.setState((prevState) => ({
@@ -1276,6 +1359,23 @@ class DatasetEdit extends Component {
 
   renderButtons() {
 
+    /* The Buttons:
+     {this.reprocessButton()}
+     {this.cancelButton()}
+     {this.aButton("submit", "Submit"))}
+     {this.aButton("published", "Publish")} 
+     {this.aButton("reopened", "Reopen")}
+     {this.aButton("unpublished", "UnPublish")}
+     {this.aButton("hold", "Hold")}
+    */
+
+// @TODO Let's maybe wrap the buttons in checks vs Building a button set for each possible state?
+// & also Drop the "aButton" factory, and just use the button component directly
+
+    // console.debug("CheckOne",this.state.has_admin_priv === true && this.state.assay_type_primary === false
+      // && this.state.previous_revision_uuid === undefined 
+      // && this.state.status.toUpperCase() === "PUBLISHED");
+
     if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
             && this.state.previous_revision_uuid === undefined 
             && this.state.status.toUpperCase() === "PUBLISHED") {
@@ -1287,27 +1387,41 @@ class DatasetEdit extends Component {
             </div>
           )
     }
-            
-    if (this.state.writeable === false && this.state.has_version_priv === false){            
+    
+    
+    // console.debug("CheckTwo",this.state.writeable === false && this.state.has_version_priv === false);
+    if (this.state.writeable === false ){            
       return (
             <div className="buttonWrapRight">
                 {this.cancelButton()} 
             </div>
           )
     } else {
-
+    // console.debug("CheckThree",["NEW", "INVALID", "REOPENED", "ERROR"].includes( this.state.status.toUpperCase()));
+    // console.debug("CheckFour",this.state.has_submit_priv,this.state.writeable && !this.props.newForm && this.state.status.toUpperCase() === "NEW" );
       if (["NEW", "INVALID", "REOPENED", "ERROR"].includes( 
               this.state.status.toUpperCase())) {
         return (
             <div className="buttonWrapRight">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.state.has_submit_priv && (
-                  this.aButton("processing", "Submit"))
+                  this.aButton("processing", "Process"))
                 }
+                {this.state.writeable && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
+                   <Button
+                   className="btn btn-primary mr-1"
+                   onClick={ () => this.showSubmitModal() }>
+                   Submit
+                 </Button>
+                )}
+                {/* {this.state.has_write_priv && this.state.status.toUpperCase() === "NEW" && (
+                  this.aButton("submit", "Submit"))
+                } */}
                 {this.cancelButton()}
             </div>
           )
       }
+      // console.debug("CheckFive",this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv);
       if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
         return (
             <div className="buttonWrapRight">
@@ -1336,9 +1450,40 @@ class DatasetEdit extends Component {
                 {this.cancelButton()}
             </div>
           )
-      }      
+      }   
+      else{
+        <div className="buttonWrapRight">
+          {this.cancelButton()}
+        </div>
+      }   
     }
   }
+
+  renderSubmitModal = () => {
+  
+      return (
+          <Dialog aria-labelledby="submit-dialog" open={this.state.showSubmitModal}>
+            <DialogContent>
+              <h4>Preparing to Submit</h4>
+              <div>  Has all data for this dataset been 1) validated locally and 2) uploaded to the globus folder?</div>
+           </DialogContent>
+             <DialogActions>
+              <Button
+              className="btn btn-primary mr-1"
+              onClick={ () => this.handleSubmit("submit")}>
+              Submit
+            </Button>
+            <Button
+              className="btn btn-secondary"
+              onClick={this.hideSubmitModal}>
+              Cancel
+            </Button>          
+            </DialogActions>
+          </Dialog>
+      
+      );
+    }
+  
 
   renderNewVersionButtons() {
     /*the entity pointed to for at least one dataset.direct_ancestory_uuids is of type sample (ancestor.entity_type == 'Source')
@@ -2166,6 +2311,7 @@ class DatasetEdit extends Component {
             </div>
           </div>
         </Modal>
+      {this.renderSubmitModal()}
       </React.Fragment>
     );
   }

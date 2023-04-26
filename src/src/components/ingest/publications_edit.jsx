@@ -52,7 +52,7 @@ import {
   entity_api_get_entity,
 } from "../../service/entity_api";
 //import { withRouter } from 'react-router-dom';
-import { search_api_get_assay_set } from "../../service/search_api";
+import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 import { removeEmptyValues } from "../../utils/constants_helper";
@@ -432,7 +432,7 @@ class PublicationEdit extends Component {
   }
 
   setAssayLists() {
-    search_api_get_assay_set()
+    ubkg_api_get_assay_type_set()
       .then((res) => {
         this.setState({
           dtl_all: res.data.result.map((value, index) => {
@@ -441,7 +441,7 @@ class PublicationEdit extends Component {
         });
       })
       .catch((err) => {});
-    search_api_get_assay_set("primary")
+    ubkg_api_get_assay_type_set("primary")
       .then((res) => {
         this.setState({
           dtl_primary: res.data.result.map((value, index) => {

@@ -39,7 +39,8 @@ import ReactTooltip from "react-tooltip";
 import SearchComponent from "../../search/SearchComponent";
 //import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
-import { SAMPLE_TYPES, SAMPLE_CATEGORIES,TISSUE_TYPES, ORGAN_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
+import { SAMPLE_TYPES, SAMPLE_CATEGORIES,TISSUE_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
+import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
 //import LabIDsModa7l from "../labIdsModal";
@@ -188,6 +189,15 @@ class TissueForm extends Component {
   };
 
   componentDidMount() {
+
+    ubkg_api_get_organ_type_set()
+      .then((res) => {
+        this.setState({organ_types: res}, () => {
+          console.log(this.state.organ_types);
+        }, () => {
+          console.log('ERROR: ubkg_api_get_organ_type_set')
+        });
+      });
 
     ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token) // @TODO Multiple places that use this do filtering after, just grab "ingest_api_users_groups" instead? 
       .then(res => {
@@ -1688,8 +1698,8 @@ handleAddImage = () => {
                             <div className="col-sm-12">
                               <b>Organ Type:</b>{" "}
                               {
-                                ORGAN_TYPES[
-                                this.state.source_entity.organ
+                                this.state.organ_types[
+                                  this.state.source_entity.organ
                                 ]
                               }
                             </div>
@@ -1815,7 +1825,7 @@ handleAddImage = () => {
                         value={this.state.organ}
                       >
                         <option value="">----</option>
-                        {Object.entries(ORGAN_TYPES).map((op, index) => {
+                        {Object.entries(this.state.organ_types).map((op, index) => {
                           return (
                             <option key={op[0]} value={op[0]}>
                               {op[1]}
@@ -1844,9 +1854,12 @@ handleAddImage = () => {
                 )}
                 {this.state.readOnly && (
                   <div>
-                   <input type="text" readOnly className="form-control" id="static_organ" value={this.state.organ === "OT" ? this.state.organ_other : ORGAN_TYPES[this.state.organ]}></input>
-
-                  
+                   <input type="text"
+                          readOnly
+                          className="form-control"
+                          id="static_organ"
+                          value={this.state.organ === "OT" ? this.state.organ_other : this.state.organ_types[this.state.organ]}>
+                   </input>
                   </div>
                 )}
               </div>
@@ -2146,12 +2159,13 @@ handleAddImage = () => {
                   { this.state.rui_click && this.state.RUI_ACTIVE && (
                   <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
+                      organList={this.state.organ_types}
                       organ={this.state.organ}
                       sex={this.state.source_entity.sex}
                       user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
                       parent="TissueForm" />
-                      </Dialog>
+                  </Dialog>
                   )}
 
                   { this.state.rui_check && (
