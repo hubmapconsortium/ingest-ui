@@ -789,7 +789,15 @@ class DatasetEdit extends Component {
   }
 
   handleReprocess = () => {
-    Alert("Reprocessing feature not implemented")
+    this.setState({ 
+      submit_error: true, 
+      submitting: false, 
+      submitErrorResponse:"Reprocessing feature not implemented",
+      buttonSpinnerTarget:""} ,
+      () => {
+       
+      });
+    // Alert()
   }
 
   handleButtonClick = (i, event) => {
@@ -1375,14 +1383,14 @@ class DatasetEdit extends Component {
     // console.debug("CheckOne",this.state.has_admin_priv === true && this.state.assay_type_primary === false
       // && this.state.previous_revision_uuid === undefined 
       // && this.state.status.toUpperCase() === "PUBLISHED");
+      console.table([this.state.has_admin_priv, this.state.assay_type_primary, this.state.previous_revision_uuid, this.state.status]);
 
-    if (this.state.has_admin_priv === true && this.state.assay_type_primary === false
-            && this.state.previous_revision_uuid === undefined 
+    if (this.state.has_admin_priv === true 
+            && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
             && this.state.status.toUpperCase() === "PUBLISHED") {
          return (
            <div className="buttonWrapRight">
                 {this.reprocessButton()}
-                {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
             </div>
           )
@@ -1448,7 +1456,7 @@ class DatasetEdit extends Component {
             <div className="buttonWrapRight">
                 {this.aButton("hold", "Hold")}
                 {this.aButton("reopened", "Reopen")}
-                {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
+                {/* {this.state.has_publish_priv && (this.aButton("published", "Publish"))} */}
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
             </div>
@@ -1468,7 +1476,9 @@ class DatasetEdit extends Component {
           <Dialog aria-labelledby="submit-dialog" open={this.state.showSubmitModal}>
             <DialogContent>
               <h4>Preparing to Submit</h4>
-              <div>  Has all data for this dataset been 1) validated locally and 2) uploaded to the globus folder?</div>
+              <div>  Has all data for this dataset been <br/>
+                1	&#41; validated locally, and  <br/>
+                2	&#41; uploaded to the globus folder?</div>
            </DialogContent>
              <DialogActions>
               <Button
