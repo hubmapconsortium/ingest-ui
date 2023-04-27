@@ -1456,7 +1456,7 @@ class DatasetEdit extends Component {
             <div className="buttonWrapRight">
                 {this.aButton("hold", "Hold")}
                 {this.aButton("reopened", "Reopen")}
-                {this.state.has_publish_priv && (this.aButton("published", "Publish"))}
+                {/* {this.state.has_publish_priv && (this.aButton("published", "Publish"))} */}
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
                 {this.cancelButton()}
             </div>
