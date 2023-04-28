@@ -1468,9 +1468,11 @@ class DatasetEdit extends Component {
           )
       }   
       else{
-        <div className="buttonWrapRight">
-          {this.cancelButton()}
-        </div>
+        return(
+          <div className="buttonWrapRight">
+            {this.cancelButton()}
+          </div>
+        )
       }   
     }
   }
