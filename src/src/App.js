@@ -112,7 +112,7 @@ export function App (props){
           setAuthStatus(true);
           ubkg_api_get_assay_type_set("primary")
           .then((response) => {
-            console.debug("ubkg_api_get_assay_type_set");
+            console.debug("ubkg_api_get_assay_type_set", response);
               let dtypes = response.data.result;
               setDataTypeList(dtypes);
               setDataTypeListPrimary(dtypes);
@@ -126,11 +126,13 @@ export function App (props){
                 .catch(error => {
                   console.debug("fetch DT list Response Error", error);
                   setIsLoading(false)
+                  reportError(error)
                 });
           })
           .catch(error => {
             console.debug("fetch DT list Response Error", error);
             setIsLoading(false)
+            reportError(error)
           });
 
 

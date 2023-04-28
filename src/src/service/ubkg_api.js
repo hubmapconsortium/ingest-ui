@@ -36,11 +36,7 @@ export function ubkg_api_get_assay_type_set(scope) {
       })
       .catch(error => {
         console.debug("ubkg_api_get_assaytype", error, error.response);
-        if(error.response){
-          return {status: error.response.status, results: error.response.data}
-        } else {
-          return {error}
-        }
+        captureError(error);
       });
 };
 
@@ -53,7 +49,6 @@ export function ubkg_api_get_assay_type_set(scope) {
  */
 export function ubkg_api_get_organ_type_set() {
   console.debug("ubkg_api_get_organ_type_set");
-
   let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code`;
   return axios
     .get(url)
@@ -63,11 +58,25 @@ export function ubkg_api_get_organ_type_set() {
       })
       .catch(error => {
         console.debug("ubkg_api_get_organ_type_set", error, error.response);
-        if(error.response){
-          return {status: error.response.status, results: error.response.data}
-        } else {
-          return {error}
-        }
+        captureError(error);
       });
 
 };
+
+
+function captureError (error){
+
+  if(error.response ){
+    if(error.response.data ){
+      if(error.data.includes("<!DOCTYPE html>")){
+        return {status: error.response.status, results: error.response.statusText}
+      }else{
+        return {status: error.response.status, results: error.response.data}
+      }
+    }else{
+      return {status: error.response.status, results: error.response.data}
+    }
+  } else {
+    return {error}
+  }
+}
