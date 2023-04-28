@@ -9,8 +9,8 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography  from '@mui/material/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
-
-import { SAMPLE_TYPES, ORGAN_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
+import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
+import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_PUBLICATION, COLUMN_DEF_UPLOADS } from './table_constants';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
@@ -62,6 +62,7 @@ class SearchComponent extends Component {
       show_search: true,
       table_loading:false,
       updateSuccess: false,
+      restrictions:this.props.restrictions ? this.props.restrictions : {},
       search_filters:{
         entityType: "",
         keywords: "",
@@ -70,9 +71,29 @@ class SearchComponent extends Component {
     };
   }
 
-  componentDidMount() {    
+  componentDidMount() {
+
+    ubkg_api_get_organ_type_set()
+      .then((res) => {
+        this.setState({organ_types: res}, () => {
+          console.log(this.state.organ_types);
+        }, () => {
+          console.log('ERROR: ubkg_api_get_organ_type_set')
+        });
+      });
+
+    console.debug("!!!SearchComponent: componentDidMount", this.state.restrictions, this.props.restrictions);
+    if(this.props.restrictions){
+      // So we can apply the object right to the state instead of do parse tango
+      var restrictedState = this.state.restrictions;
+      restrictedState.search_filters = this.state.restrictions;
+      this.setState(restrictedState,
+        function(){ 
+        this.handleSearchClick();
+      })
+    }
+
     if(this.props.packagedQuery){
-      
       this.setState({
         entityType: this.props.packagedQuery.entityType,
         keywords: this.props.packagedQuery.keywords,
@@ -413,8 +434,8 @@ class SearchComponent extends Component {
     combinedList.push(SAMPLE_CATEGORIES)
     // combinedList.push(SAMPLE_TYPES)
     var organs = {}
-    for (let k in ORGAN_TYPES) {
-       organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + ORGAN_TYPES[k]
+    for (let k in this.state.organ_types) {
+       organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + this.state.organ_types[k]
     }
     combinedList.push(organs)
     return combinedList
@@ -467,21 +488,21 @@ class SearchComponent extends Component {
     if (entityType && entityType !== '----') {
       
       if(!this.props.modecheck){url.searchParams.set('entityType',entityType);}
-      if (ORGAN_TYPES.hasOwnProperty(entityType)) {
-        
-        params["organ"] = entityType;
-      } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType)) {
-        
-        params["sample_category"] = entityType;
-      } else { 
-        
-        params["entity_type"] = toTitleCase(entityType);
-      }
-    }else{
-      url.searchParams.delete('entityType');
-    }
-    
 
+      if (ENTITY_TYPES.hasOwnProperty(entityType)) {
+        params["entity_type"] = toTitleCase(entityType);
+
+      } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType)) {
+        params["sample_category"] = entityType;
+
+      } else {
+        params["organ"] = entityType;
+      }
+
+    } else {
+      url.searchParams.delete('entityType');
+
+    }
    
     if(this.state.page !== 0 ){
       this.setState({
@@ -890,6 +911,7 @@ renderInfoPanel() {
                           name="entityType"
                           id="entityType"
                           className="select-css"
+                          disabled={this.props.restrictions && this.props.restrictions.entityType ? true : false}
                           onChange={this.handleInputChange}
                           value={this.state.search_filters.entityType}
                         >

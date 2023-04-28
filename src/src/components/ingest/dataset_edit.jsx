@@ -35,7 +35,7 @@ import { ingest_api_allowable_edit_states,
     ingest_api_allowable_edit_states_statusless} from '../../service/ingest_api';
 import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import {  search_api_get_assay_type,  search_api_get_primary_assays, search_api_get_assay_set } from '../../service/search_api';
+import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 
@@ -358,7 +358,7 @@ class DatasetEdit extends Component {
   }
 
   setAssayLists(){
-    search_api_get_assay_set()
+    ubkg_api_get_assay_type_set()
     .then((res) => {
       
       this.setState({
@@ -368,7 +368,7 @@ class DatasetEdit extends Component {
     .catch((err) => {
       
     })
-    search_api_get_assay_set("primary")
+    ubkg_api_get_assay_type_set("primary")
     .then((res) => {
       
       this.setState({
@@ -870,7 +870,7 @@ class DatasetEdit extends Component {
             description: this.state.description,
             dataset_info: this.state.dataset_info,
           };
-          
+          console.debug("Data", data);
           
   
           // get the Source ancestor
@@ -1774,11 +1774,14 @@ class DatasetEdit extends Component {
     }
    
   assay_contains_pii(assay) {
+    console.debug("AssauCOntainsPii", assay);
     let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
     for (let i in this.props.dataTypeList) {
       let e = this.props.dataTypeList[i]
+      console.debug(e, e['contains_pii'], assay_val);
       if (e['name'] === assay_val) {
-          return e['contains-pii']
+        // console.debug("e:",e,e['contains_pii']);
+          return e['contains_pii']
       }
     }
     return false

@@ -52,7 +52,7 @@ import {
   entity_api_get_entity,
 } from "../../service/entity_api";
 //import { withRouter } from 'react-router-dom';
-import { search_api_get_assay_set } from "../../service/search_api";
+import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtype } from "../../utils/display_subtypes";
 import { removeEmptyValues } from "../../utils/constants_helper";
@@ -254,6 +254,11 @@ class PublicationEdit extends Component {
               has_admin_priv: resp.results.has_admin_priv,
             });
 
+            // const adminCheck = resp.filter(
+            //   g => g.data_provider === true
+            // );
+            // console.debug("Admin Check", adminCheck, resp);
+
             ingest_api_allowable_edit_states_statusless(
               this.props.editingPublication.uuid,
               JSON.parse(localStorage.getItem("info")).groups_token
@@ -428,7 +433,7 @@ class PublicationEdit extends Component {
   }
 
   setAssayLists() {
-    search_api_get_assay_set()
+    ubkg_api_get_assay_type_set()
       .then((res) => {
         this.setState({
           dtl_all: res.data.result.map((value, index) => {
@@ -437,7 +442,7 @@ class PublicationEdit extends Component {
         });
       })
       .catch((err) => {});
-    search_api_get_assay_set("primary")
+    ubkg_api_get_assay_type_set("primary")
       .then((res) => {
         this.setState({
           dtl_primary: res.data.result.map((value, index) => {
@@ -517,6 +522,12 @@ class PublicationEdit extends Component {
     });
   };
 
+  cancelLookUpModal = () => {
+    this.setState({
+      LookUpShow: false,
+      lookUpCancelled: true
+    });
+  };
   
   cancelGroupModal = () => {
     this.setState({
@@ -1082,11 +1093,8 @@ class PublicationEdit extends Component {
             }else{
               console.debug("UPDATING data", data);
               // just update
-              // Title's immutable, in the state for rendering but strip before sending
-              // if(!this.props.newForm){delete data.title}
               entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
-                  console.debug("entity_api_update_entity response", response);
                     if (response.status < 300 ) {
                       this.setState({ 
                         submit_error: false, 
@@ -1480,8 +1488,8 @@ class PublicationEdit extends Component {
     var adminCheck = this.state.has_admin_priv
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
+    var newFormCheck = this.props.newForm
     var newStateCheck = this.state.editingPublication.status === "New"
-    var newCheck = this.props.newForm
 
     return (
       <div className="buttonWrapRight">
@@ -1489,7 +1497,7 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
-        {adminCheck && !newCheck && newStateCheck &&(
+        {adminCheck && !newFormCheck && newStateCheck &&(
           <>
             <Button 
               className="btn btn-primary mr-1" 
@@ -1500,7 +1508,8 @@ class PublicationEdit extends Component {
           </>
       )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
-        {this.props.newForm && (<>{this.saveButton()}</>)}
+        {newFormCheck && (<>{this.saveButton()}</>)}
+        {/* {adminCheck && !newFormCheck && newStateCheck  && (<>{this.submitButton()}</>)} */}
         {this.cancelModalButton()}
       </div>
     );
@@ -1599,27 +1608,27 @@ class PublicationEdit extends Component {
       </Button>
     );
   }
+        
 
-  // Submit button
   submitButton() {
     return (
       <Button
         type="button"
         variant="contained"
         onClick={() => this.handleSubmit("submit")}>
-        {this.state.buttonSpinnerTarget === "save" && (
+        {this.state.buttonSpinnerTarget === "submit" && (
           <span>
             <FontAwesomeIcon icon={faSpinner} spin />
           </span>
         )}
-        {this.state.buttonSpinnerTarget !=="save" &&
-         <>Save</>
+        {this.state.buttonSpinnerTarget !=="submit" &&
+         <>Submit</>
         }
-
-
       </Button>
     );
   }
+
+
 
   // General button
   aButton(newstate, which_button, event) {
@@ -1833,7 +1842,7 @@ class PublicationEdit extends Component {
     for (let i in this.props.dataTypeList) {
       let e = this.props.dataTypeList[i];
       if (e["name"] === assay_val) {
-        return e["contains-pii"];
+        return e["contains_pii"];
       }
     }
     return false;
@@ -1951,6 +1960,9 @@ class PublicationEdit extends Component {
                   custom_title="Search for a Source ID for your Publication"
                   filter_type="Publication"
                   modecheck="Source"
+                  restrictions={{
+                    entityType : "dataset"
+                  }}
                 />
               </DialogContent>
               <DialogActions>
@@ -2041,10 +2053,10 @@ class PublicationEdit extends Component {
           {/* pub Status */}
           <div className={"form-gropup mb-4 "+this.state.formErrors.publication_status}>
             <FormControl
-              error={this.state.validationStatus.publication_status}  >
+              error={ this.state.validationStatus.publication_status.length>0 ? true : false}  >
               <FormLabel 
                 id="publication_status"
-                error={this.state.validationStatus.publication_status}>
+                error={ this.state.validationStatus.publication_status.length>0 ? true : false }>
                   Has this Publication been Published?
               </FormLabel>
               <RadioGroup

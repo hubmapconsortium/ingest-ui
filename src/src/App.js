@@ -34,7 +34,7 @@ import {  faExclamationTriangle}
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
-import {search_api_get_assay_set} from "./service/search_api";
+import { ubkg_api_get_assay_type_set } from "./service/ubkg_api";
 import {BuildError, FormatError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
@@ -110,14 +110,14 @@ export function App (props){
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
           setAuthStatus(true);
-          search_api_get_assay_set("primary") 
+          ubkg_api_get_assay_type_set("primary")
           .then((response) => {
-            console.debug("search_api_get_assay_set");
+            console.debug("ubkg_api_get_assay_type_set", response);
               let dtypes = response.data.result;
               setDataTypeList(dtypes);
               setDataTypeListPrimary(dtypes);
               // setIsLoading(false)
-              search_api_get_assay_set()
+              ubkg_api_get_assay_type_set()
                 .then((response) => {
                     let dataAll = response.data.result;
                     setDataTypeListAll(dataAll);
@@ -126,11 +126,13 @@ export function App (props){
                 .catch(error => {
                   console.debug("fetch DT list Response Error", error);
                   setIsLoading(false)
+                  reportError(error)
                 });
           })
           .catch(error => {
             console.debug("fetch DT list Response Error", error);
             setIsLoading(false)
+            reportError(error)
           });
 
 
