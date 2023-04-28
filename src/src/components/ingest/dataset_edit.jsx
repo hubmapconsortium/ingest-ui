@@ -58,8 +58,12 @@ import Select from '@material-ui/core/Select';
 
 class DatasetEdit extends Component {
   state = {
-   // The Entity Itself
     newForm: this.props.newForm,
+    // The Entity Itself
+    // Lets just give it the whole entity to reff from the prop
+    // Remember this come time to clean up tech debt / refactor
+    contains_human_genetic_sequences:this.props.editingDataset ? this.props.editingDataset.contains_human_genetic_sequences : undefined,
+    editingDatasetProp:this.props.editingDataset ? this.props.editingDataset : {},
     data_types: this.props.editingDataset ? this.props.editingDataset.data_types : {},
     dtl_primary:[],
     dtl_all:[],
@@ -81,7 +85,7 @@ class DatasetEdit extends Component {
     writeable: true,
     // editingSourceIndex:0,  
     // name: "",
-    
+
     // User Privs & Info
     groups: [],
     has_admin_priv: false,
@@ -89,12 +93,12 @@ class DatasetEdit extends Component {
     has_publish_priv: false,
     has_version_priv: false,
     groupsToken:"",
-    
+
     // Data that sets the scene
     assay_type_primary: true,
     data_type_dicts: this.props.dataTypeList,
     slist:[], 
-    
+
     // Page States 
     showSubmitModal:false,
     badge_class: "badge-purple",
@@ -142,7 +146,7 @@ class DatasetEdit extends Component {
     
     componentDidMount() {
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.assay_type_primary,this.state.status.toUpperCase(),this.props.newForm]
-      console.table({permChecks});
+      // console.table({permChecks});
 
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
@@ -242,9 +246,11 @@ class DatasetEdit extends Component {
       } catch {
       }
 
-      if(this.props.editingDataset ==='' ){
+      if(this.props.editingDataset ==='' || !this.props.editingDataset ){
+        console.debug("EDITINGDATASET UNDEFINED");
         savedGeneticsStatus = undefined;
       }else{
+        console.debug("EDITING DATASET FOUND", this.props.editingDataset);
         savedGeneticsStatus = this.props.editingDataset.contains_human_genetic_sequences;
       }
 
@@ -856,6 +862,7 @@ class DatasetEdit extends Component {
           var dataTypeArray = Array.from(this.state.data_types);
           
           // package the data up
+          console.debug(this.state);
           let data = {
             lab_dataset_id: this.state.lab_dataset_id,
             contains_human_genetic_sequences: this.state.contains_human_genetic_sequences,
@@ -961,7 +968,7 @@ class DatasetEdit extends Component {
                     buttonSpinnerTarget:"", });
                 });
             } else if (submitIntention === "submit") {
-              this.setState({submit_error: true}, () => {
+              // this.setState({submit_error: true}, () => {
                 var dataSubmit = {
                   "status": "Submitted"
                 }
@@ -1004,7 +1011,7 @@ class DatasetEdit extends Component {
                     submitErrorResponse:error.result.data,
                     buttonSpinnerTarget:"" });
                 });
-              })
+              // })
 
             }else if (submitIntention === "processing") {
               this.setState({submit_error: false}, () => {
@@ -1196,7 +1203,7 @@ class DatasetEdit extends Component {
 
       // do a check to on the data type to see what if it normally contains pii
       let pii_check = this.assay_contains_pii(this.state.data_types);
-
+      
       if (this.state.contains_human_genetic_sequences === true && pii_check === true) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
@@ -1383,7 +1390,7 @@ class DatasetEdit extends Component {
     // console.debug("CheckOne",this.state.has_admin_priv === true && this.state.assay_type_primary === false
       // && this.state.previous_revision_uuid === undefined 
       // && this.state.status.toUpperCase() === "PUBLISHED");
-      console.table([this.state.has_admin_priv, this.state.assay_type_primary, this.state.previous_revision_uuid, this.state.status]);
+      // console.table([this.state.has_admin_priv, this.state.assay_type_primary, this.state.previous_revision_uuid, this.state.status]);
 
     if (this.state.has_admin_priv === true 
             && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
