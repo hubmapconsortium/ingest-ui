@@ -1433,7 +1433,7 @@ class PublicationEdit extends Component {
   }
 
   renderSubmitModal = () => {
-    // @TODO: Drop this into a Modals util (& stay in sync with publications)
+    // @TODO: Drop this into a Modals util (& stay in sync with datasets)
     return (
       <Dialog aria-labelledby="submit-dialog" open={this.state.showSubmitModal}>
         <DialogContent>
@@ -1444,14 +1444,14 @@ class PublicationEdit extends Component {
         </DialogContent>
         <DialogActions>
           <Button
-          className="btn btn-primary mr-1"
-          onClick={ () => this.handleSubmit("submit")}>
-          Submit
+            className="btn btn-primary mr-1"
+            onClick={ () => this.handleSubmit("submit")}>
+              Submit
           </Button>
           <Button
-          className="btn btn-secondary"
-          onClick={this.hideSubmitModal}>
-          Cancel
+            className="btn btn-secondary"
+            onClick={this.hideSubmitModal}>
+              Cancel
           </Button>          
         </DialogActions>
       </Dialog>
@@ -1471,8 +1471,13 @@ class PublicationEdit extends Component {
   }
 
   renderButtons() {
+    // @TODO: A lot of the combined checks are redundant 
+    // IE (Admins Never Make Entities, so they never load the New forms)
+    // Preserving the combos preserves/documents the Business logic, 
+    // Let's document it in either comments or a real document ok?
     var latestCheck = !this.state.editingPublication.next_revision_uuid ||this.state.editingPublication.next_revision_uuid === undefined;
     var writeCheck = this.state.has_write_priv
+    var adminCheck = this.state.has_admin_priv
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
     var newStateCheck = this.state.editingPublication.status === "New"
@@ -1484,7 +1489,7 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
-        {writeCheck && !newCheck && newStateCheck &&(
+        {adminCheck && !newCheck && newStateCheck &&(
           <>
             <Button 
               className="btn btn-primary mr-1" 

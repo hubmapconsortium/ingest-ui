@@ -1420,7 +1420,7 @@ class DatasetEdit extends Component {
                 {this.state.has_submit_priv && (
                   this.aButton("processing", "Process"))
                 }
-                {this.state.writeable && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
+                {this.state.has_admin_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
                     <div>
                       <Button 
                         className="btn btn-primary mr-1" 
@@ -1476,7 +1476,7 @@ class DatasetEdit extends Component {
   }
 
   renderSubmitModal = () => {
-  // @TODO: Drop this into a Modals util (& stay in sync with publications)
+    // @TODO: Drop this into a Modals util (& stay in sync with publications)
       return (
           <Dialog aria-labelledby="submit-dialog" open={this.state.showSubmitModal}>
             <DialogContent>
