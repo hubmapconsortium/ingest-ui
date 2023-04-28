@@ -115,6 +115,7 @@ class PublicationEdit extends Component {
     slist: [],
 
     // Page States
+    showSubmitModal:false,
     badge_class: "badge-purple",
     groups_dataprovider: [],
     GroupSelectShow: false,
@@ -465,6 +466,15 @@ class PublicationEdit extends Component {
 
   hideErrorMsgModal = () => {
     this.setState({ errorMsgShow: false });
+  };
+  
+  showSubmitModal = () => {
+    this.setState({ showSubmitModal: true });
+  };
+  hideSubmitModal = () => {
+    this.setState({
+      showSubmitModal: false
+    });
   };
 
   showConfirmDialog(row, index) {
@@ -1035,6 +1045,40 @@ class PublicationEdit extends Component {
                 );
               });
             
+            }else if(submitIntention === "submit"){
+              console.debug("SUBMITTING data", data);
+              data.status = "Submitted"
+              entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                .then((response) => {
+                  console.debug("entity_api_update_entity  SUBMIT response", response);
+                    if (response.status < 300 ) {
+                      this.setState({ 
+                        submit_error: false, 
+                        submitting: false, 
+                        });
+                      this.props.onUpdated(response.results);
+                    } else {
+                      console.debug("entity_api_update_entity SUBMITNONERR error", response);
+                      this.setState({ 
+                        submit_error: true, 
+                        submitting: false, 
+                        // submitErrorResponse:response.results.statusText,
+                        submitErrorResponse:response,
+                        buttonSpinnerTarget:"" });
+                    }
+                }) 
+                .catch((error) => {
+                  console.debug("entity_api_update_entity SUBMIT error", error);
+                  this.props.reportError(error);
+                  this.setState({ 
+                    submit_error: true, 
+                    submitting: false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"" 
+                  });
+                });
+            
+
             }else{
               console.debug("UPDATING data", data);
               // just update
@@ -1388,6 +1432,33 @@ class PublicationEdit extends Component {
     }
   }
 
+  renderSubmitModal = () => {
+    // @TODO: Drop this into a Modals util (& stay in sync with publications)
+    return (
+      <Dialog aria-labelledby="submit-dialog" open={this.state.showSubmitModal}>
+        <DialogContent>
+          <h4>Preparing to Submit</h4>
+          <div>  Has all data for this dataset been <br/>
+          1	&#41; validated locally, and  <br/>
+          2	&#41; uploaded to the globus folder?</div>
+        </DialogContent>
+        <DialogActions>
+          <Button
+          className="btn btn-primary mr-1"
+          onClick={ () => this.handleSubmit("submit")}>
+          Submit
+          </Button>
+          <Button
+          className="btn btn-secondary"
+          onClick={this.hideSubmitModal}>
+          Cancel
+          </Button>          
+        </DialogActions>
+      </Dialog>
+    );
+  }
+    
+
   renderButtonOverlay() {
     return (
       // @TODO: Improved form-bottom Control Overlay?
@@ -1404,6 +1475,8 @@ class PublicationEdit extends Component {
     var writeCheck = this.state.has_write_priv
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
+    var newStateCheck = this.state.editingPublication.status === "New"
+    var newCheck = this.props.newForm
 
     return (
       <div className="buttonWrapRight">
@@ -1411,6 +1484,16 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
+        {writeCheck && !newCheck && newStateCheck &&(
+          <>
+            <Button 
+              className="btn btn-primary mr-1" 
+              variant="contained"
+              onClick={ () => this.showSubmitModal() }>
+                Submit
+            </Button>
+          </>
+      )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
         {this.props.newForm && (<>{this.saveButton()}</>)}
         {this.cancelModalButton()}
@@ -1500,6 +1583,25 @@ class PublicationEdit extends Component {
         type="button"
         variant="contained"
         onClick={() => this.handleSubmit("save")}>
+        {this.state.buttonSpinnerTarget === "save" && (
+          <span>
+            <FontAwesomeIcon icon={faSpinner} spin />
+          </span>
+        )}
+        {this.state.buttonSpinnerTarget !=="save" &&
+         <>Save</>
+        }
+      </Button>
+    );
+  }
+
+  // Submit button
+  submitButton() {
+    return (
+      <Button
+        type="button"
+        variant="contained"
+        onClick={() => this.handleSubmit("submit")}>
         {this.state.buttonSpinnerTarget === "save" && (
           <span>
             <FontAwesomeIcon icon={faSpinner} spin />
@@ -2135,6 +2237,7 @@ class PublicationEdit extends Component {
             </div>
           </div>
         </Modal>
+        {this.renderSubmitModal()}
       </React.Fragment>
     );
   }

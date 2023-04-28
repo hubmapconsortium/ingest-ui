@@ -972,7 +972,6 @@ class DatasetEdit extends Component {
                 var dataSubmit = {
                   "status": "Submitted"
                 }
-                // Dnt actually submit till we confrm in the modal.
                 entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(dataSubmit), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                     if (response.status < 300) {
@@ -982,7 +981,6 @@ class DatasetEdit extends Component {
                         });
                       this.props.onUpdated(response.results);
                     } else {
-
                       var submitErrorResponse="Uncaptured Error";
                       if(response.err && response.err.response.data ){
                         submitErrorResponse = response.err.response.data 
@@ -1478,7 +1476,7 @@ class DatasetEdit extends Component {
   }
 
   renderSubmitModal = () => {
-  
+  // @TODO: Drop this into a Modals util (& stay in sync with publications)
       return (
           <Dialog aria-labelledby="submit-dialog" open={this.state.showSubmitModal}>
             <DialogContent>
