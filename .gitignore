@@ -30,6 +30,7 @@ src/package-lock.json
 
 # testing
 src/react-app/coverage
+thunder-tests/
 
 # env files
 src/.env.*
