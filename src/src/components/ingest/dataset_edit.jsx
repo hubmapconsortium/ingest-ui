@@ -1202,7 +1202,7 @@ class DatasetEdit extends Component {
       // do a check to on the data type to see what if it normally contains pii
       let pii_check = this.assay_contains_pii(this.state.data_types);
       
-      if (this.state.contains_human_genetic_sequences === true && pii_check === true) {
+      if (this.state.contains_human_genetic_sequences  === true && pii_check === true) {
         this.setState((prevState) => ({
           formErrors: { ...prevState.formErrors, contains_human_genetic_sequences: "" },
         }));
@@ -1412,12 +1412,12 @@ class DatasetEdit extends Component {
     } else {
     // console.debug("CheckThree",["NEW", "INVALID", "REOPENED", "ERROR"].includes( this.state.status.toUpperCase()));
     // console.debug("CheckFour",this.state.has_submit_priv,this.state.writeable && !this.props.newForm && this.state.status.toUpperCase() === "NEW" );
-      if (["NEW", "INVALID", "REOPENED", "ERROR"].includes( 
+      if (["NEW", "INVALID", "REOPENED", "ERROR", "SUBMITTED"].includes( 
               this.state.status.toUpperCase())) {
         return (
             <div className="buttonWrapRight">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.state.has_submit_priv && (
+                {this.state.has_admin_priv && (
                   this.aButton("processing", "Process"))
                 }
                 {this.state.has_admin_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
