@@ -1240,7 +1240,7 @@ class PublicationEdit extends Component {
       let isValid =   true;
 
       // Check required fields
-      var requiredFields = ["title","publication_venue","publication_date","publication_url" ];
+      var requiredFields = ["title","publication_venue","publication_date","publication_url","description" ];
       var errorMsg = "Field is Required"
       requiredFields.forEach((field) => {
         if(this.validateProcessor(field, errorMsg) ===  false) {
@@ -2200,7 +2200,7 @@ class PublicationEdit extends Component {
                 id="description"
                 name="description"
                 multiline
-                // rows={4}
+                rows={4}
                 //className={"form-control " +this.errorClass(this.state.formErrors.description) +" "}
                 onChange={this.handleInputChange}
                 value={this.state.editingPublication.description}
