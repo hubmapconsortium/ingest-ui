@@ -531,3 +531,30 @@ export function ingest_api_reorganize_upload(uuid, auth) {
         return {error}
       });
 };
+
+/* 
+ * Slack Notify
+ *
+ */
+export function ingest_api_notify_slack(auth, data) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+          "Content-Type": "application/json"
+      }
+    };
+  // const data = ["data-testing-notificatons","Beep (O v O)!"]    
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/notify-slack`;
+  return axios 
+    .post(url,data,options)
+    .then(res => {
+      console.debug("ingest_api_notify_slack",res);
+        let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(error => {
+        console.debug("ingest_api_notify_slack",error);
+        return {error}
+      });
+};

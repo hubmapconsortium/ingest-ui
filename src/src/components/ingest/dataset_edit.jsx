@@ -32,7 +32,8 @@ import { ingest_api_allowable_edit_states,
     ingest_api_dataset_submit, 
     ingest_api_dataset_publish,
     ingest_api_users_groups, 
-    ingest_api_allowable_edit_states_statusless} from '../../service/ingest_api';
+    ingest_api_allowable_edit_states_statusless,
+    ingest_api_notify_slack} from '../../service/ingest_api';
 import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
 import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
@@ -190,6 +191,7 @@ class DatasetEdit extends Component {
             //
             this.setState({
               writeable: resp.results.has_write_priv,
+              has_write_priv: resp.results.has_write_priv,
               has_submit_priv: resp.results.has_submit_priv,
               has_publish_priv: resp.results.has_publish_priv,
               has_admin_priv: resp.results.has_admin_priv
@@ -357,6 +359,27 @@ class DatasetEdit extends Component {
     }
   }
 
+  uncapError(response){
+
+    var submitErrorResponse="Uncaptured Error";
+    if(response.err && response.err.response.data ){
+      submitErrorResponse = response.err.response.data 
+    }
+    if(response.error && response.error.response.data ){
+      submitErrorResponse = response.error.response.data 
+    }
+    if(typeof response === "string"){
+      submitErrorResponse = response;
+    }
+    this.setState({ 
+      showSubmitModal:false,
+      submit_error: true, 
+      submitting: false, 
+      submitErrorResponse:submitErrorResponse,
+      buttonSpinnerTarget:"" }, () => {
+        this.props.reportError();
+      });
+  }
   setAssayLists(){
     ubkg_api_get_assay_type_set()
     .then((res) => {
@@ -974,32 +997,43 @@ class DatasetEdit extends Component {
                 }
                 entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(dataSubmit), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
+                  // We shouldn't need to check agaisnt Trojan errors hiding in 200s anymore,
+                  // if they appear, file as bugs on returning API
+                  console.debug("entity_api_update_entity response", response);
+                  // var portalURL= process.env.REACT_APP_PORTAL_URL+"/browse/dataset/"+this.props.editingDataset.uuid
+                  var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
+                  var slackMessage = {
+                    "channel": "#data-testing-notifications",
+                    "message": "Dataset has been submitted ("+ingestURL+")"
+                  }
+                  ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
+                  .then((slackRes) => {
+                    console.debug("slackRes", slackRes);
                     if (response.status < 300) {
                       this.setState({ 
                         submit_error: false, 
                         submitting: false, 
                         });
-                      this.props.onUpdated(response.results);
+                        console.debug("submitting");
+                        this.props.onUpdated(response.results);
                     } else {
-                      var submitErrorResponse="Uncaptured Error";
-                      if(response.err && response.err.response.data ){
-                        submitErrorResponse = response.err.response.data 
-                      }
-                      if(response.error && response.error.response.data ){
-                        submitErrorResponse = response.error.response.data 
-                      }
-                      if(typeof response === "string"){
-                        submitErrorResponse = response;
-                      }
                       this.setState({ 
-                        showSubmitModal:false,
                         submit_error: true, 
                         submitting: false, 
-                        submitErrorResponse:submitErrorResponse,
-                        buttonSpinnerTarget:"" }, () => {
-                          this.props.reportError();
-                        });
+                        submitErrorResponse:response,
+                        buttonSpinnerTarget:"" });
+                      this.props.reportError(response);
                     }
+                    // this.props.onUpdated(res.data);
+                  })
+                  .catch((error) => {
+                    this.setState({ 
+                      submit_error: true, 
+                      submitting: false, 
+                      submitErrorResponse:error.result.data,
+                      buttonSpinnerTarget:"", });
+                  });
+                
                 }) 
                 .catch((error) => {
                   this.props.reportError(error);
@@ -1420,7 +1454,7 @@ class DatasetEdit extends Component {
                 {this.state.has_admin_priv && (
                   this.aButton("processing", "Process"))
                 }
-                {this.state.has_admin_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
+                {this.state.has_write_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
                     <div>
                       <Button 
                         className="btn btn-primary mr-1" 
@@ -1774,11 +1808,9 @@ class DatasetEdit extends Component {
     }
    
   assay_contains_pii(assay) {
-    console.debug("AssauCOntainsPii", assay);
     let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
     for (let i in this.props.dataTypeList) {
       let e = this.props.dataTypeList[i]
-      console.debug(e, e['contains_pii'], assay_val);
       if (e['name'] === assay_val) {
         // console.debug("e:",e,e['contains_pii']);
           return e['contains_pii']
