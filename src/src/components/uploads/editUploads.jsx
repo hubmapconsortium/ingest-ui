@@ -29,7 +29,8 @@ import { ingest_api_get_globus_url,
   ingest_api_validate_upload,
   ingest_api_submit_upload,
   ingest_api_reorganize_upload,
-  ingest_api_all_user_groups } from '../../service/ingest_api';
+  ingest_api_all_user_groups,
+  ingest_api_notify_slack } from '../../service/ingest_api';
 import {
     entity_api_update_entity,
     entity_api_get_globus_url
@@ -422,14 +423,12 @@ class EditUploads extends Component{
             GroupSelectShow: false,
             submitting_submission: true,
           });
-         
 
           // package the data up
           let data = {
             title: this.state.title,
             description: this.state.description
           };
-  
 
           if (this.props.editingUpload) {
             // if user selected Publish
@@ -437,21 +436,44 @@ class EditUploads extends Component{
               .then((response) => {
                   this.handleSpinnerClear();
                   if (response.status === 200) {
-                    this.props.onUpdated(response.results);
+                    var ingestURL= process.env.REACT_APP_URL+"/upload/"+this.props.editingUpload.uuid
+                    var slackMessage = {
+                      "channel": "#data-testing-notifications",
+                      "message": "Upload has been submitted ("+ingestURL+")"
+                    }
+                    ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
+                      .then((slackRes) => {
+                        console.debug("slackRes", slackRes);
+                        if (response.status < 300) {
+                          this.setState({ 
+                            submit_error: false, 
+                            submitting: false, 
+                            });
+                            this.props.onUpdated(response.results);
+                        } else {
+                          this.uncapError(response);
+                        }
+                      })
+                      .catch((error) => {
+                        this.setState({ 
+                          submit_error: true, 
+                          submitting: false, 
+                          submitErrorResponse:error.result.data,
+                          buttonSpinnerTarget:"", });
+                      });
                     this.handleSpinnerClear();
                   } else {
                     this.setState({ submit_error: true, submitting: false, submitting_submission:false  });
                     this.handleSpinnerClear();
                   }
-            })
-            .catch((error) => {
-              
+                })
+                .catch((error) => {
               this.handleSpinnerClear();
             });
           } 
         }
       }else{
-        this.handleSpinnerClear();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+        this.handleSpinnerClear();
       }
     });
   };
@@ -510,51 +532,47 @@ class EditUploads extends Component{
 
 
   renderButtonBar(){
-      return (
-<div>
-  <div className="col-sm-12 align-right">
-  <Divider />
-  </div>
+    return (
+      <div>
+        <div className="col-sm-12 align-right">
+          <Divider />
+        </div>
+        {this.renderHelperText()}
+        <Box
+          sx={{
+            width: "100%",
+            justifyContent: 'flex-end',
+            display: 'flex',
+            '& > *': {
+              m: 1,
+            },
+            button:{
+              m:1,
+              align:'right',
+              float:'right',
+            },
+          }}
+        >
+          <ButtonGroup 
+            component={Box} 
+            display="block !important"
+            orientation="horizontal">
+            <Button
+              variant="contained"
+              type='button'
+              disabled={this.state.submitting || this.state.submitting_submission}
+              onClick={() => this.props.handleCancel()}>
+              Cancel
+            </Button>
+            {this.renderSaveButton()}
+            {this.renderReorganizeButton()}
+            {this.renderSubmitButton()}
+            {this.renderValidateButton()}
+          </ButtonGroup>
+        </Box>
 
-  {this.renderHelperText()}
-  <Box
-    sx={{
-      width: "100%",
-      justifyContent: 'flex-end',
-    display: 'flex',
-    '& > *': {
-        m: 1,
-      },
-    button:{
-      m:1,
-      align:'right',
-      float:'right',
-    },
-    
-    }}
-  >
-    <ButtonGroup component={Box} display="block !important"
-
-      orientation="horizontal"
-      // alignItems="right"
-      // aria-label="horizontal outlined button group"
-    >
-      <Button
-        variant="contained"
-        type='button'
-        disabled={this.state.submitting || this.state.submitting_submission}
-        onClick={() => this.props.handleCancel()}>
-        Cancel
-      </Button>
-      {this.renderSaveButton()}
-      {this.renderReorganizeButton()}
-      {this.renderSubmitButton()}
-      {this.renderValidateButton()}
-    </ButtonGroup>
-  </Box>
-
-</div>
-      );
+      </div>
+    );
   } 
 
   renderValidateButton() {
@@ -709,11 +727,9 @@ renderReorganizeButton() {
           }, () => {
             
           });
-          
           this.handleValidateUpload(i);
         }else if(action==="submit"){
-          
-        this.handleValidateUploadSubmission(i);
+          this.handleValidateUploadSubmission(i);
         } else if (action === "reorganize") {
           this.handleReorganize();
         }
