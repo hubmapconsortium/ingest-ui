@@ -1686,15 +1686,15 @@ handleAddImage = () => {
         
                       <div className="row">
                         <div className="col-sm-6">
-                          <b>Source Type:</b>{" "}
+                          <b>Source Category:</b>{" "}
                           {this.state.source_entity.sample_category
                             ? flattenSampleType(SAMPLE_TYPES)[
-                            this.state.source_entity.specimen_type
+                            this.state.source_entity.sample_category
                             ]
                             : this.state.source_entity.entity_type}
                         </div>
               
-                        {this.isOrganBloodType(this.state.source_entity.specimen_type) && (
+                        {this.isOrganBloodType(this.state.source_entity.sample_category) && (
                             <div className="col-sm-12">
                               <b>Organ Type:</b>{" "}
                               {
