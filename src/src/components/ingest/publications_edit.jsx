@@ -1538,6 +1538,17 @@ class PublicationEdit extends Component {
     var newFormCheck = this.props.newForm
 
 
+    var permMatrix = {
+      "latestCheck":latestCheck,
+      "writeCheck":writeCheck,
+      "adminCheck":adminCheck,
+      "versCheck":versCheck,
+      "pubCheck":pubCheck,
+      "newFormCheck":newFormCheck,
+      "newStateCheck":newStateCheck,
+    }
+    console.table("permMatrix",permMatrix)
+    
     return (
       <div className="buttonWrapRight">
         {this.renderButtonOverlay()}
@@ -1547,7 +1558,7 @@ class PublicationEdit extends Component {
         {(subCheck || newStateCheck)&& adminCheck && latestCheck && (
           <>{this.processButton()}</>
         )}
-        {adminCheck && !newFormCheck && newStateCheck &&(
+        {writeCheck && !newFormCheck && newStateCheck &&(
           <>
             <Button 
               className="btn btn-primary mr-1" 

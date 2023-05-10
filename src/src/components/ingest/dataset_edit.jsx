@@ -190,6 +190,7 @@ class DatasetEdit extends Component {
             //
             this.setState({
               writeable: resp.results.has_write_priv,
+              has_write_priv: resp.results.has_write_priv,
               has_submit_priv: resp.results.has_submit_priv,
               has_publish_priv: resp.results.has_publish_priv,
               has_admin_priv: resp.results.has_admin_priv
@@ -1390,6 +1391,26 @@ class DatasetEdit extends Component {
       // && this.state.status.toUpperCase() === "PUBLISHED");
       // console.table([this.state.has_admin_priv, this.state.assay_type_primary, this.state.previous_revision_uuid, this.state.status]);
 
+
+    var writeCheck = this.state.has_write_priv
+    var adminCheck = this.state.has_admin_priv
+    var versCheck = this.state.has_version_priv
+    var pubCheck = this.state.status === "Published"
+    var newFormCheck = this.props.newForm
+    var newStateCheck = this.state.status === "New"
+
+    var permMatrix = {
+      "writeCheck":writeCheck,
+      "adminCheck":adminCheck,
+      "versCheck":versCheck,
+      "pubCheck":pubCheck,
+      "newFormCheck":newFormCheck,
+      "newStateCheck":newStateCheck,
+    }
+    console.debug("permMatrix")
+    console.table(permMatrix)
+
+
     if (this.state.has_admin_priv === true 
             && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
             && this.state.status.toUpperCase() === "PUBLISHED") {
@@ -1420,7 +1441,7 @@ class DatasetEdit extends Component {
                 {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
                   this.aButton("processing", "Process"))
                 }
-                {this.state.has_admin_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
+                {this.state.has_write_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
                     <div>
                       <Button 
                         className="btn btn-primary mr-1" 
