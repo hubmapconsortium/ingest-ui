@@ -1098,7 +1098,7 @@ class PublicationEdit extends Component {
                 });
             
             }else if(submitIntention === "process"){
-              ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+              ingest_api_dataset_submit(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status < 300) {
                       this.props.onUpdated(response.results);
@@ -1544,7 +1544,7 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
-        {subCheck && adminCheck && latestCheck && (
+        {(subCheck || newStateCheck)&& adminCheck && latestCheck && (
           <>{this.processButton()}</>
         )}
         {adminCheck && !newFormCheck && newStateCheck &&(
@@ -1559,7 +1559,6 @@ class PublicationEdit extends Component {
       )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
         {newFormCheck && (<>{this.saveButton()}</>)}
-        {adminCheck && !newFormCheck && newStateCheck  && (<>{this.submitButton()}</>)}
         {this.cancelModalButton()}
       </div>
     );
