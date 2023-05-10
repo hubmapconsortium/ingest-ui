@@ -859,6 +859,14 @@ class PublicationEdit extends Component {
     Alert("Reprocessing feature not implemented");
   };
 
+  handleProcess = () => {
+    this.setState({
+      // newVersion: true,
+      buttonSpinnerTarget: "process",
+    });
+    this.handleSubmit("process");
+  };
+
   handleButtonClick = (i, event) => {
     console.debug("handleButtonClick", i, event);
     if (event) {
@@ -1089,7 +1097,44 @@ class PublicationEdit extends Component {
                   });
                 });
             
-
+            }else if(submitIntention === "process"){
+              ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                  .then((response) => {
+                    if (response.status < 300) {
+                      this.props.onUpdated(response.results);
+                    } else {
+                      var statusText = "";
+                      console.debug("err", response, response.error);
+                      if(response.err){
+                        statusText = response.err.response.status+" "+response.err.response.statusText;
+                      }else if(response.error){
+                        statusText = response.error.response.status+" "+response.error.response.statusText;
+                      }
+                      var submitErrorResponse="Uncaptured Error";
+                      if(response.err && response.err.response.data ){
+                        submitErrorResponse = response.err.response.data 
+                      }
+                      if(response.error && response.error.response.data ){
+                        submitErrorResponse = response.error.response.data 
+                      }
+                      this.setState({ 
+                        submit_error: true, 
+                        submitting: false,
+                        buttonSpinnerTarget:"", 
+                        submitErrorStatus:statusText,
+                        submitErrorResponse:submitErrorResponse ,
+                      });
+                    }
+                })
+                .catch((error) => {
+                    this.props.reportError(error);
+                    this.setState({ 
+                      submit_error: true, 
+                      submitting: false, 
+                      submitErrorResponse:error, 
+                      submitErrorStatus:error,
+                      buttonSpinnerTarget:"" });
+                 });
             }else{
               console.debug("UPDATING data", data);
               // just update
@@ -1488,14 +1533,19 @@ class PublicationEdit extends Component {
     var adminCheck = this.state.has_admin_priv
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
-    var newFormCheck = this.props.newForm
+    var subCheck = this.state.editingPublication.status === "Submitted"
     var newStateCheck = this.state.editingPublication.status === "New"
+    var newFormCheck = this.props.newForm
+
 
     return (
       <div className="buttonWrapRight">
         {this.renderButtonOverlay()}
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
+        )}
+        {subCheck && adminCheck && latestCheck && (
+          <>{this.processButton()}</>
         )}
         {adminCheck && !newFormCheck && newStateCheck &&(
           <>
@@ -1509,7 +1559,7 @@ class PublicationEdit extends Component {
       )}
         {!pubCheck && writeCheck && (<>{this.saveButton()}</>)}
         {newFormCheck && (<>{this.saveButton()}</>)}
-        {/* {adminCheck && !newFormCheck && newStateCheck  && (<>{this.submitButton()}</>)} */}
+        {adminCheck && !newFormCheck && newStateCheck  && (<>{this.submitButton()}</>)}
         {this.cancelModalButton()}
       </div>
     );
@@ -1578,6 +1628,9 @@ class PublicationEdit extends Component {
     );
   }
 
+  // @TODO: Give the button factory another go;
+  // As a service along w/ eventual Permission service?
+
   // Cancel button
   cancelModalButton() {
     return (
@@ -1589,7 +1642,6 @@ class PublicationEdit extends Component {
       </Button>
     );
   }
-
   // Save button
   saveButton() {
     return (
@@ -1608,8 +1660,6 @@ class PublicationEdit extends Component {
       </Button>
     );
   }
-        
-
   submitButton() {
     return (
       <Button
@@ -1627,46 +1677,6 @@ class PublicationEdit extends Component {
       </Button>
     );
   }
-
-
-
-  // General button
-  aButton(newstate, which_button, event) {
-    return (
-      <React.Fragment>
-        <div>
-          <Button
-            type="button"
-            name={"button-" + which_button}
-            variant="contained"
-            disabled={this.state.submitting}
-            onClick={(e) => {
-              this.setState(
-                {
-                  buttonSpinnerTarget: which_button.toLowerCase(),
-                },
-                () => {
-                  //
-                }
-              );
-              this.handleButtonClick(newstate);
-            }}
-            data-status={newstate.toLowerCase()}
-            // data-status={this.state.status.toLowerCase()} This just grabs what the current state is, not the goal state passed in?
-          >
-            {this.state.buttonSpinnerTarget === which_button.toLowerCase() && (
-              <span>
-                <FontAwesomeIcon icon={faSpinner} spin />
-              </span>
-            )}
-            {this.state.buttonSpinnerTarget !== which_button.toLowerCase() &&
-              which_button}
-          </Button>
-        </div>
-      </React.Fragment>
-    );
-  }
-
   reprocessButton() {
     return (
       <React.Fragment>
@@ -1686,6 +1696,26 @@ class PublicationEdit extends Component {
       </React.Fragment>
     );
   }
+  processButton() {
+    return (
+      <React.Fragment>
+        <div>
+          <Button
+            variant="contained"
+            type="button"
+            disabled={this.state.submitting}
+            onClick={() => this.handleProcess()}
+            data-status={this.state.status.toLowerCase()}>
+            {this.state.buttonSpinnerTarget === "process" && (
+              <FontAwesomeIcon className="inline-icon" icon={faSpinner} spin />
+            )}
+            {this.state.buttonSpinnerTarget !=="process" && "Process"}
+          </Button>
+        </div>
+      </React.Fragment>
+    );
+  }
+
 
   errorClass(error, e) {
     console.debug("errorClass", error, e);
