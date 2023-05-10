@@ -44,6 +44,7 @@ import {
   ingest_api_dataset_publish,
   ingest_api_users_groups,
   ingest_api_allowable_edit_states_statusless,
+  ingest_api_notify_slack
 } from "../../service/ingest_api";
 import {
   entity_api_update_entity,
@@ -1071,11 +1072,25 @@ class PublicationEdit extends Component {
                 .then((response) => {
                   console.debug("entity_api_update_entity  SUBMIT response", response);
                     if (response.status < 300 ) {
-                      this.setState({ 
-                        submit_error: false, 
-                        submitting: false, 
-                        });
-                      this.props.onUpdated(response.results);
+                      var ingestURL= process.env.REACT_APP_URL+"/publication/"+this.props.editingPublication.uuid
+                      var slackMessage = {
+                        "channel": "#data-testing-notifications",
+                        "message": "Publication has been submitted ("+ingestURL+")"
+                      }
+                      ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
+                        .then((slackRes) => {
+                          console.debug("slackRes", slackRes);
+                          if (response.status < 300) {
+                            this.setState({ 
+                              submit_error: false, 
+                              submitting: false, 
+                              });
+
+                              this.props.onUpdated(response.results);
+                          } else {
+                            this.props.reportError(response);
+                          }
+                        })
                     } else {
                       console.debug("entity_api_update_entity SUBMITNONERR error", response);
                       this.setState({ 
@@ -1555,7 +1570,7 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
-        {(subCheck || newStateCheck)&& adminCheck && latestCheck && (
+        {(subCheck || newStateCheck) && adminCheck && latestCheck && (
           <>{this.processButton()}</>
         )}
         {writeCheck && !newFormCheck && newStateCheck &&(
