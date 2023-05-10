@@ -1057,7 +1057,7 @@ class DatasetEdit extends Component {
                       var statusText = "";
                       console.debug("err", response, response.error);
                       if(response.err){
-                        statusText = response.err.response.statkus+" "+response.err.response.statusText;
+                        statusText = response.err.response.status+" "+response.err.response.statusText;
                       }else if(response.error){
                         statusText = response.error.response.status+" "+response.error.response.statusText;
                       }
@@ -1424,6 +1424,26 @@ class DatasetEdit extends Component {
       // && this.state.status.toUpperCase() === "PUBLISHED");
       // console.table([this.state.has_admin_priv, this.state.assay_type_primary, this.state.previous_revision_uuid, this.state.status]);
 
+
+    var writeCheck = this.state.has_write_priv
+    var adminCheck = this.state.has_admin_priv
+    var versCheck = this.state.has_version_priv
+    var pubCheck = this.state.status === "Published"
+    var newFormCheck = this.props.newForm
+    var newStateCheck = this.state.status === "New"
+
+    var permMatrix = {
+      "writeCheck":writeCheck,
+      "adminCheck":adminCheck,
+      "versCheck":versCheck,
+      "pubCheck":pubCheck,
+      "newFormCheck":newFormCheck,
+      "newStateCheck":newStateCheck,
+    }
+    console.debug("permMatrix")
+    console.table(permMatrix)
+
+
     if (this.state.has_admin_priv === true 
             && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
             && this.state.status.toUpperCase() === "PUBLISHED") {
@@ -1451,7 +1471,7 @@ class DatasetEdit extends Component {
         return (
             <div className="buttonWrapRight">
                 {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.state.has_admin_priv && (
+                {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
                   this.aButton("processing", "Process"))
                 }
                 {this.state.has_write_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
