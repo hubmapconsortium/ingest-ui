@@ -1003,7 +1003,6 @@ class DatasetEdit extends Component {
                   // var portalURL= process.env.REACT_APP_PORTAL_URL+"/browse/dataset/"+this.props.editingDataset.uuid
                   var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
                   var slackMessage = {
-                    "channel": "#data-testing-notifications",
                     "message": "Dataset has been submitted ("+ingestURL+")"
                   }
                   ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
