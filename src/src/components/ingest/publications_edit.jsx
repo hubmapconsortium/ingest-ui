@@ -1074,7 +1074,6 @@ class PublicationEdit extends Component {
                     if (response.status < 300 ) {
                       var ingestURL= process.env.REACT_APP_URL+"/publication/"+this.props.editingPublication.uuid
                       var slackMessage = {
-                        "channel": "#data-testing-notifications",
                         "message": "Publication has been submitted ("+ingestURL+")"
                       }
                       ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
@@ -1570,7 +1569,8 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
-        {(subCheck || newStateCheck)&& adminCheck && latestCheck && (
+
+        {(subCheck || newStateCheck) && adminCheck && latestCheck && (
           <>{this.processButton()}</>
         )}
         {writeCheck && !newFormCheck && newStateCheck &&(

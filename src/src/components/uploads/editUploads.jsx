@@ -438,7 +438,6 @@ class EditUploads extends Component{
                   if (response.status === 200) {
                     var ingestURL= process.env.REACT_APP_URL+"/upload/"+this.props.editingUpload.uuid
                     var slackMessage = {
-                      "channel": "#data-testing-notifications",
                       "message": "Upload has been submitted ("+ingestURL+")"
                     }
                     ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
