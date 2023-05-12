@@ -191,13 +191,13 @@ class TissueForm extends Component {
   componentDidMount() {
 
     ubkg_api_get_organ_type_set()
-      .then((res) => {
-        this.setState({organ_types: res}, () => {
-          console.log(this.state.organ_types);
-        }, () => {
-          console.log('ERROR: ubkg_api_get_organ_type_set')
-        });
+    .then((res) => {
+      this.setState({organ_types: res}, () => {
+        console.log(this.state.organ_types);
+      }, () => {
+        console.log('ERROR: ubkg_api_get_organ_type_set')
       });
+    });
 
     ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token) // @TODO Multiple places that use this do filtering after, just grab "ingest_api_users_groups" instead? 
       .then(res => {
@@ -386,6 +386,17 @@ class TissueForm extends Component {
 
       }
 
+  }
+
+  fetchOrganTypes(){
+    ubkg_api_get_organ_type_set()
+      .then((res) => {
+        console.debug("fetchOrganTypes", res);
+        return res
+      })
+      .catch((err) =>{
+        console.debug("ERR fetchOrganTypes",err);
+      })
   }
 
   checkForRelatedGroupIds(entity) {
@@ -2160,6 +2171,7 @@ handleAddImage = () => {
                   <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organList={this.state.organ_types}
+                      // organList={this.fetchOrganTypes}
                       organ={this.state.organ}
                       sex={this.state.source_entity.sex}
                       user={this.state.source_entity.created_by_user_displayname}
@@ -2248,6 +2260,7 @@ handleAddImage = () => {
                         { this.state.rui_click && (
                            <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
+                            organList={this.state.organ_types}
                             organ={this.state.source_entity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
@@ -2299,6 +2312,7 @@ handleAddImage = () => {
                         { this.state.rui_click && (
                           <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
+                            organList={this.state.organ_types}
                             organ={this.state.source_entity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
