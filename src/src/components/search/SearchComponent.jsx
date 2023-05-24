@@ -417,10 +417,11 @@ class SearchComponent extends Component {
   setFilterType = () => {
 
     var new_filter_list = [];
-
     this.setState({
       entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
-    })
+    }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
+      console.debug("setFilterType", this.state.entity_type_list);
+  });
 
    
 
@@ -521,8 +522,7 @@ class SearchComponent extends Component {
           if (response.total === 1) {  // for single returned items, customize the columns to match
             which_cols_def = this.columnDefType(response.results[0].entity_type);
           }else if(response.total <= 0 ){
-            
-            }
+          }
           
         this.setState({
           datarows: response.results, // Object.values(response.results)
@@ -555,6 +555,9 @@ class SearchComponent extends Component {
     if (et === 'Dataset') {
         return COLUMN_DEF_DATASET;
     } 
+    if (et === 'Publication') {
+      return COLUMN_DEF_PUBLICATION;
+  } 
     if (et === 'Upload') {
         return COLUMN_DEF_UPLOADS;
     } 
