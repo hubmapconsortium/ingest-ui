@@ -7,9 +7,11 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Snackbar from '@mui/material/Snackbar';
+
 // import Snackbar from '@material-ui/core/Snackbar';
 //import SnackbarContent from '@material-ui/core/SnackbarContent';
-import Button from '@mui/material/Button';
+import Button from '@material-ui/core/Button';
+// import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 // import IconButton from '@material-ui/core/IconButton';
@@ -71,6 +73,7 @@ class TissueForm extends Component {
     sample_category:[],
     sample_category_library:SAMPLE_TYPES,
     ancestor_organ: "",
+    LocationSaved:false,
     organ: "",
     organ_other: "",
     visit: "",
@@ -410,9 +413,15 @@ class TissueForm extends Component {
 
         ingest_api_get_associated_ids(entity.uuid,  JSON.parse(localStorage.getItem("info")).groups_token)
           .then(res => {
-            if (res.data.ingest_group_ids.length > 0) {
-
-              res.data.ingest_group_ids.sort((a, b) => {
+            console.debug("LENGTH .data.ingest_group_ids.length", res.results.length);
+            console.debug("ingest_api_get_associated_ids", res.results);
+            if (res.results.length > 0) {
+              this.setState({
+                related_group_ids:res.results
+              }, () => {
+                console.debug("RELATED IDS:", this.state.related_group_ids);
+              })
+              res.results.sort((a, b) => {
                 if (
                   parseInt(
                     a.submission_id.substring(
@@ -475,6 +484,8 @@ class TissueForm extends Component {
     } else {
       // We're not reloading the view anymore, we want to pass the UUID up
       // to our parent
+      // By not reloading, we should be Going to the Page fresh as if it were selected from the main search. 
+      //  Window reloadign and all
       this.handleChangeSample(param_uuid); 
      
     }
@@ -514,6 +525,7 @@ class TissueForm extends Component {
   }
 
   handleCancel = () => {
+    // window.history.back();
     if(this.props.handleCancel){
       // How is this happening???
      this.props.handleCancel();
@@ -1126,8 +1138,6 @@ handleAddImage = () => {
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
-                    
-                    
                     this.setState({ submit_error: false, 
                       submitting: false, 
                       show_snack: true,
@@ -1144,23 +1154,15 @@ handleAddImage = () => {
                   } else {
                     this.setState({ submit_error: true, submitting: false, isDirty: false });
                     this.setDirty(false);
-          entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                  
-
+                    entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   }
-      
-              });
+          });
         } else {
             if (this.state.selected_group && this.state.selected_group.length > 0) {
-              
                 data["group_uuid"] = this.state.selected_group; 
             } else {
-              // If none selected, we need to pick a default BUT
-              // It must be from the data providers, not permissions
-            
               data["group_uuid"] = this.state.groups_dataprovider[0].uuid; // consider the first users group        
             }
-          
             if (this.state.sample_count < 1) {
                 
                 entity_api_create_entity("sample", JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1178,6 +1180,7 @@ handleAddImage = () => {
                     // now generate some multiples
                     entity_api_create_multiple_entities(this.state.sample_count, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                       .then((resp) => {
+                        console.debug("entity_api_create_multiple_entities",resp);
                         if (resp.status === 200) {
                           
                                  //this.props.onCreated({new_samples: resp.results, entity: response.results});
@@ -1206,7 +1209,7 @@ handleAddImage = () => {
             <div className="col-sm-12 text-right pads">
               <Button
                 type="button"
-               variant="outlined"
+                variant="outlined"
                 onClick={() => this.handleCancel()}
               >
                 Cancel
@@ -1223,6 +1226,7 @@ handleAddImage = () => {
             <div className="buttonWrapRight">
               <Button
                 type="submit"
+                color="primary"
                 variant="contained"
                 className="btn btn-primary mr-1"
                 disabled={this.state.submitting}
@@ -1509,7 +1513,7 @@ handleAddImage = () => {
 
         {this.state.related_group_ids.length > 1
           && (
-            <div className="alert alert-primary col-sm-12 " role="alert">
+            <div severity="info" className="alert alert-primary col-sm-12 " role="alert">
             {this.state.editingMultiWarning}{" "}
             <p>Click below to expand and view the groups list. Then select an Sample ID to edit the sample data.  Press the update button to save your changes.</p>
             <Accordion>
@@ -2159,10 +2163,12 @@ handleAddImage = () => {
                     <Button
                       onClick={this.handleAddRUILocation}
                       variant="contained"
-                      className="btn btn-primary btn-block"
-                      sx={{
-                        display: "inline-block"
-                      }}
+                      className="btn btn-primary mr-1"
+                      color="primary"
+                      // className="btn btn-primary "
+                      // sx={{
+                      //   display: "inline-block"
+                      // }}
                     >
                       Register Location
                   </Button>
@@ -2249,10 +2255,10 @@ handleAddImage = () => {
                        
                         <div className="col-sm-3 text-left">
                           <Button
-                            type="button"
                             onClick={this.handleAddRUILocation}
                             variant="contained"
-                            className="btn btn-primary btn-block"
+                            color="primary"
+                            className="btn btn-primary "
                           >
                             Modify Location Information
                           </Button>
@@ -2275,8 +2281,9 @@ handleAddImage = () => {
                       <React.Fragment>
                     <div className="col-sm-3">
                       <Button
-                        className="btn btn-link"
-                        type="button"
+                        variant="contained"
+                        color="primary"
+                        className="btn btn-primary mt-2"
                         onClick={this.openRUIModalHandler}
                       >
                         View Location
@@ -2301,8 +2308,9 @@ handleAddImage = () => {
                           <Button
                             type="button"
                             onClick={this.handleAddRUILocation}
-                            className="btn btn-primary btn-block"
                             variant="contained"
+                            className="btn btn-primary mr-1"
+                            color="primary"
                           >
                             Register Location
                         </Button>

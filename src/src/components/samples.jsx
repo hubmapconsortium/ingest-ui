@@ -29,6 +29,8 @@ export const RenderSample = (props) => {
     }else{
     }
   }, [authSet, uuid, loadFlag]);
+
+
   function fetchEntity(uuid, auth){
     entity_api_get_entity(uuid, auth)
       .then((response) => {
@@ -48,11 +50,12 @@ export const RenderSample = (props) => {
 
 
   function handleCancel(){
-    if(this.props && this.props.handleCancel){
-     this.props.handleCancel();
-    }else{
-      window.history.back();
-    }
+    navigate('/');
+    // if(this.props && this.props.handleCancel){
+    //  this.props.handleCancel();
+    // }else{
+    //   window.history.back();
+    // }
   };
 
   function passError(status, message) {
@@ -70,8 +73,11 @@ export const RenderSample = (props) => {
   }
 
   function handleChangeSamplePage(uuid){
+    setLoading(true);
+    navigate('/sample/'+uuid);
     fetchEntity(uuid, authSet.groups_token);
   }
+
   if (!isLoading && errorHandler.isError === true){
     return (
       <ErrBox err={errorHandler} />
