@@ -147,6 +147,7 @@ class PublicationEdit extends Component {
       publication_date:"",
       publication_venue:"",
       publication_doi:"",
+      omap_doi:"",
       publication_url:"",
       publication_status:"",
     },
@@ -161,6 +162,7 @@ class PublicationEdit extends Component {
       publication_date: "",
       publication_venue: "",
       publication_doi: "",
+      omap_doi: "",
       publication_url: "",
       publication_status: ""
     },
@@ -175,6 +177,7 @@ class PublicationEdit extends Component {
       publication_date: "The date of publication",
       publication_venue: "The venue of the publication, journal, conference, preprint server, etc...",
       publication_doi: "The doi of the publication. (##.####/[alpha-numeric-string])",
+      omap_doi: "A DOI pointing to an Organ Mapping Antibody Panel relevant to this publication",
       publication_url: "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
       publication_status: "if the publication has been published yet or not",
     },
@@ -947,6 +950,7 @@ class PublicationEdit extends Component {
             publication_venue:this.state.editingPublication.publication_venue,
             publication_date:this.state.editingPublication.publication_date,
             publication_doi:this.state.editingPublication.publication_doi,
+            omap_doi:this.state.editingPublication.omap_doi,
             // publication_status:this.state.editingPublication.publication_status,
             publication_status:pubVal,
             publication_url:this.state.editingPublication.publication_url,
@@ -2174,6 +2178,28 @@ class PublicationEdit extends Component {
               />
               {this.state.validationStatus.publication_doi.length >0 && ( 
                 <FormHelperText className="component-error-text"> {this.state.validationStatus.publication_doi}</FormHelperText>
+              )}
+            </FormControl>
+          </div>
+
+          {/* OMAP DOI */}
+          <div className="form-gropup mb-4"> 
+            <FormControl 
+              fullWidth>
+              <TextField
+                disabled={!this.state.writeable}
+                error={this.state.validationStatus.omap_doi.length >0}
+                label="OMAP DOI"
+                helperText={this.state.fieldDescriptons.omap_doi}
+                variant="standard"
+                id="omap_doi"
+                name="omap_doi"
+                //className={"form-control " +this.errorClass(this.state.formErrors.omap_doi) +" "}
+                onChange={this.handleInputChange}
+                value={this.state.editingPublication.omap_doi}
+              />
+              {this.state.validationStatus.omap_doi.length >0 && ( 
+                <FormHelperText className="component-error-text"> {this.state.validationStatus.omap_doi}</FormHelperText>
               )}
             </FormControl>
           </div>
