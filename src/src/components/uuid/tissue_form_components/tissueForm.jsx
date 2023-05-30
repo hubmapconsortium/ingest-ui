@@ -368,7 +368,9 @@ class TissueForm extends Component {
             source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
           } );
 
-        this.getSourceAncestorOrgan(this.state.editingEntity);
+          if(this.state.editingEntity.direct_ancestor.entity_type === "Donor" || this.state.editingEntity.direct_ancestor.entity_type === "Organ"){
+            this.getSourceAncestorOrgan(this.state.editingEntity);
+          }
 
 
       } else {
