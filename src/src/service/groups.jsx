@@ -320,6 +320,19 @@ export const GROUPS =
     "tmc_prefix": "YALE"
   },
   {
+    "description": "Users who have write access to the Lurie Childrens Hospital Demonstration Project directory",
+    "data_provider": true,
+    "has_subgroups": false,
+    "identity_set_properties": null,
+    "uuid": "f2e660d1-f3fd-11ed-bcea-5b6c9dc23028",
+    "group_type": "regular",
+    "name": "HuBMAP-Lurie-DP",
+    "displayname": "Lurie Childrens Hospital DP",
+    "shortname": "DP - Lurie",
+    "generateuuid": true,
+    "tmc_prefix": "LURIE" 
+  },
+  {
     "description": "Users who have access to the external Human Cell Atlas organization directory.",
     "data_provider": true,
     "has_subgroups": false,

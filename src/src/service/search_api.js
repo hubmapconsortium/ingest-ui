@@ -178,10 +178,12 @@ export function search_api_search_group_list() {
   let groups = [];
 
   GROUPS.forEach(function(group) { 
-    if (group.data_provider) {  // only show the data_providers
+    if(group.data_provider){  // only show the data_providers
       groups.push(group);
     }
   });
+ 
+  
   return groups;
 }
 
