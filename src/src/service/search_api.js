@@ -182,20 +182,7 @@ export function search_api_search_group_list() {
       groups.push(group);
     }
   });
-  groups.splice(24,0, // Hardcoding this to accomidate delayed updates to the search 's available data
-    {
-        "description": "Users who have write access to the Lurie Childrens Hospital Demonstration Project directory",
-        "data_provider": true,
-        "has_subgroups": false,
-        "identity_set_properties": null,
-        "uuid": "f2e660d1-f3fd-11ed-bcea-5b6c9dc23028",
-        "group_type": "regular",
-        "name": "HuBMAP-Lurie-DP",
-        "displayname": "Lurie Childrens Hospital DP",
-        "shortname": "DP - Lurie",
-        "generateuuid": true,
-        "tmc_prefix": "LURIE" 
-    }
+ 
   )
   return groups;
 }
