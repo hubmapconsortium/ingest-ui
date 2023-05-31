@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolder
 } from "@fortawesome/free-solid-svg-icons";
-import Button from '@mui/material/Button';
+import Button from'@material-ui/core/Button';
 
 class Result extends Component {
   state = { results: [] };
@@ -127,8 +127,8 @@ class Result extends Component {
                     )}
                   <Button
                     className="btn btn-success"
-                    type="button"
                     variant="contained" 
+                    color="primary"
                     onClick={this.handleReturnClick}
                   >
                     Done
