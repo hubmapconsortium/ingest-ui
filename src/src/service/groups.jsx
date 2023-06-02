@@ -21,6 +21,19 @@ export const GROUPS =
     "generateuuid": false
   },
   {
+    "description": "Users who have write access to the Beth Israel Deaconess Medical Center directory",
+    "data_provider": true,
+    "has_subgroups": false,
+    "identity_set_properties": null,
+    "uuid": "300ac006-547c-11ed-ab8d-fb258a2766ef",
+    "group_type": "regular",
+    "name": "HuBMAP-BIDMC-TMC",
+    "displayname": "Beth Israel Deaconess Medical Center TMC",
+    "shortname": "TMC - BIDMC",
+    "generateuuid": true,
+    "tmc_prefix": "BID"
+  },
+  {
     "description": "Users who have write access to the California Institute of Technology directory",
     "data_provider": true,
     "has_subgroups": false,
@@ -47,6 +60,19 @@ export const GROUPS =
     "tmc_prefix": "CHOP"
   },
   {
+    "description": "Users who have write access to the Johns Hopkins University directory",
+    "data_provider": true,
+    "has_subgroups": false,
+    "identity_set_properties": null,
+    "uuid": "c14ba151-547c-11ed-bd9a-0db7472df7d6",
+    "group_type": "regular",
+    "name": "HuBMAP-JHU-TMC",
+    "displayname": "Johns Hopkins University TMC",
+    "shortname": "TMC - JHU",
+    "generateuuid": true,
+    "tmc_prefix": "JHU"
+  },
+  {
     "description": "Users who have access to the Pacific Northwest National Laboratory TMC directory.",
     "data_provider": true,
     "has_subgroups": false,
@@ -60,6 +86,19 @@ export const GROUPS =
     "tmc_prefix": "TMCPNNL"
   },
   {
+    "description": "Users who have write access to the University of Rochester Medical Center directory",
+    "data_provider": true,
+    "has_subgroups": false,
+    "identity_set_properties": null,
+    "uuid": "5402d50b-547c-11ed-869b-4fc917a4d930",
+    "group_type": "regular",
+    "name": "HuBMAP-Rochester-TMC",
+    "displayname": "University of Rochester Medical Center TMC",
+    "shortname": "TMC - Rochester",
+    "generateuuid": true,
+    "tmc_prefix": "UROCH"
+  },
+  {
     "description": "Users who have write access to the Stanford University directory",
     "data_provider": true,
     "has_subgroups": false,
@@ -71,6 +110,19 @@ export const GROUPS =
     "shortname": "TMC - Stanford",
     "generateuuid": true,
     "tmc_prefix": "TMCSTAN"
+  },
+  {
+    "description": "Users who have write access to the Stanford University Bone Marrow directory",
+    "data_provider": true,
+    "has_subgroups": false,
+    "identity_set_properties": null,
+    "uuid": "6f958a31-547c-11ed-ab8d-fb258a2766ef",
+    "group_type": "regular",
+    "name": "HuBMAP-Stan-Marrow-TMC",
+    "displayname": "Stanford University Bone Marrow TMC",
+    "shortname": "TMC - Stan - Marrow",
+    "generateuuid": true,
+    "tmc_prefix": "STANBM"
   },
   {
     "description": "Users who have access to the University of Connecticut TMC directory.",
@@ -149,6 +201,19 @@ export const GROUPS =
     "shortname": "TMC - Vanderbilt",
     "generateuuid": true,
     "tmc_prefix": "TMCVAN"
+  },
+  {
+    "description": "Users who have write access to the Washington University in St. Louis Kidney directory",
+    "data_provider": true,
+    "has_subgroups": false,
+    "identity_set_properties": null,
+    "uuid": "86b18408-547c-11ed-ab8d-fb258a2766ef",
+    "group_type": "regular",
+    "name": "HuBMAP-WashU-TMC",
+    "displayname": "Washington University Kidney TMC",
+    "shortname": "TMC - WashU",
+    "generateuuid": true,
+    "tmc_prefix": "WASHU"
   },
   {
     "description": "Users who have access to the Broad Institute RTI directory",
@@ -344,71 +409,6 @@ export const GROUPS =
     "shortname": "EXT - HCA",
     "generateuuid": true,
     "tmc_prefix": "HCA"
-  },
-  {
-    "description": "Users who have write access to the Beth Israel Deaconess Medical Center directory",
-    "data_provider": true,
-    "has_subgroups": false,
-    "identity_set_properties": null,
-    "uuid": "300ac006-547c-11ed-ab8d-fb258a2766ef",
-    "group_type": "regular",
-    "name": "HuBMAP-BIDMC-TMC",
-    "displayname": "Beth Israel Deaconess Medical Center TMC",
-    "shortname": "TMC - BIDMC",
-    "generateuuid": true,
-    "tmc_prefix": "BID"
-  },
-  {
-    "description": "Users who have write access to the University of Rochester Medical Center directory",
-    "data_provider": true,
-    "has_subgroups": false,
-    "identity_set_properties": null,
-    "uuid": "5402d50b-547c-11ed-869b-4fc917a4d930",
-    "group_type": "regular",
-    "name": "HuBMAP-Rochester-TMC",
-    "displayname": "University of Rochester Medical Center TMC",
-    "shortname": "TMC - Rochester",
-    "generateuuid": true,
-    "tmc_prefix": "UROCH"
-  },
-  {
-    "description": "Users who have write access to the Stanford University Bone Marrow directory",
-    "data_provider": true,
-    "has_subgroups": false,
-    "identity_set_properties": null,
-    "uuid": "6f958a31-547c-11ed-ab8d-fb258a2766ef",
-    "group_type": "regular",
-    "name": "HuBMAP-Stan-Marrow-TMC",
-    "displayname": "Stanford University Bone Marrow TMC",
-    "shortname": "TMC - Stan - Marrow",
-    "generateuuid": true,
-    "tmc_prefix": "STANBM"
-  },
-  {
-    "description": "Users who have write access to the Washington University in St. Louis Kidney directory",
-    "data_provider": true,
-    "has_subgroups": false,
-    "identity_set_properties": null,
-    "uuid": "86b18408-547c-11ed-ab8d-fb258a2766ef",
-    "group_type": "regular",
-    "name": "HuBMAP-WashU-TMC",
-    "displayname": "Washington University Kidney TMC",
-    "shortname": "TMC - WashU",
-    "generateuuid": true,
-    "tmc_prefix": "WASHU"
-  },
-  {
-    "description": "Users who have write access to the Johns Hopkins University directory",
-    "data_provider": true,
-    "has_subgroups": false,
-    "identity_set_properties": null,
-    "uuid": "c14ba151-547c-11ed-bd9a-0db7472df7d6",
-    "group_type": "regular",
-    "name": "HuBMAP-JHU-TMC",
-    "displayname": "Johns Hopkins University TMC",
-    "shortname": "TMC - JHU",
-    "generateuuid": true,
-    "tmc_prefix": "JHU"
   },
   {
     "description": "Users who have write access to the testing folder",
