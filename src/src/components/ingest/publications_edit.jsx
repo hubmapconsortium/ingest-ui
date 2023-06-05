@@ -572,18 +572,31 @@ class PublicationEdit extends Component {
 
   handleInputChange = (e) => {
     var { id, value, name } = e.target;
-
     console.debug("handleInputChange",name, id+": "+value);
     // Strugglin to get the ID from the radio group
     var checkName = (name==="publication_status") ? name : id;
-
-    this.setState(prev => ({
-      editingPublication: {
-        ...prev.editingPublication,
-        [checkName]: value
-        // [id]: valCap
-      }
-    }))
+    // console.debug("checkName",checkName);
+    if(name==="groups"){
+      this.setState(prev => ({
+        selected_group: value,
+        editingPublication: {
+          ...prev.editingPublication,
+          ["group"]: value
+          // [id]: valCap
+        }
+      }))
+    }else{
+      this.setState(prev => ({
+        editingPublication: {
+          ...prev.editingPublication,
+          [checkName]: value
+          // [id]: valCap
+        }
+      }))
+    }
+   
+    
+    
   };
 
   handleInputFocus = (e) => {
@@ -1193,8 +1206,7 @@ class PublicationEdit extends Component {
             if (this.state.selected_group &&this.state.selected_group.length > 0){
               data["group_uuid"] = this.state.selected_group;
             } else {
-              // If none selected, we need to pick a default BUT
-              // It must be from the data provviders, not permissions
+              // No default here. Unline new versioning. Selection must be made before submit
               data["group_uuid"] = this.state.groups_dataprovider[0].uuid;
             }
 
