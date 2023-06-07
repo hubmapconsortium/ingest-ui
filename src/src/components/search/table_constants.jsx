@@ -45,6 +45,7 @@ export const COLUMN_DEF_SAMPLE = [
   	{ field: 'lab_tissue_sample_id', headerName: 'LABID', hide: true},
   	{ field: 'entity_type', headerName: 'Type', hide: true },
     { field: 'specimen_type', headerName: 'Specimen Type', hide: true},
+    { field: 'organ', headerName: 'OrganCode', hide: true},
  ];
 
 // DATASET COLUMNS
