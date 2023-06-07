@@ -333,7 +333,8 @@ class DatasetEdit extends Component {
           console.debug("next_revision_uuid",this.props.editingDataset.next_revision_uuid);
           entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
-            if(response.hubmap_id){
+            console.debug("next_revision_uuid RESPONSE",response.results);
+            if(response.results.hubmap_id){
               this.setState({nextHID: response.results.hubmap_id})
             }else{
               console.debug("next_revision_uuid",response);
