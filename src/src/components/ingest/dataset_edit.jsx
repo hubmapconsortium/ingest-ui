@@ -1594,7 +1594,7 @@ class DatasetEdit extends Component {
       <Box sx={{width:"50%"}}>
         {this.props.editingDataset.next_revision_uuid  && (
           <>Next Version: <Button variant="text" onClick={() => this.handleVersionNavigate('next')}>   {this.state.nextHID}</Button></>
-        )}
+        )}<br />
         {this.props.editingDataset.previous_revision_uuid  && (
           <>Previous Version: <Button variant="text" onClick={() => this.handleVersionNavigate('prev')}>{this.state.prevHID}</Button></>
         )}

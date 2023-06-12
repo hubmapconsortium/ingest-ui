@@ -1654,7 +1654,7 @@ class PublicationEdit extends Component {
               {this.state.nextHID}
             </Button>
           </>
-        )}
+        )}<br />
         {this.props.editingPublication.previous_revision_uuid && (
           <>
             Previous Version:{" "}
