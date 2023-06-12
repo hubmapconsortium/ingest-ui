@@ -89,6 +89,7 @@ class TissueForm extends Component {
     rui_hide: true,
     rui_click: false,
     rui_show: false,
+    rui_show_btn: false,
     rui_location: "",
     sample_count: "",
     protocol_file_name: "Choose a file",
@@ -366,11 +367,19 @@ class TissueForm extends Component {
             source_uuid: this.getID(),
             source_entity: this.state.editingEntity.direct_ancestor,
             source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
-          } );
+          }, () => {
+            console.debug("ORGANCHECK",this.state.organ, this.isSpecialOrganType(this.state.organ) );
+            if(this.isSpecialOrganType(this.state.organ)){
+              this.setState({
+                rui_show_btn: true
+              });
+            }
+          })
 
           if(this.state.editingEntity.direct_ancestor.entity_type === "Donor" || this.state.editingEntity.direct_ancestor.entity_type === "Organ"){
             this.getSourceAncestorOrgan(this.state.editingEntity);
           }
+          
 
 
       } else {
@@ -556,6 +565,9 @@ class TissueForm extends Component {
   
   
     this.setDirty(true);
+
+    console.debug("handleInputChange", name, value);
+    console.debug(this.state.source_entity.display_subtype, this.isSpecialOrganType(this.state.organ));
     
     switch (name) {
 
@@ -637,9 +649,17 @@ class TissueForm extends Component {
           }));
         }
         break;
+
       case "sample_category":
         this.setState({ sample_category: value });
-        
+        // Need to manually fire a change to RUI rendering
+        if(value==="block" && this.isSpecialOrganType(this.state.organ)){
+          this.setState({ 
+            rui_show_btn: true 
+          }, () => {
+            console.debug("Showin RUI Button!");
+          })
+        }
         if (!validateRequired(value)) {
           
           this.setState(prevState => ({
@@ -647,6 +667,7 @@ class TissueForm extends Component {
               ...prevState.formErrors, 
               sample_category: "required" }
           }));
+        
         } else {
           this.setState(prevState => ({
             formErrors: { ...prevState.formErrors, sample_category: "" }
@@ -1452,15 +1473,21 @@ handleAddImage = () => {
 
     if (selection) {
       // check to see if we have an "top-level" ancestor 
+
+      // Organ added to the Column results for Samples, can pluck it from row.organ now!
+      // For Ancestry-reasons, we should still check for the top-level ancestor
       entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-        .then((response) => {
-          if (response.status === 200) {
-              if (response.results.length > 0) {
-                  ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
-              }
-          } else {
-              ancestor_organ = selection.row.organ;  // use the direct ancestor
-          }
+      .then((response) => {
+        // console.debug("selection", selection);
+        // console.debug("handleSelectClick: selection.row.uuid: " + selection.row.uuid, selection.row.organ);
+        // console.debug("handleSelectClick: response.status: " + response.status);
+        if (response.status === 200) {
+            if (response.results.length > 0) {
+                ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
+            }
+        } else {
+            ancestor_organ = selection.row.organ;  // use the direct ancestor
+        }
         
         
           this.setState({
@@ -2132,7 +2159,9 @@ handleAddImage = () => {
             {!this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              this.isSpecialOrganType(this.state.ancestor_organ) && this.state.RUI_ACTIVE && 
+              this.state.rui_show_btn &&
+              // this.isSpecialOrganType(this.state.ancestor_organ) && 
+              // this.state.RUI_ACTIVE && 
               (
                 <div className="form-group">
                   <label
@@ -2224,7 +2253,8 @@ handleAddImage = () => {
             {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
-              this.isSpecialOrganType(this.state.ancestor_organ) && this.state.RUI_ACTIVE &&  
+              this.isSpecialOrganType(this.state.organ) && 
+              this.state.RUI_ACTIVE &&  
               (
                 <div className="form-group">
                   <label
