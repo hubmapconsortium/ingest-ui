@@ -1,11 +1,12 @@
 
 import * as React from "react";
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import {
   useNavigate,
   useLocation,
   Routes,
-  Route} from "react-router-dom";
+  Route
+} from "react-router-dom";
 
 // Login Management
 import Login from './components/ui/login';
@@ -29,35 +30,35 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faExclamationTriangle}
-  from "@fortawesome/free-solid-svg-icons";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
 import { ubkg_api_get_assay_type_set } from "./service/ubkg_api";
-import {BuildError, FormatError} from "./utils/error_helper";
+import { FormatError } from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
-import {Navigation} from "./Nav";
+import { Navigation } from "./Nav";
 // import {RenderLogin} from "./components/login";
 
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
-import {RenderDonor} from "./components/donors";
-import {RenderDataset} from "./components/datasets";
-import {RenderSample } from "./components/samples";
-import {RenderUpload} from "./components/uploads";
-import {RenderPublication} from "./components/publications";
+import { RenderDonor } from "./components/donors";
+import { RenderDataset } from "./components/datasets";
+import { RenderSample } from "./components/samples";
+import { RenderUpload } from "./components/uploads";
+import { RenderPublication } from "./components/publications";
+import { RenderCollection } from "./components/collections";
 
 // Bulky
-import {RenderBulk} from "./components/bulk";
+import { RenderBulk } from "./components/bulk";
 
 // The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
-import  Box  from '@mui/material/Box';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 
@@ -375,18 +376,21 @@ export function App (props){
                 <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
-
+                <Route path='collection' element={<RenderCollection formType='collection' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
               </Route>
+
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
               <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
               <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange} />} ></Route>
+              <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
 
               <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/publication/:uuid" element={<RenderPublication  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/collection/:uuid" element={<RenderCollection  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
