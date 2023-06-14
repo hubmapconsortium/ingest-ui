@@ -1472,17 +1472,15 @@ class DatasetEdit extends Component {
             className="mx-1"
             onClick={() => this.handleStatusSet() }>
             {this.state.submitting && (
-            <FontAwesomeIcon
-              className='inline-icon'
-              icon={faSpinner}
-              spin
-            />
-          )}
+              <FontAwesomeIcon
+                className='inline-icon'
+                icon={faSpinner}
+                spin
+              />
+            )}
           {!this.state.submittingUpdate && "Update"}         
           </Button>
-        
         )}
-       
         <Collapse in={this.state.toggleStatusSet} className="col-7">
           <FormGroup controlId="status">
               <Select 
@@ -1499,11 +1497,7 @@ class DatasetEdit extends Component {
                   <option>Submitted</option>
               </Select>
               <FormHelperText>Select the desired status, then click [Update] to apply your changes.</FormHelperText>
-
-
-             
           </FormGroup>
-
         </Collapse>
       </div>
     )
