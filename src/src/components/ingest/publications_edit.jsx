@@ -4,14 +4,12 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import Button from "@mui/material/Button";
-import Checkbox from '@mui/material/Checkbox';
-import { DatePicker } from '@mui/x-date-pickers';
 
+import Collapse from '@mui/material/Collapse';
+import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
-import Input from '@mui/material/Input';
-import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -31,20 +29,17 @@ import ReactTooltip from "react-tooltip";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 
-import { validateRequired } from "../../utils/validators";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
 import {
   ingest_api_create_publication,
-  ingest_api_create_dataset,
   ingest_api_allowable_edit_states,
   ingest_api_dataset_submit,
-  ingest_api_dataset_publish,
   ingest_api_users_groups,
   ingest_api_allowable_edit_states_statusless,
-  ingest_api_notify_slack
+  ingest_api_notify_slack,
 } from "../../service/ingest_api";
 import {
   entity_api_update_entity,
@@ -70,7 +65,6 @@ import TableRow from "@material-ui/core/TableRow";
 import Box from "@material-ui/core/Box";
 
 import Select from "@material-ui/core/Select";
-import Result from '../uuid/result';
 
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -78,7 +72,6 @@ import Result from '../uuid/result';
 
 class PublicationEdit extends Component {
   state = {
-    ERIS:"nooo",
     // The Entity Itself
     newForm: this.props.newForm,
     data_types:["publication"],
@@ -108,6 +101,7 @@ class PublicationEdit extends Component {
     has_submit_priv: false,
     has_publish_priv: false,
     has_version_priv: false,
+    has_manual_priv: false,
     groupsToken: "",
 
     // Data that sets the scene
@@ -126,6 +120,9 @@ class PublicationEdit extends Component {
     buttonSpinnerTarget: "",
     errorSnack: false,
     disableSelectDatatype: false,
+    statusSetLabel:"Reset Status",
+    toggleStatusSet: false,
+
     // Form Validation & processing
     newVersion: false,
     previousHID: undefined,
@@ -272,6 +269,11 @@ class PublicationEdit extends Component {
                 this.setState({
                   has_version_priv: resp.results.has_write_priv,
                 });
+                if(this.state.has_admin_priv && (
+                  this.props.editingPublication.status.toUpperCase()==="ERROR" || 
+                  this.props.editingPublication.status.toUpperCase()==="INVALID")){
+                  this.setState({has_manual_priv: true});
+                }
               })
               .catch((err) => {
                 this.props.reportError(err);
@@ -1553,6 +1555,61 @@ class PublicationEdit extends Component {
     );
   }
 
+  toggleStatSetView = () => {
+    this.setState(prevState => ({
+      statusSetLabel: prevState.statusSetLabel === "Reset Status" ? "Cancel" : "Reset Status",
+      toggleStatusSet: !prevState.toggleStatusSet
+    }));
+  };
+
+
+  renderManualStatusControl=()=>{
+    return(  
+      <div className="mt-1">
+        <Button
+          variant="text"
+          className="mx-1"
+          onClick={this.toggleStatSetView}>
+         {this.state.statusSetLabel}
+        </Button>
+        {this.state.toggleStatusSet  && (
+          <Button
+            variant="contained"
+            className="mx-1"
+            onClick={() => this.handleStatusSet() }>
+            {this.state.submitting && (
+              <FontAwesomeIcon
+                className='inline-icon'
+                icon={faSpinner}
+                spin
+              />
+            )}
+          {!this.state.submittingUpdate && "Update"}         
+          </Button>
+        )}
+        <Collapse in={this.state.toggleStatusSet} className="col-7">
+          <FormGroup controlId="status">
+              <Select 
+                native
+                size="small"
+                name="newStatus"
+                className="form-select col-3 mt-3 " 
+                required aria-label="status-select"
+                value={this.state.newStatus}
+                id="newStatus"
+                onChange={this.handleInputChange}>
+                  <option value="">----</option>
+                  <option>New</option>
+                  <option>Submitted</option>
+              </Select>
+              <FormHelperText>Select the desired status, then click [Update] to apply your changes.</FormHelperText>
+          </FormGroup>
+        </Collapse>
+      </div>
+    )
+  }
+  
+
   renderButtons() {
     // @TODO: A lot of the combined checks are redundant 
     // IE (Admins Never Make Entities, so they never load the New forms)
@@ -2304,15 +2361,22 @@ class PublicationEdit extends Component {
             </FormControl>  
           </div>
 
+          <div className="col-8">
+            
+            {this.state.submit_error && (
+              <Alert severity="error">
+                {this.state.submitErrorResponse && (
+                  <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
+                )} <strong>Details:</strong> The following fields are Invalid: {this.state.fieldString} {" "}
+                
+              </Alert>
+            )}
+          </div>
+
           <div className="row">
             <div className="col-8">
-              {this.state.submit_error && (
-                <Alert severity="error">
-                  {this.state.submitErrorResponse && (
-                    <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
-                  )} <strong>Details:</strong> The following fields are Invalid: {this.state.fieldString} {" "}
-                  
-                </Alert>
+              {this.state.has_manual_priv && (
+                <>{this.renderManualStatusControl()}</>
               )}
             </div>
             <div className="col-4">{this.renderButtons()}</div>
