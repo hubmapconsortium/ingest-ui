@@ -4,13 +4,13 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
-import Grid from '@mui/material/Grid';
-import Pagination from '@mui/material/Pagination';
-import LinearProgress from '@mui/material/LinearProgress';
+import FormHelperText from '@mui/material/FormHelperText';
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
 
-import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
+import FormGroup from '@mui/material/FormGroup';
+import Select from '@mui/material/Select'; // import Select from "@material-ui/core/Select";
+
 
 import '../../App.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -27,13 +27,15 @@ import {
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
-import { ingest_api_allowable_edit_states, 
-    ingest_api_create_dataset, 
-    ingest_api_dataset_submit, 
-    ingest_api_dataset_publish,
-    ingest_api_users_groups, 
-    ingest_api_allowable_edit_states_statusless,
-    ingest_api_notify_slack} from '../../service/ingest_api';
+import {
+  ingest_api_allowable_edit_states,
+  ingest_api_create_dataset,
+  ingest_api_dataset_submit,
+  ingest_api_dataset_publish,
+  ingest_api_users_groups,
+  ingest_api_allowable_edit_states_statusless,
+  ingest_api_notify_slack
+} from '../../service/ingest_api';
 import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
 import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
@@ -48,10 +50,8 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 
-import Box from '@material-ui/core/Box';
 
 
-import Select from '@material-ui/core/Select';
 
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -93,6 +93,7 @@ class DatasetEdit extends Component {
     has_submit_priv: false,
     has_publish_priv: false,
     has_version_priv: false,
+    has_manual_priv: false,
     groupsToken:"",
 
     // Data that sets the scene
@@ -111,6 +112,9 @@ class DatasetEdit extends Component {
     buttonSpinnerTarget: "",
     errorSnack:false,
     disableSelectDatatype:false,
+    toggleStatusSet:false,
+    statusSetLabel:"Reset Status",
+    newStatus:"",
     // Form Validation & processing
     newVersion:false,
     previousHID: undefined,
@@ -188,7 +192,7 @@ class DatasetEdit extends Component {
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
           if (resp.status < 300) {
-            //
+            console.debug("Perms",resp.results);
             this.setState({
               writeable: resp.results.has_write_priv,
               has_write_priv: resp.results.has_write_priv,
@@ -200,7 +204,13 @@ class DatasetEdit extends Component {
               ingest_api_allowable_edit_states_statusless(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((resp) => {
                   // 
+                  console.debug("Perms SL",resp.results);
                   this.setState({has_version_priv: resp.results.has_write_priv});
+                  if(this.state.has_admin_priv && (
+                    this.state.status.toUpperCase()==="ERROR" || 
+                    this.state.status.toUpperCase()==="INVALID")){
+                    this.setState({has_manual_priv: true});
+                  }
                 })
                 .catch((err) => {
                   
@@ -444,6 +454,16 @@ class DatasetEdit extends Component {
     });
   };
 
+  
+  toggleStatSetView = () => {
+    this.setState(prevState => ({
+      statusSetLabel: prevState.statusSetLabel === "Reset Status" ? "Cancel" : "Reset Status",
+      toggleStatusSet: !prevState.toggleStatusSet
+    }));
+  };
+
+
+
   hideGroupSelectModal = () => {
     this.setState({
       GroupSelectShow: false
@@ -526,8 +546,10 @@ class DatasetEdit extends Component {
         });
         break;
       case "other_dt":
-        
         this.setState({ other_dt: value });
+        break;
+      case "newStatus":
+        this.setState({ newStatus: value });
         break;
       case "dt_select":
         
@@ -852,7 +874,38 @@ class DatasetEdit extends Component {
     window.location.reload()
   }
 
-  
+  handleStatusSet = (e) => {
+    this.setState({
+      submittingUpdate:true
+    });
+   var newStatus = this.state.newStatus;
+    entity_api_update_entity(
+      this.props.editingDataset.uuid, 
+      {"status":newStatus}, 
+      JSON.parse(localStorage.getItem("info")).groups_token)
+    .then((response) => {
+        if (response.status < 300) {
+          this.setState({ 
+            submit_error: false, 
+            submitting: false, 
+            submittingUpdate:false,
+            });
+          this.props.onUpdated(response.results);
+        } else {
+          this.setState({ 
+            submit_error: true, 
+            submitting: false, 
+            submittingUpdate:false,
+            submitErrorResponse:response.results.statusText});
+          }
+    })
+    .catch((error) => {
+      this.setState({ 
+        submit_error: true, 
+        submitting: false, 
+      });
+    });
+  }
 
   handleSubmit = (submitIntention) => {
 
@@ -1404,6 +1457,52 @@ class DatasetEdit extends Component {
     )
   }
 
+  renderManualStatusControl=()=>{
+    return(  
+      <div className="mt-1">
+        <Button
+          variant="text"
+          className="mx-1"
+          onClick={this.toggleStatSetView}>
+         {this.state.statusSetLabel}
+        </Button>
+        {this.state.toggleStatusSet  && (
+          <Button
+            variant="contained"
+            className="mx-1"
+            onClick={() => this.handleStatusSet() }>
+            {this.state.submitting && (
+              <FontAwesomeIcon
+                className='inline-icon'
+                icon={faSpinner}
+                spin
+              />
+            )}
+          {!this.state.submittingUpdate && "Update"}         
+          </Button>
+        )}
+        <Collapse in={this.state.toggleStatusSet} className="col-7">
+          <FormGroup controlId="status">
+              <Select 
+                native
+                size="small"
+                name="newStatus"
+                className="form-select col-3 mt-3 " 
+                required aria-label="status-select"
+                value={this.state.newStatus}
+                id="newStatus"
+                onChange={this.handleInputChange}>
+                  <option value="">----</option>
+                  <option>New</option>
+                  <option>Submitted</option>
+              </Select>
+              <FormHelperText>Select the desired status, then click [Update] to apply your changes.</FormHelperText>
+          </FormGroup>
+        </Collapse>
+      </div>
+    )
+  }
+  
   renderButtons() {
 
     /* The Buttons:
@@ -1424,9 +1523,10 @@ class DatasetEdit extends Component {
       // && this.state.status.toUpperCase() === "PUBLISHED");
       // console.table([this.state.has_admin_priv, this.state.assay_type_primary, this.state.previous_revision_uuid, this.state.status]);
 
-
+// @TODO: Handling in a utility will optimize this a bunch
     var writeCheck = this.state.has_write_priv
     var adminCheck = this.state.has_admin_priv
+    var manualCheck = this.state.has_manual_priv
     var versCheck = this.state.has_version_priv
     var pubCheck = this.state.status === "Published"
     var newFormCheck = this.props.newForm
@@ -1439,6 +1539,7 @@ class DatasetEdit extends Component {
       "pubCheck":pubCheck,
       "newFormCheck":newFormCheck,
       "newStateCheck":newStateCheck,
+      "manualCheck":manualCheck,
     }
     console.debug("permMatrix")
     console.table(permMatrix)
@@ -1454,8 +1555,6 @@ class DatasetEdit extends Component {
             </div>
           )
     }
-    
-    
     // console.debug("CheckTwo",this.state.writeable === false && this.state.has_version_priv === false);
     if (this.state.writeable === false ){            
       return (
@@ -1469,37 +1568,34 @@ class DatasetEdit extends Component {
       if (["NEW", "INVALID", "REOPENED", "ERROR", "SUBMITTED"].includes( 
               this.state.status.toUpperCase())) {
         return (
-            <div className="buttonWrapRight">
-                {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
-                  this.aButton("processing", "Process"))
-                }
-                {this.state.has_write_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
-                    <div>
-                      <Button 
-                        className="btn btn-primary mr-1" 
-                        variant="contained"
-                        onClick={ () => this.showSubmitModal() }>
-                          Submit
-                      </Button>
-                    </div>
-                )}
-                {/* {this.state.has_write_priv && this.state.status.toUpperCase() === "NEW" && (
-                  this.aButton("submit", "Submit"))
-                } */}
-                {this.cancelButton()}
+          <div className="buttonWrapRight">
+              {this.aButton(this.state.status.toLowerCase(), "Save")}
+              {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
+                this.aButton("processing", "Process"))
+              }
+              {this.state.has_write_priv && !this.props.newForm && this.state.status.toUpperCase() === "NEW" &&(
+                  <div>
+                    <Button 
+                      className="btn btn-primary mr-1" 
+                      variant="contained"
+                      onClick={ () => this.showSubmitModal() }>
+                        Submit
+                    </Button>
+                  </div>
+              )}
+              {this.cancelButton()}
             </div>
           )
       }
       // console.debug("CheckFive",this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv);
-      if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
-        return (
-            <div className="buttonWrapRight">
-                {this.aButton("published", "Publish")}
-                {this.cancelButton()}
-            </div>
-          )
-      }   
+      // if (this.state.status.toUpperCase() === 'UNPUBLISHED' && this.state.has_publish_priv) {
+      //   return (
+      //       <div className="buttonWrapRight">
+      //           {this.aButton("published", "Publish")}
+      //           {this.cancelButton()}
+      //       </div>
+      //     )
+      // }   
       if (this.state.status.toUpperCase() === 'PUBLISHED' ) {
         return (
             <div className="buttonWrapRight">
@@ -1510,17 +1606,17 @@ class DatasetEdit extends Component {
             </div>
           )
       } 
-      if (this.state.status.toUpperCase() === 'QA') {
-        return (
-            <div className="buttonWrapRight">
-                {this.aButton("hold", "Hold")}
-                {this.aButton("reopened", "Reopen")}
-                {/* {this.state.has_publish_priv && (this.aButton("published", "Publish"))} */}
-                {this.aButton(this.state.status.toLowerCase(), "Save")}
-                {this.cancelButton()}
-            </div>
-          )
-      }   
+      // if (this.state.status.toUpperCase() === 'QA') {
+      //   return (
+      //       <div className="buttonWrapRight">
+      //           {this.aButton("hold", "Hold")}
+      //           {this.aButton("reopened", "Reopen")}
+      //           {/* {this.state.has_publish_priv && (this.aButton("published", "Publish"))} */}
+      //           {this.aButton(this.state.status.toLowerCase(), "Save")}
+      //           {this.cancelButton()}
+      //       </div>
+      //     )
+      // }   
       else{
         return(
           <div className="buttonWrapRight">
@@ -2341,23 +2437,30 @@ class DatasetEdit extends Component {
               </div>
             </div>
           )}
+          <div className="col-8">
+            {this.state.submit_error && (
+              <Alert severity="error" >
+                {this.state.submitErrorResponse &&(
+                  <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
+                )}
+                Oops! Something went wrong. Please contact administrator for help. <br />
+                Details:  <strong>{this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
+              </Alert>
+            )}
+          </div>
 
           <div className='row'>
-                <div className="col-8">
-                  {this.state.submit_error && (
-                    <Alert severity="error" >
-                      {this.state.submitErrorResponse &&(
-                        <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
-                      )}
-                      Oops! Something went wrong. Please contact administrator for help. <br />
-                      Details:  <strong>{this.state.submitErrorStatus} </strong> {this.state.submitErrorResponse}
-                    </Alert>
-                  )}
-                </div>
-                <div className="col-4"> 
-                  {this.renderButtons()}
-                </div>
+            <div className="col-8">
+            {this.state.has_manual_priv && (
+              <>{this.renderManualStatusControl()}</>
+            )}
+            </div>
+
+            <div className="col-4"> 
+              {this.renderButtons()}
+            </div>
           </div>
+          
         </form>
 
         <GroupModal
