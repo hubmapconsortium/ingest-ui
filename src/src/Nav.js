@@ -1,7 +1,7 @@
-import React, { useEffect} from "react";
-import { Link } from 'react-router-dom'
-import { useLocation} from "react-router-dom";
-import { useNavigate} from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 import Dialog from '@mui/material/Dialog';
@@ -14,7 +14,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import UploadsForm from "./components/uploads/createUploads";
-import {DataProviders} from "./utils/userInfo";
 
 
 
@@ -151,6 +150,13 @@ export const Navigation = (props) => {
                       onClick={handleClose}
                       to="/new/publication" >
                       Publication
+                    </MenuItem>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      onClick={handleClose}
+                      to="/new/collection" >
+                      Collection
                     </MenuItem>
                   </Menu>
 
