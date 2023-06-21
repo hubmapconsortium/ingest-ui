@@ -201,3 +201,25 @@ export function entity_api_get_globus_url(uuid, auth) {
         return {error}
       });
 };
+
+/*
+ * Faux Entity Fill
+ * 
+ * return:  {results}
+ */
+export function entity_api_get_entity_faux() { 
+  console.debug("entity_api_get_entity_faux");
+  var editingCollection ={
+    uuid: "uuiduuiduuiduuid",
+    hubmap_id: "hubmapidhubmapid",
+    title: "TitleHere",
+    description: "Big Description! Like.... woah ",
+    status: "NEW",
+  };
+  
+  setTimeout(function() {
+    return {editingCollection};
+}, 3000);
+
+  
+};

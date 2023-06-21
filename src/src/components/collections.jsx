@@ -1,31 +1,71 @@
 import React, { useEffect, useState  } from "react";
-import { entity_api_get_entity} from '../service/entity_api';
+import { entity_api_get_entity_faux} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import {CollectionForm} from "./collections/collections"
 
 
 export const RenderCollection = (props) => {
-  var [entity_data, setEntity] = useState(false);
-  var [isLoading, setLoading] = useState(false);
+  var [entity_data, setEntity] = useState();
+  var [isLoadingEntity, setIsLoadingEntity] = useState(true);
+  var isNew = props.new;
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
   });
-  
-  // Using the Set State here throws us into an Endless re-render :(
-    // setUUID(useParams())
-    
-    // const { uuid } = useParams();
+
+  function fetchEntity(){
+    // console.debug("fetchEntity", uuid, authSet.groups_token);
+    entity_api_get_entity_faux()
+      .then((response) => {
+        console.debug("fetchEntity RESP", response);
+          if (response.status === 200) {
+            setEntity(response.results);
+            setIsLoadingEntity(false); 
+          }
+        })  
+        .catch((error) => {
+          console.debug("fetchEntity Error", error);
+          props.reportError(error);
+          setIsLoadingEntity(false);
+        }); 
+  };
+
+
   useEffect(() => {
-    console.debug("useEffect",props);
+   
+    if(isNew){
+      console.debug("useEffect ISNEW");
+      // Passsing an empty entity to be filled might help
+      // avoid some undefined errors
+      setEntity({
+        title:"",
+        description:"",
+      });
+      setIsLoadingEntity(false);
+    }else{
+      console.debug("useEffect NotNew");
+      entity_api_get_entity_faux()
+      .then((response) => {
+        console.debug("fetchEntity RESP", response);
+          setEntity(response.results);
+          setIsLoadingEntity(false); 
+        })  
+        .catch((error) => {
+          console.debug("fetchEntity Error", error);
+          props.reportError(error);
+          setIsLoadingEntity(false);
+        }); 
+    }
+    // console.debug("useEffect",props);
   }, []);
 
   function onUpdated(data){
     console.debug("onUpdated", data);
   }
-
-
+  function onCreated (data) {
+    console.debug('FORMS onCreated:', data);
+  }
   function handleCancel(){
     if(this.props && this.props.handleCancel){
       // How is this happening???
@@ -34,13 +74,7 @@ export const RenderCollection = (props) => {
       window.history.back();
     }
   };
-
-  function onCreated (data) {
-    console.debug('FORMS onCreated:', data);
-  }
-
   function passError(status, message) {
-    setLoading(false);
     setErrorHandler({
       status: status,
       message:message,
@@ -50,11 +84,11 @@ export const RenderCollection = (props) => {
 
 
   
-    if (!isLoading && errorHandler.isError === true){
+    if (!isLoadingEntity && errorHandler.isError === true){
       return (
         <div><ErrBox err={errorHandler} /></div>
       );
-    }else if (isLoading) {
+    }else if (isLoadingEntity) {
         return (
           <div className="card-body ">
             <div className="loader">Loading...</div>
@@ -63,7 +97,14 @@ export const RenderCollection = (props) => {
     }else{
       return (
         <div>
-          <CollectionForm handleCancel={handleCancel} onCreated={onCreated} editingEntity={entity_data} onUpdated={onUpdated}/>
+          <CollectionForm 
+            newForm={isNew}
+            handleCancel={handleCancel} 
+            onCreated={onCreated} 
+            onUpdated={onUpdated}
+            editingCollection={entity_data} 
+            // newForm={false}
+            />
         </div>
       )
     }
