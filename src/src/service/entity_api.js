@@ -207,6 +207,8 @@ export function entity_api_get_globus_url(uuid, auth) {
  * 
  * return:  {results}
  */
+
+// const timer = setTimeout(() => console.log('Initial timeout!'), 1000);
 export function entity_api_get_entity_faux() { 
   console.debug("entity_api_get_entity_faux");
   var editingCollection ={
@@ -216,10 +218,14 @@ export function entity_api_get_entity_faux() {
     description: "Big Description! Like.... woah ",
     status: "NEW",
   };
+  // var tflag = 0;
   
-  setTimeout(function() {
-    return {editingCollection};
-}, 3000);
+  // setTimeout(function() {
+  //   tflag = 1;
+  // }, 3000);
 
+  // if(tflag===1){
+  // }
   
+  return {editingCollection};
 };

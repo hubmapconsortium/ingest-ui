@@ -4,33 +4,18 @@ import {ErrBox} from "../utils/ui_elements";
 import {CollectionForm} from "./collections/collections"
 
 
+
 export const RenderCollection = (props) => {
+  
+  // var isNew = props.new;
+  var [isNew] = useState(props.new);
   var [entity_data, setEntity] = useState();
   var [isLoadingEntity, setIsLoadingEntity] = useState(true);
-  var isNew = props.new;
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
   });
-
-  function fetchEntity(){
-    // console.debug("fetchEntity", uuid, authSet.groups_token);
-    entity_api_get_entity_faux()
-      .then((response) => {
-        console.debug("fetchEntity RESP", response);
-          if (response.status === 200) {
-            setEntity(response.results);
-            setIsLoadingEntity(false); 
-          }
-        })  
-        .catch((error) => {
-          console.debug("fetchEntity Error", error);
-          props.reportError(error);
-          setIsLoadingEntity(false);
-        }); 
-  };
-
 
   useEffect(() => {
    
@@ -98,7 +83,8 @@ export const RenderCollection = (props) => {
       return (
         <div>
           <CollectionForm 
-            newForm={isNew}
+            // packed={searchWrapper}
+            newForm={props.new}
             handleCancel={handleCancel} 
             onCreated={onCreated} 
             onUpdated={onUpdated}
