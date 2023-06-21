@@ -8,48 +8,125 @@ import FormHelperText from '@mui/material/FormHelperText';
 
 export function CollectionForm (props){
 
+  var [formData, setFormData] = useState("")
+  const [title, setTitle] = useState(props.editingCollection.title);
+  const [description, setDescription] = useState(props.editingCollection.description);
+  var [editingCollection, setEditingCollection] = useState(props.editingCollection)
+  // var editingCollection = useState(props.editingCollection)
+  var badge_class = "badge-purple";
+
+
   useEffect(() => {
-    console.debug("useEffect",props);
-  }, []);
+    console.debug("useEffect",props,props.editingCollection);
+    setFormData(props.editingCollection);
+
+  }, [props]);
+
+
+
+  const onChange = (name,value) => {
+    console.debug("onChange",name,value);
+  //   var newVal=value;
+  //   console.debug(newVal);
+  //   setEditingCollection({
+  //     ...editingCollection,
+  //    name:value // becomes "somename: some value"
+  //  })
+  }
 
   
   return (
+    <form className="expanded-form">
+          <div className="row">
+            <div className="col-md-6">
+              <h3>
+                {props.newForm}
+              {props.newForm && (
+                <>
+                <span
+                  className={"badge " + badge_class}
+                  style={{ cursor: "pointer" }}
+                />
+                <span className="mx-1">
+                  Registering a Collection 
+                </span>
+                </>
+              )}
+              {!props.newForm && (
+                <>
+                <span
+                  className={"badge " + badge_class}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    this.showErrorMsgModal(
+                      editingCollection.pipeline_message
+                    )
+                  }>
+                  {editingCollection.status}
+                </span>
+                <span className="mx-1">
+                  {" "}
+                  HuBMAP Collection ID {editingCollection.hubmap_id}{" "}
+                </span>
+                </>
+              )}
+
+              </h3>
+              <p>
+                <strong>
+                  <big>
+                    {!props.newForm &&
+                      formData["title"]}
+                  </big>
+                </strong>
+              </p>
+
+
+            </div>
+            <div className="col-md-6">
+              {/* {editingCollection &&
+                editingCollection.upload &&
+                editingCollection.upload.uuid && (
+                  // useful space for collection navigation things?
+                  // <Box sx={{ display: "flex" }}>
+                  //   <Box sx={{ width: "100%" }}>
+                  //   </Box>
+                  // </Box>
+                )} */}
+            </div>
+          </div>
+
+
     <div className="card-body ">
 
-      {/* 
-      description: Text field (large text area)
-      title: Text field
-      contributors: Import contact/contributor information via a standard contributors.tsv
-      contacts: Import contact/contributor information via a standard contributors.tsv
-      */}
-
-
       {/* Title  */}
-
-      <div className="form-gropup mb-4">
-      <FormControl>
-          <TextField
-            label="Title"
-            name="title"
-            id="title"
-            error={false}
-            disabled={false}
-            helperText={"Test"}
-            variant="standard"
-            className="form-group"
-            //className={"form-control " +this.errorClass(this.state.formErrors.issue) +" "}
-            onChange={console.debug("onChange")}
-            value={"Title"}
-          />
-          {/* {this.state.validationStatus.issue.length >0 && ( 
-            <FormHelperText className="component-error-text"> {this.state.validationStatus.issue}</FormHelperText>
-          )} */}
-      </FormControl>
+      <div className="form-gropup ">
+        <FormControl>
+            <TextField
+              label="Title"
+              name="title"
+              id="title"
+              error={false}
+              disabled={false}
+              helperText={"Test"}
+              variant="standard"
+              className="form-group"
+              //className={"form-control " +this.errorClass(formErrors.issue) +" "}
+              onChange={ (e) => { 
+                setFormData({
+                 "title":e.value 
+                });
+              }}
+              value={title}
+            />
+            {/* {validationStatus.issue.length >0 && ( 
+              <FormHelperText className="component-error-text"> {validationStatus.issue}</FormHelperText>
+            )} */}
+        </FormControl>
       </div>
 
       {/* Description  */}
-
-      <div className="form-gropup mb-4">
+      <div className="form-gropup ">
         <FormControl>
           <TextField
             label="Description"
@@ -62,18 +139,22 @@ export function CollectionForm (props){
             className="form-group"
             multiline
             rows={4}
-            //className={"form-control " +this.errorClass(this.state.formErrors.issue) +" "}
+            //className={"form-control " +this.errorClass(formErrors.issue) +" "}
             onChange={console.debug("onChange")}
-            value={"Description"}
+            onChange={ (e) => { 
+              setTitle(e.target.value);
+            }}
+            value={description}
           />
-          {/* {this.state.validationStatus.issue.length >0 && ( 
-            <FormHelperText className="component-error-text"> {this.state.validationStatus.issue}</FormHelperText>
+          {/* {validationStatus.issue.length >0 && ( 
+            <FormHelperText className="component-error-text"> {validationStatus.issue}</FormHelperText>
           )} */}
         </FormControl>
       </div>
 
 
     </div>
+  </form>
   )
   
 }

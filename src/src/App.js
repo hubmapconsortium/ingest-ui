@@ -376,7 +376,7 @@ export function App (props){
                 <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                 <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='collection' element={<RenderCollection formType='collection' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                <Route path='collection' element={<RenderCollection new={true} formType='collection' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
               </Route>
 
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -390,7 +390,7 @@ export function App (props){
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/publication/:uuid" element={<RenderPublication  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/collection/:uuid" element={<RenderCollection  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/collection/:uuid" element={<RenderCollection   new={false} reportError={reportError} handleCancel={handleCancel} status="view"/>} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
