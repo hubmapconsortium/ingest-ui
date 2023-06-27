@@ -4,48 +4,24 @@ import {ErrBox} from "../utils/ui_elements";
 import {CollectionForm} from "./collections/collections"
 
 
+
 export const RenderCollection = (props) => {
+  
+  // var isNew = props.new;
+  var [isNew] = useState(props.new);
   var [entity_data, setEntity] = useState();
   var [isLoadingEntity, setIsLoadingEntity] = useState(true);
-  var isNew = props.new;
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
   });
 
-  function fetchEntity(){
-    // console.debug("fetchEntity", uuid, authSet.groups_token);
-    entity_api_get_entity_faux()
-      .then((response) => {
-        console.debug("fetchEntity RESP", response);
-          if (response.status === 200) {
-            setEntity(response.results);
-            setIsLoadingEntity(false); 
-          }
-        })  
-        .catch((error) => {
-          console.debug("fetchEntity Error", error);
-          props.reportError(error);
-          setIsLoadingEntity(false);
-        }); 
-  };
-
-
   useEffect(() => {
-   
-    if(isNew){
-      console.debug("useEffect ISNEW");
-      // Passsing an empty entity to be filled might help
-      // avoid some undefined errors
-      setEntity({
-        title:"",
-        description:"",
-      });
-      setIsLoadingEntity(false);
-    }else{
+    var authSet = JSON.parse(localStorage.getItem("info"));
+    if(!isNew){
       console.debug("useEffect NotNew");
-      entity_api_get_entity_faux()
+      entity_api_get_entity_faux(authSet.groups_token)
       .then((response) => {
         console.debug("fetchEntity RESP", response);
           setEntity(response.results);
@@ -53,12 +29,15 @@ export const RenderCollection = (props) => {
         })  
         .catch((error) => {
           console.debug("fetchEntity Error", error);
-          props.reportError(error);
+          // props.reportError(error);
           setIsLoadingEntity(false);
         }); 
+    }else{
+      setIsLoadingEntity(false); 
     }
     // console.debug("useEffect",props);
-  }, []);
+  }, [isNew]);
+
 
   function onUpdated(data){
     console.debug("onUpdated", data);
@@ -67,12 +46,13 @@ export const RenderCollection = (props) => {
     console.debug('FORMS onCreated:', data);
   }
   function handleCancel(){
-    if(this.props && this.props.handleCancel){
-      // How is this happening???
-     this.props.handleCancel();
-    }else{
-      window.history.back();
-    }
+    window.history.back();
+    // if(this.props && this.props.handleCancel){
+    //   // How is this happening???
+    //  this.props.handleCancel();
+    // }else{
+    //   window.history.back();
+    // }
   };
   function passError(status, message) {
     setErrorHandler({
@@ -98,11 +78,13 @@ export const RenderCollection = (props) => {
       return (
         <div>
           <CollectionForm 
-            newForm={isNew}
+            // packed={searchWrapper}
+            newForm={props.new}
             handleCancel={handleCancel} 
             onCreated={onCreated} 
             onUpdated={onUpdated}
             editingCollection={entity_data} 
+            writeable={true}
             // newForm={false}
             />
         </div>
