@@ -545,7 +545,7 @@ export function ingest_api_notify_slack(auth, data) {
       }
     };
   // const data = ["data-testing-notificatons","Beep (O v O)!"]    
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/notify-slack`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/notify`;
   return axios 
     .post(url,data,options)
     .then(res => {
