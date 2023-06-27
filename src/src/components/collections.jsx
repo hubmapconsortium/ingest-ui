@@ -45,6 +45,7 @@ export const RenderCollection = (props) => {
     // console.debug("useEffect",props);
   }, []);
 
+
   function onUpdated(data){
     console.debug("onUpdated", data);
   }
@@ -89,6 +90,7 @@ export const RenderCollection = (props) => {
             onCreated={onCreated} 
             onUpdated={onUpdated}
             editingCollection={entity_data} 
+            writeable={true}
             // newForm={false}
             />
         </div>
