@@ -18,19 +18,10 @@ export const RenderCollection = (props) => {
   });
 
   useEffect(() => {
-   
-    if(isNew){
-      console.debug("useEffect ISNEW");
-      // Passsing an empty entity to be filled might help
-      // avoid some undefined errors
-      setEntity({
-        title:"",
-        description:"",
-      });
-      setIsLoadingEntity(false);
-    }else{
+    var authSet = JSON.parse(localStorage.getItem("info"));
+    if(!isNew){
       console.debug("useEffect NotNew");
-      entity_api_get_entity_faux()
+      entity_api_get_entity_faux(authSet.groups_token)
       .then((response) => {
         console.debug("fetchEntity RESP", response);
           setEntity(response.results);
@@ -38,12 +29,14 @@ export const RenderCollection = (props) => {
         })  
         .catch((error) => {
           console.debug("fetchEntity Error", error);
-          props.reportError(error);
+          // props.reportError(error);
           setIsLoadingEntity(false);
         }); 
+    }else{
+      setIsLoadingEntity(false); 
     }
     // console.debug("useEffect",props);
-  }, []);
+  }, [isNew]);
 
 
   function onUpdated(data){
@@ -53,12 +46,13 @@ export const RenderCollection = (props) => {
     console.debug('FORMS onCreated:', data);
   }
   function handleCancel(){
-    if(this.props && this.props.handleCancel){
-      // How is this happening???
-     this.props.handleCancel();
-    }else{
-      window.history.back();
-    }
+    window.history.back();
+    // if(this.props && this.props.handleCancel){
+    //   // How is this happening???
+    //  this.props.handleCancel();
+    // }else{
+    //   window.history.back();
+    // }
   };
   function passError(status, message) {
     setErrorHandler({
