@@ -1,5 +1,6 @@
 import React, { useEffect, useState  } from "react";
-import { entity_api_get_entity_faux} from '../service/entity_api';
+import { useParams } from "react-router-dom";
+import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import {CollectionForm} from "./collections/collections"
 
@@ -16,14 +17,20 @@ export const RenderCollection = (props) => {
     message: "",
     isError: null 
   });
+  const routeParams = useParams();
+  let propValues = props;
 
   useEffect(() => {
+    console.debug("Collection WRAPPER uses=effect");
     var authSet = JSON.parse(localStorage.getItem("info"));
-    if(!isNew){
+    if(!propValues.new){
+      var uuid = routeParams.uuid;
       console.debug("useEffect NotNew");
-      entity_api_get_entity_faux(authSet.groups_token)
+      entity_api_get_entity(uuid, authSet.groups_token)
       .then((response) => {
         console.debug("fetchEntity RESP", response);
+        var collectionEntity = response.results;
+        // collectionEntity["dataset_uuids"] = [ "9c9f27da754e677e7eeede464fd4c97d", "dcdabfcfa50ecab40e1f2955a495f987"]
           setEntity(response.results);
           setIsLoadingEntity(false); 
         })  
@@ -36,7 +43,7 @@ export const RenderCollection = (props) => {
       setIsLoadingEntity(false); 
     }
     // console.debug("useEffect",props);
-  }, [isNew]);
+  }, [propValues,routeParams]);
 
 
   function onUpdated(data){
@@ -80,9 +87,9 @@ export const RenderCollection = (props) => {
           <CollectionForm 
             // packed={searchWrapper}
             newForm={props.new}
-            handleCancel={handleCancel} 
-            onCreated={onCreated} 
-            onUpdated={onUpdated}
+            handleCancel={() => handleCancel()} 
+            onCreated={() => onCreated()} 
+            onUpdated={() => onUpdated()}
             editingCollection={entity_data} 
             writeable={true}
             // newForm={false}
