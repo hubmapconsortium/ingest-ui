@@ -533,7 +533,7 @@ export function ingest_api_reorganize_upload(uuid, auth) {
 };
 
 /* 
- * Slack Notify
+ *  Notify
  *
  */
 export function ingest_api_notify_slack(auth, data) { 
@@ -543,7 +543,8 @@ export function ingest_api_notify_slack(auth, data) {
           "Bearer " + auth,
           "Content-Type": "application/json"
       }
-    };
+  };
+  data.send_to_email = true;
   // const data = ["data-testing-notificatons","Beep (O v O)!"]    
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/notify`;
   return axios 
