@@ -533,7 +533,7 @@ export function ingest_api_reorganize_upload(uuid, auth) {
 };
 
 /* 
- * Slack Notify
+ *  Notify
  *
  */
 export function ingest_api_notify_slack(auth, data) { 
