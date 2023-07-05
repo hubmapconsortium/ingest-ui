@@ -1,6 +1,7 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
+import { useSearchParams } from 'react-router-dom';
 import {
   useNavigate,
   useLocation,
@@ -76,13 +77,17 @@ export function App (props){
   var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
+  const [searchParams, setSearchParams] = useSearchParams();
+  let [info, setInfo] = useState(searchParams.get("info") ||   "");
   let navigate = useNavigate();
 
 
   useEffect(() => {
+    console.debug("searchParams",searchParams, searchParams["info"]);
     
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
+
     if (info !== null) {
       // Grabs the ?info= bit
       localStorage.setItem("info", info);
@@ -159,7 +164,7 @@ export function App (props){
     }
 
 
-  }, [groupsToken, isLoading]);
+  }, [groupsToken, isLoading, info]);
   
   function Logout(){
     localStorage.removeItem("info");

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
+// import SourceTable from "../ui/table";
+import { entity_api_get_entity} from '../../service/entity_api';
+
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 
 import Papa from 'papaparse';
@@ -25,21 +28,24 @@ import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@for
 
 export function CollectionForm (props){
   var [selectedSource, setSelectedSource] = useState(null);
+  var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
   var [lookupShow, setLookupShow] = useState(false);
   var [formErrors, setFormErrors] = useState({
-    title:null,
-    description: null,
-    file: null,
+    title:"",
+    description: "",
+    file: "",
     dataset_uuids: [],
-    contributors: [],
+    creators: [],
+    contacts: [],
   });
   var [formValues, setFormValues] = useState({
     title: '',
     description: '',
-    file: null,
+    file: "",
     dataset_uuids: [],
-    contributors: [],
+    creators: [{}],
+    contacts: [{}],
   });
   let { editingCollection } = props
 
@@ -47,9 +53,32 @@ export function CollectionForm (props){
   useEffect(() => {
     console.debug("CollectionForm useEffect", editingCollection);
     if(editingCollection){  
-      setFormValues(editingCollection)
-    }
-  }, [editingCollection]);
+      // editingCollection["dataset_uuids"] = ["9c9f27da754e677e7eeede464fd4c97d"]
+      setFormValues(editingCollection)  
+      // var uuids = ;
+      console.debug("UUIDS",editingCollection.dataset_uuids);
+      var sourceDatasetDetailsArray = []
+      // Till I fix the re-rendering coming from App.js, this will keep us from loading the 
+      //  same data multiple times*+8
+      setSourceDatasetDetails([]) 
+      if(editingCollection.dataset_uuids && editingCollection.dataset_uuids.length > 0){
+
+
+        for (const entity of editingCollection.dataset_uuids) {
+          console.debug("InnerFor");
+          entity_api_get_entity(entity, JSON.parse(localStorage.getItem("info")).groups_token )
+          .then((response) => {
+            console.debug("DatasetFetch",entity,response);
+            setSourceDatasetDetails((rows) => [...rows, response.results]);
+          })  
+          .catch((error) => {
+            console.debug("fetchEntity Error", error);
+          }); 
+        }
+      }
+        
+      }
+    }, [editingCollection]);
 
   const errorClass = (error, e) => {
     // errorClass( {
@@ -61,8 +90,7 @@ export function CollectionForm (props){
     // return error.length === 0 ? "" : "is-invalid";
   }
 
-
-
+ 
   const handleLookUpClick = () => {
     console.debug("handleLookUpClick" );
     setLookupShow(true);  
@@ -79,8 +107,9 @@ export function CollectionForm (props){
   const  handleSelectClick = (selection) => {
     var slist = selectedSources
     console.debug("SelctedSOurces", slist, typeof slist, selection);
-    slist.push(selection.row);   
-    setSelectedSources(slist);
+    // slist.push(selection.row);   
+    setSourceDatasetDetails((rows) => [...rows, selection.row]);
+    // setSelectedSources(slist);
     setFormValues({
         ...formValues,
         ['dataset_uuids']: selectedSources
@@ -129,7 +158,8 @@ export function CollectionForm (props){
      
   // }
 
-  var handleFileGrab = e => {
+  var handleFileGrab = (e,type) => {
+    console.debug("handleFileGrab", type);
     var grabbedFile = e.target.files[0];
     var newName = grabbedFile.name.replace(/ /g, '_')
     var newFile =  new File([grabbedFile], newName);
@@ -144,7 +174,7 @@ export function CollectionForm (props){
         complete: data => {
           console.debug("PapaParse", data, data.data);
           setFormValues({ ...formValues,
-            ['contributors']: data.data
+            [type]: data.data
           });
             // setRows(data.data);
         }
@@ -154,23 +184,95 @@ export function CollectionForm (props){
     }
   };
 
-  var renderFileGrabber = () =>{
+  // var renderFileGrabber = (type) =>{
+  //   console.debug("renderFileGrabber", type);
+  //   return (
+  //     <div className="text-left"> 
+  //     <label>
+  //       <input
+  //         accept=".tsv, .csv"
+  //         type="file"
+  //         id="FileUploader"
+  //         name="file"
+  //         onChange={(e,type) => handleFileGrab(e,type)}
+  //       />
+  //     </label>
+  //     </div>
+  //   );
+  // }
+
+  var renderTableRows = (rowDetails) => {
+    if(rowDetails.length > 0){
+      return rowDetails.map((row, index) => {
+        return (
+          <TableRow 
+            key={("rowName_"+index)}
+            className="row-selection"
+            >
+            <TableCell  className="clicky-cell" scope="row">{row.name}</TableCell>
+            <TableCell  className="clicky-cell" scope="row">{row.affiliation}</TableCell>
+            <TableCell  className="clicky-cell" scope="row"> {row.orcid_id} </TableCell>
+            <TableCell  className="clicky-cell" align="right" scope="row"> 
+            {props.writeable && (
+              <React.Fragment>
+                <FontAwesomeIcon
+                  className='inline-icon interaction-icon '
+                  icon={faTrash}
+                  color="red"  
+                  onClick={() => sourceRemover(row,index)}
+                />
+              </React.Fragment>
+              )}
+              {!props.writeable && (
+                <small className="text-muted">N/A</small>
+              )}
+            </TableCell>
+          </TableRow>
+        );
+      });
+      
+    }
+  }
+  
+
+  
+  var renderContribTable = () => {
+    
     return (
-      <div className="text-left"> 
-      <label>
-        <input
-          accept=".tsv, .csv"
-          type="file"
-          id="FileUploader"
-          name="file"
-          onChange={(e) => handleFileGrab(e)}
-        />
-      </label>
-      </div>
-    );
+      // <SourceTable
+      //   headers={{
+      //     name:"Name",
+      //     affiliation:"Affiliation",
+      //     orcid_id:"Orcid Id",
+      //   }}
+      //   rows={formValues.creators}
+      //   cellAction={() => sourceRemover()}
+      //   writeable={true}
+      // />  
+
+
+      <TableContainer 
+      component={Paper} 
+      style={{ maxHeight: 450 }}
+      >
+      <Table aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
+        <TableHead className="thead-dark font-size-sm">
+          <TableRow className="   " >
+            <TableCell> Name</TableCell>
+            <TableCell component="th">Affiliation</TableCell>
+            <TableCell component="th">Orcid</TableCell>
+            <TableCell component="th">Action</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {renderTableRows(formValues.creators)}
+        </TableBody>
+      </Table>
+    </TableContainer> 
+    )
   }
 
-  var renderContribTable = () => {
+  var renderContactTable = () => {
     return (
       <TableContainer 
       component={Paper} 
@@ -180,38 +282,13 @@ export function CollectionForm (props){
         <TableHead className="thead-dark font-size-sm">
           <TableRow className="   " >
             <TableCell> Name</TableCell>
-            <TableCell component="th">Role</TableCell>
-            <TableCell component="th">Contact</TableCell>
+            <TableCell component="th">Affiliation</TableCell>
+            <TableCell component="th">Orcid</TableCell>
             <TableCell component="th">Action</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          
-          {formValues.contributors.map((row, index) => (
-            <TableRow 
-              key={("rowName_"+""+index)}
-              className="row-selection"
-              >
-              <TableCell  className="clicky-cell" scope="row">{row.Name}</TableCell>
-              <TableCell  className="clicky-cell" scope="row">{row.Role}</TableCell>
-              <TableCell  className="clicky-cell" scope="row"> {row.Contact} </TableCell>
-              <TableCell  className="clicky-cell" align="right" scope="row"> 
-              {props.writeable && (
-                <React.Fragment>
-                  <FontAwesomeIcon
-                    className='inline-icon interaction-icon '
-                    icon={faTrash}
-                    color="red"  
-                    onClick={() => sourceRemover(row,index)}
-                  />
-                </React.Fragment>
-                )}
-                {!props.writeable && (
-                  <small className="text-muted">N/A</small>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
+          {renderTableRows(formValues.contacts)}
         </TableBody>
       </Table>
     </TableContainer> 
@@ -228,27 +305,29 @@ export function CollectionForm (props){
         // maxWidth: '400 px',
         margin: '0 0',
       }}
-      onSubmit={handleSubmit}
+      onSubmit={() => handleSubmit()}
     >
 
       <div className="w-100">
 
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-md-6 mb-4">
             <h3>
               {!props.newForm && (
-                <span className="mx-1">
+                <span className="">
+                  HuBMAP Collection ID {props.editingCollection.hubmap_id}
                   {" "}
-                  HuBMAP Collection ID {props.editingCollection.hubmap_id}{" "}
                 </span>
               )}
-
               {(props.newForm) && (
                 <span className="mx-1">
                   Registering a Collection 
                 </span>
               )}
             </h3>
+            {!props.newForm && (
+              <h5>{props.editingCollection.title}</h5>
+            )}
           </div>
         </div>
 
@@ -288,8 +367,10 @@ export function CollectionForm (props){
                 <TableCell component="th" align="right">Action</TableCell>
               </TableRow>
             </TableHead>
+            {sourceDatasetDetails && sourceDatasetDetails.length >0 && (
             <TableBody>
-              {formValues.dataset_uuids.map((row, index) => (
+              
+              {sourceDatasetDetails.map((row, index) => (
                 <TableRow 
                   key={(row.hubmap_id+""+index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
                   // onClick={() => this.handleSourceCellSelection(row)}
@@ -321,6 +402,7 @@ export function CollectionForm (props){
                 </TableRow>
               ))}
             </TableBody>
+            )}
           </Table>
         </TableContainer>
         <Box className="mt-2 w-100" width="100%"  display="flex">
@@ -358,7 +440,7 @@ export function CollectionForm (props){
           open={lookupShow}>
           <DialogContent>
             <SearchComponent
-              select={handleSelectClick}
+              select={(e) => handleSelectClick(e)}
               custom_title="Search for a Source ID for your Collection"
               // filter_type="Publication"
               modecheck="Source"
@@ -415,7 +497,40 @@ export function CollectionForm (props){
         {/* )} */}
         {/* {renderContactTable()} */}
 
-        {renderFileGrabber()}
+        <div className="text-left"> 
+          <label>
+            <input
+              accept=".tsv, .csv"
+              type="file"
+              id="FileUploadCreators"
+              name="Creators"
+              onChange={(e) => handleFileGrab(e,"creators")}
+            />
+          </label>
+        </div>
+          
+      </FormControl>
+
+      <FormControl>
+        <label htmlFor="file-input">
+          Contacts
+        </label>
+        {/* {formValues.contributors && formValues.contributors.length>0  && ( */}
+          {renderContactTable()}
+        {/* )} */}
+        {/* {renderContactTable()} */}
+
+        <div className="text-left"> 
+          <label>
+            <input
+              accept=".tsv, .csv"
+              type="file"
+              id="FileUploadContacts"
+              name="Contacts"
+              onChange={(e) => handleFileGrab(e,"contacts")}
+            />
+          </label>
+        </div>
           
       </FormControl>
 

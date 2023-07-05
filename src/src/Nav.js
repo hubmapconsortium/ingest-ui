@@ -18,9 +18,10 @@ import UploadsForm from "./components/uploads/createUploads";
 
 
 export const Navigation = (props) => {
-  const [userInfo, setUserInfo] = React.useState();
-  const [userGroups, setUserGroups] = React.useState();
-  const [userDataGroups, setUserDataGroups] = React.useState([]);
+  let propValues = props;
+  const [userInfo, setUserInfo] = React.useState(propValues.app_info);
+  const [userGroups, setUserGroups] = React.useState(propValues.userGroups);
+  const [userDataGroups, setUserDataGroups] = React.useState([propValues.userDataGroups]);
   // const [authStatus, setAuthStatus] = React.useState(false);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
@@ -30,16 +31,16 @@ export const Navigation = (props) => {
   const location = useLocation();
   let navigate = useNavigate();
 
-  useEffect(() => {
-    setUserInfo(props.app_info);
-    setUserGroups(props.userGroups);
-    setUserDataGroups([props.userDataGroups]);
-    // @TODO: Consider moving all the User & User Group info into its own utils, 
+  // useEffect(() => {
+  //   setUserInfo(propValues.app_info);
+  //   setUserGroups(propValues.userGroups);
+  //   setUserDataGroups([propValues.userDataGroups]);
+  //   // @TODO: Consider moving all the User & User Group info into its own utils, 
 
-    if(location.pathname === "/new/data"){
-      setUploadsDialog(true);
-    }
-  }, [props, props.app_info, location]);
+  //   if(location.pathname === "/new/data"){
+  //     setUploadsDialog(true);
+  //   }
+  // }, [propValues, location]);
 
 
 
