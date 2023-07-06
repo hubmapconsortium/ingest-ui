@@ -382,8 +382,18 @@ export function App (props){
               
               {authStatus && (!userDataGroups || userDataGroups.length === 0) && !isLoading && (
                 <Route path="/new/*" element={ 
-                  <Alert variant="filled" severity="error">
-                    You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group" 
+                  <Alert 
+                    variant="filled"
+                    severity="error"
+                     action={
+                      <Button 
+                        color="inherit"
+                        size="large"
+                        onClick={() => {window.history.back()}}>
+                        Cancel
+                      </Button>
+                    }>
+                    You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group
                   </Alert>
                   }/>
 
