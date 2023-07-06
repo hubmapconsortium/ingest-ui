@@ -31,16 +31,16 @@ export const Navigation = (props) => {
   const location = useLocation();
   let navigate = useNavigate();
 
-  // useEffect(() => {
-  //   setUserInfo(propValues.app_info);
-  //   setUserGroups(propValues.userGroups);
-  //   setUserDataGroups([propValues.userDataGroups]);
-  //   // @TODO: Consider moving all the User & User Group info into its own utils, 
+  useEffect(() => {
+    setUserInfo(propValues.app_info);
+    setUserGroups(propValues.userGroups);
+    setUserDataGroups([propValues.userDataGroups]);
+    // @TODO: Consider moving all the User & User Group info into its own utils, 
 
-  //   if(location.pathname === "/new/data"){
-  //     setUploadsDialog(true);
-  //   }
-  // }, [propValues, location]);
+    if(location.pathname === "/new/data"){
+      setUploadsDialog(true);
+    }
+  }, [propValues, location]);
 
 
 
