@@ -49,8 +49,12 @@ export const RenderCollection = (props) => {
   function onUpdated(data){
     console.debug("onUpdated", data);
   }
-  function onCreated (data) {
-    console.debug('FORMS onCreated:', data);
+  function onCreated (reaponse) {
+    console.debug('WRAPPER onCreated:', reaponse);
+    // window.history.pushState(
+    //     null,
+    //     "", 
+    //     "/collection/"+data.uuid);
   }
   function handleCancel(){
     window.history.back();

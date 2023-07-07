@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 // import SourceTable from "../ui/table";
-import { entity_api_get_entity} from '../../service/entity_api';
+import { entity_api_get_entity,entity_api_create_entity} from '../../service/entity_api';
 
 import { getPublishStatusColor } from "../../utils/badgeClasses";
+import SourceTable from "../ui/table.jsx";
 
 import Papa from 'papaparse';
 import ReactTooltip from "react-tooltip";
@@ -30,11 +31,11 @@ export function CollectionForm (props){
   var [selectedSource, setSelectedSource] = useState(null);
   var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
+  var [fileDetails, setFileDetails] = useState();
   var [lookupShow, setLookupShow] = useState(false);
   var [formErrors, setFormErrors] = useState({
     title:"",
     description: "",
-    file: "",
     dataset_uuids: [],
     creators: [],
     contacts: [],
@@ -42,7 +43,6 @@ export function CollectionForm (props){
   var [formValues, setFormValues] = useState({
     title: '',
     description: '',
-    file: "",
     dataset_uuids: [],
     creators: [{}],
     contacts: [{}],
@@ -105,18 +105,23 @@ export function CollectionForm (props){
   };
 
   const  handleSelectClick = (selection) => {
-    var slist = selectedSources
     console.debug("SelctedSOurces", slist, typeof slist, selection);
-    // slist.push(selection.row);   
+
     setSourceDatasetDetails((rows) => [...rows, selection.row]);
+    console.debug("SourceDatasetDetails", sourceDatasetDetails);
+
     // setSelectedSources(slist);
-    setFormValues({
-        ...formValues,
-        ['dataset_uuids']: selectedSources
-    });
+    var slist = selectedSources.push(selection.row.uuid);
+    setSelectedSources(slist);
+    // setFormValues({
+    //     ...formValues,
+    //     ['dataset_uuids']: slist
+    // });
     
     hideLookUpModal();
   };  
+
+
   const  sourceRemover = (row,index) => {
     var slist =selectedSources
     console.debug("sourceRemover", slist, typeof slist, row, index);
@@ -148,7 +153,30 @@ export function CollectionForm (props){
   const handleSubmit = (event) => {
     event.preventDefault();
     // Do something with the form values
-    console.log(formValues);
+   
+    var datasetUUIDs = []
+    sourceDatasetDetails.map((row, index) => {
+      console.debug("Row", row, index)
+      datasetUUIDs.push(row.uuid)
+    })
+    var formSubmit = formValues;
+    formSubmit["dataset_uuids"] = datasetUUIDs;
+    console.debug("handleSubmit", formSubmit);
+
+    entity_api_create_entity("collection", formSubmit, JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((response) => {
+        console.debug("handleSubmit",response.results.uuid, response);
+        props.onCreated(response.results.uuid);
+        window.history.pushState(
+          null,
+          "", 
+          "/collection/"+response.results.uuid);
+          window.location.reload();
+      })
+      .catch((error) => {
+        console.debug("handleSubmit Error", error);
+      });
+
   };
 
   // var handleUpload= () =>{
@@ -159,50 +187,64 @@ export function CollectionForm (props){
   // }
 
   var handleFileGrab = (e,type) => {
-    console.debug("handleFileGrab", type);
+    console.debug("handleFileGrab", type,e);
     var grabbedFile = e.target.files[0];
     var newName = grabbedFile.name.replace(/ /g, '_')
     var newFile =  new File([grabbedFile], newName);
     if (newFile && newFile.name.length > 0) {
-      setFormValues({ ...formValues, 
-        ['file']: newFile
-      });
+      // setFormValues({ ...formValues, 
+      //   ['file']: newFile
+      // });
       Papa.parse(newFile, {
         download: true,
         skipEmptyLines: true,
         header: true,
         complete: data => {
           console.debug("PapaParse", data, data.data);
-          setFormValues({ ...formValues,
+          setFileDetails({ ...fileDetails,
             [type]: data.data
           });
+
+          processContacts(data)
             // setRows(data.data);
         }
+
     });
+
+      
     }else{
       console.debug("No Data??");
     }
   };
 
-  // var renderFileGrabber = (type) =>{
-  //   console.debug("renderFileGrabber", type);
-  //   return (
-  //     <div className="text-left"> 
-  //     <label>
-  //       <input
-  //         accept=".tsv, .csv"
-  //         type="file"
-  //         id="FileUploader"
-  //         name="file"
-  //         onChange={(e,type) => handleFileGrab(e,type)}
-  //       />
-  //     </label>
-  //     </div>
-  //   );
-  // }
+  var processContacts = (data) => {
+    var result = data.data.reduce((r, o) => {
+        r[o.is_contact==="TRUE" ? 'contacts' : 'creators'].push(o);
+        return r;
+    }, { contacts: [], creators: [] });
+
+    console.log(result, result.contacts, result.creators);
+    var contacts = result.contacts
+    var creators = result.creators
+
+    // console.debug("FileDetails", fileDetails);
+    setFormValues({ ...formValues,
+      contacts:contacts,
+      creators:creators
+    });
+
+  }
+
 
   var renderTableRows = (rowDetails) => {
-    if(rowDetails.length > 0){
+    if (rowDetails.length > 0) {
+
+      // <SourceTable
+      //   headers={}
+      //   rows={}
+      //   cellAction={}
+      //   writeable={}
+      // />
       return rowDetails.map((row, index) => {
         return (
           <TableRow 
@@ -239,16 +281,16 @@ export function CollectionForm (props){
   var renderContribTable = () => {
     
     return (
-      // <SourceTable
-      //   headers={{
-      //     name:"Name",
-      //     affiliation:"Affiliation",
-      //     orcid_id:"Orcid Id",
-      //   }}
-      //   rows={formValues.creators}
-      //   cellAction={() => sourceRemover()}
-      //   writeable={true}
-      // />  
+    //   <SourceTable
+    //     headers={{
+    //       name:"Name",
+    //       affiliation:"Affiliation",
+    //       orcid_id:"Orcid Id",
+    //     }}
+    //     rows={formValues.creators}
+    //     cellAction={() => sourceRemover()}
+    //     writeable={true}
+    //   />  
 
 
       <TableContainer 
@@ -305,7 +347,7 @@ export function CollectionForm (props){
         // maxWidth: '400 px',
         margin: '0 0',
       }}
-      onSubmit={() => handleSubmit()}
+      onSubmit={(e) => handleSubmit(e)}
     >
 
       <div className="w-100">
@@ -496,19 +538,6 @@ export function CollectionForm (props){
           {renderContribTable()}
         {/* )} */}
         {/* {renderContactTable()} */}
-
-        <div className="text-left"> 
-          <label>
-            <input
-              accept=".tsv, .csv"
-              type="file"
-              id="FileUploadCreators"
-              name="Creators"
-              onChange={(e) => handleFileGrab(e,"creators")}
-            />
-          </label>
-        </div>
-          
       </FormControl>
 
       <FormControl>
@@ -531,7 +560,6 @@ export function CollectionForm (props){
             />
           </label>
         </div>
-          
       </FormControl>
 
       <div className="row">
