@@ -249,8 +249,8 @@ class TissueForm extends Component {
                           if (resp.status === 200) {
                             let read_only_state = !resp.results.has_write_priv;      //toggle this value sense results are actually opposite for UI
                             // OVERRIDE: UNCOMMENT THE LINE BELOW TO ALWAYS ALLOW THE SCREEN TO BE EDITED. TEMPORARY SOLUTION 
-                            read_only_state = false  //  editing on: 6/26/23  
-                            // Commented: 10/18/22
+                            // read_only_state = false  //  editing on: 7/7/23  
+                            // Commented: 7/7/23
                             // Uncommented:6/26/23  
                             this.setState({
                               editingEntity: entity_data,
