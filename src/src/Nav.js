@@ -186,7 +186,14 @@ export const Navigation = (props) => {
                       to="/bulk/data" >Data</MenuItem>
                   </Menu>
 
-
+                <span className="">
+                <Button
+                  target="_blank" 
+                  href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
+                  className="nav-link" >
+                  Ingest Board
+                </Button>
+              </span>
                 </div>
               )}
           </div>
@@ -198,7 +205,7 @@ export const Navigation = (props) => {
                 <Typography variant="button" className="username-menu">
                    {userInfo.email} 
                 </Typography>
-                <Button
+              <Button
                 href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
                 className="nav-link" >
                   Edit Profile

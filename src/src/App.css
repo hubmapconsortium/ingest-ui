@@ -30,6 +30,10 @@
 .navbar-brand{
   display: inline-block;
 }
+.nav-link:hover{
+  background-color: #D4E6F1 !important;
+}
+
 #MenuLeft{
   float: left;
 }
