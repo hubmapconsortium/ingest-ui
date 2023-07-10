@@ -186,7 +186,13 @@ export const Navigation = (props) => {
                       to="/bulk/data" >Data</MenuItem>
                   </Menu>
 
-
+                <span className="">
+                <Button
+                href={`${process.env.REACT_APP_INGEST-BOARD_URL}`}
+                className="nav-link" >
+                  Ingest Board
+                </Button>
+              </span>
                 </div>
               )}
           </div>
