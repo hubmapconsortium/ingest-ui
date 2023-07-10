@@ -31,17 +31,6 @@
   display: inline-block;
 }
 
-.nav-link:visited{
-  color:#f2f2f2!important;
-}
-.nav-link:hover{
-  background-color:#D4E6F1!important;
-  color: rgb(33, 37, 41)!important;
-}
-.nav-link{
-  background-color:#D4E6F1!important;
-  color: #f2f2f2!important;
-}
 
 
 #MenuLeft{
@@ -73,6 +62,18 @@
   /*color: #f4f1f1;*/
   color: white;
   font-weight:bold;
+}
+.nav-link:visited{
+  color:#f2f2f2;
+}
+.nav-link:hover,
+.nav-link:focus{
+  background-color:#D4E6F1;
+  color: rgb(33, 37, 41);
+}
+.nav-link{
+  background-color:#D4E6F1;
+  color: #f2f2f2;
 }
 
 .username {
