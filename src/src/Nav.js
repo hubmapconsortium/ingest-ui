@@ -191,7 +191,7 @@ export const Navigation = (props) => {
                   target="_blank" 
                   href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
                   className="nav-link" >
-                  Ingest Board
+                  Data Ingest Board
                 </Button>
               </span>
                 </div>
