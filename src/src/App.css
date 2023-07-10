@@ -30,17 +30,17 @@
 .navbar-brand{
   display: inline-block;
 }
-.nav-link:{
-  background-color: #D4E6F1 !important;
-  color: #f2f2f2!important;
-}
-.nav-link:visited{
-  color: #f2f2f2!important;
-}
 
+.nav-link:visited{
+  color:#f2f2f2!important;
+}
 .nav-link:hover{
-  background-color: #D4E6F1 !important;
+  background-color:#D4E6F1!important;
   color: rgb(33, 37, 41)!important;
+}
+.nav-link{
+  background-color:#D4E6F1!important;
+  color: #f2f2f2!important;
 }
 
 
@@ -744,7 +744,7 @@ tr.row-invalid td{
   border:1px solid red;
 }
 table.uploadedStuff-valid{
-  background: ##68ba99;
+  background: #68ba99;
 }
 table tr.row-selection td{
   border-right:1px solid #CBCBCB;
