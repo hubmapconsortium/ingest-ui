@@ -69,6 +69,13 @@ export const Navigation = (props) => {
   const onCreated = (data) => {
     navigate("/Upload/"+data.results.uuid);
     setUploadsDialog(false);
+  };  
+  
+  const toBoards = (data) => {
+    window.open(`${process.env.REACT_APP_INGEST_BOARD_URL}`,'_blank');
+  };
+  const toProfile = (data) => {
+    window.open(`${process.env.REACT_APP_PROFILE_URL}`,'_blank');
   };
   
   function logout(e) {
@@ -186,10 +193,12 @@ export const Navigation = (props) => {
                       to="/bulk/data" >Data</MenuItem>
                   </Menu>
 
-                <span className="">
+                <span className="board">
                 <Button
                   target="_blank" 
-                  href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
+                  onClick={() => toBoards()}
+                  // to={`${process.env.REACT_APP_INGEST_BOARD_URL}`} 
+                  // href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
                   className="nav-link" >
                   Data Ingest Board
                 </Button>
@@ -206,7 +215,8 @@ export const Navigation = (props) => {
                    {userInfo.email} 
                 </Typography>
               <Button
-                href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
+                // href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
+                onClick={() => toProfile()}
                 className="nav-link" >
                   Edit Profile
                 </Button>
