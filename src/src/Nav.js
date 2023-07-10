@@ -188,8 +188,9 @@ export const Navigation = (props) => {
 
                 <span className="">
                 <Button
-                href={`${process.env.REACT_APP_INGEST-BOARD_URL}`}
-                className="nav-link" >
+                  target="_blank" 
+                  href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
+                  className="nav-link" >
                   Ingest Board
                 </Button>
               </span>
@@ -204,7 +205,7 @@ export const Navigation = (props) => {
                 <Typography variant="button" className="username-menu">
                    {userInfo.email} 
                 </Typography>
-                <Button
+              <Button
                 href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
                 className="nav-link" >
                   Edit Profile
