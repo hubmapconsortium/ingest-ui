@@ -15,7 +15,6 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 // import IconButton from '@material-ui/core/IconButton';
-import { DatePicker } from '@mui/x-date-pickers';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -30,18 +29,18 @@ import {
   validateSingleProtocolIODOI
 //  validateFileType
 } from "../../../utils/validators";
-import { tsToDate, toTitleCase } from "../../../utils/string_helper";
+import { tsToDate } from "../../../utils/string_helper";
 import check from './check25.jpg';
 //import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
-import { truncateString, parseErrorMessage } from "../../../utils/string_helper";
+import { parseErrorMessage } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
 //import Protocol from "./protocol";
 //import Modal from "../modal";
 import SearchComponent from "../../search/SearchComponent";
 //import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
-import { SAMPLE_TYPES, SAMPLE_CATEGORIES,TISSUE_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
+import { SAMPLE_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
 import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
