@@ -193,16 +193,14 @@ export const Navigation = (props) => {
                       to="/bulk/data" >Data</MenuItem>
                   </Menu>
 
-                <span className="board">
-                <Button
-                  target="_blank" 
-                  onClick={() => toBoards()}
-                  // to={`${process.env.REACT_APP_INGEST_BOARD_URL}`} 
-                  // href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
-                  className="nav-link" >
-                  Data Ingest Board
-                </Button>
-              </span>
+                  <span className="board">
+                     <Button
+                        target="_blank"
+                        href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
+                        className="flat-link " >
+                          Data Ingest Board
+                      </Button>
+                  </span>
                 </div>
               )}
           </div>
@@ -214,11 +212,11 @@ export const Navigation = (props) => {
                 <Typography variant="button" className="username-menu">
                    {userInfo.email} 
                 </Typography>
-              <Button
-                // href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
-                onClick={() => toProfile()}
-                className="nav-link" >
-                  Edit Profile
+                <Button
+                  href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
+                  // onClick={() => toProfile()}
+                  className="nav-link" >
+                    Edit Profile
                 </Button>
               </span>
               <span className="logout">
