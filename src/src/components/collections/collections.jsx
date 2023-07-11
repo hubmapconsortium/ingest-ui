@@ -22,9 +22,11 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-
+import Alert from '@mui/material/Alert';
+import Collapse from '@mui/material/Collapse';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 
 
 export function CollectionForm (props){
@@ -32,7 +34,10 @@ export function CollectionForm (props){
   var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
   var [fileDetails, setFileDetails] = useState();
+  var [buttonState, setButtonState] = useState('');
   var [lookupShow, setLookupShow] = useState(false);
+  var [hideUUIDList, setHideUUIDList] = useState(true);
+  var [loadUUIDList, setLoadUUIDList] = useState(false);
   var [formErrors, setFormErrors] = useState({
     title:"",
     description: "",
@@ -48,32 +53,27 @@ export function CollectionForm (props){
     contacts: [{}],
   });
   let { editingCollection } = props
+  const ariaLabel = { 'aria-label': 'description' };
 
 
   useEffect(() => {
     console.debug("CollectionForm useEffect", editingCollection);
-    if(editingCollection){  
-      // editingCollection["dataset_uuids"] = ["9c9f27da754e677e7eeede464fd4c97d"]
+    if (editingCollection) {  
       setFormValues(editingCollection)  
-      // var uuids = ;
-      console.debug("UUIDS",editingCollection.dataset_uuids);
-      var sourceDatasetDetailsArray = []
-      // Till I fix the re-rendering coming from App.js, this will keep us from loading the 
-      //  same data multiple times*+8
       setSourceDatasetDetails([]) 
-      if(editingCollection.dataset_uuids && editingCollection.dataset_uuids.length > 0){
 
-
-        for (const entity of editingCollection.dataset_uuids) {
-          console.debug("InnerFor");
-          entity_api_get_entity(entity, JSON.parse(localStorage.getItem("info")).groups_token )
-          .then((response) => {
-            console.debug("DatasetFetch",entity,response);
-            setSourceDatasetDetails((rows) => [...rows, response.results]);
-          })  
-          .catch((error) => {
-            console.debug("fetchEntity Error", error);
-          }); 
+      if (editingCollection.datasets && editingCollection.datasets.length > 0) {        
+        for (const entity of editingCollection.datasets) {
+          // used to have to look em up but they whole dataset's included now?
+          setSourceDatasetDetails((rows) => [...rows, entity]);
+          setSelectedSources((UUIDs) => [...UUIDs, entity.uuid]);
+        }
+        // if we;ve got em all
+        if (selectedSources.length >0 && sourceDatasetDetails.length === selectedSources.length) {
+          setFormValues({
+              ...setFormValues,
+              ['dataset_uuids']: selectedSources
+          });
         }
       }
         
@@ -150,9 +150,48 @@ export function CollectionForm (props){
     }
   };
 
+  const handleInputUUIDs = (event) => {
+    event.preventDefault();
+    // const { name, value, type } = event.target;
+    console.debug("handleInputUUIDs",event, event.target.value);
+    if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
+      console.debug("LOADING");
+      // Already open, we're saving now
+      handleUUIDListLoad()
+    } else {
+      setHideUUIDList(!hideUUIDList)
+    }
+    
+  };
+
+  const handleUUIDListLoad = () => {
+    var value = formValues.dataset_uuids
+    console.debug("handleUUIDListLoad", value);
+    // setLoadUUIDList(true)
+    var listToArray = value.split(",");
+    console.debug("listToArray",listToArray);
+    for (const ds of listToArray) {
+      console.debug("listToArray",ds);
+      entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token )
+      .then((response) => {
+        console.debug("DatasetFetch",ds,response);
+        setSourceDatasetDetails((rows) => [...rows, response.results]);
+        setHideUUIDList(true)
+        setLoadUUIDList(false)
+      })  
+      .catch((error) => {
+        console.debug("fetchEntity Error", error);
+        setLoadUUIDList(false)
+      }); 
+    }
+    // setHideUUIDList(!hideUUIDList)
+    
+  };
+
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Do something with the form values
+    setButtonState("submit");
    
     var datasetUUIDs = []
     sourceDatasetDetails.map((row, index) => {
@@ -179,12 +218,6 @@ export function CollectionForm (props){
 
   };
 
-  // var handleUpload= () =>{
-  //     const formData = new FormData()
-  //     formData.append("file",formData.tsvFile)
-  //     setFormValues({ ...formValues, file: formData });
-     
-  // }
 
   var handleFileGrab = (e,type) => {
     console.debug("handleFileGrab", type,e);
@@ -204,9 +237,7 @@ export function CollectionForm (props){
           setFileDetails({ ...fileDetails,
             [type]: data.data
           });
-
           processContacts(data)
-            // setRows(data.data);
         }
 
     });
@@ -234,6 +265,12 @@ export function CollectionForm (props){
     });
 
   }
+
+  var processUUIDs = (event) => {
+    const { name, value, type } = event.target;
+    console.debug("handleUUIDList", name, value, type);
+  };
+
 
 
   var renderTableRows = (rowDetails) => {
@@ -320,7 +357,7 @@ export function CollectionForm (props){
       component={Paper} 
       style={{ maxHeight: 450 }}
       >
-      <Table aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
+      <Table aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
         <TableHead className="thead-dark font-size-sm">
           <TableRow className="   " >
             <TableCell> Name</TableCell>
@@ -402,8 +439,8 @@ export function CollectionForm (props){
             <TableHead className="thead-dark font-size-sm">
               <TableRow className="   " >
                 <TableCell> Source ID</TableCell>
-                <TableCell component="th">Submission ID</TableCell>
-                <TableCell component="th">Subtype</TableCell>
+                {/* <TableCell component="th">Lab Dataset ID</TableCell> */}
+                <TableCell component="th">Data Type</TableCell>
                 <TableCell component="th">Group Name</TableCell>
                 <TableCell component="th">Status</TableCell>
                 <TableCell component="th" align="right">Action</TableCell>
@@ -411,7 +448,6 @@ export function CollectionForm (props){
             </TableHead>
             {sourceDatasetDetails && sourceDatasetDetails.length >0 && (
             <TableBody>
-              
               {sourceDatasetDetails.map((row, index) => (
                 <TableRow 
                   key={(row.hubmap_id+""+index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
@@ -419,8 +455,7 @@ export function CollectionForm (props){
                   className="row-selection"
                   >
                   <TableCell  className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                  <TableCell  className="clicky-cell" scope="row"> {row.submission_id && ( row.submission_id)} </TableCell>
-                  <TableCell  className="clicky-cell" scope="row">{row.display_subtype}</TableCell>
+                  <TableCell  className="clicky-cell" scope="row"> {row.data_types[0] && ( row.data_types[0])} </TableCell>
                   <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
                   <TableCell  className="clicky-cell" scope="row">{row.status && (
                       <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
@@ -448,7 +483,7 @@ export function CollectionForm (props){
           </Table>
         </TableContainer>
         <Box className="mt-2 w-100" width="100%"  display="flex">
-            <Box p={1} className="m-0  text-right" flexShrink={0}  >
+            <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
               <Button
                 variant="contained"
                 type='button'
@@ -464,12 +499,73 @@ export function CollectionForm (props){
                   icon={faPlus}
                 />
               </Button>
+              
+              <Button
+                variant="text"
+                type='link'
+                size="small"
+                className='mx-2'
+                onClick={(event) => handleInputUUIDs(event)} 
+                >
+                {hideUUIDList && (<>Bulk</> )}
+                {!hideUUIDList && (<>Save</> )}
+                <FontAwesomeIcon
+                  className='fa button-icon m-2'
+                  icon={faPenToSquare}
+                />
+              </Button>
+            </Box>
+             
+            <Box>
+            <Collapse
+              in={!hideUUIDList}
+              orientation="horizontal"
+              sx={{
+                display: 'inline-flex',
+              }}>
+              {loadUUIDList && (
+                <LinearProgress> </LinearProgress>
+              )}
+              {!loadUUIDList && (
+                <FormControl
+                  // className='mb-0'
+                  sx={{
+                    verticalAlign: 'bottom',
+                    minWidth: "400px",
+                    //   display: 'flex',
+                    //   flexDirection: 'row', 
+                    }}>
+                  <TextField
+                    name="dataset_uuids"
+                    id="dataset_uuids"
+                    error={false}
+                    disabled={false}
+                    inputProps={ariaLabel}
+                    placeholder={"List of Dataset UUIDs,  Comma Seperated "}
+                    variant="standard"
+                    size="small"
+                    fullWidth={true}
+                    onChange={(event) => handleInputChange(event)}
+                    value={formValues.dataset_uuids}
+                    sx={{
+                        marginTop: '10px',
+                        width: '100%',
+                      verticalAlign: 'bottom',
+                    }}
+                  />
+                </FormControl>
+              )}
+            </Collapse>
+              
+           
+
             </Box>
             <Box p={1} width="100%"   >
             {/* {errorClass(formErrors.dataset_uuids) && (
-                  <Alert severity="error" width="100% " >
-                    {formErrors.dataset_uuids}  {formErrors.source_uuid} 
-                  </Alert>
+              <Alert severity="error" width="100% " >
+                AH  
+                {{formErrors.dataset_uuids}  {formErrors.source_uuid} }
+              </Alert>
               )} */}
             </Box>
         </Box>
@@ -534,9 +630,9 @@ export function CollectionForm (props){
         <label htmlFor="file-input">
           Contributors
         </label>
-        {/* {formValues.contributors && formValues.contributors.length>0  && ( */}
-          {renderContribTable()}
-        {/* )} */}
+        {formValues.creators && formValues.creators.length>0  && (
+          <>{renderContribTable()} </>
+        )}
         {/* {renderContactTable()} */}
       </FormControl>
 
@@ -544,10 +640,9 @@ export function CollectionForm (props){
         <label htmlFor="file-input">
           Contacts
         </label>
-        {/* {formValues.contributors && formValues.contributors.length>0  && ( */}
-          {renderContactTable()}
-        {/* )} */}
-        {/* {renderContactTable()} */}
+        {formValues.contacts && formValues.contacts.length>0  && (
+          <>{renderContactTable()} </>
+        )}
 
         <div className="text-left"> 
           <label>
@@ -564,8 +659,17 @@ export function CollectionForm (props){
 
       <div className="row">
       <div className="buttonWrapRight">
-      <Button variant="contained" type="submit" className='float-right'>
-        Submit
+          <Button variant="contained" type="submit" className='float-right'>
+            {buttonState==="submit" && (
+              <FontAwesomeIcon
+              className='inline-icon'
+              icon={faSpinner}
+              spin
+            />
+          )}
+          {buttonState !=="submit" && (   
+              "Submit"
+          )}
       </Button>
       <Button
         type="button"
