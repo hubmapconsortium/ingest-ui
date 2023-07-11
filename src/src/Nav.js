@@ -213,6 +213,7 @@ export const Navigation = (props) => {
                    {userInfo.email} 
                 </Typography>
                 <Button
+                  target="_blank"
                   href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
                   // onClick={() => toProfile()}
                   className="nav-link" >
