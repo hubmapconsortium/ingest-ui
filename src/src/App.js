@@ -24,6 +24,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
+import { Alert } from '@material-ui/lab';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Collapse from '@mui/material/Collapse';
@@ -99,9 +100,9 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results);
+        console.debug("ingest_api_users_groups", results, results.results);
         
-        if(results && results.results && results.results.data && results.results.data === "User is not a member of group HuBMAP-read"){
+        if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
           setAuthStatus(true);
           setRegStatus(false);
           setUnegStatus(true);
@@ -113,11 +114,13 @@ export function App (props){
           setUserGroups(results.results);
           if(userDataGroups && userDataGroups.length> 0){setRegStatus(true);}
           setUserDataGroups(results.results);
+          console.debug("UserDataGroups", userDataGroups);
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
           setAuthStatus(true);
           ubkg_api_get_assay_type_set("primary")
-          .then((response) => {
+          
+            .then((response) => {
             console.debug("ubkg_api_get_assay_type_set", response);
               let dtypes = response.data.result;
               setDataTypeList(dtypes);
@@ -135,10 +138,15 @@ export function App (props){
                   reportError(error)
                 });
           })
-          .catch(error => {
-            console.debug("fetch DT list Response Error", error);
-            setIsLoading(false)
-            reportError(error)
+            .catch(error => {
+              if (unregStatus) {
+                setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+                setTimerStatus(false);
+              } else {
+                console.debug("fetch DT list Response Error", error);
+                setIsLoading(false)
+                reportError(error)
+              } 
           });
 
 
@@ -357,33 +365,57 @@ export function App (props){
 
         )}
 
-     
           {unregStatus && (
-            <div className="row">
-              <div className="alert alert-danger col-sm-12 text-center">
-                <br />
-                You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-              </div>
-            </div>
+            <Paper className="px-5 py-4">
+              <Routes>
+                <Route index >
+                  <br />
+                  You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
+                </Route>
+              </Routes>
+            </Paper>
           )}
 
-          {authStatus && !timerStatus && !isLoading &&(
+          {authStatus && !timerStatus && !isLoading && !unregStatus &&(
           <Paper className="px-5 py-4">
 
 
-          <Routes>
+            <Routes>
+              
               <Route index element={<SearchComponent entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/login" element={<Login />} />
-              <Route path="/new">
-                <Route index element={<SearchComponent />} />
-                <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                <Route path='collection' element={<RenderCollection new={true} formType='collection' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
-              </Route>
+              
+              {authStatus && (!userDataGroups || userDataGroups.length === 0) && !isLoading && (
+                <Route path="/new/*" element={ 
+                  <Alert 
+                    variant="filled"
+                    severity="error"
+                     action={
+                      <Button 
+                        color="inherit"
+                        size="large"
+                        onClick={() => {window.history.back()}}>
+                        Cancel
+                      </Button>
+                    }>
+                    You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group
+                  </Alert>
+                  }/>
 
+                  
+              )}
+              {authStatus && userDataGroups && userDataGroups.length > 0 && !isLoading && (
+                <Route path="/new">
+                  <Route index element={<SearchComponent />} />
+                  <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                  <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='collection' element={<RenderCollection new={true} formType='collection' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                </Route>
+              )}
+              
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
               <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
