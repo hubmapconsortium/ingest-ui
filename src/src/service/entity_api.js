@@ -201,3 +201,66 @@ export function entity_api_get_globus_url(uuid, auth) {
         return {error}
       });
 };
+
+/*
+ * Faux Entity Fill
+ * 
+ * return:  {results}
+ */
+
+// const timer = setTimeout(() => console.log('Initial timeout!'), 1000);
+export function entity_api_get_entity_faux(auth) { 
+  console.debug("entity_api_get_entity_faux");
+  var editingCollection ={
+    "hubmap_id": "HBM0001",
+      "title": "TitleHere",
+      "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book",
+      "file": null,
+      "dataset_uuids": [
+        {
+          "created_by_user_displayname": "Marda Jorgensen",
+          "created_by_user_email": "marda@ufl.edu",
+          "data_access_level": "public",
+          "display_subtype": "Block",
+          "entity_type": "Sample",
+          "group_name": "University of Florida TMC",
+          "hubmap_id": "HBM579.CMHL.343",
+          "lab_tissue_sample_id": "19-003 Spleen CC-3",
+          "submission_id": "UFL0001-SP-3",
+          "uuid": "8e4f27d75768d026235b8eb1e7d6a007",
+          "id": "8e4f27d75768d026235b8eb1e7d6a007"
+        }
+      ],
+      "contributors": [
+        {
+          "Name": "Dr Jeff Hynes",
+          "Role": "Lead Scientist",
+          "Contact": ""
+        },
+        {
+          "Name": "Dr. Eris Bacchaus",
+          "Role": "Specialist",
+          "Contact": "erisDBachus@aol.com"
+        }
+      ]
+    }
+
+    let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/565dfcde50745914f4613b9ff6a8b001`;
+    const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+    return axios
+      .get(url, options)
+        .then((res) => {
+
+          return {status: res.status, results:editingCollection}
+        })
+        .catch((error) => {
+          return {error}
+        });
+        
+};

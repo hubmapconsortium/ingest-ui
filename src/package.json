@@ -26,6 +26,7 @@
     "elastic-builder": "^2.16.0",
     "formik": "^2.2.9",
     "moment": "^2.29.4",
+    "papaparse": "^5.4.1",
     "pretty-bytes": "^5.6.0",
     "react": "^17.0.2",
     "react-datepicker": "^4.10.0",
