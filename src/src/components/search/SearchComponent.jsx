@@ -1,4 +1,4 @@
-import { Component } from "react";
+import React, { Component  } from "react";
 // import { withRouter } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 // import { DataGrid } from '@material-ui/data-grid';
@@ -7,7 +7,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Typography  from '@mui/material/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
 import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
@@ -15,8 +15,8 @@ import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_PUB
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
 import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
-import { RenderError } from '../../utils/errorAlert';
-import { toTitleCase } from '../../utils/string_helper';
+import { RenderError } from '../../utils/errorAlert'
+import { toTitleCase } from '../../utils/string_helper'
 
 // Creation donor_form_components
 
@@ -862,7 +862,7 @@ renderInfoPanel() {
         </Typography>
   
         <Typography align={"center"} variant="subtitle1"  gutterBottom>
-        Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections. <br />
+        Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, or Publications. <br />
         If you know a specific ID you can enter it into the keyword field to locate individual entities.
         </Typography>
       </Box>
