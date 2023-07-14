@@ -41,7 +41,7 @@ export function CollectionForm (props){
   var [formErrors, setFormErrors] = useState({
     title:"",
     description: "",
-    dataset_uuids: [],
+    dataset_uuids: "",
     creators: [],
     contacts: [],
   });
@@ -104,15 +104,18 @@ export function CollectionForm (props){
     setLookupShow(false);  
   };
 
-  const  handleSelectClick = (selection) => {
-    console.debug("SelctedSOurces", slist, typeof slist, selection);
+  const handleSelectClick = (event) => {
+    // var selection = event.row;
+    console.debug("SelctedSOurces",event.row);
 
-    setSourceDatasetDetails((rows) => [...rows, selection.row]);
-    console.debug("SourceDatasetDetails", sourceDatasetDetails);
+    setSourceDatasetDetails((rows) => [...rows, event.row]);
+
+    var slist = selectedSources
+    slist = slist.push(event.row.uuid);
+    setSelectedSources(slist);
+    // console.debug("SourceDatasetDetails", sourceDatasetDetails);
 
     // setSelectedSources(slist);
-    var slist = selectedSources.push(selection.row.uuid);
-    setSelectedSources(slist);
     // setFormValues({
     //     ...formValues,
     //     ['dataset_uuids']: slist
@@ -157,7 +160,9 @@ export function CollectionForm (props){
     if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
       console.debug("LOADING");
       // Already open, we're saving now
-      handleUUIDListLoad()
+      // if (formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0){
+        handleUUIDListLoad()
+      // }
     } else {
       setHideUUIDList(!hideUUIDList)
     }
@@ -174,16 +179,26 @@ export function CollectionForm (props){
       console.debug("listToArray",ds);
       entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token )
       .then((response) => {
-        console.debug("DatasetFetch",ds,response);
-        setSourceDatasetDetails((rows) => [...rows, response.results]);
-        setHideUUIDList(true)
-        setLoadUUIDList(false)
+        console.debug("DatasetFetch", ds, response.status, response);
+        // @TODO why is it not coming back as an actua catchable error though??
+        if (response.status !== 200) {
+          console.debug("FETCHERROR", response.results, response.results.error);
+          setFormErrors((prevValues) => ({
+            ...prevValues,
+            ['dataset_uuids']: response.results.error,
+          }))
+        } else {   
+          console.debug("FETCHOK", response.results, response.results.uuid);
+          setSourceDatasetDetails((rows) => [...rows, response.results]);
+        }
       })  
       .catch((error) => {
-        console.debug("fetchEntity Error", error);
+        console.debug("!!fetchEntity Error", error);
         setLoadUUIDList(false)
       }); 
     }
+    setHideUUIDList(true)
+    setLoadUUIDList(false)
     // setHideUUIDList(!hideUUIDList)
     
   };
@@ -455,7 +470,7 @@ export function CollectionForm (props){
                   className="row-selection"
                   >
                   <TableCell  className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                  <TableCell  className="clicky-cell" scope="row"> {row.data_types[0] && ( row.data_types[0])} </TableCell>
+                  <TableCell  className="clicky-cell" scope="row"> {row.display_subtype && ( row.display_subtype)} </TableCell>
                   <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
                   <TableCell  className="clicky-cell" scope="row">{row.status && (
                       <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
@@ -538,7 +553,7 @@ export function CollectionForm (props){
                   <TextField
                     name="dataset_uuids"
                     id="dataset_uuids"
-                    error={false}
+                    error={formErrors.dataset_uuids && formErrors.dataset_uuids.length>0 ? true : false}
                     disabled={false}
                     inputProps={ariaLabel}
                     placeholder={"List of Dataset UUIDs,  Comma Seperated "}
@@ -560,15 +575,19 @@ export function CollectionForm (props){
            
 
             </Box>
-            <Box p={1} width="100%"   >
-            {/* {errorClass(formErrors.dataset_uuids) && (
-              <Alert severity="error" width="100% " >
-                AH  
-                {{formErrors.dataset_uuids}  {formErrors.source_uuid} }
-              </Alert>
-              )} */}
-            </Box>
+           
         </Box>
+        {formErrors.dataset_uuids && formErrors.dataset_uuids.length >0 && (
+          <Box 
+            p={1}
+            width="100%"
+            sx={{
+              backgroundColor: 'rgb(253, 237, 237)',
+              padding: '10px',
+                }}   >
+                {formErrors.dataset_uuids}  
+          </Box>
+        )}
 
         <Dialog
           fullWidth={true}

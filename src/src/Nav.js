@@ -152,13 +152,13 @@ export const Navigation = (props) => {
                       to="/new/publication" >
                       Publication
                     </MenuItem>
-                    <MenuItem 
+                    {/* <MenuItem 
                       className="nav-link"
                       component={Link}
                       onClick={handleClose}
                       to="/new/collection" >
                       Collection
-                    </MenuItem>
+                    </MenuItem> */}
                   </Menu>
 
                   <Button 
