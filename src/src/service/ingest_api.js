@@ -31,11 +31,7 @@ export function ingest_api_users_groups(auth) {
     return {status: res.status, results: group_list}
  })
  .catch(error => {
-   console.debug("ERR ingest_api_users_groups", error, error.response);
-   if (error.response.response === "User is not a member of group HuBMAP-read") {
-    //  it's not really an /error/ to have anaccount w/o read
-    return {status: 200, results: error.response.response} 
-   }
+    console.debug("ingest_api_allowable_edit_states", error, error.response);
     if(error.response){
       return {status: error.response.status, results: error.response.data}
     }else{
