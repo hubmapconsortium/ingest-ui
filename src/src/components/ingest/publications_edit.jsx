@@ -1642,6 +1642,7 @@ class PublicationEdit extends Component {
         {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
         )}
+
         {(subCheck || newStateCheck) && adminCheck && latestCheck && (
           <>{this.processButton()}</>
         )}
