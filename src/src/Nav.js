@@ -1,7 +1,7 @@
-import React, { useEffect} from "react";
-import { Link } from 'react-router-dom'
-import { useLocation} from "react-router-dom";
-import { useNavigate} from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 import Dialog from '@mui/material/Dialog';
@@ -14,14 +14,14 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import UploadsForm from "./components/uploads/createUploads";
-import {DataProviders} from "./utils/userInfo";
 
 
 
 export const Navigation = (props) => {
-  const [userInfo, setUserInfo] = React.useState();
-  const [userGroups, setUserGroups] = React.useState();
-  const [userDataGroups, setUserDataGroups] = React.useState([]);
+  let propValues = props;
+  const [userInfo, setUserInfo] = React.useState(propValues.app_info);
+  const [userGroups, setUserGroups] = React.useState(propValues.userGroups);
+  const [userDataGroups, setUserDataGroups] = React.useState([propValues.userDataGroups]);
   // const [authStatus, setAuthStatus] = React.useState(false);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
@@ -32,15 +32,15 @@ export const Navigation = (props) => {
   let navigate = useNavigate();
 
   useEffect(() => {
-    setUserInfo(props.app_info);
-    setUserGroups(props.userGroups);
-    setUserDataGroups([props.userDataGroups]);
+    setUserInfo(propValues.app_info);
+    setUserGroups(propValues.userGroups);
+    setUserDataGroups([propValues.userDataGroups]);
     // @TODO: Consider moving all the User & User Group info into its own utils, 
 
     if(location.pathname === "/new/data"){
       setUploadsDialog(true);
     }
-  }, [props, props.app_info, location]);
+  }, [propValues, location]);
 
 
 
@@ -158,6 +158,13 @@ export const Navigation = (props) => {
                       onClick={handleClose}
                       to="/new/publication" >
                       Publication
+                    </MenuItem>
+                    <MenuItem 
+                      className="nav-link"
+                      component={Link}
+                      onClick={handleClose}
+                      to="/new/collection" >
+                      Collection
                     </MenuItem>
                   </Menu>
 
