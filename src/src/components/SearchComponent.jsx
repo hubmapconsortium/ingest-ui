@@ -2,14 +2,14 @@
 @TODO: Fix that 
 UPDATE: Maybe not? Applying newer MUI components to the legacy view is modernizing w/o rewriting!*/
 
-import { useEffect, useState } from "react";
-import Select from 'react-select';
+import React, { useEffect, useState } from "react";
+import Select from 'react-select'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import { useFormControl } from '@mui/material/FormControl';
 import Box from '@mui/material/Box';
 import {
-  useNavigate
-} from "react-router-dom";
+  useNavigate} from "react-router-dom";
 
 // import { DataGrid } from '@mui/x-data-grid';
 // import { GridCellParams } from '@mui/x-data-grid';
@@ -285,7 +285,7 @@ function GroupSelect(props) {
   )
 
 }
-
+  
 
 function TypeSelect(props) {
   const [selectedValue, setSelectedValue] = useState("");
