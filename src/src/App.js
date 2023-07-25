@@ -76,6 +76,7 @@ export function App (props){
   var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
+  var [bannerShow,setBannerShow] = useState(false);
   let navigate = useNavigate();
 
 
@@ -309,8 +310,12 @@ export function App (props){
 
 
       </Drawer>
-
-
+      { !isLoading && bannerShow && (
+          <div className="alert alert-info" role="alert">
+            <h2>HuBMAP Data News Banner</h2>
+              <p>Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.</p>              
+          </div>
+      )}
       {isLoading &&(
         <LinearProgress />
       )}
