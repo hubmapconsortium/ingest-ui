@@ -125,10 +125,10 @@ export function CollectionForm (props){
   };  
 
 
-  const  sourceRemover = (row,index) => {
-    var slist =selectedSources
-    console.debug("sourceRemover", slist, typeof slist, row, index);
-    slist = slist.filter((source) => source.uuid !== row.uuid);
+  const sourceRemover = (row,index) => {
+    var slist = sourceDatasetDetails;
+    console.debug("sourceRemover",  row.uuid, slist[0].uuid);
+    slist = sourceDatasetDetails.filter((source) => source.uuid !== row.uuid);
     setFormValues({
         ...setFormValues,
         ['dataset_uuids']: slist
