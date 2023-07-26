@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import {useState, useEffect} from "react";
 import {
@@ -78,10 +77,10 @@ export function App (props){
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   let navigate = useNavigate();
+  
 
 
   useEffect(() => {
-    
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
@@ -107,44 +106,12 @@ export function App (props){
         if (results && results.status === 200) { 
           // console.debug("LocalStorageAuth", results);
           setUserGroups(results.results);
-          if(userDataGroups && userDataGroups.length> 0){setRegStatus(true);}
+          if(results.results.length> 0){setRegStatus(true);}
           setUserDataGroups(results.results);
-          console.debug("UserDataGroups", userDataGroups);
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
+          setIsLoading(false);
           setAuthStatus(true);
-          ubkg_api_get_assay_type_set("primary")
-          
-            .then((response) => {
-            console.debug("ubkg_api_get_assay_type_set", response);
-              let dtypes = response.data.result;
-              setDataTypeList(dtypes);
-              setDataTypeListPrimary(dtypes);
-              // setIsLoading(false)
-              ubkg_api_get_assay_type_set()
-                .then((response) => {
-                    let dataAll = response.data.result;
-                    setDataTypeListAll(dataAll);
-                    setIsLoading(false)
-                })
-                .catch(error => {
-                  console.debug("fetch DT list Response Error", error);
-                  setIsLoading(false)
-                  reportError(error)
-                });
-          })
-            .catch(error => {
-              if (unregStatus) {
-                setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-                setTimerStatus(false);
-              } else {
-                console.debug("fetch DT list Response Error", error);
-                setIsLoading(false)
-                reportError(error)
-              } 
-          });
-
-
       } else if (results && results.status === 401) {
         console.debug("LocalStorageAuth 401", results);
         setGroupsToken(null);
@@ -165,10 +132,43 @@ export function App (props){
       setTimerStatus(false);
       setIsLoading(false)
     }
-
-
-  }, [groupsToken, isLoading]);
+  }, [ ]);
   
+ 
+//  const loadTypes = () => {
+//   ubkg_api_get_assay_type_set("primary")
+//   .then((response) => {
+//     console.debug("ubkg_api_get_assay_type_set", response);
+//       let dtypes = response.data.result;
+//       setDataTypeList(dtypes);
+//       setDataTypeListPrimary(dtypes);
+//       // setIsLoading(false)
+//       ubkg_api_get_assay_type_set()
+//         .then((response) => {
+//             let dataAll = response.data.result;
+//             setDataTypeListAll(dataAll);
+//             // setIsLoading(false)
+//         })
+//         .catch(error => {
+//           console.debug("fetch DT list Response Error", error);
+//           // setIsLoading(false)
+//           reportError(error)
+//         });
+//     })
+//     .catch(error => {
+//       if (unregStatus) {
+//         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+//         setTimerStatus(false);
+//       } else {
+//         console.debug("fetch DT list Response Error", error);
+//         // setIsLoading(false)
+//         reportError(error)
+//       } 
+//     });
+//   }
+  // loadTypes();
+
+
   function Logout(){
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
@@ -198,6 +198,13 @@ export function App (props){
   function urlChange(target) {
     var lowerTarget = target.toLowerCase();
     navigate(lowerTarget,  { replace: true });
+  }
+
+  function successDialog(info) {
+
+    return (
+      <>  </>
+    );
   }
   
 
@@ -404,10 +411,10 @@ export function App (props){
                 <Route path="/new">
                   <Route index element={<SearchComponent />} />
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                  <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection new={true} formType='collection' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/>
+                  <Route path='collection' element={<RenderCollection onCreated={successDialog} onReturn={onClose} handleCancel={handleCancel} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -421,7 +428,7 @@ export function App (props){
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-              <Route path="/collection/:uuid" element={<RenderCollection new={false} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
