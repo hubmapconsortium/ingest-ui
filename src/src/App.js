@@ -45,6 +45,9 @@ import {Navigation} from "./Nav";
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
+
+import Result from "./components/uuid/result";
+
 import {RenderDonor} from "./components/donors";
 import {RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
@@ -65,6 +68,8 @@ import Grid from '@mui/material/Grid';
 export function App (props){
   // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [loginDialogRender, setLoginDialogRender] = useState(false);
+  var [successDialogRender, setSuccessDialogRender] = useState(false);
+  var [newEntity, setNewEntity] = useState(null);
   var [authStatus, setAuthStatus] = useState(false);
   var [regStatus, setRegStatus] = useState(false);
   var [unregStatus, setUnegStatus] = useState(false);
@@ -200,10 +205,26 @@ export function App (props){
     navigate(lowerTarget,  { replace: true });
   }
 
-  function successDialog(info) {
 
+  function creationSuccess(entity) {
+    setNewEntity(entity)
+    setSuccessDialogRender(true);
+
+  }
+
+  function renderSuccessDialog(info) {
     return (
-      <>  </>
+      <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+        <DialogContent>
+          <Result
+            result={newEntity}
+            // onReturn={this.props.onReturn}
+            // handleCancel={this.props.handleCancel}
+            onCreateNext={null}
+            // entity={this.state.entity}
+          />
+        </DialogContent>
+      </Dialog>
     );
   }
   
@@ -367,16 +388,21 @@ export function App (props){
 
         )}
 
-          {unregStatus && (
-            <Paper className="px-5 py-4">
-              <Routes>
-                <Route index >
-                  <br />
-                  You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-                </Route>
-              </Routes>
-            </Paper>
-          )}
+
+        {newEntity && successDialogRender && ( 
+          { renderSuccessDialog }
+        )}
+
+        {unregStatus && (
+          <Paper className="px-5 py-4">
+            <Routes>
+              <Route index >
+                <br />
+                You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
+              </Route>
+            </Routes>
+          </Paper>
+        )}
 
           {authStatus && !timerStatus && !isLoading && !unregStatus &&(
           <Paper className="px-5 py-4">
@@ -414,7 +440,7 @@ export function App (props){
                   <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection onCreated={successDialog} onReturn={onClose} handleCancel={handleCancel} /> }/>
+                  <Route path='collection' element={<RenderCollection newForm={true} onCreated={creationSuccess} onReturn={onClose} handleCancel={handleCancel} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
