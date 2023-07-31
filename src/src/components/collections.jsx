@@ -50,6 +50,13 @@ export const RenderCollection = (props) => {
     // console.debug("useEffect",props);
   }, [uuid]);
 
+  const createNew = (entity) => {
+    // To Debug
+    console.debug("WAPPER createNew", entity);
+    // props.onCreated(entity);
+    
+  }
+
 
 
   
@@ -70,7 +77,7 @@ export const RenderCollection = (props) => {
           <CollectionForm 
             // packed={searchWrapper}
             handleCancel={() => props.handleCancel()} 
-            onCreated={() => props.onCreated()} 
+            onCreated={() => createNew()} 
             onUpdated={() => props.onUpdated()}
             editingCollection={entity_data} 
             // writeable={true}

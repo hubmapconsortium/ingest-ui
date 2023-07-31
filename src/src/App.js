@@ -138,40 +138,40 @@ export function App (props){
       setIsLoading(false)
     }
   }, [ ]);
+
+  useEffect(() => {
+    ubkg_api_get_assay_type_set("primary")
+    .then((response) => {
+      console.debug("ubkg_api_get_assay_type_set", response);
+        let dtypes = response.data.result;
+        setDataTypeList(dtypes);
+        setDataTypeListPrimary(dtypes);
+        // setIsLoading(false)
+        ubkg_api_get_assay_type_set()
+          .then((response) => {
+              let dataAll = response.data.result;
+              setDataTypeListAll(dataAll);
+              // setIsLoading(false)
+          })
+          .catch(error => {
+            console.debug("fetch DT list Response Error", error);
+            // setIsLoading(false)
+            reportError(error)
+          });
+      })
+      .catch(error => {
+        if (unregStatus) {
+          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+          setTimerStatus(false);
+        } else {
+          console.debug("fetch DT list Response Error", error);
+          // setIsLoading(false)
+          reportError(error)
+        } 
+      });
+  }, [ ]);
   
  
-//  const loadTypes = () => {
-//   ubkg_api_get_assay_type_set("primary")
-//   .then((response) => {
-//     console.debug("ubkg_api_get_assay_type_set", response);
-//       let dtypes = response.data.result;
-//       setDataTypeList(dtypes);
-//       setDataTypeListPrimary(dtypes);
-//       // setIsLoading(false)
-//       ubkg_api_get_assay_type_set()
-//         .then((response) => {
-//             let dataAll = response.data.result;
-//             setDataTypeListAll(dataAll);
-//             // setIsLoading(false)
-//         })
-//         .catch(error => {
-//           console.debug("fetch DT list Response Error", error);
-//           // setIsLoading(false)
-//           reportError(error)
-//         });
-//     })
-//     .catch(error => {
-//       if (unregStatus) {
-//         setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-//         setTimerStatus(false);
-//       } else {
-//         console.debug("fetch DT list Response Error", error);
-//         // setIsLoading(false)
-//         reportError(error)
-//       } 
-//     });
-//   }
-  // loadTypes();
 
 
   function Logout(){
@@ -206,27 +206,7 @@ export function App (props){
   }
 
 
-  function creationSuccess(entity) {
-    setNewEntity(entity)
-    setSuccessDialogRender(true);
-
-  }
-
-  function renderSuccessDialog(info) {
-    return (
-      <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
-        <DialogContent>
-          <Result
-            result={newEntity}
-            // onReturn={this.props.onReturn}
-            // handleCancel={this.props.handleCancel}
-            onCreateNext={null}
-            // entity={this.state.entity}
-          />
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  
   
 
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
@@ -389,9 +369,9 @@ export function App (props){
         )}
 
 
-        {newEntity && successDialogRender && ( 
+        {/* {newEntity && successDialogRender && ( 
           { renderSuccessDialog }
-        )}
+        )} */}
 
         {unregStatus && (
           <Paper className="px-5 py-4">
@@ -437,10 +417,10 @@ export function App (props){
                 <Route path="/new">
                   <Route index element={<SearchComponent />} />
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                  <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection newForm={true} onCreated={creationSuccess} onReturn={onClose} handleCancel={handleCancel} /> }/>
+                  <Route path='collection' element={<RenderCollection newForm={true} onReturn={onClose} handleCancel={handleCancel} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>

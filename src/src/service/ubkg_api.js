@@ -27,10 +27,11 @@ export function ubkg_api_get_assay_type_set(scope) {
   } else if (scope === 'alt') {
       url += '&primary=false'
   }
-  console.debug("ubkg_api_get_assay_type_set url", url);
+  // console.debug("ubkg_api_get_assay_type_set url", url);
   return axios
     .get(url)
       .then(res => {
+        console.debug("ubkg_api_get_assay_type_set res", res);
           let data = res.data;
           let mapCheck = data.result.map((value, index) => { return value });
           console.debug("API get_processed_assays data", data, mapCheck);

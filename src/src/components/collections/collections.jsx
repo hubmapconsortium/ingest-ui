@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 // import SourceTable from "../ui/table";
@@ -27,12 +28,17 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+
+
+import Result from "../uuid/result";
 
 import Typography  from '@mui/material/Typography';
 
 export function CollectionForm (props){
+  let navigate = useNavigate();
   var [isNew] = useState(props.newForm);
+  var [successDialogRender, setSuccessDialogRender] = useState(false);
   var [selectedSource, setSelectedSource] = useState(null);
   var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
@@ -42,6 +48,7 @@ export function CollectionForm (props){
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
+  var [entityInfo, setEntityInfo] = useState();
   var [formErrors, setFormErrors] = useState({
     title:"",
     description: "",
@@ -114,10 +121,16 @@ export function CollectionForm (props){
   };
 
 
+  const completionClose = (data) => {
+    navigate("/");  
+  }
+
+
 
   const handleSelectClick = (event) => {
     // var selection = event.row;
     console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
+    
 
     // The update to the selectedSources state isn't immediate,
     // so we'll copy it into a var, push, and use THAT
@@ -153,7 +166,7 @@ export function CollectionForm (props){
     }))
   };
 
-
+  
 
   const handleInputChange = (event) => {
     const { name, value, type } = event.target;
@@ -234,14 +247,17 @@ export function CollectionForm (props){
 
     entity_api_create_entity("collection", formSubmit, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
-        console.debug("handleSubmit",response.results.uuid, response);
-        // props.onCreated(response.results.uuid);
+        console.debug("handleSubmit")
+        console.debug(response);
+        console.debug(response.results);
+        console.debug(response.results.uuid);
+        creationSuccess(response);
         props.onCreated(response.results.uuid);
-        window.history.pushState(
-          null,
-          "", 
-          "/collection/"+response.results.uuid);
-          window.location.reload();
+        // window.history.pushState(
+        //   null,
+        //   "", 
+        //   "/collection/"+response.results.uuid);
+        //   window.location.reload();
       })
       .catch((error) => {
         console.debug("handleSubmit Error", error);
@@ -405,6 +421,22 @@ export function CollectionForm (props){
     )
   }
 
+
+  var creationSuccess = (response) => {
+    var resultInfo ={
+      entity: response.results
+    } ;
+    console.debug("creationSuccess", response);
+    setEntityInfo(resultInfo);
+    setSuccessDialogRender(true);
+    console.debug("entityInfo", entityInfo);
+    console.debug("resultInfo", resultInfo);
+  }
+
+ 
+ 
+
+  
   return (
     <Box
       component="form"
@@ -419,6 +451,48 @@ export function CollectionForm (props){
     >
 
       <div className="w-100">
+
+        <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+          <DialogContent> 
+
+            <Result
+              result={entityInfo}
+              onReturn={completionClose}
+            />
+
+            {(entityInfo && entityInfo.uuid) && (
+            <div className="row">
+                {entityInfo  && ( 
+                  <div className="portal-jss116 col-sm-12 ml-2 mb-2">Save was successful</div>
+                )}
+                {entityInfo.hubmap_id && ( 
+                  <div className="portal-jss116 col-sm-12 ml-2">
+                      HuBMAP ID: {entityInfo.hubmap_id}
+                  </div>
+                )}
+                {entityInfo.submission_id && (
+                  <div className="portal-jss116 col-sm-12 ml-2">
+                      Submission ID: {entityInfo.submission_id}
+                  </div>
+                )}
+                {entityInfo.entity_type && (
+                  <div className="portal-jss116 col-sm-12 ml-2">
+                      Type: {entityInfo.entity_type}
+                  </div>
+                )}
+                  {entityInfo.globus_path && (
+                  <div className="portal-jss116 col-sm-12 ml-2">
+                      <a
+                        href={entityInfo.globus_path}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                      ><FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> Click here to go to the Globus data repository</a>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <div className="row">
           <div className="col-md-6 mb-4">

@@ -1835,6 +1835,7 @@ class DatasetEdit extends Component {
   renderAssayColumn(min, max) {
     // Hijacking Select options based on Primary DT status
     if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
+      console.debug("dtl_primary",this.props.dtl_primary);
       return (
         this.props.dtl_primary.slice(min, max).map((val, idx) =>
                     {return this.renderAssay(val, idx)})

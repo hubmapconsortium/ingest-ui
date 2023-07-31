@@ -31,13 +31,18 @@ class Result extends Component {
 
   handleReturnClick = e => {
     console.debug("handleReturnClick", e);
-    this.props.onReturn();
+    if(this.props.onReturn){
+      this.props.onReturn();
+    }else{
+      console.debug();
+    }
   };
 
   render() {
+    console.debug("Results");
     console.debug('RESULTS!!!!', this.props.result)
     return (
-      <React.Fragment>
+      <React.Fragment> 
               <div className="row">
                   
               </div>
