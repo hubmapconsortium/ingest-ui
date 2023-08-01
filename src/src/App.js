@@ -314,9 +314,12 @@ export function App (props){
           <div className="alert alert-info" role="alert">
             <h2>HuBMAP Data Providers:</h2>
               
-            <Typography>We are in the process of releasing updated metadata schemas for all HuBMAP organs, samples, and assay types. <strong> Starting August 7 we will no longer accept any submissions using the current metadata schemas.</strong>  </Typography>    
             <Typography>
-            To prepare for this change, <strong> please start to prepare your submissions using the next-generation metadata and directory structure schemas you've been working on with the Data Coordination Working Group.</strong> We will update this message with a link to those next-generation schemas this week. Please contact <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have any questions about this.
+              
+            We are in the process of releasing updated schemas for all HuBMAP organs, samples, and assay types. <strong>Starting August 7 we will no longer accept any submissions using the current metadata and directory structure schemas. </strong></Typography>    
+            <Typography>
+
+            To prepare for this change, <strong>please start to prepare your submissions using the next-generation metadata and directory structure schemas you've been working on with the Data Coordination Working Group.</strong> We will update this message with a link to those next-generation schemas this week. Please contact <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have any questions about this.
             </Typography>
           </div>
       )}
