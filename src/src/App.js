@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useContext} from "react";
 import {
   useNavigate,
   useLocation,
@@ -45,7 +45,7 @@ import {Navigation} from "./Nav";
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
-
+import { UserContext } from './service/user_service';
 import Result from "./components/uuid/result";
 
 import {RenderDonor} from "./components/donors";
@@ -83,8 +83,9 @@ export function App (props){
   var [userDataGroups, setUserDataGroups] = useState({});
   let navigate = useNavigate();
   
+  const userContextText = useContext(UserContext);
 
-
+  
   useEffect(() => {
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
@@ -110,9 +111,11 @@ export function App (props){
 
         if (results && results.status === 200) { 
           // console.debug("LocalStorageAuth", results);
+          // Um. These both seem to just give me datagroups now?
           setUserGroups(results.results);
-          if(results.results.length> 0){setRegStatus(true);}
           setUserDataGroups(results.results);
+          
+          if(results.results.length> 0){setRegStatus(true);}
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
           setIsLoading(false);
@@ -206,6 +209,29 @@ export function App (props){
   }
 
 
+  function creationSuccess(entity) {
+    setNewEntity(entity)
+    setSuccessDialogRender(true);
+
+  }
+
+  function renderSuccessDialog(info) {
+    return (
+      <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+        <DialogContent>
+          <Result
+            result={newEntity}
+            // onReturn={this.props.onReturn}
+            // handleCancel={this.props.handleCancel}
+            onCreateNext={null}
+            // entity={this.state.entity}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+
   
   
 
@@ -235,10 +261,11 @@ export function App (props){
     setErrorShow(true);
   }
 
+
   return (
     <div className="App">
       
-      
+      <span>{userContextText}</span>
       <Navigation 
         login={authStatus} 
         logout={Logout}
@@ -369,9 +396,9 @@ export function App (props){
         )}
 
 
-        {/* {newEntity && successDialogRender && ( 
+        {newEntity && successDialogRender && ( 
           { renderSuccessDialog }
-        )} */}
+        )}
 
         {unregStatus && (
           <Paper className="px-5 py-4">
@@ -420,7 +447,7 @@ export function App (props){
                   <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection newForm={true} onReturn={onClose} handleCancel={handleCancel} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups} newForm={true} onCreated={creationSuccess} onReturn={onClose} handleCancel={handleCancel} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>

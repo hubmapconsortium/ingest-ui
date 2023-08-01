@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import { useParams } from "react-router-dom";
 import {useNavigate} from "react-router-dom";
 import "../../App.css";
@@ -8,6 +8,9 @@ import { entity_api_get_entity,entity_api_create_entity} from '../../service/ent
 
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import SourceTable from "../ui/table.jsx";
+
+import GroupModal from "../uuid/groupModal";
+import { UserContext } from '../../service/user_service';
 
 import Papa from 'papaparse';
 import ReactTooltip from "react-tooltip";
@@ -39,12 +42,14 @@ export function CollectionForm (props){
   let navigate = useNavigate();
   var [isNew] = useState(props.newForm);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
+  var [dataGroups] = useState(props.dataGroups);
   var [selectedSource, setSelectedSource] = useState(null);
   var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
   var [lookupShow, setLookupShow] = useState(false);
+  var [groupSelectShow, setGroupSelectShow] = useState(true);
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
@@ -63,6 +68,11 @@ export function CollectionForm (props){
     creators: [{}],
     contacts: [{}],
   });
+  const userContextText = useContext(UserContext);
+  console.debug("userContextText", userContextText);
+
+  console.debug("dataGroups", dataGroups);
+  
 
   var [editingCollection] = useState(props.editingCollection);
   // let { editingCollection } = props
@@ -232,6 +242,19 @@ export function CollectionForm (props){
   };
 
 
+  const handleGroupCheck = (event) => {
+    event.preventDefault();
+    setButtonState("submit");
+
+    if (dataGroups.length < 2) {
+      // No need to select a group,carry on
+      handleSubmit(event)
+    } else {
+      setGroupSelectShow(true)
+    }
+  };
+
+
   const handleSubmit = (event) => {
     event.preventDefault();
     setButtonState("submit");
@@ -262,7 +285,6 @@ export function CollectionForm (props){
       .catch((error) => {
         console.debug("handleSubmit Error", error);
       });
-
   };
 
 
@@ -317,6 +339,7 @@ export function CollectionForm (props){
     const { name, value, type } = event.target;
     console.debug("handleUUIDList", name, value, type);
   };
+  
 
 
 
@@ -493,7 +516,7 @@ export function CollectionForm (props){
             )}
           </DialogContent>
         </Dialog>
-
+        <span>{userContextText}</span>
         <div className="row">
           <div className="col-md-6 mb-4">
             <h3>
@@ -716,6 +739,18 @@ export function CollectionForm (props){
           </DialogActions>
         </Dialog>
       </div>
+
+
+        {groupSelectShow && dataGroups && dataGroups.length>1 &&  (
+          <GroupModal
+            show={true}
+            groups={dataGroups}
+            submit={handleSubmit}
+            handleInputChange={handleInputChange}
+          />
+        )}
+
+
       <FormControl>
         <TextField
           label="Title"
@@ -779,7 +814,11 @@ export function CollectionForm (props){
 
       <div className="row">
       <div className="buttonWrapRight">
-          <Button variant="contained" type="submit" className='float-right'>
+          <Button
+            variant="contained"
+            onClick={() => props.handleGroupCheck()}
+            type="button"
+            className='float-right'>
             {buttonState==="submit" && (
               <FontAwesomeIcon
               className='inline-icon'

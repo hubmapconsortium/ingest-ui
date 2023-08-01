@@ -1,4 +1,4 @@
-import React, { useEffect, useState  } from "react";
+import React, { useEffect, useState, createContext  } from "react";
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { useParams } from "react-router-dom";
 import { entity_api_get_entity} from '../service/entity_api';
@@ -8,6 +8,7 @@ export const RenderCollection = (props) => {
   
   // var isNew = props.new;
   var [isNew] = useState(props.newForm);
+  var [dataGroups] = useState(props.dataGroups);
   var [entity_data, setEntity] = useState();
   var [isLoadingEntity, setIsLoadingEntity] = useState(true);
   var [errorHandler, setErrorHandler] = useState({
