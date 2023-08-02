@@ -516,7 +516,7 @@ export function CollectionForm (props){
             )}
           </DialogContent>
         </Dialog>
-        <span>{userContextText}</span>
+        {/* <spa>{userContextText}</spa`n> */}
         <div className="row">
           <div className="col-md-6 mb-4">
             <h3>
@@ -816,7 +816,7 @@ export function CollectionForm (props){
       <div className="buttonWrapRight">
           <Button
             variant="contained"
-            onClick={() => props.handleGroupCheck()}
+            onClick={() => handleGroupCheck()}
             type="button"
             className='float-right'>
             {buttonState==="submit" && (

@@ -102,36 +102,43 @@ export function App (props){
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
         console.debug("ingest_api_users_groups", results, results.results);
         
-        if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
-          setAuthStatus(true);
-          setRegStatus(false);
-          setUnegStatus(true);
-          setIsLoading(false);
-        }
+        // if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
+        //   setAuthStatus(true);
+        //   setRegStatus(false);
+        //   setUnegStatus(true);
+        //   setIsLoading(false);
+        // }
 
-        if (results && results.status === 200) { 
+        if (results && results.status === 200) {
           // console.debug("LocalStorageAuth", results);
           // Um. These both seem to just give me datagroups now?
           setUserGroups(results.results);
           setUserDataGroups(results.results);
           
-          if(results.results.length> 0){setRegStatus(true);}
+          if (results.results.length > 0) { setRegStatus(true); }
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
           setIsLoading(false);
           setAuthStatus(true);
-      } else if (results && results.status === 401) {
-        console.debug("LocalStorageAuth 401", results);
-        setGroupsToken(null);
-        setAuthStatus(false);
-        setRegStatus(false);
-        setTimerStatus(false);
-        setIsLoading(false);
-        if(localStorage.getItem("isHubmapUser")){
-          // If we were logged out and we have an old token,
-          // We should promopt to sign back in
-          CallLoginDialog(); 
-        }
+        } else if (results && results.status === 401) {
+          console.debug("LocalStorageAuth 401", results);
+          setGroupsToken(null);
+          setAuthStatus(false);
+          setRegStatus(false);
+          setTimerStatus(false);
+          setIsLoading(false);
+          if (localStorage.getItem("isHubmapUser")) {
+            // If we were logged out and we have an old token,
+            // We should promopt to sign back in
+            CallLoginDialog();
+          }
+        } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
+          console.debug("HERE results", results, results.results);
+          setAuthStatus(true);
+          setRegStatus(false);
+          setUnegStatus(true);
+          setIsLoading(false);
+          
       }
         
     });
@@ -265,7 +272,6 @@ export function App (props){
   return (
     <div className="App">
       
-      <span>{userContextText}</span>
       <Navigation 
         login={authStatus} 
         logout={Logout}
@@ -401,14 +407,16 @@ export function App (props){
         )}
 
         {unregStatus && (
-          <Paper className="px-5 py-4">
-            <Routes>
-              <Route index >
-                <br />
-                You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-              </Route>
-            </Routes>
-          </Paper>
+          
+          <Routes>
+            <Route index element={ 
+                <Alert 
+                  variant="filled"
+                  severity="error">
+                  You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
+                </Alert>
+              }/>
+          </Routes>
         )}
 
           {authStatus && !timerStatus && !isLoading && !unregStatus &&(
@@ -416,6 +424,8 @@ export function App (props){
 
 
             <Routes>
+
+              
               
               <Route index element={<SearchComponent entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
