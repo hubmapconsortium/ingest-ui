@@ -59,7 +59,6 @@ export const RenderCollection = (props) => {
   }
 
 
-
   
     if (!isLoadingEntity && errorHandler.isError === true){
       return (
@@ -82,6 +81,7 @@ export const RenderCollection = (props) => {
             onUpdated={() => props.onUpdated()}
             editingCollection={entity_data} 
             // writeable={true}
+            dataGroups={dataGroups}
             newForm={ isNew ? true : null}
             />
         </div>

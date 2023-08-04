@@ -14,7 +14,6 @@ import { UserContext } from '../../service/user_service';
 
 import Papa from 'papaparse';
 import ReactTooltip from "react-tooltip";
-
 import { TextField, Button, Box } from '@mui/material';
 import Paper from '@material-ui/core/Paper';
 import FormControl from '@mui/material/FormControl';
@@ -44,12 +43,13 @@ export function CollectionForm (props){
   var [successDialogRender, setSuccessDialogRender] = useState(false);
   var [dataGroups] = useState(props.dataGroups);
   var [selectedSource, setSelectedSource] = useState(null);
+  // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
   var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
   var [lookupShow, setLookupShow] = useState(false);
-  var [groupSelectShow, setGroupSelectShow] = useState(true);
+  var [groupSelectShow, setGroupSelectShow] = useState(false);
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
@@ -60,6 +60,7 @@ export function CollectionForm (props){
     dataset_uuids: "",
     creators: [],
     contacts: [],
+    group_uuid: "",
   });
   var [formValues, setFormValues] = useState({
     title: '',
@@ -67,6 +68,7 @@ export function CollectionForm (props){
     dataset_uuids: [],
     creators: [{}],
     contacts: [{}],
+    group_uuid: '',
   });
   const userContextText = useContext(UserContext);
   console.debug("userContextText", userContextText);
@@ -194,6 +196,16 @@ export function CollectionForm (props){
     }
   };
 
+  const handleGroupChange = (event) => {
+    const { name, value, type } = event.target;
+    console.debug("handleGroupChange", name, value, type);
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      "group_uuid": value.uuid,
+    }));
+    
+  };
+
   const handleInputUUIDs = (event) => {
     event.preventDefault();
     // const { name, value, type } = event.target;
@@ -242,21 +254,31 @@ export function CollectionForm (props){
   };
 
 
-  const handleGroupCheck = (event) => {
-    event.preventDefault();
+  const handleGroupCheck = () => {
+    // event.preventDefault();
     setButtonState("submit");
+    // Settin base group info
+      // setFormValues(dataGroups[0].uuid)
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      'group_uuid': dataGroups[0].uuid,
+    }))
 
     if (dataGroups.length < 2) {
       // No need to select a group,carry on
-      handleSubmit(event)
+      handleSubmit()
     } else {
       setGroupSelectShow(true)
     }
   };
 
+  const hideGroupSelectModal = () => {
+      setGroupSelectShow(false)
+  };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+
+  const handleSubmit = () => {
+    // event.preventDefault();
     setButtonState("submit");
    
     var datasetUUIDs = []
@@ -264,8 +286,10 @@ export function CollectionForm (props){
       console.debug("Row", row, index)
       datasetUUIDs.push(row.uuid)
     })
+    console.debug("datasetUUIDs", datasetUUIDs, formValues);
     var formSubmit = formValues;
     formSubmit["dataset_uuids"] = datasetUUIDs;
+    formSubmit["group_uuid"] = dataGroups;
     console.debug("handleSubmit", formSubmit);
 
     entity_api_create_entity("collection", formSubmit, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -362,7 +386,7 @@ export function CollectionForm (props){
             <TableCell  className="clicky-cell" scope="row">{row.affiliation}</TableCell>
             <TableCell  className="clicky-cell" scope="row"> {row.orcid_id} </TableCell>
             <TableCell  className="clicky-cell" align="right" scope="row"> 
-            {props.writeable && (
+            { (props.writeable || !props.editingCollection || props.editingCollection === undefined) && (
               <React.Fragment>
                 <FontAwesomeIcon
                   className='inline-icon interaction-icon '
@@ -372,9 +396,9 @@ export function CollectionForm (props){
                 />
               </React.Fragment>
               )}
-              {!props.writeable && (
+              {/* { (!props.writeable && props.editingCollection) && (
                 <small className="text-muted">N/A</small>
-              )}
+              )} */}
             </TableCell>
           </TableRow>
         );
@@ -470,7 +494,7 @@ export function CollectionForm (props){
         // maxWidth: '400 px',
         margin: '0 0',
       }}
-      onSubmit={(e) => handleSubmit(e)}
+      // onSubmit={(e) => handleSubmit(e)}
     >
 
       <div className="w-100">
@@ -516,7 +540,7 @@ export function CollectionForm (props){
             )}
           </DialogContent>
         </Dialog>
-        {/* <spa>{userContextText}</spa`n> */}
+
         <div className="row">
           <div className="col-md-6 mb-4">
             <h3>
@@ -596,7 +620,7 @@ export function CollectionForm (props){
                         <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
                     )}</TableCell>
                     <TableCell  className="clicky-cell" align="right" scope="row"> 
-                    {props.writeable && (
+                     { (props.writeable || !props.editingCollection || props.editingCollection === undefined) && (
                       <React.Fragment>
                         <FontAwesomeIcon
                           className='inline-icon interaction-icon '
@@ -606,7 +630,7 @@ export function CollectionForm (props){
                         />
                       </React.Fragment>
                       )}
-                      {!props.writeable && (
+                      {!props.writeable && props.editingCollection && (
                       <small className="text-muted">N/A</small>
                       )}
                     
@@ -741,12 +765,13 @@ export function CollectionForm (props){
       </div>
 
 
-        {groupSelectShow && dataGroups && dataGroups.length>1 &&  (
+        {dataGroups && dataGroups.length>1 &&  (
           <GroupModal
-            show={true}
+            show={groupSelectShow}
+            hide={hideGroupSelectModal}
             groups={dataGroups}
             submit={handleSubmit}
-            handleInputChange={handleInputChange}
+            handleInputChange={handleGroupChange}
           />
         )}
 
