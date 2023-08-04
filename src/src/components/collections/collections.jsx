@@ -41,7 +41,6 @@ export function CollectionForm (props){
   let navigate = useNavigate();
   var [isNew] = useState(props.newForm);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
-  var [dataGroups] = useState(props.dataGroups);
   var [selectedSource, setSelectedSource] = useState(null);
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
   var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
@@ -49,7 +48,6 @@ export function CollectionForm (props){
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
   var [lookupShow, setLookupShow] = useState(false);
-  var [groupSelectShow, setGroupSelectShow] = useState(false);
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
@@ -60,7 +58,6 @@ export function CollectionForm (props){
     dataset_uuids: "",
     creators: [],
     contacts: [],
-    group_uuid: "",
   });
   var [formValues, setFormValues] = useState({
     title: '',
@@ -68,13 +65,9 @@ export function CollectionForm (props){
     dataset_uuids: [],
     creators: [{}],
     contacts: [{}],
-    group_uuid: '',
   });
-  const userContextText = useContext(UserContext);
-  console.debug("userContextText", userContextText);
-
-  console.debug("dataGroups", dataGroups);
-  
+  // const userContextText = useContext(UserContext);
+  // console.debug("userContextText", userContextText);  
 
   var [editingCollection] = useState(props.editingCollection);
   // let { editingCollection } = props
@@ -107,17 +100,6 @@ export function CollectionForm (props){
   }, [editingCollection,selectedSources,isNew]);
 
   
-
-  // const errorClass = (error, e) => {
-  //   // errorClass( {
-  //   // console.debug("errorClass", error, e);
-  //   if (error === "valid") return "is-valid";
-  //   else if (error === "invalid" || error === "is-invalid") return "is-invalid";
-  //   else if (error && error.length && error.length === 0) return "is-invalid";
-  //   else return "";
-  //   // return error.length === 0 ? "" : "is-invalid";
-  // }
-
  
   const handleLookUpClick = () => {
     console.debug("handleLookUpClick" );
@@ -140,23 +122,7 @@ export function CollectionForm (props){
 
 
   const handleSelectClick = (event) => {
-    // var selection = event.row;
     console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
-    
-
-    // The update to the selectedSources state isn't immediate,
-    // so we'll copy it into a var, push, and use THAT
-    // to update the form values instead
-    // var slist = formValues.dataset_uuids;
-    // console.debug("SLIST", slist,  typeof slist, event.row.uuid);
-    // // slist = slist.push('asdasd27fd8c958f4478ab60df2555174c6e92');
-    // // slist = slist.push(event.row.uuid);
-    // console.debug("SLIST Update", slist);
-
-    // setFormValues((prevValues) => ({
-    //   ...prevValues,
-    //   'dataset_uuids': slist,
-    // }));
     setSourceDatasetDetails((rows) => [...rows, event.row]); 
     setSelectedSources((UUIDs) => [...UUIDs, event.row.uuid]);
     
@@ -167,9 +133,6 @@ export function CollectionForm (props){
   const sourceRemover = (row, index) => {
     var sourceUUIDList = selectedSources;
     var sourceDetailList = sourceDatasetDetails;
-    // var newUUIDLIST = sourceUUIDList.filter((item, i) => i !== row);
-    // var newDetailList = sourceDetailList.filter((item) => item.uuid !== row.uuid);
-    // console.debug("sourceRemover",  row.uuid, newUUIDLIST, newDetailList);
     setSelectedSources(sourceUUIDList.filter((item, i) => i !== row));
     setSourceDatasetDetails(sourceDetailList.filter((item) => item.uuid !== row.uuid)); 
     setFormValues((prevValues) => ({
@@ -182,7 +145,7 @@ export function CollectionForm (props){
 
   const handleInputChange = (event) => {
     const { name, value, type } = event.target;
-    console.debug("handleInputChange", name, value, type);
+    // console.debug("handleInputChange", name, value, type);
     if (type === 'file') {
       setFormValues((prevValues) => ({
         ...prevValues,
@@ -196,22 +159,10 @@ export function CollectionForm (props){
     }
   };
 
-  const handleGroupChange = (event) => {
-    const { name, value, type } = event.target;
-    console.debug("handleGroupChange", name, value, type);
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      "group_uuid": value.uuid,
-    }));
-    
-  };
-
   const handleInputUUIDs = (event) => {
     event.preventDefault();
     // const { name, value, type } = event.target;
     if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
-      // Already open, we're saving now
-      // if (formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0){
         handleUUIDListLoad()
       // }
     } else {
@@ -253,30 +204,6 @@ export function CollectionForm (props){
     
   };
 
-
-  const handleGroupCheck = () => {
-    // event.preventDefault();
-    setButtonState("submit");
-    // Settin base group info
-      // setFormValues(dataGroups[0].uuid)
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      'group_uuid': dataGroups[0].uuid,
-    }))
-
-    if (dataGroups.length < 2) {
-      // No need to select a group,carry on
-      handleSubmit()
-    } else {
-      setGroupSelectShow(true)
-    }
-  };
-
-  const hideGroupSelectModal = () => {
-      setGroupSelectShow(false)
-  };
-
-
   const handleSubmit = () => {
     // event.preventDefault();
     setButtonState("submit");
@@ -289,7 +216,6 @@ export function CollectionForm (props){
     console.debug("datasetUUIDs", datasetUUIDs, formValues);
     var formSubmit = formValues;
     formSubmit["dataset_uuids"] = datasetUUIDs;
-    formSubmit["group_uuid"] = dataGroups;
     console.debug("handleSubmit", formSubmit);
 
     entity_api_create_entity("collection", formSubmit, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -385,21 +311,7 @@ export function CollectionForm (props){
             <TableCell  className="clicky-cell" scope="row">{row.name}</TableCell>
             <TableCell  className="clicky-cell" scope="row">{row.affiliation}</TableCell>
             <TableCell  className="clicky-cell" scope="row"> {row.orcid_id} </TableCell>
-            <TableCell  className="clicky-cell" align="right" scope="row"> 
-            { (props.writeable || !props.editingCollection || props.editingCollection === undefined) && (
-              <React.Fragment>
-                <FontAwesomeIcon
-                  className='inline-icon interaction-icon '
-                  icon={faTrash}
-                  color="red"  
-                  onClick={() => sourceRemover(row,index)}
-                />
-              </React.Fragment>
-              )}
-              {/* { (!props.writeable && props.editingCollection) && (
-                <small className="text-muted">N/A</small>
-              )} */}
-            </TableCell>
+            
           </TableRow>
         );
       });
@@ -434,7 +346,6 @@ export function CollectionForm (props){
             <TableCell> Name</TableCell>
             <TableCell component="th">Affiliation</TableCell>
             <TableCell component="th">Orcid</TableCell>
-            <TableCell component="th">Action</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -457,7 +368,6 @@ export function CollectionForm (props){
             <TableCell> Name</TableCell>
             <TableCell component="th">Affiliation</TableCell>
             <TableCell component="th">Orcid</TableCell>
-            <TableCell component="th">Action</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -499,7 +409,7 @@ export function CollectionForm (props){
 
       <div className="w-100">
 
-        <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+        <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'xl'}>
           <DialogContent> 
 
             <Result
@@ -764,18 +674,6 @@ export function CollectionForm (props){
         </Dialog>
       </div>
 
-
-        {dataGroups && dataGroups.length>1 &&  (
-          <GroupModal
-            show={groupSelectShow}
-            hide={hideGroupSelectModal}
-            groups={dataGroups}
-            submit={handleSubmit}
-            handleInputChange={handleGroupChange}
-          />
-        )}
-
-
       <FormControl>
         <TextField
           label="Title"
@@ -841,7 +739,7 @@ export function CollectionForm (props){
       <div className="buttonWrapRight">
           <Button
             variant="contained"
-            onClick={() => handleGroupCheck()}
+            onClick={() => handleSubmit()}
             type="button"
             className='float-right'>
             {buttonState==="submit" && (
