@@ -8,6 +8,7 @@ export const RenderCollection = (props) => {
   
   // var isNew = props.new;
   var [isNew] = useState(props.newForm);
+  var [authToken] = useState(props.groupsToken);
   var [dataGroups] = useState(props.dataGroups);
   var [entity_data, setEntity] = useState();
   var [isLoadingEntity, setIsLoadingEntity] = useState(true);
@@ -22,19 +23,11 @@ export const RenderCollection = (props) => {
   // let reportError = ;
 
   useEffect(() => {
-    console.debug("PARAMS", uuid);
     const entityUUID = uuid.uuid
-    // console.debug("Collection WRAPPER uses=effect", uuid);
-    // console.debug("Collection WRAPPER uses=effect");
     var authSet = JSON.parse(localStorage.getItem("info"));
     if (entityUUID) {
-      console.debug(entityUUID);
-      // console.debug("ROUTE UUID",uuid);
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
-        console.debug("fetchEntity RESP", response);
-        // var collectionEntity = response.results;
-        // collectionEntity["dataset_uuids"] = [ "9c9f27da754e677e7eeede464fd4c97d", "dcdabfcfa50ecab40e1f2955a495f987"]
           setEntity(response.results);
           setIsLoadingEntity(false); 
         })  
@@ -44,22 +37,17 @@ export const RenderCollection = (props) => {
     }else{
       setIsLoadingEntity(false); 
     }
-      
-    // if( !isLoadingEntity ) {
-    //     setIsLoadingEntity(false); 
-    // }
-    // console.debug("useEffect",props);
   }, [uuid]);
 
-  const createNew = (entity) => {
-    // To Debug
-    console.debug("WAPPER createNew", entity);
-    // props.onCreated(entity);
-    
+  var processPlan = (result) => {
+    if (isNew) {
+      props.onCreated(result)
+    } else {
+      props.onUpdated(result)
+    }
   }
 
-
-  
+ 
     if (!isLoadingEntity && errorHandler.isError === true){
       return (
         <div><ErrBox err={errorHandler} /></div>
@@ -76,9 +64,10 @@ export const RenderCollection = (props) => {
         <div>
           <CollectionForm 
             // packed={searchWrapper}
+            authToken={authToken}
             handleCancel={() => props.handleCancel()} 
-            onCreated={() => createNew()} 
-            onUpdated={() => props.onUpdated()}
+            // Cleaner if we pass in an On Processed that can do either?
+            onProcessed={isNew? props.onCreated : props.onUpdated } 
             editingCollection={entity_data} 
             // writeable={true}
             dataGroups={dataGroups}

@@ -22,6 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import { Alert } from '@material-ui/lab';
+import Snackbar from '@mui/material/Snackbar';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Collapse from '@mui/material/Collapse';
@@ -29,7 +30,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faExclamationTriangle}
+import {  faExclamationTriangle, faTimes}
   from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
@@ -69,6 +70,8 @@ export function App (props){
   // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
+  var [snackMessage, setSnackMessage] = useState("");
+  var [showSnack, setShowSnack] = useState(false);
   var [newEntity, setNewEntity] = useState(null);
   var [authStatus, setAuthStatus] = useState(false);
   var [regStatus, setRegStatus] = useState(false);
@@ -100,7 +103,6 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results, results.results);
         
         // if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
         //   setAuthStatus(true);
@@ -121,7 +123,6 @@ export function App (props){
           setIsLoading(false);
           setAuthStatus(true);
         } else if (results && results.status === 401) {
-          console.debug("LocalStorageAuth 401", results);
           setGroupsToken(null);
           setAuthStatus(false);
           setRegStatus(false);
@@ -133,7 +134,7 @@ export function App (props){
             CallLoginDialog();
           }
         } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
-          console.debug("HERE results", results, results.results);
+          // console.debug("HERE results", results, results.results);
           setAuthStatus(true);
           setRegStatus(false);
           setUnegStatus(true);
@@ -143,7 +144,7 @@ export function App (props){
         
     });
     }catch(error){
-      console.debug("LocalStorageAuth Error", error);
+      console.debug('%c⭗', 'color:#ff005d', "LocalStorageAuth Error", error);
       setTimerStatus(false);
       setIsLoading(false)
     }
@@ -152,7 +153,7 @@ export function App (props){
   useEffect(() => {
     ubkg_api_get_assay_type_set("primary")
     .then((response) => {
-      console.debug("ubkg_api_get_assay_type_set", response);
+      // console.debug("ubkg_api_get_assay_type_set", response);
         let dtypes = response.data.result;
         setDataTypeList(dtypes);
         setDataTypeListPrimary(dtypes);
@@ -164,7 +165,7 @@ export function App (props){
               // setIsLoading(false)
           })
           .catch(error => {
-            console.debug("fetch DT list Response Error", error);
+            console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
             // setIsLoading(false)
             reportError(error)
           });
@@ -174,9 +175,9 @@ export function App (props){
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
         } else {
-          console.debug("fetch DT list Response Error", error);
-          // setIsLoading(false)
-          reportError(error)
+            console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
+            // setIsLoading(false)
+            reportError(error)
         } 
       });
   }, [ ]);
@@ -189,23 +190,21 @@ export function App (props){
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
   };
-
   function handleCancel(){
     window.history.back();  
   }
-
-
   const onClose = (event, reason) => {
       navigate("/");
   }
 
-
   const onCloseLogin = (event, reason) => {
-      navigate("/");
-      setLoginDialogRender(false);
-    
+    setLoginDialogRender(false);
+    onClose();
   }
-
+  const onCloseSuccess = (event, reason) => {
+    setSuccessDialogRender(false);
+    onClose();
+  }
   function CallLoginDialog(){
     setLoginDialogRender(true);
   }
@@ -217,25 +216,19 @@ export function App (props){
 
 
   function creationSuccess(entity) {
-    setNewEntity(entity)
+    console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity );
+    setNewEntity(entity.results)
     setSuccessDialogRender(true);
-
   }
 
-  function renderSuccessDialog(info) {
-    return (
-      <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
-        <DialogContent>
-          <Result
-            result={newEntity}
-            // onReturn={this.props.onReturn}
-            // handleCancel={this.props.handleCancel}
-            onCreateNext={null}
-            // entity={this.state.entity}
-          />
-        </DialogContent>
-      </Dialog>
-    );
+
+  function updateSuccess(entity) {
+    console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
+    setSnackMessage("Entity Updated Successfully!");
+    setShowSnack(true)
+    onClose();
+    // setNewEntity(entity)
+    // setSuccessDialogRender(true);
   }
 
 
@@ -255,7 +248,7 @@ export function App (props){
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
   function reportError (error){
-    console.debug("Type", typeof error);
+    // console.debug("Type", typeof error);
     typeof error === "string" ? setErrorInfo(error) : setErrorInfo(JSON.stringify(error));
 
     // var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
@@ -263,7 +256,7 @@ export function App (props){
     //   errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
     // }
     var formatError = FormatError(error);
-    console.debug("reportError", error, formatError);
+    console.debug('%c⭗', 'color:#ff005d', "reportError", error, formatError);
     // setErrorInfo(errString);
     setErrorShow(true);
   }
@@ -401,11 +394,6 @@ export function App (props){
 
         )}
 
-
-        {newEntity && successDialogRender && ( 
-          { renderSuccessDialog }
-        )}
-
         {unregStatus && (
           
           <Routes>
@@ -457,7 +445,7 @@ export function App (props){
                   <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups} newForm={true} onCreated={creationSuccess} onReturn={onClose} handleCancel={handleCancel} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups} newForm={true}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -471,15 +459,44 @@ export function App (props){
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
-
           </Routes>
 
-          </Paper>
-          )}
+
+          <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+            <DialogContent> 
+            {newEntity && (
+                <Result
+                  result={{entity:newEntity}}
+                  onReturn={onCloseSuccess}
+                  // handleCancel={this.props.handleCancel}
+                  onCreateNext={null}
+                  entity={newEntity}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+          <Snackbar 
+            open={true} 
+            onClose={() => setShowSnack(false)}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            autoHideDuration={6000} 
+            action={
+              <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
+                  <FontAwesomeIcon icon={faTimes} size="1x" />
+              </IconButton>
+            }>
+              <Alert severity={"success"}>{snackMessage}</Alert>
+          </Snackbar>  
+
+        </Paper>
+      )}
   </div>
   </div>
   );

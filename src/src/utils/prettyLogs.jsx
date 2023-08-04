@@ -1,4 +1,4 @@
-export function infoLog(msg, color) {
+export function PrettyLog(msg, color) {
     color = color || "black";
     var bgc = "White";
     switch (color) {

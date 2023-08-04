@@ -4,9 +4,10 @@ import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 // import SourceTable from "../ui/table";
-import { entity_api_get_entity,entity_api_create_entity} from '../../service/entity_api';
+import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
 
 import { getPublishStatusColor } from "../../utils/badgeClasses";
+// import { PrettyLog } from "../../utils/prettyLogs";
 import SourceTable from "../ui/table.jsx";
 
 import GroupModal from "../uuid/groupModal";
@@ -39,7 +40,6 @@ import Typography  from '@mui/material/Typography';
 
 export function CollectionForm (props){
   let navigate = useNavigate();
-  var [isNew] = useState(props.newForm);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
   var [selectedSource, setSelectedSource] = useState(null);
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
@@ -66,67 +66,43 @@ export function CollectionForm (props){
     creators: [{}],
     contacts: [{}],
   });
-  // const userContextText = useContext(UserContext);
-  // console.debug("userContextText", userContextText);  
-
+  // Props
+  var [isNew] = useState(props.newForm);
   var [editingCollection] = useState(props.editingCollection);
-  // let { editingCollection } = props
-  const ariaLabel = { 'aria-label': 'description' };
+  // var [authToken] = useState(props.authToken);
 
 
   useEffect(() => {
     if (editingCollection) {  
+      var formVals = editingCollection; // dont try modifying prop
       setSourceDatasetDetails([]) 
+      var UUIDs = [];
       if (editingCollection.datasets && editingCollection.datasets.length > 0) {        
         for (const entity of editingCollection.datasets) {
           setSourceDatasetDetails((rows) => [...rows, entity]); // Populate the info for table
           setSelectedSources((UUIDs) => [...UUIDs, entity.uuid]); // UUID list for translating to form values
+          UUIDs.push(entity.uuid);
         }
-        
+        formVals.dataset_uuids = UUIDs
+        setFormValues(formVals);  
       }
-    }
-  }, [editingCollection]);
-
-  useEffect(() => {
-    // if we;ve got em all
-    if (!isNew && selectedSources && editingCollection.datasets.length === selectedSources.length) {
-      var formVals = editingCollection; // dont try modifying prop
-      formVals.dataset_uuids = selectedSources
-      setFormValues(formVals);
       setLoadingDatasets(false);
     } else {
+      // We must be new. No table data to load
       setLoadingDatasets(false);
     }
-  }, [editingCollection,selectedSources,isNew]);
-
-  
- 
-  const handleLookUpClick = () => {
-    console.debug("handleLookUpClick" );
-    setLookupShow(true);  
-  };
-
-  const hideLookUpModal = () => {
-    setLookupShow(false);  
-  };
-
-  const cancelLookUpModal = () => {
-    setLookupShow(false);  
-  };
+  }, [editingCollection]);
 
 
   const completionClose = (data) => {
     navigate("/");  
   }
 
-
-
   const handleSelectClick = (event) => {
     console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
     setSourceDatasetDetails((rows) => [...rows, event.row]); 
     setSelectedSources((UUIDs) => [...UUIDs, event.row.uuid]);
-    
-    hideLookUpModal();
+    setLookupShow(false); 
   };  
 
 
@@ -157,18 +133,6 @@ export function CollectionForm (props){
         [name]: value,
       }));
     }
-  };
-
-  const handleInputUUIDs = (event) => {
-    event.preventDefault();
-    // const { name, value, type } = event.target;
-    if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
-        handleUUIDListLoad()
-      // }
-    } else {
-      setHideUUIDList(!hideUUIDList)
-    }
-    
   };
 
   const handleUUIDListLoad = () => {
@@ -205,54 +169,64 @@ export function CollectionForm (props){
   };
 
   const handleSubmit = () => {
-    // event.preventDefault();
-    setButtonState("submit");
-   
+    setButtonState("submit");   
     var datasetUUIDs = []
     sourceDatasetDetails.map((row, index) => {
-      console.debug("Row", row, index)
+      // console.debug("Row", row, index)
       datasetUUIDs.push(row.uuid)
     })
-    console.debug("datasetUUIDs", datasetUUIDs, formValues);
-    var formSubmit = formValues;
-    formSubmit["dataset_uuids"] = datasetUUIDs;
-    console.debug("handleSubmit", formSubmit);
 
-    entity_api_create_entity("collection", formSubmit, JSON.parse(localStorage.getItem("info")).groups_token)
-      .then((response) => {
-        console.debug("handleSubmit")
-        console.debug(response);
-        console.debug(response.results);
-        console.debug(response.results.uuid);
-        creationSuccess(response);
-        props.onCreated(response.results.uuid);
-        // window.history.pushState(
-        //   null,
-        //   "", 
-        //   "/collection/"+response.results.uuid);
-        //   window.location.reload();
-      })
-      .catch((error) => {
-        console.debug("handleSubmit Error", error);
-      });
+    let { title, description, creators, contacts} = formValues; 
+    let formSubmit = {title, description, creators, contacts}
+    formSubmit["dataset_uuids"] = datasetUUIDs;
+    console.debug('%c⊙', 'color:#00ff7b', "formSubmit",formSubmit );
+
+
+    if(editingCollection){
+      console.debug('%c⊙', 'color:#00ff7b', "Updating");
+      handleUpdate(formSubmit);
+    } else {
+      console.debug('%c⊙', 'color:#00ff7b', "Creating");
+      handleCreate(formSubmit);
+    }
   };
 
+  const handleCreate = (formSubmit) => {
+    entity_api_create_entity("collection", formSubmit, props.authToken)
+      .then((response) => {  
+      props.onProcessed(response);
+    })
+    .catch((error) => {
+      console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
+    });
+  }
+  
+  const handleUpdate = (formSubmit) => {
+    entity_api_update_entity(formValues.uuid,formSubmit, props.authToken)
+      .then((response) => {
+        console.debug('%c⊙', 'color:#00ff7b', "handleUpdate response",response, response.results );
+        if (response.status === 200) {
+          // Only move on if we're actually good
+          props.onProcessed(response.results);
+        } else {
+          console.debug('%c⭗', 'color:#ff005d', "handleUpdate NOT RIGHT", response);
+        }
+    })
+    .catch((error) => {
+      console.debug('%c⭗', 'color:#ff005d', "handleUpdate error", error);
+    });
+  }
 
   var handleFileGrab = (e,type) => {
-    console.debug("handleFileGrab", type,e);
     var grabbedFile = e.target.files[0];
     var newName = grabbedFile.name.replace(/ /g, '_')
     var newFile =  new File([grabbedFile], newName);
     if (newFile && newFile.name.length > 0) {
-      // setFormValues({ ...formValues, 
-      //   ['file']: newFile
-      // });
       Papa.parse(newFile, {
         download: true,
         skipEmptyLines: true,
         header: true,
         complete: data => {
-          console.debug("PapaParse", data, data.data);
           setFileDetails({ ...fileDetails,
             [type]: data.data
           });
@@ -289,19 +263,10 @@ export function CollectionForm (props){
     const { name, value, type } = event.target;
     console.debug("handleUUIDList", name, value, type);
   };
-  
-
-
 
   var renderTableRows = (rowDetails) => {
+  
     if (rowDetails.length > 0) {
-
-      // <SourceTable
-      //   headers={}
-      //   rows={}
-      //   cellAction={}
-      //   writeable={}
-      // />
       return rowDetails.map((row, index) => {
         return (
           <TableRow 
@@ -383,11 +348,11 @@ export function CollectionForm (props){
     var resultInfo ={
       entity: response.results
     } ;
-    console.debug("creationSuccess", response);
     setEntityInfo(resultInfo);
-    setSuccessDialogRender(true);
-    console.debug("entityInfo", entityInfo);
-    console.debug("resultInfo", resultInfo);
+    props.onProcessed(resultInfo)
+    // setSuccessDialogRender(true);
+    // console.debug("resultInfo", resultInfo);
+  // console.debug();
   }
 
  
@@ -401,62 +366,17 @@ export function CollectionForm (props){
         display: 'flex',
         flexDirection: 'column',
         gap: '1rem',
-        // maxWidth: '400 px',
         margin: '0 0',
       }}
-      // onSubmit={(e) => handleSubmit(e)}
     >
-
       <div className="w-100">
 
-        <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'xl'}>
-          <DialogContent> 
-
-            <Result
-              result={entityInfo}
-              onReturn={completionClose}
-            />
-
-            {(entityInfo && entityInfo.uuid) && (
-            <div className="row">
-                {entityInfo  && ( 
-                  <div className="portal-jss116 col-sm-12 ml-2 mb-2">Save was successful</div>
-                )}
-                {entityInfo.hubmap_id && ( 
-                  <div className="portal-jss116 col-sm-12 ml-2">
-                      HuBMAP ID: {entityInfo.hubmap_id}
-                  </div>
-                )}
-                {entityInfo.submission_id && (
-                  <div className="portal-jss116 col-sm-12 ml-2">
-                      Submission ID: {entityInfo.submission_id}
-                  </div>
-                )}
-                {entityInfo.entity_type && (
-                  <div className="portal-jss116 col-sm-12 ml-2">
-                      Type: {entityInfo.entity_type}
-                  </div>
-                )}
-                  {entityInfo.globus_path && (
-                  <div className="portal-jss116 col-sm-12 ml-2">
-                      <a
-                        href={entityInfo.globus_path}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                      ><FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> Click here to go to the Globus data repository</a>
-                  </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
         <div className="row">
-          <div className="col-md-6 mb-4">
+          <div className="col-md-12 mb-4">
             <h3>
               {!props.newForm && editingCollection && (
                 <span className="">
-                  HuBMAP Collection ID {editingCollection.hubmap_id}
+                  HuBMAP Collection ID: {editingCollection.hubmap_id}
                   {" "}
                 </span>
               )}
@@ -558,7 +478,7 @@ export function CollectionForm (props){
                   type='button'
                   size="small"
                   className='btn btn-neutral'
-                  onClick={() => handleLookUpClick()} 
+                  onClick={() => setLookupShow(true)} 
                   >
                   Add {formValues.dataset_uuids && formValues.dataset_uuids.length>=1 && (
                     "Another"
@@ -609,7 +529,7 @@ export function CollectionForm (props){
                       id="dataset_uuids"
                       error={formErrors.dataset_uuids && formErrors.dataset_uuids.length>0 ? true : false}
                       disabled={false}
-                      inputProps={ariaLabel}
+                      inputProps={{'aria-label': 'description'} }
                       placeholder={"List of Dataset Hubmap IDs or UUIDs,  Comma Seperated "}
                       variant="standard"
                       size="small"
@@ -649,7 +569,7 @@ export function CollectionForm (props){
         <Dialog
           fullWidth={true}
           maxWidth="lg"
-          onClose={hideLookUpModal}
+          onClose={() => setLookupShow(false)}
           aria-labelledby="source-lookup-dialog"
           open={lookupShow}>
           <DialogContent>
@@ -665,7 +585,7 @@ export function CollectionForm (props){
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={cancelLookUpModal}
+              onClick={() => setLookupShow(false)}
               variant="contained"
               color="primary">
               Close
