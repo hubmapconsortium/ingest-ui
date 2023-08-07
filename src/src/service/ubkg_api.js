@@ -1,4 +1,7 @@
 import axios from "axios";
+import { stripHTML } from '../utils/string_helper'
+
+
 
 /*
  * UBKG GET assaytype method
@@ -38,7 +41,7 @@ export function ubkg_api_get_assay_type_set(scope) {
           return {data}
       })
       .catch(error => {
-        console.debug("ubkg_api_get_assaytype", error, error.response);
+        console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_assaytype", error, error.response);
         captureError(error);
       });
 };
@@ -69,10 +72,13 @@ export function ubkg_api_get_organ_type_set() {
 
 function captureError (error){
 
+  console.debug("Error Format CHeck", error, error.response, error.response.data, error.data);
+
   if(error.response ){
     if(error.response.data ){
-      if(error.data.includes("<!DOCTYPE html>")){
-        return {status: error.response.status, results: error.response.statusText}
+      if(error.response.data.includes("<!DOCTYPE html>")){
+        var responseData = stripHTML(error.response.data)
+        return {status: error.response.status, results: responseData}
       }else{
         return {status: error.response.status, results: error.response.data}
       }

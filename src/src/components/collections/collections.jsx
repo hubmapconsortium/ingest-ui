@@ -168,8 +168,9 @@ const handleUUIDListLoad = () => {
     uuidArray  = value.split(",")
   } 
   // console.debug("uuidArray",uuidArray);
-  for (const ds of uuidArray) {
-    let errMsg = "";
+  for ( var ds of uuidArray) {
+    ds = ds.split(' ').join(''); 
+    console.debug(ds);
     entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token )
     .then((response) => {
       // @TODO why is it not coming back as an actua catchable error though??
