@@ -66,6 +66,7 @@ export const RenderCollection = (props) => {
             // packed={searchWrapper}
             authToken={authToken}
             handleCancel={() => props.handleCancel()} 
+            reportError={(err) => props.reportError(err)} 
             // Cleaner if we pass in an On Processed that can do either?
             onProcessed={isNew? props.onCreated : props.onUpdated } 
             editingCollection={entity_data} 

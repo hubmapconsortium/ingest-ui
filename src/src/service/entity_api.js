@@ -24,7 +24,7 @@ export function entity_api_get_entity(uuid, auth) {
       .catch(error => {
         console.debug("entity_api_get_entity", error, error.response);
         if(error.response){
-          return error
+          return error.response
         }else{
           return {error}
         }

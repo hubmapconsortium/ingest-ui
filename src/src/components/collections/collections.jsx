@@ -117,6 +117,19 @@ export function CollectionForm (props){
     }))
   };
 
+  const handleErrorParse = (response) => { 
+    let errMsg = {};
+    if(response.data && response.data.error){
+      console.debug("response.data.error",response.data.error);
+      errMsg.message = response.data.error;
+    } else {
+      console.debug("response.data",response.data);
+      errMsg.message =  response.data.toString();
+    }
+    console.debug("ERRMSG",errMsg);
+    props.reportError(response,);
+  
+  }
   
 
   const handleInputChange = (event) => {
@@ -135,39 +148,57 @@ export function CollectionForm (props){
     }
   };
 
-  const handleUUIDListLoad = () => {
-    var value = formValues.dataset_uuids
-    var uuidArray = value;
-    // setLoadUUIDList(true)
-    if (typeof value === 'string' || value instanceof String) {
-      uuidArray  = value.split(",")
-    } 
-      
-    
-    // console.debug("uuidArray",uuidArray);
-    for (const ds of uuidArray) {
-      entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token )
-      .then((response) => {
-        // @TODO why is it not coming back as an actua catchable error though??
-        if (response.status !== 200) {
-          setFormErrors((prevValues) => ({
-            ...prevValues,
-            'dataset_uuids': response.results.error,
-          }))
-        } else {   
-          setSourceDatasetDetails((rows) => [...rows, response.results]);
-        }
-      })  
-      .catch((error) => {
-        setLoadUUIDList(false)
-      }); 
-    }
-    setHideUUIDList(true)
-    setLoadUUIDList(false)
-    // setHideUUIDList(!hideUUIDList)
-    
-  };
+const handleInputUUIDs = (event) => {
+  event.preventDefault();
+  // const { name, value, type } = event.target;
+  if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
+      handleUUIDListLoad()
+    // }
+  } else {
+    setHideUUIDList(!hideUUIDList)
+  }
+  
+};
 
+const handleUUIDListLoad = () => {
+  var value = formValues.dataset_uuids
+  var uuidArray = value;
+  // setLoadUUIDList(true)
+  if (typeof value === 'string' || value instanceof String) {
+    uuidArray  = value.split(",")
+  } 
+  // console.debug("uuidArray",uuidArray);
+  for (const ds of uuidArray) {
+    let errMsg = "";
+    entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token )
+    .then((response) => {
+      // @TODO why is it not coming back as an actua catchable error though??
+      if (response.status !== 200) {
+      // console.debug("UNPARSED ER`RR`",response);
+        // So we're getting BOTH this check AND the catch below.  Why?
+        handleErrorParse(response);
+        // setFormErrors((prevValues) => ({
+        //   ...prevValues,
+        //   'dataset_uuids': response.results.error,
+        // }))
+      } else {   
+        setSourceDatasetDetails((rows) => [...rows, response.results]);
+      }
+    })  
+    .catch((error) => {
+      console.debug("CATCHerror",error);
+      // console.debug("error.data",error.data);
+      handleErrorParse(error);
+      setLoadUUIDList(false)
+    }); 
+  }
+  setHideUUIDList(true)
+  setLoadUUIDList(false)
+  // setHideUUIDList(!hideUUIDList)
+};
+      
+
+    
   const handleSubmit = () => {
     setButtonState("submit");   
     var datasetUUIDs = []
@@ -489,7 +520,7 @@ export function CollectionForm (props){
                   />
                 </Button>
                 
-                {/* <Button
+                <Button
                   variant="text"
                   type='link'
                   size="small"
@@ -502,7 +533,7 @@ export function CollectionForm (props){
                     className='fa button-icon m-2'
                     icon={faPenToSquare}
                   />
-                </Button> */}
+                </Button>
               </Box>
               
               <Box>

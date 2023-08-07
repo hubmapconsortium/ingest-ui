@@ -244,17 +244,22 @@ export function App (props){
   var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);
+  var [errorDetail, setErrorDetail] = useState({});
 
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
-  function reportError (error){
+  function reportError (error, details){
+    if(details){
+      setErrorDetail(details);
+    }
+    console.debug('%c⭗', 'color:#ff005d', "reportError", error);
     // console.debug("Type", typeof error);
     typeof error === "string" ? setErrorInfo(error) : setErrorInfo(JSON.stringify(error));
 
-    // var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
-    // if(error.results){
-    //   errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
-    // }
+    var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
+    if(error.results){
+      errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
+    }
     var formatError = FormatError(error);
     console.debug('%c⭗', 'color:#ff005d', "reportError", error, formatError);
     // setErrorInfo(errString);
@@ -328,6 +333,9 @@ export function App (props){
               <Typography variant="body2"gutterBottom>
                 Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
               </Typography>
+              { errorDetail && errorDetail.length>0 && (
+                <Typography variant="caption">ERR{errorDetail}</Typography>
+              )}
               <Collapse in={errorInfoShow}>
                 <Typography variant="caption">
                   {errorInfo}
@@ -445,7 +453,7 @@ export function App (props){
                   <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups} newForm={true}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
