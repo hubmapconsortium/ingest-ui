@@ -488,7 +488,7 @@ export function App (props){
             </DialogContent>
           </Dialog>
           <Snackbar 
-            open={true} 
+            open={showSnack} 
             onClose={() => setShowSnack(false)}
             anchorOrigin={{
               vertical: 'bottom',
