@@ -79,6 +79,7 @@ export function CollectionForm (props){
       var UUIDs = [];
       if (editingCollection.datasets && editingCollection.datasets.length > 0) {        
         for (const entity of editingCollection.datasets) {
+          //When coming from the Entity, the Datasets use data_types, from the Search UI they pass display_subtype instead
           setSourceDatasetDetails((rows) => [...rows, entity]); // Populate the info for table
           setSelectedSources((UUIDs) => [...UUIDs, entity.uuid]); // UUID list for translating to form values
           UUIDs.push(entity.uuid);
@@ -413,6 +414,11 @@ export function CollectionForm (props){
       // console.debug();
     }
 
+  var formatDatatype = (row) => {
+    console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.data_types);
+    return ("DT");
+  }
+
  
  
 
@@ -502,7 +508,8 @@ export function CollectionForm (props){
                         className="row-selection"
                       >
                         <TableCell className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                        <TableCell className="clicky-cell" scope="row"> {row.display_subtype && (row.display_subtype)} </TableCell>
+                        <TableCell className="clicky-cell" scope="row"> {row.data_types ? row.data_types[0] : row.display_subtype} </TableCell>
+                        {/* <TableCell className="clicky-cell" scope="row"> {row.display_subtype && (row.display_subtype)} </TableCell> */}
                         <TableCell className="clicky-cell" scope="row">{row.group_name}</TableCell>
                         <TableCell className="clicky-cell" scope="row">{row.status && (
                           <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}> {row.status}</span>
