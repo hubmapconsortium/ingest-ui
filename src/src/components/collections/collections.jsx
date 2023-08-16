@@ -99,34 +99,45 @@ export function CollectionForm (props){
   }
 
   const handleSelectClick = (event) => {
-    console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
-    setSourceDatasetDetails((rows) => [...rows, event.row]); 
-    setSelectedSources((UUIDs) => [...UUIDs, event.row.uuid]);
-    setLookupShow(false); 
-  };  
+    if (!selectedSources.includes(event.row.uuid)) {
+      setSourceDatasetDetails((rows) => [...rows, event.row]); 
+      setSelectedSources((UUIDs) => [...UUIDs, event.row.uuid]);
+      // The state might not update in time so we'll clone push and set
+      // var currentUUIDs = sourceDatasetDetails.map(({ uuid }) => uuid)
+      // currentUUIDs.push(event.row.uuid);
+      console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        'dataset_uuids': selectedSources,
+      }))
+      setLookupShow(false); 
+    } else {
+      // maybe alert them theyre selecting one they already picked?
+    }
+  };
 
 
   const sourceRemover = (row, index) => {
     var sourceUUIDList = selectedSources;
     var sourceDetailList = sourceDatasetDetails;
     setSelectedSources(sourceUUIDList.filter((item, i) => i !== row));
-    setSourceDatasetDetails(sourceDetailList.filter((item) => item.uuid !== row.uuid)); 
+    setSourceDatasetDetails(sourceDetailList.filter((item) => item.uuid !== row.uuid));
     setFormValues((prevValues) => ({
       ...prevValues,
       'dataset_uuids': selectedSources,
     }))
   };
 
-  const handleErrorParse = (response) => { 
+  const handleErrorParse = (response) => {
     let errMsg = {};
-    if(response.data && response.data.error){
-      console.debug("response.data.error",response.data.error);
+    if (response.data && response.data.error) {
+      console.debug("response.data.error", response.data.error);
       errMsg.message = response.data.error;
     } else {
-      console.debug("response.data",response.data);
-      errMsg.message =  response.data.toString();
+      console.debug("response.data", response.data);
+      errMsg.message = response.data.toString();
     }
-    console.debug("ERRMSG",errMsg);
+    console.debug("ERRMSG", errMsg);
     props.reportError(response,);
   
   }
@@ -148,373 +159,388 @@ export function CollectionForm (props){
     }
   };
 
-const handleInputUUIDs = (event) => {
-  event.preventDefault();
-  // const { name, value, type } = event.target;
-  if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
+  const handleInputUUIDs = (event) => {
+    event.preventDefault();
+    // const { name, value, type } = event.target;
+    if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
       handleUUIDListLoad()
-    // }
-  } else {
-    setHideUUIDList(!hideUUIDList)
-  }
-  
-};
-
-const handleUUIDListLoad = () => {
-  var value = formValues.dataset_uuids
-  var uuidArray = value;
-  // setLoadUUIDList(true)
-  if (typeof value === 'string' || value instanceof String) {
-    uuidArray  = value.split(",")
-  } 
-  // console.debug("uuidArray",uuidArray);
-  for ( var ds of uuidArray) {
-    ds = ds.split(' ').join(''); 
-    console.debug(ds);
-    entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token )
-    .then((response) => {
-      // @TODO why is it not coming back as an actua catchable error though??
-      if (response.status !== 200) {
-      // console.debug("UNPARSED ER`RR`",response);
-        // So we're getting BOTH this check AND the catch below.  Why?
-        handleErrorParse(response);
-        // setFormErrors((prevValues) => ({
-        //   ...prevValues,
-        //   'dataset_uuids': response.results.error,
-        // }))
-      } else {   
-        setSourceDatasetDetails((rows) => [...rows, response.results]);
-      }
-    })  
-    .catch((error) => {
-      console.debug("CATCHerror",error);
-      // console.debug("error.data",error.data);
-      handleErrorParse(error);
-      setLoadUUIDList(false)
-    }); 
-  }
-  setHideUUIDList(true)
-  setLoadUUIDList(false)
-  // setHideUUIDList(!hideUUIDList)
-};
-      
-
-    
-  const handleSubmit = () => {
-    setButtonState("submit");   
-    var datasetUUIDs = []
-    sourceDatasetDetails.map((row, index) => {
-      // console.debug("Row", row, index)
-      datasetUUIDs.push(row.uuid)
-    })
-
-    let { title, description, creators, contacts} = formValues; 
-    let formSubmit = {title, description, creators, contacts}
-    formSubmit["dataset_uuids"] = datasetUUIDs;
-    console.debug('%c⊙', 'color:#00ff7b', "formSubmit",formSubmit );
-
-
-    if(editingCollection){
-      console.debug('%c⊙', 'color:#00ff7b', "Updating");
-      handleUpdate(formSubmit);
     } else {
-      console.debug('%c⊙', 'color:#00ff7b', "Creating");
-      handleCreate(formSubmit);
+      setHideUUIDList(!hideUUIDList)
+
     }
+  
   };
 
-  const handleCreate = (formSubmit) => {
-    entity_api_create_entity("collection", formSubmit, props.authToken)
-      .then((response) => {  
-      props.onProcessed(response);
-    })
-    .catch((error) => {
-      console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
-    });
-  }
-  
-  const handleUpdate = (formSubmit) => {
-    entity_api_update_entity(formValues.uuid,formSubmit, props.authToken)
-      .then((response) => {
-        console.debug('%c⊙', 'color:#00ff7b', "handleUpdate response",response, response.results );
-        if (response.status === 200) {
-          // Only move on if we're actually good
-          props.onProcessed(response.results);
-        } else {
-          console.debug('%c⭗', 'color:#ff005d', "handleUpdate NOT RIGHT", response);
-        }
-    })
-    .catch((error) => {
-      console.debug('%c⭗', 'color:#ff005d', "handleUpdate error", error);
-    });
-  }
 
-  var handleFileGrab = (e,type) => {
-    var grabbedFile = e.target.files[0];
-    var newName = grabbedFile.name.replace(/ /g, '_')
-    var newFile =  new File([grabbedFile], newName);
-    if (newFile && newFile.name.length > 0) {
-      Papa.parse(newFile, {
-        download: true,
-        skipEmptyLines: true,
-        header: true,
-        complete: data => {
-          setFileDetails({ ...fileDetails,
-            [type]: data.data
-          });
-          processContacts(data)
-        }
-
-    });
-
-      
-    }else{
-      console.debug("No Data??");
+  const handleUUIDListLoad = () => {
+    var value = formValues.dataset_uuids
+    var uuidArray = value;
+    console.debug('%c⊙', 'color:#00ff7b', "YUUID", uuidArray);
+    // setLoadUUIDList(true)
+    if (typeof value === 'string' || value instanceof String) {
+      uuidArray = value.split(",")
     }
-  };
-
-  var processContacts = (data) => {
-    var result = data.data.reduce((r, o) => {
-        r[o.is_contact==="TRUE" ? 'contacts' : 'creators'].push(o);
-        return r;
-    }, { contacts: [], creators: [] });
-
-    console.log(result, result.contacts, result.creators);
-    var contacts = result.contacts
-    var creators = result.creators
-
-    // console.debug("FileDetails", fileDetails);
-    setFormValues({ ...formValues,
-      contacts:contacts,
-      creators:creators
-    });
-
-  }
-
-  var processUUIDs = (event) => {
-    const { name, value, type } = event.target;
-    console.debug("handleUUIDList", name, value, type);
-  };
-
-  var renderTableRows = (rowDetails) => {
-  
-    if (rowDetails.length > 0) {
-      return rowDetails.map((row, index) => {
-        return (
-          <TableRow 
-            key={("rowName_"+index)}
-            className="row-selection"
-            >
-            <TableCell  className="clicky-cell" scope="row">{row.name}</TableCell>
-            <TableCell  className="clicky-cell" scope="row">{row.affiliation}</TableCell>
-            <TableCell  className="clicky-cell" scope="row"> {row.orcid_id} </TableCell>
-            
-          </TableRow>
-        );
-      });
-      
-    }
-  }
-  
-
-  
-  var renderContribTable = () => {
+    var sourceDetailUUIDs = sourceDatasetDetails.map(({ uuid }) => uuid)
     
-    return (
-    //   <SourceTable
-    //     headers={{
-    //       name:"Name",
-    //       affiliation:"Affiliation",
-    //       orcid_id:"Orcid Id",
-    //     }}
-    //     rows={formValues.creators}
-    //     cellAction={() => sourceRemover()}
-    //     writeable={true}
-    //   />  
-
-
-      <TableContainer 
-      component={Paper} 
-      style={{ maxHeight: 450 }}
-      >
-      <Table aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
-        <TableHead className="thead-dark font-size-sm">
-          <TableRow className="   " >
-            <TableCell> Name</TableCell>
-            <TableCell component="th">Affiliation</TableCell>
-            <TableCell component="th">Orcid</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {renderTableRows(formValues.creators)}
-        </TableBody>
-      </Table>
-    </TableContainer> 
-    )
+    // console.debug("uuidArray",uuidArray);
+    for (var ds of uuidArray) {
+      ds = ds.split(' ').join('');
+      console.debug(ds);
+      console.debug('%c⊙', 'color:#00ff7b', "sourceDetailUUIDs", sourceDetailUUIDs,sourceDetailUUIDs.includes(ds));
+      // dont even ping the server if it's useless
+      if (!sourceDetailUUIDs.includes(ds)) {
+        setLoadingDatasets(true)
+        entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((response) => {
+            // @TODO why is it not coming back as an actua catchable error though??
+            if (response.status !== 200) {
+              // console.debug("UNPARSED ER`RR`",response);
+              // So we're getting BOTH this check AND the catch below.  Why?
+              handleErrorParse(response);
+              // setFormErrors((prevValues) => ({
+              //   ...prevValues,
+              //   'dataset_uuids': response.results.error,
+              // }))
+            } else {
+              setSourceDatasetDetails((rows) => [...rows, response.results]);
+              setLoadingDatasets(false)
+            }
+          })
+          .catch((error) => {
+            console.debug("CATCHerror", error);
+            // console.debug("error.data",error.data);
+            handleErrorParse(error);
+            setLoadUUIDList(false)
+            setLoadingDatasets(false)
+          });
+      } else {
+        console.debug('%c⭘', 'color:#ffe921', "Already in List", selectedSources, ds);
+      }
+      setHideUUIDList(true)
+      setLoadUUIDList(false)
+      setLoadingDatasets(false)
+      // setHideUUIDList(!hideUUIDList)
+    };
+      
   }
+    
+    const handleSubmit = () => {
+      setButtonState("submit");
+      var datasetUUIDs = []
+      sourceDatasetDetails.map((row, index) => {
+        // console.debug("Row", row, index)
+        datasetUUIDs.push(row.uuid)
+      })
 
-  var renderContactTable = () => {
-    return (
-      <TableContainer 
-      component={Paper} 
-      style={{ maxHeight: 450 }}
-      >
-      <Table aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
-        <TableHead className="thead-dark font-size-sm">
-          <TableRow className="   " >
-            <TableCell> Name</TableCell>
-            <TableCell component="th">Affiliation</TableCell>
-            <TableCell component="th">Orcid</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {renderTableRows(formValues.contacts)}
-        </TableBody>
-      </Table>
-    </TableContainer> 
-    )
-  }
+      let { title, description, creators, contacts } = formValues;
+      let formSubmit = { title, description, creators, contacts }
+      formSubmit["dataset_uuids"] = datasetUUIDs;
+      console.debug('%c⊙', 'color:#00ff7b', "formSubmit", formSubmit);
 
 
-  var creationSuccess = (response) => {
-    var resultInfo ={
-      entity: response.results
-    } ;
-    setEntityInfo(resultInfo);
-    props.onProcessed(resultInfo)
-    // setSuccessDialogRender(true);
-    // console.debug("resultInfo", resultInfo);
-  // console.debug();
-  }
+      if (editingCollection) {
+        console.debug('%c⊙', 'color:#00ff7b', "Updating");
+        handleUpdate(formSubmit);
+      } else {
+        console.debug('%c⊙', 'color:#00ff7b', "Creating");
+        handleCreate(formSubmit);
+      }
+    };
+
+    const handleCreate = (formSubmit) => {
+      entity_api_create_entity("collection", formSubmit, props.authToken)
+        .then((response) => {
+          props.onProcessed(response);
+        })
+        .catch((error) => {
+          console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
+        });
+    }
+  
+    const handleUpdate = (formSubmit) => {
+      entity_api_update_entity(formValues.uuid, formSubmit, props.authToken)
+        .then((response) => {
+          console.debug('%c⊙', 'color:#00ff7b', "handleUpdate response", response, response.results);
+          if (response.status === 200) {
+            // Only move on if we're actually good
+            props.onProcessed(response.results);
+          } else {
+            console.debug('%c⭗', 'color:#ff005d', "handleUpdate NOT RIGHT", response);
+          }
+        })
+        .catch((error) => {
+          console.debug('%c⭗', 'color:#ff005d', "handleUpdate error", error);
+        });
+    }
+
+    var handleFileGrab = (e, type) => {
+      var grabbedFile = e.target.files[0];
+      var newName = grabbedFile.name.replace(/ /g, '_')
+      var newFile = new File([grabbedFile], newName);
+      if (newFile && newFile.name.length > 0) {
+        Papa.parse(newFile, {
+          download: true,
+          skipEmptyLines: true,
+          header: true,
+          complete: data => {
+            setFileDetails({
+              ...fileDetails,
+              [type]: data.data
+            });
+            processContacts(data)
+          }
+
+        });
+
+      
+      } else {
+        console.debug("No Data??");
+      }
+    };
+
+    var processContacts = (data) => {
+      var result = data.data.reduce((r, o) => {
+        r[o.is_contact === "TRUE" ? 'contacts' : 'creators'].push(o);
+        return r;
+      }, { contacts: [], creators: [] });
+
+      console.log(result, result.contacts, result.creators);
+      var contacts = result.contacts
+      var creators = result.creators
+
+      // console.debug("FileDetails", fileDetails);
+      setFormValues({
+        ...formValues,
+        contacts: contacts,
+        creators: creators
+      });
+
+    }
+
+    var processUUIDs = (event) => {
+      const { name, value, type } = event.target;
+      console.debug("handleUUIDList", name, value, type);
+    };
+
+    var renderTableRows = (rowDetails) => {
+  
+      if (rowDetails.length > 0) {
+        return rowDetails.map((row, index) => {
+          return (
+            <TableRow
+              key={("rowName_" + index)}
+              className="row-selection"
+            >
+              <TableCell className="clicky-cell" scope="row">{row.name}</TableCell>
+              <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
+              <TableCell className="clicky-cell" scope="row"> {row.orcid_id} </TableCell>
+            
+            </TableRow>
+          );
+        });
+      
+      }
+    }
+  
+
+  
+    var renderContribTable = () => {
+    
+      return (
+        //   <SourceTable
+        //     headers={{
+        //       name:"Name",
+        //       affiliation:"Affiliation",
+        //       orcid_id:"Orcid Id",
+        //     }}
+        //     rows={formValues.creators}
+        //     cellAction={() => sourceRemover()}
+        //     writeable={true}
+        //   />  
+
+
+        <TableContainer
+          component={Paper}
+          style={{ maxHeight: 450 }}
+        >
+          <Table aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
+            <TableHead className="thead-dark font-size-sm">
+              <TableRow className="   " >
+                <TableCell> Name</TableCell>
+                <TableCell component="th">Affiliation</TableCell>
+                <TableCell component="th">Orcid</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {renderTableRows(formValues.creators)}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )
+    }
+
+    var renderContactTable = () => {
+      return (
+        <TableContainer
+          component={Paper}
+          style={{ maxHeight: 450 }}
+        >
+          <Table aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
+            <TableHead className="thead-dark font-size-sm">
+              <TableRow className="   " >
+                <TableCell> Name</TableCell>
+                <TableCell component="th">Affiliation</TableCell>
+                <TableCell component="th">Orcid</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {renderTableRows(formValues.contacts)}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )
+    }
+
+
+    var creationSuccess = (response) => {
+      var resultInfo = {
+        entity: response.results
+      };
+      setEntityInfo(resultInfo);
+      props.onProcessed(resultInfo)
+      // setSuccessDialogRender(true);
+      // console.debug("resultInfo", resultInfo);
+      // console.debug();
+    }
 
  
  
 
   
-  return (
-    <Box
-      component="form"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        margin: '0 0',
-      }}
-    >
-      <div className="w-100">
+    return (
+      <Box
+        component="form"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          margin: '0 0',
+        }}
+      >
+        <div className="w-100">
 
-        <div className="row">
-          <div className="col-md-12 mb-4">
-            <h3>
-              {!props.newForm && editingCollection && (
-                <span className="">
-                  HuBMAP Collection ID: {editingCollection.hubmap_id}
-                  {" "}
-                </span>
+          <div className="row">
+            <div className="col-md-12 mb-4">
+              <h3>
+                {!props.newForm && editingCollection && (
+                  <span className="">
+                    HuBMAP Collection ID: {editingCollection.hubmap_id}
+                    {" "}
+                  </span>
+                )}
+                {(props.newForm) && (
+                  <span className="mx-1">
+                    Registering a Collection
+                  </span>
+                )}
+              </h3>
+              {!props.newForm && (
+                <h5>{props.editingCollection.title}</h5>
               )}
-              {(props.newForm) && (
-                <span className="mx-1">
-                  Registering a Collection 
-                </span>
-              )}
-            </h3>
-            {!props.newForm && (
-              <h5>{props.editingCollection.title}</h5>
-            )}
+            </div>
           </div>
-        </div>
 
-        <label htmlFor='dataset_uuids'>
-          Source(s) <span className='text-danger px-2'>*</span>
-        </label>
-        <FontAwesomeIcon
-          icon={faQuestionCircle}
-          data-tip
-          data-for='source_uuid_tooltip'
-        />
-        <ReactTooltip
-          id='source_uuid_tooltip'
-          className='zindex-tooltip'
-          place='right'
-          type='info'
-          effect='solid'
-        >
-          <p>
-            The source tissue samples or data from which this data was derived.  <br />
-            At least <strong>one source </strong>is required, but multiple may be specified.
-          </p>
-        </ReactTooltip>
+          <label htmlFor='dataset_uuids'>
+            Source(s) <span className='text-danger px-2'>*</span>
+          </label>
+          <FontAwesomeIcon
+            icon={faQuestionCircle}
+            data-tip
+            data-for='source_uuid_tooltip'
+          />
+          <ReactTooltip
+            id='source_uuid_tooltip'
+            className='zindex-tooltip'
+            place='right'
+            type='info'
+            effect='solid'
+          >
+            <p>
+              The source tissue samples or data from which this data was derived.  <br />
+              At least <strong>one source </strong>is required, but multiple may be specified.
+            </p>
+          </ReactTooltip>
         
-        {loadingDatasets && (
-          <LinearProgress/>
-        )}
+          {loadingDatasets && (
+            <LinearProgress />
+          )}
           
         
-        {!loadingDatasets && (<>
+          {!loadingDatasets && (<>
           
-          <TableContainer 
-            component={Paper} 
-            style={{ maxHeight: 450 }}
+            <TableContainer
+              component={Paper}
+              style={{ maxHeight: 450 }}
             >
-            <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
-              <TableHead className="thead-dark font-size-sm">
-                <TableRow className="   " >
-                  <TableCell> Source ID</TableCell>
-                  {/* <TableCell component="th">Lab Dataset ID</TableCell> */}
-                  <TableCell component="th">Data Type</TableCell>
-                  <TableCell component="th">Group Name</TableCell>
-                  <TableCell component="th">Status</TableCell>
-                  <TableCell component="th" align="right">Action</TableCell>
-                </TableRow>
-              </TableHead>
-              {sourceDatasetDetails && sourceDatasetDetails.length >0 && (
-              <TableBody>
-                {sourceDatasetDetails.map((row, index) => (
-                  <TableRow 
-                    key={(row.hubmap_id+""+index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
-                    // onClick={() => this.handleSourceCellSelection(row)}
-                    className="row-selection"
-                    >
-                    <TableCell  className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                    <TableCell  className="clicky-cell" scope="row"> {row.display_subtype && ( row.display_subtype)} </TableCell>
-                    <TableCell  className="clicky-cell" scope="row">{row.group_name}</TableCell>
-                    <TableCell  className="clicky-cell" scope="row">{row.status && (
-                        <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
-                    )}</TableCell>
-                    <TableCell  className="clicky-cell" align="right" scope="row"> 
-                     { (props.writeable || !props.editingCollection || props.editingCollection === undefined) && (
-                      <React.Fragment>
-                        <FontAwesomeIcon
-                          className='inline-icon interaction-icon '
-                          icon={faTrash}
-                          color="red"  
-                          onClick={() => sourceRemover(row,index)}
-                        />
-                      </React.Fragment>
-                      )}
-                      {!props.writeable && props.editingCollection && (
-                      <small className="text-muted">N/A</small>
-                      )}
-                    
-                    </TableCell>
+              <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
+                <TableHead className="thead-dark font-size-sm">
+                  <TableRow className="   " >
+                    <TableCell> Source ID</TableCell>
+                    {/* <TableCell component="th">Lab Dataset ID</TableCell> */}
+                    <TableCell component="th">Data Type</TableCell>
+                    <TableCell component="th">Group Name</TableCell>
+                    <TableCell component="th">Status</TableCell>
+                    <TableCell component="th" align="right">Action</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-              )}
-            </Table>
-          </TableContainer>
-          <Box className="mt-2 w-100" width="100%"  display="flex">
+                </TableHead>
+                {sourceDatasetDetails && sourceDatasetDetails.length > 0 && (
+                  <TableBody>
+                    {sourceDatasetDetails.map((row, index) => (
+                      <TableRow
+                        key={(row.hubmap_id + "" + index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
+                        // onClick={() => this.handleSourceCellSelection(row)}
+                        className="row-selection"
+                      >
+                        <TableCell className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
+                        <TableCell className="clicky-cell" scope="row"> {row.display_subtype && (row.display_subtype)} </TableCell>
+                        <TableCell className="clicky-cell" scope="row">{row.group_name}</TableCell>
+                        <TableCell className="clicky-cell" scope="row">{row.status && (
+                          <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}> {row.status}</span>
+                        )}</TableCell>
+                        <TableCell className="clicky-cell" align="right" scope="row">
+                          {(props.writeable || !props.editingCollection || props.editingCollection === undefined) && (
+                            <React.Fragment>
+                              <FontAwesomeIcon
+                                className='inline-icon interaction-icon '
+                                icon={faTrash}
+                                color="red"
+                                onClick={() => sourceRemover(row, index)}
+                              />
+                            </React.Fragment>
+                          )}
+                          {!props.writeable && props.editingCollection && (
+                            <small className="text-muted">N/A</small>
+                          )}
+                    
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                )}
+              </Table>
+            </TableContainer>
+            <Box className="mt-2 w-100" width="100%" display="flex">
               <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
                 <Button
                   variant="contained"
                   type='button'
                   size="small"
                   className='btn btn-neutral'
-                  onClick={() => setLookupShow(true)} 
-                  >
-                  Add {formValues.dataset_uuids && formValues.dataset_uuids.length>=1 && (
+                  onClick={() => setLookupShow(true)}
+                >
+                  Add {formValues.dataset_uuids && formValues.dataset_uuids.length >= 1 && (
                     "Another"
-                    )} Source 
+                  )} Source
                   <FontAwesomeIcon
                     className='fa button-icon m-2'
                     icon={faPlus}
@@ -526,10 +552,10 @@ const handleUUIDListLoad = () => {
                   type='link'
                   size="small"
                   className='mx-2'
-                  onClick={(event) => handleInputUUIDs(event)} 
-                  >
-                  {hideUUIDList && (<>Bulk</> )}
-                  {!hideUUIDList && (<>Save</> )}
+                  onClick={(event) => handleInputUUIDs(event)}
+                >
+                  {hideUUIDList && (<>Bulk</>)}
+                  {!hideUUIDList && (<>Save</>)}
                   <FontAwesomeIcon
                     className='fa button-icon m-2'
                     icon={faPenToSquare}
@@ -538,185 +564,182 @@ const handleUUIDListLoad = () => {
               </Box>
               
               <Box>
-              <Collapse
-                in={!hideUUIDList}
-                orientation="horizontal"
-                sx={{
-                  display: 'inline-flex',
-                }}>
-                {loadUUIDList && (
-                  <LinearProgress> </LinearProgress>
-                )}
-                {!loadUUIDList && (
-                  <FormControl
-                    // className='mb-0'
-                    sx={{
-                      verticalAlign: 'bottom',
-                      minWidth: "400px",
-                      //   display: 'flex',
-                      //   flexDirection: 'row', 
-                      }}>
-                    <TextField
-                      name="dataset_uuids"
-                      id="dataset_uuids"
-                      error={formErrors.dataset_uuids && formErrors.dataset_uuids.length>0 ? true : false}
-                      disabled={false}
-                      inputProps={{'aria-label': 'description'} }
-                      placeholder={"List of Dataset Hubmap IDs or UUIDs,  Comma Seperated "}
-                      variant="standard"
-                      size="small"
-                      fullWidth={true}
-                      onChange={(event) => handleInputChange(event)}
-                      value={formValues.dataset_uuids}
+                <Collapse
+                  in={!hideUUIDList}
+                  orientation="horizontal"
+                  sx={{
+                    display: 'inline-flex',
+                  }}>
+                  {loadUUIDList && (
+                    <LinearProgress> </LinearProgress>
+                  )}
+                  {!loadUUIDList && (
+                    <FormControl
+                      // className='mb-0'
                       sx={{
+                        verticalAlign: 'bottom',
+                        minWidth: "400px",
+                        //   display: 'flex',
+                        //   flexDirection: 'row', 
+                      }}>
+                      <TextField
+                        name="dataset_uuids"
+                        id="dataset_uuids"
+                        error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
+                        disabled={false}
+                        inputProps={{ 'aria-label': 'description' }}
+                        placeholder={"List of Dataset Hubmap IDs or UUIDs,  Comma Seperated "}
+                        variant="standard"
+                        size="small"
+                        fullWidth={true}
+                        onChange={(event) => handleInputChange(event)}
+                        value={formValues.dataset_uuids}
+                        sx={{
                           marginTop: '10px',
                           width: '100%',
-                        verticalAlign: 'bottom',
-                      }}
-                    />
-                  </FormControl>
-                )}
-              </Collapse>
+                          verticalAlign: 'bottom',
+                        }}
+                      />
+                    </FormControl>
+                  )}
+                </Collapse>
                 
             
 
               </Box>
             
-          </Box>
-          {formErrors.dataset_uuids && formErrors.dataset_uuids.length >0 && (
-            <Box 
-              p={1}
-              width="100%"
-              sx={{
-                backgroundColor: 'rgb(253, 237, 237)',
-                padding: '10px',
-                  }}   >
-                  {formErrors.dataset_uuids}  
             </Box>
-          )}
+            {formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 && (
+              <Box
+                p={1}
+                width="100%"
+                sx={{
+                  backgroundColor: 'rgb(253, 237, 237)',
+                  padding: '10px',
+                }}   >
+                {formErrors.dataset_uuids}
+              </Box>
+            )}
         
-        </>)}
+          </>)}
 
         
-        <Dialog
-          fullWidth={true}
-          maxWidth="lg"
-          onClose={() => setLookupShow(false)}
-          aria-labelledby="source-lookup-dialog"
-          open={lookupShow}>
-          <DialogContent>
-            <SearchComponent
-              select={(e) => handleSelectClick(e)}
-              custom_title="Search for a Source ID for your Collection"
-              // filter_type="Publication"
-              modecheck="Source"
-              restrictions={{
-                entityType : "dataset"
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setLookupShow(false)}
-              variant="contained"
-              color="primary">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
+          <Dialog
+            fullWidth={true}
+            maxWidth="lg"
+            onClose={() => setLookupShow(false)}
+            aria-labelledby="source-lookup-dialog"
+            open={lookupShow}>
+            <DialogContent>
+              <SearchComponent
+                select={(e) => handleSelectClick(e)}
+                custom_title="Search for a Source ID for your Collection"
+                // filter_type="Publication"
+                modecheck="Source"
+                restrictions={{
+                  entityType: "dataset"
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => setLookupShow(false)}
+                variant="contained"
+                color="primary">
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
 
-      <FormControl>
-        <TextField
-          label="Title"
-          name="title"
-          id="title"
-          error={false}
-          disabled={false}
-          helperText={"The title of the COllection"}
-          variant="standard"
-          onChange={handleInputChange}
-          value={formValues.title}
-        /> 
-      </FormControl>
-      <FormControl>
-        <TextField
-          label="Description"
-          name="description"
-          id="description"
-          multiline
-          rows={4}
-          error={false}
-          disabled={false}
-          helperText={"A description of the Collection"}
-          variant="standard"
-          onChange={handleInputChange}
-          value={formValues.description}
-        />
-      </FormControl>
+        <FormControl>
+          <TextField
+            label="Title"
+            name="title"
+            id="title"
+            error={false}
+            disabled={false}
+            helperText={"The title of the COllection"}
+            variant="standard"
+            onChange={handleInputChange}
+            value={formValues.title}
+          />
+        </FormControl>
+        <FormControl>
+          <TextField
+            label="Description"
+            name="description"
+            id="description"
+            multiline
+            rows={4}
+            error={false}
+            disabled={false}
+            helperText={"A description of the Collection"}
+            variant="standard"
+            onChange={handleInputChange}
+            value={formValues.description}
+          />
+        </FormControl>
        
               
-      <FormControl>
-        <Typography sx={{color: 'rgba(0, 0, 0.2, 0.6)'}}>
-          Contributors
-        </Typography>
-        {formValues.creators && formValues.creators.length>0  && (
-          <>{renderContribTable()} </>
-        )}
-        {/* {renderContactTable()} */}
-      </FormControl>
+        <FormControl>
+          <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
+            Contributors
+          </Typography>
+          {formValues.creators && formValues.creators.length > 0 && (
+            <>{renderContribTable()} </>
+          )}
+          {/* {renderContactTable()} */}
+        </FormControl>
 
-      <FormControl>
-        <Typography sx={{color: 'rgba(0, 0, 0.2, 0.6)'}}>
-          Contacts
-        </Typography>
-        {formValues.contacts && formValues.contacts.length>0  && (
-          <>{renderContactTable()} </>
-        )}
+        <FormControl>
+          <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
+            Contacts
+          </Typography>
+          {formValues.contacts && formValues.contacts.length > 0 && (
+            <>{renderContactTable()} </>
+          )}
 
-        <div className="text-left"> 
-          <label>
-            <input
-              accept=".tsv, .csv"
-              type="file"
-              id="FileUploadContacts"
-              name="Contacts"
-              onChange={(e) => handleFileGrab(e,"contacts")}
-            />
-          </label>
+          <div className="text-left">
+            <label>
+              <input
+                accept=".tsv, .csv"
+                type="file"
+                id="FileUploadContacts"
+                name="Contacts"
+                onChange={(e) => handleFileGrab(e, "contacts")}
+              />
+            </label>
+          </div>
+        </FormControl>
+
+        <div className="row">
+          <div className="buttonWrapRight">
+            <Button
+              variant="contained"
+              onClick={() => handleSubmit()}
+              type="button"
+              className='float-right'>
+              {buttonState === "submit" && (
+                <FontAwesomeIcon
+                  className='inline-icon'
+                  icon={faSpinner}
+                  spin
+                />
+              )}
+              {buttonState !== "submit" && (
+                "Submit"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              onClick={() => props.handleCancel()}>
+              Cancel
+            </Button>
+          </div>
         </div>
-      </FormControl>
-
-      <div className="row">
-      <div className="buttonWrapRight">
-          <Button
-            variant="contained"
-            onClick={() => handleSubmit()}
-            type="button"
-            className='float-right'>
-            {buttonState==="submit" && (
-              <FontAwesomeIcon
-              className='inline-icon'
-              icon={faSpinner}
-              spin
-            />
-          )}
-          {buttonState !=="submit" && (   
-              "Submit"
-          )}
-      </Button>
-      <Button
-        type="button"
-        variant="outlined"
-        onClick={() => props.handleCancel()}>
-        Cancel
-      </Button>
-      </div>
-      </div>
         
-    </Box>
-  );
-}
-
-
-
+      </Box>
+    );
+  }
