@@ -7,6 +7,7 @@ import SearchComponent from "../search/SearchComponent";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
 
 import { getPublishStatusColor } from "../../utils/badgeClasses";
+import { generateDisplaySubtype_UBKG } from "../../utils/display_subtypes";
 // import { PrettyLog } from "../../utils/prettyLogs";
 import SourceTable from "../ui/table.jsx";
 
@@ -74,12 +75,20 @@ export function CollectionForm (props){
 
   useEffect(() => {
     if (editingCollection) {  
-      var formVals = editingCollection; // dont try modifying prop
       setSourceDatasetDetails([]) 
+      var formVals = editingCollection; // dont try modifying prop
       var UUIDs = [];
-      if (editingCollection.datasets && editingCollection.datasets.length > 0) {        
+      if (editingCollection.datasets && editingCollection.datasets.length > 0) {
         for (const entity of editingCollection.datasets) {
           //When coming from the Entity, the Datasets use data_types, from the Search UI they pass display_subtype instead
+          if (entity.data_types && entity.data_types.length > 0) {
+            var subtype = generateDisplaySubtype_UBKG(entity);
+            console.debug('%c⊙', 'color:#00ff7b', "subtype", subtype);
+            entity.display_subtype = subtype;
+            // entity.display_subtype = entity.data_types[0];
+          }else {
+            
+          }
           setSourceDatasetDetails((rows) => [...rows, entity]); // Populate the info for table
           setSelectedSources((UUIDs) => [...UUIDs, entity.uuid]); // UUID list for translating to form values
           UUIDs.push(entity.uuid);
@@ -508,8 +517,8 @@ export function CollectionForm (props){
                         className="row-selection"
                       >
                         <TableCell className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                        <TableCell className="clicky-cell" scope="row"> {row.data_types ? row.data_types[0] : row.display_subtype} </TableCell>
-                        {/* <TableCell className="clicky-cell" scope="row"> {row.display_subtype && (row.display_subtype)} </TableCell> */}
+                        {/* <TableCell className="clicky-cell" scope="row"> {row.data_types ? row.data_types[0] : row.display_subtype} </TableCell> */}
+                        <TableCell className="clicky-cell" scope="row"> {row.display_subtype && (row.display_subtype)} </TableCell>
                         <TableCell className="clicky-cell" scope="row">{row.group_name}</TableCell>
                         <TableCell className="clicky-cell" scope="row">{row.status && (
                           <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}> {row.status}</span>
