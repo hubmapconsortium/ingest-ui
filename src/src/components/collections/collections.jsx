@@ -606,7 +606,7 @@ export function CollectionForm (props){
                           <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}> {row.status}</span>
                         )}</TableCell>
                         <TableCell className="clicky-cell" align="right" scope="row">
-                          {(props.writeable || !props.editingCollection || props.editingCollection === undefined) && (
+                          
                             <React.Fragment>
                               <FontAwesomeIcon
                                 className='inline-icon interaction-icon '
@@ -615,10 +615,7 @@ export function CollectionForm (props){
                                 onClick={() => sourceRemover(row, index)}
                               />
                             </React.Fragment>
-                          )}
-                          {!props.writeable && props.editingCollection && (
-                            <small className="text-muted">N/A</small>
-                          )}
+                         
                     
                         </TableCell>
                       </TableRow>
