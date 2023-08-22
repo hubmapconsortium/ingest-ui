@@ -294,12 +294,14 @@ export function CollectionForm (props){
     }
     //Logic Flipped here to handle check for presence of object details not lack of
     // Only include if prenent, ignore if not
-    if (formValues.creators && (formValues.creators[0] && formValues.creators[0].version!==undefined)) {
-      formValuesSubmit.creators = formValues.creators
+    console.debug('%c⊙', 'color:#00ff7b', "Creators",creators );
+    if (creators && (creators[0] && creators[0].version!==undefined)) {
+      formValuesSubmit.creators = creators
     } 
     // Do not send blank contacts
-    if (!formValues.contacts && (formValues.contacts && formValues.contacts[0].version!==undefined)) {
-      formValuesSubmit.contacts = formValues.contacts
+    console.debug('%c⊙', 'color:#00ff7b', "Contacts",contacts );
+    if (contacts && (contacts[0] && contacts[0].version!==undefined)) {
+      formValuesSubmit.contacts = contacts
     }
 
     if (isValid) {
@@ -369,33 +371,41 @@ export function CollectionForm (props){
               ...fileDetails,
               [type]: data.data
             });
-            processContacts(data)
+            processContacts(data,"grab")
           }
 
-        });
-
-      
+        });      
       } else {
         console.debug("No Data??");
       }
     };
 
-    var processContacts = (data) => {
-      var result = data.data.reduce((r, o) => {
-        r[o.is_contact === "TRUE" ? 'contacts' : 'creators'].push(o);
-        return r;
-      }, { contacts: [], creators: [] });
-
-      console.log(result, result.contacts, result.creators);
-      var contacts = result.contacts
-      var creators = result.creators
-
-      // console.debug("FileDetails", fileDetails);
-      setFormValues({
-        ...formValues,
-        contacts: contacts,
-        creators: creators
-      });
+    var processContacts = (data,source) => {
+      var contacts = []
+      var creators = []
+      // We render two from one TSV if we upload a file
+      if (source && source === "grab") {
+        for (const row of data.data) {
+          console.debug('%c⊙', 'color:#00ff7b', "row", row);
+          creators.push(row)
+          if (row.is_contact==="TRUE") {
+            contacts.push(row)
+          }
+        }
+        setFormValues({
+          ...formValues,
+          contacts: contacts,
+          creators: creators
+        });
+      } else {
+        // setFormValues({
+        //   ...formValues,
+        //   contacts: editingCollection.contacts,
+        //   creators: editingCollection.creators
+        // });
+      
+      }
+      
 
     }
 

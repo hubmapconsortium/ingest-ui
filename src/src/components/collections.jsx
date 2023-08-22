@@ -3,21 +3,25 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { useParams } from "react-router-dom";
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
-import {CollectionForm} from "./collections/collections"
+import { CollectionForm } from "./collections/collections"
+import { ingest_api_allowable_edit_states} from "../service/ingest_api";
+
 export const RenderCollection = (props) => {
-  
+
   // var isNew = props.new;
   var [isNew] = useState(props.newForm);
   var [authToken] = useState(props.groupsToken);
   var [dataGroups] = useState(props.dataGroups);
   var [entity_data, setEntity] = useState();
   var [isLoadingEntity, setIsLoadingEntity] = useState(true);
+  var [permissions, setPermissions] = useState();
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
     isError: null 
   });
   const uuid = useParams();
+
   // const reportError = props.reportError;
   // const { firstName, lastName, city } = person;
   // let reportError = ;
@@ -28,8 +32,20 @@ export const RenderCollection = (props) => {
     if (entityUUID) {
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
-          setEntity(response.results);
-          setIsLoadingEntity(false); 
+        setEntity(response.results);
+        setIsLoadingEntity(false); 
+        // ingest_api_allowable_edit_states(entityUUID, authSet.groups_token)
+        //   .then((resp) => {
+        //     console.debug("Write Check", resp);
+        //     if (resp.status < 300) {
+        //       setPermissions(resp.results);
+        //       console.debug('%c⊙', 'color:#00ff7b', "Permissions", resp.results);
+        //       setIsLoadingEntity(false); 
+        //     }
+        //   })
+        //   .catch((error) => { 
+        //     console.debug('%c⭗', 'color:#ff005d', "Permissions", error);
+        //   });
         })  
         .catch((error) => {
           setIsLoadingEntity(false);
@@ -38,6 +54,8 @@ export const RenderCollection = (props) => {
       setIsLoadingEntity(false); 
     }
   }, [uuid]);
+
+
 
   var processPlan = (result) => {
     if (isNew) {
