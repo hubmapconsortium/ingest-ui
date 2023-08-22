@@ -64,8 +64,8 @@ export function CollectionForm (props){
     title: '',
     description: '',
     dataset_uuids: [],
-    creators: [{}],
-    contacts: [{}],
+    creators: [],
+    contacts: [],
   });
   // Props
   var [isNew] = useState(props.newForm);
@@ -230,32 +230,103 @@ export function CollectionForm (props){
       setLoadUUIDList(false)
       setLoadingDatasets(false)
       // setHideUUIDList(!hideUUIDList)
-    };
-      
+    };   
   }
+
+  function removeEmpty(obj) {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([_, v]) => v != null)
+        .map(([k, v]) => [k, v === Object(v) ? removeEmpty(v) : v])
+    );
+  }
+  function validateForm(formValues) {
+    var isValid = true;
+    let { title, description, creators, contacts } = formValues;
+    let formValuesSubmit = {};
+    // Title
+    if (!title || title.length === 0) {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'title': "Title is required",
+      }))
+      isValid = false;
+    } else {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'title': ""
+      }))
+      formValuesSubmit.title = formValues.title  
+    }
+    // Description
+    if (!description || description.length === 0) {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'description': "Descripton is required",
+      }))
+      isValid = false;
+    } else {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'description': "",
+      }))
+      formValuesSubmit.description = description  
+    }
+    // Datasets
+    var datasetUUIDs = []
+    sourceDatasetDetails.map((row, index) => {
+      datasetUUIDs.push(row.uuid)
+    })
+    console.debug('%c⊙', 'color:#00ff7b', "datasetUUIDs", datasetUUIDs, datasetUUIDs.length );
+    if (!datasetUUIDs || datasetUUIDs.length === 0) {
+      console.debug('%c⭗', 'color:#ff005d', "No Datasets" );
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'dataset_uuids': "At least one Source  is required",
+      }))
+      isValid = false;
+    } else {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'dataset_uuids': "",
+      }))
+      formValuesSubmit.dataset_uuids = datasetUUIDs  
+    }
+    //Logic Flipped here to handle check for presence of object details not lack of
+    // Only include if prenent, ignore if not
+    if (formValues.creators && (formValues.creators[0] && formValues.creators[0].version!==undefined)) {
+      formValuesSubmit.creators = formValues.creators
+    } 
+    // Do not send blank contacts
+    if (!formValues.contacts && (formValues.contacts && formValues.contacts[0].version!==undefined)) {
+      formValuesSubmit.contacts = formValues.contacts
+    }
+
+    if (isValid) {
+      return formValuesSubmit
+    } else {
+      return false
+    }
+  }
+
     
-    const handleSubmit = () => {
-      setButtonState("submit");
-      var datasetUUIDs = []
-      sourceDatasetDetails.map((row, index) => {
-        // console.debug("Row", row, index)
-        datasetUUIDs.push(row.uuid)
-      })
-
-      let { title, description, creators, contacts } = formValues;
-      let formSubmit = { title, description, creators, contacts }
-      formSubmit["dataset_uuids"] = datasetUUIDs;
-      console.debug('%c⊙', 'color:#00ff7b', "formSubmit", formSubmit);
-
-
+  const handleSubmit = () => {
+    setButtonState("submit");
+    var submitForm = validateForm(formValues);
+    console.debug('%c⊙', 'color:#00ff7b', "submitForm", submitForm);
+    if (submitForm!==false) {
       if (editingCollection) {
         console.debug('%c⊙', 'color:#00ff7b', "Updating");
-        handleUpdate(formSubmit);
+        handleUpdate(submitForm);
       } else {
         console.debug('%c⊙', 'color:#00ff7b', "Creating");
-        handleCreate(formSubmit);
+        handleCreate(submitForm);
       }
-    };
+    }else{
+      setButtonState("");
+    }
+    
+  };
 
     const handleCreate = (formSubmit) => {
       entity_api_create_entity("collection", formSubmit, props.authToken)
@@ -267,20 +338,21 @@ export function CollectionForm (props){
         });
     }
   
-    const handleUpdate = (formSubmit) => {
-      entity_api_update_entity(formValues.uuid, formSubmit, props.authToken)
-        .then((response) => {
-          console.debug('%c⊙', 'color:#00ff7b', "handleUpdate response", response, response.results);
-          if (response.status === 200) {
-            // Only move on if we're actually good
-            props.onProcessed(response.results);
-          } else {
-            console.debug('%c⭗', 'color:#ff005d', "handleUpdate NOT RIGHT", response);
-          }
-        })
-        .catch((error) => {
-          console.debug('%c⭗', 'color:#ff005d', "handleUpdate error", error);
-        });
+  const handleUpdate = (formSubmit) => {
+      // Need to strip out all blank values
+    entity_api_update_entity(formValues.uuid, formSubmit, props.authToken)
+      .then((response) => {
+        console.debug('%c⊙', 'color:#00ff7b', "handleUpdate response", response, response.results);
+        if (response.status === 200) {
+          // Only move on if we're actually good
+          props.onProcessed(response.results);
+        } else {
+          console.debug('%c⭗', 'color:#ff005d', "handleUpdate NOT RIGHT", response);
+        }
+      })
+      .catch((error) => {
+        console.debug('%c⭗', 'color:#ff005d', "handleUpdate error", error);
+      });
     }
 
     var handleFileGrab = (e, type) => {
@@ -619,9 +691,6 @@ export function CollectionForm (props){
                     </FormControl>
                   )}
                 </Collapse>
-                
-            
-
               </Box>
             
             </Box>
@@ -673,9 +742,9 @@ export function CollectionForm (props){
             label="Title"
             name="title"
             id="title"
-            error={false}
+            error={formErrors.title && formErrors.title.length > 0 ? true : false}
             disabled={false}
-            helperText={"The title of the COllection"}
+            helperText={formErrors.title && formErrors.title.length > 0 ? "The title of the Collection is Required" : "The title of the Collection" }
             variant="standard"
             onChange={handleInputChange}
             value={formValues.title}
@@ -688,16 +757,14 @@ export function CollectionForm (props){
             id="description"
             multiline
             rows={4}
-            error={false}
+            error={formErrors.description && formErrors.description.length > 0 ? true : false}
             disabled={false}
-            helperText={"A description of the Collection"}
+            helperText={formErrors.title && formErrors.title.length > 0 ? "A description of the Collection is Required" : "A description of the Collection" }
             variant="standard"
             onChange={handleInputChange}
             value={formValues.description}
           />
         </FormControl>
-       
-              
         <FormControl>
           <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
             Contributors
