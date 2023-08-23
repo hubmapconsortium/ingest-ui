@@ -121,11 +121,14 @@ class bulkCreation extends Component {
   handleErrorCompiling = (data) =>{
     var errors = [];
     console.debug("handleErrorCompiling",data);
-    console.debug("LEN",data.err.response.data.data)
+    // console.debug("LEN",data.err.response.data.data)
 
-    //  If the error regards the first / fundamental structure of file, 
+    //  If the error regards the first / fundamental structure of file,
     //  it'll come back like this
-    var coreError = data.err.response.data.data;
+    // if (data.error.response.data) {
+      
+    // }
+    var coreError = data.error.response.data.data;
     console.debug("coreError", coreError);
     if(coreError){
       for (const [key, value] of Object.entries(coreError)) {
