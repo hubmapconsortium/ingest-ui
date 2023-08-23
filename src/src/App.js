@@ -1,6 +1,5 @@
-
 import * as React from "react";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useContext} from "react";
 import {
   useNavigate,
   useLocation,
@@ -24,6 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import { Alert } from '@material-ui/lab';
+import Snackbar from '@mui/material/Snackbar';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Collapse from '@mui/material/Collapse';
@@ -31,7 +31,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faExclamationTriangle}
+import {  faExclamationTriangle, faTimes}
   from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
@@ -47,11 +47,15 @@ import {Navigation} from "./Nav";
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
+import { UserContext } from './service/user_service';
+import Result from "./components/uuid/result";
+
 import {RenderDonor} from "./components/donors";
 import {RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 import {RenderPublication} from "./components/publications";
+import { RenderCollection } from "./components/collections";
 
 // Bulky
 import {RenderBulk} from "./components/bulk";
@@ -66,6 +70,10 @@ import Grid from '@mui/material/Grid';
 export function App (props){
   // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   var [loginDialogRender, setLoginDialogRender] = useState(false);
+  var [successDialogRender, setSuccessDialogRender] = useState(false);
+  var [snackMessage, setSnackMessage] = useState("");
+  var [showSnack, setShowSnack] = useState(false);
+  var [newEntity, setNewEntity] = useState(null);
   var [authStatus, setAuthStatus] = useState(false);
   var [regStatus, setRegStatus] = useState(false);
   var [unregStatus, setUnegStatus] = useState(false);
@@ -79,10 +87,11 @@ export function App (props){
   var [userDataGroups, setUserDataGroups] = useState({});
   var [bannerShow,setBannerShow] = useState(true);
   let navigate = useNavigate();
+  
+  const userContextText = useContext(UserContext);
 
-
+  
   useEffect(() => {
-    
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
@@ -96,102 +105,108 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        console.debug("ingest_api_users_groups", results, results.results);
         
-        if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
+        // if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
+        //   setAuthStatus(true);
+        //   setRegStatus(false);
+        //   setUnegStatus(true);
+        //   setIsLoading(false);
+        // }
+
+        if (results && results.status === 200) {
+          // console.debug("LocalStorageAuth", results);
+          // Um. These both seem to just give me datagroups now?
+          setUserGroups(results.results);
+          setUserDataGroups(results.results);
+          
+          if (results.results.length > 0) { setRegStatus(true); }
+          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+          setTimerStatus(false);
+          setIsLoading(false);
+          setAuthStatus(true);
+        } else if (results && results.status === 401) {
+          setGroupsToken(null);
+          setAuthStatus(false);
+          setRegStatus(false);
+          setTimerStatus(false);
+          setIsLoading(false);
+          if (localStorage.getItem("isHubmapUser")) {
+            // If we were logged out and we have an old token,
+            // We should promopt to sign back in
+            CallLoginDialog();
+          }
+        } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
+          // console.debug("HERE results", results, results.results);
           setAuthStatus(true);
           setRegStatus(false);
           setUnegStatus(true);
           setIsLoading(false);
-        }
-
-        if (results && results.status === 200) { 
-          // console.debug("LocalStorageAuth", results);
-          setUserGroups(results.results);
-          if(userDataGroups && userDataGroups.length> 0){setRegStatus(true);}
-          setUserDataGroups(results.results);
-          console.debug("UserDataGroups", userDataGroups);
-          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-          setTimerStatus(false);
-          setAuthStatus(true);
-          ubkg_api_get_assay_type_set("primary")
           
-            .then((response) => {
-            console.debug("ubkg_api_get_assay_type_set", response);
-              let dtypes = response.data.result;
-              setDataTypeList(dtypes);
-              setDataTypeListPrimary(dtypes);
-              // setIsLoading(false)
-              ubkg_api_get_assay_type_set()
-                .then((response) => {
-                    let dataAll = response.data.result;
-                    setDataTypeListAll(dataAll);
-                    setIsLoading(false)
-                })
-                .catch(error => {
-                  console.debug("fetch DT list Response Error", error);
-                  setIsLoading(false)
-                  reportError(error)
-                });
-          })
-            .catch(error => {
-              if (unregStatus) {
-                setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-                setTimerStatus(false);
-              } else {
-                console.debug("fetch DT list Response Error", error);
-                setIsLoading(false)
-                reportError(error)
-              } 
-          });
-
-
-      } else if (results && results.status === 401) {
-        console.debug("LocalStorageAuth 401", results);
-        setGroupsToken(null);
-        setAuthStatus(false);
-        setRegStatus(false);
-        setTimerStatus(false);
-        setIsLoading(false);
-        if(localStorage.getItem("isHubmapUser")){
-          // If we were logged out and we have an old token,
-          // We should promopt to sign back in
-          CallLoginDialog(); 
-        }
       }
         
     });
     }catch(error){
-      console.debug("LocalStorageAuth Error", error);
+      console.debug('%c⭗', 'color:#ff005d', "LocalStorageAuth Error", error);
       setTimerStatus(false);
       setIsLoading(false)
     }
+  }, [ ]);
 
-
-  }, [groupsToken, isLoading]);
+  useEffect(() => {
+    ubkg_api_get_assay_type_set("primary")
+    .then((response) => {
+      // console.debug("ubkg_api_get_assay_type_set", response);
+        let dtypes = response.data.result;
+        setDataTypeList(dtypes);
+        setDataTypeListPrimary(dtypes);
+        // setIsLoading(false)
+        ubkg_api_get_assay_type_set()
+          .then((response) => {
+              let dataAll = response.data.result;
+              setDataTypeListAll(dataAll);
+              // setIsLoading(false)
+          })
+          .catch(error => {
+            console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
+            // setIsLoading(false)
+            reportError(error)
+          });
+      })
+      .catch(error => {
+        if (unregStatus) {
+          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+          setTimerStatus(false);
+        } else {
+            console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
+            // setIsLoading(false)
+            reportError(error)
+        } 
+      });
+  }, [ ]);
   
+ 
+
+
   function Logout(){
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
     window.location.replace(`${process.env.REACT_APP_URL}`);  
   };
-
   function handleCancel(){
     window.history.back();  
   }
-
-
   const onClose = (event, reason) => {
       navigate("/");
   }
 
-
   const onCloseLogin = (event, reason) => {
-      navigate("/");
-      setLoginDialogRender(false);
-    
+    setLoginDialogRender(false);
+    onClose();
   }
-
+  const onCloseSuccess = (event, reason) => {
+    setSuccessDialogRender(false);
+    onClose();
+  }
   function CallLoginDialog(){
     setLoginDialogRender(true);
   }
@@ -200,6 +215,26 @@ export function App (props){
     var lowerTarget = target.toLowerCase();
     navigate(lowerTarget,  { replace: true });
   }
+
+
+  function creationSuccess(entity) {
+    console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity );
+    setNewEntity(entity.results)
+    setSuccessDialogRender(true);
+  }
+
+
+  function updateSuccess(entity) {
+    console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
+    setSnackMessage("Entity Updated Successfully!");
+    setShowSnack(true)
+    onClose();
+    // setNewEntity(entity)
+    // setSuccessDialogRender(true);
+  }
+
+
+  
   
 
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
@@ -211,26 +246,31 @@ export function App (props){
   var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);
+  var [errorDetail, setErrorDetail] = useState({});
 
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
-  function reportError (error){
-    console.debug("Type", typeof error);
+  function reportError (error, details){
+    if(details){
+      setErrorDetail(details);
+    }
+    console.debug('%c⭗', 'color:#ff005d', "reportError", error);
+    // console.debug("Type", typeof error);
     typeof error === "string" ? setErrorInfo(error) : setErrorInfo(JSON.stringify(error));
 
-    // var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
-    // if(error.results){
-    //   errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
-    // }
+    var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
+    if(error.results){
+      errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
+    }
     var formatError = FormatError(error);
-    console.debug("reportError", error, formatError);
+    console.debug('%c⭗', 'color:#ff005d', "reportError", error, formatError);
     // setErrorInfo(errString);
     setErrorShow(true);
   }
 
+
   return (
     <div className="App">
-      
       
       <Navigation 
         login={authStatus} 
@@ -295,6 +335,9 @@ export function App (props){
               <Typography variant="body2"gutterBottom>
                 Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
               </Typography>
+              { errorDetail && errorDetail.length>0 && (
+                <Typography variant="caption">ERR{errorDetail}</Typography>
+              )}
               <Collapse in={errorInfoShow}>
                 <Typography variant="caption">
                   {errorInfo}
@@ -367,22 +410,26 @@ export function App (props){
 
         )}
 
-          {unregStatus && (
-            <Paper className="px-5 py-4">
-              <Routes>
-                <Route index >
-                  <br />
+        {unregStatus && (
+          
+          <Routes>
+            <Route index element={ 
+                <Alert 
+                  variant="filled"
+                  severity="error">
                   You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-                </Route>
-              </Routes>
-            </Paper>
-          )}
+                </Alert>
+              }/>
+          </Routes>
+        )}
 
           {authStatus && !timerStatus && !isLoading && !unregStatus &&(
           <Paper className="px-5 py-4">
 
 
             <Routes>
+
+              
               
               <Route index element={<SearchComponent entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
@@ -413,27 +460,59 @@ export function App (props){
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                   <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                  <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
               <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
               <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange} />} ></Route>
-
+              <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
+              
               <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/publication/:uuid" element={<RenderPublication  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
+              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
-
           </Routes>
 
-          </Paper>
-          )}
+
+          <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+            <DialogContent> 
+            {newEntity && (
+                <Result
+                  result={{entity:newEntity}}
+                  onReturn={onCloseSuccess}
+                  // handleCancel={this.props.handleCancel}
+                  onCreateNext={null}
+                  entity={newEntity}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+          <Snackbar 
+            open={showSnack} 
+            onClose={() => setShowSnack(false)}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            autoHideDuration={6000} 
+            action={
+              <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
+                  <FontAwesomeIcon icon={faTimes} size="1x" />
+              </IconButton>
+            }>
+              <Alert severity={"success"}>{snackMessage}</Alert>
+          </Snackbar>  
+
+        </Paper>
+      )}
   </div>
   </div>
   );

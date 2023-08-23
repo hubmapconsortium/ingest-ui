@@ -1,4 +1,7 @@
 import axios from "axios";
+import { stripHTML } from '../utils/string_helper'
+
+
 
 /*
  * UBKG GET assaytype method
@@ -18,7 +21,7 @@ import axios from "axios";
  */
 export function ubkg_api_get_assay_type_set(scope) {
   // application_context 
-  console.debug("ubkg_api_get_assay_type_set", scope);
+  // console.debug("ubkg_api_get_assay_type_set", scope);
   let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype?application_context=HUBMAP`;
   // let url = `${process.env.REACT_APP_SEARCH_API_URL}/v3/assaytype`;
   // Note: scope == 'all' will not include the query parameter
@@ -27,17 +30,18 @@ export function ubkg_api_get_assay_type_set(scope) {
   } else if (scope === 'alt') {
       url += '&primary=false'
   }
-  console.debug("ubkg_api_get_assay_type_set url", url);
+  // console.debug("ubkg_api_get_assay_type_set url", url);
   return axios
     .get(url)
       .then(res => {
+        // console.debug("ubkg_api_get_assay_type_set res", res);
           let data = res.data;
           let mapCheck = data.result.map((value, index) => { return value });
-          console.debug("API get_processed_assays data", data, mapCheck);
+          // console.debug("API get_processed_assays data", data, mapCheck);
           return {data}
       })
       .catch(error => {
-        console.debug("ubkg_api_get_assaytype", error, error.response);
+        console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_assaytype", error, error.response);
         captureError(error);
       });
 };
@@ -50,7 +54,7 @@ export function ubkg_api_get_assay_type_set(scope) {
  * return: {'AO': 'Aorta' ... }
  */
 export function ubkg_api_get_organ_type_set() {
-  console.debug("ubkg_api_get_organ_type_set");
+  // console.debug("ubkg_api_get_organ_type_set");
   let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`;
   return axios
     .get(url)
@@ -68,10 +72,13 @@ export function ubkg_api_get_organ_type_set() {
 
 function captureError (error){
 
+  console.debug("Error Format CHeck", error, error.response, error.response.data, error.data);
+
   if(error.response ){
     if(error.response.data ){
-      if(error.data.includes("<!DOCTYPE html>")){
-        return {status: error.response.status, results: error.response.statusText}
+      if(error.response.data.includes("<!DOCTYPE html>")){
+        var responseData = stripHTML(error.response.data)
+        return {status: error.response.status, results: responseData}
       }else{
         return {status: error.response.status, results: error.response.data}
       }

@@ -6,7 +6,7 @@ import axios from "axios";
  * return:  { status, results}
  */
 export function entity_api_get_entity(uuid, auth) { 
-  console.debug("entity_api_get_entity", auth);
+  // console.debug("entity_api_get_entity", auth);
   const options = {
       headers: {
         Authorization:
@@ -24,7 +24,7 @@ export function entity_api_get_entity(uuid, auth) {
       .catch(error => {
         console.debug("entity_api_get_entity", error, error.response);
         if(error.response){
-          return {status: error.response.status, results: error.response.data}
+          return error.response
         }else{
           return {error}
         }
@@ -51,7 +51,7 @@ export function entity_api_update_entity(uuid, data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-          console.debug("entity_api_update_entity", res);
+          // console.debug("entity_api_update_entity", res);
           let results = res.data;
           return {status: res.status, results: results}
       })
@@ -167,7 +167,7 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
   return axios 
     .get(url,options)
       .then(res => {
-        console.debug(res);
+        // console.debug(res);
         let results = res.data;
         return {status: res.status, results: results}
       })
@@ -182,7 +182,7 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
  * return:  { status, results}
  */
 export function entity_api_get_globus_url(uuid, auth) { 
-  console.debug("entity_api_get_globus_url", auth);
+  // console.debug("entity_api_get_globus_url", auth);
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url`;
   const options = {
     headers: {
@@ -194,7 +194,7 @@ export function entity_api_get_globus_url(uuid, auth) {
   return axios
     .get(url, options)
       .then((res) => {
-        console.debug("entity_api_get_globus_url", res);
+        // console.debug("entity_api_get_globus_url", res);
         return {status: res.status, results: res.data}
       })
       .catch((error) => {

@@ -27,12 +27,13 @@ export function ingest_api_users_groups(auth) {
           .map(g => {
             return g;
           });
-    console.debug('API USER GROUPs', group_list);
+    // console.debug('API USER GROUPs', group_list);
     return {status: res.status, results: group_list}
  })
  .catch(error => {
    console.debug("ERR ingest_api_users_groups", error, error.response);
    if (error.response.response === "User is not a member of group HuBMAP-read") {
+     console.debug("User exists just not in the read group");
     //  it's not really an /error/ to have anaccount w/o read
     return {status: 200, results: error.response.response} 
    }
@@ -55,7 +56,7 @@ export function ingest_api_file_upload(data, options) {
   .get(
     `${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
     .then(res => {
-      console.debug("ingest_api_file_upload", res);
+      // console.debug("ingest_api_file_upload", res);
       return {status: res.status, results: res}
     })
     .catch(error => {
@@ -147,7 +148,7 @@ export function ingest_api_allowable_edit_states_statusless(uuid, auth) {
  *
  */
 export function ingest_api_create_dataset(data, auth) { 
-  console.debug("ingest_api_create_dataset", data);
+  // console.debug("ingest_api_create_dataset", data);
   const options = {
       headers: {
         Authorization:
@@ -202,7 +203,7 @@ export function ingest_api_create_publication(data, auth) {
  *
  */
 export function ingest_api_dataset_submit(uuid, data, auth) { 
-  console.debug("ingest_api_dataset_submit", data);
+  // console.debug("ingest_api_dataset_submit", data);
   const options = {
       headers: {
         Authorization:
@@ -229,7 +230,7 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
  *
  */
 export function ingest_api_dataset_publish(uuid, data, auth) { 
-  console.debug("ingest_api_dataset_submit", data);
+  // console.debug("ingest_api_dataset_submit", data);
   const options = {
       headers: {
         Authorization:

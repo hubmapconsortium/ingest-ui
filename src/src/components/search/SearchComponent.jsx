@@ -76,13 +76,12 @@ class SearchComponent extends Component {
     ubkg_api_get_organ_type_set()
       .then((res) => {
         this.setState({organ_types: res}, () => {
-          console.log(this.state.organ_types);
+          // console.log(this.state.organ_types);
         }, () => {
           console.log('ERROR: ubkg_api_get_organ_type_set')
         });
       });
 
-    console.debug("!!!SearchComponent: componentDidMount", this.state.restrictions, this.props.restrictions);
     if(this.props.restrictions){
       // So we can apply the object right to the state instead of do parse tango
       var restrictedState = this.state.restrictions;
@@ -420,7 +419,7 @@ class SearchComponent extends Component {
     this.setState({
       entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
     }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
-      console.debug("setFilterType", this.state.entity_type_list);
+      // console.debug("setFilterType", this.state.entity_type_list);
   });
 
    

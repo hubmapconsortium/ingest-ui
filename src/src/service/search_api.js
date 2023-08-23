@@ -84,13 +84,13 @@ export function api_search2(params, auth, from, size, fields) {
       }
     };
   let payload = search_api_filter_es_query_builder(params, from, size, fields);
-  console.debug('payload', payload)
+  // console.debug('payload', payload)
   return axios 
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`,
               payload, options
       )
       .then(res => {
-        console.debug("API api_search2 res", res);
+        // console.debug("API api_search2 res", res);
           let hits = res.data.hits.hits;
           let entities = [];
           hits.forEach(s => {
@@ -113,7 +113,6 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
 
   let requestBody =  esb.requestBodySearch();
   let boolQuery = "";
-  console.debug("Fields", fields);
     if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
       boolQuery = esb.queryStringQuery(fields["keywords"])
         .fields(ES_SEARCHABLE_WILDCARDS)
@@ -121,7 +120,7 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
       boolQuery = esb.boolQuery();
       // if no field criteria is sent just default to a 
       if (Object.keys(fields).length === 0 && fields.constructor === Object) {
-          console.debug("full search")
+          // console.debug("full search")
             boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample OR Dataset OR Upload OR Publication')); 
       } else {
         // was a group name selected
@@ -132,7 +131,7 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
         } 
         // was specimen types selected
         if (fields["sample_category"]) {
-          console.debug("sample_category", fields["sample_category"]);
+          // console.debug("sample_category", fields["sample_category"]);
           if (fields["sample_category"] !== 'donor') {
             boolQuery.must(esb.matchQuery("sample_category.keyword", fields["sample_category"]));
           } else {

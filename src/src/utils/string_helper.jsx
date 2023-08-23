@@ -102,6 +102,17 @@ export function toPlural(str) {
 }
 
 
+export function stripHTML(str) {
+  const regexForStripHTML = /<([^</> ]+)[^<>]*?>[^<>]*?<\/\1> */gi;
+  try { 
+    const stripContent = str.replaceAll(regexForStripHTML, '');
+    return stripContent;
+ }catch(error) {
+   return error
+ }
+}
+
+
 
   
 

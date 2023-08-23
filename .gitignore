@@ -59,5 +59,6 @@ favorites.json
 *.lock
 *.~lock
 *.~lock.*
+package-lock.json
 
 .idea

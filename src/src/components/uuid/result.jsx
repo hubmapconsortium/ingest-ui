@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import MultipleListModal from "./tissue_form_components/multipleListModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faFolder
+  faFolder,
+  faLink
 } from "@fortawesome/free-solid-svg-icons";
 import Button from'@material-ui/core/Button';
 
@@ -31,13 +32,18 @@ class Result extends Component {
 
   handleReturnClick = e => {
     console.debug("handleReturnClick", e);
-    this.props.onReturn();
+    if(this.props.onReturn){
+      this.props.onReturn();
+    }else{
+      console.debug();
+    }
   };
 
   render() {
+    console.debug("Results");
     console.debug('RESULTS!!!!', this.props.result)
     return (
-      <React.Fragment>
+      <React.Fragment> 
               <div className="row">
                   
               </div>
@@ -85,6 +91,13 @@ class Result extends Component {
                             target='_blank'
                             rel='noopener noreferrer'
                           ><FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/> Click here to go to the Globus data repository</a>
+                      </div>
+                    )}
+                      {this.props.result.entity.uuid && (
+                        <div className="d-none">
+                          <a
+                            href={this.props.result.entity.entity_type+"/"+this.props.result.entity.uuid}
+                          ><FontAwesomeIcon icon={faLink} data-tip data-for='link_tooltip'/> View in Ingest</a>
                       </div>
                     )}
               </div>
