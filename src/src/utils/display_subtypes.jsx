@@ -190,6 +190,13 @@ export function generateDisplaySubtype( entity) {
     return display_subtype
 };
 
+
+export function generateDisplaySubtypeSimple_UBKG(datatype, datatypeList) {
+  // console.debug('%c⊙', 'color:#00ff7b', "generateDisplaySubtypeSimple_UBKG", datatype, datatypeList);
+  const assayDetail = datatypeList.find(({ name }) => name === datatype);
+  return assayDetail.description
+}
+
 export function generateDisplaySubtype_UBKG( entity) {
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'

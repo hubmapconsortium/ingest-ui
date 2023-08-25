@@ -7,7 +7,7 @@ import SearchComponent from "../search/SearchComponent";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
 
 import { getPublishStatusColor } from "../../utils/badgeClasses";
-import { generateDisplaySubtype_UBKG } from "../../utils/display_subtypes";
+import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
 // import { PrettyLog } from "../../utils/prettyLogs";
 import SourceTable from "../ui/table.jsx";
 
@@ -70,6 +70,7 @@ export function CollectionForm (props){
   // Props
   var [isNew] = useState(props.newForm);
   var [editingCollection] = useState(props.editingCollection);
+  var [datatypeList] = useState(props.dtl_all);
   // var [authToken] = useState(props.authToken);
 
 
@@ -82,7 +83,7 @@ export function CollectionForm (props){
         for (const entity of editingCollection.datasets) {
           //When coming from the Entity, the Datasets use data_types, from the Search UI they pass display_subtype instead
           if (entity.data_types && entity.data_types.length > 0) {
-            var subtype = generateDisplaySubtype_UBKG(entity);
+            var subtype = generateDisplaySubtypeSimple_UBKG(entity.data_types[0],props.dtl_all);
             console.debug('%c⊙', 'color:#00ff7b', "subtype", subtype);
             entity.display_subtype = subtype;
             // entity.display_subtype = entity.data_types[0];
@@ -112,13 +113,14 @@ export function CollectionForm (props){
     if (!selectedSources.includes(event.row.uuid)) {
       setSourceDatasetDetails((rows) => [...rows, event.row]); 
       setSelectedSources((UUIDs) => [...UUIDs, event.row.uuid]);
+
       // The state might not update in time so we'll clone push and set
-      // var currentUUIDs = sourceDatasetDetails.map(({ uuid }) => uuid)
-      // currentUUIDs.push(event.row.uuid);
+      var currentUUIDs = sourceDatasetDetails.map(({ uuid }) => uuid)
+      currentUUIDs.push(event.row.uuid);
       console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
       setFormValues((prevValues) => ({
         ...prevValues,
-        'dataset_uuids': selectedSources,
+        'dataset_uuids':currentUUIDs,
       }))
       setLookupShow(false); 
     } else {
@@ -129,12 +131,18 @@ export function CollectionForm (props){
 
   const sourceRemover = (row, index) => {
     var sourceUUIDList = selectedSources;
+    let filteredUUIDs = sourceUUIDList.filter((item) => item !== row.uuid)
+    setSelectedSources(filteredUUIDs);
+    console.debug('%c⊙', 'color:#00ff7b', "filteredUUIDs", filteredUUIDs);
+    
     var sourceDetailList = sourceDatasetDetails;
-    setSelectedSources(sourceUUIDList.filter((item, i) => i !== row));
-    setSourceDatasetDetails(sourceDetailList.filter((item) => item.uuid !== row.uuid));
+    let filteredDetailList = sourceDetailList.filter((item, i) => item.uuid !== row.uuid)
+    setSourceDatasetDetails(filteredDetailList);
+    console.debug('%c⊙', 'color:#00ff7b', "filtered Details", filteredDetailList );
+
     setFormValues((prevValues) => ({
-      ...prevValues,
-      'dataset_uuids': selectedSources,
+        ...prevValues,
+        'dataset_uuids': filteredUUIDs,
     }))
   };
 
@@ -144,8 +152,8 @@ export function CollectionForm (props){
       console.debug("response.data.error", response.data.error);
       errMsg.message = response.data.error;
     } else {
-      console.debug("response.data", response.data);
-      errMsg.message = response.data.toString();
+      console.debug("response", response);
+      // errMsg.message = response.toString();
     }
     console.debug("ERRMSG", errMsg);
     props.reportError(response,);
@@ -171,8 +179,9 @@ export function CollectionForm (props){
 
   const handleInputUUIDs = (event) => {
     event.preventDefault();
+    console.debug('%c⊙', 'color:#00ff7b', "FORM VALS", formValues.dataset_uuids );
     // const { name, value, type } = event.target;
-    if (!hideUUIDList && formValues.dataset_uuids.length > 0) {
+    if (!hideUUIDList) {
       handleUUIDListLoad()
     } else {
       setHideUUIDList(!hideUUIDList)
@@ -185,53 +194,51 @@ export function CollectionForm (props){
   const handleUUIDListLoad = () => {
     var value = formValues.dataset_uuids
     var uuidArray = value;
-    console.debug('%c⊙', 'color:#00ff7b', "YUUID", uuidArray);
-    // setLoadUUIDList(true)
     if (typeof value === 'string' || value instanceof String) {
       uuidArray = value.split(",")
     }
     var sourceDetailUUIDs = sourceDatasetDetails.map(({ uuid }) => uuid)
-    
-    // console.debug("uuidArray",uuidArray);
-    for (var ds of uuidArray) {
-      ds = ds.split(' ').join('');
+    for (var datatypeID of uuidArray) {
+      let ds = datatypeID.split(' ').join('');
       console.debug(ds);
-      console.debug('%c⊙', 'color:#00ff7b', "sourceDetailUUIDs", sourceDetailUUIDs,sourceDetailUUIDs.includes(ds));
-      // dont even ping the server if it's useless
-      if (!sourceDetailUUIDs.includes(ds)) {
-        setLoadingDatasets(true)
-        entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((response) => {
-            // @TODO why is it not coming back as an actua catchable error though??
-            if (response.status !== 200) {
-              // console.debug("UNPARSED ER`RR`",response);
-              // So we're getting BOTH this check AND the catch below.  Why?
-              handleErrorParse(response);
-              // setFormErrors((prevValues) => ({
-              //   ...prevValues,
-              //   'dataset_uuids': response.results.error,
-              // }))
+      setLoadingDatasets(true)
+      entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((response) => {
+          // @TODO why is it not coming back as an actua catchable error though??
+          if (response.status !== 200) {
+            handleErrorParse(response);
+          } else {
+            let row = response.results;
+            if (!sourceDetailUUIDs.includes(row.uuid)) {
+              // New additon to the set
+              if (!row.display_subtype && row.data_types && row.data_types[0].length > 0) {
+                // If it comes from the selector modal it has proper Data Type rendering,
+                // but this is missing when called from input
+                row.display_subtype =  generateDisplaySubtypeSimple_UBKG(row.data_types[0],props.dtl_all);
+                setSourceDatasetDetails((rows) => [...rows, row]);
+                setLoadingDatasets(false)
+              }
             } else {
-              setSourceDatasetDetails((rows) => [...rows, response.results]);
-              setLoadingDatasets(false)
+              console.debug('%c⭘', 'color:#ffe921', "Already in List", selectedSources, ds);
             }
-          })
-          .catch((error) => {
-            console.debug("CATCHerror", error);
-            // console.debug("error.data",error.data);
-            handleErrorParse(error);
-            setLoadUUIDList(false)
-            setLoadingDatasets(false)
-          });
-      } else {
-        console.debug('%c⭘', 'color:#ffe921', "Already in List", selectedSources, ds);
-      }
+          }
+        })
+        .catch((error) => {
+          console.debug("CATCHerror", error);
+          // console.debug("error.data",error.data);
+          handleErrorParse(error);
+          setLoadUUIDList(false)
+          setLoadingDatasets(false)
+        });
+   
       setHideUUIDList(true)
       setLoadUUIDList(false)
       setLoadingDatasets(false)
       // setHideUUIDList(!hideUUIDList)
     };   
   }
+
+
 
   function removeEmpty(obj) {
     return Object.fromEntries(
@@ -650,7 +657,7 @@ export function CollectionForm (props){
                   onClick={(event) => handleInputUUIDs(event)}
                 >
                   {hideUUIDList && (<>Bulk</>)}
-                  {!hideUUIDList && (<>Save</>)}
+                  {!hideUUIDList && (<>Add</>)}
                   <FontAwesomeIcon
                     className='fa button-icon m-2'
                     icon={faPenToSquare}

@@ -90,6 +90,7 @@ export const RenderCollection = (props) => {
             editingCollection={entity_data} 
             // writeable={true}
             dataGroups={dataGroups}
+            dtl_all={props.dtl_all}
             newForm={ isNew ? true : null}
             />
         </div>

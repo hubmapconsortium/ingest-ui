@@ -79,9 +79,11 @@ export function App (props){
   var [groupsToken, setGroupsToken] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
   var [isLoading, setIsLoading] = useState(true);
+  var [dtloading, setDTLoading] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
   var [dataTypeListAll, setDataTypeListAll] = useState({});
   var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
+  var [displaySubtypes, setDisplaySubtypes] = useState();
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   let navigate = useNavigate();
@@ -160,9 +162,17 @@ export function App (props){
         // setIsLoading(false)
         ubkg_api_get_assay_type_set()
           .then((response) => {
-              let dataAll = response.data.result;
-              setDataTypeListAll(dataAll);
-              // setIsLoading(false)
+            let dataAll = response.data.result;
+            let displayAll = [];
+            setDataTypeListAll(dataAll);
+            console.debug('%c⊙', 'color:#00ff7b', "DT ALL",dataAll );
+            for (const dt of dataAll) {
+              displayAll.push({name:dt.name, description:dt.description});
+            }
+            setDisplaySubtypes(displayAll);
+            console.debug('%c⊙', 'color:#00ff7b', "DT SUBTYPES",displaySubtypes,displayAll );
+            setDTLoading(false)
+            // setIsLoading(false)
           })
           .catch(error => {
             console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
@@ -182,7 +192,7 @@ export function App (props){
       });
   }, [ ]);
   
- 
+  
 
 
   function Logout(){
@@ -262,7 +272,7 @@ export function App (props){
     }
     var formatError = FormatError(error);
     console.debug('%c⭗', 'color:#ff005d', "reportError", error, formatError);
-    // setErrorInfo(errString);
+    setErrorInfo(errString);
     setErrorShow(true);
   }
 
@@ -354,7 +364,7 @@ export function App (props){
       </Drawer>
 
 
-      {isLoading &&(
+      {isLoading && dtloading &&(
         <LinearProgress />
       )}
 
@@ -415,7 +425,7 @@ export function App (props){
           </Routes>
         )}
 
-          {authStatus && !timerStatus && !isLoading && !unregStatus &&(
+          {authStatus && !timerStatus && !isLoading && !dtloading && !unregStatus &&(
           <Paper className="px-5 py-4">
 
 
@@ -453,7 +463,7 @@ export function App (props){
                   <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeListAll} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -467,7 +477,7 @@ export function App (props){
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
               <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
               <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
