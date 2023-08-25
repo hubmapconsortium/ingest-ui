@@ -4,7 +4,8 @@ import {
   useNavigate,
   useLocation,
   Routes,
-  Route} from "react-router-dom";
+  Route,
+  Link} from "react-router-dom";
 
 // Login Management
 import Login from './components/ui/login';
@@ -86,6 +87,7 @@ export function App (props){
   var [displaySubtypes, setDisplaySubtypes] = useState();
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
+  var [bannerShow,setBannerShow] = useState(true);
   let navigate = useNavigate();
   
   const userContextText = useContext(UserContext);
@@ -362,8 +364,14 @@ export function App (props){
 
 
       </Drawer>
-
-
+      { !isLoading && bannerShow && (
+          <div className="alert alert-info" role="alert">
+            <h2>HuBMAP Data Providers:</h2>
+             <Typography> The Data Coordination Working Group (DCWG) and HIVE are in the process of releasing updated schemas for all HuBMAP organs, samples, and assay types. <strong>The HIVE will no longer accept any new data submissions using the previous metadata and directory schemas. Please prepare any new data submissions using the draft next-generation metadata and directory schemas</strong> that are being finalized by the DCWG, and which are linked from <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank"> this page</Link>. </Typography>
+             <Typography>The schemas you should use going forward are marked <strong>"use this one"</strong> on the schema pages for each assay. You can validate finalized (non-draft) <strong>metadata schemas</strong> using the <Link to="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit" target="_blank">process outlined here</Link>.  <strong>We aim to finalize all the remaining next-gen metadata and directory schemas before Sept. 30.</strong> This will be done incrementally and as more metadata and directory schemas are finalized, we will send updates. </Typography>
+             <Typography> The HIVE will still process any datasets using the previous schemas that were fully submitted and uploaded prior to August 7, or that had submission errors that are currently being worked through. Please contact  <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions</Typography>
+          </div>
+      )}
       {isLoading && dtloading &&(
         <LinearProgress />
       )}
