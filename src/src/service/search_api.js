@@ -153,16 +153,31 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
         }
 
         if (fields["keywords"]) {
+          if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0) {
+            boolQuery.must(esb.matchQuery("hubmap_id", fields["keywords"] ));
+            // boolQuery.must(esb.matchQuery("hubmap_id", ("\"" +fields["keywords"]+ "\"" ) ));
+          } else {
             boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"]));
+          }
         }
       }
     }
-  requestBody
-    .query(boolQuery)
-    .from(from)
-    .size(size)
-    .sort(esb.sort('last_modified_timestamp', 'asc'))
-    .source(colFields);
+  if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1) {
+    // console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", boolQuery );
+    requestBody
+      .query(boolQuery)
+      .from(from)
+      .size(1)
+      .sort(esb.sort('last_modified_timestamp', 'asc'))
+      .source(colFields);
+  } else {
+    requestBody
+      .query(boolQuery)
+      .from(from)
+      .size(size)
+      .sort(esb.sort('last_modified_timestamp', 'asc'))
+      .source(colFields);
+  }
   return requestBody.toJSON();
 
 }
