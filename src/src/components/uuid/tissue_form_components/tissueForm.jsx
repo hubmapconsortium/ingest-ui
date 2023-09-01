@@ -2400,39 +2400,7 @@ handleAddImage = () => {
           {((!this.state.readOnly || this.state.metadatas.length > 0) && 
               !this.state.multiple_id) && (
               <div className="form-group">
-                
                 <div>
-                  {!this.state.readOnly && (
-                    <div>
-                      <div className="">
-                        <Button
-                          type="button"
-                          onClick={this.handleAddMetadata}
-                          variant="outlined"
-                          data-tip
-                          data-for="add_meta_tooltip"
-                        >
-                          <FontAwesomeIcon
-                            className="inline-icon"
-                            icon={faPaperclip}
-                            title="Uploaded meta data"
-                          />
-                            Add a Metadata file
-                          </Button>
-                           <ReactTooltip
-                              id="add_meta_tooltip"
-                              className={"tooltip"}
-                              place="top"
-                              type="info"
-                              effect="solid"
-                          >
-                            <p>
-                                Click here to attach a single or multiple metadata file(s)
-                            </p>
-                            </ReactTooltip>
-                      </div>
-                    </div>
-                  )}
                   {this.state.metadatas.map(metadata => (
                     <MetadataUpload
                       key={metadata.id}
@@ -2448,7 +2416,6 @@ handleAddImage = () => {
                     />
                   ))}
                 </div>
-                
               </div>
             )}
             {((!this.state.readOnly || this.state.images.length > 0) &&
