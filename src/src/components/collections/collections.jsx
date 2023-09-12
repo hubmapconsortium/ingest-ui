@@ -33,12 +33,14 @@ import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-
-
 import Result from "../uuid/result";
+import Typography  from '@mui/material/Typography';import { styled } from "@mui/material/styles";
 
-import Typography  from '@mui/material/Typography';
-
+const StyledTextField = styled(TextField)`
+  textarea {
+    resize: both;
+  }
+`;
 export function CollectionForm (props){
   let navigate = useNavigate();
   var [successDialogRender, setSuccessDialogRender] = useState(false);
@@ -684,11 +686,13 @@ export function CollectionForm (props){
                         //   display: 'flex',
                         //   flexDirection: 'row', 
                       }}>
-                      <TextField
+                      <StyledTextField
                         name="dataset_uuids"
                         id="dataset_uuids"
                         error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
                         disabled={false}
+                        multiline
+                        rows={2}
                         inputProps={{ 'aria-label': 'description' }}
                         placeholder={"List of Dataset Hubmap IDs or UUIDs,  Comma Seperated "}
                         variant="standard"
