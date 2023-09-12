@@ -34,7 +34,8 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import Result from "../uuid/result";
-import Typography  from '@mui/material/Typography';import { styled } from "@mui/material/styles";
+import Typography from '@mui/material/Typography';
+import { styled } from "@mui/material/styles";
 
 const StyledTextField = styled(TextField)`
   textarea {
