@@ -13,7 +13,7 @@ import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
 import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_PUBLICATION, COLUMN_DEF_UPLOADS } from './table_constants';
 import { api_search2, search_api_search_group_list } from '../../service/search_api';
-import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states } from '../../service/ingest_api';
+import { ingest_api_users_groups, ingest_api_all_user_groups, ingest_api_allowable_edit_states,ingest_api_all_groups } from '../../service/ingest_api';
 import { entity_api_get_entity } from '../../service/entity_api';
 import { RenderError } from '../../utils/errorAlert'
 import { toTitleCase } from '../../utils/string_helper'
@@ -35,6 +35,7 @@ class SearchComponent extends Component {
     super(props); 
     // 
     this.state = {
+      allGroups: [],
       column_def: COLUMN_DEF_DONOR, 
       editForm: false,
       entity_type_list: SAMPLE_TYPES,
@@ -71,7 +72,17 @@ class SearchComponent extends Component {
     };
   }
 
+  
+
   componentDidMount() {
+    ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((res) => {
+        var allGroups = this.sortGroupsByDisplay(res.results);
+        this.setState({ allGroups: allGroups }, () => {});
+      })
+      .catch((err) => {
+        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+      });
 
     ubkg_api_get_organ_type_set()
       .then((res) => {
@@ -258,24 +269,14 @@ class SearchComponent extends Component {
       });
   }
 
-  const config = {
-   
-    headers: {
-      Authorization:
-        "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-      "Content-Type": "application/json"
-    }
-  };
-
   ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
       .then((res) => {
-        
         const groups = res.results.filter(
           g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
         );
 
         this.setState({
-          groups: groups
+          groups: ["groups"]
         });
       })
       .catch((err) => {
@@ -288,6 +289,48 @@ class SearchComponent extends Component {
       });
   }
 
+  // @TODO: Possily move into groups service?
+  //  Not actually reltated to the user so not going to user service
+  // only used to assemblw dropdown though
+  sortGroupsByDisplay = (obj) => {
+    var result = {
+      TMC: [],
+      RTI: [],
+      TTD: [],
+      DP: [],
+      TC: [],
+      MC: [],
+      EXT: [],
+      IEC: []
+    };
+    var sortedResult = [];
+    // put em all in their right slots 
+    for (var key in obj) {
+      var shortname = obj[key].shortname;
+      console.debug('%c⊙', 'color:#00ff7b', "shortname", shortname );
+      var prefix = shortname.split(" ")
+      if (["TMC", "RTI", "TTD", "DP", "TC", "MC", "EXT", "IEC"].includes(prefix[0])) {
+        result[prefix[0]].push({
+          shortName: obj[key].shortname,
+          uuid: obj[key].uuid
+        });
+      } 
+    }
+    // compile them by slot in specific order
+    sortedResult.push(
+      result["TMC"],
+      result["RTI"],
+      result["TTD"],
+      result["DP"],
+      result["TC"],
+      result["MC"],
+      result["EXT"],
+      result["IEC"]
+    );
+    // FLatten it!
+    var sortedResultFlat = sortedResult.flat();
+    return sortedResultFlat;
+}
 
 
   handleShowSearch  = (show) => {
@@ -336,7 +379,6 @@ class SearchComponent extends Component {
         });
     }
     if (prevState.editEntity !== this.state.editEntity && (!this.state.editEntity || this.state.editEntity === null)) {
-
       this.setState({
         editForm: false,
         show_modal: false,
@@ -345,6 +387,14 @@ class SearchComponent extends Component {
         }, () => {   
       });
     }
+    // console.debug('%c⊙', 'color:#00ff7b', "AllGroups", prevState.allGroups, this.state.allGroups );
+    // if (prevState.allGroups !== this.state.allGroups) {
+    //   this.setState({
+    //     allGroups: ["Test"]
+    //   }, () => {  
+    //     console.debug('%c⊙', 'color:#00ff7b', "STATE RESET ALLGROUPS" );
+    //   });
+    // }
     
   }
 
@@ -751,19 +801,14 @@ class SearchComponent extends Component {
     return  (
         
         <div style={{ width: '100%' }}>
-
-
-
           {this.state.show_search && (
             this.renderFilterControls()
             )}
 
-            
           {this.state.loading &&(
              this.renderLoadingBar()
           )}
             
-
           {this.state.show_search && this.state.datarows &&
                     this.state.datarows.length > 0 && (
               this.renderTable())
@@ -790,7 +835,7 @@ class SearchComponent extends Component {
       </span> <br /><br />
       </div>
       );
-}
+  }
 
 
 
@@ -808,10 +853,20 @@ renderInfoPanel() {
         </span> <br /><br />
         </div>
         );
+}
+  
+renderGroupOptions = () => {
+    this.state.allGroups.map((group, index) => {
+      console.debug('%c⊙', 'color:#00ff7b', "group", group.shortName);
+       return (
+          <option key={index} value={group.uuid}>
+            {group.shortname}
+          </option>
+        ); 
+    });
   }
 
   renderLoadingBar = () => {
-
     if( this.state.loading && !this.state.page > 0 ){
       return (
         <div>
@@ -819,7 +874,6 @@ renderInfoPanel() {
         </div>
       )
     }
-      
   }
 
   renderTable() {
@@ -877,7 +931,7 @@ renderInfoPanel() {
               {this.state.errorState && (
                 <RenderError error={this.state.error} />
               )} 
-              
+
               <form onSubmit={this.handleSearchButtonClick}>
                 <Grid 
                   container 
@@ -896,14 +950,15 @@ renderInfoPanel() {
                         id="group"
                         className="select-css"
                         onChange={this.handleInputChange}
-                        value={this.state.search_filters.group}
-                        >
-                      {search_api_search_group_list().map((group, index) => {
-                              return (
-                                <option key={group.uuid} value={group.uuid}>
-                                  {group.shortname}
-                                </option>
-                              ); 
+                        value={this.state.search_filters.group}>
+                          
+                        <option value="">All Components</option>
+                      {this.state.allGroups.map((group, index) => {
+                          return (
+                            <option key={index+1} value={Object.values(group)[1]}>
+                              { Object.values(group)[0]}
+                            </option>
+                          ); 
                       })}
                     </select>
                   </Grid>
