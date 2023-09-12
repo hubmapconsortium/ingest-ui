@@ -32,7 +32,7 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare,faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import Result from "../uuid/result";
 import Typography from '@mui/material/Typography';
 import { styled } from "@mui/material/styles";
@@ -62,6 +62,7 @@ export function CollectionForm (props){
     dataset_uuids: "",
     creators: [],
     contacts: [],
+    bulk_dataset_uuids:["","",""]
   });
   var [formValues, setFormValues] = useState({
     title: '',
@@ -208,8 +209,17 @@ export function CollectionForm (props){
       entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token)
         .then((response) => {
           // @TODO why is it not coming back as an actua catchable error though??
-          if (response.status !== 200) {
+          if ((response.status === 400 || response.status === 404) && response.data && response.data.error) {
+            var err = response.data.error.split(': ');
+            // var displayError = err[1]+" ("+err[0]+")";
+            setFormErrors((prevValues) => ({
+              ...prevValues,
+              'bulk_dataset_uuids': err,
+            }))
+          }
+          else if (response.status !== 200 && response.status !== 400 && response.status !== 404) { //Not Validation Errors 
             handleErrorParse(response);
+            console.debug('%c⊕', 'color:#00e5ff', "response", response);
           } else {
             let row = response.results;
             if (!sourceDetailUUIDs.includes(row.uuid)) {
@@ -224,11 +234,13 @@ export function CollectionForm (props){
             } else {
               console.debug('%c⭘', 'color:#ffe921', "Already in List", selectedSources, ds);
             }
+             setFormErrors((prevValues) => ({
+              ...prevValues,
+              'bulk_dataset_uuids': ["","","  "],
+            }))
           }
         })
-        .catch((error) => {
-          console.debug("CATCHerror", error);
-          // console.debug("error.data",error.data);
+        .catch((error) => {          
           handleErrorParse(error);
           setLoadUUIDList(false)
           setLoadingDatasets(false)
@@ -425,7 +437,6 @@ export function CollectionForm (props){
     };
 
     var renderTableRows = (rowDetails) => {
-  
       if (rowDetails.length > 0) {
         return rowDetails.map((row, index) => {
           return (
@@ -440,27 +451,13 @@ export function CollectionForm (props){
             </TableRow>
           );
         });
-      
       }
     }
   
 
   
     var renderContribTable = () => {
-    
       return (
-        //   <SourceTable
-        //     headers={{
-        //       name:"Name",
-        //       affiliation:"Affiliation",
-        //       orcid_id:"Orcid Id",
-        //     }}
-        //     rows={formValues.creators}
-        //     cellAction={() => sourceRemover()}
-        //     writeable={true}
-        //   />  
-
-
         <TableContainer
           component={Paper}
           style={{ maxHeight: 450 }}
@@ -480,7 +477,7 @@ export function CollectionForm (props){
         </TableContainer>
       )
     }
-
+  
     var renderContactTable = () => {
       return (
         <TableContainer
@@ -503,7 +500,6 @@ export function CollectionForm (props){
       )
     }
 
-
     var creationSuccess = (response) => {
       var resultInfo = {
         entity: response.results
@@ -515,15 +511,10 @@ export function CollectionForm (props){
       // console.debug();
     }
 
-  var formatDatatype = (row) => {
-    console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.data_types);
-    return ("DT");
-  }
-
- 
- 
-
-  
+    var formatDatatype = (row) => {
+      console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.data_types);
+      return ("DT");
+    }
     return (
       <Box
         component="form"
@@ -634,6 +625,19 @@ export function CollectionForm (props){
                 )}
               </Table>
             </TableContainer>
+            {formErrors.bulk_dataset_uuids[0].length > 0 && (
+              <Box className="mt-2 w-100" width="100%" display="flex" sx={{
+                "backgroundColor": "rgb(211, 47, 47)",
+                "color": "white",
+                "padding": "5px",
+                "borderRadius": "5px",
+              }} >
+                <Typography align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{ padding: 1, margin: "0 50px 0 0", }} />&nbsp;<strong>Error:&nbsp;</strong></Typography>
+                {formErrors.bulk_dataset_uuids[1]}: {formErrors.bulk_dataset_uuids[2]}
+                <Typography sx={{ "fontSize": "0.75em", "lineHeight": "2.3em", "color": "rgb(228, 228, 228)" }}>&nbsp;&nbsp;&nbsp;({formErrors.bulk_dataset_uuids[0]})</Typography>
+              </Box>
+            )}
+
             <Box className="mt-2 w-100" width="100%" display="flex">
               <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
                 <Button
