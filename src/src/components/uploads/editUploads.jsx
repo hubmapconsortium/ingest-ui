@@ -578,7 +578,8 @@ class EditUploads extends Component{
    
     if (["SUBMITTED", "VALID", "INVALID", "ERROR", "NEW"].includes(
       this.state.status.toUpperCase() 
-      ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
+      // ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
+      ) && (this.state.data_admin)) {
       return (
               <Button
               variant="contained" 
