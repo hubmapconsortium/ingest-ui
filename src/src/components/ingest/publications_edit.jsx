@@ -316,12 +316,12 @@ class PublicationEdit extends Component {
         this.setState({
           source_uuids: this.props.editingPublication.direct_ancestors,
         });
-      } catch {}
+      } catch { }
 
       if (this.props.editingPublication === "") {
         savedGeneticsStatus = false;
       } else {
-        savedGeneticsStatus =false
+        savedGeneticsStatus = false
       }
 
       this.setState(
@@ -352,7 +352,7 @@ class PublicationEdit extends Component {
             : undefined,
           errorMsgShow:
             this.props.editingPublication.status.toLowerCase() === "error" &&
-            this.props.editingPublication.message
+              this.props.editingPublication.message
               ? true
               : false,
           statusErrorMsg: this.props.editingPublication.message,
@@ -415,25 +415,34 @@ class PublicationEdit extends Component {
       });
 
       // Sets the Hubmap ID labels for Previous and Next version Buttons
+      
+      // Sets the Hubmap ID labels for Previous and Next version Buttons  
       if (this.props.editingPublication.next_revision_uuid) {
-        entity_api_get_entity(
-          this.props.editingPublication.next_revision_uuid,
-          JSON.parse(localStorage.getItem("info")).groups_token
-        )
+        console.debug("next_revision_uuid", this.props.editingPublication.next_revision_uuid);
+        entity_api_get_entity(this.props.editingPublication.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
-            this.setState({ nextHID: response.results.hubmap_id });
+            console.debug("next_revision_uuid RESPONSE", response.results);
+            if (response.results.hubmap_id) {
+              this.setState({ nextHID: response.results.hubmap_id })
+            } else {
+              console.debug("next_revision_uuid", response);
+            }
           })
-          .catch((error) => {});
+          .catch((error) => {
+            console.debug("next_revision_uuid", error);
+            this.props.reportError(error);
+          })
       }
       if (this.props.editingPublication.previous_revision_uuid) {
-        entity_api_get_entity(
-          this.props.editingPublication.previous_revision_uuid,
-          JSON.parse(localStorage.getItem("info")).groups_token
-        )
+        console.debug("prev_revision_uuid", this.props.editingPublication.previous_revision_uuid);
+        entity_api_get_entity(this.props.editingPublication.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
-            this.setState({ prevHID: response.results.hubmap_id });
+            this.setState({ prevHID: response.results.hubmap_id })
           })
-          .catch((error) => {});
+          .catch((error) => {
+            console.debug("porev", error);
+            this.props.reportError(error);
+          })
       }
     }
   }
