@@ -32,13 +32,17 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-
-
-import Result from "../uuid/result";
-
-import Typography  from '@mui/material/Typography';
-
+import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare,faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
+import CloseIcon from '@mui/icons-material/Close';
+import { styled } from "@mui/material/styles";
+const StyledTextField = styled(TextField)`
+  textarea {
+    resize: both;
+  }
+`;
 export function CollectionForm (props){
   let navigate = useNavigate();
   var [successDialogRender, setSuccessDialogRender] = useState(false);
@@ -48,17 +52,22 @@ export function CollectionForm (props){
   var [selectedSources, setSelectedSources] = useState([]);
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
+  var [warningOpen, setWarningOpen] = React.useState(true);
   var [lookupShow, setLookupShow] = useState(false);
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
   var [entityInfo, setEntityInfo] = useState();
+  var [formWarnings, setFormWarnings] = useState({
+    bulk_dataset_uuids:""
+  });
   var [formErrors, setFormErrors] = useState({
     title:"",
     description: "",
     dataset_uuids: "",
     creators: [],
     contacts: [],
+    bulk_dataset_uuids:["","",""]
   });
   var [formValues, setFormValues] = useState({
     title: '',
@@ -72,7 +81,6 @@ export function CollectionForm (props){
   var [editingCollection] = useState(props.editingCollection);
   var [datatypeList] = useState(props.dtl_all);
   // var [authToken] = useState(props.authToken);
-
 
   useEffect(() => {
     if (editingCollection) {  
@@ -103,11 +111,6 @@ export function CollectionForm (props){
       setLoadingDatasets(false);
     }
   }, [editingCollection]);
-
-
-  const completionClose = (data) => {
-    navigate("/");  
-  }
 
   const handleSelectClick = (event) => {
     if (!selectedSources.includes(event.row.uuid)) {
@@ -185,57 +188,83 @@ export function CollectionForm (props){
       handleUUIDListLoad()
     } else {
       setHideUUIDList(!hideUUIDList)
-
     }
-  
   };
 
 
   const handleUUIDListLoad = () => {
     var value = formValues.dataset_uuids
     var uuidArray = value;
+    var errCount = 0;
+    var processed = sourceDatasetDetails.map(({ uuid }) => uuid); //the state might not update fast enough sequential dupes
+    setFormErrors((prevValues) => ({
+      ...prevValues,
+      'bulk_dataset_uuids': ["","",""],
+    }))
+    setWarningOpen(false)
     if (typeof value === 'string' || value instanceof String) {
       uuidArray = value.split(",")
     }
-    var sourceDetailUUIDs = sourceDatasetDetails.map(({ uuid }) => uuid)
+
     for (var datatypeID of uuidArray) {
       let ds = datatypeID.split(' ').join('');
-      console.debug(ds);
+      console.debug('%c⊙', 'color:#00ff7b', "ds",ds, processed.includes(ds), processed );
       setLoadingDatasets(true)
-      entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token)
-        .then((response) => {
-          // @TODO why is it not coming back as an actua catchable error though??
-          if (response.status !== 200) {
-            handleErrorParse(response);
-          } else {
-            let row = response.results;
-            if (!sourceDetailUUIDs.includes(row.uuid)) {
-              // New additon to the set
-              if (!row.display_subtype && row.data_types && row.data_types[0].length > 0) {
-                // If it comes from the selector modal it has proper Data Type rendering,
-                // but this is missing when called from input
-                row.display_subtype =  generateDisplaySubtypeSimple_UBKG(row.data_types[0],props.dtl_all);
-                setSourceDatasetDetails((rows) => [...rows, row]);
-                setLoadingDatasets(false)
-              }
-            } else {
-              console.debug('%c⭘', 'color:#ffe921', "Already in List", selectedSources, ds);
+      if (ds.length !== 0 && !processed.includes(ds)) { 
+        console.debug('%c⊙', 'color:#00ff7b', "ds", ds, processed.includes(ds) );
+        entity_api_get_entity(ds, JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((response) => {
+            if ((response.status === 400 || response.status === 404) && response.data && response.data.error) {
+              // Not Found / Invalid
+              errCount++;
+              setFormErrors((prevValues) => ({
+                ...prevValues,
+                'bulk_dataset_uuids': response.data.error.split(': '),
+              }))
             }
-          }
-        })
-        .catch((error) => {
-          console.debug("CATCHerror", error);
-          // console.debug("error.data",error.data);
-          handleErrorParse(error);
-          setLoadUUIDList(false)
-          setLoadingDatasets(false)
-        });
-   
+            else if (response.status !== 200 && response.status !== 400 && response.status !== 404) {
+              //Not Validation Errors but AN error
+              errCount++;
+              handleErrorParse(response);
+            } else {
+              let row = response.results;
+              if (!processed.includes(row.uuid)) { 
+                if (!row.display_subtype && row.data_types && row.data_types[0].length > 0) {
+                  // entity does not return display subtype, so we'll generate it
+                  row.display_subtype = generateDisplaySubtypeSimple_UBKG(row.data_types[0], props.dtl_all);
+                  setSourceDatasetDetails((rows) => [...rows, row]);
+                  processed.push(row.uuid.toString());
+                }
+              } else {
+                setWarningOpen(true)
+                setFormWarnings((prevValues) => ({
+                  ...prevValues,
+                  'bulk_dataset_uuids': "UUID " + ds + " is already in the list",
+                }))
+              }
+            }
+          })
+          .catch((error) => {
+            handleErrorParse(error);
+            setLoadUUIDList(false)
+            setLoadingDatasets(false)
+          });
+      } else if (processed.includes(ds)) {
+        setWarningOpen(true)
+        setFormWarnings((prevValues) => ({
+          ...prevValues,
+          'bulk_dataset_uuids': "UUID " + ds + " is already in the list",
+        }))
+      }
+    };   
+    setLoadingDatasets(false)
+    if (errCount >0) { 
+      // If we've got no errors we can shrinkydink the box
+      console.debug('%c⊙', 'color:#00ff7b', "No Errors" );     
       setHideUUIDList(true)
       setLoadUUIDList(false)
-      setLoadingDatasets(false)
-      // setHideUUIDList(!hideUUIDList)
-    };   
+    }
+    
   }
 
 
@@ -422,7 +451,6 @@ export function CollectionForm (props){
     };
 
     var renderTableRows = (rowDetails) => {
-  
       if (rowDetails.length > 0) {
         return rowDetails.map((row, index) => {
           return (
@@ -437,27 +465,13 @@ export function CollectionForm (props){
             </TableRow>
           );
         });
-      
       }
     }
   
 
   
     var renderContribTable = () => {
-    
       return (
-        //   <SourceTable
-        //     headers={{
-        //       name:"Name",
-        //       affiliation:"Affiliation",
-        //       orcid_id:"Orcid Id",
-        //     }}
-        //     rows={formValues.creators}
-        //     cellAction={() => sourceRemover()}
-        //     writeable={true}
-        //   />  
-
-
         <TableContainer
           component={Paper}
           style={{ maxHeight: 450 }}
@@ -477,7 +491,7 @@ export function CollectionForm (props){
         </TableContainer>
       )
     }
-
+  
     var renderContactTable = () => {
       return (
         <TableContainer
@@ -500,7 +514,6 @@ export function CollectionForm (props){
       )
     }
 
-
     var creationSuccess = (response) => {
       var resultInfo = {
         entity: response.results
@@ -512,15 +525,10 @@ export function CollectionForm (props){
       // console.debug();
     }
 
-  var formatDatatype = (row) => {
-    console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.data_types);
-    return ("DT");
-  }
-
- 
- 
-
-  
+    var formatDatatype = (row) => {
+      console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.data_types);
+      return ("DT");
+    }
     return (
       <Box
         component="form"
@@ -582,10 +590,7 @@ export function CollectionForm (props){
         
           {!loadingDatasets && (<>
           
-            <TableContainer
-              component={Paper}
-              style={{ maxHeight: 450 }}
-            >
+            <div style={{ maxHeight: 450, marginBottom: "10px" }}>
               <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
                 <TableHead className="thead-dark font-size-sm">
                   <TableRow className="   " >
@@ -630,7 +635,26 @@ export function CollectionForm (props){
                   </TableBody>
                 )}
               </Table>
-            </TableContainer>
+            </div>
+            {formErrors.bulk_dataset_uuids[0].length > 0 && (
+              <Alert variant="filled" severity="error">
+                <strong>Error:</strong> {formErrors.bulk_dataset_uuids[1]}: {formErrors.bulk_dataset_uuids[2]} ({formErrors.bulk_dataset_uuids[2]})
+              </Alert>
+            )}
+            {formWarnings.bulk_dataset_uuids.length > 0 && (
+              <Collapse in={warningOpen}>
+                <Alert
+                  severity='warning' variant='filled' sx={{ mt: 2 }}
+                  action={
+                    <IconButton aria-label="close" color="inherit" size="small"onClick={() => {setWarningOpen(false)}}>
+                      <CloseIcon fontSize="inherit" />
+                    </IconButton>}>
+                  <strong>Notice: </strong>{formWarnings.bulk_dataset_uuids}
+                </Alert>
+              </Collapse>
+             
+            )}
+
             <Box className="mt-2 w-100" width="100%" display="flex">
               <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
                 <Button
@@ -670,7 +694,8 @@ export function CollectionForm (props){
                   in={!hideUUIDList}
                   orientation="horizontal"
                   sx={{
-                    display: 'inline-flex',
+                    overflow: 'hidden',
+                    display: 'inline-box',
                   }}>
                   {loadUUIDList && (
                     <LinearProgress> </LinearProgress>
@@ -681,14 +706,17 @@ export function CollectionForm (props){
                       sx={{
                         verticalAlign: 'bottom',
                         minWidth: "400px",
+                        overflow: 'hidden',
                         //   display: 'flex',
                         //   flexDirection: 'row', 
                       }}>
-                      <TextField
+                      <StyledTextField
                         name="dataset_uuids"
                         id="dataset_uuids"
                         error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
                         disabled={false}
+                        multiline
+                        rows={2}
                         inputProps={{ 'aria-label': 'description' }}
                         placeholder={"List of Dataset Hubmap IDs or UUIDs,  Comma Seperated "}
                         variant="standard"
@@ -706,6 +734,12 @@ export function CollectionForm (props){
                   )}
                 </Collapse>
               </Box>
+
+              {!hideUUIDList && (
+                <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
+                  <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => {setHideUUIDList(true)}}><CancelPresentationIcon/></IconButton>
+                </Box>
+              )}
             
             </Box>
             {formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 && (

@@ -918,9 +918,6 @@ renderInfoPanel() {
                           value={this.state.search_filters.entityType}
                         >
                           <option value=""></option>
-
-                          
-
                           {this.state.entity_type_list.map((optgs, index) => {
                             return (
                               <optgroup
@@ -928,8 +925,6 @@ renderInfoPanel() {
                                 label="____________________________________________________________"
                               >
                                 {Object.entries(optgs).map(op => {
-                                  // 
-                                  // 
                                   return (
                                     <option key={op[1]} value={op[0]}>
                                       {(op[1])}
@@ -939,8 +934,6 @@ renderInfoPanel() {
                               </optgroup>
                             );
                           })}
-
-
                         </select>
                   </Grid>
                   <Grid item xs={12}>

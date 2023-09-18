@@ -194,7 +194,12 @@ export function generateDisplaySubtype( entity) {
 export function generateDisplaySubtypeSimple_UBKG(datatype, datatypeList) {
   // console.debug('%c⊙', 'color:#00ff7b', "generateDisplaySubtypeSimple_UBKG", datatype, datatypeList);
   const assayDetail = datatypeList.find(({ name }) => name === datatype);
-  return assayDetail.description
+  console.debug('%c⊙', 'color:#00ff7b', "assayDetail", assayDetail );
+  if (assayDetail !==undefined && assayDetail && assayDetail.description) {
+    return assayDetail.description
+  } else {
+    return "N/A"
+  }
 }
 
 export function generateDisplaySubtype_UBKG( entity) {
