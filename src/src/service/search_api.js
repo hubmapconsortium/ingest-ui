@@ -1,9 +1,10 @@
 // Search APIs
 
 import axios from "axios";
-import { GROUPS } from "./groups";
+// import { GROUPS } from "./groups";
 import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
 
+import {  ingest_api_all_user_groups} from './ingest_api';
 export const esb = require('elastic-builder');
 
 /*
@@ -187,20 +188,21 @@ export function fixKeywordText(text) {
 return x
 }
 
-// this is a shell function that reads from a static file groups.jsx
+// this WAS a  function that reads from a static file groups.jsx
 export function search_api_search_group_list() {
-  let groups = [];
-
-  GROUPS.forEach(function(group) { 
-    if(group.data_provider){  // only show the data_providers
-      groups.push(group);
-    }
-  });
- 
-  
-  return groups;
+   ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((res) => {
+        // no need to filter out the data_providers, the ingest api does that for us
+        let groups = res.results
+        return groups;
+       
+      })
+      .catch((err) => {
+        console.debug('%c⭗', 'color:#ff005d', "search_api_search_group_list error", err);
+        return err
+      });
 }
-
+  
 export function  search_api_get_assay_type(assay) { 
   return axios 
     .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`)

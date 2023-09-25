@@ -307,7 +307,7 @@ class SearchComponent extends Component {
     // put em all in their right slots 
     for (var key in obj) {
       var shortname = obj[key].shortname;
-      console.debug('%c⊙', 'color:#00ff7b', "shortname", shortname );
+      // console.debug('%c⊙', 'color:#00ff7b', "shortname", shortname );
       var prefix = shortname.split(" ")
       if (["TMC", "RTI", "TTD", "DP", "TC", "MC", "EXT", "IEC"].includes(prefix[0])) {
         result[prefix[0]].push({

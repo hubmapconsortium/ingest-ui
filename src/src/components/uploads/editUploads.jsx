@@ -35,7 +35,7 @@ import {
     entity_api_update_entity,
     entity_api_get_globus_url
 } from '../../service/entity_api';
-import { DATA_ADMIN, DATA_CURATOR } from '../../service/groups'
+import { DATA_ADMIN, DATA_CURATOR } from '../../service/user_service'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
 class EditUploads extends Component{
