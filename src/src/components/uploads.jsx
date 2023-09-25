@@ -27,22 +27,18 @@ export const RenderUpload = (props) => {
   const { uuid } = useParams();
 
   useEffect(() => {
-    console.debug("USEEFFECT");
     entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
-        console.debug(response);
           if (response.status === 200) {
             setEntity(response.results);
-            console.debug("entity_data", response.results);
             setLoading(false);
           }else{
-            console.debug(response.status, response.results.error);
-            // passError(response.status, response.results.error );
+            console.error(response.status, response.results.error);
             return(response.status, response.results.error );
           }
         })
         .catch((error) => {
-          console.debug(error);
+          console.error(error);
           return(error.status, error.results.error );
         });
   },  [uuid]);
@@ -59,38 +55,25 @@ export const RenderUpload = (props) => {
   }
   
 
-
-
-  // function passError(status, message) {
-  //  //console.debug("Error", status, message);
-  //   setLoading(false);
-  //   setErrorHandler({
-  //       status: status,
-  //       message:message,
-  //       isError: true 
-  //     })
-  //   }
-
-    if (!isLoading && errorHandler.isError === true){
-      console.debug("errorHandler", errorHandler);
+  if (!isLoading && errorHandler.isError === true){
+    console.debug("errorHandler", errorHandler);
+    return (
+      <ErrBox err={errorHandler} />
+    );
+  }else if (isLoading) {
+    console.debug("IS LOADING");
       return (
-        <ErrBox err={errorHandler} />
-      );
-    }else if (isLoading) {
-      console.debug("IS LOADING");
-        return (
-          <div className="card-body ">
-            <div className="loader">Loading...</div>
-          </div>
-        );
-    }else{
-      console.debug("LOADED",entity_data );
-      return (
-        <div>
-          <EditUploads handleCancel={handleCancel} editingUpload={entity_data} onUpdated={onUpdated}/>
+        <div className="card-body ">
+          <div className="loader">Loading...</div>
         </div>
-      )
-    }
+      );
+  }else{
+    return (
+      <div>
+        <EditUploads handleCancel={handleCancel} editingUpload={entity_data} onUpdated={onUpdated}/>
+      </div>
+    )
   }
+}
   
 
