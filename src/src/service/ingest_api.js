@@ -105,7 +105,7 @@ export function ingest_api_all_groups(auth) {
 
   return axios 
  .get(
-   `${process.env.REACT_APP_METADATA_API_URL}/metadata/allgroups`, options)
+   `${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
  .then(res => {
   const group_list = res.data.groups;
     return {status: res.status, results: group_list}
