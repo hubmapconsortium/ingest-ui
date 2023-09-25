@@ -66,7 +66,7 @@ export function ingest_api_file_upload(data, options) {
 
 
 /*
- * User Groups ALL groups are return
+ * User Groups ALL groups are return (For that user only)
  *
  */
 export function ingest_api_all_user_groups(auth) { 
@@ -81,6 +81,31 @@ export function ingest_api_all_user_groups(auth) {
   return axios 
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+ .then(res => {
+  const group_list = res.data.groups;
+    return {status: res.status, results: group_list}
+ })
+ .catch(error => {
+        return {error}
+ });
+}
+
+/*
+ * ALL groups are returned
+ *
+ */
+export function ingest_api_all_groups(auth) { 
+   const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+
+  return axios 
+ .get(
+   `${process.env.REACT_APP_METADATA_API_URL}/metadata/allgroups`, options)
  .then(res => {
   const group_list = res.data.groups;
     return {status: res.status, results: group_list}

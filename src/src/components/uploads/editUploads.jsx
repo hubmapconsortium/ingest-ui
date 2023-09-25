@@ -35,10 +35,11 @@ import {
     entity_api_update_entity,
     entity_api_get_globus_url
 } from '../../service/entity_api';
-import { DATA_ADMIN, DATA_CURATOR } from '../../service/groups'
 import { COLUMN_DEF_DATASET} from '../search/table_constants';
 
+// import { DATA_ADMIN, DATA_CURATOR } from '../../service/user_service'
 class EditUploads extends Component{
+
 
   
   state = {
@@ -211,9 +212,15 @@ class EditUploads extends Component{
           column_def: COLUMN_DEF_DATASET})
     
   };
-
+  
   allowablePermissions = (data_group_uuid) => {
+    // I think we've moved on from this specific perission structure
+    // (Currators are now Providers, and Group Editors are not in use)
+    // This will likely need to be updated based on current Submit/Save permission goals
+    const DATA_ADMIN = process.env.REACT_APP_DATA_ADMIN;
+    const DATA_CURATOR = process.env.REACT_APP_DATA_CURATOR; 
     var local = JSON.parse(localStorage.getItem("info"));
+    
     // get the users groups
     ingest_api_all_user_groups(local.groups_token).then((results) => {
       if (results.status === 200) {
