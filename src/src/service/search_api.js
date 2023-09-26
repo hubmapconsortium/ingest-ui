@@ -111,7 +111,7 @@ export function api_search2(params, auth, from, size, fields) {
  *
  */
 export function search_api_filter_es_query_builder(fields, from, size, colFields) {
-
+console.debug('%c⊙', 'color:#00ff7b', "fields", fields );
   let requestBody =  esb.requestBodySearch();
   let boolQuery = "";
     if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
@@ -155,7 +155,8 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
 
         if (fields["keywords"]) {
           if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0) {
-            boolQuery.must(esb.matchQuery("hubmap_id", fields["keywords"] ));
+            // boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"]));
+            boolQuery.must(esb.matchQuery("hubmap_id.keyword", fields["keywords"] ));
             // boolQuery.must(esb.matchQuery("hubmap_id", ("\"" +fields["keywords"]+ "\"" ) ));
           } else {
             boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"]));
