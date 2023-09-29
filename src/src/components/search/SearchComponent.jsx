@@ -86,6 +86,17 @@ class SearchComponent extends Component {
 
     ubkg_api_get_organ_type_set()
       .then((res) => {
+
+        // console.debug('%c⊙', 'color:#00ff7b', "Data", res );
+        // let sortedData = {};
+        // for (let key in res) {
+        //   let value = res[key];
+        //   sortedData[value] = key;
+        // }
+        // console.debug('%c⊙', 'color:#00ff7b', "SortedData", sortedData );
+        // let sortedMap = new Map(Object.entries(sortedData));
+        // console.debug('%c⊙', 'color:#00ff7b', "SortedMap", sortedMap);
+        
         this.setState({organ_types: res}, () => {
           // console.log(this.state.organ_types);
         }, () => {
@@ -483,10 +494,19 @@ class SearchComponent extends Component {
     combinedList.push(ENTITY_TYPES)
     combinedList.push(SAMPLE_CATEGORIES)
     // combinedList.push(SAMPLE_TYPES)
-    var organs = {}
+    var organs = []
+    console.debug('%c⊙', 'color:#00ff7b', "organ_types", this.state.organ_types);
+    // for (const [key, value] of this.state.organ_types) {
+    //   console.debug('%c⊙', 'color:#00ff7b', "organ", key, value);
+    //   organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key
+    // }
+    
+    
     for (let k in this.state.organ_types) {
-       organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + this.state.organ_types[k]
+      // console.debug('%c⊙', 'color:#00ff7b', "organ", k, this.state.organ_types[k] );
+      organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + this.state.organ_types[k]
     }
+    console.debug('%c⊙', 'color:#00ff7b', "organs", organs );
     combinedList.push(organs)
     return combinedList
   }
