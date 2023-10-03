@@ -197,7 +197,14 @@ class bulkCreation extends Component {
 
 
   handleFileMake = e => {
-    var headers=["hubmap_id", "lab_tissue_sample_id","entity_type","sample_category","protocol_url","description"]
+    var headers = [];
+    // ["hubmap_id", "lab_tissue_sample_id","entity_type","sample_category","protocol_url","description"]
+    if(this.props.bulkType.toLowerCase() === "samples"){
+      headers=["hubmap_id","lab_tissue_sample_id","sample_category","organ_type","protocol_url","description"]
+    }else if(this.props.bulkType.toLowerCase() === "donors"){
+      headers=["hubmap_id","label","lab_donor_id","protocol_url","description"]
+    }
+    
     return (
       <CSVLink 
         style={{
@@ -717,9 +724,9 @@ renderFileGrabber = () =>{
 
 
   renderTableBody = () =>{
-    console.debug("this.state.uploadedSources",this.state.uploadedSources);
+    // console.debug("this.state.uploadedSources",this.state.uploadedSources);
     if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
-      console.debug("this.state.uploadedSources",this.state.uploadedSources);
+      // console.debug("this.state.uploadedSources",this.state.uploadedSources);
       return(
         <TableBody>
           {this.state.uploadedSources.map((row, index) => (
@@ -728,7 +735,7 @@ renderFileGrabber = () =>{
                 <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
               )}
               <TableCell  className="" scope="row"> {row.lab_id ? row.lab_id : row.lab_tissue_sample_id}</TableCell>
-              <TableCell  className="" scope="row"> {row.sample_type ? row.sample_type : row.specimen_type}</TableCell>
+              <TableCell  className="" scope="row"> {row.sample_category ? row.sample_category : row.specimen_type}</TableCell>
               <TableCell  className="" scope="row"> {row.organ_type ? row.organ_type : ""}</TableCell>
               <TableCell  className="" scope="row"> {row.sample_protocol ? row.sample_protocol : row.protocol_url}</TableCell>
               <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
@@ -762,11 +769,10 @@ renderFileGrabber = () =>{
       headCells = [
         // { id: 'source_id',  label: 'Source Id ' },
         { id: 'lab_id',  label: 'Lab Id ' },
-        { id: 'sample_type',  label: 'Type' },
+        { id: 'sample_category',  label: 'Type' },
         { id: 'organ_type',  label: 'Organ ' },
         { id: 'sample_protocol',  label: 'Protocol ' },
         { id: 'description',  label: 'Description ' },
-
       ];
     }else if(this.props.bulkType.toLowerCase() === "donors"){
       headCells = [
@@ -779,6 +785,8 @@ renderFileGrabber = () =>{
     if(this.state.registeredStatus === true){
       headCells.unshift({ id: 'hubmap_id', disablePadding: true, label: 'Hubmap ID ', width:"" },)
     }
+
+
     return(
       <TableContainer 
         component={Paper} 
