@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Paper from '@material-ui/core/Paper';
 import Button from '@mui/material/Button';
+import DownloadIcon from '@mui/icons-material/Download';
 import ErrorIcon from '@material-ui/icons/Error';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
@@ -20,7 +21,9 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import * as prettyBytes from 'pretty-bytes';
 import _ from 'lodash';
 import {  parseErrorMessage, toTitleCase } from "../../utils/string_helper";
-import {  readString } from 'react-papaparse'
+import { readString, jsonToCSV } from 'react-papaparse'
+import {CSVLink} from "react-csv";
+
 import {ingest_api_bulk_entities_upload, 
         ingest_api_bulk_entities_register,
         ingest_api_users_groups} from '../../service/ingest_api';
@@ -192,6 +195,25 @@ class bulkCreation extends Component {
     });
   }
 
+
+  handleFileMake = e => {
+    var headers=["hubmap_id", "lab_tissue_sample_id","entity_type","sample_category","protocol_url","description"]
+    return (
+      <CSVLink 
+        style={{
+          float: "right",
+          padding: "12px",
+        }}
+        headers={headers}
+        data={this.state.uploadedSources}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}>
+           Download These Results
+        </Button>       
+      </CSVLink>
+    );
+  };
 
 handleFileGrab = e => {
   var grabbedFile = e.target.files[0];
@@ -599,12 +621,15 @@ renderFileGrabber = () =>{
       <div>
         <div className="row">
         {this.state.error_status && !this.state.loading &&(
-          <div>
+          <div> 
             {this.renderInvalidTable()}
           </div>
         )}
         {!this.state.error_status && (
           <div>
+            {this.state.complete && (
+              <>{this.handleFileMake() }</>
+            )}
             {this.renderPreviewTable()}
           </div>
         )}
@@ -679,7 +704,9 @@ renderFileGrabber = () =>{
             )}
           {/* Complete */}
           {this.state.complete === true && !this.state.loading && !this.state.error_status &&(
-            <Typography className="text-right p-2">Data Submitted Successfully!</Typography>
+            <div>
+              <Typography className="text-right p-2">Data Submitted Successfully!</Typography>
+            </div>
           )}
 
         </div>
