@@ -155,8 +155,7 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
 
         if (fields["keywords"]) {
           if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0) {
-            boolQuery.must(esb.matchQuery("hubmap_id", fields["keywords"] ));
-            // boolQuery.must(esb.matchQuery("hubmap_id", ("\"" +fields["keywords"]+ "\"" ) ));
+            boolQuery.must(esb.matchQuery("hubmap_id.keyword", fields["keywords"] ));
           } else {
             boolQuery.filter(esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"]));
           }
