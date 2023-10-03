@@ -28,7 +28,7 @@ module_hotfixes=true\n'\
 # 5 - Overwrite the nginx.conf with ours to run nginx as non-root
 # 6 - Use our nginx config file for ingest-ui
 # 7 - Add Node.js stable release Yum Repository
-# 8 - Install Node.js v16.x (includes npm)
+# 8 - Install Node.js v18.x (includes npm) based on https://github.com/nodesource/distributions#nodejs-v18x
 # 9 - Clean all yum cache
 RUN yum install -y yum-utils && \
     yum-config-manager --enable nginx-mainline && \
@@ -36,8 +36,9 @@ RUN yum install -y yum-utils && \
     rm /etc/nginx/conf.d/default.conf && \
     mv nginx.conf /etc/nginx/nginx.conf && \
     mv ingest-ui.conf /etc/nginx/conf.d && \
-    curl -sL https://rpm.nodesource.com/setup_16.x | bash - && \
-    yum install -y nodejs && \
+    yum install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y && \
+    yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 && \
+    npm install npm@latest -g && \
     yum clean all
     
 # Change to source code directory
