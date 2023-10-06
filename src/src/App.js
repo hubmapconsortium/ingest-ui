@@ -36,7 +36,7 @@ import {  faExclamationTriangle, faTimes}
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import { ingest_api_users_groups } from './service/ingest_api';
-import { ubkg_api_get_assay_type_set } from "./service/ubkg_api";
+import { ubkg_api_get_assay_type_set, ubkg_api_get_organ_type_set } from "./service/ubkg_api";
 import {BuildError, FormatError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
@@ -85,6 +85,7 @@ export function App (props){
   var [dataTypeListAll, setDataTypeListAll] = useState({});
   var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
   var [displaySubtypes, setDisplaySubtypes] = useState();
+  var [organList, setOrganList] = useState();
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   var [bannerShow,setBannerShow] = useState(true);
@@ -173,7 +174,21 @@ export function App (props){
             }
             setDisplaySubtypes(displayAll);
             console.debug('%c⊙', 'color:#00ff7b', "DT SUBTYPES",displaySubtypes,displayAll );
-            setDTLoading(false)
+
+            ubkg_api_get_organ_type_set()
+              .then((res) => {
+                // let sortedData = {};
+                // for (let key in res) {
+                //   let value = res[key];
+                //   sortedData[value] = key;
+                // }
+                setOrganList(res);
+                setDTLoading(false)
+              })
+              .catch((err) => {
+                console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_organ_type_set ERR", err );
+              })
+            
             // setIsLoading(false)
           })
           .catch(error => {
@@ -441,7 +456,7 @@ export function App (props){
 
               
               
-              <Route index element={<SearchComponent entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+              <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/login" element={<Login />} />
               
