@@ -1,8 +1,8 @@
-source_id	lab_id	sample_type	organ_type	sample_protocol	description	rui_location
-HBM638.HMDC.533	test_smpl_01	blood		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
-HBM638.HMDC.533	test_smpl_02	blood		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
-HBM638.HMDC.533	test_smpl_03	blood		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
-HBM638.HMDC.533	test_smpl_04	blood		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
-HBM638.HMDC.533	test_smpl_05	blood		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
-HBM638.HMDC.533	test_smpl_06	blood		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
-HBM638.HMDC.533	test_smpl_07	blood		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
+source_id	lab_id	sample_category	organ_type	sample_protocol	description	rui_location
+HBM638.HMDC.533	test_smpl_01	section		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
+HBM638.HMDC.533	test_smpl_02	section		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
+HBM638.HMDC.533	test_smpl_03	section		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
+HBM638.HMDC.533	test_smpl_04	section		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
+HBM638.HMDC.533	test_smpl_05	section		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
+HBM638.HMDC.533	test_smpl_06	section		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	
+HBM638.HMDC.533	test_smpl_07	section		https://dx.doi.org/10.1504/protocols.io.bjuxknxn	random sample comment	

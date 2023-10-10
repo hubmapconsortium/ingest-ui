@@ -75,14 +75,21 @@ class SearchComponent extends Component {
   
 
   componentDidMount() {
-    ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-      .then((res) => {
-        var allGroups = this.sortGroupsByDisplay(res.results);
-        this.setState({ allGroups: allGroups }, () => {});
-      })
-      .catch((err) => {
-        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
-      });
+    const localInfo = JSON.parse(localStorage.getItem("info"));
+    if (localInfo) {
+      try {
+        ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((res) => {
+            var allGroups = this.sortGroupsByDisplay(res.results);
+            this.setState({ allGroups: allGroups }, () => { });
+          })
+          .catch((err) => {
+            console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err);
+          });
+      } catch (error) {
+        console.debug('%c⭗', 'color:#ff005d', "Try for localstorage groups token failed");
+      }
+    }    
 
     ubkg_api_get_organ_type_set()
       .then((res) => {
@@ -269,24 +276,24 @@ class SearchComponent extends Component {
       });
   }
 
-  ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-      .then((res) => {
-        const groups = res.results.filter(
-          g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-        );
+  // ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+  //     .then((res) => {
+  //       const groups = res.results.filter(
+  //         g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
+  //       );
 
-        this.setState({
-          groups: ["groups"]
-        });
-      })
-      .catch((err) => {
-        if (err.response && err.response.status === 401) {
-          localStorage.setItem("isAuthenticated", false);
-          window.location.reload();
-        }else{
-          //
-        }
-      });
+  //       this.setState({
+  //         groups: ["groups"]
+  //       });
+  //     })
+  //     .catch((err) => {
+  //       if (err.response && err.response.status === 401) {
+  //         localStorage.setItem("isAuthenticated", false);
+  //         window.location.reload();
+  //       }else{
+  //         //
+  //       }
+  //     });
   }
 
   // @TODO: Possily move into groups service?
