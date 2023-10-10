@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import {MSGS, PATHS, WAIT,SELECTORS, DATA} from "../../config/constants";
+import {MSGS, PATHS, WAIT, DATA} from "../../config/constants";
 
 describe(`${MSGS.name}.${MSGS.searchPub}`, () => {
     beforeEach(() => {
@@ -7,9 +7,7 @@ describe(`${MSGS.name}.${MSGS.searchPub}`, () => {
         cy.visit(PATHS.searchPub)
         cy.wait(WAIT.time);
     })
-
      const checkResult = ({targetHID = DATA.examples.publication.hubmapID}) => {
-        
         cy.wait(WAIT.time)
         cy.get('.MuiDataGrid-row--lastVisible [data-field=hubmap_id] .MuiDataGrid-cellContent')
             .invoke('attr', 'title')
@@ -20,7 +18,7 @@ describe(`${MSGS.name}.${MSGS.searchPub}`, () => {
                 expect($elem).to.equal(targetHID)
             })
      }
-    it("BLAHBLAHBLAH", () => {
+    it("Should Return a single Result with a  Hubmap ID that matches the Keyword Search ", () => {
         checkResult({})
     })
 })
