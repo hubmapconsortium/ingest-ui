@@ -1541,8 +1541,8 @@ class DatasetEdit extends Component {
       "newStateCheck":newStateCheck,
       "manualCheck":manualCheck,
     }
-    console.debug("permMatrix")
-    console.table(permMatrix)
+    // console.debug("permMatrix")
+    // console.table(permMatrix)
 
 
     if (this.state.has_admin_priv === true 
@@ -1835,11 +1835,11 @@ class DatasetEdit extends Component {
   renderAssayColumn(min, max) {
     // Hijacking Select options based on Primary DT status
     if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
-      console.debug("dtl_primary",this.props.dtl_primary);
+      // console.debug("dtl_primary",this.props.dtl_primary);
       return (
         this.props.dtl_primary.slice(min, max).map((val, idx) =>
-                    {return this.renderAssay(val, idx)})
-             )
+          {return this.renderAssay(val, idx)})
+        )
     }else{  // false = Not primary DT, set options to full
       return (
         this.props.dtl_all.slice(min, max).map((val, idx) =>{

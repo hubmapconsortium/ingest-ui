@@ -75,30 +75,43 @@ class SearchComponent extends Component {
   
 
   componentDidMount() {
-    const localInfo = JSON.parse(localStorage.getItem("info"));
-    if (localInfo) {
-      try {
-        ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((res) => {
-            var allGroups = this.sortGroupsByDisplay(res.results);
-            this.setState({ allGroups: allGroups }, () => { });
-          })
-          .catch((err) => {
-            console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err);
-          });
-      } catch (error) {
-        console.debug('%c⭗', 'color:#ff005d', "Try for localstorage groups token failed");
-      }
-    }    
 
-    ubkg_api_get_organ_type_set()
+    ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
       .then((res) => {
-        this.setState({organ_types: res}, () => {
-          // console.log(this.state.organ_types);
-        }, () => {
-          console.log('ERROR: ubkg_api_get_organ_type_set')
-        });
+        var allGroups = this.sortGroupsByDisplay(res.results);
+        this.setState({
+          allGroups: allGroups, 
+          isAuthenticated: true
+        }, () => { });
+      })
+      .catch((err) => {
+        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
       });
+    
+
+
+    var organList = {}
+    if (this.props.organList) {   
+      organList = this.props.organList;
+      this.setState({organ_types:this.handleSortOrgans(organList)}, () => {
+        this.setFilterType();
+      });
+    }else{
+      ubkg_api_get_organ_type_set()
+        .then((res) => {
+          organList = res;
+          this.setState({organ_types:this.handleSortOrgans(res)}, () => {
+            this.setFilterType();
+          });
+        })
+        .catch((err) => {
+          console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_organ_type_set ERR", err );
+        })
+    }
+    
+  
+    
+
 
     if(this.props.restrictions){
       // So we can apply the object right to the state instead of do parse tango
@@ -182,9 +195,6 @@ class SearchComponent extends Component {
         this.setState({
           loading: false
         },function(){ 
-
-
-          //
           this.setFilterType();
           if(euuid && euuid !== "new"){
             var params = {
@@ -239,61 +249,8 @@ class SearchComponent extends Component {
         });
       }
 
-
- 
-
-      if(this.props.location.search){
-        // * Replacing with parameters passed in from wrapper app above, 
-        // * see bundledParameters
-        
-        //@TODO: Polyfilling fixes the IE sorrows for URLSearchParams 
-
-      }
     }
 
-
-    try { //@TODO: Handle Auth in the outer wrappers 
-      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        //
-
-      if (results && results.status && results.status === 200) { 
-        this.setState({
-          isAuthenticated: true
-        }, () => {
-          
-          this.setFilterType();
-        });
-      } else if (results && results.status &&  results.status === 401) {
-          this.setState({
-            isAuthenticated: false
-          });
-          window.location.reload();
-        }
-    });
-  } catch {
-    this.setState({
-        isAuthenticated: false
-      });
-  }
-
-  // ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-  //     .then((res) => {
-  //       const groups = res.results.filter(
-  //         g => g.uuid !== process.env.REACT_APP_READ_ONLY_GROUP_ID
-  //       );
-
-  //       this.setState({
-  //         groups: ["groups"]
-  //       });
-  //     })
-  //     .catch((err) => {
-  //       if (err.response && err.response.status === 401) {
-  //         localStorage.setItem("isAuthenticated", false);
-  //         window.location.reload();
-  //       }else{
-  //         //
-  //       }
-  //     });
   }
 
   // @TODO: Possily move into groups service?
@@ -339,6 +296,23 @@ class SearchComponent extends Component {
     return sortedResultFlat;
 }
 
+
+  handleSortOrgans = (organList) => {
+    // console.debug('%c⊙', 'color:#00ff7b', "handleSortOrgans", organList );
+    let sortedDataProp = {};
+    let sortedDataArray = [];
+    var sortedMap = new Map();
+      for (let key in organList) {
+        let value = organList[key];
+        sortedDataProp[value] = key;
+        sortedDataArray.push(value);
+      }
+    sortedDataArray = sortedDataArray.sort();
+      for (const [index,element] of sortedDataArray.entries()) {
+      sortedMap.set(element, sortedDataProp[element]);
+    }
+    return sortedMap;
+  }
 
   handleShowSearch  = (show) => {
     if ( show === true ){
@@ -471,17 +445,13 @@ class SearchComponent extends Component {
   set filter fo the Types dropdown, which depends on the propos.filter_type, if avaliable
   */
   setFilterType = () => {
-
-    var new_filter_list = [];
+    // var new_filter_list = [];
     this.setState({
       entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
     }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
       // console.debug("setFilterType", this.state.entity_type_list);
   });
-
-   
-
-  } 
+ } 
 
 
   combinedTypeOptions = () => {
@@ -489,13 +459,25 @@ class SearchComponent extends Component {
     var combinedList = [];
     combinedList.push(ENTITY_TYPES)
     combinedList.push(SAMPLE_CATEGORIES)
-    // combinedList.push(SAMPLE_TYPES)
-    var organs = {}
-    for (let k in this.state.organ_types) {
-       organs[k] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + this.state.organ_types[k]
+    var organs = [];
+    var organList = this.state.organ_types;
+    try {
+      organList.forEach((value, key) => {
+        organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key
+      });
+      combinedList.push(organs.sort())
+      // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList );
+      return combinedList
+    } catch (error) {
+      console.debug('%c⭗', 'color:#ff005d', "combinedList error", error);
+      var errStringMSG = ""
+      typeof error.type === 'string' ? errStringMSG = "Error on Organ Assembly" : errStringMSG = error
+      this.setState({
+        errorState:true,
+        error: errStringMSG
+      })
+      
     }
-    combinedList.push(organs)
-    return combinedList
   }
 
   handleSearchClick = () => {
@@ -803,35 +785,26 @@ class SearchComponent extends Component {
   **/
 
   render() {
-       
     if (this.state.isAuthenticated) {
-    return  (
-        
+      return  (
         <div style={{ width: '100%' }}>
           {this.state.show_search && (
             this.renderFilterControls()
-            )}
-
-          {this.state.loading &&(
-             this.renderLoadingBar()
           )}
-            
-          {this.state.show_search && this.state.datarows &&
-                    this.state.datarows.length > 0 && (
-              this.renderTable())
-          }
-          {this.state.datarows &&
-          this.state.datarows.length === 0 && 
-          this.state.filtered && 
-          !this.state.loading && (
+          {this.state.loading &&(
+            this.renderLoadingBar()
+          )}
+          {this.state.show_search && this.state.datarows && this.state.datarows.length > 0 && (
+            this.renderTable()
+          )}
+          {this.state.datarows && this.state.datarows.length === 0 && this.state.filtered && !this.state.loading && (
             <div className="text-center">No record found.</div>
           )}
-
         </div>
       );
     }
     return null;
-  }
+  } 
 
   renderProps() {
     // 
@@ -843,14 +816,6 @@ class SearchComponent extends Component {
       </div>
       );
   }
-
-
-
-
-  renderEditForm  = () => {
-    
-  }
-
 
 renderInfoPanel() {
       return (
@@ -930,115 +895,115 @@ renderGroupOptions = () => {
   
   }
 
+
   renderFilterControls() {
     return (
-            <div className="m-2">
-              {this.renderPreamble()}
+      <div className="m-2">
+        {this.renderPreamble()}
 
-              {this.state.errorState && (
-                <RenderError error={this.state.error} />
-              )} 
+        {this.state.errorState && (
+          <RenderError error={this.state.error} />
+        )} 
 
-              <form onSubmit={this.handleSearchButtonClick}>
-                <Grid 
-                  container 
-                  spacing={3}
-                  pb={3}
-                  alignItems="center"
-                  sx={{ 
-                    display: 'flex',
-                    justifyContent: 'flex-start' 
-                  }}
-                >
-                  <Grid item  xs={6}>
-                    <label htmlFor="group" className="portal-jss116">Group</label>
-                      <select
-                        name="group"
-                        id="group"
-                        className="select-css"
-                        onChange={this.handleInputChange}
-                        value={this.state.search_filters.group}>
-                          
-                        <option value="">All Components</option>
-                      {this.state.allGroups.map((group, index) => {
-                          return (
-                            <option key={index+1} value={Object.values(group)[1]}>
-                              { Object.values(group)[0]}
-                            </option>
-                          ); 
-                      })}
-                    </select>
-                  </Grid>
-                  <Grid item xs={6}>
-                      <label htmlFor="entityType" className="portal-jss116">Type</label>
-                        <select
-                          name="entityType"
-                          id="entityType"
-                          className="select-css"
-                          disabled={this.props.restrictions && this.props.restrictions.entityType ? true : false}
-                          onChange={this.handleInputChange}
-                          value={this.state.search_filters.entityType}
+        <form onSubmit={this.handleSearchButtonClick}>
+          <Grid 
+            container 
+            spacing={3}
+            pb={3}
+            alignItems="center"
+            sx={{ 
+              display: 'flex',
+              justifyContent: 'flex-start' 
+            }}
+          >
+            <Grid item  xs={6}>
+              <label htmlFor="group" className="portal-jss116">Group</label>
+                <select
+                  name="group"
+                  id="group"
+                  className="select-css"
+                  onChange={this.handleInputChange}
+                  value={this.state.search_filters.group  || ''}> 
+                  <option value="">All Components</option>
+                  {this.state.allGroups.map((group, index) => {
+                    return (
+                      <option key={index+1} value={Object.values(group)[1]}>
+                        { Object.values(group)[0]}
+                      </option>
+                    ); 
+                })}
+              </select>
+            </Grid>
+            <Grid item xs={6}>
+                <label htmlFor="entityType" className="portal-jss116">Type</label>
+                  <select
+                    name="entityType"
+                    id="entityType"
+                    className="select-css"
+                    disabled={this.props.restrictions && this.props.restrictions.entityType ? true : false}
+                    onChange={this.handleInputChange}
+                    value={this.state.search_filters.entityType  || ''}
+                  >
+                    <option value=""></option>
+                    {this.state.entity_type_list.map((optgs, index) => {
+                      return (
+                        <optgroup
+                          key={index}
+                          label="____________________________________________________________"
                         >
-                          <option value=""></option>
-                          {this.state.entity_type_list.map((optgs, index) => {
+                          {Object.entries(optgs).map((op, index) => {
                             return (
-                              <optgroup
-                                key={index}
-                                label="____________________________________________________________"
-                              >
-                                {Object.entries(optgs).map(op => {
-                                  return (
-                                    <option key={op[1]} value={op[0]}>
-                                      {(op[1])}
-                                    </option>
-                                  );
-                                })}
-                              </optgroup>
+                              <option key={op[0]} value={op[0]}>
+                                {(op[1])}
+                              </option>
                             );
-                          })}
-                        </select>
-                  </Grid>
-                  <Grid item xs={12}>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="keywords"
-                          id="keywords"
-                          placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-                          onChange={this.handleInputChange}
-                          //ref={this.keywords}
-                          value={this.state.search_filters.keywords}
-                        />
-                  </Grid>
-                  
-                  <Grid item xs={2}></Grid>
-                <Grid item xs={4}>
-                    <Button
-                      fullWidth
-                      color="primary"
-                      variant="contained"
-                      size="large"
-                      onClick={this.handleSearchButtonClick}
-                    >
-                      Search
-                    </Button>
-                </Grid>
-                <Grid item xs={4}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="primary"
-                      size="large"
-                      onClick={this.handleClearFilter}
-                    >
-                      Clear
-                    </Button>
-                </Grid>
-                  
-                <Grid item xs={2}></Grid>
-              </Grid>
-            </form>
-            </div>
+                          })} 
+                        </optgroup>
+                      );
+                    })}
+                  </select>
+            </Grid>
+            <Grid item xs={12}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="keywords"
+                    id="keywords"
+                    placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                    onChange={this.handleInputChange}
+                    //ref={this.keywords}
+                    value={this.state.search_filters.keywords  || ''}
+                  />
+            </Grid>
+            
+            <Grid item xs={2}></Grid>
+          <Grid item xs={4}>
+              <Button
+                fullWidth
+                color="primary"
+                variant="contained"
+                size="large"
+                onClick={this.handleSearchButtonClick}
+              >
+                Search
+              </Button>
+          </Grid>
+          <Grid item xs={4}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="primary"
+                size="large"
+                onClick={this.handleClearFilter}
+              >
+                Clear
+              </Button>
+          </Grid>
+            
+          <Grid item xs={2}></Grid>
+        </Grid>
+      </form>
+      </div>
     );
   }
   
