@@ -6,10 +6,10 @@ describe(`${MSGS.name}.${MSGS.searchPub}`, () => {
         cy.viewport(1000, 1000)
         cy.login(PATHS.login)
         cy.visit(PATHS.searchPub)
-        cy.wait(WAIT.time);
+        cy.wait(2000);
     })
      const checkResult = ({targetHID = DATA.examples.publication.hubmapID}) => {
-        cy.wait(10000)
+        cy.wait(1000)
         cy.get('.MuiDataGrid-row--lastVisible [data-field=hubmap_id] .MuiDataGrid-cellContent')
             .invoke('attr', 'title')
             .as('HubMAPID');

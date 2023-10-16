@@ -66,7 +66,8 @@ const WAIT = {
 
 const AUTH = {
     username: Cypress.env('username'),
-    password: Cypress.env('password')
+    password: Cypress.env('password'),
+    organization: Cypress.env('organization')
 }
 
 

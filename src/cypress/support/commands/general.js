@@ -20,23 +20,12 @@ Cypress.Commands.add('clog', (msg) => {
 
 Cypress.Commands.add('loginProcess', (msg) => {
     // cy.contains('Log in with your institution credentials').click()
-    // cy.origin('auth.globus.org',  { args: { AUTH } }, ({ AUTH }) => {
-    //     // Use Globus
-    //     cy.contains('Globus ID to sign in').click()
-    // })
-    
-    // cy.origin('www.auth.globus.org', { args: { AUTH } }, ({ AUTH }) => {
-    
     cy.wait(2000)
-    cy.get('#identity_provider-selectized').type('University of Pittsburgh').type('{enter}')
-
+    cy.get('#identity_provider-selectized').type(AUTH.organization).type('{enter}')
     cy.get('#login-btn').click({ force: true })   
     cy.get('#username').type(AUTH.username)
     cy.get('#password').type(AUTH.password).type('{enter}')
     cy.wait(2000)
-    cy.url().should('contain', 'localhost')
-    
-
 })
 
 Cypress.Commands.add('login', (options = { }, name = 'pitt') => {
@@ -46,7 +35,7 @@ Cypress.Commands.add('login', (options = { }, name = 'pitt') => {
             cy.visit("localhost:8484/login")
             cy.loginProcess()
         }
-
+        cy.wait(2000)
         cy.contains('Search')
     })
 })
