@@ -443,6 +443,7 @@ class SearchComponent extends Component {
   
   /*
   set filter fo the Types dropdown, which depends on the propos.filter_type, if avaliable
+  Depricated now by whitelist/blackist?
   */
   setFilterType = () => {
     // var new_filter_list = [];
@@ -454,11 +455,37 @@ class SearchComponent extends Component {
  } 
 
 
+  
   combinedTypeOptions = () => {
     // Simplified to handle replacement of Types with Categories
     var combinedList = [];
-    combinedList.push(ENTITY_TYPES)
+    // console.debug('%c⊙', 'color:#00ff7b', this.props );
+    // console.debug('%c⊙', 'color:#00ff7b', "Blacklist: ", this.props.blacklist );
+    // console.debug('%c⊙', 'color:#00ff7b', "Whitelist: ", this.props.whitelist );
+
+    // FIRST: Main Entity Types
+    // We're either going to use a whitelist, blacklist or all of em
+    var entityList = ENTITY_TYPES;
+    if (!this.props.blacklist && !this.props.whitelist) {
+      combinedList.push(entityList) // ALLoffem
+    } else {
+      for (const [key, value] of Object.entries(entityList)) {
+        if (// if we've got a Blacklist this IS on it, nix it from the entity types, OR
+            ( this.props.blacklist && this.props.blacklist.includes(key.toLowerCase())) ||
+            // If we've got a whitelist and this is NOT on it, nix it from the entity types
+            (this.props.whitelist && !this.props.whitelist.includes(key.toLowerCase())) ){
+          delete entityList[key];
+        } 
+      }
+      combinedList.push(entityList)
+    } 
+  
+
+    // NEXT: Sample Categories
     combinedList.push(SAMPLE_CATEGORIES)
+    // @TODO: Switch these to UBKG too?
+
+    // LAST: Organs
     var organs = [];
     var organList = this.state.organ_types;
     try {
@@ -501,7 +528,7 @@ class SearchComponent extends Component {
           which_cols_def = COLUMN_DEF_PUBLICATION;
         } else if (colSet === 'upload' ) {
           which_cols_def = COLUMN_DEF_UPLOADS;
-        } else if (colSet === 'publication' ) {
+        } else if (colSet === 'collection' ) {
           which_cols_def = COLUMN_DEF_DATASET;
         } 
     }

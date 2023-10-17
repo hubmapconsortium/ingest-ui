@@ -2041,11 +2041,12 @@ class DatasetEdit extends Component {
               
               <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow ? this.state.LookUpShow : false}>
                 <DialogContent>
-                  <SearchComponent
-                    select={this.handleSelectClick}
-                    custom_title="Search for a Source ID for your Dataset"
-                    filter_type="Dataset"
-                    modecheck="Source"
+                <SearchComponent
+                  select={this.handleSelectClick}
+                  custom_title="Search for a Source ID for your Dataset"
+                  filter_type="Dataset"
+                  blacklist={['collection']}
+                  modecheck="Source"
                   />
                 </DialogContent>  
                 <DialogActions>
