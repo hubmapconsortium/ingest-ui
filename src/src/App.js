@@ -201,6 +201,7 @@ export function App (props){
         if (unregStatus) {
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
+          CallLoginDialog();
         } else {
             console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
             // setIsLoading(false)
