@@ -94,22 +94,18 @@ class SearchComponent extends Component {
 
   componentDidMount() {
     try {
-      ingest_api_users_groups(
-        JSON.parse(localStorage.getItem("info")).groups_token
-      )
-        .then((res) => {
-          var allGroups = this.sortGroupsByDisplay(res.results);
-          this.setState(
-            {
-              allGroups: allGroups,
-              isAuthenticated: true,
-            },
-            () => {}
-          );
-        })
-        .catch((err) => {
-          console.debug("%c⭗", "color:#ff005d", "GROUPS ERR", err);
-        });
+      ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((res) => {
+        var allGroups = this.sortGroupsByDisplay(res.results);
+        this.setState({
+          allGroups: allGroups, 
+          isAuthenticated: true
+        }, () => { });
+      })
+      .catch((err) => {
+        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+      })
+    
     } catch (error) {
       console.debug("%c⭗", "color:#ff005d");
     }
