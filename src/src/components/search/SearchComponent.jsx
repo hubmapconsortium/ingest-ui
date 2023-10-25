@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography  from '@mui/material/Typography';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import {GridLoader} from "react-spinners";
 import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
 import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
 import { COLUMN_DEF_DONOR, COLUMN_DEF_SAMPLE, COLUMN_DEF_DATASET, COLUMN_DEF_PUBLICATION, COLUMN_DEF_UPLOADS } from './table_constants';
@@ -61,7 +62,8 @@ class SearchComponent extends Component {
       show_info_panel: true,
       show_modal: false,
       show_search: true,
-      table_loading:false,
+      table_loading: true,
+      data_loading: true,
       updateSuccess: false,
       restrictions:this.props.restrictions ? this.props.restrictions : {},
       search_filters:{
@@ -72,11 +74,9 @@ class SearchComponent extends Component {
     };
   }
 
-  
-
   componentDidMount() {
-
-    ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+    try {
+      ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
       .then((res) => {
         var allGroups = this.sortGroupsByDisplay(res.results);
         this.setState({
@@ -86,12 +86,13 @@ class SearchComponent extends Component {
       })
       .catch((err) => {
         console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
-      });
-    
+      })
+    } catch (error) {
+      console.debug("%c⭗", "color:#ff005d",error);
+    }
 
-
-    var organList = {}
-    if (this.props.organList) {   
+    var organList = {};
+    if (this.props.organList) {
       organList = this.props.organList;
       this.setState({organ_types:this.handleSortOrgans(organList)}, () => {
         this.setFilterType();
@@ -447,12 +448,13 @@ class SearchComponent extends Component {
   setFilterType = () => {
     // var new_filter_list = [];
     this.setState({
-      entity_type_list: this.combinedTypeOptions()  //SAMPLE_TYPES
-    }, () => {   // need to do this in order for it to execute after setting the state or state won't be available
-      // console.debug("setFilterType", this.state.entity_type_list);
-  });
- } 
-
+        entity_type_list: this.combinedTypeOptions(), //SAMPLE_TYPES
+    }, () => {
+      this.setState({
+        data_loading: false,
+      },()=>{});
+    });
+  };
 
   combinedTypeOptions = () => {
     // Simplified to handle replacement of Types with Categories
@@ -785,6 +787,25 @@ class SearchComponent extends Component {
   **/
 
   render() {
+    if (this.state.data_loading) {
+      return (
+      <div style={{ width: "100%" }}>
+        <Typography align={"center"}  style={{marginBottom:"20px"}}>
+          Loading System Data
+        </Typography>
+        <Typography align={"center"}>
+          <GridLoader
+            color="#444a65"
+            size={20}
+            loading={true}
+            cssOverride={{
+              margin: '0, auto'
+            }}
+          />
+        </Typography>
+        </div>
+      )
+    }
     if (this.state.isAuthenticated) {
       return  (
         <div style={{ width: '100%' }}>

@@ -40,7 +40,8 @@ export function ubkg_api_get_assay_type_set(scope) {
       })
       .catch(error => {
         console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_assaytype", error, error.response);
-        captureError(error);
+        var errorResp = captureError(error);
+        return errorResp
       });
 };
 
@@ -52,7 +53,6 @@ export function ubkg_api_get_assay_type_set(scope) {
  * return: {'AO': 'Aorta' ... }
  */
 export function ubkg_api_get_organ_type_set() {
-  console.debug("ubkg_api_get_organ_type_set");
   let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`;
   return axios
     .get(url)

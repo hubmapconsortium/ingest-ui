@@ -149,7 +149,6 @@ export function App (props){
         
     });
     }catch(error){
-      console.debug('%c⭗', 'color:#ff005d', "LocalStorageAuth Error", error);
       setTimerStatus(false);
       setIsLoading(false)
     }
@@ -157,43 +156,29 @@ export function App (props){
 
   useEffect(() => {
     ubkg_api_get_assay_type_set("primary")
-    .then((response) => {
-      // console.debug("ubkg_api_get_assay_type_set", response);
+      .then((response) => {
         let dtypes = response.data.result;
         setDataTypeList(dtypes);
         setDataTypeListPrimary(dtypes);
-        // setIsLoading(false)
         ubkg_api_get_assay_type_set()
-          .then((response) => {
+          .then((response) => {            
             let dataAll = response.data.result;
             let displayAll = [];
             setDataTypeListAll(dataAll);
-            console.debug('%c⊙', 'color:#00ff7b', "DT ALL",dataAll );
             for (const dt of dataAll) {
-              displayAll.push({name:dt.name, description:dt.description});
+              displayAll.push({ name: dt.name, description: dt.description });
             }
             setDisplaySubtypes(displayAll);
-            console.debug('%c⊙', 'color:#00ff7b', "DT SUBTYPES",displaySubtypes,displayAll );
-
             ubkg_api_get_organ_type_set()
               .then((res) => {
-                // let sortedData = {};
-                // for (let key in res) {
-                //   let value = res[key];
-                //   sortedData[value] = key;
-                // }
                 setOrganList(res);
                 setDTLoading(false)
               })
               .catch((err) => {
-                console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_organ_type_set ERR", err );
+                reportError(err)
               })
-            
-            // setIsLoading(false)
           })
-          .catch(error => {
-            console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
-            // setIsLoading(false)
+          .catch( (error) => {
             reportError(error)
           });
       })
@@ -202,8 +187,7 @@ export function App (props){
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
         } else {
-            console.debug('%c⭗', 'color:#ff005d', "fetch DT list Response Error", error);
-            // setIsLoading(false)
+          console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_assay_type_set ERROR", error);
             reportError(error)
         } 
       });
@@ -275,22 +259,19 @@ export function App (props){
 
   var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
 
-  function reportError (error, details){
+  function reportError(error, details) {
+    console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);
     if(details){
       setErrorDetail(details);
     }
-    console.debug('%c⭗', 'color:#ff005d', "reportError", error);
-    // console.debug("Type", typeof error);
     typeof error === "string" ? setErrorInfo(error) : setErrorInfo(JSON.stringify(error));
-
     var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
     if(error.results){
       errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
     }
-    var formatError = FormatError(error);
-    console.debug('%c⭗', 'color:#ff005d', "reportError", error, formatError);
     setErrorInfo(errString);
     setErrorShow(true);
+    throw (error)
   }
 
 
@@ -387,7 +368,7 @@ export function App (props){
              <Typography> The HIVE will still process any datasets using the previous schemas that were fully submitted and uploaded prior to August 7, or that had submission errors that are currently being worked through. Please contact  <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions</Typography>
           </div>
       )}
-      {isLoading && dtloading &&(
+      {isLoading || dtloading &&(
         <LinearProgress />
       )}
 
@@ -481,7 +462,7 @@ export function App (props){
               )}
               {authStatus && userDataGroups && userDataGroups.length > 0 && !isLoading && (
                 <Route path="/new">
-                  <Route index element={<SearchComponent />} />
+                  <Route index element={<SearchComponent reportError={reportError} />} />
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                   <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
