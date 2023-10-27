@@ -10,7 +10,6 @@ export const RenderBulk = (props) => {
     }
   };
 
-  console.debug('%c⊙', 'color:#00ff7b', "BULK PROPS",props );
   return (
     <div>
       <BulkCreation bulkType={props.bulkType} reportError={props.reportError} handleCancel={handleCancel} />

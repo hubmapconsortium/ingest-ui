@@ -329,18 +329,15 @@ handleRegister = () =>{
     }
     ingest_api_bulk_entities_register(this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
-        console.debug('%c⊙', 'color:#00ff7b', "ingest_api_bulk_entities_register resp", resp );
         if (resp.status && resp.status === 201) {
           //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
           // We might back back a 201 with an array of errors encountered. Let's check for that!  
-          console.debug("STATUS 201 results",resp.status, resp);
           if(resp.results){
             var respData = resp.results.data;
             console.debug("respData",respData);
             let respInfo = _.map(respData, (value, prop) => {
               return { "prop": prop, "value": value };
             });
-            console.debug("!!!! respInfo",respInfo);
             if( respInfo[1] && respInfo[1].value['error']){
             this.setState({ 
               submit_error:"error",
@@ -367,15 +364,11 @@ handleRegister = () =>{
                 }, () => {   
                 });
               }
-           
           }
-
-
         } else if (resp.error.response && resp.error.response.status === 504) {
-          console.debug('%c⭗', 'color:#ff005d', "504 Error: ",resp.error );
+          console.debug('%c⭗', 'color:#ff005d', "504 Error: ", resp.error);
+          console.debug('%c⭗', 'color:#ff005d', "Err Response", resp.error.response);
           this.props.reportError(resp.error);
-
-
         }  else {
           console.debug('%c⭗', 'color:#ff005d', "Error: ",resp );
           // var respError = resp.err.response.data
