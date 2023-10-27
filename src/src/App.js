@@ -12,7 +12,6 @@ import Login from './components/ui/login';
 import Timer from './components/ui/idle';
 
 import LinearProgress from '@mui/material/LinearProgress';
-
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
@@ -49,17 +48,14 @@ import {Navigation} from "./Nav";
 
 import { UserContext } from './service/user_service';
 import Result from "./components/uuid/result";
-
 import {RenderDonor} from "./components/donors";
 import {RenderDataset} from "./components/datasets";
 import {RenderSample } from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 import {RenderPublication} from "./components/publications";
 import { RenderCollection } from "./components/collections";
-
 // Bulky
 import {RenderBulk} from "./components/bulk";
-
 // The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
@@ -115,7 +111,6 @@ export function App (props){
         //   setUnegStatus(true);
         //   setIsLoading(false);
         // }
-
         if (results && results.status === 200) {
           // console.debug("LocalStorageAuth", results);
           // Um. These both seem to just give me datagroups now?
@@ -174,7 +169,6 @@ export function App (props){
             }
             setDisplaySubtypes(displayAll);
             console.debug('%c⊙', 'color:#00ff7b', "DT SUBTYPES",displaySubtypes,displayAll );
-
             ubkg_api_get_organ_type_set()
               .then((res) => {
                 // let sortedData = {};
@@ -188,7 +182,6 @@ export function App (props){
               .catch((err) => {
                 console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_organ_type_set ERR", err );
               })
-            
             // setIsLoading(false)
           })
           .catch(error => {
@@ -209,9 +202,6 @@ export function App (props){
       });
   }, [ ]);
   
-  
-
-
   function Logout(){
     localStorage.removeItem("info");
     localStorage.removeItem("isAuthenticated");
@@ -258,10 +248,6 @@ export function App (props){
     // setSuccessDialogRender(true);
   }
 
-
-  
-  
-
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
@@ -296,7 +282,6 @@ export function App (props){
 
   return (
     <div className="App">
-      
       <Navigation 
         login={authStatus} 
         logout={Logout}
@@ -304,10 +289,9 @@ export function App (props){
         userGroups={userGroups}
         userDataGroups={userDataGroups}
         onCreatedReditect={""}
-      />       
-      
-      <Timer logout={Logout}/>
+      />
 
+      <Timer logout={Logout}/>
       <div id="content" className="container">
       <Drawer 
         sx={{
@@ -323,8 +307,6 @@ export function App (props){
         className="alert-danger"
         anchor='bottom'
         open={errorShow}>
-
-
         <Box  sx={{ 
           width: '100%', 
           padding: 1, 
@@ -345,18 +327,14 @@ export function App (props){
         </Box>
 
         <Box sx={{ width: '100%', height:'100%', padding: 1, backgroundColor:'white', color:"#dc3545", }}>
-
           <Grid container>
-
             <Grid item xs={7}>
               <Typography variant="body2" gutterBottom>
                 There's been an error handling the current task. Please try again later. <br />
                 If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
               </Typography>
             </Grid>
-
             <Grid item xs={5}>
-
               <Typography variant="body2"gutterBottom>
                 Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
               </Typography>
@@ -368,16 +346,9 @@ export function App (props){
                   {errorInfo}
                 </Typography>
               </Collapse>
-
             </Grid>
-
           </Grid>
-         
-
-          
         </Box>
-
-
       </Drawer>
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
@@ -399,44 +370,37 @@ export function App (props){
                 <Route path="*" element={ <Login />} />
                 <Route path="/login" element={ <Login />} />
             </Routes>
-
-
-          <Dialog
-            open={loginDialogRender}
-            onClose={onCloseLogin}
-            disableEscapeKeyDown={false}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-            onBackdropClick={onCloseLogin}
-          >
-            <DialogTitle 
-              color="white"
-              backgroundColor="red"
-              id="alert-dialog-title"
-            >
-
-            <React.Fragment>
-            <AnnouncementTwoToneIcon /> Session Has Ended
-            </React.Fragment>
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                <br />
-                It looks like your login session has ended. Please log in again to continue
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={onCloseLogin} autoFocus>
-                Log In
-              </Button>
-            </DialogActions>
-          </Dialog>
+            <Dialog
+              open={loginDialogRender}
+              onClose={onCloseLogin}
+              disableEscapeKeyDown={false}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+              onBackdropClick={onCloseLogin}>
+                <DialogTitle 
+                  color="white"
+                  backgroundColor="red"
+                  id="alert-dialog-title">
+                <React.Fragment>
+                  <AnnouncementTwoToneIcon /> Session Has Ended
+                </React.Fragment>
+                </DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    <br />
+                    It looks like your login session has ended. Please log in again to continue
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={onCloseLogin} autoFocus>
+                    Log In
+                  </Button>
+                </DialogActions>
+            </Dialog>
           </React.Fragment>
-
         )}
 
         {unregStatus && (
-          
           <Routes>
             <Route index element={ 
                 <Alert 
@@ -450,16 +414,10 @@ export function App (props){
 
           {authStatus && !timerStatus && !isLoading && !dtloading && !unregStatus &&(
           <Paper className="px-5 py-4">
-
-
             <Routes>
-
-              
-              
               <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/login" element={<Login />} />
-              
               {authStatus && (!userDataGroups || userDataGroups.length === 0) && !isLoading && (
                 <Route path="/new/*" element={ 
                   <Alert 
@@ -476,8 +434,6 @@ export function App (props){
                     You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group
                   </Alert>
                   }/>
-
-                  
               )}
               {authStatus && userDataGroups && userDataGroups.length > 0 && !isLoading && (
                 <Route path="/new">
@@ -535,14 +491,10 @@ export function App (props){
             }>
               <Alert severity={"success"}>{snackMessage}</Alert>
           </Snackbar>  
-
         </Paper>
       )}
   </div>
   </div>
   );
-  
 }
-      
-
 export default App
