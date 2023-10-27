@@ -1,6 +1,7 @@
 import React from "react";
 import BulkCreation from "./ingest/bulk";
 export const RenderBulk = (props) => {
+
   function handleCancel(){
     if(this.props.handleCancel){
      this.props.handleCancel();
@@ -9,11 +10,12 @@ export const RenderBulk = (props) => {
     }
   };
 
-      return (
-        <div>
-          <BulkCreation bulkType={props.bulkType} handleCancel={handleCancel} />
-        </div>
-      )
+  console.debug('%c⊙', 'color:#00ff7b', "BULK PROPS",props );
+  return (
+    <div>
+      <BulkCreation bulkType={props.bulkType} reportError={props.reportError} handleCancel={handleCancel} />
+    </div>
+  )
     
   }
   
