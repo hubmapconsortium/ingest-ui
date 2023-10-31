@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 // import { withRouter } from 'react-router-dom';
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
 import Grid from "@mui/material/Grid";
@@ -32,6 +32,7 @@ import {
 import { entity_api_get_entity } from "../../service/entity_api";
 import { RenderError } from "../../utils/errorAlert";
 import { toTitleCase } from "../../utils/string_helper";
+import {CSVLink} from "react-csv";
 
 // Creation donor_form_components
 
@@ -404,6 +405,9 @@ class SearchComponent extends Component {
     //   });
     // }
   }
+
+
+    
 
   handleSingularty = (target, size) => {
     if (target === "uploads") {
@@ -953,6 +957,8 @@ class SearchComponent extends Component {
           columnBuffer={2}
           columnThreshold={2}
           pagination
+          slots={{ toolbar: GridToolbar }}
+          csvOptions={csvOptions}
           hideFooterSelectedRowCount
           rowCount={this.state.results_total}
           paginationMode="server"
@@ -1103,6 +1109,25 @@ class SearchComponent extends Component {
       </div>
     );
   }
+
+  // @TODO: Can we move this & the one in bulk to the file_helper util?
+  // renderResultDownload = e => {
+  //   return (
+  //     <CSVLink 
+  //       style={{
+  //         float: "right",
+  //         padding: "12px",
+  //       }}
+  //       headers={headers}
+  //       data={this.state.uploadedSources}>
+  //       <Button
+  //         variant="outlined"
+  //         startIcon={<DownloadIcon />}>
+  //         Download These Results
+  //       </Button>       
+  //     </CSVLink>
+  //   )
+  // }
 }
 
 export default SearchComponent;
