@@ -484,8 +484,8 @@ export function App (props){
               <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
               <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
-              <Route path="/bulk/donors" reportError={reportError} exact element={<RenderBulk bulkType="donors" />} />
-              <Route path="/bulk/samples" reportError={reportError} element={<RenderBulk bulkType="samples" />} />
+              <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
+              <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
           </Routes>
 
 

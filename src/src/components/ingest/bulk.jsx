@@ -55,7 +55,9 @@ class bulkCreation extends Component {
       response_status: "",
       error_message: "",
       error_status:false,
+      error_message_extended:"",
       errorSet:[],
+      rowLimitClass:"",
       success_status:false,
       success_message:"",
       validation:true,
@@ -250,7 +252,7 @@ handleUpload= () =>{
   }
   if( localStorage.getItem("info") !== null ){
     const formData = new FormData()
-    formData.append("file", this.state.tsvFile)
+    formData.append("file", this.state.tsvFile)    
     ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
         if(resp.results && resp.results.temp_id){
@@ -327,24 +329,19 @@ handleRegister = () =>{
       "temp_id":this.state.bulkFileID,
       "group_uuid":this.state.group_uuid
     }
+    console.debug("REG HERE");
     ingest_api_bulk_entities_register(this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
-        console.debug("handleRegister RESP", resp);
-        if (resp.status === 201) {
-
+        if (resp.status && resp.status === 201) {
           //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
           // We might back back a 201 with an array of errors encountered. Let's check for that!  
-          
-          console.debug("results",resp);
           if(resp.results){
             var respData = resp.results.data;
             console.debug("respData",respData);
             let respInfo = _.map(respData, (value, prop) => {
               return { "prop": prop, "value": value };
             });
-            console.debug("===== respInfo",respInfo);
             if( respInfo[1] && respInfo[1].value['error']){
-            console.debug("EERRRS DETECTED");
             this.setState({ 
               submit_error:"error",
               error_status:true,
@@ -370,12 +367,15 @@ handleRegister = () =>{
                 }, () => {   
                 });
               }
-           
           }
-
-          
-        } else {
-          var respError = resp.err.response.data
+        } else if (resp.error.response && resp.error.response.status === 504) {
+          console.debug('%c⭗', 'color:#ff005d', "504 Error: ", resp.error);
+          console.debug('%c⭗', 'color:#ff005d', "Err Response", resp.error.response);
+          this.props.reportError(resp.error);
+        }  else {
+          console.debug('%c⭗', 'color:#ff005d', "Error: ",resp );
+          // var respError = resp.err.response.data
+          var respError = resp.error
           console.debug("=====ERROR=====, respError", respError, respError.status, respError.data);
           this.parseRegErrorFrame(resp);
           this.setState({ 
@@ -447,10 +447,27 @@ parseUpload = () =>{
 }
 parseResults = (results) =>{
   console.debug("results",results.data);
-  this.setState({
-    uploadedSources:results.data,
-    finalTableReady:true
-  });
+
+  // We should check early on that there's less than 40 rows
+  var rowCount = results.data.length;
+  var expectedSplit =  Math.ceil(rowCount/40);
+  console.debug("rowCount",rowCount );
+  if(rowCount>40){
+    this.setState({
+      rowLimitClass:"rowLimitError", 
+      submit_error:"Row Limit Exceeded",
+      loading:false,
+      error_status:true,
+      error_message_detail:"Row Limit Exceeded",
+      error_message:"40 row limit exceeded (total rows:"+rowCount+"). Please split your data across multiple files (est "+expectedSplit+" files)" ,
+      error_message_extended:"40 row limit exceeded (total rows:"+rowCount+"). Please split your data across multiple files (est "+expectedSplit+" files) " 
+    });
+  }else{
+    this.setState({
+      uploadedSources:results.data,
+      finalTableReady:true
+    });
+  }
 }
 
 resetSteps(){
@@ -596,7 +613,7 @@ renderFileGrabber = () =>{
             color="error">
               {this.state.error_message_detail}
             </Typography>
-
+                         
             <Typography 
               variant="caption" 
               color="error">
@@ -672,12 +689,19 @@ renderFileGrabber = () =>{
           {/* Errors */}
 
           {this.state.error_message &&(
-            <div>
+            <div style={{marginBottom:"10px", width:"100%", display:"inline-block"}}>
               
               <Typography 
               variant="h6"
               color="error">
                 {this.state.error_message_detail}
+              </Typography>
+
+              <Typography 
+                variant="caption"
+                style={{marginBottom:"10px", width:"100%", display:"inline-block"}}
+                color="error">
+                {this.state.error_message_extended}
               </Typography>
 
               <Typography 
@@ -1010,6 +1034,8 @@ renderFileGrabber = () =>{
               <h4>{toTitleCase(this.props.bulkType).slice(0, -1)} Information Upload</h4>
               <Typography className="d-inline-block " style={{ display: "inline-block"  }} >
                 To bulk register multiple {this.props.bulkType.toLowerCase()} at one time, upload a tsv file here in the format specified by this example file. <br /> Include one line per {this.props.bulkType.toLowerCase().slice(0, -1)} to register. {toTitleCase(this.props.bulkType).slice(0, -1)} metadata must be provided separately. <br />
+                <Typography className={this.state.rowLimitClass}> <strong> There is a 40 row limit on uploaded files.</strong> <br /></Typography>
+               
                 See the <Link href={docs} target="new">{toTitleCase(this.props.bulkType).slice(0, -1)} Bulk Registration</Link> page for further details.
               </Typography> 
 

@@ -847,6 +847,10 @@ svg.invalid {
   margin: 10px;
 }
 
+.rowLimitError{
+  color:#f44336;
+}
+
 .thead-dark th {
   color: #fff;
   background-color: #343a40;
