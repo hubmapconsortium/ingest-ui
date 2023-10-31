@@ -70,7 +70,7 @@ export function ubkg_api_get_organ_type_set() {
 
 function captureError (error){
 
-  console.debug("Error Format CHeck", error, error.response, error.response.data, error.data);
+  console.debug("Error Format CHeck", error);
 
   if(error.response ){
     if(error.response.data ){

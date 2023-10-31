@@ -4,6 +4,7 @@ import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
+import Link from "@mui/material/Link";
 
 
 // table column definitions
@@ -139,6 +140,56 @@ export const COLUMN_DEF_UPLOADS = [
   
  ];
 
+ // COLLECTIONS COLUMNS
+ export const COLUMN_DEF_COLLECTION = [
+  //   Created By
+  //   HuBMAP ID
+  //   Title *(see below for title)
+  //   Group Name
+  // DOI * (see below for DOI)
+
+  { field: "created_by_user_email", headerName: "Created By", width: 210 },
+  { field: "hubmap_id", headerName: "HubMAP ID", width: 180 },
+  {
+    field: "title",
+    headerName: "Title",
+    width: 250,
+    renderCell: (params: ValueFormatterParams) => (
+      <React.Fragment>
+        <span>{params.value}</span>
+      </React.Fragment>
+    ),
+  },{
+  field: "datasets",
+   width: 200,
+   headerName: "Groups",
+   valueGetter: ({ row }) => {
+     if (row.datasets) {
+       return groupNames(row);
+     }
+   },
+ },{
+    field: "doi_url",
+    headerName: "DOI",
+    width: 400,
+    renderCell: (params: ValueFormatterParams) => (
+      <React.Fragment>
+       <span>{params.value}</span>
+     </React.Fragment>
+   ),
+    valueGetter: ({ row }) => {
+      if (row.doi_url && row.registered_doi) {
+        return (doiLink(row.doi_url, row.registered_doi))
+      }
+    },
+  },{
+    // This is just so it's included in the requested columns
+    field: "registered_doi",
+    headerName: "registered_doi",
+    hide: true,
+  },
+];
+
 
 // Computed column functions
 
@@ -164,15 +215,32 @@ return ""
 //	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
 }
 
-function handleDataClick(dataset_uuid) {
+function doiLink(doi_url,registered_doi) {
+  try {
+    return (
+      <Link target="_blank" href={doi_url} rel="noreferrer">
+        {registered_doi}
+      </Link>
+    );
+  } catch(error) {
+    console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error  );
+  }
+  return "";
+}
 
+
+function handleDataClick(dataset_uuid) {
   ingest_api_get_globus_url(dataset_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
           .then((resp) => {
-            console.debug('ingest_api_get_globus_url', resp)
           if (resp.status === 200) {
              window.open(resp.results, "_blank");
           }
   });
 }
-
-
+function groupNames(entity) {
+  let unique_values = [
+    ...new Set(entity.datasets.map((entity) => entity.group_name)),
+  ];
+  return unique_values;
+  
+}

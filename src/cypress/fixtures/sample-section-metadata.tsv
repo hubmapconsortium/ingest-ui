@@ -1,0 +1,2 @@
+version	sample_id	type	source_storage_time_value	source_storage_time_unit	preparation_media	preparation_condition	processing_time_value	processing_time_unit	storage_media	storage_method	quality_criteria	histological_report	section_thickness_value	section_thickness_unit	section_index_number	area_value	area_unit	notes
+1	SNT597.VMDW.663	section	30	hours	PFA (4%)	ambient temperature	5	hours	Buffered Formalin (10% NBF)	ambient temperature	debris		2	cm	3	20	mm^2	bad

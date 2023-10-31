@@ -61,4 +61,8 @@ favorites.json
 *.~lock.*
 package-lock.json
 
+#cypress
+src/cypress.config.js
+src/cypress.env.json
+
 .idea

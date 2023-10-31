@@ -1,19 +1,10 @@
-import React, { useEffect, useState,useContext } from 'react';
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
 import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
-// import SourceTable from "../ui/table";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
-
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
-// import { PrettyLog } from "../../utils/prettyLogs";
-import SourceTable from "../ui/table.jsx";
-
-import GroupModal from "../uuid/groupModal";
-import { UserContext } from '../../service/user_service';
-
 import Papa from 'papaparse';
 import ReactTooltip from "react-tooltip";
 import { TextField, Button, Box } from '@mui/material';
@@ -22,17 +13,21 @@ import FormControl from '@mui/material/FormControl';
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+
+
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+
+
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus,faFolder, faUserShield,faPenToSquare,faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
@@ -80,7 +75,6 @@ export function CollectionForm (props){
   var [isNew] = useState(props.newForm);
   var [editingCollection] = useState(props.editingCollection);
   var [datatypeList] = useState(props.dtl_all);
-  // var [authToken] = useState(props.authToken);
 
   useEffect(() => {
     if (editingCollection) {  
@@ -92,9 +86,7 @@ export function CollectionForm (props){
           //When coming from the Entity, the Datasets use data_types, from the Search UI they pass display_subtype instead
           if (entity.data_types && entity.data_types.length > 0) {
             var subtype = generateDisplaySubtypeSimple_UBKG(entity.data_types[0],props.dtl_all);
-            console.debug('%c⊙', 'color:#00ff7b', "subtype", subtype);
             entity.display_subtype = subtype;
-            // entity.display_subtype = entity.data_types[0];
           }else {
             
           }
@@ -472,11 +464,8 @@ export function CollectionForm (props){
   
     var renderContribTable = () => {
       return (
-        <TableContainer
-          component={Paper}
-          style={{ maxHeight: 450 }}
-        >
-          <Table aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
+        <TableContainer style={{ maxHeight: 200 }}>
+          <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
             <TableHead className="thead-dark font-size-sm">
               <TableRow className="   " >
                 <TableCell> Name</TableCell>
@@ -494,11 +483,8 @@ export function CollectionForm (props){
   
     var renderContactTable = () => {
       return (
-        <TableContainer
-          component={Paper}
-          style={{ maxHeight: 450 }}
-        >
-          <Table aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
+        <TableContainer style={{ maxHeight: 200 }}>
+          <Table stickyHeader aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
             <TableHead className="thead-dark font-size-sm">
               <TableRow className="   " >
                 <TableCell> Name</TableCell>
@@ -590,12 +576,12 @@ export function CollectionForm (props){
         
           {!loadingDatasets && (<>
           
-            <div style={{ maxHeight: 450, marginBottom: "10px" }}>
-              <Table aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
+  
+            <TableContainer sx={{ maxHeight: 440 }}>
+              <Table stickyHeader aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
                 <TableHead className="thead-dark font-size-sm">
                   <TableRow className="   " >
-                    <TableCell> Source ID</TableCell>
-                    {/* <TableCell component="th">Lab Dataset ID</TableCell> */}
+                    <TableCell> Source</TableCell>
                     <TableCell component="th">Data Type</TableCell>
                     <TableCell component="th">Group Name</TableCell>
                     <TableCell component="th">Status</TableCell>
@@ -603,7 +589,7 @@ export function CollectionForm (props){
                   </TableRow>
                 </TableHead>
                 {sourceDatasetDetails && sourceDatasetDetails.length > 0 && (
-                  <TableBody>
+                  <TableBody >
                     {sourceDatasetDetails.map((row, index) => (
                       <TableRow
                         key={(row.hubmap_id + "" + index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
@@ -611,14 +597,12 @@ export function CollectionForm (props){
                         className="row-selection"
                       >
                         <TableCell className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                        {/* <TableCell className="clicky-cell" scope="row"> {row.data_types ? row.data_types[0] : row.display_subtype} </TableCell> */}
                         <TableCell className="clicky-cell" scope="row"> {row.display_subtype && (row.display_subtype)} </TableCell>
                         <TableCell className="clicky-cell" scope="row">{row.group_name}</TableCell>
                         <TableCell className="clicky-cell" scope="row">{row.status && (
                           <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}> {row.status}</span>
                         )}</TableCell>
                         <TableCell className="clicky-cell" align="right" scope="row">
-                          
                             <React.Fragment>
                               <FontAwesomeIcon
                                 className='inline-icon interaction-icon '
@@ -627,15 +611,13 @@ export function CollectionForm (props){
                                 onClick={() => sourceRemover(row, index)}
                               />
                             </React.Fragment>
-                         
-                    
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 )}
               </Table>
-            </div>
+              </TableContainer>
             {formErrors.bulk_dataset_uuids[0].length > 0 && (
               <Alert variant="filled" severity="error">
                 <strong>Error:</strong> {formErrors.bulk_dataset_uuids[1]}: {formErrors.bulk_dataset_uuids[2]} ({formErrors.bulk_dataset_uuids[2]})

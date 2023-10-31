@@ -186,6 +186,7 @@ export function App (props){
         if (unregStatus) {
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
+          CallLoginDialog();
         } else {
           console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_assay_type_set ERROR", error);
             reportError(error)

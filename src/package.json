@@ -43,6 +43,7 @@
     "yup": "^1.0.0"
   },
   "devDependencies": {
+    "cypress": "^13.3.0",
     "react-scripts": "^5.0.1"
   },
   "resolutions": {
@@ -57,7 +58,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "cypress:open": "cypress open"
   },
   "eslintConfig": {
     "extends": "react-app"
