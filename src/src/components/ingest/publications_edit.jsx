@@ -2094,9 +2094,10 @@ class PublicationEdit extends Component {
                 <SearchComponent
                   select={this.handleSelectClick}
                   custom_title="Search for a Source ID for your Publication"
-                  filter_type="Publication"
+                  // filter_type="Publication"
                   modecheck="Source"
-                  restrictions={{
+                  // whitelist="dataset" 
+                  restrictions={{ // Disables type selection entierly, vs just hiding options
                     entityType : "dataset"
                   }}
                 />
