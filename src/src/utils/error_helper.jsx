@@ -1,7 +1,6 @@
 
 // Creates a new error object with the given message
 export const BuildError = (message) => {
-    console.debug("buildError", message);
     var newError;
     if(message.message){
         // If it IS aleady an error object, just return it
@@ -16,29 +15,22 @@ export const BuildError = (message) => {
   
 
 export const FormatError = (message) => {
-    console.debug("FormatError GOT", message);
     var newError;
     if(message.message){
-        console.debug("FormatError MESSAGEMESSAGE", message.message);
         newError = new Error(message.message);
     }
-
-    
-
     if(message.status && message.status >200){
         // probably looks like
-        // console.debug("FormatError", message.results, message.results.error);
         // {"status": 400, "results": {"error": "400 Bad Request: The provided status value of Dataset is not valid"}}
         if(message.data ){
-            console.debug("FormatError DATA", message.data);
             newError = new Error(message.data);
         }else if(message.results){
-            console.debug("FormatError RESULTS", message.results);
             newError = new Error(message.results);
         }
-    }else{}
+    } else {
     // Else, let's make it one
-        newError = new Error(message);
+    newError = new Error(message);
+    }
     return (
         newError
     )

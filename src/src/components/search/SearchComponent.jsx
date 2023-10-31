@@ -8,6 +8,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@material-ui/core/LinearProgress";
+import {GridLoader} from "react-spinners";
 import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
 import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
 import {
@@ -81,7 +82,8 @@ class SearchComponent extends Component {
       show_info_panel: true,
       show_modal: false,
       show_search: true,
-      table_loading: false,
+      table_loading: true,
+      data_loading: true,
       updateSuccess: false,
       restrictions: this.props.restrictions ? this.props.restrictions : {},
       search_filters: {
@@ -105,9 +107,8 @@ class SearchComponent extends Component {
       .catch((err) => {
         console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
       })
-    
     } catch (error) {
-      console.debug("%c⭗", "color:#ff005d");
+      console.debug("%c⭗", "color:#ff005d",error);
     }
 
     var organList = {};
@@ -475,11 +476,11 @@ class SearchComponent extends Component {
     // var new_filter_list = [];
     this.setState({
         entity_type_list: this.combinedTypeOptions(), //SAMPLE_TYPES
-      },() => {
-        // need to do this in order for it to execute after setting the state or state won't be available
-        // console.debug("setFilterType", this.state.entity_type_list);
-      }
-    );
+    }, () => {
+      this.setState({
+        data_loading: false,
+      },()=>{});
+    });
   };
 
   combinedTypeOptions = () => {
@@ -854,6 +855,25 @@ class SearchComponent extends Component {
   **/
 
   render() {
+    if (this.state.data_loading) {
+      return (
+      <div style={{ width: "100%" }}>
+        <Typography align={"center"}  style={{marginBottom:"20px"}}>
+          Loading System Data
+        </Typography>
+        <Typography align={"center"}>
+          <GridLoader
+            color="#444a65"
+            size={20}
+            loading={true}
+            cssOverride={{
+              margin: '0, auto'
+            }}
+          />
+        </Typography>
+        </div>
+      )
+    }
     if (this.state.isAuthenticated) {
       return (
         <div style={{ width: "100%" }}>
