@@ -958,7 +958,6 @@ class SearchComponent extends Component {
           columnThreshold={2}
           pagination
           slots={{ toolbar: GridToolbar }}
-          csvOptions={csvOptions}
           hideFooterSelectedRowCount
           rowCount={this.state.results_total}
           paginationMode="server"
