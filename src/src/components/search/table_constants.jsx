@@ -160,7 +160,7 @@ export const COLUMN_DEF_UPLOADS = [
       </React.Fragment>
     ),
   },{
-  field: "datasets",
+  field: "datasets.group_name",
    width: 200,
    headerName: "Groups",
    valueGetter: ({ row }) => {
