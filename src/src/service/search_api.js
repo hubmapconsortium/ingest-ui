@@ -111,7 +111,7 @@ export function api_search2(params, auth, from, size, fields) {
  *
  */
 export function search_api_filter_es_query_builder(fields, from, size, colFields) {
-
+  console.debug('%c⊙', 'color:#00ff7b', "fields", fields);
   let requestBody =  esb.requestBodySearch();
   let boolQuery = "";
     if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {  // if keywords contain a wildcard
@@ -128,7 +128,13 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
         if (fields["group_name"]) {
           boolQuery.must(esb.matchQuery("group_name.keyword", fields["group_name"]));
         } else if (fields["group_uuid"]) {
-          boolQuery.must(esb.matchQuery("group_uuid.keyword", fields["group_uuid"]));
+          // this'll be from the dropdown, 
+          // if its a collection, we wanna search the datasets of it, not it itself
+          if (fields["entity_type"] === 'Collection') {
+            boolQuery.must(esb.matchQuery("datasets.group_uuid.keyword", fields["group_uuid"]));            
+          } else {
+            boolQuery.must(esb.matchQuery("group_uuid.keyword", fields["group_uuid"]));
+          }
         } 
         // was specimen types selected
         if (fields["sample_category"]) {
