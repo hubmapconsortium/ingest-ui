@@ -216,7 +216,6 @@ export const ES_SEARCHABLE_FIELDS = [
   "display_subtype.keyword",
   "hubmap_id.keyword", 
   "lab_dataset_id.keyword",
-  "lab_donor_id.keyword",
   "lab_donor_id.keyword", 
   "lab_name.keyword",
   "lab_tissue_sample_id.keyword",
