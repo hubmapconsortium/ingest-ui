@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 // import { withRouter } from 'react-router-dom';
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
 import Grid from "@mui/material/Grid";
@@ -32,7 +32,6 @@ import {
 import { entity_api_get_entity } from "../../service/entity_api";
 import { RenderError } from "../../utils/errorAlert";
 import { toTitleCase } from "../../utils/string_helper";
-
 // Creation donor_form_components
 
 function resultFieldSet() {
@@ -404,6 +403,9 @@ class SearchComponent extends Component {
     //   });
     // }
   }
+
+
+    
 
   handleSingularty = (target, size) => {
     if (target === "uploads") {
@@ -953,6 +955,7 @@ class SearchComponent extends Component {
           columnBuffer={2}
           columnThreshold={2}
           pagination
+          slots={{ toolbar: GridToolbar }}
           hideFooterSelectedRowCount
           rowCount={this.state.results_total}
           paginationMode="server"
