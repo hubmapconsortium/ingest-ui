@@ -40,6 +40,7 @@ const StyledTextField = styled(TextField)`
 `;
 export function CollectionForm (props){
   let navigate = useNavigate();
+  var [locked, setLocked] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
   var [selectedSource, setSelectedSource] = useState(null);
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
@@ -98,6 +99,10 @@ export function CollectionForm (props){
         setFormValues(formVals);  
       }
       setLoadingDatasets(false);
+      if (editingCollection.doi_url || editingCollection.registered_doi) {
+        // Cant be editied further after DOI information is added
+        setLocked(true);
+      }
     } else {
       // We must be new. No table data to load
       setLoadingDatasets(false);
@@ -696,7 +701,7 @@ export function CollectionForm (props){
                         name="dataset_uuids"
                         id="dataset_uuids"
                         error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
-                        disabled={false}
+                        disabled={locked}
                         multiline
                         rows={2}
                         inputProps={{ 'aria-label': 'description' }}
@@ -832,6 +837,7 @@ export function CollectionForm (props){
               variant="contained"
               onClick={() => handleSubmit()}
               type="button"
+              disabled={locked}
               className='float-right'>
               {buttonState === "submit" && (
                 <FontAwesomeIcon

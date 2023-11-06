@@ -207,20 +207,20 @@ export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "577
 
 // this is a list of fields for the keyword search.  note: must ID fields need to use .keyword
 export const ES_SEARCHABLE_FIELDS = [
-  "description.keyword", 
-  "hubmap_id.keyword", 
-  "submission_id.keyword",
-  "display_doi.keyword", 
-  "lab_donor_id.keyword", 
-  "display_subtype.keyword",
-  "lab_name.keyword",
-  "lab_tissue_sample_id.keyword",
-  "lab_donor_id.keyword",
-  "lab_dataset_id.keyword",
   "created_by_user_displayname", 
   "created_by_user_email",
-  "dataset_info"
-  ];
+  "dataset_info",
+  "datasets.group_uuid", 
+  "description.keyword", 
+  "display_doi.keyword", 
+  "display_subtype.keyword",
+  "hubmap_id.keyword", 
+  "lab_dataset_id.keyword",
+  "lab_donor_id.keyword", 
+  "lab_name.keyword",
+  "lab_tissue_sample_id.keyword",
+  "submission_id.keyword",
+];
 
 // this list is for wildcard searchable fields
 export const ES_SEARCHABLE_WILDCARDS = [
