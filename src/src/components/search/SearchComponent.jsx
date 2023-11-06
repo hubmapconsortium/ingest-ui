@@ -956,6 +956,13 @@ class SearchComponent extends Component {
           columnThreshold={2}
           pagination
           slots={{ toolbar: GridToolbar }}
+          slotProps={{
+            toolbar: {
+              csvOptions : {
+                fileName: 'hubmap_ingest_export'
+              }
+            }
+          }}
           hideFooterSelectedRowCount
           rowCount={this.state.results_total}
           paginationMode="server"
