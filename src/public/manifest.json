@@ -1,6 +1,6 @@
 {
-  "short_name": "HuBMAP ID",
-  "name": "HuBMAP ID Generator",
+  "short_name": "HuBMAP Ingest Portal",
+  "name": "HuBMAP Ingest Portal",
   "icons": [
     {
       "src": "favicon.ico",
