@@ -17,7 +17,7 @@
     "@mui/icons-material": "^5.4.2",
     "@mui/lab": "^5.0.0-alpha.120",
     "@mui/material": "^5.2.8",
-    "@mui/x-data-grid": "^6.17.0",
+    "@mui/x-data-grid": "^5.17.26",
     "@mui/x-date-pickers": "^5.0.20",
     "@stefftek/tick.js": "^1.1.1",
     "axios": "^0.24.0",
