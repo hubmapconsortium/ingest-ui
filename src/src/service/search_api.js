@@ -76,7 +76,9 @@ export function api_search(params, auth) {
     });
 };
 
-export function api_search2(params, auth, from, size, fields) { 
+export function api_search2(params, auth, from, size, fields,source) { 
+  console.debug('%c⊙', 'color:#00ff7b', fields );
+  console.debug('%c⊙', 'color:#00ff7b', "api2", params, auth, from, size, fields,source);
   const options = {
       headers: {
         Authorization:
@@ -180,7 +182,7 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
     requestBody
       .query(boolQuery)
       .from(from)
-      .size(size)
+      .size(100)
       .sort(esb.sort('last_modified_timestamp', 'asc'))
       .source(colFields);
   }

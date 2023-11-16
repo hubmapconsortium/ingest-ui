@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 // import { withRouter } from 'react-router-dom';
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar, useGridApiRef,gridPageSelector,
+  gridPageCountSelector,
+  useGridApiContext,
+  useGridSelector, } from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
 import Grid from "@mui/material/Grid";
@@ -30,6 +33,7 @@ import {
   ingest_api_all_groups,
 } from "../../service/ingest_api";
 import { entity_api_get_entity } from "../../service/entity_api";
+import { RenderSearchTable } from "./searchTable";
 import { RenderError } from "../../utils/errorAlert";
 import { toTitleCase } from "../../utils/string_helper";
 // Creation donor_form_components
@@ -55,7 +59,7 @@ class SearchComponent extends Component {
     super(props);
     //
     this.state = {
-      allGroups: [],
+      allGroups: [""],
       column_def: COLUMN_DEF_DONOR,
       editForm: false,
       entity_type_list: SAMPLE_TYPES,
@@ -70,7 +74,6 @@ class SearchComponent extends Component {
       isAuthenticated: false,
       keywords: "",
       last_keyword: "",
-      loading: false,
       modecheck: "", //@TODO: Patch for loadingsearch within dataset edits, We should move this
       page: 0,
       pageSize: 100,
@@ -81,8 +84,9 @@ class SearchComponent extends Component {
       show_info_panel: true,
       show_modal: false,
       show_search: true,
-      table_loading: true,
-      data_loading: true,
+      loading: false,
+      table_loading: false,
+      data_loading: false,
       updateSuccess: false,
       restrictions: this.props.restrictions ? this.props.restrictions : {},
       search_filters: {
@@ -117,21 +121,21 @@ class SearchComponent extends Component {
         this.setFilterType();
       });
     } else {
-      ubkg_api_get_organ_type_set()
-        .then((res) => {
-          organList = res;
-          this.setState({ organ_types: this.handleSortOrgans(res) }, () => {
-            this.setFilterType();
-          });
-        })
-        .catch((err) => {
-          console.debug(
-            "%c⭗",
-            "color:#ff005d",
-            "ubkg_api_get_organ_type_set ERR",
-            err
-          );
-        });
+      // ubkg_api_get_organ_type_set()
+      //   .then((res) => {
+      //     organList = res;
+      //     this.setState({ organ_types: this.handleSortOrgans(res) }, () => {
+      //       this.setFilterType();
+      //     });
+      //   })
+      //   .catch((err) => {
+      //     console.debug(
+      //       "%c⭗",
+      //       "color:#ff005d",
+      //       "ubkg_api_get_organ_type_set ERR",
+      //       err
+      //     );
+      //   });
     }
 
     if (this.props.restrictions) {
@@ -405,28 +409,6 @@ class SearchComponent extends Component {
   }
 
 
-    
-
-  handleSingularty = (target, size) => {
-    if (target === "uploads") {
-      return "uploads"; // Is always plural in our system
-    }
-    if (size === "plural") {
-      if (target.slice(-1) === "s") {
-        return target.toLowerCase();
-      } else {
-        return (target + "s").toLowerCase();
-      }
-    } else {
-      // we wanna singularize
-      if (target.slice(-1) === "s") {
-        return target.slice(0, -1); //.toLowerCase()
-      } else {
-        return target;
-      }
-    }
-  };
-
   handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -613,7 +595,8 @@ class SearchComponent extends Component {
           JSON.parse(localStorage.getItem("info")).groups_token,
           this.state.page * this.state.pageSize,
           this.state.pageSize,
-          this.state.fieldSet
+          this.state.fieldSet,
+          "oldTable"
         ).then((response) => {
           if (response.status === 200) {
             if (response.total === 1) {
@@ -622,6 +605,7 @@ class SearchComponent extends Component {
                 response.results[0].entity_type
               );
             }
+            console.debug('%c⊙', 'color:#00ff7b', "APISEARCHRES", response.results );
             this.setState({
               datarows: response.results, // Object.values(response.results)
               results_total: response.total,
@@ -683,6 +667,9 @@ class SearchComponent extends Component {
   };
 
   handlePageChange = (page) => {
+    var currentPage = this.state.page;
+    
+    console.debug('%c⭗', 'color:#ff005d', "AAAAAAAAAAAAAAAAAAA" );
     this.setState({
         page: page,
         table_loading: true,
@@ -701,7 +688,7 @@ class SearchComponent extends Component {
   };
 
   handleSearchButtonClick = (event) => {
-    event.preventDefault();
+    // event.preventDefault();
 
     this.setState({
         datarows: [],
@@ -879,12 +866,24 @@ class SearchComponent extends Component {
     if (this.state.isAuthenticated) {
       return (
         <div style={{ width: "100%" }}>
-          {this.state.show_search && this.renderFilterControls()}
+          {/* {this.state.show_search && this.renderFilterControls()} */}
           {this.state.loading && this.renderLoadingBar()}
           {this.state.show_search &&
             this.state.datarows &&
-            this.state.datarows.length > 0 &&
-            this.renderTable()}
+            this.state.datarows.length > 0 &&(
+            // this.renderTable()}
+            <div>  HELLO THERE
+              <RenderSearchTable 
+                data={this.state.datarows}  
+                columns={this.state.column_def} 
+                allGroups={this.state.allGroups}
+                handleSearchButtonClick={() => this.handleSearchButtonClick()}
+                stateData={this.state}
+                select={this.props.select?this.props.select:null}
+                reportError={this.props.reportError?this.props.reportError:null}
+                urlChange={this.props.urlChange() } />
+            </div>
+          )}
           {this.state.datarows &&
             this.state.datarows.length === 0 &&
             this.state.filtered &&
@@ -950,11 +949,18 @@ class SearchComponent extends Component {
       <div style={{ height: 590, width: "100%" }}>
         <DataGrid
           rows={this.state.datarows}
+          
           columns={this.state.column_def}
-          disableColumnMenu={true}
           columnBuffer={2}
           columnThreshold={2}
-          pagination
+
+          paginationMode="server"
+          initialState={{ pagination: { paginationModel: { page: 0, pageSize: 100 } } }}
+          paginationModel={{ page:0, pageSize:100 }}
+          onPageChange={(params) => this.handlePageChange(params)}
+          onPaginationModelChange={() => this.handlePageChange(3)}
+          // onPaginationModelChange={handlePaginationModelChange}
+
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
@@ -965,9 +971,6 @@ class SearchComponent extends Component {
           }}
           hideFooterSelectedRowCount
           rowCount={this.state.results_total}
-          paginationMode="server"
-          onPageChange={(params) => this.handlePageChange(params)}
-          onPageSizeChange={(page) => this.handlePageSizeSelection(page)}
           loading={this.state.table_loading}
           onCellClick={
             this.props.select ? this.props.select : this.handleTableCellClick
@@ -976,6 +979,17 @@ class SearchComponent extends Component {
       </div>
     );
   }
+  
+//  CustomDataGrid(props) {
+//     const apiRef = useGridApiRef();
+//     return (
+//       <div>
+//         <Button onClick={() => apiRef.current.setPage(1)}>Go to page 1</Button>
+//         <DataGrid apiRef={apiRef} {...other} />
+//       </div>
+//     );
+//   }
+  
 
   renderPreamble() {
     return (
@@ -1004,7 +1018,7 @@ class SearchComponent extends Component {
 
   renderFilterControls() {
     return (
-      <div className="m-2">
+      <div className="m-2"> FROM CLASS NOT FUNCTIOn
         {this.renderPreamble()}
 
         {this.state.errorState && <RenderError error={this.state.error} />}
