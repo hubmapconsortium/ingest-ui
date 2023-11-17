@@ -1,21 +1,13 @@
-import React, { useEffect, useState,useCallback  } from "react";
-// import { withRouter } from 'react-router-dom';
-import { useQuery } from "react-query";
-import {DataGrid, GridToolbar} from '@mui/x-data-grid';
+import React, {useEffect, useState} from "react";
+import {DataGrid, GridToolbar } from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import {GridLoader} from 'react-spinners';
-import {RenderError} from '../../utils/errorAlert';
-import {ErrBox} from "../../utils/ui_elements";
-import { toTitleCase } from "../../utils/string_helper";  
-
-import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
-import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
+import LinearProgress from "@material-ui/core/LinearProgress";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import { RenderError } from "../../utils/errorAlert";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
@@ -24,65 +16,51 @@ import {
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
 } from "./table_constants";
-import {
-  api_search2,
-  search_api_search_group_list,
-} from "../../service/search_api";
-import {
-  ingest_api_users_groups,
-  ingest_api_all_user_groups,
-  ingest_api_allowable_edit_states,
-  ingest_api_all_groups,
-} from "../../service/ingest_api";
-import { entity_api_get_entity } from "../../service/entity_api";
+import { api_search2 } from "../../service/search_api";
 
 export const RenderSearchTable = (props) => {
-  var [isAuthenticated, setIsauthenticated] = useState(
-    props.isAuthenticated ? props.isAuthenticated : [""]
-  );
-  var [search_title, setSearch_Title] = useState(
-    props.search_title ? props.search_title : [""]
-  );
-  var [rlc, setRLC] = useState(0);
+  // var [isAuthenticated, setIsauthenticated] = useState(props.isAuthenticated ? props.isAuthenticated : [""]);
+  var [search_title] = useState(props.search_title ? props.search_title : [""]);
+  // var [rlc, setRLC] = useState(0);
 
   // TABLE & FILTER VALUES
-  var [allGroups, setAllgroups] = useState(props.allGroups ? props.allGroups : []);
-  var [entityTypeList, setEntityTypeList] = useState(props.allTypes ? props.allTypes : []);
+  var [allGroups] = useState(props.allGroups ? props.allGroups : []);
+  var [entityTypeList] = useState(props.allTypes ? props.allTypes : []);
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
   // var [colDef, setColDef] = useState(COLUMN_DEF_SAMPLE);
   var [page, setPage] = useState(0);
-  var [pageSize, setPageSize] = useState(100);
-  var [sortOrder, setSortOrder] = useState("asc");
-  const [paginationModel, setPaginationModel] = React.useState({
-    pageSize: 25,
-    page: 0,
-  });
+  var [pageSize] = useState(100);
+  // var [sortOrder, setSortOrder] = useState("asc");
+  // const [paginationModel, setPaginationModel] = React.useState({
+  //   pageSize:25,
+  //   page:    0,
+  // });
 
   // TABLE DATA
-  var [dataRows, setDataRows] = useState(props.data ? props.data : null);
-  var [rowCount, setRowCount] = React.useState(10000);
+  // var [dataRows, setDataRows] = useState(props.data ? props.data : null);
+  // var [rowCount, setRowCount] = React.useState(10000);
   var [results, setResults] = React.useState({
     dataRows:null,
     rowCount:0,
-    colDef:COLUMN_DEF_SAMPLE,
+    colDef:  COLUMN_DEF_SAMPLE,
   });
 
   //  LOADERS
   var [loading, setLoading] = useState(true);
-  var [dataLoading, setDataLoading] = useState(true);
+  // var [dataLoading, setDataLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
 
   // ERROR THINGS
   var [error, setError] = useState();
-  var [errorState, setErrorstate] = useState();
-  var [errorHandler, setErrorHandler] = useState({
-    status: "",
-    message: "",
-    isError: null,
-  });
+  var [errorState, setErrorState] = useState();
+  // var [errorHandler, setErrorHandler] = useState({
+  //   status: "",
+  //   message:"",
+  //   isError:null,
+  // });
 
   // PROPS
-  const { data, columns } = props;
+  const {data, columns} = props;
   const urlChange = props.urlChange;
 
   function resultFieldSet() {
@@ -99,10 +77,9 @@ export const RenderSearchTable = (props) => {
   }
 
   useEffect(() => {
-    var authSet = JSON.parse(localStorage.getItem("info"));
-    console.debug("useEffect");
-    
-    var fieldSearchSet= resultFieldSet();
+    //console.debug("useEffect");
+
+    var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilters,
       JSON.parse(localStorage.getItem("info")).groups_token,
@@ -113,21 +90,21 @@ export const RenderSearchTable = (props) => {
     )
       .then((response) => {
         setTableLoading(false);
-        console.debug('%c⊙USEEFAPISEARCHRES', 'color:rgb(0 140 255)',  response.total, response.results );
-        if (response.total>0 && response.status === 200) {
+        //console.debug('%c⊙USEEFAPISEARCHRES', 'color:rgb(0 140 255)',  response.total, response.results );
+        if (response.total > 0 && response.status === 200) {
           setResults({
             dataRows:response.results,
             rowCount:response.total,
-            colDef:columnDefType(response.results[0].entity_type),
+            colDef:  columnDefType(response.results[0].entity_type),
           });
-        } else if(response.total === 0){
-          console.debug('%c⊙', 'color:#00ff7b', "NORES" );
+        } else if (response.total === 0) {
+          //console.debug('%c⊙', 'color:#00ff7b', "NORES" );
           setResults({
             dataRows:response.results,
             rowCount:response.total,
-            colDef:COLUMN_DEF_SAMPLE,
+            colDef:  COLUMN_DEF_SAMPLE,
           });
-        }else {
+        } else {
           var errStringMSG = "";
           var errString =
             response.results.data.error.root_cause[0].type +
@@ -136,42 +113,38 @@ export const RenderSearchTable = (props) => {
           typeof errString.type === "string"
             ? (errStringMSG = "Error on Search")
             : (errStringMSG = errString);
-          this.setState({
-            errorState: true,
-            error: errStringMSG,
-          });
-        }
+          
+          
+            setErrorState(true)
+            setError(errStringMSG)
+          }
       })
       .catch((error) => {
         setTableLoading(false);
         // props.reportError(error);
-        console.debug("%c⭗", "color:#ff005d", "ERROR", error);
+        //console.debug("%c⭗", "color:#ff005d", "ERROR", error);
       });
-
-
-  }, [page,pageSize,searchFilters]);
+  }, [page, pageSize, searchFilters]);
 
   // useEffect(() => {
   //   populateTableData();
   // }, [populateTableData]);
 
-  const handleSortModelChange = useCallback((sortModel) => {
-    setSortOrder(sortModel[0].sort);
-  }, []);
+  // const handleSortModelChange = useCallback((sortModel) => {
+  //   setSortOrder(sortModel[0].sort);
+  // }, []);
 
   function handlePageChange(pageInfo) {
-    console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
+    //console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     // var currentPage = page;
     // var nextPage = page + 1;
-    setPage(pageInfo.page)
+    setPage(pageInfo.page);
     // prepQueryParams();
   }
 
   function handleSearchButtonClick(event) {
     event.preventDefault();
   }
-
-
 
   function columnDefType(et) {
     if (et === "Donor") {
@@ -194,32 +167,34 @@ export const RenderSearchTable = (props) => {
 
   function handleInputChange(e) {
     // Values for filtering the table data are set here
-    const { name, value } = e.target;
-    console.debug("%c⊙", "color:#00ff7b", "HandleINputChange", name);
+    const {
+ name, value 
+} = e.target;
+    //console.debug("%c⊙", "color:#00ff7b", "HandleINputChange", name);
     switch (name) {
       case "group":
         if (value != "All Components") {
           setSearchFilters((prevValues) => ({
             ...prevValues,
-            group: value,
+            group:value,
           }));
         } else {
           setSearchFilters((prevValues) => ({
             ...prevValues,
-            group: "",
+            group:"",
           }));
         }
         break;
       case "entityType":
         setSearchFilters((prevValues) => ({
           ...prevValues,
-          entityType: value,
+          entityType:value,
         }));
         break;
       case "keywords":
         setSearchFilters((prevValues) => ({
           ...prevValues,
-          keywords: value,
+          keywords:value,
         }));
         break;
       default:
@@ -254,15 +229,14 @@ export const RenderSearchTable = (props) => {
     // );
   }
 
-
   function renderView() {
-    console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
+    //console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
     return (
-      <div style={{ width: "100%" }}>
+      <div style={{ width:"100%" }}>
         {renderFilterControls()}
         {tableLoading && renderLoadingBar()}
         {results.dataRows && results.dataRows.length > 0 && renderTable()}
-        {results.dataRows && results.dataRows.length === 0 && !loading && (
+        {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
           <div className="text-center">No record found.</div>
         )}
       </div>
@@ -271,7 +245,7 @@ export const RenderSearchTable = (props) => {
 
   function renderGroupOptions() {
     allGroups.map((group, index) => {
-      console.debug("%c⊙", "color:#00ff7b", "group", group.shortName);
+      //console.debug("%c⊙", "color:#00ff7b", "group", group.shortName);
       return (
         <option key={index} value={group.uuid}>
           {group.shortname}
@@ -292,7 +266,9 @@ export const RenderSearchTable = (props) => {
 
   function renderTable() {
     return (
-      <div style={{ height: 590, width: "100%" }}>
+      <div style={{
+ height:590, width:"100%" 
+}}>
         <DataGrid
           rows={results.dataRows}
           columns={results.colDef}
@@ -301,14 +277,8 @@ export const RenderSearchTable = (props) => {
           columnThreshold={2}
           pageSizeOptions={[100]}
           pagination
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{
-            toolbar: {
-              csvOptions: {
-                fileName: "hubmap_ingest_export",
-              },
-            },
-          }}
+          slots={{ toolbar:GridToolbar }}
+          slotProps={{toolbar:{csvOptions:{fileName:"hubmap_ingest_export",},},}}
           hideFooterSelectedRowCount
           rowCount={results.rowCount}
           paginationMode="server"
@@ -328,7 +298,7 @@ export const RenderSearchTable = (props) => {
       <Box
         sx={{
           flexDirection: "column",
-          justifyContent: "center",
+          justifyContent:"center",
         }}>
         <Typography
           component={"h1"}
@@ -363,8 +333,8 @@ export const RenderSearchTable = (props) => {
             pb={3}
             alignItems="center"
             sx={{
-              display: "flex",
-              justifyContent: "flex-start",
+              display:       "flex",
+              justifyContent:"flex-start",
             }}>
             <Grid item xs={6}>
               <label htmlFor="group" className="portal-jss116">
@@ -460,12 +430,10 @@ export const RenderSearchTable = (props) => {
     );
   }
 
-  return ( 
-    renderView()
-  )
+  return renderView();
   // if (!loading ) {
-  //   console.debug("Loaded!");
-  //   return ( 
+  // //console.debug("Loaded!");
+  //   return (
   //     renderView()
   //   )
   // }else{
@@ -475,5 +443,4 @@ export const RenderSearchTable = (props) => {
   //     </div>
   //   );
   // }
-
-}
+};

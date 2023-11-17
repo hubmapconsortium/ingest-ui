@@ -71,7 +71,7 @@ export function api_search(params, auth) {
 
 export function api_search2(params, auth, from, size, fields, source) {
   // console.debug('%c⊙', 'color:#00ff7b', fields );
-  console.debug('%c⊙', 'color:#00ff7b', "api2", params, auth, from, size, fields,source);
+  // console.debug('%c⊙', 'color:#00ff7b', "api2", params, auth, from, size, fields,source);
   const options = {
     headers: {
       Authorization: "Bearer " + auth,
@@ -112,7 +112,7 @@ export function search_api_filter_es_query_builder(
   size,
   colFields
 ) {
-  console.debug("%c⊙queryBits:", "color:#00ff7b", fields, from, size, colFields);
+  // console.debug("%c⊙queryBits:", "color:#00ff7b", fields, from, size, colFields);
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {
@@ -202,7 +202,7 @@ export function search_api_filter_es_query_builder(
       .query(boolQuery)
       .from(from)
       .size(1)
-      .sort(esb.sort('last_modified_timestamp', 'asc'))
+      .sort(esb.sort("last_modified_timestamp", "asc"))
       .source(colFields)
       .trackTotalHits(true);
   } else {
@@ -210,7 +210,7 @@ export function search_api_filter_es_query_builder(
       .query(boolQuery)
       .from(from)
       .size(100)
-      .sort(esb.sort('last_modified_timestamp', 'asc'))
+      .sort(esb.sort("last_modified_timestamp", "asc"))
       .source(colFields)
       .trackTotalHits(true);
   }

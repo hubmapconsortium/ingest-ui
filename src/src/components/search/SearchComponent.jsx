@@ -124,17 +124,17 @@ class SearchComponent extends Component {
     }
 
     var organList = {};
-    console.debug('%c⊙', 'color:#00ff7b', "this.props.organList", this.props.organList );
+    // console.debug('%c⊙', 'color:#00ff7b', "this.props.organList", this.props.organList );
     if (this.props.organList) {
       organList = this.props.organList;
       this.setState({ organ_types: this.handleSortOrgans(organList) }, () => {
         this.setFilterType();
       });
     } else {
-      console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set" );
+      // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set" );
       ubkg_api_get_organ_type_set()
         .then((res) => {
-          console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set", res );
+          // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set", res );
           organList = res;
           this.setState({ organ_types: this.handleSortOrgans(res) }, () => {
             this.setFilterType();
@@ -680,7 +680,7 @@ class SearchComponent extends Component {
       )
     }
     if (this.state.isAuthenticated) {
-      console.debug('%c⊙', 'color:#00ff7b', "AUTHED" );
+      // console.debug('%c⊙', 'color:#00ff7b', "AUTHED" );
       return (
         <div style={{ width: "100%" }}>
           {/* {this.state.show_search && this.renderFilterControls()} */}
