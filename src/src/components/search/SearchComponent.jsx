@@ -682,14 +682,14 @@ class SearchComponent extends Component {
     if (this.state.isAuthenticated) {
       console.debug('%c⊙', 'color:#00ff7b', "AUTHED" );
       return (
-        <div style={{ width: "100%" }}> HI
+        <div style={{ width: "100%" }}>
           {/* {this.state.show_search && this.renderFilterControls()} */}
           {this.state.loading && this.renderLoadingBar()}
           {this.state.show_search &&
           !this.state.groupsLoading &&
           !this.state.entityListLoading && (
             // this.renderTable()}
-            <div>  HELLO THERE
+            <div>
               <RenderSearchTable 
                 // data={this.state.datarows} 
                 restrictions={this.props.restrictions}

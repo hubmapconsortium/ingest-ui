@@ -112,32 +112,22 @@ export const RenderSearchTable = (props) => {
       "newTable"
     )
       .then((response) => {
+        setTableLoading(false);
         console.debug('%c⊙USEEFAPISEARCHRES', 'color:rgb(0 140 255)',  response.total, response.results );
-        if (response.status === 200) {
-          if (response.total === 1) {
-            // for single returned items, customize the columns to match
-            // setColDef(response.results[0].entity_type);
-            // which_cols_def = this.stateData.columnDefType();
-          }
-          console.debug(
-            "%c⊙",
-            "color:#00ff7b",
-            "SETTING RESULTS",
-            response.total,
-            response.results
-          );
-          // return response;
+        if (response.total>0 && response.status === 200) {
           setResults({
             dataRows:response.results,
             rowCount:response.total,
             colDef:columnDefType(response.results[0].entity_type),
           });
-          // setRowCount(response.total);
-          // setDataRows(response.results);
-          // setColDef(columnDefType(response.results[0].entity_type));
-          setLoading(false);
-          setTableLoading(false);
-        } else {
+        } else if(response.total === 0){
+          console.debug('%c⊙', 'color:#00ff7b', "NORES" );
+          setResults({
+            dataRows:response.results,
+            rowCount:response.total,
+            colDef:COLUMN_DEF_SAMPLE,
+          });
+        }else {
           var errStringMSG = "";
           var errString =
             response.results.data.error.root_cause[0].type +
@@ -153,30 +143,10 @@ export const RenderSearchTable = (props) => {
         }
       })
       .catch((error) => {
+        setTableLoading(false);
         // props.reportError(error);
         console.debug("%c⭗", "color:#ff005d", "ERROR", error);
       });
-
-
-
-    // entity_api_get_entity(uuid, authSet.groups_token)
-    //   .then((response) => {
-    //     console.debug("useEffect entity_api_get_entity", response);
-    //       if (response.status === 200) {
-    //         setEntity(response.results);
-    //         //console.debug("entity_data", response.results);
-    //         setLoading(false);
-    //       } else {
-    //         console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
-    //         passError(response.status, response.message);
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.debug("entity_api_get_entity ERROR", error);
-    //       passError(error.status, error.results.error );
-    //     });
-
-
 
 
   }, [page,pageSize,searchFilters]);
@@ -201,128 +171,7 @@ export const RenderSearchTable = (props) => {
     event.preventDefault();
   }
 
-  function prepQueryParams() {
-    // var group = searchFilters.group;
-    // var entityType = searchFilters.entityType;
-    // var keywords = searchFilters.keywords;
 
-    // // COLUMN setting
-    // setColDef(COLUMN_DEF_SAMPLE);
-
-    // // let which_cols_def = COLUMN_DEF_SAMPLE; //default
-    // if (entityType) {
-    //   let colSet = entityType.toLowerCase();
-    //   setColDef(columnDefType(colSet));
-    // }
-
-    // let params = {};
-    // var url = new URL(window.location);
-
-    // if (keywords) {
-    //   params["keywords"] = keywords;
-    //   if (!this.props.modecheck) {
-    //     url.searchParams.set("keywords", keywords);
-    //   }
-    // } else {
-    //   url.searchParams.delete("keywords");
-    // }
-
-    // if (group && group !== "All Components") {
-    //   params["group_uuid"] = group;
-    //   if (!this.props.modecheck) {
-    //     url.searchParams.set("group", group);
-    //   }
-    // } else {
-    //   url.searchParams.delete("group");
-    // }
-
-    // if (entityType && entityType !== "----") {
-    //   if (!this.props.modecheck) {
-    //     url.searchParams.set("entityType", entityType);
-    //   }
-
-    //   if (ENTITY_TYPES.hasOwnProperty(entityType)) {
-    //     params["entity_type"] = toTitleCase(entityType);
-    //   } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType)) {
-    //     params["sample_category"] = entityType;
-    //   } else {
-    //     params["organ"] = entityType;
-    //   }
-    // } else {
-    //   url.searchParams.delete("entityType");
-    // }
-    // // window.history.pushState({}, "", url);
-    // setSearchFilters(params);
-
-    // THey get set on Selection now.
-    // populateTableData(searchFilters, page, pageSize, colDef);
-  }
-
-
-
-  // function populateTableData(){
-  //   var params = searchFilters;
-  //   var fieldSearchSet = resultFieldSet(results.colDef);
-    
-  //   console.debug(
-  //     "%c⊙populateTableData",
-  //     "color:#6200FF",
-  //     "",
-  //     params,
-  //     page,
-  //     pageSize,
-  //     fieldSearchSet
-  //   );
-  //   // setTableLoading(true);
-  //   api_search2(
-  //     params,
-  //     JSON.parse(localStorage.getItem("info")).groups_token,
-  //     page * pageSize,
-  //     results.rowCount,
-  //     fieldSearchSet,
-  //     "newTable"
-  //   )
-  //     .then((response) => {
-  //       console.debug('%c⊙APISEARCHRES', 'color:rgb(0 140 255)',  response.total, response.results );
-  //       if (response.status === 200) {
-  //         if (response.total === 1) {
-  //           // for single returned items, customize the columns to match
-  //           // setColDef(response.results[0].entity_type);
-  //           // which_cols_def = this.stateData.columnDefType();
-  //         }
-  //         console.debug(
-  //           "%c⊙",
-  //           "color:#00ff7b",
-  //           "SETTING RESULTS",
-  //           response.total,
-  //           response.results
-  //         );
-  //         return response;
-  //         // setRowCount(response.total);
-  //         // setDataRows(response.results);
-  //         // setColDef(columnDefType(response.results[0].entity_type));
-  //         // setLoading(false);
-  //         // setTableLoading(false);
-  //       } else {
-  //         var errStringMSG = "";
-  //         var errString =
-  //           response.results.data.error.root_cause[0].type +
-  //           " | " +
-  //           response.results.data.error.root_cause[0].reason;
-  //         typeof errString.type === "string"
-  //           ? (errStringMSG = "Error on Search")
-  //           : (errStringMSG = errString);
-  //         this.setState({
-  //           errorState: true,
-  //           error: errStringMSG,
-  //         });
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       props.reportError(error);
-  //       console.debug("%c⭗", "color:#ff005d", "ERROR", error);
-  //     });
-  // }
 
   function columnDefType(et) {
     if (et === "Donor") {
@@ -405,14 +254,13 @@ export const RenderSearchTable = (props) => {
     // );
   }
 
+
   function renderView() {
     console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
     return (
       <div style={{ width: "100%" }}>
-        {" "}
-        AUTH BUT WHERE
         {renderFilterControls()}
-        {loading && renderLoadingBar()}
+        {tableLoading && renderLoadingBar()}
         {results.dataRows && results.dataRows.length > 0 && renderTable()}
         {results.dataRows && results.dataRows.length === 0 && !loading && (
           <div className="text-center">No record found.</div>
@@ -612,27 +460,20 @@ export const RenderSearchTable = (props) => {
     );
   }
 
-
-  return renderView();
-
-  // console.debug(
-  //   "%c⊙Initial, Can We Render?",
-  //   "color:#FFBB00",
-  //   "",
-  //   loading,
-  //   errorHandler,
-  //   dataRows,
-  //   colDef
-  // );
-  // if (!loading && errorHandler.isError === true) {
-  //   return <ErrBox err={errorHandler} />;
-  // } else if (loading) {
+  return ( 
+    renderView()
+  )
+  // if (!loading ) {
+  //   console.debug("Loaded!");
+  //   return ( 
+  //     renderView()
+  //   )
+  // }else{
   //   return (
   //     <div className="card-body ">
   //       <div className="loader">Loading...</div>
-  //     </div>);
-  // } else {
-  //   console.debug("%c⊙", "color:#00ff7b", "SHOULD BE RENDERIN");
-    
+  //     </div>
+  //   );
   // }
+
 }
