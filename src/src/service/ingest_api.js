@@ -1,7 +1,7 @@
 // Ingest specific APIs
 
 import axios from "axios";
-import FormData from "form-data"
+import FormData from "form-data";
 
 
 
@@ -10,13 +10,8 @@ import FormData from "form-data"
  *
  */
 export function ingest_api_users_groups(auth) { 
-   const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+   const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
 
   return axios 
  .get(
@@ -28,17 +23,17 @@ export function ingest_api_users_groups(auth) {
             return g;
           });
     // console.debug('API USER GROUPs', group_list);
-    return {status: res.status, results: group_list}
+    return {status:res.status, results:group_list}
  })
  .catch(error => {
-   console.debug("ERR ingest_api_users_groups", error, error);
+   console.debug("ERR ingest_api_users_groups", error, error.response);
    if (error.response.response === "User is not a member of group HuBMAP-read") {
      console.debug("User exists just not in the read group");
     //  it's not really an /error/ to have anaccount w/o read
-    return {status: 200, results: error.response.response} 
+    return {status:200, results:error.response.response} 
    }
     if(error.response){
-      return {status: error.response.status, results: error.response.data}
+      return {status:error.response.status, results:error.response.data}
     }else{
       return {error}
     }
@@ -57,7 +52,7 @@ export function ingest_api_file_upload(data, options) {
     `${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
     .then(res => {
       // console.debug("ingest_api_file_upload", res);
-      return {status: res.status, results: res}
+      return {status:res.status, results:res}
     })
     .catch(error => {
         return {error}
@@ -70,20 +65,15 @@ export function ingest_api_file_upload(data, options) {
  *
  */
 export function ingest_api_all_user_groups(auth) { 
-   const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+   const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
 
   return axios 
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
  .then(res => {
   const group_list = res.data.groups;
-    return {status: res.status, results: group_list}
+    return {status:res.status, results:group_list}
  })
  .catch(error => {
         return {error}
@@ -95,20 +85,15 @@ export function ingest_api_all_user_groups(auth) {
  *
  */
 export function ingest_api_all_groups(auth) { 
-   const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+   const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
 
   return axios 
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
  .then(res => {
   const group_list = res.data.groups;
-    return {status: res.status, results: group_list}
+    return {status:res.status, results:group_list}
  })
  .catch(error => {
         return {error}
@@ -121,23 +106,18 @@ export function ingest_api_all_groups(auth) {
  * return:  { status, results}
  */
 export function ingest_api_allowable_edit_states(uuid, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states`;
   return axios 
     .get(url,options)
       .then(res => {
-        return {status: res.status, results: res.data}
+        return {status:res.status, results:res.data}
       })
       .catch(error => {
         console.debug("ingest_api_allowable_edit_states", error, error.response);
         if(error.response){
-          return {status: error.response.status, results: error.response.data}
+          return {status:error.response.status, results:error.response.data}
         }else{
           return {error}
         }
@@ -150,18 +130,13 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
  * return:  { status, results}
  */
 export function ingest_api_allowable_edit_states_statusless(uuid, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`;
   return axios 
     .get(url,options)
       .then(res => {
-        return {status: res.status, results: res.data}
+        return {status:res.status, results:res.data}
       })
       .catch(error => {
         return {error}
@@ -174,20 +149,15 @@ export function ingest_api_allowable_edit_states_statusless(uuid, auth) {
  */
 export function ingest_api_create_dataset(data, auth) { 
   // console.debug("ingest_api_create_dataset", data);
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
 
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`;
   return axios 
      .post(url, data, options)
       .then(res => {
           let results = res.data;
-          return {status: res.status, results: results}
+          return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -199,24 +169,19 @@ export function ingest_api_create_dataset(data, auth) {
  *
  */
 export function ingest_api_create_publication(data, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
 
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/publications`;
   return axios 
      .post(url, data, options)
       .then(res => {
           let results = res.data;
-          return {status: res.status, results: results}
+          return {status:res.status, results:results}
       })
       .catch(error => {
         if(error.response){
-          return {status: error.response.status, results: error.response.data}
+          return {status:error.response.status, results:error.response.data}
         }else{
           return {error}
         }
@@ -229,20 +194,15 @@ export function ingest_api_create_publication(data, auth) {
  */
 export function ingest_api_dataset_submit(uuid, data, auth) { 
   // console.debug("ingest_api_dataset_submit", data);
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
         
   return axios 
      .put(url, data, options)
       .then(res => {
           let results = res.data;
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -256,13 +216,8 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
  */
 export function ingest_api_dataset_publish(uuid, data, auth) { 
   // console.debug("ingest_api_dataset_submit", data);
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/publish`;
         
   return axios 
@@ -270,7 +225,7 @@ export function ingest_api_dataset_publish(uuid, data, auth) {
       .then(res => {
           let results = res.data;
       
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -283,13 +238,8 @@ export function ingest_api_dataset_publish(uuid, data, auth) {
  *
  */
 export function ingest_api_derived_dataset(uuid, data, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
 
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`; // @TODO: Derived? 
         
@@ -298,7 +248,7 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
       .then(res => {
           let results = res.data;
       
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -315,17 +265,12 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
   console.debug("Going to : ",type);
   var dataForm = new FormData();
   dataForm.append('file', data);
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "multipart/form-data"
-      },
-      onUploadProgress: (ev: ProgressEvent) => {
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"multipart/form-data"},
+      onUploadProgress:(ev: ProgressEvent) => {
         const progress = ev.loaded / ev.total * 100;
         console.debug("prog", Math.round(progress));
-      }
-    };
+      }};
   let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
 
   return axios 
@@ -339,7 +284,7 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
         if(results[0]){
           console.debug("results DATA ",results[0]);
         }
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -353,28 +298,28 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
  */
 export function ingest_api_bulk_entities_register(type, data, auth) { 
   console.debug("Starting Data: ",data);
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "application/json"
-      },
-      onUploadProgress: (ev: ProgressEvent) => {
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"application/json"},
+      onUploadProgress:(ev: ProgressEvent) => {
         const progress = ev.loaded / ev.total * 100;
         console.debug("prog", Math.round(progress));
-      }
-    };
+      }};
   let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`;
   console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
   return axios 
      .post(url, data, options)
       .then(res => {
-        console.debug("ingest_api_bulk_entities",res);
+        console.debug('%c⭗ INGESTAPI BULK RES: ', 'color:#FF00FF',  res);
+        // console.debug("ingest_ap i_bulk_entities",res);
           let results = res.data;
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
-        return {error}
+        // console.debug('%c‼️ INGESTAPI BULK ERR', 'color:#ff005d', error);
+        // throw new Error(error);
+        // var err = new Error(error);
+        // throw err;
+        return (error)
      });
 };
 
@@ -382,13 +327,8 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
    these are multi-labs records
 */
 export function ingest_api_get_associated_ids(uuid, auth) {
-   const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-        "Content-Type": "application/json"
-      }
-    };
+   const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
    return axios
         .get(
           `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}/ingest-group-ids`, options)
@@ -426,7 +366,7 @@ export function ingest_api_get_associated_ids(uuid, auth) {
               return 0;
             });
           }
-          return {status: res.status, results: res.data.ingest_group_ids}
+          return {status:res.status, results:res.data.ingest_group_ids}
         })
         .catch(error => {
         return {error}
@@ -434,13 +374,8 @@ export function ingest_api_get_associated_ids(uuid, auth) {
 }
 
 export function ingest_api_get_globus_url(uuid, auth) {
-  const config = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "multipart/form-data",
-      },
-    };
+  const config = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"multipart/form-data",},};
 
     return axios
       .get(
@@ -448,7 +383,7 @@ export function ingest_api_get_globus_url(uuid, auth) {
         config
       )
       .then((res) => {
-        return {status: 200, results: res.data}
+        return {status:200, results:res.data}
       })
       .catch(error => {
         return {error}
@@ -462,20 +397,15 @@ export function ingest_api_get_globus_url(uuid, auth) {
  *
  */
 export function ingest_api_create_upload(data, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"application/json"}};
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`;
   return axios 
      .post(url, data, options)
       .then(res => {
           let results = res.data;
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -488,20 +418,15 @@ export function ingest_api_create_upload(data, auth) {
  *
  */
 export function ingest_api_submit_upload(uuid, data, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"application/json"}};
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/submit`;
   return axios 
      .put(url, data, options)
       .then(res => {
           let results = res.data;
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -514,13 +439,8 @@ export function ingest_api_submit_upload(uuid, data, auth) {
  *
  */
 export function ingest_api_validate_upload(uuid, data, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"application/json"}};
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/validate`;
   return axios 
@@ -528,7 +448,7 @@ export function ingest_api_validate_upload(uuid, data, auth) {
       .then(res => {
           let results = res.data;
       
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -541,13 +461,8 @@ export function ingest_api_validate_upload(uuid, data, auth) {
  *
  */
 export function ingest_api_reorganize_upload(uuid, auth) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "application/json"
-      }
-    };
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"application/json"}};
   const data = {}
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/reorganize`;
@@ -555,7 +470,7 @@ export function ingest_api_reorganize_upload(uuid, auth) {
      .put(url, data, options)
       .then(res => {
           let results = res.data;
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         return {error}
@@ -567,13 +482,8 @@ export function ingest_api_reorganize_upload(uuid, auth) {
  *
  */
 export function ingest_api_notify_slack(auth, data) { 
-  const options = {
-      headers: {
-        Authorization:
-          "Bearer " + auth,
-          "Content-Type": "application/json"
-      }
-  };
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"application/json"}};
   data.send_to_email = true;
   // const data = ["data-testing-notificatons","Beep (O v O)!"]    
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/notify`;
@@ -582,7 +492,7 @@ export function ingest_api_notify_slack(auth, data) {
     .then(res => {
       console.debug("ingest_api_notify_slack",res);
         let results = res.data;
-        return {status: res.status, results: results}
+        return {status:res.status, results:results}
       })
       .catch(error => {
         console.debug("ingest_api_notify_slack",error);

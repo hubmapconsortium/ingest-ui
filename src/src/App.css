@@ -865,3 +865,9 @@ svg.invalid {
   color: red !important;
   margin-left: 0px !important;
 }
+
+.error-page{
+  border: 8px solid #ff0000;
+  box-sizing: border-box;
+  margin-bottom:20px;
+}

@@ -1,12 +1,17 @@
 import * as React from "react";
-import {useState, useEffect, useContext} from "react";
+import {
+  useState,useEffect,useContext
+} from "react";
 import {
   useNavigate,
   useLocation,
   Routes,
   Route,
-  Link} from "react-router-dom";
+  Link
+} from "react-router-dom";
 
+  import StandardErrorBoundary from "./utils/errorWrap";
+import ErrorPage from "./utils/errorPage";
 // Login Management
 import Login from './components/ui/login';
 import Timer from './components/ui/idle';
@@ -22,22 +27,21 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import { Alert } from '@material-ui/lab';
+import {Alert} from '@material-ui/lab';
 import Snackbar from '@mui/material/Snackbar';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faExclamationTriangle, faTimes}
-  from "@fortawesome/free-solid-svg-icons";
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
-import { ingest_api_users_groups } from './service/ingest_api';
-import { ubkg_api_get_assay_type_set, ubkg_api_get_organ_type_set } from "./service/ubkg_api";
-import {BuildError, FormatError} from "./utils/error_helper";
+import {ingest_api_users_groups} from './service/ingest_api';
+import {ubkg_api_get_assay_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {BuildError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -47,15 +51,15 @@ import {Navigation} from "./Nav";
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
-import { UserContext } from './service/user_service';
+import {UserContext} from './service/user_service';
 import Result from "./components/uuid/result";
 
 import {RenderDonor} from "./components/donors";
 import {RenderDataset} from "./components/datasets";
-import {RenderSample } from "./components/samples";
+import {RenderSample} from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 import {RenderPublication} from "./components/publications";
-import { RenderCollection } from "./components/collections";
+import {RenderCollection} from "./components/collections";
 
 // Bulky
 import {RenderBulk} from "./components/bulk";
@@ -63,7 +67,7 @@ import {RenderBulk} from "./components/bulk";
 // The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
-import  Box  from '@mui/material/Box';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 
@@ -166,7 +170,7 @@ export function App (props){
             let displayAll = [];
             setDataTypeListAll(dataAll);
             for (const dt of dataAll) {
-              displayAll.push({ name: dt.name, description: dt.description });
+              displayAll.push({ name:dt.name, description:dt.description });
             }
             setDisplaySubtypes(displayAll);
             ubkg_api_get_organ_type_set()
@@ -223,7 +227,7 @@ export function App (props){
   
   function urlChange(target) {
     var lowerTarget = target.toLowerCase();
-    navigate(lowerTarget,  { replace: true });
+    navigate(lowerTarget,  { replace:true });
   }
 
 
@@ -258,7 +262,9 @@ export function App (props){
   var [errorInfoShow,setErrorInfoShow] = useState(false);
   var [errorDetail, setErrorDetail] = useState({});
 
-  var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
+  var bundledParameters = {
+entityType:queryType, keywords:queryKeyword, group:queryGroup
+};
 
   function reportError(error, details) {
     console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);
@@ -293,13 +299,11 @@ export function App (props){
       <div id="content" className="container">
       <Drawer 
         sx={{
-          color: 'white',
-          height:150   ,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {           
-            height: 150,
-            boxSizing: 'border-box',
-          },
+          color:               'white',
+          height:              150   ,
+          flexShrink:          0,
+          '& .MuiDrawer-paper':{height:   150,
+            boxSizing:'border-box',},
         }}
         variant="temporary"
         className="alert-danger"
@@ -308,17 +312,17 @@ export function App (props){
 
 
         <Box  sx={{ 
-          width: '100%', 
-          padding: 1, 
+          width:          '100%', 
+          padding:        1, 
           backgroundColor:'#dc3545', 
-          color:"#fff",
-            '& span, h5': {           
-            display: 'inline-block',
-            padding: "0 5px 0 0 ",
-          }, }}>
+          color:          "#fff",
+            '& span, h5':   {display:'inline-block',
+            padding:"0 5px 0 0 ",}, }}>
             <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
             <IconButton
-              sx={{ position: 'absolute', right: 8, top: 4, color: 'white' }}
+              sx={{
+                position:'absolute', right:8, top:4, color:'white' 
+              }}
               aria-label="close drawer"
               onClick= {()=> setErrorShow(false)}
               edge="start">
@@ -326,10 +330,10 @@ export function App (props){
             </IconButton>
         </Box>
 
-        <Box sx={{ width: '100%', height:'100%', padding: 1, backgroundColor:'white', color:"#dc3545", }}>
-
+        <Box sx={{
+            width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
+          }}>
           <Grid container>
-
             <Grid item xs={7}>
               <Typography variant="body2" gutterBottom>
                 There's been an error handling the current task. Please try again later. <br />
@@ -431,7 +435,17 @@ export function App (props){
         )}
 
           {authStatus && !timerStatus && !isLoading && !dtloading && !unregStatus &&(
-          <Paper className="px-5 py-4">
+          <StandardErrorBoundary
+            FallbackComponent={ErrorPage}
+            onError={(error, errorInfo) => {
+              // log the error
+              console.log("Error caught!");  
+              console.error(error);
+              console.error(errorInfo);
+              // record the error in an APM tool...
+            }}>
+            <Paper className="px-5 py-4">
+
 
 
             <Routes>
@@ -461,6 +475,7 @@ export function App (props){
 
                   
               )}
+              
               {authStatus && userDataGroups && userDataGroups.length > 0 && !isLoading && (
                 <Route path="/new">
                   <Route index element={<SearchComponent reportError={reportError} />} />
@@ -486,8 +501,7 @@ export function App (props){
 
               <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
               <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
-          </Routes>
-
+            </Routes>
 
           <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
             <DialogContent> 
@@ -505,10 +519,8 @@ export function App (props){
           <Snackbar 
             open={showSnack} 
             onClose={() => setShowSnack(false)}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
+            anchorOrigin={{vertical:  'bottom',
+              horizontal:'right',}}
             autoHideDuration={6000} 
             action={
               <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
@@ -519,6 +531,7 @@ export function App (props){
           </Snackbar>  
 
         </Paper>
+        </StandardErrorBoundary>
       )}
   </div>
   </div>

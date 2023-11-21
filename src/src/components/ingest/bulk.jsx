@@ -90,6 +90,13 @@ class bulkCreation extends Component {
     console.debug(this.state);
     console.debug(this.props);
     console.debug(this.props.bulkType);
+    // throw new Error({
+    //   errorValue: "TypeError: splitString.slice.lastIndexOf is not a function",
+    //   columnNumber: 49,
+    //   fileName: "http://localhost:8585/main.deda0b45e14921a26bd1.hot-update.js",
+    //   lineNumber: 122,
+    //   message: "splitString.slice.lastIndexOf is not a function",
+    // });
   }
 
 
@@ -133,14 +140,21 @@ class bulkCreation extends Component {
 
     //  If the error regards the first / fundamental structure of file,
     //  it'll come back like this
-    // if (data.error.response.data) {
-      
-    // }
-    var coreError = data.error.response.data.data;
+    var coreError;
+    if (data.error && data.error.response && data.error.response.data) {
+      coreError = data.error.response.data.data;
+    }else if(data.data){
+      coreError = data.data;
+    }else{
+      coreError = data;
+    }
     console.debug("coreError", coreError);
     if(coreError){
-      for (const [key, value] of Object.entries(coreError)) {
+      for (var [key, value] of Object.entries(coreError)) {
         console.debug("key", key, "value", value);
+        if(value.error){
+          value=value.error;
+        }
 
         console.log("ROW __________________",`${key}: ${value}`);
         var parsedVal = value.toString();   
@@ -156,6 +170,11 @@ class bulkCreation extends Component {
           errors.push(errRow);
         }else{
           errRow.row = "N/A";
+          if (value.indexOf("exists already")>0){
+            var splitString = value.slice(value.indexOf('"exists already'));
+            var splitUUID = splitString.slice.lastIndexOf(' ')+1;
+            console.debug('%c⊙splitUUID', 'color:#00ff7b', splitUUID );
+          }
           errRow.message = value;
           console.debug("value",value);
           console.debug("errRow",errRow);
@@ -287,7 +306,7 @@ handleUpload= () =>{
           error_status:        true,
           error_message_detail:parseErrorMessage(error),
           error_message:       "Error" 
-});
+        });
         console.debug("SUBMIT error", error)
         this.setState({loading:false,});
       });
@@ -297,7 +316,7 @@ handleUpload= () =>{
       error_status:        true,
       error_message_detail:"Please log in again",
       error_message:       "Token Expired" 
-});
+    });
     console.debug("SUBMIT error", "Login Expired")
     this.setState({loading:false,});
   }
@@ -308,58 +327,89 @@ handleRegister = () =>{
   this.setState({loading:    true,
     uploadTimer:"00:00"});
   if( localStorage.getItem("info") !== null ){
-    console.debug("this.state.bulkFileID", this.state.bulkFileID);    
+    // console.debug("this.state.bulkFileID", this.state.bulkFileID);    
     var fileData ={"temp_id":   this.state.bulkFileID,
       "group_uuid":this.state.group_uuid}
-    console.debug("REG HERE");
+    // console.debug("REG HERE");
     ingest_api_bulk_entities_register(this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).groups_token)
+      
+      // There's a wide array of responses we can get here:
+      //  500 : Server Broke, something Techincal and *not* related to the processing of Data
+      // 504 
+    
       .then((resp) => {
-        if (resp.status && resp.status === 201) {
-          //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
+        var serverResp = resp.response ? resp.response : resp.error.response;
+        console.debug('%c⊙', 'color:#00ff7b', "resp", serverResp );
+          //There's a chance our  may pass the Entity validation, but not the Subsequent pre-insert Valudation
           // We might back back a 201 with an array of errors encountered. Let's check for that!  
-          if(resp.results){
-            var respData = resp.results.data;
-            console.debug("respData",respData);
-            let respInfo = _.map(respData, (value, prop) => {
-              return { "prop":prop, "value":value };
-            });
-            
-            // Cant depend on first one if its a partial success
-            if( respInfo[1] && respInfo[1].value['error']){
+        if(resp.results){
+          console.debug('%c⊙', 'color:#00ff7b', "OK Results" );
+          var respData = resp.results.data;
+          console.debug("respData",respData);
+          let respInfo = _.map(respData, (value, prop) => {
+            return { "prop":prop, "value":value };
+          });
+          console.debug('%c⊙', 'color:#00ff7b', "respInfo", respInfo );
+          // Cant depend on first one if its a partial success
+          if( respInfo[1] && respInfo[1].value['error']){
             this.setState({ 
               submit_error:        "error",
               error_status:        true,
               success_message:     null,
               error_message_detail:"Errors were found. Please review &amp; and try again",
               error_message:       "Error" 
-});
+            });
             console.debug("SUBMIT error", "error")
+            console.debug('%c⊙', 'color:#00ff7b', this.state.error_message_detail );
             this.setState({loading:false,});
 
-            }else{
-              console.debug("No RESP.results Detected");
-              var respToArray = Object.values(respData)
-              this.setState({
-                success_status:  true,
-                alertStatus:     "success",
-                success_message: this.props.bulkType+" Registered Successfully",
-                loading:         false,
-                uploadedBulkFile:respInfo,
-                uploadedSources: respToArray,
-                complete:        true,
-                registeredStatus:true
-                }, () => {   
-                });
-              }
-          }
+          }else{
+            console.debug("No RESP.results Detected");
+            var respToArray = Object.values(respData)
+            this.setState({
+              success_status:  true,
+              alertStatus:     "success",
+              success_message: this.props.bulkType+" Registered Successfully",
+              loading:         false,
+              uploadedBulkFile:respInfo,
+              uploadedSources: respToArray,
+              complete:        true,
+              registeredStatus:true
+              }, () => {   
+              });
+            }
+            
+        }else if( 
+          (resp.response && resp.response.status && resp.response.status === 504) || 
+          (resp.error  && resp.error.response  && resp.error.response.status === 504) ){
+          // console.debug('%c⭗ 504 DATA ERROR', 'color:#ff005d', resp );
+          this.parseRegErrorFrame(resp);
+        }else if(
+          (resp.response && resp.response.status && resp.response.status === 500) || 
+          (resp.error  && resp.error.response && resp.error.response.status === 500)){
+            console.debug('%c⊙', 'color:#00ff7b', serverResp.status,serverResp.data, serverResp.data.status,serverResp.data.data );
+          var grabFullError = {status:serverResp.data.status,data:serverResp.data.data}
 
-        } else if (resp.error.response && (resp.error.response.status === 504 || resp.error.response.status === 500)) {
-          console.debug('%c⭗', 'color:#ff005d', resp.error.response.status+" Error: ", resp.error);
-          console.debug('%c⭗', 'color:#ff005d', "Err Response", resp.error.response);
-          this.props.reportError(resp.error);
+          console.debug('%c⭗ 500 ERROR: ', 'color:#ff005d', grabFullError );
+          // this.props.reportError(grabFullError); // This is for erver errors, not data errors
+          this.setState({
+            error_status:        true,
+            alertStatus:         "error",
+            error_message:       "Regsitsration Faiure",
+            error_message_detail:grabFullError.status,
+            loading:             false,
+            uploadedSources:     grabFullError.data,
+            complete:            false,
+            registeredStatus:    false
+            }, () => {   
+              console.debug('%c⊙', 'color:#00ff7b', "FInished 500 setstate" );
+              // this.parseRegErrorFrame(resp);
+              this.handleErrorCompiling(grabFullError);
+            });
+
+
         } else if (resp.status === 207) { // Partial Success
-          console.debug('%c⭗ 207 |', 'color:#FBFF00',  resp.data.status);
-          // this.props.reportError(resp.error);
+          console.debug('%c⭗ 207 PARTIAL|', 'color:#FBFF00',  resp.data.status);
           var mixedResponseArray = Object.values(respData)
           this.setState({
             mixed_status:    true,
@@ -372,40 +422,44 @@ handleRegister = () =>{
             }, () => {   
             });
         } else {
-          console.debug('%c⭗', 'color:#ff005d', "Error: ",resp );
+          console.debug('%c⭗ UNKNWN ERROR '+(resp.status ? resp.status:"000"), 'color:#ff005d', "Error: ",resp );
+
+          this.props.reportError(resp);
           // var respError = resp.err.response.data
-          var respError = resp.error
-          console.debug("=====ERROR=====, respError", respError, respError.status, respError.data);
-          this.parseRegErrorFrame(resp);
-          this.setState({ 
-            error_status:        true, 
-            submit_error:        true, 
-            submitting:          false, 
-            loading:             false,
-            error_message_detail:parseErrorMessage(respError.status),
-            success_message:     null,
-            response_status:     resp.Error
-          });
+          // var respError = resp.error
+          // console.debug("=====ERROR=====, respError", respError, respError.status, respError.data);
+          // this.parseRegErrorFrame(resp);
+          // this.setState({ 
+          //   error_status:        true, 
+          //   submit_error:        "error", 
+          //   submitting:          false, 
+          //   loading:             false,
+          //   error_message_detail:parseErrorMessage(respError),
+          //   success_message:     null,
+          //   response_status:     "3resp.Error"
+          // });
           console.debug("DEBUG",this.state.error_message_detail);
         } 
       })
       .catch((error) => {
-        console.debug("SUBMIT error", error);
-        console.debug("======= response ", error.response);
+        console.debug('%c⊙CATCH Errpr', 'color:#FF00DD', error.message,"||" );
+        console.debug( error.stack );
+        // console.debug("======= response ", error.response);
+        // throw new Error(error);
         this.setState({ 
           submit_error:        error,
           error_status:        true,
           error_message_detail:parseErrorMessage(error),
           loading:             false,
           error_message:       "Error" 
-});
+          });
       });
   }
 }
 
 
 parseRegErrorFrame = (errResp) => {
-  console.debug('%c⊙', 'color:#FF0000', "parseRegErrorFrame", errResp );
+  console.debug('%c⊙parseRegErrorFrame: ' , 'color:#FF0000', errResp );
   var parsedError;
   
   if(errResp.results && errResp.results.data && errResp.results.data.data){
@@ -414,17 +468,28 @@ parseRegErrorFrame = (errResp) => {
     parsedError = parseErrorMessage(errResp.results.data);
   }else if(errResp.results && errResp.results.data){
     parsedError = parseErrorMessage(errResp.results.data);
+  }else if(errResp.status && errResp.data){
+    parsedError = parseErrorMessage(errResp.data);
   }else{
+    console.debug('%c⊙', 'color:#00ff7b', "Cant figure our Parsing Frame, ",errResp );
     let regErrorSet ={}
     if(errResp.err && errResp.err.response.data){
       regErrorSet = errResp.err.response.data 
     }else if(errResp.error && errResp.error.response.data){
       regErrorSet = errResp.error.response.data 
+    }else if(errResp.data){
+      regErrorSet = errResp 
+    }else{
+      regErrorSet = errResp
     }
-      var errRows = regErrorSet.data;
-      var errMessage = regErrorSet.status;
-      console.debug("errRows",errRows, "errMessage",errMessage);
-      parsedError=errResp;
+    console.debug('%c⊙regErrorSet', 'color:#00ff7b', regErrorSet," ||| ER RESP: ",errResp );
+    // var errRows = regErrorSet.data;
+    var errRows = regErrorSet.map(g => {
+      return g.message
+    })
+    var errMessage = regErrorSet.status;
+    console.debug("errRows",errRows, "errMessage",errMessage);
+    parsedError=errResp;
   }
 
   this.handleErrorCompiling(parsedError); // Error Array's set in that not here
@@ -609,7 +674,7 @@ renderFileGrabber = () =>{
           <div className="mx-2">
                         
             <Typography 
-            variant="h6"
+            // variant="h6"
             color="error">
               {this.state.error_message_detail}
             </Typography>
@@ -695,13 +760,13 @@ renderFileGrabber = () =>{
 
           {this.state.error_message &&(
             <div style={{
-marginBottom:"10px", width:"100%", display:"inline-block"
-}}>
+              marginBottom:"10px", width:"100%", display:"inline-block"
+              }}>
               
               <Typography 
               variant="h6"
               color="error">
-                {this.state.error_message_detail}
+                {/* {this.state.error_message_detail} */}
               </Typography>
 
               <Typography 
@@ -718,7 +783,6 @@ marginBottom:"10px", width:"100%", display:"inline-block"
                 color="error">
                 There were some problems Registering your data. <br /> 
                 Please review &amp; resubmit.
-                
               </Typography> 
 
              
