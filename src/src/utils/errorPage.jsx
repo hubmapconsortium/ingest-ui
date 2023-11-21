@@ -22,31 +22,27 @@ export default function ErrorPage(props) {
     }
     // var jsonERR = toJSON(errorObject);
     // var mapDerails = new Map(JSON.parse(jsonERR));
-    console.debug('%c⊙DEEETS', 'color:#2600FF', errorObject.stack );
     return (
         <div className={"error-page p-1"}>
 
             <Box  sx={{ 
-            width:          '100%', 
-            padding:        1, 
-            backgroundColor:'#dc3545', 
-            color:          "#fff",
-                '& span, h4':   {display:'inline-block',
+                backgroundColor: 'white',
+                width:          '100%', 
+                '& span, h2':   {display:'inline-block',
                 padding:"5px",} }}>
                 
                 <Grid container className='p-2'>
-                    <Grid item xs={5} className="mb-4">
+                    <Grid item xs={12} className="mb-4" sx={{backgroundColor:'#dc3545',color:          "#fff",width:'100%',padding:1, }}>
                         <Typography variant="h2" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="body" >Something's gone wrong...</Typography>
                     </Grid>
                     <Grid item xs={7} className="mb-4">
-                        <Typography variant="h5">Please try again later. <br />
-                            If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org&body=">help@hubmapconsortium.org</a>
+                        <Typography variant="body">There's been an error handling the current task. Please try again later. <br />
+                            If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
                         </Typography>
                     </Grid>
-
                     <Grid item xs={12} sx={{
                         backgroundColor:'#fcfad9',
-                        padding:"2px 4px",
+                        padding:"4px 8px",
                         color:"#dc3545",
                     }}>
                         <Typography variant='h5' gutterBottom>Error: </Typography>
@@ -57,7 +53,6 @@ export default function ErrorPage(props) {
                                 <Typography ><strong>Line Number:</strong> {errorObject.lineNumber} | <strong>Column Number:</strong> {errorObject.columnNumber} |</Typography> 
                             </Box>
                         )}
-                        
                         <Typography variant='h5'gutterBottom>View Stack Trace:<IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ChevronRightIcon /></IconButton> </Typography>
                         <Collapse in={errorInfoShow} sx={{backgroundColor:'white', color:"#dc3545", padding:"3em"}}>
                             <Typography variant="subtitle1">
@@ -65,9 +60,6 @@ export default function ErrorPage(props) {
                             </Typography>
                         </Collapse>
                     </Grid>
-
-
-
                 </Grid>
             </Box>
         </div>
