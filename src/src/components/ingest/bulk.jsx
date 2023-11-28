@@ -85,26 +85,12 @@ class bulkCreation extends Component {
     // State setting tries to happen before the groupset data can populate
     console.debug("BULK MOUNTED");
     var userGroups = this.getUserGroups();
-    // console.debug("componentDidMount");
-    // console.debug("groups", userGroups); // Grabbing them on mount to populate in the state
-    // console.debug(this.state);
-    // console.debug(this.props);
-    // console.debug(this.props.bulkType);
-    // throw new Error({
-    //   errorValue: "TypeError: splitString.slice.lastIndexOf is not a function",
-    //   columnNumber: 49,
-    //   fileName: "http://localhost:8585/main.deda0b45e14921a26bd1.hot-update.js",
-    //   lineNumber: 122,
-    //   message: "splitString.slice.lastIndexOf is not a function",
-    // });
   }
 
 
   getUserGroups(){
-    console.debug("Groups TOken Grabby");
     var GT = localStorage.getItem("info");
     console.debug("GT", GT);
-
 
     ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token+"").then((results) => {
       if (results.status === 200) { 
@@ -135,8 +121,6 @@ class bulkCreation extends Component {
 
   handleErrorCompiling = (data) =>{
     var errors = [];
-    console.debug("handleErrorCompiling",data);
-    // console.debug("LEN",data.err.response.data.data)
     //  If the error regards the first / fundamental structure of file,
     //  it'll come back like this
     var coreError;
@@ -149,11 +133,10 @@ class bulkCreation extends Component {
     }
     if(coreError){
       for (var [key, value] of Object.entries(coreError)) {
-        // console.debug("key", key, "value", value);
         if(value.error){
           value=value.error;
         }
-        // console.log("ROW __________________",`${key}: ${value}`);
+        console.log("ROW __________________",`${key}: ${value}`);
         var parsedVal = value.toString();   
         var errRow = {};
 
@@ -166,9 +149,6 @@ class bulkCreation extends Component {
           errors.push(errRow);
         }else{
           errRow.row = "N/A";
-          // if (value.indexOf("exists already")>0){
-          //   var splitString = value.slice(value.indexOf('"exists already'));
-          // }
           errRow.message = value;
           errors.push(errRow);
         }
@@ -181,13 +161,11 @@ class bulkCreation extends Component {
 
     
   handleNext = () => {
-    console.debug("handleNext");
     var newStep = this.state.activeStep +1
     this.setState({activeStep:newStep})    
   };
 
   handleBack = () => {
-    console.debug("handleBack");
     var newStep = this.state.activeStep -1
     this.setState({
       activeStep:    newStep,
@@ -256,7 +234,6 @@ handleUpload= () =>{
     formData.append("file", this.state.tsvFile)    
     ingest_api_bulk_entities_upload(this.props.bulkType, this.state.tsvFile, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
-        console.debug('%c⊙UpLOAD STATUS: ', 'color:#00ff7b', resp.status );
         if(resp.results && resp.results.temp_id){
         }
         if (resp.status === 201) {
@@ -317,13 +294,11 @@ handleRegister = () =>{
   this.setState({loading:    true,
     uploadTimer:"00:00"});
   if( localStorage.getItem("info") !== null ){
-    var fileData ={"temp_id":   this.state.bulkFileID,"group_uuid":this.state.group_uuid}
+    var fileData ={"temp_id":this.state.bulkFileID,"group_uuid":this.state.group_uuid}
     try{
       ingest_api_bulk_entities_register(this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((resp) => {
-       
-        console.debug('%c⊙REGISTER STATUS: ', 'color:#00ff7b', resp.status, resp );
-        var serverResp;
+       var serverResp;
         if(resp.response ){
           serverResp = resp.response
         }else if(resp.error && resp.error.response){
@@ -331,90 +306,78 @@ handleRegister = () =>{
         }else{
           serverResp = resp;
         }
-          //There's a chance our  may pass the Entity validation, but not the Subsequent pre-insert Valudation
-          // We might back back a 201 with an array of errors encountered. Let's check for that!  
-          // if(resp.results && resp.status !== 207){
-        // if( (resp.data && resp.status !== 207) || (resp.results && resp.results.data && resp.status === 201) ){
-        //   var respData = resp.results.data?resp.results.data:resp.results;
-        //   console.debug("%c⊙respData: ", "color:#00ff7b", respData);
-        //   // let respInfo = _.map(respData, (value, prop) => {
-        //   //   return { "prop":prop, "value":value };
-        //   // });
-        if (resp.status && resp.status === 201) {
-            
-          //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
-          // We might back back a 201 with an array of errors encountered. Let's check for that!  
-          if(resp.results){
-            
-            var respData = resp.results.data;
-            console.debug("respData",respData);
-            // var dataRows = Array.from(respData);
-            var dataRows = [];
-            // for var row in respData{
-            for (var [key, value] of Object.entries(respData)) {
-              console.debug("value",value);
-              dataRows.push(value);
-            }
-            let respInfo = _.map(respData, (value, prop) => {
-              return { "prop":prop, "value":value };
+        //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
+        // We might back back a 201 with an array of errors encountered. Let's check for that!  
+        if(resp.status && resp.status === 201 && resp.results){
+          var respData = resp.results.data;
+          console.debug("respData",respData);
+          var dataRows = [];
+          for (var [key, value] of Object.entries(respData)) {
+            console.debug("value",value);
+            dataRows.push(value);
+          }
+          let respInfo = _.map(respData, (value, prop) => {
+            return { "prop":prop, "value":value };
+          });
+          this.setState({
+            error_status:        false,
+            loading:             false,
+            uploadedSources:     dataRows,
+            complete:            true,
+            registeredStatus:    true
+            }, () => {   
+              console.debug("%c⊙Shoukd be good to map?: ", "color:#00ff7b", respInfo);
+              // this.handleErrorCompiling(grabFullError);
+          });
+        }else if( 
+          (resp.response && resp.response.status && resp.response.status === 504) || 
+          (resp.error  && resp.error.response  && resp.error.response.status === 504) ){
+          console.debug('%c⊙504', 'color:#ff005d' );
+          this.parseRegErrorFrame(resp);
+        }else if(
+          (resp.response && resp.response.status && resp.response.status === 500) || 
+          (resp.error  && resp.error.response && resp.error.response.status === 500)){
+          console.debug('%c⊙500', 'color:#ff005d' );
+          var grabFullError = {status:serverResp.data.status,data:serverResp.data.data}
+          this.setState({
+            error_status:        true,
+            alertStatus:         "error",
+            error_message:       "Regsitsration Faiure",
+            error_message_detail:grabFullError.status,
+            loading:             false,
+            uploadedSources:     grabFullError.data,
+            complete:            false,
+            registeredStatus:    false
+            }, () => {   
+              this.handleErrorCompiling(grabFullError);
             });
-            this.setState({
-              error_status:        false,
-              loading:             false,
-              uploadedSources:     dataRows,
-              complete:            true,
-              registeredStatus:    true
-              }, () => {   
-                console.debug("%c⊙Shoukd be good to map?: ", "color:#00ff7b", respInfo);
-                // this.handleErrorCompiling(grabFullError);
+        } else if (resp.results && resp.results.data && resp.status === 207) { // Partial Success
+          console.debug('%c⊙207', 'color:#f4d006' );
+          var mixedResponseArray = Object.values(resp.results.data)
+          var errRows = mixedResponseArray.filter(row => {
+            return row.error
+          })
+          var successRows = mixedResponseArray.filter(row => {
+            return !row.error;
+          })
+          this.setState({
+            mixed_status:    true,
+            alertStatus:     "mixed",
+            mixed_message:   "Partial Regsitsration Success",
+            loading:         false,
+            uploadedSources: successRows,
+            errorSet: errRows,
+            complete:        true,
+            registeredStatus:true
+            }, () => {   
             });
-          }else if( 
-            (resp.response && resp.response.status && resp.response.status === 504) || 
-            (resp.error  && resp.error.response  && resp.error.response.status === 504) ){
-            this.parseRegErrorFrame(resp);
-          }else if(
-            (resp.response && resp.response.status && resp.response.status === 500) || 
-            (resp.error  && resp.error.response && resp.error.response.status === 500)){
-            var grabFullError = {status:serverResp.data.status,data:serverResp.data.data}
-            this.setState({
-              error_status:        true,
-              alertStatus:         "error",
-              error_message:       "Regsitsration Faiure",
-              error_message_detail:grabFullError.status,
-              loading:             false,
-              uploadedSources:     grabFullError.data,
-              complete:            false,
-              registeredStatus:    false
-              }, () => {   
-                this.handleErrorCompiling(grabFullError);
-              });
-          } else if (resp.results && resp.results.data && resp.status === 207) { // Partial Success
-            var mixedResponseArray = Object.values(resp.results.data)
-            var errRows = mixedResponseArray.filter(row => {
-              return row.error
-            })
-            var successRows = mixedResponseArray.filter(row => {
-              return !row.error;
-            })
-            this.setState({
-              mixed_status:    true,
-              alertStatus:     "mixed",
-              mixed_message:   "Partial Regsitsration Success",
-              loading:         false,
-              uploadedSources: successRows,
-              errorSet: errRows,
-              complete:        true,
-              registeredStatus:true
-              }, () => {   
-              });
-          } else {
-            this.props.reportError(resp);
-          } 
-        }
+        } else {
+          this.props.reportError(resp);
+        } 
+        
       })
       .catch((error) => {
         console.debug( error.stack );
-        // throw new Error(error);
         this.setState({ 
           submit_error:        error,
           error_status:        true,
@@ -423,8 +386,15 @@ handleRegister = () =>{
           error_message:       "Error" 
           });
       });       
-    }catch(err){
-      console.debug("ERROR", err);
+    }catch(error){
+      this.setState({ 
+        submit_error:        error,
+        error_status:        true,
+        error_message_detail:parseErrorMessage(error),
+        error_message:       "Error" 
+      });
+      console.debug("SUBMIT error", error)
+      this.setState({loading:false,});
     }
 
   }
@@ -567,6 +537,11 @@ renderStatusButon = (message) =>{
     );
   }
 }
+renderErrorNuance = () =>{
+  if(this.state.mixed_status){
+    return(<strong className="text-dange">Some</strong>);
+  }
+}
 
 
 
@@ -685,7 +660,7 @@ renderFileGrabber = () =>{
           <div> 
             <div className="mb-5" > 
               <Typography variant="h5" gutterBottom><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Some Rows Failed to Register!</Typography>
-              <Typography variant="body" className="" > Some rows failed to process. Please Review the table below & resubmit these entries.</Typography>
+              <Typography variant="body1" className="" > Some rows failed to process. Please Review the table below & resubmit these entries.</Typography>
               {this.renderMixedSuccess()}
             </div>
             <div>
@@ -786,7 +761,7 @@ renderFileGrabber = () =>{
           {/* Complete */}
           {this.state.complete === true && !this.state.loading && !this.state.error_status &&(
             <div>
-              <Typography className="text-right p-2">Data Submitted Successfully!</Typography>
+              <Typography className="text-right p-2">{this.renderErrorNuance()} Data Submitted Successfully!</Typography>
             </div>
           )}
 
@@ -798,13 +773,13 @@ renderFileGrabber = () =>{
 
 
   renderTableBody = () =>{
-    console.debug("typeof", this.state.uploadedSources, typeof this.state.uploadedSources);
+    // console.debug("typeof", this.state.uploadedSources, typeof this.state.uploadedSources);
     if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
       return(
         <TableBody>
           {this.state.uploadedSources && this.state.uploadedSources.map((row, index) => (
             <TableRow  key={(row.id+""+index)}>
-              {console.debug("row", row)}
+              {/* {console.debug("row", row)} */}
               {this.state.registeredStatus === true && (
                 <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
               )}
