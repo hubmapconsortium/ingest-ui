@@ -806,3 +806,8 @@ svg.invalid{
   box-sizing: border-box;
   margin-bottom:20px;
 }
+
+.tableRowError{
+  background-color: #ff0000!important;
+  color: white!important;
+}

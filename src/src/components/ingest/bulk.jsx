@@ -614,9 +614,7 @@ renderFileGrabber = () =>{
           )}
         {/* Err on its own Stepper pane?  */}
           {this.state.error_status === true&&(
-
           <div className="mx-2">
-                        
             <Typography 
             // variant="h6"
             color="error">
@@ -918,9 +916,9 @@ renderFileGrabber = () =>{
             aria-label={"Uploaded Errors"+this.props.bulkType }
             size="small"
             stickyHeader 
-            className="table table-striped table-hover mb-0 uploadedTable ">
-            <TableHead  className="font-size-sm" style={{backgroundColor: '#dc3545', color:'#ffffff' }}>
-              <TableRow >
+            className="error-table table table-striped table-hover mb-0 uploadedTable ">
+            <TableHead  className="font-size-sm">
+              <TableRow className="tableRowError">
                 <TableCell  component="th" variant="head" width="7%">Row</TableCell>
                 <TableCell  component="th" variant="head">Error</TableCell>
               </TableRow>
