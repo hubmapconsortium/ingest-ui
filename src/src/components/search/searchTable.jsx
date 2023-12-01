@@ -1,13 +1,21 @@
-import React, {useEffect, useState} from "react";
-import {DataGrid, GridToolbar } from "@mui/x-data-grid";
+import React,{useEffect,useState} from "react";
+import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
+
+import {ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
 
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import { RenderError } from "../../utils/errorAlert";
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import TextField from '@mui/material/TextField';
+
+import {GridLoader} from "react-spinners";
+import {RenderError} from "../../utils/errorAlert";
+import {toTitleCase} from "../../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
@@ -16,29 +24,21 @@ import {
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
 } from "./table_constants";
-import { api_search2 } from "../../service/search_api";
+import {api_search2} from "../../service/search_api";
 
 export const RenderSearchTable = (props) => {
-  // var [isAuthenticated, setIsauthenticated] = useState(props.isAuthenticated ? props.isAuthenticated : [""]);
   var [search_title] = useState(props.search_title ? props.search_title : [""]);
-  // var [rlc, setRLC] = useState(0);
 
   // TABLE & FILTER VALUES
   var [allGroups] = useState(props.allGroups ? props.allGroups : []);
   var [entityTypeList] = useState(props.allTypes ? props.allTypes : []);
+  var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
-  // var [colDef, setColDef] = useState(COLUMN_DEF_SAMPLE);
+  // var [formFilters, setFormFilters] = useState(props.formFilters ? props.formFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize] = useState(100);
-  // var [sortOrder, setSortOrder] = useState("asc");
-  // const [paginationModel, setPaginationModel] = React.useState({
-  //   pageSize:25,
-  //   page:    0,
-  // });
 
   // TABLE DATA
-  // var [dataRows, setDataRows] = useState(props.data ? props.data : null);
-  // var [rowCount, setRowCount] = React.useState(10000);
   var [results, setResults] = React.useState({
     dataRows:null,
     rowCount:0,
@@ -47,18 +47,13 @@ export const RenderSearchTable = (props) => {
 
   //  LOADERS
   var [loading, setLoading] = useState(true);
-  // var [dataLoading, setDataLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
+  var [filtersLoading, setFiltersLoading] = useState(true);
 
   // ERROR THINGS
   var [error, setError] = useState();
   var [errorState, setErrorState] = useState();
-  // var [errorHandler, setErrorHandler] = useState({
-  //   status: "",
-  //   message:"",
-  //   isError:null,
-  // });
-
+  
   // PROPS
   const {data, columns} = props;
   const urlChange = props.urlChange;
@@ -75,10 +70,18 @@ export const RenderSearchTable = (props) => {
     const unique = [...new Set(fieldArray.map((item) => item.field))];
     return unique;
   }
+  function errorReporting(error){
+    console.debug('%c⭗errorReporting', 'color:#ff005d', error );
+  }
+  // var errorReport = props.errorReport? props.errorReport : errorReporting;
+  
 
   useEffect(() => {
-    //console.debug("useEffect");
 
+    setTableLoading(true);
+    // Will run automatically once searchFilters is updated
+    // (Hence populating formFilters & converting to searchFilters on click)
+    console.debug('%c⊙PageSizeChange', 'color:#00ff7b', page);
     var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilters,
@@ -90,7 +93,7 @@ export const RenderSearchTable = (props) => {
     )
       .then((response) => {
         setTableLoading(false);
-        //console.debug('%c⊙USEEFAPISEARCHRES', 'color:rgb(0 140 255)',  response.total, response.results );
+        console.debug('%c⊙useEffect Search', 'color:rgb(0 140 255)',  response.total, response.results );
         if (response.total > 0 && response.status === 200) {
           setResults({
             dataRows:response.results,
@@ -98,7 +101,6 @@ export const RenderSearchTable = (props) => {
             colDef:  columnDefType(response.results[0].entity_type),
           });
         } else if (response.total === 0) {
-          //console.debug('%c⊙', 'color:#00ff7b', "NORES" );
           setResults({
             dataRows:response.results,
             rowCount:response.total,
@@ -106,46 +108,69 @@ export const RenderSearchTable = (props) => {
           });
         } else {
           var errStringMSG = "";
-          var errString =
-            response.results.data.error.root_cause[0].type +
-            " | " +
-            response.results.data.error.root_cause[0].reason;
-          typeof errString.type === "string"
-            ? (errStringMSG = "Error on Search")
-            : (errStringMSG = errString);
-          
-          
+          var errString =response.results.data.error.root_cause[0].type +" | " +response.results.data.error.root_cause[0].reason;
+            typeof errString.type === "string"
+              ? (errStringMSG = "Error on Search")
+              : (errStringMSG = errString);
             setErrorState(true)
             setError(errStringMSG)
           }
       })
       .catch((error) => {
         setTableLoading(false);
-        // props.reportError(error);
-        //console.debug("%c⭗", "color:#ff005d", "ERROR", error);
+        // errorReport(error)
+        props.reportError(error);
+        console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
   }, [page, pageSize, searchFilters]);
 
-  // useEffect(() => {
-  //   populateTableData();
-  // }, [populateTableData]);
+
+  useEffect(() => {
+    if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
+      setFiltersLoading(false);
+    }
+  }, [allGroups,entityTypeList]);
 
   // const handleSortModelChange = useCallback((sortModel) => {
   //   setSortOrder(sortModel[0].sort);
   // }, []);
+// Probably dont need since state updates it 
+  // function handleResponse(response) {
+  //   setTableLoading(false);
+  //   console.debug('%c⊙ handleResponse', 'color:rgb(0 140 255)', response,  response.total, response.results );
+  //   if (response.total > 0 && response.status === 200) {
+  //     setResults({
+  //       dataRows:response.results,
+  //       rowCount:response.total,
+  //       colDef:  columnDefType(response.results[0].entity_type),
+  //     });
+  //   } else if (response.total === 0) {
+  //     console.debug('%c⊙', 'color:#00ff7b', "NORES" );
+  //     setResults({
+  //       dataRows:response.results,
+  //       rowCount:response.total,
+  //       colDef:  COLUMN_DEF_SAMPLE,
+  //     });
+  //   } else {
+  //     var errStringMSG = "";
+  //     var errString =response.results.data.error.root_cause[0].type +" | " +response.results.data.error.root_cause[0].reason;
+  //       typeof errString.type === "string"
+  //         ? (errStringMSG = "Error on Search")
+  //         : (errStringMSG = errString);
+  //       setErrorState(true)
+  //       setError(errStringMSG)
+  //     }
+  // }
 
   function handlePageChange(pageInfo) {
-    //console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
+    console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     // var currentPage = page;
     // var nextPage = page + 1;
     setPage(pageInfo.page);
     // prepQueryParams();
   }
 
-  function handleSearchButtonClick(event) {
-    event.preventDefault();
-  }
-
+  
   function columnDefType(et) {
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
@@ -167,41 +192,51 @@ export const RenderSearchTable = (props) => {
 
   function handleInputChange(e) {
     // Values for filtering the table data are set here
-    const {
- name, value 
-} = e.target;
-    //console.debug("%c⊙", "color:#00ff7b", "HandleINputChange", name);
+    const {name, value } = e.target;
+    console.debug("%c⊙", "color:#00ff7b", "HandleINputChange", name, value, e);
     switch (name) {
-      case "group":
-        if (value != "All Components") {
-          setSearchFilters((prevValues) => ({
-            ...prevValues,
-            group:value,
-          }));
+      case "group_uuid":
+        if (value !== "All Components" && value !== "allcom") {
+          setFormFilters((prevValues) => ({...prevValues,
+            group_uuid:value,}));
         } else {
-          setSearchFilters((prevValues) => ({
-            ...prevValues,
-            group:"",
-          }));
+          setFormFilters((prevValues) => ({...prevValues,
+            group_uuid:"",}));
         }
         break;
-      case "entityType":
-        setSearchFilters((prevValues) => ({
-          ...prevValues,
-          entityType:value,
-        }));
-        break;
+      case "entity_type":
+        if (value !== "---") {
+          setFormFilters((prevValues) => ({...prevValues,
+            entity_type:value}));
+        } else {
+          setFormFilters((prevValues) => ({...prevValues,
+            entity_type:"",}));
+        }
+        // We only care about type deliniaton for search back end / searchFilters
+        // Keep em grouped up in formFilters as the val to the One dropdown 
+        // if (ENTITY_TYPES.hasOwnProperty(value)) {
+          // typeParam["entity_type"] = toTitleCase(value);
+        //   setformFilters((prevValues) => ({...prevValues,
+        //     entity_type:toTitleCase(value),}));
+        // } else if (SAMPLE_CATEGORIES.hasOwnProperty(value)) {
+          // typeParam["sample_category"] = value;
+        //   setformFilters((prevValues) => ({...prevValues,
+        //     sample_category:value,}));
+        // } else {
+          // typeParam["organ"] = value;
+        //   setformFilters((prevValues) => ({...prevValues,
+        //     organ:value,}));
+        // }
+        break
       case "keywords":
-        setSearchFilters((prevValues) => ({
-          ...prevValues,
-          keywords:value,
-        }));
+        setFormFilters((prevValues) => ({...prevValues,
+          keywords:value,}));
         break;
       default:
         break;
     }
   }
-
+  
   function handleTableCellClick(params) {
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
@@ -209,33 +244,106 @@ export const RenderSearchTable = (props) => {
       urlChange(typeText + "/" + params.row.uuid);
     }
   }
-
+  
   function handleClearFilter() {
-    // this.setState({
-    //     filtered: false,
-    //     dataRows: [],
-    //     entityType: "----",
-    //     group: "All Components",
-    //     keywords: "",
-    //     page: 0,
-    //     searchFilters: {
-    //       entity_type: "",
-    //       group: "",
-    //       keywords: "",
-    //     },
-    //   },() => {
-    //     prepQueryParams();
-    //   }
-    // );
+    setFormFilters({
+      group_uuid:"",
+      entity_type:"",
+      keywords:""
+    })
+    setSearchFilters({
+      group_uuid:"allcom",
+      entity_type:"---",
+      keywords:""
+    })
   }
+        
+  function handleSearchButtonClick(event) {
+    event.preventDefault();
+    handleSearchClick(event);
+  }
+        
+  function handleSearchClick(event) {
+    console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    // handle this in the function component now 
+    var group_uuid = formFilters.group_uuid;
+    var entityType = formFilters.entity_type;
+    var keywords = formFilters.keywords;
+
+    let which_cols_def = COLUMN_DEF_SAMPLE; //default
+    if (entityType) {
+      let colSet = entityType.toLowerCase();
+      if (which_cols_def) {
+        if (colSet === "donor") {
+          which_cols_def = COLUMN_DEF_DONOR;
+        } else if (colSet === "sample") {
+          which_cols_def = COLUMN_DEF_SAMPLE;
+        } else if (colSet === "dataset") {
+          which_cols_def = COLUMN_DEF_DATASET;
+        } else if (colSet === "publication") {
+          which_cols_def = COLUMN_DEF_PUBLICATION;
+        } else if (colSet === "upload") {
+          which_cols_def = COLUMN_DEF_UPLOADS;
+        } else if (colSet === "collection") {
+          which_cols_def = COLUMN_DEF_COLLECTION;
+        }
+      }
+    }
+
+      let params = {}; // Will become the searchFilters
+      var url = new URL(window.location); // Only used outside in basic / homepage Mode
+
+      if (keywords) {
+        params["keywords"] = keywords;
+        url.searchParams.set("keywords", keywords);
+      } else {
+        url.searchParams.delete("keywords");
+      }
+      if (group_uuid && group_uuid !== "All Components") {
+        params["group_uuid"] = group_uuid;
+        url.searchParams.set("group_uuid", group_uuid);
+      } else {
+        url.searchParams.delete("group_uuid");
+      }
+      if (entityType && entityType !== "----") {
+        console.debug('%c⊙', 'color:#00ff7b', entityType );
+        url.searchParams.set("entity_type", entityType);
+        if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
+          console.debug('%c⊙ Entity', 'color:#00ff7b' );
+          params["entity_type"] = toTitleCase(entityType);
+        } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase())) {
+          console.debug('%c⊙ Sample', 'color:#00ff7b' );
+          params["sample_category"] = entityType.toLowerCase();
+        } else {
+          console.debug('%c⊙ Organ', 'color:#00ff7b' );
+          params["organ"] = entityType.toUpperCase();
+        }
+      } else {
+        url.searchParams.delete("entity_type");
+      }
+      console.debug('%c⊙SAMPLE_CATEGORIES', 'color:#00ff7b', SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase()),entityType,SAMPLE_CATEGORIES );
+      // If we're not in a special mode, push URL to window
+      if (!props.modecheck) {
+        window.history.pushState({}, "", url);
+      }
+
+
+    // Since useEffect is watching searchFilters, 
+    // maybe we can just set it here and it'll search on its own?
+    setSearchFilters(params);
+    console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
+  };
+
 
   function renderView() {
     //console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
     return (
-      <div style={{ width:"100%" }}>
-        {renderFilterControls()}
-        {tableLoading && renderLoadingBar()}
-        {results.dataRows && results.dataRows.length > 0 && renderTable()}
+      <div style={{ width:"100%", textAlign:"center"}}>
+        {/* {renderFilterControls()} */}
+        {!filtersLoading && renderFilterControls()}
+        {filtersLoading && <GridLoader/>}
+        {tableLoading && <GridLoader/>}
+        {!tableLoading && results.dataRows && results.dataRows.length > 0 && renderTable()}
         {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
           <div className="text-center">No record found.</div>
         )}
@@ -255,7 +363,7 @@ export const RenderSearchTable = (props) => {
   }
 
   function renderLoadingBar() {
-    if (loading && !page > 0) {
+    if (!page > 0) {
       return (
         <div>
           <LinearProgress />
@@ -266,9 +374,7 @@ export const RenderSearchTable = (props) => {
 
   function renderTable() {
     return (
-      <div style={{
- height:590, width:"100%" 
-}}>
+      <div style={{height:590, width:"100%" }}>
         <DataGrid
           rows={results.dataRows}
           columns={results.colDef}
@@ -287,7 +393,7 @@ export const RenderSearchTable = (props) => {
           // onPageChange={(newPage) => setPage(newPage)}
           // onPageSizeChange={(page) => handlePageSizeSelection(page)}
           loading={tableLoading}
-          onCellClick={props.select ? props.select : handleTableCellClick} // this allows a props handler to override the local handler
+          onCellClick={props.select ? props.select() : (e) => handleTableCellClick(e)} // this allows a props handler to override the local handler
         />
       </div>
     );
@@ -296,10 +402,8 @@ export const RenderSearchTable = (props) => {
   function renderPreamble() {
     return (
       <Box
-        sx={{
-          flexDirection: "column",
-          justifyContent:"center",
-        }}>
+        sx={{flexDirection: "column",
+          justifyContent:"center",}}>
         <Typography
           component={"h1"}
           variant={"h4"}
@@ -327,26 +431,27 @@ export const RenderSearchTable = (props) => {
           onSubmit={(e) => {
             handleSearchButtonClick(e);
           }}>
+        {/* <FormControl sx={{ m:1, minWidth:120 }}> */}
+
           <Grid
             container
             spacing={3}
             pb={3}
             alignItems="center"
-            sx={{
-              display:       "flex",
-              justifyContent:"flex-start",
-            }}>
+            sx={{display:       "flex",
+              justifyContent:"flex-start",}}>
             <Grid item xs={6}>
-              <label htmlFor="group" className="portal-jss116">
-                Group
-              </label>
-              <select
-                name="group"
-                id="group"
-                className="select-css"
-                onChange={() => handleInputChange()}
-                value={searchFilters.group || ""}>
-                <option value="">All Components</option>
+            <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
+              <Select
+                native 
+                fullWidth
+                labelid="group_label"
+                id="group_uuid"
+                name="group_uuid"
+                label="Group"
+                value={formFilters.group_uuid?formFilters.group_uuid : ""}
+                onChange={(event) => handleInputChange(event)}>
+                <option value="allcom">All Components</option>
                 {allGroups.map((group, index) => {
                   return (
                     <option key={index + 1} value={Object.values(group)[1]}>
@@ -354,29 +459,27 @@ export const RenderSearchTable = (props) => {
                     </option>
                   );
                 })}
-              </select>
+                </Select>
             </Grid>
             <Grid item xs={6}>
-              <label htmlFor="entityType" className="portal-jss116">
-                Type
-              </label>
-              <select
-                name="entityType"
-                id="entityType"
-                className="select-css"
-                disabled={
-                  props.restrictions && props.restrictions.entityType
-                    ? true
-                    : false
-                }
-                onChange={handleInputChange}
-                value={searchFilters.entityType || ""}>
-                <option value=""></option>
+              <InputLabel htmlFor="entity_type" id="entity_type_label">Type</InputLabel>
+              <Select
+                native 
+                fullWidth
+                labelid="entity_type_label"
+                name="entity_type"
+                id="entity_type"
+                label="Type"
+                value={formFilters.entity_type}
+                // defaultValue={formFilters.entity_type?formFilters.entity_type : ""}
+                onChange={(e) => handleInputChange(e)}>
+                <option value="---">---</option>
                 {entityTypeList.map((optgs, index) => {
+                  console.debug('%c⊙', 'color:#00ff7b', optgs, index );
                   return (
                     <optgroup
-                      key={index}
-                      label="____________________________________________________________">
+                    key={index}
+                    label="____________________________________________________________">
                       {Object.entries(optgs).map((op, index) => {
                         return (
                           <option key={op[0]} value={op[0]}>
@@ -387,19 +490,20 @@ export const RenderSearchTable = (props) => {
                     </optgroup>
                   );
                 })}
-              </select>
+                </Select>
             </Grid>
             <Grid item xs={12}>
-              <input
-                type="text"
-                className="form-control"
-                name="keywords"
-                id="keywords"
-                placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-                onChange={handleInputChange}
-                //ref={keywords}
-                value={searchFilters.keywords || ""}
-              />
+            <InputLabel htmlFor="keywords" id="keywords_label">Keywords</InputLabel>
+            <TextField
+              labelid="keywords_label"
+              name="keywords"
+              id="keywords"
+              helperText="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+              // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+              fullWidth
+              value={formFilters.keywords?formFilters.keywords : ""}
+              onChange={(e) => handleInputChange(e)}/>
+              
             </Grid>
             <Grid item xs={2}></Grid>
             <Grid item xs={4}>
@@ -425,6 +529,8 @@ export const RenderSearchTable = (props) => {
 
             <Grid item xs={2}></Grid>
           </Grid>
+
+          {/* </FormControl> */}
         </form>
       </div>
     );
