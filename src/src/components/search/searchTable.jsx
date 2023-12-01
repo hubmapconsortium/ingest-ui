@@ -53,7 +53,8 @@ export const RenderSearchTable = (props) => {
   var [errorState, setErrorState] = useState();
   
   // PROPS
-  const {data, columns} = props;
+  // const {data, columns} = props;
+  const restrictions = props.restrictions ? props.restrictions : null;
   const urlChange = props.urlChange;
 
   function resultFieldSet() {
@@ -127,6 +128,18 @@ export const RenderSearchTable = (props) => {
     }
   }, [allGroups,entityTypeList]);
 
+
+  useEffect(() => {
+    if (restrictions) {
+      if(restrictions.entityType){
+        setFormFilters((prevValues) => ({...prevValues,
+          entity_type:restrictions.entityType,}));
+      }
+      console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
+      handleSearchClick();
+    }
+  }, [restrictions]);
+
   function handlePageChange(pageInfo) {
     console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     setPage(pageInfo.page);
@@ -151,6 +164,7 @@ export const RenderSearchTable = (props) => {
     }
     return COLUMN_DEF_SAMPLE;
   }
+
 
   function handleInputChange(e) {
     // Values for filtering the table data are set here
@@ -269,13 +283,15 @@ export const RenderSearchTable = (props) => {
       if (!props.modecheck) {
         window.history.pushState({}, "", url);
       }
-
-
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
     setSearchFilters(params);
     console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
   };
+
+  // function renderGridLoader() {
+  //   // So we can keep the 
+  // }
 
 
   function renderView() {
@@ -285,11 +301,9 @@ export const RenderSearchTable = (props) => {
         {/* {renderFilterControls()} */}
         {!filtersLoading && renderFilterControls()}
         {filtersLoading && <GridLoader/>}
-        {tableLoading && <GridLoader/>}
-        {!tableLoading && results.dataRows && results.dataRows.length > 0 && renderTable()}
+        {results.dataRows && results.dataRows.length > 0 && renderTable()}
         {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
-          <div className="text-center">No record found.</div>
-        )}
+          <div className="text-center">No record found.</div>)}
       </div>
     );
   }
@@ -316,7 +330,7 @@ export const RenderSearchTable = (props) => {
           // onPageChange={(newPage) => setPage(newPage)}
           // onPageSizeChange={(page) => handlePageSizeSelection(page)}
           loading={tableLoading}
-          onCellClick={props.select ? props.select() : (e) => handleTableCellClick(e)} // this allows a props handler to override the local handler
+          onCellClick={props.handleTableCellClick ? (e)=> props.handleTableCellClick(e) : (e) => handleTableCellClick(e)} // this allows a props handler to override the local handler
         />
       </div>
     );
@@ -391,8 +405,8 @@ export const RenderSearchTable = (props) => {
                 id="entity_type"
                 label="Type"
                 value={formFilters.entity_type}
-                // defaultValue={formFilters.entity_type?formFilters.entity_type : ""}
-                onChange={(e) => handleInputChange(e)}>
+                onChange={(e) => handleInputChange(e)}
+                disabled={props.restrictions && props.restrictions.entityType?true:false}>
                 <option value="---">---</option>
                 {entityTypeList.map((optgs, index) => {
                   // console.debug('%c⊙', 'color:#00ff7b', optgs, index );

@@ -1,41 +1,19 @@
-import React, { Component } from "react";
-// import { withRouter } from 'react-router-dom';
-import { DataGrid, GridToolbar, useGridApiRef,gridPageSelector,
-  gridPageCountSelector,
-  useGridApiContext,
-  useGridSelector, } from "@mui/x-data-grid";
-// import { DataGrid } from '@material-ui/data-grid';
-
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
+import {Component} from "react";
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import {GridLoader} from "react-spinners";
-import { SAMPLE_TYPES, ENTITY_TYPES, SAMPLE_CATEGORIES } from "../../constants";
-import { ubkg_api_get_organ_type_set } from "../../service/ubkg_api";
+import {SAMPLE_TYPES,ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
+import {ubkg_api_get_organ_type_set} from "../../service/ubkg_api";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
   COLUMN_DEF_SAMPLE,
   COLUMN_DEF_DATASET,
-  COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
 } from "./table_constants";
-import {
-  api_search2,
-  search_api_search_group_list,
-} from "../../service/search_api";
-import {
-  ingest_api_users_groups,
-  ingest_api_all_user_groups,
-  ingest_api_allowable_edit_states,
-  ingest_api_all_groups,
-} from "../../service/ingest_api";
-import { entity_api_get_entity } from "../../service/entity_api";
-import { RenderSearchTable } from "./searchTable";
-import { RenderError } from "../../utils/errorAlert";
-import { toTitleCase } from "../../utils/string_helper";
+import {ingest_api_allowable_edit_states,ingest_api_all_groups} from "../../service/ingest_api";
+import {entity_api_get_entity} from "../../service/entity_api";
+import {RenderSearchTable} from "./searchTable";
 // Creation donor_form_components
 
 function resultFieldSet() {
@@ -601,6 +579,7 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
+    console.debug('%c⊙ cell click SC', 'color:#00ff7b',  params);
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
@@ -658,8 +637,6 @@ class SearchComponent extends Component {
   **/
 
   render() {
-    // console.debug('%c⊙', 'color:#00ff7b', "Render check" ,this.state.isAuthenticated,this.state.show_search,this.state.groupsLoading,this.state.entityListLoading );
-    // console.debug('%c⊙', 'color:#00ff7b', "RENDER PREP", this.state.allGroups, this.state.allTypes );
     if (this.state.data_loading) {
       return (
       <div style={{ width: "100%" }}>
@@ -696,8 +673,9 @@ class SearchComponent extends Component {
                 allGroups={this.state.allGroups}
                 allTypes={this.state.allTypes}
                 columns={this.state.column_def} 
-                handleTableCellClick={(params) => this.handleTableCellClick(params)}
+                // handleTableCellClick={(params) => this.handleTableCellClick(params)}
                 // handleSearchButtonClick={() => this.handleSearchButtonClick()}
+                handleTableCellClick={this.props.select?(e)=>this.props.select(e):(e)=>this.handleTableCellClick(e)}
                 // select={this.props.select?this.props.select:null}
                 reportError={(error) => this.props.reportError(error)}
                 urlChange={(target) => this.props.urlChange(target) } />
@@ -726,189 +704,32 @@ class SearchComponent extends Component {
     }
   };
 
-  // renderTable() {
+
+  // renderPreamble() {
   //   return (
-  //     <div style={{ height: 590, width: "100%" }}>
-  //       <DataGrid
-  //         rows={this.state.datarows}
-          
-  //         columns={this.state.column_def}
-  //         columnBuffer={2}
-  //         columnThreshold={2}
+  //     <Box
+  //       sx={{
+  //         flexDirection: "column",
+  //         justifyContent: "center",
+  //       }}>
+  //       <Typography
+  //         component={"h1"}
+  //         variant={"h4"}
+  //         fontWeight={500}
+  //         align={"center"}>
+  //         {this.state.search_title}
+  //       </Typography>
 
-  //         paginationMode="server"
-  //         initialState={{ pagination: { paginationModel: { page: 0, pageSize: 100 } } }}
-  //         paginationModel={{ page:0, pageSize:100 }}
-  //         onPageChange={(params) => this.handlePageChange(params)}
-  //         onPaginationModelChange={() => this.handlePageChange(3)}
-  //         // onPaginationModelChange={handlePaginationModelChange}
-
-  //         slots={{ toolbar: GridToolbar }}
-  //         slotProps={{
-  //           toolbar: {
-  //             csvOptions : {
-  //               fileName: 'hubmap_ingest_export'
-  //             }
-  //           }
-  //         }}
-  //         hideFooterSelectedRowCount
-  //         rowCount={this.state.results_total}
-  //         loading={this.state.table_loading}
-  //         onCellClick={
-  //           this.props.select ? this.props.select : this.handleTableCellClick
-  //         } // this allows a props handler to override the local handler
-  //       />
-  //     </div>
+  //       <Typography align={"center"} variant="subtitle1" gutterBottom>
+  //         Use the filter controls to search for Donors, Samples, Datasets, Data
+  //         Uploads, Publications, or Collections. <br />
+  //         If you know a specific ID you can enter it into the keyword field to
+  //         locate individual entities.
+  //       </Typography>
+  //     </Box>
   //   );
   // }
-  
-//  CustomDataGrid(props) {
-//     const apiRef = useGridApiRef();
-//     return (
-//       <div>
-//         <Button onClick={() => apiRef.current.setPage(1)}>Go to page 1</Button>
-//         <DataGrid apiRef={apiRef} {...other} />
-//       </div>
-//     );
-//   }
-  
 
-  renderPreamble() {
-    return (
-      <Box
-        sx={{
-          flexDirection: "column",
-          justifyContent: "center",
-        }}>
-        <Typography
-          component={"h1"}
-          variant={"h4"}
-          fontWeight={500}
-          align={"center"}>
-          {this.state.search_title}
-        </Typography>
-
-        <Typography align={"center"} variant="subtitle1" gutterBottom>
-          Use the filter controls to search for Donors, Samples, Datasets, Data
-          Uploads, Publications, or Collections. <br />
-          If you know a specific ID you can enter it into the keyword field to
-          locate individual entities.
-        </Typography>
-      </Box>
-    );
-  }
-
-  // renderFilterControls() {
-  //   return (
-  //     <div className="m-2"> FROM CLASS NOT FUNCTIOn
-  //       {this.renderPreamble()}
-
-  //       {this.state.errorState && <RenderError error={this.state.error} />}
-
-  //       <form onSubmit={this.handleSearchButtonClick}>
-  //         <Grid
-  //           container
-  //           spacing={3}
-  //           pb={3}
-  //           alignItems="center"
-  //           sx={{
-  //             display: "flex",
-  //             justifyContent: "flex-start",
-  //           }}>
-  //           <Grid item xs={6}>
-  //             <label htmlFor="group" className="portal-jss116">
-  //               Group
-  //             </label>
-  //             <select
-  //               name="group"
-  //               id="group"
-  //               className="select-css"
-  //               onChange={this.handleInputChange}
-  //               value={this.state.search_filters.group || ""}>
-  //               <option value="">All Components</option>
-  //               {this.state.allGroups.map((group, index) => {
-  //                 return (
-  //                   <option key={index + 1} value={Object.values(group)[1]}>
-  //                     {Object.values(group)[0]}
-  //                   </option>
-  //                 );
-  //               })}
-  //             </select>
-  //           </Grid>
-  //           <Grid item xs={6}>
-  //             <label htmlFor="entityType" className="portal-jss116">
-  //               Type
-  //             </label>
-  //             <select
-  //               name="entityType"
-  //               id="entityType"
-  //               className="select-css"
-  //               disabled={
-  //                 this.props.restrictions && this.props.restrictions.entityType
-  //                   ? true
-  //                   : false
-  //               }
-  //               onChange={this.handleInputChange}
-  //               value={this.state.search_filters.entityType || ""}>
-  //               <option value=""></option>
-  //               {this.state.allTypes.map((optgs, index) => {
-  //                 return (
-  //                   <optgroup
-  //                     key={index}
-  //                     label="____________________________________________________________">
-  //                     {Object.entries(optgs).map((op, index) => {
-  //                       return (
-  //                         <option key={op[0]} value={op[0]}>
-  //                           {op[1]}
-  //                         </option>
-  //                       );
-  //                     })}
-  //                   </optgroup>
-  //                 );
-  //               })}
-  //             </select>
-  //           </Grid>
-  //           <Grid item xs={12}>
-  //             <input
-  //               type="text"
-  //               className="form-control"
-  //               name="keywords"
-  //               id="keywords"
-  //               placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-  //               onChange={this.handleInputChange}
-  //               //ref={this.keywords}
-  //               value={this.state.search_filters.keywords || ""}
-  //             />
-  //           </Grid>
-
-  //           <Grid item xs={2}></Grid>
-  //           <Grid item xs={4}>
-  //             <Button
-  //               fullWidth
-  //               color="primary"
-  //               variant="contained"
-  //               size="large"
-  //               onClick={this.handleSearchButtonClick}>
-  //               Search
-  //             </Button>
-  //           </Grid>
-  //           <Grid item xs={4}>
-  //             <Button
-  //               fullWidth
-  //               variant="outlined"
-  //               color="primary"
-  //               size="large"
-  //               onClick={this.handleClearFilter}>
-  //               Clear
-  //             </Button>
-  //           </Grid>
-
-  //           <Grid item xs={2}></Grid>
-  //         </Grid>
-  //       </form>
-  //     </div>
-  //   );
-  // }
 }
 
 export default SearchComponent;
