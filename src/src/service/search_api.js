@@ -2,9 +2,9 @@
 
 import axios from "axios";
 // import { GROUPS } from "./groups";
-import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
+import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from "../constants";
 
-import { ingest_api_all_user_groups } from "./ingest_api";
+import {ingest_api_all_user_groups} from "./ingest_api";
 export const esb = require("elastic-builder");
 
 /*

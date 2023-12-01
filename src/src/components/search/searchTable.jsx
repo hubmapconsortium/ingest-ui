@@ -4,7 +4,6 @@ import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 
 import {ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
 
-import LinearProgress from "@material-ui/core/LinearProgress";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -34,7 +33,6 @@ export const RenderSearchTable = (props) => {
   var [entityTypeList] = useState(props.allTypes ? props.allTypes : []);
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
-  // var [formFilters, setFormFilters] = useState(props.formFilters ? props.formFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize] = useState(100);
 
@@ -73,8 +71,6 @@ export const RenderSearchTable = (props) => {
   function errorReporting(error){
     console.debug('%c⭗errorReporting', 'color:#ff005d', error );
   }
-  // var errorReport = props.errorReport? props.errorReport : errorReporting;
-  
 
   useEffect(() => {
 
@@ -131,43 +127,9 @@ export const RenderSearchTable = (props) => {
     }
   }, [allGroups,entityTypeList]);
 
-  // const handleSortModelChange = useCallback((sortModel) => {
-  //   setSortOrder(sortModel[0].sort);
-  // }, []);
-// Probably dont need since state updates it 
-  // function handleResponse(response) {
-  //   setTableLoading(false);
-  //   console.debug('%c⊙ handleResponse', 'color:rgb(0 140 255)', response,  response.total, response.results );
-  //   if (response.total > 0 && response.status === 200) {
-  //     setResults({
-  //       dataRows:response.results,
-  //       rowCount:response.total,
-  //       colDef:  columnDefType(response.results[0].entity_type),
-  //     });
-  //   } else if (response.total === 0) {
-  //     console.debug('%c⊙', 'color:#00ff7b', "NORES" );
-  //     setResults({
-  //       dataRows:response.results,
-  //       rowCount:response.total,
-  //       colDef:  COLUMN_DEF_SAMPLE,
-  //     });
-  //   } else {
-  //     var errStringMSG = "";
-  //     var errString =response.results.data.error.root_cause[0].type +" | " +response.results.data.error.root_cause[0].reason;
-  //       typeof errString.type === "string"
-  //         ? (errStringMSG = "Error on Search")
-  //         : (errStringMSG = errString);
-  //       setErrorState(true)
-  //       setError(errStringMSG)
-  //     }
-  // }
-
   function handlePageChange(pageInfo) {
     console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
-    // var currentPage = page;
-    // var nextPage = page + 1;
     setPage(pageInfo.page);
-    // prepQueryParams();
   }
 
   
@@ -212,21 +174,6 @@ export const RenderSearchTable = (props) => {
           setFormFilters((prevValues) => ({...prevValues,
             entity_type:"",}));
         }
-        // We only care about type deliniaton for search back end / searchFilters
-        // Keep em grouped up in formFilters as the val to the One dropdown 
-        // if (ENTITY_TYPES.hasOwnProperty(value)) {
-          // typeParam["entity_type"] = toTitleCase(value);
-        //   setformFilters((prevValues) => ({...prevValues,
-        //     entity_type:toTitleCase(value),}));
-        // } else if (SAMPLE_CATEGORIES.hasOwnProperty(value)) {
-          // typeParam["sample_category"] = value;
-        //   setformFilters((prevValues) => ({...prevValues,
-        //     sample_category:value,}));
-        // } else {
-          // typeParam["organ"] = value;
-        //   setformFilters((prevValues) => ({...prevValues,
-        //     organ:value,}));
-        // }
         break
       case "keywords":
         setFormFilters((prevValues) => ({...prevValues,
@@ -265,11 +212,9 @@ export const RenderSearchTable = (props) => {
         
   function handleSearchClick(event) {
     console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
-    // handle this in the function component now 
     var group_uuid = formFilters.group_uuid;
     var entityType = formFilters.entity_type;
     var keywords = formFilters.keywords;
-
     let which_cols_def = COLUMN_DEF_SAMPLE; //default
     if (entityType) {
       let colSet = entityType.toLowerCase();
@@ -294,7 +239,7 @@ export const RenderSearchTable = (props) => {
       var url = new URL(window.location); // Only used outside in basic / homepage Mode
 
       if (keywords) {
-        params["keywords"] = keywords;
+        params["keywords"] = keywords.trim();
         url.searchParams.set("keywords", keywords);
       } else {
         url.searchParams.delete("keywords");
@@ -320,9 +265,7 @@ export const RenderSearchTable = (props) => {
         }
       } else {
         url.searchParams.delete("entity_type");
-      }
-      console.debug('%c⊙SAMPLE_CATEGORIES', 'color:#00ff7b', SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase()),entityType,SAMPLE_CATEGORIES );
-      // If we're not in a special mode, push URL to window
+      } // If we're not in a special mode, push URL to window
       if (!props.modecheck) {
         window.history.pushState({}, "", url);
       }
@@ -351,26 +294,6 @@ export const RenderSearchTable = (props) => {
     );
   }
 
-  function renderGroupOptions() {
-    allGroups.map((group, index) => {
-      //console.debug("%c⊙", "color:#00ff7b", "group", group.shortName);
-      return (
-        <option key={index} value={group.uuid}>
-          {group.shortname}
-        </option>
-      );
-    });
-  }
-
-  function renderLoadingBar() {
-    if (!page > 0) {
-      return (
-        <div>
-          <LinearProgress />
-        </div>
-      );
-    }
-  }
 
   function renderTable() {
     return (
@@ -436,10 +359,7 @@ export const RenderSearchTable = (props) => {
           <Grid
             container
             spacing={3}
-            pb={3}
-            alignItems="center"
-            sx={{display:       "flex",
-              justifyContent:"flex-start",}}>
+            sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>
             <Grid item xs={6}>
             <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
               <Select
@@ -475,7 +395,7 @@ export const RenderSearchTable = (props) => {
                 onChange={(e) => handleInputChange(e)}>
                 <option value="---">---</option>
                 {entityTypeList.map((optgs, index) => {
-                  console.debug('%c⊙', 'color:#00ff7b', optgs, index );
+                  // console.debug('%c⊙', 'color:#00ff7b', optgs, index );
                   return (
                     <optgroup
                     key={index}
