@@ -23,6 +23,7 @@ function resultFieldSet() {
     COLUMN_DEF_COLLECTION,
     COLUMN_DEF_DATASET,
     COLUMN_DEF_UPLOADS,
+    COLUMN_DEF_PUBLICATION,
     COLUMN_DEF_DONOR
   );
   const unique = [...new Set(fieldArray.map((item) => item.field))];
