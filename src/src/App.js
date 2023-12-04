@@ -226,8 +226,10 @@ export function App (props){
   }
   
   function urlChange(target) {
-    var lowerTarget = target.toLowerCase();
-    navigate(lowerTarget,  { replace:true });
+    if(target && target!=undefined){
+      var lowerTarget = target.toLowerCase();
+      navigate(lowerTarget,  { replace:true });
+    }
   }
 
 
