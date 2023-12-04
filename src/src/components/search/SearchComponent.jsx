@@ -9,6 +9,7 @@ import {
   COLUMN_DEF_COLLECTION,
   COLUMN_DEF_SAMPLE,
   COLUMN_DEF_DATASET,
+  COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
 } from "./table_constants";
 import {ingest_api_allowable_edit_states,ingest_api_all_groups} from "../../service/ingest_api";
