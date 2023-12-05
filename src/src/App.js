@@ -1,11 +1,6 @@
 import * as React from "react";
-import {useState, useEffect, useContext} from "react";
-import {
-  useNavigate,
-  useLocation,
-  Routes,
-  Route,
-  Link} from "react-router-dom";
+import {useState,useEffect,useContext} from "react";
+import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
 // Login Management
 import Login from './components/ui/login';
@@ -22,7 +17,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import { Alert } from '@material-ui/lab';
+import {Alert} from '@material-ui/lab';
 import Snackbar from '@mui/material/Snackbar';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -30,14 +25,13 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faExclamationTriangle, faTimes}
-  from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
-import { ingest_api_users_groups } from './service/ingest_api';
-import { ubkg_api_get_assay_type_set, ubkg_api_get_organ_type_set } from "./service/ubkg_api";
-import {BuildError, FormatError} from "./utils/error_helper";
+import {ingest_api_users_groups} from './service/ingest_api';
+import {ubkg_api_get_assay_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {BuildError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -47,15 +41,15 @@ import {Navigation} from "./Nav";
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
-import { UserContext } from './service/user_service';
+import {UserContext} from './service/user_service';
 import Result from "./components/uuid/result";
 
 import {RenderDonor} from "./components/donors";
 import {RenderDataset} from "./components/datasets";
-import {RenderSample } from "./components/samples";
+import {RenderSample} from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 import {RenderPublication} from "./components/publications";
-import { RenderCollection } from "./components/collections";
+import {RenderCollection} from "./components/collections";
 
 // Bulky
 import {RenderBulk} from "./components/bulk";
@@ -63,7 +57,7 @@ import {RenderBulk} from "./components/bulk";
 // The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
-import  Box  from '@mui/material/Box';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
 
@@ -246,19 +240,23 @@ export function App (props){
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
-  const queryEntity = queryParams.get('entity_type');
-  const querySample = queryParams.get('sample_category');
-  const queryOrgan = queryParams.get('organ');
-  const queryKeyword = queryParams.get('keywords');
-  const queryGroup = queryParams.get('group');
+  const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
+  const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
+  const queryGroup = queryParams.has("group")?queryParams.get("group"):null  
+  // const queryKeyword = queryParams.get("keywords")
+  // const queryGroup = queryParams.get("group")
+  // var bundledParameters = {};
+  // var bundledParameters = {entity_type:queryEntity, keywords:queryKeyword, group:queryGroup};
+  var [bundledParameters] = useState({entity_type:queryEntity, keywords:queryKeyword, group:queryGroup});
   var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);
   var [errorDetail, setErrorDetail] = useState({});
-  console.debug("queryParams", queryParams);
+  // var [bundledParameters, setBundledParameters] = useState({});
+  // console.debug("APP paramObj", paramObj, queryEntity, queryKeyword, queryGroup);
 
-  // var bundledParameters = {entity_type: queryType, keywords: queryKeyword, group: queryGroup};
-  var bundledParameters = {queryParams};
+  // var bundledParameters = {test: "test"};
+  // console.debug('%c⊙PARAMSIES IN APP: ', 'color:#00ff7b', search, queryParams, bundledParameters );
 
   function reportError(error, details) {
     console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);

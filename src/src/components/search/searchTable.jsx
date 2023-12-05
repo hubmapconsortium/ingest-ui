@@ -1,5 +1,4 @@
 import React,{useEffect,useState} from "react";
-import {useLocation} from "react-router-dom";
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
@@ -33,6 +32,7 @@ export const RenderSearchTable = (props) => {
   var [allGroups] = useState(props.allGroups ? props.allGroups : []);
   var [entityTypeList] = useState(props.allTypes ? props.allTypes : []);
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
+  // var [searchFilters, setSearchFilters] = useState();
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize] = useState(100);
@@ -56,41 +56,25 @@ export const RenderSearchTable = (props) => {
   // PROPS
   const restrictions = props.restrictions ? props.restrictions : null;
   const urlChange = props.urlChange;
-  // var queryParams = props.packagedQuery ? props.packagedQuery : null
-
-  // URL Queries
-  var { search } = useLocation();
-  var queryParams = new URLSearchParams(search);
-  var queryEntity = queryParams.get('entity_type');
-  var querySample = queryParams.get('sample_category');
-  var queryOrgan = queryParams.get('organ');
-  var queryKeyword = queryParams.get('keywords');
-  var queryGroup = queryParams.get('group');
-  console.debug('%c⊙', 'color:#00ff7b', queryParams, queryEntity, querySample, queryOrgan, queryKeyword, queryGroup );
+  // Cant reach many hooks like useLocation since we're wrapped in a class
+  var queryParams = props.packagedQuery?props.packagedQuery : null
 
  useEffect(() => {
-    var formQueries = {};
-    if(queryEntity){formQueries.entity_type = queryEntity}
-    if(querySample){formQueries.entity_type = querySample}
-    if(queryOrgan){formQueries.entity_type = queryOrgan}
-    if(queryKeyword){formQueries.keywords = queryKeyword}
-    if(queryGroup){formQueries.group_uuid = queryGroup}
+   var formQueries = {};
+   if(queryParams.entity_type){formQueries.entity_type = queryParams.entity_type}
+   if(queryParams.keywords){formQueries.keywords = queryParams.keywords}
+   if(queryParams.group){formQueries.group_uuid = queryParams.group}
+   console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
+   var queryLength = Object.keys(formQueries).length
+  //  console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
     setFormFilters(formQueries);
-    console.debug("Setting Form Filters from URL");
-    // setSearchFilters(searchQueries);
- }, [queryEntity,querySample,queryOrgan,queryKeyword,queryGroup]);
+    if(queryLength>0){
+      console.debug("Setting search Filters from URL",formQueries);
+      setSearchFilters(formQueries);
+      // handleSearchClick();
+    }// setSearchFilters(searchQueries);
+ }, [queryParams]);
 
-
-//  useEffect(() => {
-//     var searchQueries = {};
-//     if(queryEntity){searchQueries.entity_type = queryEntity}
-//     if(querySample){searchQueries.sample_category = querySample}
-//     if(queryOrgan){searchQueries.organ = queryOrgan}
-//     if(queryKeyword){searchQueries.keywords = queryKeyword}
-//     if(queryGroup){searchQueries.group = queryGroup}
-//     setSearchFilters(searchQueries);
-//     console.debug("Setting Search Filters from URL");
-//  }, [queryEntity,querySample,queryOrgan,queryKeyword,queryGroup]);
 
 
   function resultFieldSet() {
@@ -110,22 +94,31 @@ export const RenderSearchTable = (props) => {
   }
 
   useEffect(() => {
-    console.debug("useEffect loadTable");
-    console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilters );
-    // console.debug('%c⊙ queryParams: ', 'color:#00ff7b', queryParams );
-    // If we're loading fresh and have to pass some URL Query info
-    //  it gets set in the forum field values automaticall
-    //  we cant call setSearchFilters within this useEffect or we get infinity reloading
-    // we can use the setSearchFilters to trigger the search/render, 
-    // but maybe override the values going to the search based on the selected field values?
-
+    var searchFilterParams = searchFilters;
     setTableLoading(true);
+    console.debug("useEffect loadTable");
+    console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilterParams );
+
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
-    console.debug('%c⊙PageSizeChange', 'color:#00ff7b', page);
+
+    // Let's make sure the casing is right on the entity based fields\
+    if (searchFilterParams.entity_type && searchFilterParams.entity_type !== "----") {
+      var entityType = searchFilterParams.entity_type;
+      delete searchFilterParams.entity_type;
+      if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
+        searchFilterParams.entity_type = toTitleCase(entityType);
+      } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase())) {
+        searchFilterParams.sample_category = entityType.toLowerCase();
+      } else {
+        searchFilterParams.organ = entityType.toUpperCase();
+      }
+      console.debug('%c⊙ CLEANED SF', 'color:#00ff7b', searchFilterParams );
+    } 
+
     var fieldSearchSet = resultFieldSet();
     api_search2(
-      searchFilters,
+      searchFilterParams,
       JSON.parse(localStorage.getItem("info")).groups_token,
       page * pageSize,
       100,
@@ -160,7 +153,7 @@ export const RenderSearchTable = (props) => {
       .catch((error) => {
         setTableLoading(false);
         // errorReport(error)
-        props.reportError(error);
+        //props.reportError(error);
         console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
   }, [page, pageSize, searchFilters]);
@@ -177,11 +170,12 @@ export const RenderSearchTable = (props) => {
   useEffect(() => {
     console.debug("useEffect restrictions")
     if (restrictions) {
+      console.debug('%c⊙', 'color:#00ff7b', "Restrictions detected: ",restrictions );
       if(restrictions.entityType){
         setFormFilters((prevValues) => ({...prevValues,
           entity_type:restrictions.entityType,}));
       }
-      console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
+      // console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
       handleSearchClick();
     }
   }, [restrictions]);
@@ -215,7 +209,7 @@ export const RenderSearchTable = (props) => {
   function handleInputChange(e) {
     // Values for filtering the table data are set here
     const {name, value } = e.target;
-    console.debug("%c⊙", "color:#00ff7b", "HandleINputChange", name, value, e);
+    console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
     switch (name) {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
@@ -273,7 +267,14 @@ export const RenderSearchTable = (props) => {
   function handleSearchClick(event) {
     console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     var group_uuid = formFilters.group_uuid;
-    var entityType = formFilters.entity_type;
+    var entityType;
+    if(formFilters.entity_type){
+      entityType = formFilters.entity_type;
+    }else if(formFilters.organ){
+      entityType = formFilters.organ;
+    }else if(formFilters.sample_category){
+      entityType = formFilters.sample_category;
+    }
     var keywords = formFilters.keywords;
     let which_cols_def = COLUMN_DEF_SAMPLE; //default
     if (entityType) {
@@ -306,34 +307,23 @@ export const RenderSearchTable = (props) => {
       }
       if (group_uuid && group_uuid !== "All Components") {
         params["group_uuid"] = group_uuid;
-        url.searchParams.set("group_uuid", group_uuid);
+        url.searchParams.set("group", group_uuid);
       } else {
-        url.searchParams.delete("group_uuid");
+        url.searchParams.delete("group");
       }
+      // Here's where we sort out if the query's getting either:
+      //  an entity type, sample category, or an organ
+      // Doing this IN search now to avoid miscasting from URL
       if (entityType && entityType !== "----") {
-        console.debug('%c⊙', 'color:#00ff7b', entityType );
-        // Need to manually clear out the three so only 1 is used
-        url.searchParams.delete("entity_type");
-        url.searchParams.delete("sample_category");
-        url.searchParams.delete("organ");
-        // and now set whichever one it should be
-        if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
-          console.debug('%c⊙ Entity', 'color:#00ff7b' );
-          url.searchParams.set("entity_type", entityType);
-          params["entity_type"] = toTitleCase(entityType);
-        } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase())) {
-          console.debug('%c⊙ Sample', 'color:#00ff7b' );
-          url.searchParams.set("sample_category", entityType);
-          params["sample_category"] = entityType.toLowerCase();
-        } else {
-          console.debug('%c⊙ Organ', 'color:#00ff7b' );
-          url.searchParams.set("organ", entityType);
-          params["organ"] = entityType.toUpperCase();
-        }
-        console.debug('%c⊙params', 'color:#00ff7b', params);
+        console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
+        params["entity_type"] = entityType;
+        url.searchParams.set("entity_type", entityType);
       } else {
+        console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
         url.searchParams.delete("entity_type");
-      } // If we're not in a special mode, push URL to window
+      } 
+      
+      // If we're not in a special mode, push URL to window
       if (!props.modecheck) {
         console.debug("%c⊙SETTING URL: ", "color:#FFf07b",  url, params);
         window.history.pushState({}, "", url);

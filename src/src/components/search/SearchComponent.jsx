@@ -1,5 +1,4 @@
 import {Component} from "react";
-
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import {GridLoader} from "react-spinners";
@@ -74,7 +73,7 @@ class SearchComponent extends Component {
       updateSuccess: false,
       restrictions: this.props.restrictions ? this.props.restrictions : {},
       search_filters: {
-        entity_type: "",
+        entityType: "",
         keywords: "",
         group: "",
       },
@@ -139,13 +138,12 @@ class SearchComponent extends Component {
     }
 
     if (this.props.packagedQuery) {
-      console.debug('%c⊙ packagedQuery From APp to SC: ', 'color:#00ff7b', this.props.packagedQuery);
       this.setState(
         {
-          entity_type: this.props.packagedQuery.entity_type,
+          entityType: this.props.packagedQuery.entityType,
           keywords: this.props.packagedQuery.keywords,
           search_filters: {
-            entity_type: this.props.packagedQuery.entity_type,
+            entityType: this.props.packagedQuery.entityType,
             keywords: this.props.packagedQuery.keywords,
             group: this.props.packagedQuery.group,
           },
@@ -639,6 +637,7 @@ class SearchComponent extends Component {
   **/
 
   render() {
+    console.debug('%c⊙ SC RENDER packageQuery', 'color:#00ff7b', this.props.packagedQuery );
     if (this.state.data_loading) {
       return (
       <div style={{ width: "100%" }}>
@@ -671,6 +670,7 @@ class SearchComponent extends Component {
             <div>
               <RenderSearchTable 
                 // data={this.state.datarows} 
+                packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
                 restrictions={this.props.restrictions}
                 allGroups={this.state.allGroups}
                 allTypes={this.state.allTypes}
@@ -678,7 +678,6 @@ class SearchComponent extends Component {
                 // handleTableCellClick={(params) => this.handleTableCellClick(params)}
                 // handleSearchButtonClick={() => this.handleSearchButtonClick()}
                 handleTableCellClick={this.props.select?(e)=>this.props.select(e):(e)=>this.handleTableCellClick(e)}
-                packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
                 // select={this.props.select?this.props.select:null}
                 reportError={(error) => this.props.reportError(error)}
                 urlChange={(target) => this.props.urlChange(target) } />
