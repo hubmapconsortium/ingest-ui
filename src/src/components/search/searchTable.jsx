@@ -1,4 +1,5 @@
 import React,{useEffect,useState} from "react";
+import {useLocation} from "react-router-dom";
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
@@ -53,9 +54,44 @@ export const RenderSearchTable = (props) => {
   var [errorState, setErrorState] = useState();
   
   // PROPS
-  // const {data, columns} = props;
   const restrictions = props.restrictions ? props.restrictions : null;
   const urlChange = props.urlChange;
+  // var queryParams = props.packagedQuery ? props.packagedQuery : null
+
+  // URL Queries
+  var { search } = useLocation();
+  var queryParams = new URLSearchParams(search);
+  var queryEntity = queryParams.get('entity_type');
+  var querySample = queryParams.get('sample_category');
+  var queryOrgan = queryParams.get('organ');
+  var queryKeyword = queryParams.get('keywords');
+  var queryGroup = queryParams.get('group');
+  console.debug('%c⊙', 'color:#00ff7b', queryParams, queryEntity, querySample, queryOrgan, queryKeyword, queryGroup );
+
+ useEffect(() => {
+    var formQueries = {};
+    if(queryEntity){formQueries.entity_type = queryEntity}
+    if(querySample){formQueries.entity_type = querySample}
+    if(queryOrgan){formQueries.entity_type = queryOrgan}
+    if(queryKeyword){formQueries.keywords = queryKeyword}
+    if(queryGroup){formQueries.group_uuid = queryGroup}
+    setFormFilters(formQueries);
+    console.debug("Setting Form Filters from URL");
+    // setSearchFilters(searchQueries);
+ }, [queryEntity,querySample,queryOrgan,queryKeyword,queryGroup]);
+
+
+//  useEffect(() => {
+//     var searchQueries = {};
+//     if(queryEntity){searchQueries.entity_type = queryEntity}
+//     if(querySample){searchQueries.sample_category = querySample}
+//     if(queryOrgan){searchQueries.organ = queryOrgan}
+//     if(queryKeyword){searchQueries.keywords = queryKeyword}
+//     if(queryGroup){searchQueries.group = queryGroup}
+//     setSearchFilters(searchQueries);
+//     console.debug("Setting Search Filters from URL");
+//  }, [queryEntity,querySample,queryOrgan,queryKeyword,queryGroup]);
+
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -74,6 +110,14 @@ export const RenderSearchTable = (props) => {
   }
 
   useEffect(() => {
+    console.debug("useEffect loadTable");
+    console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilters );
+    // console.debug('%c⊙ queryParams: ', 'color:#00ff7b', queryParams );
+    // If we're loading fresh and have to pass some URL Query info
+    //  it gets set in the forum field values automaticall
+    //  we cant call setSearchFilters within this useEffect or we get infinity reloading
+    // we can use the setSearchFilters to trigger the search/render, 
+    // but maybe override the values going to the search based on the selected field values?
 
     setTableLoading(true);
     // Will run automatically once searchFilters is updated
@@ -123,6 +167,7 @@ export const RenderSearchTable = (props) => {
 
 
   useEffect(() => {
+    console.debug("useEffect groups & types")
     if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
       setFiltersLoading(false);
     }
@@ -130,6 +175,7 @@ export const RenderSearchTable = (props) => {
 
 
   useEffect(() => {
+    console.debug("useEffect restrictions")
     if (restrictions) {
       if(restrictions.entityType){
         setFormFilters((prevValues) => ({...prevValues,
@@ -266,27 +312,36 @@ export const RenderSearchTable = (props) => {
       }
       if (entityType && entityType !== "----") {
         console.debug('%c⊙', 'color:#00ff7b', entityType );
-        url.searchParams.set("entity_type", entityType);
+        // Need to manually clear out the three so only 1 is used
+        url.searchParams.delete("entity_type");
+        url.searchParams.delete("sample_category");
+        url.searchParams.delete("organ");
+        // and now set whichever one it should be
         if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
           console.debug('%c⊙ Entity', 'color:#00ff7b' );
+          url.searchParams.set("entity_type", entityType);
           params["entity_type"] = toTitleCase(entityType);
         } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase())) {
           console.debug('%c⊙ Sample', 'color:#00ff7b' );
+          url.searchParams.set("sample_category", entityType);
           params["sample_category"] = entityType.toLowerCase();
         } else {
           console.debug('%c⊙ Organ', 'color:#00ff7b' );
+          url.searchParams.set("organ", entityType);
           params["organ"] = entityType.toUpperCase();
         }
+        console.debug('%c⊙params', 'color:#00ff7b', params);
       } else {
         url.searchParams.delete("entity_type");
       } // If we're not in a special mode, push URL to window
       if (!props.modecheck) {
+        console.debug("%c⊙SETTING URL: ", "color:#FFf07b",  url, params);
         window.history.pushState({}, "", url);
       }
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
-    setSearchFilters(params);
     console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
+    setSearchFilters(params);
   };
 
   // function renderGridLoader() {

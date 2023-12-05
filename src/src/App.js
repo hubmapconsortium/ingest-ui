@@ -95,6 +95,7 @@ export function App (props){
 
   
   useEffect(() => {
+    console.debug("useEffect URL/Info");
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
@@ -108,13 +109,6 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        
-        // if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
-        //   setAuthStatus(true);
-        //   setRegStatus(false);
-        //   setUnegStatus(true);
-        //   setIsLoading(false);
-        // }
 
         if (results && results.status === 200) {
           // console.debug("LocalStorageAuth", results);
@@ -143,8 +137,7 @@ export function App (props){
           setAuthStatus(true);
           setRegStatus(false);
           setUnegStatus(true);
-          setIsLoading(false);
-          
+          setIsLoading(false);   
       }
         
     });
@@ -155,6 +148,7 @@ export function App (props){
   }, [ ]);
 
   useEffect(() => {
+    console.debug("useEffect ubkg")
     ubkg_api_get_assay_type_set("primary")
       .then((response) => {
         let dtypes = response.data.result;
@@ -252,15 +246,19 @@ export function App (props){
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
-  const queryType = queryParams.get('entityType');
+  const queryEntity = queryParams.get('entity_type');
+  const querySample = queryParams.get('sample_category');
+  const queryOrgan = queryParams.get('organ');
   const queryKeyword = queryParams.get('keywords');
   const queryGroup = queryParams.get('group');
   var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);
   var [errorDetail, setErrorDetail] = useState({});
+  console.debug("queryParams", queryParams);
 
-  var bundledParameters = {entityType: queryType, keywords: queryKeyword, group: queryGroup};
+  // var bundledParameters = {entity_type: queryType, keywords: queryKeyword, group: queryGroup};
+  var bundledParameters = {queryParams};
 
   function reportError(error, details) {
     console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);

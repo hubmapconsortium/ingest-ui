@@ -1,4 +1,5 @@
 import {Component} from "react";
+
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import {GridLoader} from "react-spinners";
@@ -73,7 +74,7 @@ class SearchComponent extends Component {
       updateSuccess: false,
       restrictions: this.props.restrictions ? this.props.restrictions : {},
       search_filters: {
-        entityType: "",
+        entity_type: "",
         keywords: "",
         group: "",
       },
@@ -138,12 +139,13 @@ class SearchComponent extends Component {
     }
 
     if (this.props.packagedQuery) {
+      console.debug('%c⊙ packagedQuery From APp to SC: ', 'color:#00ff7b', this.props.packagedQuery);
       this.setState(
         {
-          entityType: this.props.packagedQuery.entityType,
+          entity_type: this.props.packagedQuery.entity_type,
           keywords: this.props.packagedQuery.keywords,
           search_filters: {
-            entityType: this.props.packagedQuery.entityType,
+            entity_type: this.props.packagedQuery.entity_type,
             keywords: this.props.packagedQuery.keywords,
             group: this.props.packagedQuery.group,
           },
@@ -676,6 +678,7 @@ class SearchComponent extends Component {
                 // handleTableCellClick={(params) => this.handleTableCellClick(params)}
                 // handleSearchButtonClick={() => this.handleSearchButtonClick()}
                 handleTableCellClick={this.props.select?(e)=>this.props.select(e):(e)=>this.handleTableCellClick(e)}
+                packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
                 // select={this.props.select?this.props.select:null}
                 reportError={(error) => this.props.reportError(error)}
                 urlChange={(target) => this.props.urlChange(target) } />
