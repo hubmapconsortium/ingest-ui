@@ -209,7 +209,7 @@ export function search_api_filter_es_query_builder(
     requestBody
       .query(boolQuery)
       .from(from)
-      .size(100)
+      .size(size)
       .sort(esb.sort("last_modified_timestamp", "asc"))
       .source(colFields)
       .trackTotalHits(true);

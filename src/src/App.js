@@ -242,12 +242,12 @@ export function App (props){
   const queryParams = new URLSearchParams(search);
   const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
   const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
-  const queryGroup = queryParams.has("group")?queryParams.get("group"):null  
+  const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
   // const queryKeyword = queryParams.get("keywords")
   // const queryGroup = queryParams.get("group")
   // var bundledParameters = {};
   // var bundledParameters = {entity_type:queryEntity, keywords:queryKeyword, group:queryGroup};
-  var [bundledParameters] = useState({entity_type:queryEntity, keywords:queryKeyword, group:queryGroup});
+  var [bundledParameters] = useState({entity_type:queryEntity, keywords:queryKeyword, group_uuid:queryGroup});
   var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);

@@ -35,7 +35,7 @@ export const RenderSearchTable = (props) => {
   // var [searchFilters, setSearchFilters] = useState();
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
   var [page, setPage] = useState(0);
-  var [pageSize] = useState(100);
+  var [pageSize,setPageSize] = useState(100);
 
   // TABLE DATA
   var [results, setResults] = React.useState({
@@ -60,10 +60,11 @@ export const RenderSearchTable = (props) => {
   var queryParams = props.packagedQuery?props.packagedQuery : null
 
  useEffect(() => {
+  console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
    var formQueries = {};
    if(queryParams.entity_type){formQueries.entity_type = queryParams.entity_type}
    if(queryParams.keywords){formQueries.keywords = queryParams.keywords}
-   if(queryParams.group){formQueries.group_uuid = queryParams.group}
+   if(queryParams.group_uuid){formQueries.group_uuid = queryParams.group_uuid}
    console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
    var queryLength = Object.keys(formQueries).length
   //  console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
@@ -113,7 +114,7 @@ export const RenderSearchTable = (props) => {
       } else {
         searchFilterParams.organ = entityType.toUpperCase();
       }
-      console.debug('%c⊙ CLEANED SF', 'color:#00ff7b', searchFilterParams );
+      // console.debug('%c⊙ CLEANED SF', 'color:#00ff7b', searchFilterParams );
     } 
 
     var fieldSearchSet = resultFieldSet();
@@ -121,7 +122,7 @@ export const RenderSearchTable = (props) => {
       searchFilterParams,
       JSON.parse(localStorage.getItem("info")).groups_token,
       page * pageSize,
-      100,
+      pageSize,
       fieldSearchSet,
       "newTable"
     )
@@ -183,6 +184,7 @@ export const RenderSearchTable = (props) => {
   function handlePageChange(pageInfo) {
     console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     setPage(pageInfo.page);
+    setPageSize(pageInfo.pageSize);
   }
 
   
@@ -259,12 +261,10 @@ export const RenderSearchTable = (props) => {
     })
   }
         
-  function handleSearchButtonClick(event) {
-    event.preventDefault();
-    handleSearchClick(event);
-  }
-        
   function handleSearchClick(event) {
+    if(event){event.preventDefault()}
+    setTableLoading(true);
+    setPage(0)
     console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     var group_uuid = formFilters.group_uuid;
     var entityType;
@@ -307,9 +307,9 @@ export const RenderSearchTable = (props) => {
       }
       if (group_uuid && group_uuid !== "All Components") {
         params["group_uuid"] = group_uuid;
-        url.searchParams.set("group", group_uuid);
+        url.searchParams.set("group_uuid", group_uuid);
       } else {
-        url.searchParams.delete("group");
+        url.searchParams.delete("group_uuid");
       }
       // Here's where we sort out if the query's getting either:
       //  an entity type, sample category, or an organ
@@ -363,13 +363,13 @@ export const RenderSearchTable = (props) => {
           disableColumnMenu={true}
           columnBuffer={2}
           columnThreshold={2}
-          pageSizeOptions={[100]}
           pagination
           slots={{ toolbar:GridToolbar }}
           slotProps={{toolbar:{csvOptions:{fileName:"hubmap_ingest_export",},},}}
           hideFooterSelectedRowCount
           rowCount={results.rowCount}
           paginationMode="server"
+          pageSizeOptions={[10, 50, 100]}
           onPaginationModelChange={(e) => handlePageChange(e)}
           // onPageChange={() => handlePageChange()}
           // onPageChange={(newPage) => setPage(newPage)}
@@ -411,7 +411,7 @@ export const RenderSearchTable = (props) => {
         {errorState && <RenderError error={error} />}
         <form
           onSubmit={(e) => {
-            handleSearchButtonClick(e);
+            handleSearchClick(e);
           }}>
         {/* <FormControl sx={{ m:1, minWidth:120 }}> */}
 
@@ -491,7 +491,7 @@ export const RenderSearchTable = (props) => {
                 color="primary"
                 variant="contained"
                 size="large"
-                onClick={(e) => handleSearchButtonClick(e)}>
+                onClick={(e) => handleSearchClick(e)}>
                 Search
               </Button>
             </Grid>
