@@ -358,6 +358,19 @@ export const RenderSearchTable = (props) => {
     return (
       <div style={{height:590, width:"100%" }}>
         <DataGrid
+          sx={{
+            '.MuiTablePagination-select':{
+              'background':'#eee',
+            },
+            '.MuiTablePagination-displayedRows':{
+              'margin-top':'1em',
+              'margin-bottom':'1em'
+            },
+            '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel':{
+              'margin-top':'1em',
+              'margin-bottom':'1em'
+            }
+          }}
           rows={results.dataRows}
           columns={results.colDef}
           disableColumnMenu={true}
@@ -371,9 +384,6 @@ export const RenderSearchTable = (props) => {
           paginationMode="server"
           pageSizeOptions={[10, 50, 100]}
           onPaginationModelChange={(e) => handlePageChange(e)}
-          // onPageChange={() => handlePageChange()}
-          // onPageChange={(newPage) => setPage(newPage)}
-          // onPageSizeChange={(page) => handlePageSizeSelection(page)}
           loading={tableLoading}
           onCellClick={props.handleTableCellClick ? (e)=> props.handleTableCellClick(e) : (e) => handleTableCellClick(e)} // this allows a props handler to override the local handler
         />
