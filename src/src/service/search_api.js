@@ -2,9 +2,9 @@
 
 import axios from "axios";
 // import { GROUPS } from "./groups";
-import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
+import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from "../constants";
 
-import {  ingest_api_all_user_groups} from './ingest_api';
+import {ingest_api_all_user_groups} from './ingest_api';
 export const esb = require('elastic-builder');
 
 /*
@@ -181,8 +181,9 @@ export function search_api_filter_es_query_builder(fields, from, size, colFields
       .query(boolQuery)
       .from(from)
       .size(size)
-      .sort(esb.sort('last_modified_timestamp', 'asc'))
-      .source(colFields);
+      .sort(esb.sort("last_modified_timestamp", "asc"))
+      .source(colFields)
+      .trackTotalHits(true);
   }
   return requestBody.toJSON();
 

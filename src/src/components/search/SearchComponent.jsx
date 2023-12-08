@@ -639,6 +639,7 @@ class SearchComponent extends Component {
   **/
 
   render() {
+    console.debug('%c⊙ SC RENDER packageQuery', 'color:#00ff7b', this.props.packagedQuery );
     if (this.state.data_loading) {
       return (
       <div style={{ width: "100%" }}>
@@ -671,6 +672,7 @@ class SearchComponent extends Component {
             <div>
               <RenderSearchTable 
                 // data={this.state.datarows} 
+                packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
                 restrictions={this.props.restrictions}
                 allGroups={this.state.allGroups}
                 allTypes={this.state.allTypes}

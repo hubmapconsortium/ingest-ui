@@ -32,9 +32,10 @@ export const RenderSearchTable = (props) => {
   var [allGroups] = useState(props.allGroups ? props.allGroups : []);
   var [entityTypeList] = useState(props.allTypes ? props.allTypes : []);
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
+  // var [searchFilters, setSearchFilters] = useState();
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
   var [page, setPage] = useState(0);
-  var [pageSize] = useState(100);
+  var [pageSize,setPageSize] = useState(100);
 
   // TABLE DATA
   var [results, setResults] = React.useState({
@@ -53,9 +54,29 @@ export const RenderSearchTable = (props) => {
   var [errorState, setErrorState] = useState();
   
   // PROPS
-  // const {data, columns} = props;
   const restrictions = props.restrictions ? props.restrictions : null;
   const urlChange = props.urlChange;
+  // Cant reach many hooks like useLocation since we're wrapped in a class
+  var queryParams = props.packagedQuery?props.packagedQuery : null
+
+ useEffect(() => {
+  console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
+   var formQueries = {};
+   if(queryParams.entity_type){formQueries.entity_type = queryParams.entity_type}
+   if(queryParams.keywords){formQueries.keywords = queryParams.keywords}
+   if(queryParams.group_uuid){formQueries.group_uuid = queryParams.group_uuid}
+   console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
+   var queryLength = Object.keys(formQueries).length
+  //  console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
+    setFormFilters(formQueries);
+    if(queryLength>0){
+      console.debug("Setting search Filters from URL",formQueries);
+      setSearchFilters(formQueries);
+      // handleSearchClick();
+    }// setSearchFilters(searchQueries);
+ }, [queryParams]);
+
+
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -74,17 +95,34 @@ export const RenderSearchTable = (props) => {
   }
 
   useEffect(() => {
-
+    var searchFilterParams = searchFilters;
     setTableLoading(true);
+    console.debug("useEffect loadTable");
+    console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilterParams );
+
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
-    console.debug('%c⊙PageSizeChange', 'color:#00ff7b', page);
+
+    // Let's make sure the casing is right on the entity based fields\
+    if (searchFilterParams.entity_type && searchFilterParams.entity_type !== "----") {
+      var entityType = searchFilterParams.entity_type;
+      delete searchFilterParams.entity_type;
+      if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
+        searchFilterParams.entity_type = toTitleCase(entityType);
+      } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase())) {
+        searchFilterParams.sample_category = entityType.toLowerCase();
+      } else {
+        searchFilterParams.organ = entityType.toUpperCase();
+      }
+      // console.debug('%c⊙ CLEANED SF', 'color:#00ff7b', searchFilterParams );
+    } 
+
     var fieldSearchSet = resultFieldSet();
     api_search2(
-      searchFilters,
+      searchFilterParams,
       JSON.parse(localStorage.getItem("info")).groups_token,
       page * pageSize,
-      100,
+      pageSize,
       fieldSearchSet,
       "newTable"
     )
@@ -116,13 +154,14 @@ export const RenderSearchTable = (props) => {
       .catch((error) => {
         setTableLoading(false);
         // errorReport(error)
-        props.reportError(error);
+        //props.reportError(error);
         console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
   }, [page, pageSize, searchFilters]);
 
 
   useEffect(() => {
+    console.debug("useEffect groups & types")
     if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
       setFiltersLoading(false);
     }
@@ -130,12 +169,14 @@ export const RenderSearchTable = (props) => {
 
 
   useEffect(() => {
+    console.debug("useEffect restrictions")
     if (restrictions) {
+      console.debug('%c⊙', 'color:#00ff7b', "Restrictions detected: ",restrictions );
       if(restrictions.entityType){
         setFormFilters((prevValues) => ({...prevValues,
           entity_type:restrictions.entityType,}));
       }
-      console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
+      // console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
       handleSearchClick();
     }
   }, [restrictions]);
@@ -143,6 +184,7 @@ export const RenderSearchTable = (props) => {
   function handlePageChange(pageInfo) {
     console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     setPage(pageInfo.page);
+    setPageSize(pageInfo.pageSize);
   }
 
   
@@ -169,7 +211,7 @@ export const RenderSearchTable = (props) => {
   function handleInputChange(e) {
     // Values for filtering the table data are set here
     const {name, value } = e.target;
-    console.debug("%c⊙", "color:#00ff7b", "HandleINputChange", name, value, e);
+    console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
     switch (name) {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
@@ -219,15 +261,20 @@ export const RenderSearchTable = (props) => {
     })
   }
         
-  function handleSearchButtonClick(event) {
-    event.preventDefault();
-    handleSearchClick(event);
-  }
-        
   function handleSearchClick(event) {
+    if(event){event.preventDefault()}
+    setTableLoading(true);
+    setPage(0)
     console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     var group_uuid = formFilters.group_uuid;
-    var entityType = formFilters.entity_type;
+    var entityType;
+    if(formFilters.entity_type){
+      entityType = formFilters.entity_type;
+    }else if(formFilters.organ){
+      entityType = formFilters.organ;
+    }else if(formFilters.sample_category){
+      entityType = formFilters.sample_category;
+    }
     var keywords = formFilters.keywords;
     let which_cols_def = COLUMN_DEF_SAMPLE; //default
     if (entityType) {
@@ -264,29 +311,27 @@ export const RenderSearchTable = (props) => {
       } else {
         url.searchParams.delete("group_uuid");
       }
+      // Here's where we sort out if the query's getting either:
+      //  an entity type, sample category, or an organ
+      // Doing this IN search now to avoid miscasting from URL
       if (entityType && entityType !== "----") {
-        console.debug('%c⊙', 'color:#00ff7b', entityType );
+        console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
+        params["entity_type"] = entityType;
         url.searchParams.set("entity_type", entityType);
-        if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
-          console.debug('%c⊙ Entity', 'color:#00ff7b' );
-          params["entity_type"] = toTitleCase(entityType);
-        } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase())) {
-          console.debug('%c⊙ Sample', 'color:#00ff7b' );
-          params["sample_category"] = entityType.toLowerCase();
-        } else {
-          console.debug('%c⊙ Organ', 'color:#00ff7b' );
-          params["organ"] = entityType.toUpperCase();
-        }
       } else {
+        console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
         url.searchParams.delete("entity_type");
-      } // If we're not in a special mode, push URL to window
+      } 
+      
+      // If we're not in a special mode, push URL to window
       if (!props.modecheck) {
+        console.debug("%c⊙SETTING URL: ", "color:#FFf07b",  url, params);
         window.history.pushState({}, "", url);
       }
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
-    setSearchFilters(params);
     console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
+    setSearchFilters(params);
   };
 
   // function renderGridLoader() {
@@ -318,13 +363,13 @@ export const RenderSearchTable = (props) => {
           disableColumnMenu={true}
           columnBuffer={2}
           columnThreshold={2}
-          pageSizeOptions={[100]}
           pagination
           slots={{ toolbar:GridToolbar }}
           slotProps={{toolbar:{csvOptions:{fileName:"hubmap_ingest_export",},},}}
           hideFooterSelectedRowCount
           rowCount={results.rowCount}
           paginationMode="server"
+          pageSizeOptions={[10, 50, 100]}
           onPaginationModelChange={(e) => handlePageChange(e)}
           // onPageChange={() => handlePageChange()}
           // onPageChange={(newPage) => setPage(newPage)}
@@ -366,7 +411,7 @@ export const RenderSearchTable = (props) => {
         {errorState && <RenderError error={error} />}
         <form
           onSubmit={(e) => {
-            handleSearchButtonClick(e);
+            handleSearchClick(e);
           }}>
         {/* <FormControl sx={{ m:1, minWidth:120 }}> */}
 
@@ -446,7 +491,7 @@ export const RenderSearchTable = (props) => {
                 color="primary"
                 variant="contained"
                 size="large"
-                onClick={(e) => handleSearchButtonClick(e)}>
+                onClick={(e) => handleSearchClick(e)}>
                 Search
               </Button>
             </Grid>
