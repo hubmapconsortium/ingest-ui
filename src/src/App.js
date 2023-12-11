@@ -1,14 +1,6 @@
 import * as React from "react";
-import {
-  useState,useEffect,useContext
-} from "react";
-import {
-  useNavigate,
-  useLocation,
-  Routes,
-  Route,
-  Link
-} from "react-router-dom";
+import {useState,useEffect,useContext} from "react";
+import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
   import StandardErrorBoundary from "./utils/errorWrap";
 import ErrorPage from "./utils/errorPage";
@@ -99,6 +91,7 @@ export function App (props){
 
   
   useEffect(() => {
+    console.debug("useEffect URL/Info");
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
@@ -112,13 +105,6 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        
-        // if(results && results.results && results.results.data && results.results.results === "User is not a member of group HuBMAP-read"){
-        //   setAuthStatus(true);
-        //   setRegStatus(false);
-        //   setUnegStatus(true);
-        //   setIsLoading(false);
-        // }
 
         if (results && results.status === 200) {
           // console.debug("LocalStorageAuth", results);
@@ -147,8 +133,7 @@ export function App (props){
           setAuthStatus(true);
           setRegStatus(false);
           setUnegStatus(true);
-          setIsLoading(false);
-          
+          setIsLoading(false);   
       }
         
     });
@@ -159,6 +144,7 @@ export function App (props){
   }, [ ]);
 
   useEffect(() => {
+    console.debug("useEffect ubkg")
     ubkg_api_get_assay_type_set("primary")
       .then((response) => {
         let dtypes = response.data.result;
@@ -226,8 +212,10 @@ export function App (props){
   }
   
   function urlChange(target) {
-    var lowerTarget = target.toLowerCase();
-    navigate(lowerTarget,  { replace:true });
+    if(target && target!=undefined){
+      var lowerTarget = target.toLowerCase();
+      navigate(lowerTarget,  { replace: true });
+    }
   }
 
 
@@ -254,17 +242,23 @@ export function App (props){
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
-  const queryType = queryParams.get('entityType');
-  const queryKeyword = queryParams.get('keywords');
-  const queryGroup = queryParams.get('group');
+  const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
+  const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
+  const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
+  // const queryKeyword = queryParams.get("keywords")
+  // const queryGroup = queryParams.get("group")
+  // var bundledParameters = {};
+  // var bundledParameters = {entity_type:queryEntity, keywords:queryKeyword, group:queryGroup};
+  var [bundledParameters] = useState({entity_type:queryEntity, keywords:queryKeyword, group_uuid:queryGroup});
   var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);
   var [errorDetail, setErrorDetail] = useState({});
+  // var [bundledParameters, setBundledParameters] = useState({});
+  // console.debug("APP paramObj", paramObj, queryEntity, queryKeyword, queryGroup);
 
-  var bundledParameters = {
-entityType:queryType, keywords:queryKeyword, group:queryGroup
-};
+  // var bundledParameters = {test: "test"};
+  // console.debug('%c⊙PARAMSIES IN APP: ', 'color:#00ff7b', search, queryParams, bundledParameters );
 
   function reportError(error, details) {
     console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);
