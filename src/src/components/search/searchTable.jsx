@@ -62,19 +62,22 @@ export const RenderSearchTable = (props) => {
  useEffect(() => {
   console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
    var formQueries = {};
-   if(queryParams.entity_type){formQueries.entity_type = queryParams.entity_type}
-   if(queryParams.keywords){formQueries.keywords = queryParams.keywords}
-   if(queryParams.group_uuid){formQueries.group_uuid = queryParams.group_uuid}
-   console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
-   var queryLength = Object.keys(formQueries).length
-  //  console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
-    setFormFilters(formQueries);
-    if(queryLength>0){
-      console.debug("Setting search Filters from URL",formQueries);
-      setSearchFilters(formQueries);
-      // handleSearchClick();
-    }// setSearchFilters(searchQueries);
- }, [queryParams]);
+   if(queryParams){
+
+    if(queryParams.entity_type){formQueries.entity_type = queryParams.entity_type}
+    if(queryParams.keywords){formQueries.keywords = queryParams.keywords}
+    if(queryParams.group_uuid){formQueries.group_uuid = queryParams.group_uuid}
+    console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
+    var queryLength = Object.keys(formQueries).length
+    //  console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
+      setFormFilters(formQueries);
+      if(queryLength>0){
+        console.debug("Setting search Filters from URL",formQueries);
+        setSearchFilters(formQueries);
+        // handleSearchClick();
+      }// setSearchFilters(searchQueries);
+    }
+  }, [queryParams]);
 
 
 
