@@ -336,7 +336,6 @@ export function App (props){
             </Grid>
 
             <Grid item xs={5}>
-
               <Typography variant="body2"gutterBottom>
                 Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
               </Typography>
@@ -348,23 +347,18 @@ export function App (props){
                   {errorInfo}
                 </Typography>
               </Collapse>
-
             </Grid>
-
           </Grid>
-         
 
-          
         </Box>
 
 
       </Drawer>
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
-            <h2>HuBMAP Data Providers:</h2>
-            <Typography>The Data Coordination Working Group (DCWG) and HIVE are in the process of releasing updated schemas for all HuBMAP organs, samples, and assay types. <strong>The HIVE will no longer accept any new data submissions using the previous metadata and directory schemas. Please prepare any new data submissions using the draft next-generation metadata and directory schemas</strong> that are being finalized by the DCWG, and which are linked from <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank"> this page</Link>.</Typography>
-            <Typography>The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate finalized (non-draft)<strong> metadata schemas</strong> using the <Link to="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/" target="_blank"> process outlined here.</Link> If you're using an assay that is still "draft" and haven't been in touch with the DCWG, please reach out to them by emailing help@hubmapconsortium.org.</Typography>
-            <Typography>The HIVE will still process any datasets using the previous schemas that were fully submitted and uploaded prior to August 7, or that had submission errors that are currently being worked through.  Please contact  <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions. </Typography>
+            <h2>DECEMBER DATA DRIVE - PLEASE SUBMIT DATA NOW!</h2>
+            <Typography>We're ready to receive your data, and would especially love to get data <strong>in December</strong> from any teams who have not yet submitted. <strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas,</strong> which are linked from <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank">this page</Link>. The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <Link to="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit#heading=h.d6xf2xeysl78" target="_blank">process outlined here</Link>.  </Typography>
+            <Typography><strong>Please also <Link to="https://docs.google.com/spreadsheets/d/19ZJx_EVyBGKNeW0xxQlOsMdt1DVNZYWmuG014rXsQP4/edit#gid=0" target="_blank">update this data pulse check spreadsheet</Link></strong> so we know what data is coming from your team. We're looking forward to your submissions! Please contact <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions.</Typography>
           </div>
       )}
       {isLoading || dtloading &&(
