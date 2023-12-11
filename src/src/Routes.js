@@ -1,11 +1,8 @@
-import React, { Component } from "react";
-import { Router, Switch, Route } from "react-router-dom";
-import Collections from "./Collections/Collections";
-import Collection from "./Collections/Collection";
-import ErrorPage from './utils/error_page';
-import Home from "./Home/Home";
+import {Component} from "react";
+import {
+    Router,Switch,Route
+} from "react-router-dom";
 import history from './history';
-import TissueForm from './components/uuid/tissue_form_components/tissueForm';
 import SearchComponent from './components/search/SearchComponent';
 // import UUIDEntrance from './components/uuid/uuid_entrance';
 // import IngestEntrance from './components/ingest/ingest_entrance';
@@ -38,8 +35,8 @@ export default class Routes extends Component {
                             )}
                     />
                     {/* <Route path="/:type" component={SearchComponent} /> */}
-                    <Route path="/err-response" component={ErrorPage} />
-                            <Route path="/" exact component={SearchComponent} /> 
+                    {/* <Route path="/err-response" component={ErrorPage} /> */}
+                    <Route path="/" exact component={SearchComponent} /> 
                 </Switch>
             </Router>
         )

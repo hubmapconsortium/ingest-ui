@@ -2,6 +2,8 @@ import * as React from "react";
 import {useState,useEffect,useContext} from "react";
 import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
+  import StandardErrorBoundary from "./utils/errorWrap";
+import ErrorPage from "./utils/errorPage";
 // Login Management
 import Login from './components/ui/login';
 import Timer from './components/ui/idle';
@@ -21,10 +23,10 @@ import {Alert} from '@material-ui/lab';
 import Snackbar from '@mui/material/Snackbar';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
@@ -154,7 +156,7 @@ export function App (props){
             let displayAll = [];
             setDataTypeListAll(dataAll);
             for (const dt of dataAll) {
-              displayAll.push({ name: dt.name, description: dt.description });
+              displayAll.push({ name:dt.name, description:dt.description });
             }
             setDisplaySubtypes(displayAll);
             ubkg_api_get_organ_type_set()
@@ -291,13 +293,11 @@ export function App (props){
       <div id="content" className="container">
       <Drawer 
         sx={{
-          color: 'white',
-          height:150   ,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {           
-            height: 150,
-            boxSizing: 'border-box',
-          },
+          color:               'white',
+          height:              150   ,
+          flexShrink:          0,
+          '& .MuiDrawer-paper':{height:   150,
+            boxSizing:'border-box',},
         }}
         variant="temporary"
         className="alert-danger"
@@ -306,17 +306,17 @@ export function App (props){
 
 
         <Box  sx={{ 
-          width: '100%', 
-          padding: 1, 
+          width:          '100%', 
+          padding:        1, 
           backgroundColor:'#dc3545', 
-          color:"#fff",
-            '& span, h5': {           
-            display: 'inline-block',
-            padding: "0 5px 0 0 ",
-          }, }}>
+          color:          "#fff",
+            '& span, h5':   {display:'inline-block',
+            padding:"0 5px 0 0 ",}, }}>
             <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
             <IconButton
-              sx={{ position: 'absolute', right: 8, top: 4, color: 'white' }}
+              sx={{
+                position:'absolute', right:8, top:4, color:'white' 
+              }}
               aria-label="close drawer"
               onClick= {()=> setErrorShow(false)}
               edge="start">
@@ -324,10 +324,10 @@ export function App (props){
             </IconButton>
         </Box>
 
-        <Box sx={{ width: '100%', height:'100%', padding: 1, backgroundColor:'white', color:"#dc3545", }}>
-
+        <Box sx={{
+            width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
+          }}>
           <Grid container>
-
             <Grid item xs={7}>
               <Typography variant="body2" gutterBottom>
                 There's been an error handling the current task. Please try again later. <br />
@@ -429,7 +429,17 @@ export function App (props){
         )}
 
           {authStatus && !timerStatus && !isLoading && !dtloading && !unregStatus &&(
-          <Paper className="px-5 py-4">
+          <StandardErrorBoundary
+            FallbackComponent={ErrorPage}
+            onError={(error, errorInfo) => {
+              // log the error
+              console.log("Error caught!");  
+              console.error(error);
+              console.error(errorInfo);
+              // record the error in an APM tool...
+            }}>
+            <Paper className="px-5 py-4">
+
 
 
             <Routes>
@@ -459,6 +469,7 @@ export function App (props){
 
                   
               )}
+              
               {authStatus && userDataGroups && userDataGroups.length > 0 && !isLoading && (
                 <Route path="/new">
                   <Route index element={<SearchComponent reportError={reportError} />} />
@@ -484,8 +495,7 @@ export function App (props){
 
               <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
               <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
-          </Routes>
-
+            </Routes>
 
           <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
             <DialogContent> 
@@ -503,10 +513,8 @@ export function App (props){
           <Snackbar 
             open={showSnack} 
             onClose={() => setShowSnack(false)}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
+            anchorOrigin={{vertical:  'bottom',
+              horizontal:'right',}}
             autoHideDuration={6000} 
             action={
               <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
@@ -517,6 +525,7 @@ export function App (props){
           </Snackbar>  
 
         </Paper>
+        </StandardErrorBoundary>
       )}
   </div>
   </div>
