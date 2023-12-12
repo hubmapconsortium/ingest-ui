@@ -1,19 +1,10 @@
 //@TODO Explain the whats and whatnots
 
 
+## **Notes:**
 
-:::tip
-TSVs and CSVs are interchangeable with the current library processing both
-
-:::
-
-
-:::tip
-The **Source** values for these will need to change
-
-depending on what’s actually in the database where you’re testing
-
-:::
+* TSVs and CSVs are interchangeable with the current library processing both
+* The **Source** values for these will need to change depending on what’s actually in the database where you’re testing
 
 
 **HuBMAP-register-organs**: Should go through fine
@@ -22,11 +13,7 @@ depending on what’s actually in the database where you’re testing
 
 
 
-
-:::info
-Older files used, no modern replacement for donors yet
-
-:::
+These Older files used, no modern replacement for donors yet
 
 **BulkDonorTest**
 
