@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React,{Component} from "react";
 import Paper from "@material-ui/core/Paper";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -16,7 +16,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormLabel from '@mui/material/FormLabel';
 
 import "../../App.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
   faSpinner,
@@ -29,7 +29,7 @@ import ReactTooltip from "react-tooltip";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 
-import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import SearchComponent from "../search/SearchComponent";
@@ -48,13 +48,13 @@ import {
   entity_api_get_entity,
 } from "../../service/entity_api";
 //import { withRouter } from 'react-router-dom';
-import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
-import { getPublishStatusColor } from "../../utils/badgeClasses";
-import { generateDisplaySubtype } from "../../utils/display_subtypes";
-import { removeEmptyValues } from "../../utils/constants_helper";
-import { humanize } from "../../utils/string_helper";
+import {ubkg_api_get_assay_type_set} from "../../service/ubkg_api";
+import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {generateDisplaySubtype} from "../../utils/display_subtypes";
+import {removeEmptyValues} from "../../utils/constants_helper";
+import {humanize} from "../../utils/string_helper";
 
-import { Alert, AlertTitle } from "@material-ui/lab";
+import {Alert,AlertTitle} from "@material-ui/lab";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -1978,7 +1978,7 @@ class PublicationEdit extends Component {
     for (let i in this.props.dataTypeList) {
       let e = this.props.dataTypeList[i];
       if (e["name"] === assay_val) {
-        return e["contains_pii"];
+        return e["contains-pii"];
       }
     }
     return false;
