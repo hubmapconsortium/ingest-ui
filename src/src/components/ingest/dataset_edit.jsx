@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React,{Component} from "react";
 import Paper from '@material-ui/core/Paper';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -13,14 +13,14 @@ import Select from '@mui/material/Select'; // import Select from "@material-ui/c
 
 
 import '../../App.css';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus, faUserShield } from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faQuestionCircle,faSpinner,faTrash,faPlus,faUserShield} from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
 import HIPPA from "../uuid/HIPPA.jsx";
 
-import { validateRequired } from "../../utils/validators";
+import {validateRequired} from "../../utils/validators";
 import {
   faExternalLinkAlt
 } from "@fortawesome/free-solid-svg-icons";
@@ -36,13 +36,13 @@ import {
   ingest_api_allowable_edit_states_statusless,
   ingest_api_notify_slack
 } from '../../service/ingest_api';
-import { entity_api_update_entity, entity_api_get_globus_url, entity_api_get_entity } from '../../service/entity_api';
+import {entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity} from '../../service/entity_api';
 //import { withRouter } from 'react-router-dom';
-import { ubkg_api_get_assay_type_set } from "../../service/ubkg_api";
-import { getPublishStatusColor } from "../../utils/badgeClasses";
-import { generateDisplaySubtype } from "../../utils/display_subtypes";
+import {ubkg_api_get_assay_type_set} from "../../service/ubkg_api";
+import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {generateDisplaySubtype} from "../../utils/display_subtypes";
 
-import { Alert, AlertTitle } from '@material-ui/lab';
+import {Alert,AlertTitle} from '@material-ui/lab';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -1929,8 +1929,8 @@ class DatasetEdit extends Component {
     for (let i in this.props.dataTypeList) {
       let e = this.props.dataTypeList[i]
       if (e['name'] === assay_val) {
-        // console.debug("e:",e,e['contains_pii']);
-          return e['contains_pii']
+        // console.debug("e:",e,e['contains-pii']);
+          return e['contains-pii']
       }
     }
     return false
