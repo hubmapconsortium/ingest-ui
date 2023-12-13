@@ -88,7 +88,7 @@ export function App (props){
   var [bannerShow,setBannerShow] = useState(true);
   var [routingMessage] = useState({
     // Route: [Message, solution/alternative]
-    Datasets:["Registring individual datasets is currently disabled.","/new/upload"],
+    Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
   });
   // const userContextText1 = useContext(UserContext);
 
