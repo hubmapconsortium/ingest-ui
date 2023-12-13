@@ -1,6 +1,8 @@
 import {Component} from "react";
+import {Link} from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@material-ui/core/LinearProgress";
+import Alert from '@mui/material/Alert';
 import {GridLoader} from "react-spinners";
 import {SAMPLE_TYPES,ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
 import {ubkg_api_get_organ_type_set} from "../../service/ubkg_api";
@@ -579,7 +581,7 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
-    console.debug('%c⊙ cell click SC', 'color:#00ff7b',  params);
+    // console.debug('%c⊙ cell click SC', 'color:#00ff7b',  params);
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
@@ -637,7 +639,7 @@ class SearchComponent extends Component {
   **/
 
   render() {
-    console.debug('%c⊙ SC RENDER packageQuery', 'color:#00ff7b', this.props.packagedQuery );
+    // console.debug('%c⊙ SC RENDER packageQuery', 'color:#00ff7b', this.props.packagedQuery );
     if (this.state.data_loading) {
       return (
       <div style={{ width: "100%" }}>
@@ -661,6 +663,12 @@ class SearchComponent extends Component {
       // console.debug('%c⊙', 'color:#00ff7b', "AUTHED" );
       return (
         <div style={{ width: "100%" }}>
+          {this.props.routingMessage && (
+            <Alert variant="filled" severity="error">
+              <strong>Sorry</strong> {this.props.routingMessage[0]+" "} 
+               Please use <Link to={this.props.routingMessage[1]}  className="text-white">Uploads</Link> instead.
+            </Alert>
+          )}
           {/* {this.state.show_search && this.renderFilterControls()} */}
           {this.state.loading && this.renderLoadingBar()}
           {this.state.show_search &&
