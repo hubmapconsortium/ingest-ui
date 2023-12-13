@@ -1,7 +1,7 @@
-import React, { useEffect} from "react";
-import { Link } from 'react-router-dom'
-import { useLocation} from "react-router-dom";
-import { useNavigate} from "react-router-dom";
+import React,{useEffect} from "react";
+import {Link} from 'react-router-dom';
+import {useLocation} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 
 import Dialog from '@mui/material/Dialog';
@@ -14,7 +14,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 import UploadsForm from "./components/uploads/createUploads";
-import {DataProviders} from "./utils/userInfo";
 
 
 
@@ -37,7 +36,7 @@ export const Navigation = (props) => {
     setUserDataGroups([props.userDataGroups]);
     // @TODO: Consider moving all the User & User Group info into its own utils, 
 
-    if(location.pathname === "/new/data"){
+    if(location.pathname === "/new/upload"){
       setUploadsDialog(true);
     }
   }, [props, props.app_info, location]);
