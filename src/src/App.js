@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState,useEffect,useContext} from "react";
+import {useState,useEffect} from "react";
 import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
   import StandardErrorBoundary from "./utils/errorWrap";
@@ -43,7 +43,6 @@ import {Navigation} from "./Nav";
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 //  import {RenderSearchComponent} from './components/SearchComponent';
 
-import {UserContext} from './service/user_service';
 import Result from "./components/uuid/result";
 
 import {RenderDonor} from "./components/donors";
@@ -65,6 +64,7 @@ import Grid from '@mui/material/Grid';
 
 export function App (props){
   // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
+  let navigate = useNavigate();
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
   var [snackMessage, setSnackMessage] = useState("");
@@ -84,10 +84,13 @@ export function App (props){
   var [organList, setOrganList] = useState();
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
+  var [userDev, setUserDev] = useState(false);
   var [bannerShow,setBannerShow] = useState(true);
-  let navigate = useNavigate();
-  
-  const userContextText = useContext(UserContext);
+  var [routingMessage] = useState({
+    // Route: [Message, solution/alternative]
+    Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
+  });
+  // const userContextText1 = useContext(UserContext);
 
   
   useEffect(() => {
@@ -105,14 +108,20 @@ export function App (props){
 
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
+        // console.debug("LocalStorageAuth", results);
 
         if (results && results.status === 200) {
           // console.debug("LocalStorageAuth", results);
-          // Um. These both seem to just give me datagroups now?
           setUserGroups(results.results);
           setUserDataGroups(results.results);
-          
-          if (results.results.length > 0) { setRegStatus(true); }
+          if (results.results.length > 0) { 
+            setRegStatus(true); 
+            for (let group in results.results) {
+              if(results.results[group].displayname.includes("IEC")){
+                setUserDev(true)
+              }
+            }
+          }
           setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
           setTimerStatus(false);
           setIsLoading(false);
@@ -135,7 +144,6 @@ export function App (props){
           setUnegStatus(true);
           setIsLoading(false);   
       }
-        
     });
     }catch(error){
       setTimerStatus(false);
@@ -468,10 +476,17 @@ export function App (props){
                 <Route path="/new">
                   <Route index element={<SearchComponent reportError={reportError} />} />
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                  <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
                   <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeListAll} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                  <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                  <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  {/* {userDev && (
+                    <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  )}
+                  {!userDev && (
+                    <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                  )} */}
                 </Route>
               )}
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
