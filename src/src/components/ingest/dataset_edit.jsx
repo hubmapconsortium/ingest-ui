@@ -1667,7 +1667,7 @@ name, display_doi, doi
   }
 
  renderOneAssay(val, idx) {
-  var idstr = 'dt_' + val.name.toLowerCase().replace(' ','_');
+  var idstr = 'dt_' + val.term.toLowerCase().replace(' ','_');
 
   return (
     <div 
@@ -1680,9 +1680,9 @@ name, display_doi, doi
         key={idstr} 
         id={idstr}
         onChange={this.handleInputChange} 
-        checked={this.state.dataset_type.has(val.name)}
+        checked={this.state.dataset_type.has(val.term)}
       />
-      <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
+      <label className='form-check-label' htmlFor={idstr}>{val.term}</label>
     </div>
   )
 }
@@ -1719,7 +1719,7 @@ name, display_doi, doi
 
 
   renderAssay(val) {
-    return (<option key={val.name} value={val.name} id={val.name}>{val.description}</option>)
+    return (<option key={val.term} value={val.code} id={val.term}>{val.term}</option>)
   }
 
   renderListAssay(val) {
