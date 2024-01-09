@@ -74,7 +74,7 @@ class PublicationEdit extends Component {
   state = {
     // The Entity Itself
     newForm: this.props.newForm,
-    data_types:["publication"],
+    dataset_type:["publication"],
     dtl_primary: [],
     dtl_all: [],
     selected_dt: "",
@@ -181,17 +181,17 @@ class PublicationEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
-    let data_types = null;
+    let dataset_type = null;
     let other_dt = undefined;
     if (
       this.props.hasOwnProperty("editingPublication") &&
       this.props.editingPublication &&
-      this.props.editingPublication.data_types
+      this.props.editingPublication.dataset_type
     ) {
     }
 
     this.setState({
-      data_types: new Set(this.props.editingPublication.data_types),
+      dataset_type: new Set(this.props.editingPublication.dataset_type),
       has_other_datatype: other_dt !== undefined,
       other_dt: other_dt,
     });
@@ -403,11 +403,11 @@ class PublicationEdit extends Component {
       var selected = "";
       if (
         this.props.editingPublication &&
-        this.props.editingPublication.data_types &&
-        this.props.editingPublication.data_types.length === 1
+        this.props.editingPublication.dataset_type &&
+        this.props.editingPublication.dataset_type.length === 1
       ) {
         // Set DT Select by state so it behaves as "controlled"
-        selected = this.props.editingPublication.data_types[0];
+        selected = this.props.editingPublication.dataset_type[0];
         //
       }
       this.setState({
@@ -968,7 +968,7 @@ class PublicationEdit extends Component {
         
           // package the data up
           var data = {
-            data_types: ["publication"],
+            dataset_type: ["publication"],
             description: this.state.editingPublication.description,
             title:this.state.editingPublication.title,
             publication_venue:this.state.editingPublication.publication_venue,
@@ -1866,7 +1866,7 @@ class PublicationEdit extends Component {
           key={idstr}
           id={idstr}
           onChange={this.handleInputChange}
-          checked={this.state.data_types.has(val.name)}
+          checked={this.state.dataset_type.has(val.name)}
         />
         <label className="form-check-label" htmlFor={idstr}>
           {val.description}
@@ -1877,8 +1877,8 @@ class PublicationEdit extends Component {
 
   isAssayCheckSet(assay) {
     try {
-      if (this.props.editingPublication.data_types) {
-        return this.props.editingPublication.data_types.includes(assay);
+      if (this.props.editingPublication.dataset_type) {
+        return this.props.editingPublication.dataset_type.includes(assay);
       } else {
         return false;
       }
@@ -1923,7 +1923,7 @@ class PublicationEdit extends Component {
   }
 
   renderMultipleAssays() {
-    var arr = Array.from(this.state.data_types);
+    var arr = Array.from(this.state.dataset_type);
     return arr.map((val) => {
       return this.renderListAssay(val);
     });
@@ -1937,9 +1937,9 @@ class PublicationEdit extends Component {
     }
     if (
       this.props.editingPublication &&
-      this.props.editingPublication.data_types
+      this.props.editingPublication.dataset_type
     ) {
-      len = this.props.editingPublication.data_types.length;
+      len = this.props.editingPublication.dataset_type.length;
     } else {
       //console.debug("no editingPublication");
     }

@@ -56,12 +56,12 @@ class DatasetEdit extends Component {
     // Remember this come time to clean up tech debt / refactor
     contains_human_genetic_sequences:this.props.editingDataset ? this.props.editingDataset.contains_human_genetic_sequences : undefined,
     editingDatasetProp:this.props.editingDataset ? this.props.editingDataset : {},
-    data_types:this.props.editingDataset ? this.props.editingDataset.data_types : {},
+    dataset_type:this.props.editingDataset ? this.props.editingDataset.dataset_type : {},
     dtl_primary:[],
     dtl_all:[],
     selected_dt:"",
-    //  data_types: this.props.dataTypeList,
-    // data_types: new Set(),
+    //  dataset_type: this.props.dataTypeList,
+    // dataset_type: new Set(),
     dataset_info:"",
     description:"",
     dataTypeDropdown:[],
@@ -117,7 +117,7 @@ class DatasetEdit extends Component {
     isValidData:true,
     formErrors:{
       contains_human_genetic_sequences:"",
-      data_types:"",
+      dataset_type:"",
       lab_dataset_id:"",
       other_dt:"",
       source_uuid_list:"",
@@ -126,15 +126,15 @@ class DatasetEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
-    let data_types = null;
+    let dataset_type = null;
     let other_dt = undefined;
     if (this.props.hasOwnProperty('editingDataset')
       && this.props.editingDataset
-      && this.props.editingDataset.data_types) {
+      && this.props.editingDataset.dataset_type) {
       }
 
       this.setState({
-        data_types:new Set(this.props.editingDataset.data_types),
+        dataset_type:new Set(this.props.editingDataset.dataset_type),
         has_other_datatype:other_dt !== undefined,
         other_dt:other_dt,
       });
@@ -298,9 +298,9 @@ class DatasetEdit extends Component {
           dataTypeDropdown:this.props.dtl_all});
       }
       var selected = ""
-      if(this.props.editingDataset  && this.props.editingDataset.data_types && this.props.editingDataset.data_types.length === 1){
+      if(this.props.editingDataset  && this.props.editingDataset.dataset_type && this.props.editingDataset.dataset_type.length === 1){
         // Set DT Select by state so it behaves as "controlled"
-        selected = this.props.editingDataset.data_types[0];
+        selected = this.props.editingDataset.dataset_type[0];
         //
       }
       this.setState({selected_dt:selected,})
@@ -493,12 +493,12 @@ class DatasetEdit extends Component {
         break;
       case "dt_select":
         
-        var data_types = [];  
-        data_types.push(value);
-        // data_types.push(value);
+        var dataset_type = [];  
+        dataset_type.push(value);
+        // dataset_type.push(value);
         this.setState({
           has_other_datatype:false,
-          data_types:data_types,
+          dataset_type:dataset_type,
           selected_dt:value,
         });
         
@@ -511,22 +511,22 @@ class DatasetEdit extends Component {
     }
     if (id.startsWith("dt")) {
       if (id === "dt_other") {
-        const data_types = this.state.data_types;
-        this.setState({data_types:data_types,
+        const dataset_type = this.state.dataset_type;
+        this.setState({dataset_type:dataset_type,
           has_other_datatype:e.target.checked,});
         if (!e.target.checked) {
 	         const data_type_options = new Set(this.props.dataTypeList.map((elt, idx) => {return elt.name}));
-            const data_types = this.state.data_types;
-            const other_dt = Array.from(data_types).filter(
+            const dataset_type = this.state.dataset_type;
+            const other_dt = Array.from(dataset_type).filter(
               (dt) => !data_type_options.has(dt)
               )[0];
-            data_types.delete(other_dt);
-            this.setState({data_types:data_types,
+            dataset_type.delete(other_dt);
+            this.setState({dataset_type:dataset_type,
               other_dt:"",});
         }
       } else {
         if (value === "other") {
-          this.setState({data_types:data_types,
+          this.setState({dataset_type:dataset_type,
             has_other_datatype:value === "other",});
       
         } else {
@@ -835,24 +835,24 @@ class DatasetEdit extends Component {
 
           this.setState({GroupSelectShow:false,
             submitting:true,});
-          const state_data_types = this.state.data_types;
-          let data_types = [...state_data_types];
+          const state_dataset_type = this.state.dataset_type;
+          let dataset_type = [...state_dataset_type];
           if (this.state.other_dt !== undefined && this.state.other_dt !== "") {
-            data_types = [
-              ...data_types,
+            dataset_type = [
+              ...dataset_type,
               this.state.other_dt.replace(/'/g, "\\'"),
             ];
           }
 
           // Can't stringify a set within json
-          var dataTypeArray = Array.from(this.state.data_types);
+          var dataTypeArray = Array.from(this.state.dataset_type);
           
           // package the data up
           console.debug(this.state);
           let data = {
             lab_dataset_id:this.state.lab_dataset_id,
             contains_human_genetic_sequences:this.state.contains_human_genetic_sequences,
-            data_types:dataTypeArray,
+            dataset_type:dataTypeArray,
             description:this.state.description,
             dataset_info:this.state.dataset_info,
           };
@@ -1161,12 +1161,12 @@ class DatasetEdit extends Component {
       }
       console.debug("validateForm 2", isValid);
       
-      if (this.state.data_types && (this.state.data_types.size === 0 || this.state.data_types === "")) {
-        this.setState((prevState) => ({formErrors:{ ...prevState.formErrors, data_types:"required" },}));
+      if (this.state.dataset_type && (this.state.dataset_type.size === 0 || this.state.dataset_type === "")) {
+        this.setState((prevState) => ({formErrors:{ ...prevState.formErrors, dataset_type:"required" },}));
         isValid = false;
         resolve(isValid);
       } else {
-        this.setState((prevState) => ({formErrors:{ ...prevState.formErrors, data_types:"" },}));
+        this.setState((prevState) => ({formErrors:{ ...prevState.formErrors, dataset_type:"" },}));
       }
 
       if (this.state.has_other_datatype && !validateRequired(this.state.other_dt)) {
@@ -1178,7 +1178,7 @@ class DatasetEdit extends Component {
       }
 
       // do a check to on the data type to see what if it normally contains pii
-      let pii_check = this.assay_contains_pii(this.state.data_types);
+      let pii_check = this.assay_contains_pii(this.state.dataset_type);
       
       if (this.state.contains_human_genetic_sequences  === true && pii_check === true) {
         this.setState((prevState) => ({formErrors:{ ...prevState.formErrors, contains_human_genetic_sequences:"" },}));
@@ -1680,7 +1680,7 @@ name, display_doi, doi
         key={idstr} 
         id={idstr}
         onChange={this.handleInputChange} 
-        checked={this.state.data_types.has(val.name)}
+        checked={this.state.dataset_type.has(val.name)}
       />
       <label className='form-check-label' htmlFor={idstr}>{val.description}</label>
     </div>
@@ -1689,8 +1689,8 @@ name, display_doi, doi
 
   isAssayCheckSet(assay) {
     try {    
-      if (this.props.editingDataset.data_types) {
-        return this.props.editingDataset.data_types.includes(assay);
+      if (this.props.editingDataset.dataset_type) {
+        return this.props.editingDataset.dataset_type.includes(assay);
       } else{
         return false
       }
@@ -1736,7 +1736,7 @@ name, display_doi, doi
 
 
   renderMultipleAssays() {
-    var arr = Array.from(this.state.data_types)
+    var arr = Array.from(this.state.dataset_type)
     return (arr.map((val) => {return this.renderListAssay(val)}))
   }
 
@@ -1747,8 +1747,8 @@ name, display_doi, doi
       if(this.props.newForm){
         dtlistLen = this.props.dtl_primary.length;
       }
-      if(this.props.editingDataset && this.props.editingDataset.data_types) {
-        len = this.props.editingDataset.data_types.length;
+      if(this.props.editingDataset && this.props.editingDataset.dataset_type) {
+        len = this.props.editingDataset.dataset_type.length;
       }else{
         //console.debug("no editingDataset");
       }
@@ -2158,7 +2158,7 @@ name, display_doi, doi
                   </div>
       
                   <div className='col-sm-12'>
-                  {this.state.formErrors.data_types && (
+                  {this.state.formErrors.dataset_type && (
                     <div className='alert alert-danger'>
                       At least one Data Type is Required.
                     </div>

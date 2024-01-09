@@ -32,7 +32,7 @@ import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import {ingest_api_users_groups} from './service/ingest_api';
-import {ubkg_api_get_assay_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {BuildError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
@@ -153,32 +153,22 @@ export function App (props){
 
   useEffect(() => {
     console.debug("useEffect ubkg")
-    ubkg_api_get_assay_type_set("primary")
+    ubkg_api_get_dataset_type_set()
       .then((response) => {
-        let dtypes = response.data.result;
+        console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
+        let dtypes = response;
         setDataTypeList(dtypes);
         setDataTypeListPrimary(dtypes);
-        ubkg_api_get_assay_type_set()
-          .then((response) => {            
-            let dataAll = response.data.result;
-            let displayAll = [];
-            setDataTypeListAll(dataAll);
-            for (const dt of dataAll) {
-              displayAll.push({ name:dt.name, description:dt.description });
-            }
-            setDisplaySubtypes(displayAll);
-            ubkg_api_get_organ_type_set()
-              .then((res) => {
-                setOrganList(res);
-                setDTLoading(false)
-              })
-              .catch((err) => {
-                reportError(err)
-              })
+        setDataTypeListAll(dtypes);
+        setDisplaySubtypes(dtypes);
+        ubkg_api_get_organ_type_set()
+          .then((res) => {
+            setOrganList(res);
+            setDTLoading(false)
           })
-          .catch( (error) => {
-            reportError(error)
-          });
+          .catch((err) => {
+            reportError(err)
+        })
       })
       .catch(error => {
         if (unregStatus) {

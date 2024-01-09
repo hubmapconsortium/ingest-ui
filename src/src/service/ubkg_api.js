@@ -64,7 +64,24 @@ export function ubkg_api_get_organ_type_set() {
         console.debug("ubkg_api_get_organ_type_set", error, error.response);
         captureError(error);
       });
+};
 
+/*
+ * UBKG GET dataset types method
+ *
+ */
+export function ubkg_api_get_dataset_type_set() {
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
+  return axios
+    .get(url)
+      .then(res => {
+        let data = res.data;
+        return data;
+      })
+      .catch(error => {
+        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+        captureError(error);
+      });
 };
 
 
