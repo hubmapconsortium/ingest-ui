@@ -163,18 +163,19 @@ export function generateDisplaySubtype( entity) {
         display_subtype = 'Donor'
     }else if (entity_type === 'Sample'){
 
-        if ('specimen_type' in entity){
-            if (entity['specimen_type'].toLowerCase() === 'organ'){
+        if ('sample_category' in entity){
+          console.debug('%c⊙ sample_category', 'color:#00ff7b', entity['sample_category'] );
+            if (entity['sample_category'].toLowerCase() === 'organ'){
                 if ('organ' in entity){
                     display_subtype = get_organ_description(entity['organ']);
                 }else{
-                    console.error("Missing missing organ when specimen_type is set of Sample with uuid: {entity['uuid']}")
+                    console.error("Missing missing organ when sample_category is set of Sample with uuid: {entity['uuid']}")
                 }
             }else{
-               display_subtype = get_tissue_sample_description(entity['specimen_type'])
+               display_subtype = get_tissue_sample_description(entity['sample_category'])
             }
         }else{
-            console.error("Missing specimen_type of Sample with uuid: {entity['uuid']}")
+            console.error("Missing sample_category of Sample with uuid: {entity['uuid']}")
         }
 
     }else if (entity_type === 'Dataset'){
@@ -193,16 +194,16 @@ export function generateDisplaySubtype( entity) {
 
 export function generateDisplaySubtypeSimple_UBKG(datatype, datatypeList) {
   // console.debug('%c⊙', 'color:#00ff7b', "generateDisplaySubtypeSimple_UBKG", datatype, datatypeList);
-  const assayDetail = datatypeList.find(({ name }) => name === datatype);
-  console.debug('%c⊙', 'color:#00ff7b', "assayDetail", assayDetail );
-  if (assayDetail !==undefined && assayDetail && assayDetail.description) {
-    return assayDetail.description
+  const assayDetail = datatypeList.find(({ term }) => term === datatype);
+  if (assayDetail !==undefined && assayDetail && assayDetail.term) {
+    return assayDetail.term
   } else {
     return "N/A"
   }
 }
 
 export function generateDisplaySubtype_UBKG( entity) {
+    // Seemingly never replaced generateDisplaySubtype defined above?
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'
   
