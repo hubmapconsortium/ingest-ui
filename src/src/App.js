@@ -31,8 +31,9 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
-import {ingest_api_users_groups} from './service/ingest_api';
+import {ingest_api_users_groups,ingest_api_all_groups} from './service/ingest_api';
 import {ubkg_api_get_assay_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
@@ -74,9 +75,8 @@ export function App (props){
   var [regStatus, setRegStatus] = useState(false);
   var [unregStatus, setUnegStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
+  var [allGroups, setAllGroups] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
-  var [isLoading, setIsLoading] = useState(true);
-  var [dtloading, setDTLoading] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
   var [dataTypeListAll, setDataTypeListAll] = useState({});
   var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
@@ -86,6 +86,9 @@ export function App (props){
   var [userDataGroups, setUserDataGroups] = useState({});
   var [userDev, setUserDev] = useState(false);
   var [bannerShow,setBannerShow] = useState(true);
+  var [isLoading, setIsLoading] = useState(true);
+  var [dtloading, setDTLoading] = useState(true);
+  // var [groupsLoading, setGroupsLoading] = useState(true);
   var [routingMessage] = useState({
     // Route: [Message, solution/alternative]
     Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
@@ -191,6 +194,23 @@ export function App (props){
         } 
       });
   }, [ ]);
+
+  useEffect(() => {
+    try {
+      ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((res) => {
+        var allGroups = sortGroupsByDisplay(res.results);
+        console.debug('%c⊙ allGroups!!', 'color:#00ff7b', allGroups );
+        setAllGroups(allGroups);
+      })
+      .catch((err) => {
+        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+      })
+    } catch (error) {
+      console.debug("%c⭗", "color:#ff005d",error);
+    }
+
+  },[])
   
   
 
@@ -253,20 +273,12 @@ export function App (props){
   const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
   const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
   const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
-  // const queryKeyword = queryParams.get("keywords")
-  // const queryGroup = queryParams.get("group")
-  // var bundledParameters = {};
-  // var bundledParameters = {entity_type:queryEntity, keywords:queryKeyword, group:queryGroup};
+
   var [bundledParameters] = useState({entity_type:queryEntity, keywords:queryKeyword, group_uuid:queryGroup});
   var [errorShow,setErrorShow] = useState(false);
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);
   var [errorDetail, setErrorDetail] = useState({});
-  // var [bundledParameters, setBundledParameters] = useState({});
-  // console.debug("APP paramObj", paramObj, queryEntity, queryKeyword, queryGroup);
-
-  // var bundledParameters = {test: "test"};
-  // console.debug('%c⊙PARAMSIES IN APP: ', 'color:#00ff7b', search, queryParams, bundledParameters );
 
   function reportError(error, details) {
     console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);
@@ -369,11 +381,11 @@ export function App (props){
             <Typography><strong>Please also <Link to="https://docs.google.com/spreadsheets/d/19ZJx_EVyBGKNeW0xxQlOsMdt1DVNZYWmuG014rXsQP4/edit#gid=0" target="_blank">update this data pulse check spreadsheet</Link></strong> so we know what data is coming from your team. We're looking forward to your submissions! Please contact <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions.</Typography>
           </div>
       )}
-      {isLoading || dtloading &&(
+      {isLoading || dtloading || (!allGroups || allGroups.length<=0) && (
         <LinearProgress />
       )}
 
-        { !authStatus && !isLoading && (
+        { !authStatus && (
           <React.Fragment>
             <Routes>
                 <Route path="/" element={ <Login />} />
@@ -418,7 +430,6 @@ export function App (props){
         )}
 
         {unregStatus && (
-          
           <Routes>
             <Route index element={ 
                 <Alert 
@@ -440,13 +451,8 @@ export function App (props){
               console.error(errorInfo);
               // record the error in an APM tool...
             }}>
-            <Paper className="px-5 py-4">
-
-
-
+          <Paper className="px-5 py-4">
             <Routes>
-
-              
               
               <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
@@ -472,7 +478,7 @@ export function App (props){
                   
               )}
               
-              {authStatus && userDataGroups && userDataGroups.length > 0 && !isLoading && (
+              {authStatus && (userDataGroups && userDataGroups.length > 0) && !isLoading && (allGroups && allGroups.length > 0) && (
                 <Route path="/new">
                   <Route index element={<SearchComponent reportError={reportError} />} />
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
@@ -494,13 +500,13 @@ export function App (props){
               <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
               <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
               <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-              <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange} />} ></Route>
+              <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
               <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
               
               <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
               <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+              <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
+              <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
               <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
               <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 

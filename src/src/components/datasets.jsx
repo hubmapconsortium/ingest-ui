@@ -188,6 +188,7 @@ export const RenderDataset = (props) => {
           handleCancel={handleCancel} 
           editingDataset={entity_data} 
           reportError={props.reportError} 
+          allGroups={props.allGroups}
           dataTypeList={dataTypeList} 
           dtl_primary={dtl_primary} 
           dtl_all={dtl_all} 

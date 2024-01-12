@@ -8,7 +8,8 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
-import Select from '@mui/material/Select'; // import Select from "@material-ui/core/Select";
+import Select from '@mui/material/Select'; 
+import TextField from '@mui/material/TextField';
 
 import '../../App.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -77,6 +78,11 @@ class DatasetEdit extends Component {
     writeable:true,
     // editingSourceIndex:0,  
     // name: "",
+
+    // Admin task assignment
+		allGroups:this.props.allGroups ? this.props.allGroups : {},
+    group_assignmnet:"",
+    task:"", 
 
     // User Privs & Info
     groups:[],
@@ -462,6 +468,7 @@ class DatasetEdit extends Component {
     const {
  id, name, value 
 } = e.target;
+console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     switch (name) {
       case "lab_dataset_id":
         this.setState({lab_dataset_id:value,});
@@ -490,6 +497,12 @@ class DatasetEdit extends Component {
         break;
       case "newStatus":
         this.setState({ newStatus:value });
+        break;
+      case "group_assignment":
+        this.setState({ group_assignment:value });
+        break;
+      case "task":
+        this.setState({ task:value });
         break;
       case "dt_select":
         
@@ -600,6 +613,29 @@ class DatasetEdit extends Component {
         slist:slist,} ,() => {
         // this.hideConfirmDialog();
       });
+  }
+
+  renderGroupAssignment = () => {
+      return (
+        <Select
+          native 
+          fullWidth
+          labelid="group_label"
+          id="group_assignmnet"
+          name="group_assignmnet"
+          label="Assigned to Group Name"
+          value={this.state.group_assignment}
+          onChange={(event) => this.handleInputChange(event)}>
+          <option value=""></option>
+          {this.props.allGroups.map((group, index) => {
+            return (
+              <option key={index + 1} value={Object.values(group)[0]}>
+                {Object.values(group)[0]}
+              </option>
+            );
+          })}
+        </Select>
+      )
   }
 
   renderSources = () => {
@@ -855,6 +891,8 @@ class DatasetEdit extends Component {
             data_types:dataTypeArray,
             description:this.state.description,
             dataset_info:this.state.dataset_info,
+						group_assignment:this.state.global_assignment,
+						task:this.state.task
           };
           console.debug("Data", data);
           
@@ -2173,6 +2211,30 @@ name, display_doi, doi
               )}
             
           </div>
+					
+					{/* Make this check admin when finished */}
+					{this.props.allGroups && this.props.allGroups.length > 0 && (
+              <div className="row mt-4  ">
+                <div className='form-group col-6'> 
+                  <label htmlFor='group_assignmnet'>Assigned to Group Name </label>
+                  {this.renderGroupAssignment()}
+                  <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
+                </div>
+                <div className='form-group col-6'> 
+                  <label htmlFor='task'>Ingest Task </label>
+                  <TextField
+                    labelid="task_label"
+                    name="task"
+                    id="task"
+                    helperText="The next task in the data ingest process."
+                    // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                    fullWidth
+                    value={this.state.task}
+                    onChange={(event) => this.handleInputChange(event)}/>
+              
+                </div>
+              </div>
+            )}
  
           {this.state.assay_metadata_status !== undefined && (
             <div className='form-group row'>
