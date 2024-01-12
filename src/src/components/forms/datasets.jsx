@@ -96,8 +96,8 @@ export function DatasetForm (props){
       var UUIDs = [];
       if (editingDataset.datasets && editingDataset.datasets.length > 0) {
         for (const entity of editingDataset.datasets) {
-          if (entity.dataset_types && entity.dataset_types.length > 0) {
-            var subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_types[0],dataTypeList);
+          if (entity.dataset_type && entity.dataset_type.length > 0) {
+            var subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type[0],dataTypeList);
             entity.display_subtype = subtype;
           }
           setSourceDatasetDetails((rows) => [...rows, entity]); // Populate the info for table
