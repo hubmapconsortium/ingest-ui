@@ -2132,7 +2132,7 @@ name, display_doi, doi
                 htmlFor='dt_select'
                 className='col col-form-label text-right'
               >
-                Data Type <span className='text-danger'>* </span>
+                Dataset Type <span className='text-danger'>* </span>
               </label>
               <span>
                 <FontAwesomeIcon
@@ -2147,7 +2147,7 @@ name, display_doi, doi
                   type='info'
                   effect='solid'
                 >
-                  <p>Data Type Tips</p>
+                  <p>Dataset Type Tips</p>
                 </ReactTooltip>
               </span>
               {this.state.writeable&& (
@@ -2160,7 +2160,7 @@ name, display_doi, doi
                   <div className='col-sm-12'>
                   {this.state.formErrors.dataset_type && (
                     <div className='alert alert-danger'>
-                      At least one Data Type is Required.
+                      At least one Dataset Type is Required.
                     </div>
                   )}
                   </div>
