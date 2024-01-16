@@ -74,7 +74,7 @@ class PublicationEdit extends Component {
   state = {
     // The Entity Itself
     newForm: this.props.newForm,
-    dataset_type:["publication"],
+    dataset_type:"publication",
     dtl_primary: [],
     dtl_all: [],
     selected_dt: "",
@@ -191,7 +191,8 @@ class PublicationEdit extends Component {
     }
 
     this.setState({
-      dataset_type: new Set(this.props.editingPublication.dataset_type),
+      // dataset_type: new Set(this.props.editingPublication.dataset_type),
+      dataset_type:this.props.editingPublication.dataset_type,
       has_other_datatype: other_dt !== undefined,
       other_dt: other_dt,
     });
@@ -968,7 +969,7 @@ class PublicationEdit extends Component {
         
           // package the data up
           var data = {
-            dataset_type: ["publication"],
+            dataset_type: "Publication",
             description: this.state.editingPublication.description,
             title:this.state.editingPublication.title,
             publication_venue:this.state.editingPublication.publication_venue,
