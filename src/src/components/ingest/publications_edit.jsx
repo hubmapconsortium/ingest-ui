@@ -1254,8 +1254,7 @@ class PublicationEdit extends Component {
                       }
                     });
                 } else {
-                  console.debug('%c⭗', 'color:#ff005d', response );
-                  if(response.response && response.response.data.error){
+                  if(response.response.data.error){
                     this.setState({
                         submit_error: true,
                         submitting: false,
@@ -1264,15 +1263,6 @@ class PublicationEdit extends Component {
                       },() => {
                         this.props.reportError(response.response.data.error);
                     });
-                  }else if(response.results && response.results.error){
-                    this.setState({
-                      submit_error: true,
-                      submitting: false,
-                      submitErrorResponse: response.results.error,
-                      buttonSpinnerTarget: "",
-                    },() => {
-                      this.props.reportError(response.results.error);
-                    });
                   }else{
                     this.setState({
                       submit_error: true,
@@ -1280,7 +1270,7 @@ class PublicationEdit extends Component {
                       submitErrorResponse: "Error Creating Publication",
                       buttonSpinnerTarget: "",
                     },() => {
-                      this.props.reportError("Failed to Capture Error");
+                      this.props.reportError(response.response.data.error);
                     });
                   }
                 }
@@ -1875,7 +1865,7 @@ class PublicationEdit extends Component {
   //         name={val.name}
   //         key={idstr}
   //         id={idstr}
-  //         onChange={this.handleInputChange}  
+  //         onChange={this.handleInputChange}
   //         checked={this.state.dataset_type.has(val.name)}
   //       />
   //       <label className="form-check-label" htmlFor={idstr}>
@@ -2406,8 +2396,7 @@ class PublicationEdit extends Component {
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
           hide={()=> this.hideGroupSelectModal()}
-          submit={() => this.handleSubmit("save")} 
-          // It'll only be asking which group on create
+          submit={() => this.handleSubmit("save")} // It'll only be askign which group pn create
           // submit={this.handleSubmit} 
           // submit={this.handleSubmit}  Modal only appears when theres no group, which only happens on new form. Intent is blank
           handleInputChange={this.handleInputChange}

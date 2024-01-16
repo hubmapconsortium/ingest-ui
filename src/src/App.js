@@ -264,12 +264,11 @@ export function App (props){
       setErrorDetail(details);
     }
     typeof error === "string" ? setErrorInfo(error) : setErrorInfo(JSON.stringify(error));
-    // var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
+    var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
     if(error.results){
-      console.debug('%c⭗ has error.results', 'color:#ff005d', error.results);
-      // errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
-      setErrorInfo(JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results))))
+      errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
     }
+    setErrorInfo(errString);
     setErrorShow(true);
     throw (error)
   }

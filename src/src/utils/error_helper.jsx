@@ -5,10 +5,9 @@ export const BuildError = (message) => {
     if(message.message){
         // If it IS aleady an error object, just return it
         newError = message;
-    }else{
-        // Else, let's make it one
+    }else{}
+    // Else, let's make it one
         newError = new Error(message);
-    }
     return (
         newError
     )

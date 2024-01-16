@@ -14,17 +14,17 @@ export default class StandardErrorBoundary extends React.Component {
     // update the component state when an error occurs
     static getDerivedStateFromError(error) {
         // specify that the error boundary has caught an error
-        return {hasError:true};
+        return {hasError:true,
+            error:   error};
     }
 
     // defines what to do when an error gets caught
-    componentDidCatch(error, info) {
+    componentDidCatch(error, errorInfo) {
         // log the error
-        console.debug('%c❌ ERROR WRAP | ', 'color:#ff005d',error,info);
-        this.setState({ error, info });
+        console.debug('%c❌ ERROR WRAP | ', 'color:#ff005d',error,errorInfo);
         // console.log("Error caught!");
         // console.error(error);
-        // console.error(info);
+        // console.error(errorInfo);
 
         // record the error in an APM tool...
     }

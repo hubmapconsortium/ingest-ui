@@ -225,7 +225,6 @@ class Forms extends Component {
             onReturn={this.props.handleCancel}
             changeLink={this.onChangeGlobusLink.bind(this)}
             newForm={true}
-            reportError={this.props.reportError}
             // dtl_primary={this.props.dtl_primary}
             // dtl_all={this.props.dtl_all}
             // dtl_status={false}
