@@ -387,32 +387,32 @@ class PublicationEdit extends Component {
       // if it's no longer a base primary type.
       var dtlStatus = this.props.dtl_status;
 
-      if (dtlStatus) {
-        // We are primary type, only priamries in Dropdown
-        this.setState({
-          disableSelectDatatype: false,
-          dataTypeDropdown: this.props.dtl_primary,
-        });
-      } else {
-        // Not primary type, uneditable dropdown should contain all
-        this.setState({
-          disableSelectDatatype: true,
-          dataTypeDropdown: this.props.dtl_all,
-        });
-      }
-      var selected = "";
-      if (
-        this.props.editingPublication &&
-        this.props.editingPublication.dataset_type &&
-        this.props.editingPublication.dataset_type.length === 1
-      ) {
-        // Set DT Select by state so it behaves as "controlled"
-        selected = this.props.editingPublication.dataset_type[0];
-        //
-      }
-      this.setState({
-        selected_dt: selected,
-      });
+      // if (dtlStatus) {
+      //   // We are primary type, only priamries in Dropdown
+      //   this.setState({
+      //     disableSelectDatatype: false,
+      //     dataTypeDropdown: this.props.dtl_primary,
+      //   });
+      // } else {
+      //   // Not primary type, uneditable dropdown should contain all
+      //   this.setState({
+      //     disableSelectDatatype: true,
+      //     dataTypeDropdown: this.props.dtl_all,
+      //   });
+      // }
+      // var selected = "";
+      // if (
+      //   this.props.editingPublication &&
+      //   this.props.editingPublication.dataset_type &&
+      //   this.props.editingPublication.dataset_type.length === 1
+      // ) {
+      //   // Set DT Select by state so it behaves as "controlled"
+      //   selected = this.props.editingPublication.dataset_type[0];
+      //   //
+      // }
+      // this.setState({
+      //   selected_dt: selected,
+      // });
 
       // Sets the Hubmap ID labels for Previous and Next version Buttons
       
@@ -1854,38 +1854,38 @@ class PublicationEdit extends Component {
     });
   }
 
-  renderOneAssay(val, idx) {
-    var idstr = "dt_" + val.name.toLowerCase().replace(" ", "_");
+  // renderOneAssay(val, idx) {
+  //   var idstr = "dt_" + val.name.toLowerCase().replace(" ", "_");
 
-    return (
-      <div className="form-group form-check" key={idstr}>
-        <input
-          type="radio"
-          className="form-check-input"
-          name={val.name}
-          key={idstr}
-          id={idstr}
-          onChange={this.handleInputChange}
-          checked={this.state.dataset_type.has(val.name)}
-        />
-        <label className="form-check-label" htmlFor={idstr}>
-          {val.description}
-        </label>
-      </div>
-    );
-  }
+  //   return (
+  //     <div className="form-group form-check" key={idstr}>
+  //       <input
+  //         type="radio"
+  //         className="form-check-input"
+  //         name={val.name}
+  //         key={idstr}
+  //         id={idstr}
+  //         onChange={this.handleInputChange}
+  //         checked={this.state.dataset_type.has(val.name)}
+  //       />
+  //       <label className="form-check-label" htmlFor={idstr}>
+  //         {val.description}
+  //       </label>
+  //     </div>
+  //   );
+  // }
 
-  isAssayCheckSet(assay) {
-    try {
-      if (this.props.editingPublication.dataset_type) {
-        return this.props.editingPublication.dataset_type.includes(assay);
-      } else {
-        return false;
-      }
-    } catch {
-      return "Error";
-    }
-  }
+  // isAssayCheckSet(assay) {
+  //   try {
+  //     if (this.props.editingPublication.dataset_type) {
+  //       return this.props.editingPublication.dataset_type.includes(assay);
+  //     } else {
+  //       return false;
+  //     }
+  //   } catch {
+  //     return "Error";
+  //   }
+  // }
 
   renderAssayColumn(min, max) {
     // Hijacking Select options based on Primary DT status
@@ -1929,49 +1929,49 @@ class PublicationEdit extends Component {
     });
   }
 
-  renderAssayArray() {
-    var len = 0;
-    var dtlistLen = this.state.dataTypeDropdown.length;
-    if (this.props.newForm) {
-      dtlistLen = this.props.dtl_primary.length;
-    }
-    if (
-      this.props.editingPublication &&
-      this.props.editingPublication.dataset_type
-    ) {
-      len = this.props.editingPublication.dataset_type.length;
-    } else {
-      //console.debug("no editingPublication");
-    }
+  // renderAssayArray() {
+  //   var len = 0;
+  //   var dtlistLen = this.state.dataTypeDropdown.length;
+  //   if (this.props.newForm) {
+  //     dtlistLen = this.props.dtl_primary.length;
+  //   }
+  //   if (
+  //     this.props.editingPublication &&
+  //     this.props.editingPublication.dataset_type
+  //   ) {
+  //     len = this.props.editingPublication.dataset_type.length;
+  //   } else {
+  //     //console.debug("no editingPublication");
+  //   }
 
-    if (len > 1) {
-      return (
-        <>
-          <ul>{this.renderMultipleAssays()}</ul>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <Select
-            native
-            name="dt_select"
-            className="form-select"
-            disabled={
-              !this.state.writeable ||
-              !this.state.assay_type_primary ||
-              this.state.disableSelectDatatype
-            }
-            value={this.state.selected_dt}
-            id="dt_select"
-            onChange={this.handleInputChange}>
-            <option></option>
-            {this.renderAssayColumn(0, dtlistLen)}
-          </Select>
-        </>
-      );
-    }
-  }
+  //   if (len > 1) {
+  //     return (
+  //       <>
+  //         <ul>{this.renderMultipleAssays()}</ul>
+  //       </>
+  //     );
+  //   } else {
+  //     return (
+  //       <>
+  //         <Select
+  //           native
+  //           name="dt_select"
+  //           className="form-select"
+  //           disabled={
+  //             !this.state.writeable ||
+  //             !this.state.assay_type_primary ||
+  //             this.state.disableSelectDatatype
+  //           }
+  //           value={this.state.selected_dt}
+  //           id="dt_select"
+  //           onChange={this.handleInputChange}>
+  //           <option></option>
+  //           {this.renderAssayColumn(0, dtlistLen)}
+  //         </Select>
+  //       </>
+  //     );
+  //   }
+  // }
 
   assay_contains_pii(assay) {
     let assay_val = [...assay.values()][0]; // only one assay can now be selected, the Set() is older code
