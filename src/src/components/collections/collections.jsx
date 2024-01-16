@@ -226,9 +226,9 @@ export function CollectionForm (props){
             } else {
               let row = response.results;
               if (!processed.includes(row.uuid)) { 
-                if (!row.display_subtype && row.dataset_type && row.dataset_type[0].length > 0) {
+                if (!row.display_subtype && row.dataset_type) {
                   // entity does not return display subtype, so we'll generate it
-                  row.display_subtype = generateDisplaySubtypeSimple_UBKG(row.dataset_type[0], props.dtl_all);
+                  row.display_subtype = generateDisplaySubtypeSimple_UBKG(row.dataset_type, props.dtl_all);
                   setSourceDatasetDetails((rows) => [...rows, row]);
                   processed.push(row.uuid.toString());
                 }
