@@ -13,12 +13,19 @@ export default function ErrorPage(props) {
     var [errorInfoShow, setErrorInfoShow] = useState(false);
     // var {message,stack,fileName,lineNumber,columnNumber} = props.errorValue;
     console.debug('%c⊙ErrorPage Props: ', 'color:#00ff7b', props );
-    var errorObject = {
-        message:props.errorValue.message ?  props.errorValue.message : "Error: No Message Included",
-        stack:props.errorValue.stack ?  props.errorValue.stack : "No Stack Trace Available",
-        fileName:props.errorValue.fileName ?  props.errorValue.fileName : "No File Name Available",
-        lineNumber:props.errorValue.lineNumber ?  props.errorValue.lineNumber : "No Line Number Available",
-        columnNumber:props.errorValue.columnNumber ?  props.errorValue.columnNumber : "No Column Number Available",
+    var errorObject = {}
+    if(props.errorValue && props.errorValue !== undefined){
+        errorObject.message = props.errorValue.message ?  props.errorValue.message : "Error: No Message Included"
+        errorObject.stack = props.errorValue.stack ?  props.errorValue.stack : "No Stack Trace Available"
+        errorObject.fileName = props.errorValue.fileName ?  props.errorValue.fileName : "No File Name Available"
+        errorObject.lineNumber = props.errorValue.lineNumber ?  props.errorValue.lineNumber : "No Line Number Available"
+        errorObject.columnNumber = props.errorValue.columnNumber ?  props.errorValue.columnNumber : "No Column Number Available"
+    }else {
+        errorObject.message = "Information Not Provided. Possible Asynchronous Error"
+        errorObject.stack = ""
+        errorObject.fileName = ""
+        errorObject.lineNumber = ""
+        errorObject.columnNumber = ""
     }
     // var jsonERR = toJSON(errorObject);
     // var mapDerails = new Map(JSON.parse(jsonERR));
@@ -49,8 +56,15 @@ export default function ErrorPage(props) {
                         {errorObject.message && errorObject.message.length>0 && (
                             <Box sx={{width:'100%', fontSize:'1.8em',  padding:1,marginBottom:2, backgroundColor:'white', color:"#dc3545"}}>
                                 {errorObject.message} <br/>
-                                <Typography ><strong>File:</strong> {errorObject.fileName}  </Typography> 
-                                <Typography ><strong>Line Number:</strong> {errorObject.lineNumber} | <strong>Column Number:</strong> {errorObject.columnNumber} |</Typography> 
+                                {!props.errorValue && (
+                                    <Typography ><strong>Please See Error Overlay for Further Information:</strong> </Typography> 
+                                )}
+                                {props.errorValue && (
+                                    <>
+                                    <Typography ><strong>File:</strong> {errorObject.fileName}  </Typography> 
+                                    <Typography ><strong>Line Number:</strong> {errorObject.lineNumber} | <strong>Column Number:</strong> {errorObject.columnNumber} |</Typography> 
+                                    </>
+                                )}
                             </Box>
                         )}
                         <Typography variant='h5'gutterBottom>View Stack Trace:<IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ChevronRightIcon /></IconButton> </Typography>
