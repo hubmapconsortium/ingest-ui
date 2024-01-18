@@ -969,7 +969,6 @@ class PublicationEdit extends Component {
         
           // package the data up
           var data = {
-            dataset_type: "Publication",
             description: this.state.editingPublication.description,
             title:this.state.editingPublication.title,
             publication_venue:this.state.editingPublication.publication_venue,

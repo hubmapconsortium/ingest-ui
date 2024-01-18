@@ -59,9 +59,6 @@ class DatasetEdit extends Component {
     dataset_type:this.props.editingDataset ? this.props.editingDataset.dataset_type : "",
     dtl_primary:[],
     dtl_all:[],
-    dataset_type:"",
-    //  dataset_type: this.props.dataTypeList,
-    // dataset_type: new Set(),
     dataset_info:"",
     description:"",
     dataTypeDropdown:[],
@@ -148,7 +145,7 @@ class DatasetEdit extends Component {
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
-      this.setAssayLists();
+      // this.setAssayLists();
       var savedGeneticsStatus = undefined;
       try {
         var auth = JSON.parse(localStorage.getItem("info")).groups_token;
@@ -363,20 +360,20 @@ class DatasetEdit extends Component {
         this.props.reportError();
       });
   }
-  setAssayLists(){
-    ubkg_api_get_assay_type_set()
-    .then((res) => {
-      this.setState({dtl_all:res.data.result.map((value, index) => { return value.name })});
-    })
-    .catch((err) => {
-    })
-    ubkg_api_get_assay_type_set("primary")
-    .then((res) => {
-      this.setState({dtl_primary:res.data.result.map((value, index) => { return value.name })});
-    })
-    .catch((err) => {
-    })
-  }
+  // setAssayLists(){
+  //   ubkg_api_get_assay_type_set()
+  //   .then((res) => {
+  //     this.setState({dtl_all:res.data.result.map((value, index) => { return value.name })});
+  //   })
+  //   .catch((err) => {
+  //   })
+  //   ubkg_api_get_assay_type_set("primary")
+  //   .then((res) => {
+  //     this.setState({dtl_primary:res.data.result.map((value, index) => { return value.name })});
+  //   })
+  //   .catch((err) => {
+  //   })
+  // }
 
 
   componentWillUnmount() {
@@ -392,7 +389,11 @@ class DatasetEdit extends Component {
   };
 
   hideModal = () => {
-    this.setState({ show:false });
+    console.debug('%c⊙ Hiding Modal', 'color:#00ff7b' );
+    this.setState({ 
+      GroupSelectShow:false,
+      buttonSpinnerTarget:""
+     });
   };
 
   showErrorMsgModal = (msg) => {
@@ -1125,7 +1126,7 @@ class DatasetEdit extends Component {
         this.setState((prevState) => ({formErrors:{ ...prevState.formErrors, source_uuid_list:"" },}));
       }
       
-      if (this.state.dataset_type && (this.state.dataset_type.size === 0 || this.state.dataset_type === "")) {
+      if ((this.state.dataset_type && (this.state.dataset_type.size === 0 || this.state.dataset_type === "")) || !this.state.dataset_type) {
         this.setState((prevState) => ({formErrors:{ ...prevState.formErrors, dataset_type:"required" },}));
         isValid = false;
         resolve(isValid);
@@ -1630,38 +1631,38 @@ name, display_doi, doi
     });
   }
 
- renderOneAssay(val, idx) {
-  var idstr = 'dt_' + val.term.toLowerCase().replace(' ','_');
+//  renderOneAssay(val, idx) {
+//   var idstr = 'dt_' + val.term.toLowerCase().replace(' ','_');
 
-  return (
-    <div 
-      className='form-group form-check' 
-      key={idstr}>
-      <input 
-        type='radio' 
-        className='form-check-input' 
-        name={val.name} 
-        key={idstr} 
-        id={idstr}
-        onChange={this.handleInputChange} 
-        checked={this.state.dataset_type.has(val.term)}
-      />
-      <label className='form-check-label' htmlFor={idstr}>{val.term}</label>
-    </div>
-  )
-}
+//   return (
+//     <div 
+//       className='form-group form-check' 
+//       key={idstr}>
+//       <input 
+//         type='radio' 
+//         className='form-check-input' 
+//         name={val.name} 
+//         key={idstr} 
+//         id={idstr}
+//         onChange={this.handleInputChange} 
+//         checked={this.state.dataset_type.has(val.term)}
+//       />
+//       <label className='form-check-label' htmlFor={idstr}>{val.term}</label>
+//     </div>
+//   )
+// }
 
-  isAssayCheckSet(assay) {
-    try {    
-      if (this.props.editingDataset.dataset_type) {
-        return this.props.editingDataset.dataset_type.includes(assay);
-      } else{
-        return false
-      }
-    } catch {
-      return ("Error");
-     }
-   }
+  // isAssayCheckSet(assay) {
+  //   try {    
+  //     if (this.props.editingDataset.dataset_type) {
+  //       return this.props.editingDataset.dataset_type.includes(assay);
+  //     } else{
+  //       return false
+  //     }
+  //   } catch {
+  //     return ("Error");
+  //    }
+  //  }
 
    renderDatsetTypeDropdown(){
     return (
@@ -1680,8 +1681,8 @@ name, display_doi, doi
         <option value=""></option>
         {this.props.dtl_all.map((type, index) => {
           return (
-            <option key={index + 1} value={Object.values(type)[0]}>
-              {Object.values(type)[0]}
+            <option key={index + 1} value={type.term}>
+              {type.term}
             </option>
           );
         })}
@@ -1689,96 +1690,81 @@ name, display_doi, doi
     )
    }
 
-  renderAssayColumn(min, max) {
-    // Hijacking Select options based on Primary DT status
-    // @TODO there will be ways to verify primary status in the near future?
-    // if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
-    //   // console.debug("dtl_primary",this.props.dtl_primary);
-    //   return (
-    //     this.props.dtl_primary.slice(min, max).map((val, idx) => {return this.renderAssay(val, idx)})
-    //     )
-    // }else{  // false = Not primary DT, set options to full
-    //   return (
-    //     this.props.dtl_all.slice(min, max).map((val, idx) =>{
-    //       return this.renderAssay(val, idx)
-    //     })
-    //   )
-    // }
-    return (
-      this.props.dtl_all.slice(min, max).map((val, idx) =>{
-        return this.renderAssay(val, idx)
-      })
-    )
-  }
+  // renderAssayColumn(min, max) {
+  //   // Hijacking Select options based on Primary DT status
+  //   // @TODO there will be ways to verify primary status in the near future?
+  //   // if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
+  //   //   // console.debug("dtl_primary",this.props.dtl_primary);
+  //   //   return (
+  //   //     this.props.dtl_primary.slice(min, max).map((val, idx) => {return this.renderAssay(val, idx)})
+  //   //     )
+  //   // }else{  // false = Not primary DT, set options to full
+  //   //   return (
+  //   //     this.props.dtl_all.slice(min, max).map((val, idx) =>{
+  //   //       return this.renderAssay(val, idx)
+  //   //     })
+  //   //   )
+  //   // }
+  //   return (
+  //     this.props.dtl_all.slice(min, max).map((val, idx) =>{
+  //       return this.renderAssay(val, idx)
+  //     })
+  //   )
+  // }
 
 
-  renderAssay(val) {
-    return (<option key={val.term} value={val.term} id={val.term}>{val.term}</option>)
-  }
+  // renderAssay(val) {
+  //   return (<option key={val.term} value={val.term} id={val.term}>{val.term}</option>)
+  // }
 
-  renderListAssay(val) {
-    return (<li key={val}>{val}</li>)
-  }
+  // renderListAssay(val) {
+  //   return (<li key={val}>{val}</li>)
+  // }
 
-  renderStringAssay(val) {
-    return ({val})
-  }
+  // renderStringAssay(val) {
+  //   return ({val})
+  // }
 
-  renderDisabledNonprimaryDT(val) {
-    return (<li key={val}>{val}</li>)
-  }
+  // renderDisabledNonprimaryDT(val) {
+  //   return (<li key={val}>{val}</li>)
+  // }
 
 
-  renderMultipleAssays() {
-    var arr = Array.from(this.state.dataset_type)
-    return (arr.map((val) => {return this.renderListAssay(val)}))
-  }
+  // renderMultipleAssays() {
+  //   var arr = Array.from(this.state.dataset_type)
+  //   return (arr.map((val) => {return this.renderListAssay(val)}))
+  // }
 
    
-  renderAssayArray() {
-      // var len = 0;
-      var dtlistLen = this.state.dataTypeDropdown.length;
-      if(this.props.newForm){
-        dtlistLen = this.props.dtl_primary.length;
-      }
-      
-      // if(this.props.editingDataset && this.props.editingDataset.dataset_type) {
-      //   // We only use one now. 
-      //   // len = this.props.editingDataset.dataset_type.length;
-      //   len = 1
-      // }else{
-      //   //console.debug("no editingDataset");
-      // }
-      // if (len > 1) {
-      //   return (<>
-      //     <ul>
-      //       {this.renderMultipleAssays()}
-      //     </ul>
-      //     </>)
-      // }else{ 
-  	    return (<>
-  		    <Select 
-            native
-            name="dt_select"
-            className="form-select" 
-            // disabled={ (!this.state.writeable || !this.state.assay_type_primary) || this.state.disableSelectDatatype }
-            disabled={ !this.state.writeable || this.state.disableSelectDatatype }
-            value={this.state.dataset_type} 
-            id="dt_select" 
-            onChange={this.handleInputChange}>
-            <option></option>
-            {this.renderAssayColumn(0, dtlistLen)}
-          </Select>
-          </> )
+  // renderAssayArray() {
+  //     // var len = 0;
+  //     var dtlistLen = this.state.dataTypeDropdown.length;
+  //     if(this.props.newForm){
+  //       dtlistLen = this.props.dtl_primary.length;
+  //     }
+  // 	    return (<>
+  // 		    <Select 
+  //           native
+  //           name="dt_select"
+  //           className="form-select" 
+  //           // disabled={ (!this.state.writeable || !this.state.assay_type_primary) || this.state.disableSelectDatatype }
+  //           disabled={ !this.state.writeable || this.state.disableSelectDatatype }
+  //           value={this.state.dataset_type} 
+  //           id="dt_select" 
+  //           onChange={this.handleInputChange}>
+  //           <option></option>
+  //           {this.renderAssayColumn(0, dtlistLen)}
+  //         </Select>
+  //         </> )
   
-      // }    
-    }
+  //     // }    
+  //   }
    
-  assay_contains_pii(assay) {
+    // assay_contains_pii(assay) {
     // New Dataset Type resource does not contain Pii Info, 
     // Requested check removed via slack 
     // hubmapconsortium.slack.com/archives/GNJ4QBLEL/p1705082366315539?thread_ts=1705076459.524989&cid=GNJ4QBLEL
-    return false
+    // return false
     // let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
     // let assay_val = this.props.dataset_type 
     // for (let i in this.props.dataTypeList) {
@@ -1790,7 +1776,7 @@ name, display_doi, doi
     //   }
     // }
     // return false
-  }
+    //}
 
   render() {
     return (
@@ -2152,31 +2138,29 @@ name, display_doi, doi
                   <p>Dataset Type Tips</p>
                 </ReactTooltip>
               </span>
-              {this.state.writeable&& (
+              {this.props.newForm&& (
                 <React.Fragment>
-                  
                   <div className='col-sm-12'>
-                        { this.renderAssayArray()}
+                        { this.renderDatsetTypeDropdown()}
                   </div>
-      
                   <div className='col-sm-12'>
                   {this.state.formErrors.dataset_type && (
                     <div className='alert alert-danger'>
-                      At least one Dataset Type is Required.
+                      One Dataset Type is Required.
                     </div>
                   )}
                   </div>
                 </React.Fragment>
               )}
-              {!this.state.writeable && (
+              {!this.props.newForm && this.props.editingDataset.dataset_type &&(
                   <div className='col-sm-12'>
-                        {true && this.renderAssayArray()}
+                        {this.props.editingDataset.dataset_type.toString()}
                   </div>
               )}
             
           </div>
  
-          {this.state.assay_metadata_status !== undefined && (
+          {/* {this.state.assay_metadata_status !== undefined && (
             <div className='form-group row'>
               <label
                 htmlFor='assay_metadata_status'
@@ -2196,8 +2180,8 @@ name, display_doi, doi
                 )}
               </div>
             </div>
-          )}
-          {this.state.data_metric_availability !== undefined && (
+          )} */}
+          {/* {this.state.data_metric_availability !== undefined && (
             <div className='form-group row'>
               <label
                 htmlFor='data_metric_availability'
@@ -2218,8 +2202,8 @@ name, display_doi, doi
                 )}
               </div>
             </div>
-          )}
-          {this.state.data_processing_level !== undefined && (
+          )} */}
+          {/* {this.state.data_processing_level !== undefined && (
             <div className='form-group row'>
               <label
                 htmlFor='data_processing_level'
@@ -2246,8 +2230,8 @@ name, display_doi, doi
                 )}
               </div>
             </div>
-          )}
-          {this.state.dataset_sign_off_status !== undefined && (
+          )} */}
+          {/* {this.state.dataset_sign_off_status !== undefined && (
             <div className='form-group row'>
               <label
                 htmlFor='dataset_sign_off_status'
@@ -2268,7 +2252,7 @@ name, display_doi, doi
                 )}
               </div>
             </div>
-          )}
+          )} */}
           <div className="col-8">
             {this.state.submit_error && (
               <Alert severity="error" >
@@ -2299,6 +2283,7 @@ name, display_doi, doi
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
           submit={this.handleSubmit}
+          hide={() => this.hideModal()}
           handleInputChange={this.handleInputChange}
         />
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
