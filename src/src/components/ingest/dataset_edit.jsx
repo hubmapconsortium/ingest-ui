@@ -37,7 +37,7 @@ import {
 } from '../../service/entity_api';
 import {ubkg_api_get_assay_type_set} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
-import {generateDisplaySubtype} from "../../utils/display_subtypes";
+import {generateDisplaySubtype, generateDisplaySubtype_UBKG} from "../../utils/display_subtypes";
 
 import {Alert,AlertTitle} from '@material-ui/lab';
 import Table from '@material-ui/core/Table';
@@ -1071,21 +1071,17 @@ class DatasetEdit extends Component {
                       submitting:false, 
                       submitErrorResponse:response.results.data.error,
                       buttonSpinnerTarget:""
-} ,
-                      () => {
-                       //
-                      });
-                   
+                      } ,() => {});
                   }
                 
               })
               .catch((err) => {
                 this.setState({
- submit_error:true, submitting:false, submitErrorResponse:err, buttonSpinnerTarget:"" 
-} ,
-                  () => {
-                   //
-                  });
+                  submit_error:true, 
+                  submitting:false, 
+                  submitErrorResponse:err, 
+                  buttonSpinnerTarget:"" 
+                } ,() => {});
               });
           }  
         }
@@ -1176,7 +1172,9 @@ class DatasetEdit extends Component {
 
   assembleSourceAncestorData(source_uuids){
     for (var i = 0; i < source_uuids.length; i++) {
-      var dst = generateDisplaySubtype(source_uuids[i]);
+      
+      var dst = generateDisplaySubtype_UBKG(source_uuids[i], this.props.dtl_all);
+      // var dst = generateDisplaySubtype(source_uuids[i]);
       source_uuids[i].display_subtype=dst;
     }
   try {

@@ -154,6 +154,7 @@ function get_sample_description_UBKG(tissue_code) {
         
         
 export function generateDisplaySubtype( entity) {
+  console.debug('%c⊙ generateDisplaySubtype', 'color:#00ff7b', entity );
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'
 
@@ -202,29 +203,31 @@ export function generateDisplaySubtypeSimple_UBKG(datatype, datatypeList) {
   }
 }
 
-export function generateDisplaySubtype_UBKG( entity) {
-    // Seemingly never replaced generateDisplaySubtype defined above?
+export function generateDisplaySubtype_UBKG(entity) {
+    // console.debug('%c⊙ generateDisplaySubtype_UBKG', 'color:#00ff7b',  entity);
+
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'
-  
 
     if (entity_type === 'Upload'){
         display_subtype = 'Data Upload'
     }else if (entity_type === 'Donor'){
         display_subtype = 'Donor'
     }else if (entity_type === 'Sample'){
-        if ('specimen_type' in entity){
-            if (entity['specimen_type'].toLowerCase() === 'organ'){
+        if ('sample_category' in entity){
+            if (entity['sample_category'].toLowerCase() === 'organ'){
               if ('organ' in entity) {
                     display_subtype = get_organ_description_UBKG(entity['organ']);
                 }else{
-                    console.error("Missing missing organ when specimen_type is set of Sample with uuid: {entity['uuid']}")
+                    console.error("Missing missing organ when sample_category is set of Sample with uuid: {entity['uuid']}")
                 }
             } else {
-               display_subtype = get_sample_description_UBKG(entity['specimen_type'])
+              // @TODO: Readdress: Do we have a new source for this? 
+              display_subtype = entity['sample_category']
+              // display_subtype = get_sample_description_UBKG(entity['sample_category'])
             }
         }else{
-            console.error("Missing specimen_type of Sample with uuid: {entity['uuid']}")
+            console.error("Missing sample_category of Sample with uuid: {entity['uuid']}")
         }
 
     }else if (entity_type === 'Dataset'){
