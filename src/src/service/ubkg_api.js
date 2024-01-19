@@ -1,5 +1,5 @@
 import axios from "axios";
-import { stripHTML } from '../utils/string_helper'
+import { stripHTML,toTitleCase } from '../utils/string_helper'
 
 
 
@@ -83,6 +83,46 @@ export function ubkg_api_get_dataset_type_set() {
         captureError(error);
       });
 };
+
+
+/*
+ * UBKG Generate Display Subtype method
+ *
+ */
+export function ubkg_api_generate_display_subtype(entity) {
+  var entity_type = entity['entity_type']
+  if (entity_type === 'Sample' && 'sample_category' in entity){
+    if (entity['sample_category'].toLowerCase() === 'organ'){
+      if ('organ' in entity) {
+        var organCode = entity['organ'];
+        return ubkg_api_get_organ_type_set()
+          .then((res) => {
+            console.debug('%c⊙ generate_subtype', 'color:#8400FF', res[organCode] );
+            return (res[organCode])
+          })
+          .catch((error) => {
+            return (error)
+          });
+          
+      }else{
+        throw new Error("Missing Organ key for  Sample with uuid: {entity['uuid']}")
+      }
+    } else {
+      return entity['sample_category'].toString();
+    }  
+  }else if (entity_type === 'Dataset' && 'dataset_type' in entity){ 
+    // Datasets store in ugly format, need to reff pretty style
+    return (entity['dataset_type'].toString())
+  }else if (entity_type === 'Upload'){ 
+    // Uploads just need language fix
+    return ("Data Upload")
+  }else{ 
+    // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
+    return ( toTitleCase(entity_type.toString()))
+  }    
+}
+
+
 
 
 function captureError (error){
