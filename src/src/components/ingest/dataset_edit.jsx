@@ -35,9 +35,9 @@ import {
 import {
   entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity
 } from '../../service/entity_api';
-import {ubkg_api_get_assay_type_set} from "../../service/ubkg_api";
+import {ubkg_api_get_assay_type_set,ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
-import {generateDisplaySubtype, generateDisplaySubtype_UBKG} from "../../utils/display_subtypes";
+import {generateDisplaySubtype, generateDisplaySubtype_UBKG, generateSubtype} from "../../utils/display_subtypes";
 
 import {Alert,AlertTitle} from '@material-ui/lab';
 import Table from '@material-ui/core/Table';
@@ -231,11 +231,15 @@ class DatasetEdit extends Component {
 
     // Sets up the Entity's info  if we're not new here
     if (this.props.editingDataset && !this.props.newForm) {      
-      try {
-        // use only the first direct ancestor
-         this.setState({source_uuids:this.props.editingDataset.direct_ancestors});
-      } catch {
-      }
+      // try {
+      //   this.setState({source_uuid_list: this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)});  
+
+        
+      // } catch(error) {
+      //   console.debug('%c⭗ ancestorList', 'color:#ff005d', error );
+      // }
+
+
 
       if(this.props.editingDataset ==='' || !this.props.editingDataset ){
         console.debug("EDITINGDATASET UNDEFINED");
@@ -245,13 +249,34 @@ class DatasetEdit extends Component {
         savedGeneticsStatus = this.props.editingDataset.contains_human_genetic_sequences;
       }
 
+      var ancestorList = []
+      if(this.props.editingDataset.direct_ancestors){
+        console.debug('%c⊙ direct_ancestors', 'color:#5900FF', this.props.editingDataset.direct_ancestors );
+        // Might have to assemble here for promise reasons?
+        // ancestorList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
+        this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)
+        // this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)
+        //   .then((response) => {
+        //       console.debug('%c⊙ RESP assembleSourceAncestorData', 'color:#00ff7b', response );
+        //       return response
+        //   })
+        //   .catch((error) => {
+        //     console.debug("sourceCompile",error);
+        //     this.props.reportError(error);
+        //   })   
+      
+
+
+        // console.debug('%c⊙ ancestorList', 'color:#8400FF', ancestorList );
+      }
+      // var sourceList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
       this.setState(
         {
           status:this.props.editingDataset.hasOwnProperty('status') ? this.props.editingDataset.status.toUpperCase() : "NEW",
           display_doi:this.props.editingDataset.hubmap_id,
           lab_dataset_id:this.props.editingDataset.lab_dataset_id,
           source_uuid:this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
-          source_uuid_list:this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors),
+          // source_uuid_list:sourceList,
           source_entity:this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
           slist:this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           contains_human_genetic_sequences:savedGeneticsStatus,
@@ -1170,19 +1195,18 @@ class DatasetEdit extends Component {
     });
   }
 
-  assembleSourceAncestorData(source_uuids){
-    for (var i = 0; i < source_uuids.length; i++) {
-      
-      var dst = generateDisplaySubtype_UBKG(source_uuids[i], this.props.dtl_all);
-      // var dst = generateDisplaySubtype(source_uuids[i]);
-      source_uuids[i].display_subtype=dst;
-    }
-  try {
-    return source_uuids
-  } catch {
-   //
-  }
- 
+  assembleSourceAncestorData(source_uuids){   
+    source_uuids.forEach(function(row, index) {
+      return ubkg_api_generate_display_subtype(row)
+        .then((res) => {
+          return [index].display_subtype=res;
+        })
+        .catch((error) => {
+          throw new Error(error)
+        });
+    });
+    // this.setState({source_uuid_list:source_uuids});  
+    return (source_uuids)
 }
 
   // only handles one selection at this time
