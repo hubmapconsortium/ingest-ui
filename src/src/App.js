@@ -2,7 +2,7 @@ import * as React from "react";
 import {useState,useEffect} from "react";
 import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
-  import StandardErrorBoundary from "./utils/errorWrap";
+import StandardErrorBoundary from "./utils/errorWrap";
 import ErrorPage from "./utils/errorPage";
 // Login Management
 import Login from './components/ui/login';
@@ -32,7 +32,7 @@ import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import {ingest_api_users_groups,ingest_api_all_groups} from './service/ingest_api';
-import {ubkg_api_get_assay_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
 
@@ -156,32 +156,22 @@ export function App (props){
 
   useEffect(() => {
     console.debug("useEffect ubkg")
-    ubkg_api_get_assay_type_set("primary")
+    ubkg_api_get_dataset_type_set()
       .then((response) => {
-        let dtypes = response.data.result;
+        console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
+        let dtypes = response;
         setDataTypeList(dtypes);
         setDataTypeListPrimary(dtypes);
-        ubkg_api_get_assay_type_set()
-          .then((response) => {            
-            let dataAll = response.data.result;
-            let displayAll = [];
-            setDataTypeListAll(dataAll);
-            for (const dt of dataAll) {
-              displayAll.push({ name:dt.name, description:dt.description });
-            }
-            setDisplaySubtypes(displayAll);
-            ubkg_api_get_organ_type_set()
-              .then((res) => {
-                setOrganList(res);
-                setDTLoading(false)
-              })
-              .catch((err) => {
-                reportError(err)
-              })
+        setDataTypeListAll(dtypes);
+        setDisplaySubtypes(dtypes);
+        ubkg_api_get_organ_type_set()
+          .then((res) => {
+            setOrganList(res);
+            setDTLoading(false)
           })
-          .catch( (error) => {
-            reportError(error)
-          });
+          .catch((err) => {
+            reportError(err)
+        })
       })
       .catch(error => {
         if (unregStatus) {
@@ -484,9 +474,9 @@ export function App (props){
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeListAll} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} dtl_all={dataTypeListAll} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                   <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                  <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
                   
                   {/* {userDev && (
