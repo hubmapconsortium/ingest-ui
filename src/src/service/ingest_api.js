@@ -502,3 +502,37 @@ export function ingest_api_notify_slack(auth, data) {
         return {error}
       });
 };
+
+/* 
+ *  Bulk Metadata
+ *
+ */
+export function ingest_api_upload_bulk_metadata(type, dataFile, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+          "Content-Type": "application/json"
+      }
+  };
+  var formData = new FormData();
+  formData.append('metadata', dataFile);
+  // formData.append('file', dataFile)
+  formData.append('entity_type', "sample")
+  formData.append('sub_type', type)
+
+  // const data = ["data-testing-notificatons","Beep (O v O)!"]    
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate`;
+  console.debug('%c⊙', 'color:#00ff7b', "url,dataForm,options", url,formData,options );
+  return axios 
+    .post(url,formData,options)
+    .then(res => {
+      console.debug("ingest_api_upload_bulk_metadata",res);
+        let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(error => {
+        console.debug("ingest_api_upload_bulk_metadata",error);
+        return {error}
+      });
+};
