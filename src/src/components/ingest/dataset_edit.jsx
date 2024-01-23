@@ -81,8 +81,8 @@ class DatasetEdit extends Component {
 
     // Admin task assignment
 		allGroups:this.props.allGroups ? this.props.allGroups : {},
-    group_assignmnet:"",
-    task:"", 
+    assigned_to_group_name:"",
+    ingest_task:"", 
 
     // User Privs & Info
     groups:[],
@@ -498,11 +498,11 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       case "newStatus":
         this.setState({ newStatus:value });
         break;
-      case "group_assignment":
-        this.setState({ group_assignment:value });
+      case "assigned_to_group_name":
+        this.setState({ assigned_to_group_name:value });
         break;
-      case "task":
-        this.setState({ task:value });
+      case "ingest_task":
+        this.setState({ ingest_task:value });
         break;
       case "dt_select":
         
@@ -621,10 +621,10 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
           native 
           fullWidth
           labelid="group_label"
-          id="group_assignmnet"
-          name="group_assignmnet"
+          id="assigned_to_group_name"
+          name="assigned_to_group_name"
           label="Assigned to Group Name"
-          value={this.state.group_assignment}
+          value={this.state.assigned_to_group_name}
           onChange={(event) => this.handleInputChange(event)}>
           <option value=""></option>
           {this.props.allGroups.map((group, index) => {
@@ -891,8 +891,8 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
             data_types:dataTypeArray,
             description:this.state.description,
             dataset_info:this.state.dataset_info,
-						group_assignment:this.state.global_assignment,
-						task:this.state.task
+						assigned_to_group_name:this.state.global_assignment,
+						ingest_task:this.state.ingest_task
           };
           console.debug("Data", data);
           
@@ -2213,23 +2213,23 @@ name, display_doi, doi
           </div>
 					
 					{/* Make this check admin when finished */}
-					{this.props.allGroups && this.props.allGroups.length > 0 && (
+					{this.props.allGroups && this.state.has_admin_priv && (
               <div className="row mt-4  ">
                 <div className='form-group col-6'> 
-                  <label htmlFor='group_assignmnet'>Assigned to Group Name </label>
+                  <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
                   {this.renderGroupAssignment()}
                   <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
                 </div>
                 <div className='form-group col-6'> 
-                  <label htmlFor='task'>Ingest Task </label>
+                  <label htmlFor='ingest_task'>Ingest Task </label>
                   <TextField
-                    labelid="task_label"
-                    name="task"
-                    id="task"
+                    labelid="ingest_task_label"
+                    name="ingest_task"
+                    id="ingest_task"
                     helperText="The next task in the data ingest process."
                     // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
                     fullWidth
-                    value={this.state.task}
+                    value={this.state.ingest_task}
                     onChange={(event) => this.handleInputChange(event)}/>
               
                 </div>

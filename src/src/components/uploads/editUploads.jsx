@@ -122,8 +122,8 @@ class EditUploads extends Component{
       group:entity_data.group_uuid,
       datasets:entity_data.datasets,
       status:entity_data.status,
-      group_assignmnet:entity_data.group_assignmnet ? entity_data.group_assignmnet : "",
-      task:entity_data.task ? entity_data.task : "", 
+      assigned_to_group_name:entity_data.assigned_to_group_name ? entity_data.assigned_to_group_name : "",
+      ingest_task:entity_data.ingest_task ? entity_data.ingest_task : "", 
       editForm: true,
       show_modal: true,
       show_search: false,
@@ -295,8 +295,8 @@ class EditUploads extends Component{
           let data = {
             title: this.state.title,
             description: this.state.description,
-            group_assignmnet:this.state.group_assignmnet ? this.state.group_assignmnet : null,
-            task:this.state.task ? this.state.task : null, 
+            assigned_to_group_name:this.state.assigned_to_group_name ? this.state.assigned_to_group_name : null,
+            ingest_task:this.state.ingest_task ? this.state.ingest_task : null, 
           };
           if (this.props.editingUpload) {
             entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -443,8 +443,8 @@ class EditUploads extends Component{
           let data = {
             title: this.state.title,
             description: this.state.description,
-            group_assignmnet:this.state.group_assignmnet ? this.state.group_assignmnet : null,
-            task:this.state.task ? this.state.task : null, 
+            assigned_to_group_name:this.state.assigned_to_group_name ? this.state.assigned_to_group_name : null,
+            ingest_task:this.state.ingest_task ? this.state.ingest_task : null, 
           };
           console.debug('%c⊙ DATA', 'color:#00ff7b', data );
 
@@ -836,10 +836,10 @@ renderReorganizeButton() {
           native 
           fullWidth
           labelid="group_label"
-          id="group_assignmnet"
-          name="group_assignmnet"
+          id="assigned_to_group_name"
+          name="assigned_to_group_name"
           label="Assigned to Group Name"
-          value={this.state.group_assignment}
+          value={this.state.assigned_to_group_name}
           onChange={(event) => this.updateInputValue(event)}>
           <option value=""></option>
           {this.props.allGroups.map((group, index) => {
@@ -1085,23 +1085,23 @@ renderReorganizeButton() {
               
 
               {/* Make this check admin when finished */}
-            {this.props.allGroups && this.props.allGroups.length > 0 && (
+            {this.props.allGroups && this.state.data_admin && (
               <div className="row mt-4  ">
                 <div className='form-group col-6'> 
-                  <label htmlFor='group_assignmnet'>Assigned to Group Name </label>
+                  <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
                   {this.renderGroupAssignment()}
                   <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
                 </div>
                 <div className='form-group col-6'> 
-                  <label htmlFor='task'>Ingest Task </label>
+                  <label htmlFor='ingest_task'>Ingest Task </label>
                   <TextField
-                    labelid="task_label"
-                    name="task"
-                    id="task"
+                    labelid="ingest_task_label"
+                    name="ingest_task"
+                    id="ingest_task"
                     helperText="The next task in the data ingest process."
                     // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
                     fullWidth
-                    value={this.state.task}
+                    value={this.state.ingest_task}
                     onChange={(event) => this.updateInputValue(event)}/>
               
                 </div>
