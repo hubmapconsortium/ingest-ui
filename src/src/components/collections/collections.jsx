@@ -96,8 +96,8 @@ export function CollectionForm (props){
           UUIDs.push(entity.uuid);
         }
         formVals.dataset_uuids = UUIDs
-        setFormValues(formVals);  
       }
+      setFormValues(formVals);  
       setLoadingDatasets(false);
       if (editingCollection.doi_url || editingCollection.registered_doi) {
         // Cant be editied further after DOI information is added
