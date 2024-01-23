@@ -1196,18 +1196,17 @@ class DatasetEdit extends Component {
   }
 
   assembleSourceAncestorData(source_uuids){   
+    var dst="";
     source_uuids.forEach(function(row, index) {
-      return ubkg_api_generate_display_subtype(row)
-        .then((res) => {
-          return [index].display_subtype=res;
-        })
-        .catch((error) => {
-          throw new Error(error)
-        });
+      dst=ubkg_api_generate_display_subtype(row);
+      console.debug("dst", dst);
+      source_uuids[index].display_subtype=dst;
     });
-    // this.setState({source_uuid_list:source_uuids});  
+    
+    this.setState({source_uuid_list:source_uuids});  
     return (source_uuids)
-}
+  }
+
 
   // only handles one selection at this time
   getSourceAncestor(source_uuids){
