@@ -883,10 +883,12 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
             contains_human_genetic_sequences:this.state.contains_human_genetic_sequences,
             dataset_type:this.state.dataset_type,
             description:this.state.description,
-            dataset_info:this.state.dataset_info,
-						assigned_to_group_name:this.state.global_assignment,
-						ingest_task:this.state.ingest_task
+            dataset_info:this.state.dataset_info
           };
+          if(this.state.has_admin_priv){
+						data["assigned_to_group_name"]=this.state.global_assignment
+						data["ingest_task"]=this.state.ingest_task
+          }
           console.debug("Data", data);
           
   
