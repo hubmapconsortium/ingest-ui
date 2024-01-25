@@ -5,7 +5,7 @@
 // Donor: "Donor"
 // Sample: if specimen_type == 'organ' the display name linked to the corresponding description of organ code
 // otherwise the display name linked to the value of the corresponding description of specimen_type code
-// Dataset: the display names linked to the values in data_types as a comma separated list
+// Dataset: the display names linked to the values in dataset_type as a comma separated list
 
 import { ubkg_api_get_organ_type_set,ubkg_api_get_assay_type_set } from "../service/ubkg_api";
 import { SAMPLE_TYPES } from "../constants";
@@ -154,6 +154,7 @@ function get_sample_description_UBKG(tissue_code) {
         
         
 export function generateDisplaySubtype( entity) {
+  console.debug('%c⊙ generateDisplaySubtype', 'color:#00ff7b', entity );
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'
 
@@ -163,25 +164,26 @@ export function generateDisplaySubtype( entity) {
         display_subtype = 'Donor'
     }else if (entity_type === 'Sample'){
 
-        if ('specimen_type' in entity){
-            if (entity['specimen_type'].toLowerCase() === 'organ'){
+        if ('sample_category' in entity){
+          console.debug('%c⊙ sample_category', 'color:#00ff7b', entity['sample_category'] );
+            if (entity['sample_category'].toLowerCase() === 'organ'){
                 if ('organ' in entity){
                     display_subtype = get_organ_description(entity['organ']);
                 }else{
-                    console.error("Missing missing organ when specimen_type is set of Sample with uuid: {entity['uuid']}")
+                    console.error("Missing missing organ when sample_category is set of Sample with uuid: {entity['uuid']}")
                 }
             }else{
-               display_subtype = get_tissue_sample_description(entity['specimen_type'])
+               display_subtype = get_tissue_sample_description(entity['sample_category'])
             }
         }else{
-            console.error("Missing specimen_type of Sample with uuid: {entity['uuid']}")
+            console.error("Missing sample_category of Sample with uuid: {entity['uuid']}")
         }
 
     }else if (entity_type === 'Dataset'){
-        if ('data_types' in entity){
-            display_subtype = entity['data_types'].toString();
+        if ('dataset_type' in entity){
+            display_subtype = entity['dataset_type'].toString();
         }else{
-            console.error("Missing data_types of Dataset with uuid: {entity['uuid']}")
+            console.error("Missing dataset_type of Dataset with uuid: {entity['uuid']}")
         }
     }else{
         // Do nothing
@@ -193,44 +195,46 @@ export function generateDisplaySubtype( entity) {
 
 export function generateDisplaySubtypeSimple_UBKG(datatype, datatypeList) {
   // console.debug('%c⊙', 'color:#00ff7b', "generateDisplaySubtypeSimple_UBKG", datatype, datatypeList);
-  const assayDetail = datatypeList.find(({ name }) => name === datatype);
-  console.debug('%c⊙', 'color:#00ff7b', "assayDetail", assayDetail );
-  if (assayDetail !==undefined && assayDetail && assayDetail.description) {
-    return assayDetail.description
+  const assayDetail = datatypeList.find(({ term }) => term === datatype);
+  if (assayDetail !==undefined && assayDetail && assayDetail.term) {
+    return assayDetail.term
   } else {
     return "N/A"
   }
 }
 
-export function generateDisplaySubtype_UBKG( entity) {
+export function generateDisplaySubtype_UBKG(entity) {
+    // console.debug('%c⊙ generateDisplaySubtype_UBKG', 'color:#00ff7b',  entity);
+
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'
-  
 
     if (entity_type === 'Upload'){
         display_subtype = 'Data Upload'
     }else if (entity_type === 'Donor'){
         display_subtype = 'Donor'
     }else if (entity_type === 'Sample'){
-        if ('specimen_type' in entity){
-            if (entity['specimen_type'].toLowerCase() === 'organ'){
+        if ('sample_category' in entity){
+            if (entity['sample_category'].toLowerCase() === 'organ'){
               if ('organ' in entity) {
                     display_subtype = get_organ_description_UBKG(entity['organ']);
                 }else{
-                    console.error("Missing missing organ when specimen_type is set of Sample with uuid: {entity['uuid']}")
+                    console.error("Missing missing organ when sample_category is set of Sample with uuid: {entity['uuid']}")
                 }
             } else {
-               display_subtype = get_sample_description_UBKG(entity['specimen_type'])
+              // @TODO: Readdress: Do we have a new source for this? 
+              display_subtype = entity['sample_category']
+              // display_subtype = get_sample_description_UBKG(entity['sample_category'])
             }
         }else{
-            console.error("Missing specimen_type of Sample with uuid: {entity['uuid']}")
+            console.error("Missing sample_category of Sample with uuid: {entity['uuid']}")
         }
 
     }else if (entity_type === 'Dataset'){
-        if ('data_types' in entity){
-            display_subtype = entity['data_types'].toString();
+        if ('dataset_type' in entity){
+            display_subtype = entity['dataset_type'].toString();
         }else{
-            console.error("Missing data_types of Dataset with uuid: {entity['uuid']}")
+            console.error("Missing dataset_type of Dataset with uuid: {entity['uuid']}")
         }
     }else{
         // Do nothing
@@ -323,10 +327,10 @@ export function compiledTypes() {
     //         else:
     //             logger.error(f"Missing specimen_type of Sample with uuid: {entity['uuid']}")
     //     else if entity_type == 'Dataset':
-    //         if 'data_types' in entity:
-    //             display_subtype = ','.join(entity['data_types'])
+    //         if 'dataset_type' in entity:
+    //             display_subtype = ','.join(entity['dataset_type'])
     //         else:
-    //             logger.error(f"Missing data_types of Dataset with uuid: {entity['uuid']}")
+    //             logger.error(f"Missing dataset_type of Dataset with uuid: {entity['uuid']}")
     //     else:
     //         # Do nothing
     //         logger.error(f"Invalid entity_type: {entity_type}. Only generate display_subtype for Upload/Donor/Sample/Dataset")

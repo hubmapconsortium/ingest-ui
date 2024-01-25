@@ -51,29 +51,14 @@ export const RenderDataset = (props) => {
     setAuthToken(authSet);
   
     function checkAssayType(dtype){
-      ubkg_api_get_assay_type_set("primary")// the list call only gets primaries for now.
-      .then((response) => {
-        let primaries = response.data.result ;
-        var primarySet = primaries.map((elt, idx) => {return elt.name});
-        var primaryStatus = primarySet.includes(dtype[0])
-        setDataTypeList(primaries);
-        setDtl_primary(primaries);
-        setDtl_status( primarySet.includes(dtype[0]));
-        ubkg_api_get_assay_type_set()// the list call only gets primaries for now.
-          .then((response) => {
-            let allDTs = response.data.result;
-            setDtl_all(allDTs);
-            setIsLoadingDTList(false);
-          })
-          .catch(error => {
-            console.debug("checkAssayType Error", error);
-            props.reportError(error);
-          });
-      })
-      .catch(error => {
-        console.debug("checkAssayType Primary Error", error);
-        props.reportError(error);
-      });
+      // Primary situation will be changing in the near future
+      setDtl_status(false);
+
+      setDtl_all(props.dataTypeList);
+      setDtl_primary(props.dataTypeList);
+      setDataTypeList(props.dataTypeList);
+      setIsLoadingDTList(false);
+      
     }
 
 
@@ -85,7 +70,7 @@ export const RenderDataset = (props) => {
             if (response.status === 200) {
               setEntity(response.results);
               setIsLoadingEntity(false); 
-              var checkAssay = response.results.data_types;
+              var checkAssay = response.results.dataset_type;
               checkAssayType(checkAssay)
             }
             

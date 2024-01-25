@@ -84,9 +84,9 @@ export function CollectionForm (props){
       var UUIDs = [];
       if (editingCollection.datasets && editingCollection.datasets.length > 0) {
         for (const entity of editingCollection.datasets) {
-          //When coming from the Entity, the Datasets use data_types, from the Search UI they pass display_subtype instead
-          if (entity.data_types && entity.data_types.length > 0) {
-            var subtype = generateDisplaySubtypeSimple_UBKG(entity.data_types[0],props.dtl_all);
+          //When coming from the Entity, the Datasets use dataset_type, from the Search UI they pass display_subtype instead
+          if (entity.dataset_type && entity.dataset_type.length > 0) {
+            var subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type[0],props.dtl_all);
             entity.display_subtype = subtype;
           }else {
             
@@ -226,9 +226,9 @@ export function CollectionForm (props){
             } else {
               let row = response.results;
               if (!processed.includes(row.uuid)) { 
-                if (!row.display_subtype && row.data_types && row.data_types[0].length > 0) {
+                if (!row.display_subtype && row.dataset_type) {
                   // entity does not return display subtype, so we'll generate it
-                  row.display_subtype = generateDisplaySubtypeSimple_UBKG(row.data_types[0], props.dtl_all);
+                  row.display_subtype = generateDisplaySubtypeSimple_UBKG(row.dataset_type, props.dtl_all);
                   setSourceDatasetDetails((rows) => [...rows, row]);
                   processed.push(row.uuid.toString());
                 }
@@ -517,7 +517,7 @@ export function CollectionForm (props){
     }
 
     var formatDatatype = (row) => {
-      console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.data_types);
+      console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.dataset_type);
       return ("DT");
     }
     return (
