@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
 import Select from '@mui/material/Select'; 
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 
 import '../../App.css';
@@ -147,6 +148,15 @@ class DatasetEdit extends Component {
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
       // var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.assay_type_primary,this.state.status.toUpperCase(),this.props.newForm]
       // console.table({permChecks});
+      if(this.props.editingDataset && this.props.editingDataset.assigned_to_group_name){
+        console.debug('%c⊙ assigned_to_group_name', 'color:#00ff7b', this.props.editingDataset.assigned_to_group_name );
+        this.setState({assigned_to_group_name:this.props.editingDataset.assigned_to_group_name})
+      }
+      if(this.props.editingDataset && this.props.editingDataset.ingest_task){
+        console.debug('%c⊙ ingest_task', 'color:#00ff7b', this.props.editingDataset.ingest_task );
+        this.setState({ingest_task:this.props.editingDataset.ingest_task})
+      }
+      
 
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
@@ -610,7 +620,6 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
   renderGroupAssignment = () => {
       return (
         <Select
-          native 
           fullWidth
           labelid="group_label"
           id="assigned_to_group_name"
@@ -618,12 +627,13 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
           label="Assigned to Group Name"
           value={this.state.assigned_to_group_name}
           onChange={(event) => this.handleInputChange(event)}>
-          <option value=""></option>
+
+          <MenuItem value=""></MenuItem>
           {this.props.allGroups.map((group, index) => {
             return (
-              <option key={index + 1} value={Object.values(group)[0]}>
+              <MenuItem key={index + 1} value={Object.values(group)[0]}>
                 {Object.values(group)[0]}
-              </option>
+              </MenuItem>
             );
           })}
         </Select>
@@ -886,7 +896,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
             dataset_info:this.state.dataset_info
           };
           if(this.state.has_admin_priv){
-						data["assigned_to_group_name"]=this.state.global_assignment
+						data["assigned_to_group_name"]=this.state.assigned_to_group_name
 						data["ingest_task"]=this.state.ingest_task
           }
           console.debug("Data", data);

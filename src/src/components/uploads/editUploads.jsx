@@ -297,7 +297,7 @@ class EditUploads extends Component{
             description: this.state.description,
           };
           if(this.state.data_admin){
-						data["assigned_to_group_name"]=this.state.global_assignment;
+						data["assigned_to_group_name"]=this.state.assigned_to_group_name;
 						data["ingest_task"]=this.state.ingest_task;
           }
           if (this.props.editingUpload) {
@@ -447,7 +447,7 @@ class EditUploads extends Component{
             description: this.state.description,
           };
           if(this.state.data_admin){
-						data["assigned_to_group_name"]=this.state.global_assignment;
+						data["assigned_to_group_name"]=this.state.assigned_to_group_name;
 						data["ingest_task"]=this.state.ingest_task;
           }
           console.debug('%c⊙ DATA', 'color:#00ff7b', data );
