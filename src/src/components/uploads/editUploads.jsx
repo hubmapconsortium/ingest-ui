@@ -295,9 +295,11 @@ class EditUploads extends Component{
           let data = {
             title: this.state.title,
             description: this.state.description,
-            assigned_to_group_name:this.state.assigned_to_group_name ? this.state.assigned_to_group_name : null,
-            ingest_task:this.state.ingest_task ? this.state.ingest_task : null, 
           };
+          if(this.state.data_admin){
+						data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+						data["ingest_task"]=this.state.ingest_task;
+          }
           if (this.props.editingUpload) {
             entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
@@ -443,9 +445,11 @@ class EditUploads extends Component{
           let data = {
             title: this.state.title,
             description: this.state.description,
-            assigned_to_group_name:this.state.assigned_to_group_name ? this.state.assigned_to_group_name : null,
-            ingest_task:this.state.ingest_task ? this.state.ingest_task : null, 
           };
+          if(this.state.data_admin){
+						data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+						data["ingest_task"]=this.state.ingest_task;
+          }
           console.debug('%c⊙ DATA', 'color:#00ff7b', data );
 
           if (this.props.editingUpload) {
@@ -534,14 +538,10 @@ class EditUploads extends Component{
   
 
 
-  highlightInvalidDatasets(){
-      
+  highlightInvalidDatasets(){      
       var matches = document.querySelectorAll("div[data-value='invalid']");
-      
       matches.forEach(function(item) {
-          item.parentElement.classList.add("invalidDatset");
-          
-          
+        item.parentElement.classList.add("invalidDatset");
       });
       
   } 
