@@ -247,15 +247,11 @@ class DatasetEdit extends Component {
 
     // Sets up the Entity's info  if we're not new here
     if (this.props.editingDataset && !this.props.newForm) {      
-      // try {
-      //   this.setState({source_uuid_list: this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)});  
-
-        
-      // } catch(error) {
-      //   console.debug('%c⭗ ancestorList', 'color:#ff005d', error );
-      // }
-
-
+      try {
+        this.setState({source_uuid_list: this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)});  
+      } catch(error) {
+        console.debug('%c⭗ ancestorList', 'color:#ff005d', error );
+      }
 
       if(this.props.editingDataset ==='' || !this.props.editingDataset ){
         console.debug("EDITINGDATASET UNDEFINED");
