@@ -94,7 +94,7 @@ class EditUploads extends Component{
             
             this.setState({
               globus_path: res.results,
-            });
+            }); 
           })
           .catch((err) => {
             this.setState({
@@ -297,8 +297,12 @@ class EditUploads extends Component{
             description: this.state.description,
           };
           if(this.state.data_admin){
-						data["assigned_to_group_name"]=this.state.assigned_to_group_name;
-						data["ingest_task"]=this.state.ingest_task;
+            if (this.state.assigned_to_group_name){
+              data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+            }
+            if (this.state.ingest_task){
+              data["ingest_task"]=this.state.ingest_task;
+            }
           }
           if (this.props.editingUpload) {
             entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1085,7 +1089,7 @@ renderReorganizeButton() {
               
 
               {/* Make this check admin when finished */}
-            {this.props.allGroups && this.state.data_admin && (
+            {this.props.allGroups && this.state.data_admin && this.state.writeable && (
               <div className="row mt-4  ">
                 <div className='form-group col-6'> 
                   <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>

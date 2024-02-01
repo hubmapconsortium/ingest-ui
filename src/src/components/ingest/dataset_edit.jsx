@@ -895,9 +895,13 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
             description:this.state.description,
             dataset_info:this.state.dataset_info
           };
-          if(this.state.has_admin_priv){
-						data["assigned_to_group_name"]=this.state.assigned_to_group_name
-						data["ingest_task"]=this.state.ingest_task
+          if(this.state.data_admin){
+            if (this.state.assigned_to_group_name){
+              data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+            }
+            if (this.state.ingest_task){
+              data["ingest_task"]=this.state.ingest_task;
+            }
           }
           console.debug("Data", data);
           
