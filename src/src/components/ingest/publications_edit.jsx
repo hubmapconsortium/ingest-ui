@@ -74,7 +74,7 @@ class PublicationEdit extends Component {
   state = {
     // The Entity Itself
     newForm: this.props.newForm,
-    data_types:["publication"],
+    dataset_type:"publication",
     dtl_primary: [],
     dtl_all: [],
     selected_dt: "",
@@ -181,17 +181,18 @@ class PublicationEdit extends Component {
   };
 
   updateStateDataTypeInfo() {
-    let data_types = null;
+    let dataset_type = null;
     let other_dt = undefined;
     if (
       this.props.hasOwnProperty("editingPublication") &&
       this.props.editingPublication &&
-      this.props.editingPublication.data_types
+      this.props.editingPublication.dataset_type
     ) {
     }
 
     this.setState({
-      data_types: new Set(this.props.editingPublication.data_types),
+      // dataset_type: new Set(this.props.editingPublication.dataset_type),
+      dataset_type:this.props.editingPublication.dataset_type,
       has_other_datatype: other_dt !== undefined,
       other_dt: other_dt,
     });
@@ -387,32 +388,32 @@ class PublicationEdit extends Component {
       // if it's no longer a base primary type.
       var dtlStatus = this.props.dtl_status;
 
-      if (dtlStatus) {
-        // We are primary type, only priamries in Dropdown
-        this.setState({
-          disableSelectDatatype: false,
-          dataTypeDropdown: this.props.dtl_primary,
-        });
-      } else {
-        // Not primary type, uneditable dropdown should contain all
-        this.setState({
-          disableSelectDatatype: true,
-          dataTypeDropdown: this.props.dtl_all,
-        });
-      }
-      var selected = "";
-      if (
-        this.props.editingPublication &&
-        this.props.editingPublication.data_types &&
-        this.props.editingPublication.data_types.length === 1
-      ) {
-        // Set DT Select by state so it behaves as "controlled"
-        selected = this.props.editingPublication.data_types[0];
-        //
-      }
-      this.setState({
-        selected_dt: selected,
-      });
+      // if (dtlStatus) {
+      //   // We are primary type, only priamries in Dropdown
+      //   this.setState({
+      //     disableSelectDatatype: false,
+      //     dataTypeDropdown: this.props.dtl_primary,
+      //   });
+      // } else {
+      //   // Not primary type, uneditable dropdown should contain all
+      //   this.setState({
+      //     disableSelectDatatype: true,
+      //     dataTypeDropdown: this.props.dtl_all,
+      //   });
+      // }
+      // var selected = "";
+      // if (
+      //   this.props.editingPublication &&
+      //   this.props.editingPublication.dataset_type &&
+      //   this.props.editingPublication.dataset_type.length === 1
+      // ) {
+      //   // Set DT Select by state so it behaves as "controlled"
+      //   selected = this.props.editingPublication.dataset_type[0];
+      //   //
+      // }
+      // this.setState({
+      //   selected_dt: selected,
+      // });
 
       // Sets the Hubmap ID labels for Previous and Next version Buttons
       
@@ -968,7 +969,6 @@ class PublicationEdit extends Component {
         
           // package the data up
           var data = {
-            data_types: ["publication"],
             description: this.state.editingPublication.description,
             title:this.state.editingPublication.title,
             publication_venue:this.state.editingPublication.publication_venue,
@@ -1854,38 +1854,38 @@ class PublicationEdit extends Component {
     });
   }
 
-  renderOneAssay(val, idx) {
-    var idstr = "dt_" + val.name.toLowerCase().replace(" ", "_");
+  // renderOneAssay(val, idx) {
+  //   var idstr = "dt_" + val.name.toLowerCase().replace(" ", "_");
 
-    return (
-      <div className="form-group form-check" key={idstr}>
-        <input
-          type="radio"
-          className="form-check-input"
-          name={val.name}
-          key={idstr}
-          id={idstr}
-          onChange={this.handleInputChange}
-          checked={this.state.data_types.has(val.name)}
-        />
-        <label className="form-check-label" htmlFor={idstr}>
-          {val.description}
-        </label>
-      </div>
-    );
-  }
+  //   return (
+  //     <div className="form-group form-check" key={idstr}>
+  //       <input
+  //         type="radio"
+  //         className="form-check-input"
+  //         name={val.name}
+  //         key={idstr}
+  //         id={idstr}
+  //         onChange={this.handleInputChange}
+  //         checked={this.state.dataset_type.has(val.name)}
+  //       />
+  //       <label className="form-check-label" htmlFor={idstr}>
+  //         {val.description}
+  //       </label>
+  //     </div>
+  //   );
+  // }
 
-  isAssayCheckSet(assay) {
-    try {
-      if (this.props.editingPublication.data_types) {
-        return this.props.editingPublication.data_types.includes(assay);
-      } else {
-        return false;
-      }
-    } catch {
-      return "Error";
-    }
-  }
+  // isAssayCheckSet(assay) {
+  //   try {
+  //     if (this.props.editingPublication.dataset_type) {
+  //       return this.props.editingPublication.dataset_type.includes(assay);
+  //     } else {
+  //       return false;
+  //     }
+  //   } catch {
+  //     return "Error";
+  //   }
+  // }
 
   renderAssayColumn(min, max) {
     // Hijacking Select options based on Primary DT status
@@ -1923,55 +1923,55 @@ class PublicationEdit extends Component {
   }
 
   renderMultipleAssays() {
-    var arr = Array.from(this.state.data_types);
+    var arr = Array.from(this.state.dataset_type);
     return arr.map((val) => {
       return this.renderListAssay(val);
     });
   }
 
-  renderAssayArray() {
-    var len = 0;
-    var dtlistLen = this.state.dataTypeDropdown.length;
-    if (this.props.newForm) {
-      dtlistLen = this.props.dtl_primary.length;
-    }
-    if (
-      this.props.editingPublication &&
-      this.props.editingPublication.data_types
-    ) {
-      len = this.props.editingPublication.data_types.length;
-    } else {
-      //console.debug("no editingPublication");
-    }
+  // renderAssayArray() {
+  //   var len = 0;
+  //   var dtlistLen = this.state.dataTypeDropdown.length;
+  //   if (this.props.newForm) {
+  //     dtlistLen = this.props.dtl_primary.length;
+  //   }
+  //   if (
+  //     this.props.editingPublication &&
+  //     this.props.editingPublication.dataset_type
+  //   ) {
+  //     len = this.props.editingPublication.dataset_type.length;
+  //   } else {
+  //     //console.debug("no editingPublication");
+  //   }
 
-    if (len > 1) {
-      return (
-        <>
-          <ul>{this.renderMultipleAssays()}</ul>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <Select
-            native
-            name="dt_select"
-            className="form-select"
-            disabled={
-              !this.state.writeable ||
-              !this.state.assay_type_primary ||
-              this.state.disableSelectDatatype
-            }
-            value={this.state.selected_dt}
-            id="dt_select"
-            onChange={this.handleInputChange}>
-            <option></option>
-            {this.renderAssayColumn(0, dtlistLen)}
-          </Select>
-        </>
-      );
-    }
-  }
+  //   if (len > 1) {
+  //     return (
+  //       <>
+  //         <ul>{this.renderMultipleAssays()}</ul>
+  //       </>
+  //     );
+  //   } else {
+  //     return (
+  //       <>
+  //         <Select
+  //           native
+  //           name="dt_select"
+  //           className="form-select"
+  //           disabled={
+  //             !this.state.writeable ||
+  //             !this.state.assay_type_primary ||
+  //             this.state.disableSelectDatatype
+  //           }
+  //           value={this.state.selected_dt}
+  //           id="dt_select"
+  //           onChange={this.handleInputChange}>
+  //           <option></option>
+  //           {this.renderAssayColumn(0, dtlistLen)}
+  //         </Select>
+  //       </>
+  //     );
+  //   }
+  // }
 
   assay_contains_pii(assay) {
     let assay_val = [...assay.values()][0]; // only one assay can now be selected, the Set() is older code

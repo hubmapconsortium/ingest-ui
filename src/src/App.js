@@ -32,7 +32,7 @@ import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import {ingest_api_users_groups} from './service/ingest_api';
-import {ubkg_api_get_assay_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {BuildError} from "./utils/error_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
@@ -154,32 +154,22 @@ export function App (props){
 
   useEffect(() => {
     console.debug("useEffect ubkg")
-    ubkg_api_get_assay_type_set("primary")
+    ubkg_api_get_dataset_type_set()
       .then((response) => {
-        let dtypes = response.data.result;
+        console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
+        let dtypes = response;
         setDataTypeList(dtypes);
         setDataTypeListPrimary(dtypes);
-        ubkg_api_get_assay_type_set()
-          .then((response) => {            
-            let dataAll = response.data.result;
-            let displayAll = [];
-            setDataTypeListAll(dataAll);
-            for (const dt of dataAll) {
-              displayAll.push({ name:dt.name, description:dt.description });
-            }
-            setDisplaySubtypes(displayAll);
-            ubkg_api_get_organ_type_set()
-              .then((res) => {
-                setOrganList(res);
-                setDTLoading(false)
-              })
-              .catch((err) => {
-                reportError(err)
-              })
+        setDataTypeListAll(dtypes);
+        setDisplaySubtypes(dtypes);
+        ubkg_api_get_organ_type_set()
+          .then((res) => {
+            setOrganList(res);
+            setDTLoading(false)
           })
-          .catch( (error) => {
-            reportError(error)
-          });
+          .catch((err) => {
+            reportError(err)
+        })
       })
       .catch(error => {
         if (unregStatus) {
@@ -365,8 +355,7 @@ export function App (props){
       </Drawer>
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
-            <h2>DECEMBER DATA DRIVE - PLEASE SUBMIT DATA NOW!</h2>
-            <Typography>We're ready to receive your data, and would especially love to get data <strong>in December</strong> from any teams who have not yet submitted. <strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas,</strong> which are linked from <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank">this page</Link>. The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <Link to="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit#heading=h.d6xf2xeysl78" target="_blank">process outlined here</Link>.  </Typography>
+            <Typography> <strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas,</strong> which are linked from <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank">this page</Link>. The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <Link to="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit#heading=h.d6xf2xeysl78" target="_blank">process outlined here</Link>.  </Typography>
             <Typography><strong>Please also <Link to="https://docs.google.com/spreadsheets/d/19ZJx_EVyBGKNeW0xxQlOsMdt1DVNZYWmuG014rXsQP4/edit#gid=0" target="_blank">update this data pulse check spreadsheet</Link></strong> so we know what data is coming from your team. We're looking forward to your submissions! Please contact <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions.</Typography>
           </div>
       )}
@@ -479,9 +468,9 @@ export function App (props){
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeListAll} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} dtl_all={dataTypeListAll} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                   <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                  <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
                   
                   {/* {userDev && (
