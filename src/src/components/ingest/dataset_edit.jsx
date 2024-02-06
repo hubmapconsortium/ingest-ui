@@ -892,10 +892,10 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
             dataset_info:this.state.dataset_info
           };
           if(this.state.data_admin){
-            if (this.state.assigned_to_group_name){
+            if (this.state.assigned_to_group_name && this.state.assigned_to_group_name.length > 0){
               data["assigned_to_group_name"]=this.state.assigned_to_group_name;
             }
-            if (this.state.ingest_task){
+            if (this.state.ingest_task && this.state.ingest_task.length > 0){
               data["ingest_task"]=this.state.ingest_task;
             }
           }
