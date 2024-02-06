@@ -887,7 +887,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
           // var dataTypeArray = Array.from(this.state.dataset_type);
           
           // package the data up
-          console.debug(this.state);
+          // console.debug(this.state);
           let data = {
             lab_dataset_id:this.state.lab_dataset_id,
             contains_human_genetic_sequences:this.state.contains_human_genetic_sequences,
@@ -895,7 +895,8 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
             description:this.state.description,
             dataset_info:this.state.dataset_info
           };
-          if(this.state.data_admin){
+          if(this.state.has_admin_priv){
+            console.debug('%c⊙', 'color:#8b1fff', this.state.assigned_to_group_name, this.state.ingest_task );
             if (this.state.assigned_to_group_name && this.state.assigned_to_group_name.length > 0){
               data["assigned_to_group_name"]=this.state.assigned_to_group_name;
             }
@@ -903,7 +904,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
               data["ingest_task"]=this.state.ingest_task;
             }
           }
-          console.debug("Data", data);
+          console.debug('%c⭗ Data', 'color:#00ff7b',data  );
           
   
           // get the Source ancestor
