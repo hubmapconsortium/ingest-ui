@@ -508,19 +508,24 @@ export function ingest_api_notify_slack(auth, data) {
  *
  */
 export function ingest_api_upload_bulk_metadata(type, dataFile, auth) { 
+  console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type, auth);
   const options = {
       headers: {
+        "Content-Type": "text/tab-separated-values",
         Authorization:
           "Bearer " + auth,
           "Content-Type": "application/json"
       }
   };
   var formData = new FormData();
-  formData.append('metadata', dataFile);
-  // formData.append('file', dataFile)
-  formData.append('entity_type', "sample")
-  formData.append('sub_type', type)
-
+  // formData.append('metadata', dataFile);
+  formData.append('metadata', 
+  new Blob([dataFile],
+    {type: 'text/tab-separated-values' }),dataFile.name);
+  formData.append('entity_type', "Sample")
+  formData.append('sub_type', "Block")
+  formData.append('validate_uuids', 1)
+  formData.append('ui_type', 'gui')
   // const data = ["data-testing-notificatons","Beep (O v O)!"]    
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate`;
   console.debug('%c⊙', 'color:#00ff7b', "url,dataForm,options", url,formData,options );
@@ -532,7 +537,8 @@ export function ingest_api_upload_bulk_metadata(type, dataFile, auth) {
         return {status: res.status, results: results}
       })
       .catch(error => {
-        console.debug("ingest_api_upload_bulk_metadata",error);
+        console.debug('%c⭗  ingest_api_upload_bulk_metadata', 'color:#ff005d',error );
+        // throw new Error(error);
         return {error}
       });
 };

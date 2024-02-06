@@ -9,6 +9,12 @@ import StepContent from '@mui/material/StepContent';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
+import { DataGrid } from '@mui/x-data-grid';
+import DataTable from 'react-data-table-component';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
+import CloseIcon from '@mui/icons-material/Close';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSpinner,faExclamationTriangle,faFileDownload} from "@fortawesome/free-solid-svg-icons";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -16,13 +22,19 @@ import * as prettyBytes from 'pretty-bytes';
 import DescriptionIcon from '@material-ui/icons/Description';
 import {GridLoader} from 'react-spinners';
 import {ingest_api_upload_bulk_metadata} from '../service/ingest_api';
-import {parseErrorMessage,toTitleCase} from "../utils/string_helper";
+import {parseErrorMessage,toTitleCase,prettyObject,string_helper,urlify} from "../utils/string_helper";
+import {getErrorList} from "../utils/error_helper";
+import {InvalidTable} from './ui/table';
+
 
 export const RenderMetadata = (props) => {
   var [isLoading, setLoading] = useState(true);
   const [activeStep, setActiveStep] = React.useState(0);
   const [uploadedFile, setUploadedFile] = React.useState();
+  const [warningOpen, setWarningOpen] = React.useState();
   const [failed, setFailed] = React.useState(new Set());
+  const [issues, setIssues] = React.useState();
+  var [table, setTable] = React.useState({data:[],columns:{}});
   const steps = ['Select','Upload', 'Validate', 'Results'];
   const type = props.type;
   const isStepFailed = (step) => {
@@ -75,18 +87,38 @@ export const RenderMetadata = (props) => {
           setTimeout(() => {
             setActiveStep(3);
           }, 6000);
-          
+        }else{ 
+          console.debug('%c⭗ ERROR: ', 'color:#ff005d', resp.error.response.data);
+          var innerDetails = Object.values(resp.error.response.data.description)[0];
+          var deepInnerDetails = Object.values(innerDetails)[0];
+          var packagedValError = {
+            code:resp.error.response.data.code,
+            description: deepInnerDetails,
+            name:resp.error.response.data.name
+          }
+          var errorTable = getErrorList(packagedValError)
+          console.debug('%c⭗ DESC', 'color:#ff005d', resp.error.response.data.description );
+          console.debug('%c⊙DESC 0 ', 'color:#00ff7b', deepInnerDetails);
+          console.debug('%c⊙ERROR TABLE ', 'color:#00ff7b', errorTable);
+
+          setFailed(1);
+          setActiveStep(4);
+          setTable(errorTable)
+          // handleUploadError(valErrors)
         }
       })
       .catch((error) => {
-        console.error(error);
-        setActiveStep(-1);
-        handleUploadError();
+        console.debug('%c⭗', 'color:#ff005d', 'Error', error,error.description);
+        // setActiveStep(-1);
+        handleUploadError(error);
       });
   };
 
-  const handleUploadError = () => {
-    setFailed(1);
+  const handleUploadError = (error) => {
+    // const result = getErrorList(error)
+    // console.debug('%c⭗ TABLE RESULTS', 'color:#ff005d', table );
+    // Ok, we need to break down the row by row error info
+    
   };
 
   const handleReset = () => {
@@ -104,6 +136,19 @@ export const RenderMetadata = (props) => {
   const handleBack = () => {
     setActiveStep(activeStep - 1);
   };
+  
+
+const handleErrorRow = (row) => {
+  let err = row.error
+  if (typeof row.error === 'object') {
+      err = err.msg
+      if (row.error.data) {
+          const jsonStr = JSON.stringify(row.error.data);
+          err += ' http://local/api/json?view='+(jsonStr)
+      }
+  }
+  return err
+}
 
   const introText = () =>{
     return(
@@ -125,6 +170,57 @@ export const RenderMetadata = (props) => {
           <Button size='small' onClick={() => handleReset()} >Upload Another File</Button>
         </Typography>
       )}
+      {activeStep ===4 && (
+        <>
+        <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+          There were some prolems with your upload. <br />
+          Please review the error table below and try again. <br />
+          <Button size='small' onClick={() => handleReset()} >Upload Another File</Button>
+        </Typography>
+
+        
+        {/* <InvalidTable type={props.type} data={issues} /> */}
+        TABLE 
+        <DataTable
+          columns={
+            [
+              {
+                "name": "row",
+                "sortable": true,
+                "width": "100px",
+                selector: row => row.row,
+              },
+              {
+                "name": "error",
+                "sortable": true,
+                selector: row => row.error,
+                format: (row) => {
+                  var d = '"'
+                  const formatError = (val) => val.replaceAll(' '+d, ' <code>').replaceAll(' "', ' <code>').replaceAll(d, '</code>').replaceAll('"', '</code>')
+                  // const formatError = (val);
+                  let err = handleErrorRow(row)
+                  err = formatError(err)
+                  // return err
+                  return <span dangerouslySetInnerHTML={{__html: urlify(err)}} />
+                }
+              }
+            ]
+          }
+          data={table.data}
+          pagination />
+          ENDTABLE
+
+        <Alert variant='filled' severity='error'>
+        <Button size='small' variant='link' onClick={() => {setWarningOpen(!warningOpen)}} >View Full Error Response &gt;&gt; </Button>
+          <Collapse in={warningOpen}>
+              {prettyObject(issues)}
+          </Collapse>
+            
+        </Alert>
+        </>
+      )}
+
+
       </>
   )}
 
@@ -138,7 +234,7 @@ export const RenderMetadata = (props) => {
                 variant='contained'
                 component="label"
                 startIcon={<CloudUploadIcon />}
-                onClick={(event) => handleFileGrab(event)}>
+                >
                 Browse
                 <VisuallyHiddenInput 
                   type="file"
@@ -186,6 +282,14 @@ export const RenderMetadata = (props) => {
       </div>
     );
   };
+  var stepInvalid = () => {
+    return (
+      <div>
+       REUPLOAD BTN
+        
+      </div>
+    );
+  };
   var stepBad = () => {
     return (
       <div>
@@ -211,6 +315,9 @@ export const RenderMetadata = (props) => {
       case 3:
         console.debug('%c⊙', 'color:#00ff7b', 'Step 3');
         return stepFour();
+      case 4:
+        console.debug('%c⊙', 'color:#00ff7b', 'Step 4 INVALID');
+        return stepInvalid();
       default:
         console.debug('%c⊙', 'color:#00ff7b', 'Step Unknown');
         return 'Unknown step';
@@ -220,7 +327,6 @@ export const RenderMetadata = (props) => {
 var targetBranch ="master";
 var targetFile = (props.type).slice(0, -1).toLowerCase()
 const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/"+targetBranch+"/src/src/assets/Documents/example-"+targetFile+"-registrations.tsv"
-const docs ="https://software.docs.hubmapconsortium.org/bulk-registration/"+props.type.toLowerCase().slice(0, -1)+"-bulk-reg.html"
   return (
     <>
         <div className="row">
