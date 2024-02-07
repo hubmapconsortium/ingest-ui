@@ -8,12 +8,14 @@ import StepLabel from '@mui/material/StepLabel';
 import StepContent from '@mui/material/StepContent';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import RestorePageIcon from '@mui/icons-material/RestorePage';
 import {GridLoader} from "react-spinners";
 import { styled } from '@mui/material/styles';
+import FileOpenIcon from '@mui/icons-material/FileOpen';
 import { DataGrid } from '@mui/x-data-grid';
 import DataTable from 'react-data-table-component';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
-
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
@@ -31,16 +33,16 @@ import {InvalidTable} from './ui/table';
 
 export const RenderMetadata = (props) => {
   var [isLoading, setLoading] = useState(true);
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [uploadedFile, setUploadedFile] = React.useState();
-  const [warningOpen, setWarningOpen] = React.useState();
-  const [failed, setFailed] = React.useState(new Set());
-  const [failedStep, setFailedStep] = React.useState(null);
-  const [issues, setIssues] = React.useState();
+  var [activeStep, setActiveStep] = React.useState(0);
+  var [uploadedFile, setUploadedFile] = React.useState();
+  var [warningOpen, setWarningOpen] = React.useState();
+  var [failed, setFailed] = React.useState(new Set());
+  var [failedStep, setFailedStep] = React.useState(null);
+  var [issues, setIssues] = React.useState();
   var [table, setTable] = React.useState({data:[],columns:{}});
   const steps = ['Select','Upload', 'Validate', 'Results'];
   const type = props.type;
-  const isStepFailed = (step) => {
+  var isStepFailed = (step) => {
     return step === failedStep;
     // return false;
   };
@@ -101,8 +103,6 @@ export const RenderMetadata = (props) => {
           }
           var errorTable = getErrorList(packagedValError)
           setIssues(resp.error.response.data);
-
-
           setFailed(1);
           setFailedStep(2);
           setActiveStep(4);
@@ -112,15 +112,14 @@ export const RenderMetadata = (props) => {
       })
       .catch((error) => {
         console.debug('%c⭗', 'color:#ff005d', 'Error', error,error.description);
-        // setActiveStep(-1);
-        // handleUploadError(error);
       });
   };
 
 
   const handleReset = () => {
-    // setActiveStep(0);
-    window.location.reload();
+    setActiveStep(0);
+    setFailedStep(null)
+    setFailed(0)
   };
 
 
@@ -144,8 +143,8 @@ const handleErrorRow = (row) => {
       </Typography> 
       
       {activeStep ===0 && (
-        <Grid container spacing={2}>
-          <Grid xs="auto">
+        <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+          <Grid container xs={2}>
             <Button
               sx={{
                 padding:"1.5em",
@@ -155,7 +154,7 @@ const handleErrorRow = (row) => {
               size='large'
               variant='contained'
               component="label"
-              startIcon={<CloudUploadIcon />}
+              startIcon={<FileOpenIcon />}
               >
               Browse
               <VisuallyHiddenInput 
@@ -175,8 +174,8 @@ const handleErrorRow = (row) => {
       )}
       
       {activeStep ===1 && (
-        <Grid container spacing={2}>
-          <Grid xs="auto">
+        <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}} > 
+          <Grid container xs={2}>
             <Button 
               sx={{
                 padding:"1.5em",
@@ -190,26 +189,21 @@ const handleErrorRow = (row) => {
               Upload
             </Button>
           </Grid>
-          <Grid xs={10}>
-            <Typography className="d-inline-block text-left " style={{ display:"inline-block", margin:"10px"  }} variant='caption'>{uploadedFile.name} <br /> <small><em>({prettyBytes(uploadedFile.size)})</em></small></Typography> 
+          <Grid xs={10} container alignItems="flex-start">
+            <InsertDriveFileIcon style={{ fontSize:"5em" }} />
+            <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >{uploadedFile.name} <br /><em>({prettyBytes(uploadedFile.size)})</em></Typography> 
           </Grid>
         </Grid>
       )}
 
 
       {activeStep ===2 && (
-        <Grid container spacing={2}>
-          <Grid xs="auto">
-              <GridLoader
-                color="#444a65"
-                size={20}
-                loading={true}
-                cssOverride={{
-                  margin: '0, auto'
-                }}
-              />
+        <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+          <Grid container alignItems="flex-start" xs={2}>
+            <GridLoader color="#444a65" size={23} loading={true} />
+            <GridLoader color="#444a65" size={23} loading={true} />
           </Grid>
-          <Grid xs={10}>
+            <Grid xs={10}>
               <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
                 Validating... <br />
                 This step could take a few moments. <br />
@@ -232,12 +226,30 @@ const handleErrorRow = (row) => {
       {/* Val Fail */}
       {activeStep ===4 && (
         <>
-        <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
-          There were some prolems with your upload. <br />
-          Please review the error table below and try again. <br />
-          <Button size='small' onClick={() => handleReset()} >Upload Another File</Button>
-        </Typography>
-
+        <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+          <Grid container alignItems="flex-start" xs={2}>
+          <Button 
+              sx={{
+                padding:"1.5em",
+                fontSize: '1.1em',
+              }}
+              color="error"
+              fullWidth
+              size='large'
+              variant="contained" 
+              startIcon={<RestorePageIcon />} 
+              onClick={() => handleReset()}>
+              Try again
+            </Button>
+              
+          </Grid>
+          <Grid xs={10}>
+              <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+                There were some prolems with your upload. <br />
+                Please review the error table below and try again. <br />
+              </Typography>
+          </Grid>
+        </Grid>    
         
         {/* <InvalidTable type={props.type} data={issues} /> */}
         
@@ -286,8 +298,6 @@ const handleErrorRow = (row) => {
         </Alert>
         </>
       )}
-
-
       </>
   )}
 
@@ -309,7 +319,7 @@ const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui
                   labelProps.error = true;
                 }
                 return (
-                  <Step key={label}>
+                  <Step key={label} onClick={()=>setActiveStep(index)} sx={{cursor: "pointer"}}>
                     <StepLabel {...labelProps}>{label}</StepLabel>
                     {/* <StepContent>{getStepContent(activeStep)}</StepContent> */}
                   </Step>
