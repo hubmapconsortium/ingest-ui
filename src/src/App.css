@@ -876,3 +876,15 @@ svg.invalid {
   background-color: #ff0000!important;
   color: white!important;
 }
+.metadataHasError{
+  border: 1px solid #d32f2f;  
+}
+.metadataHasError div.rdt_TableRow{
+  border-top: 1px solid #d32f2f;  
+}
+.metadataHasError div.rdt_TableHead div{
+  background-color: #d32f2f!important;
+  color: white!important;
+  font-size:1.1em;
+}
+

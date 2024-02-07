@@ -514,7 +514,6 @@ export function ingest_api_upload_bulk_metadata(type, dataFile, auth) {
         "Content-Type": "text/tab-separated-values",
         Authorization:
           "Bearer " + auth,
-          "Content-Type": "application/json"
       }
   };
   var formData = new FormData();
