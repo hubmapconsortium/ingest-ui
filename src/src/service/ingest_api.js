@@ -90,17 +90,16 @@ export function ingest_api_all_user_groups(auth) {
 export function ingest_api_all_groups(auth) { 
    const options = {headers:{Authorization: "Bearer " + auth,
         "Content-Type":"application/json"}};
-
   return axios 
- .get(
-   `${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
- .then(res => {
-  const group_list = res.data.groups;
-    return {status:res.status, results:group_list}
- })
- .catch(error => {
-        return {error}
- });
+  .get(
+    `${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
+  .then(res => {
+    const group_list = res.data.groups;
+      return {status:res.status, results:group_list}
+  })
+  .catch(error => {
+          return {error}
+  });
 }
 
 /*

@@ -4,8 +4,11 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControl from '@mui/material/FormControl';
 import { Link } from 'react-router-dom';
-
+import Select from '@mui/material/Select'; 
 import { validateRequired } from "../../utils/validators";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -91,7 +94,7 @@ class EditUploads extends Component{
             
             this.setState({
               globus_path: res.results,
-            });
+            }); 
           })
           .catch((err) => {
             this.setState({
@@ -119,6 +122,8 @@ class EditUploads extends Component{
       group:entity_data.group_uuid,
       datasets:entity_data.datasets,
       status:entity_data.status,
+      assigned_to_group_name:entity_data.assigned_to_group_name ? entity_data.assigned_to_group_name : "",
+      ingest_task:entity_data.ingest_task ? entity_data.ingest_task : "", 
       editForm: true,
       show_modal: true,
       show_search: false,
@@ -289,8 +294,16 @@ class EditUploads extends Component{
           // package the data up
           let data = {
             title: this.state.title,
-            description: this.state.description
+            description: this.state.description,
           };
+          if(this.state.data_admin){
+            if (this.state.assigned_to_group_name){
+              data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+            }
+            if (this.state.ingest_task){
+              data["ingest_task"]=this.state.ingest_task;
+            }
+          }
           if (this.props.editingUpload) {
             entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
@@ -412,6 +425,7 @@ class EditUploads extends Component{
 
   //@TODO: DRY this out 
   handleValidateUploadSubmission = (i) => {
+    console.debug('%c⊙ handleValidateUploadSubmission', 'color:#00ff7b',  );
     this.setState({ 
       submitting_submission: true,
       button_submit: true,  
@@ -434,8 +448,17 @@ class EditUploads extends Component{
           // package the data up
           let data = {
             title: this.state.title,
-            description: this.state.description
+            description: this.state.description,
           };
+          if(this.state.data_admin){
+						if (this.state.assigned_to_group_name){
+              data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+            }
+            if (this.state.ingest_task){
+              data["ingest_task"]=this.state.ingest_task;
+            }
+          }
+          console.debug('%c⊙ DATA', 'color:#00ff7b', data );
 
           if (this.props.editingUpload) {
             // if user selected Publish
@@ -523,14 +546,10 @@ class EditUploads extends Component{
   
 
 
-  highlightInvalidDatasets(){
-      
+  highlightInvalidDatasets(){      
       var matches = document.querySelectorAll("div[data-value='invalid']");
-      
       matches.forEach(function(item) {
-          item.parentElement.classList.add("invalidDatset");
-          
-          
+        item.parentElement.classList.add("invalidDatset");
       });
       
   } 
@@ -797,38 +816,49 @@ renderReorganizeButton() {
         });
   }
   handleDatasetCellSelection = (row,column,event) =>{ 
-    
-    
-    
-
       window.history.pushState(
         null,
         "", 
         "/dataset/"+row.uuid);
       window.location.reload()
-  
 }
 
 
   errorClass(error) {
-    
     if (error && error === "valid" ) return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
   }
 
 
   updateInputValue = (evt) => {
-    
-    if(evt.target.id==="title"){
-      this.setState({
-        title: evt.target.value
-      });
-    }else if(evt.target.id==="description"){
-      this.setState({
-        description: evt.target.value
-      });
-    }
-    
+    console.debug('%c⊙ EVT', 'color:#00ff7b', evt.target, evt.target.id, evt );
+    var inputID = evt.target.id;
+    this.setState({
+      [inputID]:evt.target.value
+    });
+  }
+
+  renderGroupAssignment = () => {
+      return (
+        <Select
+          native 
+          fullWidth
+          labelid="group_label"
+          id="assigned_to_group_name"
+          name="assigned_to_group_name"
+          label="Assigned to Group Name"
+          value={this.state.assigned_to_group_name}
+          onChange={(event) => this.updateInputValue(event)}>
+          <option value=""></option>
+          {this.props.allGroups.map((group, index) => {
+            return (
+              <option key={index + 1} value={Object.values(group)[0]}>
+                {Object.values(group)[0]}
+              </option>
+            );
+          })}
+        </Select>
+      )
   }
 
 
@@ -925,73 +955,52 @@ renderReorganizeButton() {
   
     // dev int
   render() {
+    console.debug('%c⊙ ALLGROUPS', 'color:#00ff7b', this.props.allGroups );
     return (
       <React.Fragment>
-      <form>
-        <div>
+        <form>
+          <div>
             <div className='row mt-3 mb-3'>
-                
               <div className='col-sm-12'>
                 <h3 className='float-left'>
-                    <span
-                      className={"mr-1 badge " + this.state.badge_class}
-                      style={{ cursor: "pointer", marginRight: "10px" }}
-                      onClick={() =>
-                        this.showErrorMsgModal(
-                          this.props.editingUpload.pipeline_message
-                        )
-                      }
-                    >
-                      {this.props.editingUpload.status}
-                    </span> 
-                    {this.props.editingUpload &&
-                      "HuBMAP Upload ID " +
-                      this.props.editingUpload.hubmap_id}
-                  </h3>
-                </div>
+                  <span
+                    className={"mr-1 badge " + this.state.badge_class}
+                    style={{ cursor: "pointer", marginRight: "10px" }}
+                    onClick={() =>
+                      this.showErrorMsgModal(
+                        this.props.editingUpload.pipeline_message
+                      )
+                    }>
+                    {this.props.editingUpload.status}
+                  </span> 
+                  {this.props.editingUpload &&
+                    "HuBMAP Upload ID " +
+                    this.props.editingUpload.hubmap_id}
+                </h3>
               </div>
-
-             
-             
-             
-             
-              <React.Fragment>
-            <div className="row  mb-3 ">
-              
-              <div className="col-sm-6">
-                <div className="col-sm-12 portal-label">
-                Group Name: {this.props.editingUpload.group_name}
-                </div>
-                  <div className="col-sm-12 portal-label">
-                    Entered by: {this.props.editingUpload.created_by_user_email}
-                </div>
-                <div className="col-sm-12 portal-label">
-                    Entry Date: {tsToDate(this.props.editingUpload.created_timestamp)}
-                </div>
+            </div>
+            <React.Fragment>
+              <div className="row  mb-3 ">
+                <div className="col-sm-6">
+                  <div className="col-sm-12 portal-label">Group Name: {this.props.editingUpload.group_name}</div>
+                  <div className="col-sm-12 portal-label">Entered by: {this.props.editingUpload.created_by_user_email}</div>
+                <div className="col-sm-12 portal-label">Entry Date: {tsToDate(this.props.editingUpload.created_timestamp)}</div>
               </div>
               <div className="col-sm-6">
-              <p>
-                    <strong>
-                      <big>
-                        {this.state.globus_path && (
-
-                          <a
-                            href={this.state.globus_path}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                          >   
-                              {/* <FontAwesomeIcon icon={faExternalLinkAlt}
-                                style={{marginRight: "5px"}} 
-                                data-tip data-for='folder_tooltip' 
-                                className="mr-1" /> */}
-                                {this.state.globusLinkText}{" "}
-
-                                <FontAwesomeIcon icon={faExternalLinkAlt} />
-                          </a>
-                        )}
-                      
-                      </big>
-                    </strong>
+                <p>
+                  <strong>
+                    <big>
+                      {this.state.globus_path && (
+                        <a
+                          href={this.state.globus_path}
+                          target='_blank'
+                          rel='noopener noreferrer'>   
+                              {this.state.globusLinkText}{" "}
+                              <FontAwesomeIcon icon={faExternalLinkAlt} />
+                        </a>
+                      )}
+                    </big>
+                  </strong>
                   </p>
               </div>
               </div>
@@ -1027,7 +1036,7 @@ renderReorganizeButton() {
                     this.errorClass(this.state.formErrors.title)
                   }
                   placeholder='Upload Title'
-                  onChange={this.updateInputValue}
+                  onChange={(event) => this.updateInputValue(event)}
                   value={this.state.title}
                 />
               
@@ -1041,22 +1050,17 @@ renderReorganizeButton() {
           </div>
 
           <div className='form-group'>
-            <label
-              htmlFor='description'>
-              Description <span className='text-danger'>*</span>
-            </label>
+            <label htmlFor='description'> Description <span className='text-danger'>*</span></label>
             <span className="px-2">
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for='description_tooltip'
-                />
+                  data-for='description_tooltip'/>
                 <ReactTooltip
                   id='description_tooltip'
                   place='top'
                   type='info'
-                  effect='solid'
-                >
+                  effect='solid'>
                   <p>Description Tips</p>
                 </ReactTooltip>
               </span>
@@ -1069,12 +1073,9 @@ renderReorganizeButton() {
                     id='description'
                     cols='30'
                     rows='5'
-                    className={
-                      "form-control " +
-                      this.errorClass(this.state.formErrors.description)
-                    }
+                    className={"form-control " +this.errorClass(this.state.formErrors.description)}
                     placeholder='Description'
-                    onChange={this.updateInputValue}
+                    onChange={(event) => this.updateInputValue(event)}
                     value={this.state.description}
                   />
                 </div>
@@ -1085,13 +1086,37 @@ renderReorganizeButton() {
                 <p>{this.state.description}</p>
               </div>
             )}
-            
             <div>
-         
-          <div className=''>
-            {this.renderDatasets(this.state.datasets)}
-          </div>  
-            </div>
+            <div className=''>
+              {this.renderDatasets(this.state.datasets)}
+            </div>  
+              
+
+              {/* Make this check admin when finished */}
+            {this.props.allGroups && this.state.data_admin && this.state.writeable && (
+              <div className="row mt-4  ">
+                <div className='form-group col-6'> 
+                  <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
+                  {this.renderGroupAssignment()}
+                  <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
+                </div>
+                <div className='form-group col-6'> 
+                  <label htmlFor='ingest_task'>Ingest Task </label>
+                  <TextField
+                    labelid="ingest_task_label"
+                    name="ingest_task"
+                    id="ingest_task"
+                    helperText="The next task in the data ingest process."
+                    // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                    fullWidth
+                    value={this.state.ingest_task}
+                    onChange={(event) => this.updateInputValue(event)}/>
+              
+                </div>
+              </div>
+            )}
+            
+          </div>
         
 
           {this.state.submit_error && (

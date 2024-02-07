@@ -8,7 +8,9 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
-import Select from '@mui/material/Select'; // import Select from "@material-ui/core/Select";
+import Select from '@mui/material/Select'; 
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 
 import '../../App.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -74,6 +76,11 @@ class DatasetEdit extends Component {
     writeable:true,
     // editingSourceIndex:0,  
     // name: "",
+
+    // Admin task assignment
+		allGroups:this.props.allGroups ? this.props.allGroups : {},
+    assigned_to_group_name:"",
+    ingest_task:"", 
 
     // User Privs & Info
     groups:[],
@@ -141,6 +148,15 @@ class DatasetEdit extends Component {
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
       // var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.assay_type_primary,this.state.status.toUpperCase(),this.props.newForm]
       // console.table({permChecks});
+      if(this.props.editingDataset && this.props.editingDataset.assigned_to_group_name){
+        console.debug('%c⊙ assigned_to_group_name', 'color:#00ff7b', this.props.editingDataset.assigned_to_group_name );
+        this.setState({assigned_to_group_name:this.props.editingDataset.assigned_to_group_name})
+      }
+      if(this.props.editingDataset && this.props.editingDataset.ingest_task){
+        console.debug('%c⊙ ingest_task', 'color:#00ff7b', this.props.editingDataset.ingest_task );
+        this.setState({ingest_task:this.props.editingDataset.ingest_task})
+      }
+      
 
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
@@ -483,6 +499,7 @@ class DatasetEdit extends Component {
     const {
  id, name, value 
 } = e.target;
+console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     switch (name) {
       case "lab_dataset_id":
         this.setState({lab_dataset_id:value,});
@@ -511,6 +528,12 @@ class DatasetEdit extends Component {
         break;
       case "newStatus":
         this.setState({ newStatus:value });
+        break;
+      case "assigned_to_group_name":
+        this.setState({ assigned_to_group_name:value });
+        break;
+      case "ingest_task":
+        this.setState({ ingest_task:value });
         break;
       case "dt_select":
         this.setState({
@@ -588,6 +611,29 @@ class DatasetEdit extends Component {
         slist:slist,} ,() => {
         // this.hideConfirmDialog();
       });
+  }
+
+  renderGroupAssignment = () => {
+      return (
+        <Select
+          fullWidth
+          labelid="group_label"
+          id="assigned_to_group_name"
+          name="assigned_to_group_name"
+          label="Assigned to Group Name"
+          value={this.state.assigned_to_group_name}
+          onChange={(event) => this.handleInputChange(event)}>
+
+          <MenuItem value=""></MenuItem>
+          {this.props.allGroups.map((group, index) => {
+            return (
+              <MenuItem key={index + 1} value={Object.values(group)[0]}>
+                {Object.values(group)[0]}
+              </MenuItem>
+            );
+          })}
+        </Select>
+      )
   }
 
   renderSources = () => {
@@ -837,15 +883,24 @@ class DatasetEdit extends Component {
           // var dataTypeArray = Array.from(this.state.dataset_type);
           
           // package the data up
-          console.debug(this.state);
+          // console.debug(this.state);
           let data = {
             lab_dataset_id:this.state.lab_dataset_id,
             contains_human_genetic_sequences:this.state.contains_human_genetic_sequences,
             dataset_type:this.state.dataset_type,
             description:this.state.description,
-            dataset_info:this.state.dataset_info,
+            dataset_info:this.state.dataset_info
           };
-          console.debug("Data", data);
+          if(this.state.has_admin_priv){
+            console.debug('%c⊙', 'color:#8b1fff', this.state.assigned_to_group_name, this.state.ingest_task );
+            if (this.state.assigned_to_group_name && this.state.assigned_to_group_name.length > 0){
+              data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+            }
+            if (this.state.ingest_task && this.state.ingest_task.length > 0){
+              data["ingest_task"]=this.state.ingest_task;
+            }
+          }
+          console.debug('%c⭗ Data', 'color:#00ff7b',data  );
           
   
           // get the Source ancestor
@@ -2176,6 +2231,30 @@ name, display_doi, doi
               )}
             
           </div>
+					
+					{/* Make this check admin when finished */}
+					{this.props.allGroups && this.state.has_admin_priv && (
+              <div className="row mt-4  ">
+                <div className='form-group col-6'> 
+                  <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
+                  {this.renderGroupAssignment()}
+                  <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
+                </div>
+                <div className='form-group col-6'> 
+                  <label htmlFor='ingest_task'>Ingest Task </label>
+                  <TextField
+                    labelid="ingest_task_label"
+                    name="ingest_task"
+                    id="ingest_task"
+                    helperText="The next task in the data ingest process."
+                    // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                    fullWidth
+                    value={this.state.ingest_task}
+                    onChange={(event) => this.handleInputChange(event)}/>
+              
+                </div>
+              </div>
+            )}
  
           {/* {this.state.assay_metadata_status !== undefined && (
             <div className='form-group row'>
