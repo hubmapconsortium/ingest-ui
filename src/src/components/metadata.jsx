@@ -8,6 +8,7 @@ import StepLabel from '@mui/material/StepLabel';
 import StepContent from '@mui/material/StepContent';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import FilePresentIcon from '@mui/icons-material/FilePresent';
 import RestorePageIcon from '@mui/icons-material/RestorePage';
 import {GridLoader} from "react-spinners";
 import { styled } from '@mui/material/styles';
@@ -26,6 +27,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import * as prettyBytes from 'pretty-bytes';
 import DescriptionIcon from '@material-ui/icons/Description';
 import {ingest_api_upload_bulk_metadata} from '../service/ingest_api';
+import {entity_api_attach_bulk_metadata} from '../service/entity_api';
 import {parseErrorMessage,toTitleCase,prettyObject,string_helper,urlify} from "../utils/string_helper";
 import {getErrorList} from "../utils/error_helper";
 import {InvalidTable} from './ui/table';
@@ -33,14 +35,17 @@ import {InvalidTable} from './ui/table';
 
 export const RenderMetadata = (props) => {
   var [isLoading, setLoading] = useState(true);
+  var [isAttaching, setAttaching] = useState(true);
   var [activeStep, setActiveStep] = React.useState(0);
   var [uploadedFile, setUploadedFile] = React.useState();
   var [warningOpen, setWarningOpen] = React.useState();
   var [failed, setFailed] = React.useState(new Set());
   var [failedStep, setFailedStep] = React.useState(null);
+  var [validatedMeta, setValidatedMeta] = React.useState(null);
+  var [path, setPath] = React.useState(null);
   var [issues, setIssues] = React.useState();
   var [table, setTable] = React.useState({data:[],columns:{}});
-  const steps = ['Select','Upload', 'Validate', 'Results'];
+  const steps = ['Select','Upload', 'Validate', 'Attach', "Success"];
   const type = props.type;
   var isStepFailed = (step) => {
     return step === failedStep;
@@ -77,8 +82,54 @@ export const RenderMetadata = (props) => {
     }
   };
 
+  const attachMetadata = () => {
+    console.debug('%c⊙ PATH', 'color:#00ff7b', path );
+    let passes = []
+    let fails = []
+    let row = 0
+    // setIsLoading(true)validatedMeta
+    for (let item of validatedMeta) {
+      console.debug('%c◉ ValRow ', 'color:#00ff7b', validatedMeta[row].description.uuid);
+
+      let thisRow = {
+        // uuid: validatedMeta[row].description.uuid,
+        metadata: item,
+        // sample_category:type,
+        protocol_url:  item.protocols_io_doi,
+        direct_ancestor_uuid: item.donor_id
+      };
+      thisRow.metadata['pathname'] = path
+      thisRow.metadata['file_row'] = row
+      console.debug('%c⊙', 'color:#00ff7b', thisRow);       
+      entity_api_attach_bulk_metadata(validatedMeta[row].description.uuid,thisRow,JSON.parse(localStorage.getItem('info')).groups_token)
+        .then((resp) => {
+          if (!resp.error){
+            console.debug('%c⊙', 'color:#00ff7b', 'Success', resp);
+            passes.push(resp)
+          } else {
+              fails.push(resp)
+              console.debug('%c◉ Val fail ', 'color:#ffe921',resp );
+          }
+        })
+        .catch((error)=>{
+          console.debug('%c⭗', 'color:#ff005d', 'Error', error);
+        })
+      row++    
+    }
+    // setIsLoading(false)
+    // setBulkSuccess({fails, passes})
+
+}
+function getColNames() {
+  let typeCol = 'sample_category'
+  let labIdCol = 'lab_tissue_sample_id'
+  return {typeCol, labIdCol}
+}
+
+
   const handleUploadFile = () => {
     setActiveStep(2);
+    console.debug('%c◉ bulkFile ', 'color:#00ff7b',uploadedFile);
     ingest_api_upload_bulk_metadata(
       type,
       uploadedFile,
@@ -86,12 +137,15 @@ export const RenderMetadata = (props) => {
     )
       .then((resp) => {
         if (resp.status === 200) {
-          console.debug('%c⊙', 'color:#00ff7b', 'Success', activeStep);
+          console.debug('%c⊙', 'color:#00ff7b', 'Success', activeStep, resp);
           // handleNext();
           // Force a timeout for really short uploads to look like theyre doing something
-          setTimeout(() => {
-            setActiveStep(3);
-          }, 6000);
+
+          setValidatedMeta(resp.results.description.data);
+          setPath(resp.results.description.pathname);
+          setActiveStep(3);
+          console.debug('%c⊙', 'color:#00ff7b', resp.results.description,validatedMeta );
+
         }else{ 
           console.debug('%c⭗ ERROR: ', 'color:#ff005d', resp.error.response.data);
           var innerDetails = Object.values(resp.error.response.data.description)[0];
@@ -113,6 +167,11 @@ export const RenderMetadata = (props) => {
       .catch((error) => {
         console.debug('%c⭗', 'color:#ff005d', 'Error', error,error.description);
       });
+  };
+
+
+  const handleAttach = () => {
+    
   };
 
 
@@ -156,7 +215,7 @@ const handleErrorRow = (row) => {
               component="label"
               startIcon={<FileOpenIcon />}
               >
-              Browse
+              Select
               <VisuallyHiddenInput 
                 type="file"
                 accept='.tsv, .csv'
@@ -215,13 +274,63 @@ const handleErrorRow = (row) => {
       )}
 
       
-      {/* Success */}
+      {/* Val Success */}
       {activeStep ===3 && (
-        <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
-          Please feel free to INSERT COPY HERE <br />
-          <Button size='small' onClick={() => handleReset()} >Upload Another File</Button>
-        </Typography>
+          <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+            
+            <Grid container xs={2}>
+              <Button 
+                sx={{
+                  padding:"1em",
+                  fontSize: '1em',
+                }}
+                fullWidth
+                size='large'
+                variant="contained" 
+                startIcon={<FilePresentIcon />} 
+                onClick={() => attachMetadata()}>
+                Attach Metadata 
+              </Button>
+            </Grid>
+            <Grid xs={10} container alignItems="flex-start">
+              <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+              Validation Success! <br />
+              Your file  <em>{uploadedFile.name} </em>is now ready to upload. <br />
+              </Typography>
+            </Grid>
+          </Grid>
+         
       )}
+
+      {/* Attach Success */}
+     {/* Val Success */}
+     {activeStep ===5 && (
+          <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+            
+            <Grid container xs={2}>
+              <Button 
+                sx={{
+                  padding:"1em",
+                  fontSize: '1em',
+                }}
+                fullWidth
+                size='large'
+                variant="contained" 
+                startIcon={<FilePresentIcon />} 
+                onClick={() => attachMetadata()}>
+                Attach Metadata 
+              </Button>
+            </Grid>
+            <Grid xs={10} container alignItems="flex-start">
+              <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+              Success! <br />
+              The Folowing entries have been assigned their associated Metadata. 
+              </Typography>
+            </Grid>
+          </Grid>
+         
+      )}
+
 
       {/* Val Fail */}
       {activeStep ===4 && (
@@ -254,33 +363,24 @@ const handleErrorRow = (row) => {
         {/* <InvalidTable type={props.type} data={issues} /> */}
         
         <DataTable
-        sx={{
-          border: '1px solid #ff0000',
-        }}
+          sx={{
+            border: '1px solid #ff0000',
+          }}
           columns={
-            [
-              {
-                "name": "Row",
+            [{" name": "Row",
                 "sortable": true,
-                "width": "100px","style": {
-                  backgroundColor: '#fdebed',
-                },
+                "width": "100px","style": {backgroundColor: '#fdebed',},
                 "selector": row => row.row,
-              },
-              {
+              },{
                 "name": "Error",
                 "sortable": true,
-                "style": {
-                  backgroundColor: '#fdebed',
-                },
+                "style": {backgroundColor: '#fdebed'},
                 "selector": row => row.error,
                 "format": (row) => {
                   var d = '"'
                   const formatError = (val) => val.replaceAll(' '+d, ' <code>').replaceAll(' "', ' <code>').replaceAll(d, '</code>').replaceAll('"', '</code>')
-                  // const formatError = (val);
                   let err = handleErrorRow(row)
                   err = formatError(err)
-                  // return err
                   return <span dangerouslySetInnerHTML={{__html: urlify(err)}} />
                 }
               }

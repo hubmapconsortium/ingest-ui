@@ -509,25 +509,18 @@ export function ingest_api_notify_slack(auth, data) {
  */
 export function ingest_api_upload_bulk_metadata(type, dataFile, auth) { 
   console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type, auth);
-  const options = {
-      headers: {
-        "Content-Type": "text/tab-separated-values",
-        Authorization:
-          "Bearer " + auth,
-      }
-  };
+  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
   var formData = new FormData();
   // formData.append('metadata', dataFile);
-  formData.append('metadata', 
-  new Blob([dataFile],
-    {type: 'text/tab-separated-values' }),dataFile.name);
-  formData.append('entity_type', "Sample")
-  formData.append('sub_type', "Block")
+  formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);
+  // formData.append('entity_type', "Sample")
+  // formData.append('sub_type', type)
   formData.append('validate_uuids', 1)
-  formData.append('ui_type', 'gui')
+  // formData.append('ui_type', 'gui')
+  console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
   // const data = ["data-testing-notificatons","Beep (O v O)!"]    
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate`;
-  console.debug('%c⊙', 'color:#00ff7b', "url,dataForm,options", url,formData,options );
+  console.debug('%c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
   return axios 
     .post(url,formData,options)
     .then(res => {
