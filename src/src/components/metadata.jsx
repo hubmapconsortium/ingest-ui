@@ -35,13 +35,15 @@ import {InvalidTable} from './ui/table';
 
 export const RenderMetadata = (props) => {
   var [isLoading, setLoading] = useState(true);
-  var [isAttaching, setAttaching] = useState(true);
+  var [isAttaching, setAttaching] = useState(false);
   var [activeStep, setActiveStep] = React.useState(0);
   var [uploadedFile, setUploadedFile] = React.useState();
   var [warningOpen, setWarningOpen] = React.useState();
   var [failed, setFailed] = React.useState(new Set());
   var [failedStep, setFailedStep] = React.useState(null);
   var [validatedMeta, setValidatedMeta] = React.useState(null);
+  var [attachedMetadata, setAttachedMetadata] = React.useState([]);
+  var [passedMeta, setPassedMeta] = React.useState([]);
   var [path, setPath] = React.useState(null);
   var [issues, setIssues] = React.useState();
   var [table, setTable] = React.useState({data:[],columns:{}});
@@ -84,28 +86,28 @@ export const RenderMetadata = (props) => {
 
   const attachMetadata = () => {
     console.debug('%c⊙ PATH', 'color:#00ff7b', path );
+    setAttaching(true)
     let passes = []
     let fails = []
     let row = 0
     // setIsLoading(true)validatedMeta
     for (let item of validatedMeta) {
-      console.debug('%c◉ ValRow ', 'color:#00ff7b', validatedMeta[row].description.uuid);
-
+      // console.debug('%c◉ ValRow ', 'color:#00ff7b', validatedMeta[row].description.uuid);
       let thisRow = {
-        // uuid: validatedMeta[row].description.uuid,
         metadata: item,
-        // sample_category:type,
         protocol_url:  item.protocols_io_doi,
         direct_ancestor_uuid: item.donor_id
       };
       thisRow.metadata['pathname'] = path
       thisRow.metadata['file_row'] = row
-      console.debug('%c⊙', 'color:#00ff7b', thisRow);       
+      console.debug('%c⊙ Attaching Row: ', 'color:#00ff7b', thisRow);       
       entity_api_attach_bulk_metadata(validatedMeta[row].description.uuid,thisRow,JSON.parse(localStorage.getItem('info')).groups_token)
         .then((resp) => {
           if (!resp.error){
             console.debug('%c⊙', 'color:#00ff7b', 'Success', resp);
-            passes.push(resp)
+            passes.push(resp.results.message)
+            setAttachedMetadata(attachedMetadata => [...attachedMetadata, resp.results.message])
+            // setAttachedMetadata(passes);
           } else {
               fails.push(resp)
               console.debug('%c◉ Val fail ', 'color:#ffe921',resp );
@@ -114,8 +116,16 @@ export const RenderMetadata = (props) => {
         .catch((error)=>{
           console.debug('%c⭗', 'color:#ff005d', 'Error', error);
         })
-      row++    
+      row++ 
     }
+   
+      setTimeout(() => {
+        console.debug('%c◉ attachedMetadata ', 'color:#00ff7b', attachedMetadata,passes);
+        setActiveStep(5)
+      }, 10000);
+
+    
+    // setAttaching(false)
     // setIsLoading(false)
     // setBulkSuccess({fails, passes})
 
@@ -138,14 +148,11 @@ function getColNames() {
       .then((resp) => {
         if (resp.status === 200) {
           console.debug('%c⊙', 'color:#00ff7b', 'Success', activeStep, resp);
-          // handleNext();
-          // Force a timeout for really short uploads to look like theyre doing something
-
+          console.debug('%c◉ resp.results.description.data ', 'color:#00ff7b', resp.results.description.data);
           setValidatedMeta(resp.results.description.data);
           setPath(resp.results.description.pathname);
           setActiveStep(3);
-          console.debug('%c⊙', 'color:#00ff7b', resp.results.description,validatedMeta );
-
+          console.debug('%c⊙', 'color:#00ff7b', resp.results.description,resp.results.description.data );
         }else{ 
           console.debug('%c⭗ ERROR: ', 'color:#ff005d', resp.error.response.data);
           var innerDetails = Object.values(resp.error.response.data.description)[0];
@@ -275,57 +282,69 @@ const handleErrorRow = (row) => {
 
       
       {/* Val Success */}
-      {activeStep ===3 && (
-          <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
-            
-            <Grid container xs={2}>
-              <Button 
-                sx={{
-                  padding:"1em",
-                  fontSize: '1em',
-                }}
-                fullWidth
-                size='large'
-                variant="contained" 
-                startIcon={<FilePresentIcon />} 
-                onClick={() => attachMetadata()}>
-                Attach Metadata 
-              </Button>
-            </Grid>
-            <Grid xs={10} container alignItems="flex-start">
-              <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
-              Validation Success! <br />
-              Your file  <em>{uploadedFile.name} </em>is now ready to upload. <br />
-              </Typography>
-            </Grid>
+      {activeStep ===3 && !isAttaching && (
+        <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+          <Grid container xs={2}>
+            <Button 
+              sx={{
+                padding:"1em",
+                fontSize: '1em',
+              }}
+              fullWidth
+              size='large'
+              variant="contained" 
+              startIcon={<FilePresentIcon />} 
+              onClick={() => attachMetadata()}>
+              Attach Metadata 
+            </Button>
           </Grid>
-         
+          <Grid xs={10} container alignItems="flex-start">
+            <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+            Validation Success! <br />
+            Your file  <em>{uploadedFile.name} </em>is now ready to upload. <br />
+            </Typography>
+          </Grid>
+        </Grid>
       )}
+      {activeStep ===3 && isAttaching && (
+        <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+          <Grid container alignItems="flex-start" xs={2}>
+            <GridLoader color="#444a65" size={23} loading={true} />
+            <GridLoader color="#444a65" size={23} loading={true} />
+          </Grid>
+          <Grid xs={10} container alignItems="flex-start">
+            <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+              Attaching Metadata now <br />
+              This step could take a few moments. <br />
+              Please do not refresh, close, or leave the page until the process is
+            </Typography>
+          </Grid>
+        </Grid>
+      )}
+         
 
-      {/* Attach Success */}
-     {/* Val Success */}
      {activeStep ===5 && (
           <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
-            
-            <Grid container xs={2}>
-              <Button 
-                sx={{
-                  padding:"1em",
-                  fontSize: '1em',
-                }}
-                fullWidth
-                size='large'
-                variant="contained" 
-                startIcon={<FilePresentIcon />} 
-                onClick={() => attachMetadata()}>
-                Attach Metadata 
-              </Button>
-            </Grid>
-            <Grid xs={10} container alignItems="flex-start">
+
+            <Grid xs={12} container alignItems="flex-start">
               <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
               Success! <br />
               The Folowing entries have been assigned their associated Metadata. 
               </Typography>
+
+              <DataTable
+               
+                columns={
+                  [{" name": "Message",
+                      "sortable": true,
+                      "selector": row => row,
+                    }]
+                }
+                className=''
+                data={attachedMetadata}
+                pagination />
+
+
             </Grid>
           </Grid>
          
