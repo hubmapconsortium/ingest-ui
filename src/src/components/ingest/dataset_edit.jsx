@@ -12,6 +12,16 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 
+import Grid from "@mui/material/Grid";
+
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import ListItemButton from '@mui/material/ListItemButton';
+import Typography from '@mui/material/Typography';
+
+
 import '../../App.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -34,9 +44,7 @@ import {
   ingest_api_allowable_edit_states_statusless,
   ingest_api_notify_slack
 } from '../../service/ingest_api';
-import {
-  entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity
-} from '../../service/entity_api';
+import {entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity} from '../../service/entity_api';
 import {ubkg_api_get_assay_type_set,ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
 import {generateDisplaySubtype, generateDisplaySubtype_UBKG, generateSubtype} from "../../utils/display_subtypes";
@@ -223,6 +231,58 @@ class DatasetEdit extends Component {
       //
       }
 
+      // Revision UUID/HID match
+      // PREv
+      if(this.props.editingDataset && this.props.editingDataset.previous_revision_uuids && this.props.editingDataset.previous_revision_uuids.length >0){
+        console.debug('%c◉ HUBIDS ', 'color:#00ff7b', );
+        var pHubIDs= [];
+        this.props.editingDataset.previous_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              console.debug('%c◉ response ', 'color:#00ff7b',response.results.hubmap_id );
+              if(response.results.hubmap_id){
+                pHubIDs.push(response.results.hubmap_id)
+              }else{
+                pHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              console.debug("UUIDCheck",error);
+              this.props.reportError(error);
+            })
+        });
+        this.setState({
+          previousHubIDs:pHubIDs
+        },() => {
+          console.debug('%c◉ previousHIDS ', 'color:#00ff7b', this.state.previousHubIDs);
+        })
+      }
+      // NEXT
+      if(this.props.editingDataset && this.props.editingDataset.next_revision_uuids && this.props.editingDataset.next_revision_uuids.length >0){
+        console.debug('%c◉ HUBIDS ', 'color:#00ff7b', );
+        var nHubIDs= [];
+        this.props.editingDataset.next_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              console.debug('%c◉ response ', 'color:#00ff7b',response.results.hubmap_id );
+              if(response.results.hubmap_id){
+                nHubIDs.push(response.results.hubmap_id)
+              }else{
+                nHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              console.debug("UUIDCheck",error);
+              this.props.reportError(error);
+            })
+        });
+        this.setState({
+          nextHubIDs:nHubIDs
+        },() => {
+          console.debug('%c◉ nextHubIDs ', 'color:#00ff7b', this.state.nextHubIDs);
+        })
+      }
+
     ingest_api_users_groups(auth)
       .then((res) => {
         
@@ -360,6 +420,7 @@ class DatasetEdit extends Component {
             this.props.reportError(error);
           })   
         }
+        
         if(this.props.editingDataset.previous_revision_uuid){
           console.debug("prev_revision_uuid",this.props.editingDataset.previous_revision_uuid);
           entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1580,21 +1641,72 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     } 
   }
 
+  renderListItem(uuid){
+    console.debug('%c◉ data ', 'color:#00ff7b', uuid);
+      entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((response) => {
+        console.debug('%c◉ response ', 'color:#00ff7b',response.results.hubmap_id );
+        if(response.results.hubmap_id){
+          return response.results.hubmap_id
+        }else{
+          return uuid
+        }
+      })
+      .catch((error) => {
+        console.debug("UUIDCheck",error);
+        this.props.reportError(error);
+      })   
+
+    
+  }
 
   renderVersionNav() {
-    var next = "";
-    var prev = "";
+    var next = [];
+    var prev = [];
+    // console.debug('%c◉ previous_revision_uuids ', 'color:#00ff7b', this.props.editingDataset.previous_revision_uuid);
+    // var previousUUIDs = this.props.previous_revision_uuids;
+    // var nextUUIDs = this.props.next_revision_uuids;
+    // var multiList = 
     return (
-      <Box sx={{width:"50%"}}>
-        {this.props.editingDataset.next_revision_uuid  && (
-          <>Next Version: <Button variant="text" onClick={() => this.handleVersionNavigate('next')}>   {this.state.nextHID}</Button></>
-        )}<br />
-        {this.props.editingDataset.previous_revision_uuid  && (
-          <>Previous Version: <Button variant="text" onClick={() => this.handleVersionNavigate('prev')}>{this.state.prevHID}</Button></>
+      <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
+        {this.state.previousHubIDs &&(
+          <Grid item xs={6}>
+            <Typography>Previous Revisions</Typography>
+            <List
+              divider={true}
+              dense={true}
+              sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
+              {this.state.previousHubIDs.map((hid, index) => {
+                return (
+                  <ListItem sx={{display:"flex"}} key={index + 1}  href={"/"+hid+""}>
+                    <ListItemText primary={hid} />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Grid>
         )}
-      </Box>
+        {this.state.nextHubIDs &&(
+          <Grid item xs={6}>
+            <Typography>Next Revisions</Typography>
+            <List
+              divider={true}
+              dense={true}
+              sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
+              {this.state.nextHubIDs.map((hid, index) => {
+                return (
+                  <ListItem sx={{display:"flex"}} key={index + 1}  href={"/"+hid+""}>
+                    <ListItemText primary={hid} />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Grid>
+        )}
+      </Grid>
     )
 }
+
 
   // Cancel button
   cancelButton() {
