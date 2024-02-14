@@ -35,6 +35,7 @@ import {ingest_api_users_groups,ingest_api_all_groups} from './service/ingest_ap
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
+import {htmlDecode} from "./utils/string_helper";
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -85,9 +86,11 @@ export function App (props){
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   var [userDev, setUserDev] = useState(false);
-  var [bannerShow,setBannerShow] = useState(true);
   var [isLoading, setIsLoading] = useState(true);
   var [dtloading, setDTLoading] = useState(true);
+  var [bannerTitle,setBannerTitle] = useState();
+  var [bannerDetails,setBannerDetails] = useState();
+  var [bannerShow,setBannerShow] = useState(false);
   // var [groupsLoading, setGroupsLoading] = useState(true);
   var [routingMessage] = useState({
     // Route: [Message, solution/alternative]
@@ -107,6 +110,17 @@ export function App (props){
       localStorage.setItem("isHubmapUser", true);
       // Redirect to home page without query string
       window.location.replace(`${process.env.REACT_APP_URL}`);
+    }
+
+    // Setting Banner
+    try{
+      if(process.env.REACT_APP_BANNER_DETAILS && process.env.REACT_APP_BANNER_DETAILS!==""){
+        setBannerTitle(process.env.REACT_APP_BANNER_TITLE ? process.env.REACT_APP_BANNER_TITLE : "" );
+        setBannerDetails(process.env.REACT_APP_BANNER_DETAILS);
+        setBannerShow(true)
+      }
+    }catch(error){
+      console.debug('%c◉ Banner Set Error: ', 'color:#ff005d', error );
     }
 
     try {
@@ -366,8 +380,8 @@ export function App (props){
       </Drawer>
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
-            <Typography> <strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas,</strong> which are linked from <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank">this page</Link>. The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <Link to="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit#heading=h.d6xf2xeysl78" target="_blank">process outlined here</Link>.  </Typography>
-            <Typography><strong>Please also <Link to="https://docs.google.com/spreadsheets/d/19ZJx_EVyBGKNeW0xxQlOsMdt1DVNZYWmuG014rXsQP4/edit#gid=0" target="_blank">update this data pulse check spreadsheet</Link></strong> so we know what data is coming from your team. We're looking forward to your submissions! Please contact <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions.</Typography>
+            <h2>{bannerTitle}</h2>
+            <div dangerouslySetInnerHTML={{ __html: bannerDetails}} />
           </div>
       )}
       {isLoading || dtloading || (!allGroups || allGroups.length<=0) && (

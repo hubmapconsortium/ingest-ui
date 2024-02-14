@@ -683,6 +683,7 @@ class SearchComponent extends Component {
                 allGroups={this.state.allGroups}
                 allTypes={this.state.allTypes}
                 columns={this.state.column_def} 
+                searchTitle={this.state.search_title}
                 // handleTableCellClick={(params) => this.handleTableCellClick(params)}
                 // handleSearchButtonClick={() => this.handleSearchButtonClick()}
                 handleTableCellClick={this.props.select?(e)=>this.props.select(e):(e)=>this.handleTableCellClick(e)}
