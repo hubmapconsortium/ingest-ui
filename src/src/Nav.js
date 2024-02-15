@@ -25,8 +25,10 @@ export const Navigation = (props) => {
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
   const [anchorEl_B, setAnchorEl_B] = React.useState(null);
+  const [anchorEl_S, setAnchorEl_S] = React.useState(null);
   const open_I = Boolean(anchorEl_I);
   const open_B = Boolean(anchorEl_B);
+  const open_S = Boolean(anchorEl_S);
   const location = useLocation();
   let navigate = useNavigate();
 
@@ -42,11 +44,13 @@ export const Navigation = (props) => {
   }, [props, props.app_info, location]);
 
 
-
+  // @TODO: Dry this up
+  const handleClick_S = (event) => {
+    setAnchorEl_S(event.currentTarget);
+  };
   const handleClick_I = (event) => {
     setAnchorEl_I(event.currentTarget);
   };
-
   const handleClick_B = (event) => {
     setAnchorEl_B(event.currentTarget);
   };
@@ -54,6 +58,7 @@ export const Navigation = (props) => {
   const handleClose = () => {
     setAnchorEl_I();
     setAnchorEl_B();
+    setAnchorEl_S();
   };
   
   const OpenUploads = () => {
@@ -200,6 +205,50 @@ export const Navigation = (props) => {
                           Data Ingest Board
                       </Button>
                   </span>
+
+                  <Button 
+                    id="sampleMetadataButton"
+                    endIcon={<ArrowDropDownIcon />}
+                    aria-controls={open_I ? 'sampleMetadataMenu' : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open_I ? 'true' : undefined}
+                    onClick={handleClick_S} >
+                    Upload Sample Metadata</Button>
+                    <Menu
+                      id="sampleMetadataMenu"
+                      sx={{ width: "200px" }}
+                      anchorEl={anchorEl_S}
+                      variant="menu"
+                      open={open_S}
+                      onClose={handleClose}
+                      MenuListProps={{
+                        'aria-labelledby': 'IndividualButton',
+                      }}>
+                      <MenuItem 
+                        className="nav-link" 
+                        sx={{ width: "200px" }}
+                        component={Link}
+                        onClick={handleClose}
+                        to="/metadata/block" >
+                        Block
+                      </MenuItem>
+                      <MenuItem 
+                        className="nav-link" 
+                        component={Link}
+                        onClick={handleClose}
+                        to="/metadata/section" >
+                        Section
+                      </MenuItem>
+                      <MenuItem 
+                        className="nav-link" 
+                        component={Link}
+                        onClick={handleClose}
+                        to="/metadata/suspension" >
+                        Suspension
+                      </MenuItem>
+                    
+                    </Menu>
+
                 </div>
               )}
           </div>

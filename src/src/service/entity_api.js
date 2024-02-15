@@ -201,3 +201,23 @@ export function entity_api_get_globus_url(uuid, auth) {
         return {error}
       });
 };
+
+export function entity_api_attach_bulk_metadata(uuid,item, auth) { 
+  console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item, auth);
+  const options = {headers:{Authorization: "Bearer " + auth,
+          "Content-Type":"application/json"}};
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid
+
+  return axios 
+    .put(url,item,options)
+    .then(res => {
+      console.debug("ingest_api_attach_bulk_metadata",res);
+        let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(error => {
+        console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error );
+        // throw new Error(error);
+        return {error}
+      });
+};
