@@ -2,7 +2,7 @@ import * as React from "react";
 import {useState,useEffect} from "react";
 import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
-  import StandardErrorBoundary from "./utils/errorWrap";
+import StandardErrorBoundary from "./utils/errorWrap";
 import ErrorPage from "./utils/errorPage";
 // Login Management
 import Login from './components/ui/login';
