@@ -51,16 +51,6 @@ export const Navigation = (props) => {
   useEffect(() => {
     var wide = window.innerWidth
     console.debug('%c◉ windowWidth ', 'color:#00ff7b',wide);
-    // if(wide<1400){
-    //   setMenuItems({
-    //     ...menuItems,
-    //       new:"New",
-    //       metadata[0]:"Metadata"
-    //   });
-
-      
-    // }
-
   }, [menuItems.new, menuItems.metadata]);
 
 
@@ -154,7 +144,7 @@ export const Navigation = (props) => {
                     onClose={handleClose}
                     MenuListProps={{
                       'aria-labelledby': 'IndividualButton',
-                    }}>
+                    }}> 
                     <MenuItem 
                       className="nav-link" 
                       component={Link}
