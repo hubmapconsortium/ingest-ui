@@ -11,7 +11,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import MenuItem, {menuItemClasses} from '@mui/material/MenuItem';
 
 import UploadsForm from "./components/uploads/createUploads";
 
@@ -31,17 +31,37 @@ export const Navigation = (props) => {
   const open_S = Boolean(anchorEl_S);
   const location = useLocation();
   let navigate = useNavigate();
+  const [menuItems, setMenuItems] = React.useState({
+    "new":[window.innerWidth<1400 ? "New" : "Individual","donor", "sample", "dataset", "publication"],
+    "bulk":["Bulk","donors", "samples", "data"],
+    "board":[window.innerWidth<1400 ? "Ingest" : "Data Ingest Board"],
+    "metadata":[window.innerWidth<1400 ? "Metadata" : "Upload Sample Metadata","block", "section", "suspension"]
+  });
 
   useEffect(() => {
     setUserInfo(props.app_info);
     setUserGroups(props.userGroups);
     setUserDataGroups([props.userDataGroups]);
     // @TODO: Consider moving all the User & User Group info into its own utils, 
-
     if(location.pathname === "/new/upload"){
       setUploadsDialog(true);
     }
   }, [props, props.app_info, location]);
+
+  useEffect(() => {
+    var wide = window.innerWidth
+    console.debug('%c◉ windowWidth ', 'color:#00ff7b',wide);
+    // if(wide<1400){
+    //   setMenuItems({
+    //     ...menuItems,
+    //       new:"New",
+    //       metadata[0]:"Metadata"
+    //   });
+
+      
+    // }
+
+  }, [menuItems.new, menuItems.metadata]);
 
 
   // @TODO: Dry this up
@@ -117,7 +137,7 @@ export const Navigation = (props) => {
 
               {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
                 <div className="d-inline">                
-                <span className="menu-bar-static-label mr-4">REGISTER NEW:</span>
+                <span className="menu-bar-static-label mr-4">{window.innerWidth<1400 ? "" : "REGISTER NEW:" }</span>
 
                 <Button 
                   id="IndividualButton"
@@ -126,7 +146,7 @@ export const Navigation = (props) => {
                   aria-haspopup="true"
                   aria-expanded={open_I ? 'true' : undefined}
                   onClick={handleClick_I} >
-                    Individual</Button>
+                    {menuItems.new[0]}</Button>
                   <Menu
                     id="IndividualMenu"
                     anchorEl={anchorEl_I}
@@ -172,7 +192,7 @@ export const Navigation = (props) => {
                   aria-haspopup="true"
                   aria-expanded={open_B ? 'true' : undefined}
                   onClick={handleClick_B} >
-                    Bulk</Button>
+                    {menuItems.bulk[0]}</Button>
                   <Menu
                     id="BulkMenu"
                     anchorEl={anchorEl_B}
@@ -202,7 +222,7 @@ export const Navigation = (props) => {
                         target="_blank"
                         href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
                         className="flat-link " >
-                          Data Ingest Board
+                          {menuItems.board[0]}
                       </Button>
                   </span>
 
@@ -213,7 +233,7 @@ export const Navigation = (props) => {
                     aria-haspopup="true"
                     aria-expanded={open_I ? 'true' : undefined}
                     onClick={handleClick_S} >
-                    Upload Sample Metadata</Button>
+                    {menuItems.metadata[0] }</Button>
                     <Menu
                       id="sampleMetadataMenu"
                       sx={{ width: "200px" }}
