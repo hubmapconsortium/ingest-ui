@@ -1,36 +1,27 @@
-import React, {useState} from 'react';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Step from '@mui/material/Step';
-import Stepper from '@mui/material/Stepper';
-import StepLabel from '@mui/material/StepLabel';
-import StepContent from '@mui/material/StepContent';
-import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
-import FilePresentIcon from '@mui/icons-material/FilePresent';
-import RestorePageIcon from '@mui/icons-material/RestorePage';
-import {GridLoader} from "react-spinners";
-import { styled } from '@mui/material/styles';
-import FileOpenIcon from '@mui/icons-material/FileOpen';
-import { DataGrid } from '@mui/x-data-grid';
-import DataTable from 'react-data-table-component';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
-import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
-import CloseIcon from '@mui/icons-material/Close';
+import {faFileDownload} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner,faExclamationTriangle,faFileDownload} from "@fortawesome/free-solid-svg-icons";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import FileOpenIcon from '@mui/icons-material/FileOpen';
+import FilePresentIcon from '@mui/icons-material/FilePresent';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import RestorePageIcon from '@mui/icons-material/RestorePage';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Collapse from '@mui/material/Collapse';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Stepper from '@mui/material/Stepper';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import {styled} from '@mui/material/styles';
 import * as prettyBytes from 'pretty-bytes';
-import DescriptionIcon from '@material-ui/icons/Description';
-import {ingest_api_upload_bulk_metadata} from '../service/ingest_api';
+import React,{useState} from 'react';
+import DataTable from 'react-data-table-component';
+import {GridLoader} from "react-spinners";
 import {entity_api_attach_bulk_metadata} from '../service/entity_api';
-import {parseErrorMessage,toTitleCase,prettyObject,string_helper,urlify} from "../utils/string_helper";
+import {ingest_api_upload_bulk_metadata} from '../service/ingest_api';
 import {getErrorList} from "../utils/error_helper";
-import {InvalidTable} from './ui/table';
+import {prettyObject,toTitleCase,urlify} from "../utils/string_helper";
 
 
 export const RenderMetadata = (props) => {
@@ -71,6 +62,12 @@ export const RenderMetadata = (props) => {
     message: '',
     isError: null,
   });
+
+  var handleCancel = (e) => {
+    window.history.pushState( null,"", "/");
+    window.location.reload()
+  }
+
 
   var handleFileGrab = (e) => {
     var grabbedFile = e.target.files[0];
@@ -323,7 +320,7 @@ const handleErrorRow = (row) => {
       )}
          
 
-     {activeStep ===5 && (
+     {activeStep ===5 && (<>
           <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
 
             <Grid xs={12} container alignItems="flex-start">
@@ -331,9 +328,7 @@ const handleErrorRow = (row) => {
               Success! <br />
               The Folowing entries have been assigned their associated Metadata. 
               </Typography>
-
               <DataTable
-               
                 columns={
                   [{" name": "Message",
                       "sortable": true,
@@ -343,11 +338,19 @@ const handleErrorRow = (row) => {
                 className=''
                 data={attachedMetadata}
                 pagination />
-
-
             </Grid>
           </Grid>
-         
+          <Grid alignItems="flex-end" justifyContent="flex-end" container spacing={2}> 
+            
+            <Grid alignItems="flex-end" justifyContent="flex-end" >
+              <Button variant="contained" onClick={()=>window.location.reload()}>Restart</Button>
+            </Grid>
+            <Grid alignItems="flex-end" justifyContent="flex-end" >
+              <Button variant="contained" onClick={()=>handleCancel()}>Close</Button>
+            </Grid>
+
+          </Grid>
+         </>
       )}
 
 
