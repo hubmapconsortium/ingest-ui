@@ -4,7 +4,6 @@ import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
 import StandardErrorBoundary from "./utils/errorWrap";
 import ErrorPage from "./utils/errorPage";
-// Login Management
 import Login from './components/ui/login';
 import Timer from './components/ui/idle';
 
@@ -38,13 +37,9 @@ import {BuildError} from "./utils/error_helper";
 import {htmlDecode} from "./utils/string_helper";
 // import useScript from './utils/hooks/useScript';
 
-// import {ErrBox} from "../utils/ui_elements";
-  // Site Content
 import {Navigation} from "./Nav";
-// import {RenderLogin} from "./components/login";
 
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
-//  import {RenderSearchComponent} from './components/SearchComponent';
 
 import Result from "./components/uuid/result";
 
@@ -55,10 +50,8 @@ import {RenderUpload} from "./components/uploads";
 import {RenderPublication} from "./components/publications";
 import {RenderCollection} from "./components/collections";
 
-// Bulky
 import {RenderBulk} from "./components/bulk";
 
-// The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 import Box from '@mui/material/Box';
@@ -66,7 +59,6 @@ import Grid from '@mui/material/Grid';
 
 
 export function App (props){
-  // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   let navigate = useNavigate();
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
@@ -74,19 +66,17 @@ export function App (props){
   var [showSnack, setShowSnack] = useState(false);
   var [newEntity, setNewEntity] = useState(null);
   var [authStatus, setAuthStatus] = useState(false);
-  var [regStatus, setRegStatus] = useState(false);
   var [unregStatus, setUnegStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [allGroups, setAllGroups] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
   var [dataTypeListAll, setDataTypeListAll] = useState({});
-  var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
-  var [displaySubtypes, setDisplaySubtypes] = useState();
   var [organList, setOrganList] = useState();
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   var [userDev, setUserDev] = useState(false);
+  var [regStatus, setRegStatus] = useState(false);
   var [isLoading, setIsLoading] = useState(true);
   var [dtloading, setDTLoading] = useState(true);
   var [bannerTitle,setBannerTitle] = useState();
@@ -94,10 +84,8 @@ export function App (props){
   var [bannerShow,setBannerShow] = useState(false);
   // var [groupsLoading, setGroupsLoading] = useState(true);
   var [routingMessage] = useState({
-    // Route: [Message, solution/alternative]
     Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
   });
-  // const userContextText1 = useContext(UserContext);
 
   
   useEffect(() => {
@@ -105,11 +93,9 @@ export function App (props){
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
-      // Grabs the ?info= bit
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
       localStorage.setItem("isHubmapUser", true);
-      // Redirect to home page without query string
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
@@ -174,9 +160,7 @@ export function App (props){
         console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
         let dtypes = response;
         setDataTypeList(dtypes);
-        setDataTypeListPrimary(dtypes);
         setDataTypeListAll(dtypes);
-        setDisplaySubtypes(dtypes);
         ubkg_api_get_organ_type_set()
           .then((res) => {
             setOrganList(res);
@@ -261,7 +245,7 @@ export function App (props){
   }
   
   function urlChange(target) {
-    if(target && target!=undefined){
+    if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
       navigate(lowerTarget,  { replace: true });
     }
@@ -280,14 +264,10 @@ export function App (props){
     setSnackMessage("Entity Updated Successfully!");
     setShowSnack(true)
     onClose();
-    // setNewEntity(entity)
-    // setSuccessDialogRender(true);
   }
 
 
   
-  
-
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
@@ -330,7 +310,6 @@ export function App (props){
       />       
       
       <Timer logout={Logout}/>
-
       <div id="content" className="container">
       <Drawer 
         sx={{
@@ -413,8 +392,6 @@ export function App (props){
                 <Route path="*" element={ <Login />} />
                 <Route path="/login" element={ <Login />} />
             </Routes>
-
-
           <Dialog
             open={loginDialogRender}
             onClose={onCloseLogin}
@@ -428,7 +405,6 @@ export function App (props){
               backgroundColor="red"
               id="alert-dialog-title"
             >
-
             <React.Fragment>
             <AnnouncementTwoToneIcon /> Session Has Ended
             </React.Fragment>
@@ -465,14 +441,17 @@ export function App (props){
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
             onError={(error, errorInfo) => {
-              // log the error
               console.log("Error caught!");  
               console.error(error);
               console.error(errorInfo);
-              // record the error in an APM tool...
             }}>
-          <Paper className="px-5 py-4">
+            <Paper className="px-5 py-4">
+
+
+
             <Routes>
+
+              
               
               <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
@@ -504,7 +483,7 @@ export function App (props){
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} dtl_all={dataTypeListAll} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                   <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
                   <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
@@ -540,7 +519,6 @@ export function App (props){
                 <Result
                   result={{entity:newEntity}}
                   onReturn={onCloseSuccess}
-                  // handleCancel={this.props.handleCancel}
                   onCreateNext={null}
                   entity={newEntity}
                 />
