@@ -36,6 +36,7 @@ import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./servi
 import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
 import {htmlDecode} from "./utils/string_helper";
+// import useScript from './utils/hooks/useScript';
 
 // import {ErrBox} from "../utils/ui_elements";
   // Site Content
@@ -112,57 +113,55 @@ export function App (props){
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
-    // Setting Banner
-    try{
-      if(process.env.REACT_APP_BANNER_DETAILS && process.env.REACT_APP_BANNER_DETAILS!==""){
-        setBannerTitle(process.env.REACT_APP_BANNER_TITLE ? process.env.REACT_APP_BANNER_TITLE : "" );
-        setBannerDetails(process.env.REACT_APP_BANNER_DETAILS);
-        setBannerShow(true)
-      }
-    }catch(error){
-      console.debug('%c◉ Banner Set Error: ', 'color:#ff005d', error );
-    }
-
-    try {
-      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        // console.debug("LocalStorageAuth", results);
-
-        if (results && results.status === 200) {
+    if(localStorage.getItem("info")  ){
+      console.debug('%c◉ localStorage.getItem("info") ', 'color:#00ff7b', localStorage.getItem("info"));
+      try {
+        ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
           // console.debug("LocalStorageAuth", results);
-          setUserGroups(results.results);
-          setUserDataGroups(results.results);
-          if (results.results.length > 0) { 
-            setRegStatus(true); 
-            for (let group in results.results) {
-              if(results.results[group].displayname.includes("IEC")){
-                setUserDev(true)
+
+          if (results && results.status === 200) {
+            // console.debug("LocalStorageAuth", results);
+            setUserGroups(results.results);
+            setUserDataGroups(results.results);
+            if (results.results.length > 0) { 
+              setRegStatus(true); 
+              for (let group in results.results) {
+                if(results.results[group].displayname.includes("IEC")){
+                  setUserDev(true)
+                }
               }
             }
-          }
-          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-          setTimerStatus(false);
-          setIsLoading(false);
-          setAuthStatus(true);
-        } else if (results && results.status === 401) {
-          setGroupsToken(null);
-          setAuthStatus(false);
-          setRegStatus(false);
-          setTimerStatus(false);
-          setIsLoading(false);
-          if (localStorage.getItem("isHubmapUser")) {
-            // If we were logged out and we have an old token,
-            // We should promopt to sign back in
-            CallLoginDialog();
-          }
-        } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
-          // console.debug("HERE results", results, results.results);
-          setAuthStatus(true);
-          setRegStatus(false);
-          setUnegStatus(true);
-          setIsLoading(false);   
+            setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+            setTimerStatus(false);
+            setIsLoading(false);
+            setAuthStatus(true);
+          } else if (results && results.status === 401) {
+            console.debug('%c◉ FAIL WITH 410 ', 'color:#00ff7b', );
+            setGroupsToken(null);
+            setAuthStatus(false);
+            setRegStatus(false);
+            setTimerStatus(false);
+            setIsLoading(false);
+            if (localStorage.getItem("isHubmapUser")) {
+              // If we were logged out and we have an old token,
+              // We should promopt to sign back in
+              CallLoginDialog();
+            }
+          } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
+            // console.debug("HERE results", results, results.results);
+            setAuthStatus(true);
+            setRegStatus(false);
+            setUnegStatus(true);
+            setIsLoading(false);  
+        }
+      });
+      }catch(error){
+        console.debug('%c◉ FAIL WITH ERROR 410 ', 'color:#ff0000', );
+        setTimerStatus(false);
+        setIsLoading(false)
+        throw new Error(error);
       }
-    });
-    }catch(error){
+    }else{
       setTimerStatus(false);
       setIsLoading(false)
     }
@@ -197,23 +196,41 @@ export function App (props){
             reportError(error)
         } 
       });
-  }, [ ]);
+  }, [unregStatus ]);
 
   useEffect(() => {
-    try {
-      ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-      .then((res) => {
-        var allGroups = sortGroupsByDisplay(res.results);
-        console.debug('%c⊙ allGroups!!', 'color:#00ff7b', allGroups );
-        setAllGroups(allGroups);
-      })
-      .catch((err) => {
-        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
-      })
-    } catch (error) {
-      console.debug("%c⭗", "color:#ff005d",error);
+    if(localStorage.getItem("info")){
+      try {
+        ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((res) => {
+          var allGroups = sortGroupsByDisplay(res.results);
+          console.debug('%c⊙ allGroups!!', 'color:#00ff7b', allGroups );
+          setAllGroups(allGroups);
+        })
+        .catch((err) => {
+          console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+        })
+      } catch (error) {
+        console.debug("%c⭗", "color:#ff005d",error);
+      }
     }
 
+  },[])
+  
+  
+  
+  
+  useEffect(() => {
+    // Banner Setting
+    // We'll sometimes have details & no title, 
+    // but ALWAYS have details
+    if( window.hasOwnProperty('REACT_APP_BANNER_DETAILS') && window.REACT_APP_BANNER_DETAILS!==""){
+      console.log("REACT_APP_BANNER_TITLE", window.REACT_APP_BANNER_TITLE)
+      console.log("REACT_APP_BANNER_DETAILS", window.REACT_APP_BANNER_DETAILS)
+      setBannerTitle(window.REACT_APP_BANNER_TITLE ? window.REACT_APP_BANNER_TITLE : "" );
+      setBannerDetails(window.REACT_APP_BANNER_DETAILS);
+      setBannerShow(true)
+    }
   },[])
   
   
@@ -384,7 +401,7 @@ export function App (props){
             <div dangerouslySetInnerHTML={{ __html: bannerDetails}} />
           </div>
       )}
-      {isLoading || dtloading || (!allGroups || allGroups.length<=0) && (
+      {isLoading || dtloading || (groupsToken && (!allGroups || allGroups.length<=0)) && (
         <LinearProgress />
       )}
 
