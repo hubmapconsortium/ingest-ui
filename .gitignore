@@ -50,6 +50,9 @@ src/yarn-error.log*
 src/build/*
 !src/build/README.md
 
+#Ignoring the local liveBanner file in Public
+src/public/assets/liveBanner.js
+
 # VS Code 
 *.code-workspace
 favorites.json
