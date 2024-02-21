@@ -20,6 +20,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 
 
 import '../../App.css';
@@ -1690,20 +1691,29 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
         )}
         {this.state.nextHubIDs &&(
           <Grid item xs={6}>
+
             <Typography>Next Revisions</Typography>
-            <List
-              divider={true}
-              dense={true}
-              sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
-              {this.state.nextHubIDs.map((hid, index) => {
-                return (
-                  <ListItem sx={{display:"flex"}} key={index + 1}  href={"/"+hid+""}>
-                    <ListItemText primary={hid} />
-                  </ListItem>
-                );
-              })}
-            </List>
+
+            {this.state.nextHubIDs ? (
+              <List
+                divider={true}
+                dense={true}
+                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
+                {this.state.nextHubIDs.map((hid, index) => {
+                  return (
+                    <ListItem sx={{display:"flex"}} key={index + 1}  href={"/"+hid+""}>
+                      <ListItemText primary={hid} />
+                    </ListItem>
+                  );
+                })}
+              </List>
+            ) : (
+              <Skeleton variant="rectangular" width={210} height={118} />
+            )}
+
+
           </Grid>
+          
         )}
       </Grid>
     )
@@ -1817,39 +1827,6 @@ name, display_doi, doi
     });
   }
 
-//  renderOneAssay(val, idx) {
-//   var idstr = 'dt_' + val.term.toLowerCase().replace(' ','_');
-
-//   return (
-//     <div 
-//       className='form-group form-check' 
-//       key={idstr}>
-//       <input 
-//         type='radio' 
-//         className='form-check-input' 
-//         name={val.name} 
-//         key={idstr} 
-//         id={idstr}
-//         onChange={this.handleInputChange} 
-//         checked={this.state.dataset_type.has(val.term)}
-//       />
-//       <label className='form-check-label' htmlFor={idstr}>{val.term}</label>
-//     </div>
-//   )
-// }
-
-  // isAssayCheckSet(assay) {
-  //   try {    
-  //     if (this.props.editingDataset.dataset_type) {
-  //       return this.props.editingDataset.dataset_type.includes(assay);
-  //     } else{
-  //       return false
-  //     }
-  //   } catch {
-  //     return ("Error");
-  //    }
-  //  }
-
    renderDatsetTypeDropdown(){
     return (
       <Select
@@ -1876,93 +1853,6 @@ name, display_doi, doi
     )
    }
 
-  // renderAssayColumn(min, max) {
-  //   // Hijacking Select options based on Primary DT status
-  //   // @TODO there will be ways to verify primary status in the near future?
-  //   // if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
-  //   //   // console.debug("dtl_primary",this.props.dtl_primary);
-  //   //   return (
-  //   //     this.props.dtl_primary.slice(min, max).map((val, idx) => {return this.renderAssay(val, idx)})
-  //   //     )
-  //   // }else{  // false = Not primary DT, set options to full
-  //   //   return (
-  //   //     this.props.dtl_all.slice(min, max).map((val, idx) =>{
-  //   //       return this.renderAssay(val, idx)
-  //   //     })
-  //   //   )
-  //   // }
-  //   return (
-  //     this.props.dtl_all.slice(min, max).map((val, idx) =>{
-  //       return this.renderAssay(val, idx)
-  //     })
-  //   )
-  // }
-
-
-  // renderAssay(val) {
-  //   return (<option key={val.term} value={val.term} id={val.term}>{val.term}</option>)
-  // }
-
-  // renderListAssay(val) {
-  //   return (<li key={val}>{val}</li>)
-  // }
-
-  // renderStringAssay(val) {
-  //   return ({val})
-  // }
-
-  // renderDisabledNonprimaryDT(val) {
-  //   return (<li key={val}>{val}</li>)
-  // }
-
-
-  // renderMultipleAssays() {
-  //   var arr = Array.from(this.state.dataset_type)
-  //   return (arr.map((val) => {return this.renderListAssay(val)}))
-  // }
-
-   
-  // renderAssayArray() {
-  //     // var len = 0;
-  //     var dtlistLen = this.state.dataTypeDropdown.length;
-  //     if(this.props.newForm){
-  //       dtlistLen = this.props.dtl_primary.length;
-  //     }
-  // 	    return (<>
-  // 		    <Select 
-  //           native
-  //           name="dt_select"
-  //           className="form-select" 
-  //           // disabled={ (!this.state.writeable || !this.state.assay_type_primary) || this.state.disableSelectDatatype }
-  //           disabled={ !this.state.writeable || this.state.disableSelectDatatype }
-  //           value={this.state.dataset_type} 
-  //           id="dt_select" 
-  //           onChange={this.handleInputChange}>
-  //           <option></option>
-  //           {this.renderAssayColumn(0, dtlistLen)}
-  //         </Select>
-  //         </> )
-  
-  //     // }    
-  //   }
-   
-    // assay_contains_pii(assay) {
-    // New Dataset Type resource does not contain Pii Info, 
-    // Requested check removed via slack 
-    // hubmapconsortium.slack.com/archives/GNJ4QBLEL/p1705082366315539?thread_ts=1705076459.524989&cid=GNJ4QBLEL
-    // return false
-    // let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
-    // let assay_val = this.props.dataset_type 
-    // for (let i in this.props.dataTypeList) {
-    //   let e = this.props.dataTypeList
-    //   if (e['name'] === assay) {
-    //     console.debug(" contains-pii e:",e,e['contains-pii']);
-    //     console.debug('%c⊙ PII', 'color:#00ff7b', e['contains-pii'] );
-    //       return e['contains-pii']
-    //   }
-    // }
-    // return false
-    //}
 
   render() {
     return (
@@ -2369,100 +2259,7 @@ name, display_doi, doi
                 </div>
               </div>
             )}
- 
-          {/* {this.state.assay_metadata_status !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='assay_metadata_status'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Assay Metadata Status
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.assay_metadata_status === 0 && (
-                  <span className='badge badge-secondary'>No metadata</span>
-                )}
-                {this.state.assay_metadata_status === 1 && (
-                  <span className='badge badge-primary'>Metadata provided</span>
-                )}
-                {this.state.assay_metadata_status === 2 && (
-                  <span className='badge badge-primary'>Metadata curated</span>
-                )}
-              </div>
-            </div>
-          )} */}
-          {/* {this.state.data_metric_availability !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='data_metric_availability'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Data Metric Availability
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.data_metric_availability === 0 && (
-                  <span className='badge badge-secondary'>
-                    No quality metrics are available
-                  </span>
-                )}
-                {this.state.data_metric_availability === 1 && (
-                  <span className='badge badge-primary'>
-                    Quality metrics are available
-                  </span>
-                )}
-              </div>
-            </div>
-          )} */}
-          {/* {this.state.data_processing_level !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='data_processing_level'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Data Proccessing Level
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.data_processing_level === 0 && (
-                  <span className='badge badge-secondary'>
-                    Uploaded data. No standardized processing has been performed
-                    by the HIVE.
-                  </span>
-                )}
-                {this.state.data_processing_level === 1 && (
-                  <span className='badge badge-primary'>
-                    Processing has been performed with a standard HIVE pipeline.
-                  </span>
-                )}
-                {this.state.data_processing_level === 2 && (
-                  <span className='badge badge-primary'>
-                    Additional processing has been performed.
-                  </span>
-                )}
-              </div>
-            </div>
-          )} */}
-          {/* {this.state.dataset_sign_off_status !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='dataset_sign_off_status'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Dataset Sign Off Status
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.dataset_sign_off_status === 0 && (
-                  <span className='badge badge-secondary'>
-                    Expert has not signed off on the data
-                  </span>
-                )}
-                {this.state.dataset_sign_off_status === 1 && (
-                  <span className='badge badge-primary'>
-                    Expert has signed off on the data
-                  </span>
-                )}
-              </div>
-            </div>
-          )} */}
+
           <div className="col-8">
             {this.state.submit_error && (
               <Alert severity="error" >
