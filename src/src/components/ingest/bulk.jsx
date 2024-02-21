@@ -572,7 +572,7 @@ renderFileGrabber = () =>{
         {this.state.error_status === false&&(
           <div className="">
             <div className="text-left">
-              <h4> <DescriptionIcon style={{ fontSize:40 }}  /> {this.state.tsvFile.name} <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small></h4>
+              <h4> <DescriptionIcon style={{ fontSize:"4em" }}  /> {this.state.tsvFile.name} <small><em>({prettyBytes(this.state.tsvFile.size)})</em></small></h4>
               {this.renderGroupSelect()}
             </div>
           </div>

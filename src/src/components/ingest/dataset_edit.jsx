@@ -887,8 +887,8 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
           let data = {
             lab_dataset_id:this.state.lab_dataset_id,
             contains_human_genetic_sequences:this.state.contains_human_genetic_sequences,
-            dataset_type:this.state.dataset_type,
-            description:this.state.description,
+            // dataset_type:this.state.dataset_type, Added To Create Dataset function; change no longer supported in other entity operations
+            description:this.state.description, 
             dataset_info:this.state.dataset_info
           };
           if(this.state.has_admin_priv){
@@ -1108,6 +1108,8 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
               });
             }
           } else {  // new creations
+            
+            data['dataset_type']=this.state.dataset_type
 
             if (this.state.lab_dataset_id) {
               data["lab_dataset_id"] = this.state.lab_dataset_id;

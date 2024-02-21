@@ -49,6 +49,7 @@ import {RenderSample} from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 import {RenderPublication} from "./components/publications";
 import {RenderCollection} from "./components/collections";
+import {RenderMetadata} from "./components/metadata";
 
 import {RenderBulk} from "./components/bulk";
 
@@ -511,6 +512,12 @@ export function App (props){
 
               <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
               <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+              <Route path="/metadata">
+                <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
+                <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
+                <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
+                <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
+              </Route>
             </Routes>
 
           <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>

@@ -1,64 +1,85 @@
 import React, { useState, useEffect } from 'react'
 
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faTrash } from "@fortawesome/free-solid-svg-icons"; 
-const SourceTable = (headers,rows,cellAction,writeable) => {
-  // const mapped = Object.entries(headers).map(([k,v]) => `${k}_${v}`);
-  console.debug("SourceTable",headers,rows,cellAction,writeable);
-  return (
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
-    <TableContainer 
-      component={Paper} 
-      style={{ maxHeight: 450 }}
-      >
-      <Table aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
-        <TableHead className="thead-dark font-size-sm">
-          <TableRow className="   " >
-          {headers.map((item, i) => (
-            <TableCell component="th">{item}</TableCell>
-          ))}
-          </TableRow>
-        </TableHead>
+
+export const renderTableBody = props => {
+    // console.debug("typeof", this.state.uploadedSources, typeof this.state.uploadedSources);
+    if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
+      return(
         <TableBody>
-          
-          {rows.map((row, index) => (
-            <TableRow 
-              key={("rowName_"+index)}
-              className="row-selection"
-              >
-              <TableCell  className="clicky-cell" scope="row">{row.name}</TableCell>
-              <TableCell  className="clicky-cell" scope="row">{row.affiliation}</TableCell>
-              <TableCell  className="clicky-cell" scope="row"> {row.ordid_id} </TableCell>
-              <TableCell  className="clicky-cell" align="right" scope="row"> 
-              {writeable && (
-                <React.Fragment>
-                  <FontAwesomeIcon
-                    className='inline-icon interaction-icon '
-                    icon={faTrash}
-                    color="red"  
-                    onClick={() => cellAction(row,index)}
-                  />
-                </React.Fragment>
-                )}
-                {writeable && (
-                  <small className="text-muted">N/A</small>
-                )}
-              </TableCell>
+          {this.state.uploadedSources && this.state.uploadedSources.map((row, index) => (
+            <TableRow  key={(row.id+""+index)}>
+              {/* {console.debug("row", row)} */}
+              {this.state.registeredStatus === true && (
+                <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
+              )}
+              <TableCell  className="" scope="row"> {row.lab_id ? row.lab_id : row.lab_tissue_sample_id}</TableCell>
+              <TableCell  className="" scope="row"> {row.sample_category ? row.sample_category : row.specimen_type}</TableCell>
+              <TableCell  className="" scope="row"> {row.organ_type ? row.organ_type : ""}</TableCell>
+              <TableCell  className="" scope="row"> {row.sample_protocol ? row.sample_protocol : row.protocol_url}</TableCell>
+              <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
-      </Table>
-    </TableContainer> 
-  )
-};
+        );
+    }else if(this.props.bulkType.toLowerCase() === "donors" && this.state.uploadedSources){
+      return(
+      <TableBody>
+        {this.state.uploadedSources.map((row, index) => (
+          <TableRow  key={(row.hubmap_id+""+index)}>
+            {this.state.registeredStatus === true && (
+              <TableCell  className="" scope="row"> {row.hubmap_id}</TableCell>
+            )}
+            <TableCell  className="" scope="row"> {row.lab_id ? row.lab_id : row.lab_donor_id}</TableCell>
+            <TableCell  className="" scope="row"> {row.lab_name ? row.lab_name : row.label}</TableCell>
+            <TableCell  className="" scope="row"> {row.selection_protocol ? row.selection_protocol : row.protocol_url}</TableCell>
+            <TableCell  className="" scope="row"> {this.renderTrimDescription(row.description)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    );
+  }    
+}
 
-export default SourceTable;
 
-
+export const InvalidTable = props => {
+  return(
+    <TableContainer 
+      component={Paper} 
+      style={{ maxHeight:450 }}
+      >
+    <Table 
+      aria-label={"Uploaded Errors"+this.props.type }
+      size="small"
+      stickyHeader 
+      className="table table-striped table-hover mb-0 uploadedTable ">
+      <TableHead  className="thead-dark font-size-sm">
+        <TableRow >
+          <TableCell  component="th" variant="head" width="7%">Row</TableCell>
+          <TableCell  component="th" variant="head">Error</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {this.props.errors.map((item, index) => (
+          <TableRow  key={("rowitem_"+index)} >
+            <TableCell  className="" scope="row"> 
+              {item.row}
+            </TableCell>
+            <TableCell  className="" scope="row"> 
+              {item.message}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </TableContainer>
+      
+  ) 
+}
