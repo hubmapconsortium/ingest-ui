@@ -26,7 +26,7 @@ import {
 import {api_search2} from "../../service/search_api";
 
 export const RenderSearchTable = (props) => {
-  var [search_title] = useState(props.search_title ? props.search_title : [""]);
+  var [search_title] = useState(props.searchTitle ? props.searchTitle : "Search");
 
   // TABLE & FILTER VALUES
   var [allGroups] = useState(props.allGroups ? props.allGroups : []);
@@ -399,14 +399,8 @@ export const RenderSearchTable = (props) => {
       <Box
         sx={{flexDirection: "column",
           justifyContent:"center",}}>
-        <Typography
-          component={"h1"}
-          variant={"h4"}
-          fontWeight={500}
-          align={"center"}>
-          {search_title}
-        </Typography>
-
+        
+        <span className="portal-label text-center">{search_title} </span>
         <Typography align={"center"} variant="subtitle1" gutterBottom>
           Use the filter controls to search for Donors, Samples, Datasets, Data
           Uploads, Publications, or Collections. <br />
