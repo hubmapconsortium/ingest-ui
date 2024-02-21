@@ -21,6 +21,8 @@ services:
     volumes:
       # Mount the logging to container
       - "../log:/usr/src/app/log"
+      # For configurable banner message
+      - "../src/public/assets/liveBanner.js:/usr/src/app/src/build/assets/liveBanner.js"
     networks:
       - gateway_hubmap
 

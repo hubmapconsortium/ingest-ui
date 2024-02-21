@@ -4,7 +4,6 @@ import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
 import StandardErrorBoundary from "./utils/errorWrap";
 import ErrorPage from "./utils/errorPage";
-// Login Management
 import Login from './components/ui/login';
 import Timer from './components/ui/idle';
 
@@ -35,14 +34,12 @@ import {ingest_api_users_groups,ingest_api_all_groups} from './service/ingest_ap
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
+import {htmlDecode} from "./utils/string_helper";
+// import useScript from './utils/hooks/useScript';
 
-// import {ErrBox} from "../utils/ui_elements";
-  // Site Content
 import {Navigation} from "./Nav";
-// import {RenderLogin} from "./components/login";
 
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
-//  import {RenderSearchComponent} from './components/SearchComponent';
 
 import Result from "./components/uuid/result";
 
@@ -52,11 +49,10 @@ import {RenderSample} from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 import {RenderPublication} from "./components/publications";
 import {RenderCollection} from "./components/collections";
+import {RenderMetadata} from "./components/metadata";
 
-// Bulky
 import {RenderBulk} from "./components/bulk";
 
-// The Old Stuff
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 import Box from '@mui/material/Box';
@@ -64,7 +60,6 @@ import Grid from '@mui/material/Grid';
 
 
 export function App (props){
-  // var [uploadsDialogRender, setUploadsDialogRender] = useState(false);
   let navigate = useNavigate();
   var [loginDialogRender, setLoginDialogRender] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
@@ -72,28 +67,26 @@ export function App (props){
   var [showSnack, setShowSnack] = useState(false);
   var [newEntity, setNewEntity] = useState(null);
   var [authStatus, setAuthStatus] = useState(false);
-  var [regStatus, setRegStatus] = useState(false);
   var [unregStatus, setUnegStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [allGroups, setAllGroups] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
   var [dataTypeListAll, setDataTypeListAll] = useState({});
-  var [dataTypeListPrimary, setDataTypeListPrimary] = useState({});
-  var [displaySubtypes, setDisplaySubtypes] = useState();
   var [organList, setOrganList] = useState();
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   var [userDev, setUserDev] = useState(false);
-  var [bannerShow,setBannerShow] = useState(true);
+  var [regStatus, setRegStatus] = useState(false);
   var [isLoading, setIsLoading] = useState(true);
   var [dtloading, setDTLoading] = useState(true);
+  var [bannerTitle,setBannerTitle] = useState();
+  var [bannerDetails,setBannerDetails] = useState();
+  var [bannerShow,setBannerShow] = useState(false);
   // var [groupsLoading, setGroupsLoading] = useState(true);
   var [routingMessage] = useState({
-    // Route: [Message, solution/alternative]
     Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
   });
-  // const userContextText1 = useContext(UserContext);
 
   
   useEffect(() => {
@@ -101,54 +94,61 @@ export function App (props){
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if (info !== null) {
-      // Grabs the ?info= bit
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
       localStorage.setItem("isHubmapUser", true);
-      // Redirect to home page without query string
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
 
-    try {
-      ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-        // console.debug("LocalStorageAuth", results);
-
-        if (results && results.status === 200) {
+    if(localStorage.getItem("info")  ){
+      console.debug('%c◉ localStorage.getItem("info") ', 'color:#00ff7b', localStorage.getItem("info"));
+      try {
+        ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
           // console.debug("LocalStorageAuth", results);
-          setUserGroups(results.results);
-          setUserDataGroups(results.results);
-          if (results.results.length > 0) { 
-            setRegStatus(true); 
-            for (let group in results.results) {
-              if(results.results[group].displayname.includes("IEC")){
-                setUserDev(true)
+
+          if (results && results.status === 200) {
+            // console.debug("LocalStorageAuth", results);
+            setUserGroups(results.results);
+            setUserDataGroups(results.results);
+            if (results.results.length > 0) { 
+              setRegStatus(true); 
+              for (let group in results.results) {
+                if(results.results[group].displayname.includes("IEC")){
+                  setUserDev(true)
+                }
               }
             }
-          }
-          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-          setTimerStatus(false);
-          setIsLoading(false);
-          setAuthStatus(true);
-        } else if (results && results.status === 401) {
-          setGroupsToken(null);
-          setAuthStatus(false);
-          setRegStatus(false);
-          setTimerStatus(false);
-          setIsLoading(false);
-          if (localStorage.getItem("isHubmapUser")) {
-            // If we were logged out and we have an old token,
-            // We should promopt to sign back in
-            CallLoginDialog();
-          }
-        } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
-          // console.debug("HERE results", results, results.results);
-          setAuthStatus(true);
-          setRegStatus(false);
-          setUnegStatus(true);
-          setIsLoading(false);   
+            setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
+            setTimerStatus(false);
+            setIsLoading(false);
+            setAuthStatus(true);
+          } else if (results && results.status === 401) {
+            console.debug('%c◉ FAIL WITH 410 ', 'color:#00ff7b', );
+            setGroupsToken(null);
+            setAuthStatus(false);
+            setRegStatus(false);
+            setTimerStatus(false);
+            setIsLoading(false);
+            if (localStorage.getItem("isHubmapUser")) {
+              // If we were logged out and we have an old token,
+              // We should promopt to sign back in
+              CallLoginDialog();
+            }
+          } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
+            // console.debug("HERE results", results, results.results);
+            setAuthStatus(true);
+            setRegStatus(false);
+            setUnegStatus(true);
+            setIsLoading(false);  
+        }
+      });
+      }catch(error){
+        console.debug('%c◉ FAIL WITH ERROR 410 ', 'color:#ff0000', );
+        setTimerStatus(false);
+        setIsLoading(false)
+        throw new Error(error);
       }
-    });
-    }catch(error){
+    }else{
       setTimerStatus(false);
       setIsLoading(false)
     }
@@ -161,9 +161,7 @@ export function App (props){
         console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
         let dtypes = response;
         setDataTypeList(dtypes);
-        setDataTypeListPrimary(dtypes);
         setDataTypeListAll(dtypes);
-        setDisplaySubtypes(dtypes);
         ubkg_api_get_organ_type_set()
           .then((res) => {
             setOrganList(res);
@@ -183,23 +181,41 @@ export function App (props){
             reportError(error)
         } 
       });
-  }, [ ]);
+  }, [unregStatus ]);
 
   useEffect(() => {
-    try {
-      ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-      .then((res) => {
-        var allGroups = sortGroupsByDisplay(res.results);
-        console.debug('%c⊙ allGroups!!', 'color:#00ff7b', allGroups );
-        setAllGroups(allGroups);
-      })
-      .catch((err) => {
-        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
-      })
-    } catch (error) {
-      console.debug("%c⭗", "color:#ff005d",error);
+    if(localStorage.getItem("info")){
+      try {
+        ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((res) => {
+          var allGroups = sortGroupsByDisplay(res.results);
+          console.debug('%c⊙ allGroups!!', 'color:#00ff7b', allGroups );
+          setAllGroups(allGroups);
+        })
+        .catch((err) => {
+          console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+        })
+      } catch (error) {
+        console.debug("%c⭗", "color:#ff005d",error);
+      }
     }
 
+  },[])
+  
+  
+  
+  
+  useEffect(() => {
+    // Banner Setting
+    // We'll sometimes have details & no title, 
+    // but ALWAYS have details
+    if( window.hasOwnProperty('REACT_APP_BANNER_DETAILS') && window.REACT_APP_BANNER_DETAILS!==""){
+      console.log("REACT_APP_BANNER_TITLE", window.REACT_APP_BANNER_TITLE)
+      console.log("REACT_APP_BANNER_DETAILS", window.REACT_APP_BANNER_DETAILS)
+      setBannerTitle(window.REACT_APP_BANNER_TITLE ? window.REACT_APP_BANNER_TITLE : "" );
+      setBannerDetails(window.REACT_APP_BANNER_DETAILS);
+      setBannerShow(true)
+    }
   },[])
   
   
@@ -230,7 +246,7 @@ export function App (props){
   }
   
   function urlChange(target) {
-    if(target && target!=undefined){
+    if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
       navigate(lowerTarget,  { replace: true });
     }
@@ -249,14 +265,10 @@ export function App (props){
     setSnackMessage("Entity Updated Successfully!");
     setShowSnack(true)
     onClose();
-    // setNewEntity(entity)
-    // setSuccessDialogRender(true);
   }
 
 
   
-  
-
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
@@ -299,7 +311,6 @@ export function App (props){
       />       
       
       <Timer logout={Logout}/>
-
       <div id="content" className="container">
       <Drawer 
         sx={{
@@ -366,11 +377,11 @@ export function App (props){
       </Drawer>
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
-            <Typography> <strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas,</strong> which are linked from <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank">this page</Link>. The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <Link to="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit#heading=h.d6xf2xeysl78" target="_blank">process outlined here</Link>.  </Typography>
-            <Typography><strong>Please also <Link to="https://docs.google.com/spreadsheets/d/19ZJx_EVyBGKNeW0xxQlOsMdt1DVNZYWmuG014rXsQP4/edit#gid=0" target="_blank">update this data pulse check spreadsheet</Link></strong> so we know what data is coming from your team. We're looking forward to your submissions! Please contact <a href="mailto:help@hubmapconsortium.org ">help@hubmapconsortium.org</a> if you have questions.</Typography>
+            <h2>{bannerTitle}</h2>
+            <div dangerouslySetInnerHTML={{ __html: bannerDetails}} />
           </div>
       )}
-      {isLoading || dtloading || (!allGroups || allGroups.length<=0) && (
+      {isLoading || dtloading || (groupsToken && (!allGroups || allGroups.length<=0)) && (
         <LinearProgress />
       )}
 
@@ -382,8 +393,6 @@ export function App (props){
                 <Route path="*" element={ <Login />} />
                 <Route path="/login" element={ <Login />} />
             </Routes>
-
-
           <Dialog
             open={loginDialogRender}
             onClose={onCloseLogin}
@@ -397,7 +406,6 @@ export function App (props){
               backgroundColor="red"
               id="alert-dialog-title"
             >
-
             <React.Fragment>
             <AnnouncementTwoToneIcon /> Session Has Ended
             </React.Fragment>
@@ -434,14 +442,17 @@ export function App (props){
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
             onError={(error, errorInfo) => {
-              // log the error
               console.log("Error caught!");  
               console.error(error);
               console.error(errorInfo);
-              // record the error in an APM tool...
             }}>
-          <Paper className="px-5 py-4">
+            <Paper className="px-5 py-4">
+
+
+
             <Routes>
+
+              
               
               <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
               <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
@@ -473,7 +484,7 @@ export function App (props){
                   <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
                   <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} dtl_all={dataTypeListAll} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                   <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
                   <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                   <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
@@ -501,6 +512,12 @@ export function App (props){
 
               <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
               <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+              <Route path="/metadata">
+                <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
+                <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
+                <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
+                <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
+              </Route>
             </Routes>
 
           <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
@@ -509,7 +526,6 @@ export function App (props){
                 <Result
                   result={{entity:newEntity}}
                   onReturn={onCloseSuccess}
-                  // handleCancel={this.props.handleCancel}
                   onCreateNext={null}
                   entity={newEntity}
                 />
