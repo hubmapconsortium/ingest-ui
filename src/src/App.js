@@ -34,9 +34,7 @@ import {ingest_api_users_groups,ingest_api_all_groups} from './service/ingest_ap
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
-import {htmlDecode} from "./utils/string_helper";
-// import useScript from './utils/hooks/useScript';
-
+// import {htmlDecode} from "./utils/string_helper";
 import {Navigation} from "./Nav";
 
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
@@ -203,8 +201,6 @@ export function App (props){
   },[])
   
   
-  
-  
   useEffect(() => {
     // Banner Setting
     // We'll sometimes have details & no title, 
@@ -217,7 +213,6 @@ export function App (props){
       setBannerShow(true)
     }
   },[])
-  
   
 
 
@@ -251,6 +246,7 @@ export function App (props){
       navigate(lowerTarget,  { replace: true });
     }
   }
+
 
 
   function creationSuccess(entity) {
@@ -314,9 +310,9 @@ export function App (props){
       <div id="content" className="container">
       <Drawer 
         sx={{
-          color:               'white',
-          height:              150   ,
-          flexShrink:          0,
+          color:'white',
+          height:150   ,
+          flexShrink:0,
           '& .MuiDrawer-paper':{height:   150,
             boxSizing:'border-box',},
         }}

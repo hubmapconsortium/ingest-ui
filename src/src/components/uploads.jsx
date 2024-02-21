@@ -31,6 +31,7 @@ export const RenderUpload = (props) => {
       .then((response) => {
           if (response.status === 200) {
             setEntity(response.results);
+            document.title = ("HuBMAP Ingest Portal | Data Upload: "+response.results.hubmap_id +"" );
             setLoading(false);
           }else{
             console.error(response.status, response.results.error);

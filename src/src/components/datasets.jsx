@@ -72,6 +72,7 @@ export const RenderDataset = (props) => {
               setIsLoadingEntity(false); 
               var checkAssay = response.results.dataset_type;
               checkAssayType(checkAssay)
+              document.title = ("HuBMAP Ingest Portal | Dataset: "+response.results.hubmap_id +"" );
             }
             
           })  

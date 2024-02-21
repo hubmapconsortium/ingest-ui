@@ -128,6 +128,8 @@ class DatasetEdit extends Component {
     submitErrorResponse:"",
     submitErrorStatus:"",
     isValidData:true,
+    previousHubIDs:[],
+    nextHubIDs:[],
     formErrors:{
       contains_human_genetic_sequences:"",
       dataset_type:"",
@@ -138,20 +140,6 @@ class DatasetEdit extends Component {
     },
   };
 
-  // updateStateDataTypeInfo() {
-  //   let dataset_type = null;
-  //   let other_dt = undefined;
-  //   if (this.props.hasOwnProperty('editingDataset')
-  //     && this.props.editingDataset
-  //     && this.props.editingDataset.dataset_type) {
-  //     }
-
-  //     this.setState({
-  //       dataset_type:new Set(this.props.editingDataset.dataset_type),
-  //       has_other_datatype:other_dt !== undefined,
-  //       other_dt:other_dt,
-  //     });
-  //   }
     
     componentDidMount() {
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
@@ -232,58 +220,6 @@ class DatasetEdit extends Component {
       //
       }
 
-      // Revision UUID/HID match
-      // PREv
-      if(this.props.editingDataset && this.props.editingDataset.previous_revision_uuids && this.props.editingDataset.previous_revision_uuids.length >0){
-        console.debug('%c◉ HUBIDS ', 'color:#00ff7b', );
-        var pHubIDs= [];
-        this.props.editingDataset.previous_revision_uuids.forEach(function(uuid, index) {
-          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-            .then((response) => {
-              console.debug('%c◉ response ', 'color:#00ff7b',response.results.hubmap_id );
-              if(response.results.hubmap_id){
-                pHubIDs.push(response.results.hubmap_id)
-              }else{
-                pHubIDs.push(uuid)
-              }
-            })
-            .catch((error) => {
-              console.debug("UUIDCheck",error);
-              this.props.reportError(error);
-            })
-        });
-        this.setState({
-          previousHubIDs:pHubIDs
-        },() => {
-          console.debug('%c◉ previousHIDS ', 'color:#00ff7b', this.state.previousHubIDs);
-        })
-      }
-      // NEXT
-      if(this.props.editingDataset && this.props.editingDataset.next_revision_uuids && this.props.editingDataset.next_revision_uuids.length >0){
-        console.debug('%c◉ HUBIDS ', 'color:#00ff7b', );
-        var nHubIDs= [];
-        this.props.editingDataset.next_revision_uuids.forEach(function(uuid, index) {
-          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-            .then((response) => {
-              console.debug('%c◉ response ', 'color:#00ff7b',response.results.hubmap_id );
-              if(response.results.hubmap_id){
-                nHubIDs.push(response.results.hubmap_id)
-              }else{
-                nHubIDs.push(uuid)
-              }
-            })
-            .catch((error) => {
-              console.debug("UUIDCheck",error);
-              this.props.reportError(error);
-            })
-        });
-        this.setState({
-          nextHubIDs:nHubIDs
-        },() => {
-          console.debug('%c◉ nextHubIDs ', 'color:#00ff7b', this.state.nextHubIDs);
-        })
-      }
-
     ingest_api_users_groups(auth)
       .then((res) => {
         
@@ -328,19 +264,6 @@ class DatasetEdit extends Component {
         // Might have to assemble here for promise reasons?
         // ancestorList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
         this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)
-        // this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)
-        //   .then((response) => {
-        //       console.debug('%c⊙ RESP assembleSourceAncestorData', 'color:#00ff7b', response );
-        //       return response
-        //   })
-        //   .catch((error) => {
-        //     console.debug("sourceCompile",error);
-        //     this.props.reportError(error);
-        //   })   
-      
-
-
-        // console.debug('%c⊙ ancestorList', 'color:#8400FF', ancestorList );
       }
       // var sourceList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
       this.setState(
@@ -379,60 +302,94 @@ class DatasetEdit extends Component {
             });
         }
       );
-       // Now tha we've got that all set, 
-      // Here's the hack that disables changing the datatype 
-      // // if it's no longer a base primary type.  
-      // var dtlStatus = this.props.dtl_status;
-      // if(dtlStatus){
-      //   // We are primary type, only priamries in Dropdown
-      //   this.setState({disableSelectDatatype:false,
-      //     dataTypeDropdown:this.props.dtl_primary});
-      // }else{
-      //   // Not primary type, uneditable dropdown should contain all
-      //   this.setState({disableSelectDatatype:true,
-      //     dataTypeDropdown:this.props.dtl_all});
-      // }
-      // var selected = ""
-      // if(this.props.editingDataset  && this.props.editingDataset.dataset_type && this.props.editingDataset.dataset_type.length === 1){
-      //   // Set DT Select by state so it behaves as "controlled"
-      //   selected = this.props.editingDataset.dataset_type[0];
-      //   //
-      // }
+
       this.setState({
         dataset_type:this.props.editingDataset.dataset_type,
         dataTypeDropdown:this.props.dtl_all
       })
 
 
-        // Sets the Hubmap ID labels for Previous and Next version Buttons  
-        if(this.props.editingDataset.next_revision_uuid){
-          console.debug("next_revision_uuid",this.props.editingDataset.next_revision_uuid);
-          entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((response) => {
-            console.debug("next_revision_uuid RESPONSE",response.results);
-            if(response.results.hubmap_id){
-              this.setState({nextHID:response.results.hubmap_id})
-            }else{
-              console.debug("next_revision_uuid",response);
-            }
-          })
-          .catch((error) => {
-            console.debug("next_revision_uuid",error);
-            this.props.reportError(error);
-          })   
-        }
+      //  NEXT/PREV REVISION LIST BUILD
+      if(this.props.editingDataset && this.props.editingDataset.previous_revision_uuids && this.props.editingDataset.previous_revision_uuids.length >0){
+        var pHubIDs= [];
+        this.props.editingDataset.previous_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              if(response.results.hubmap_id){
+                pHubIDs.push({
+                  type: response.results.entity_type, 
+                  hubmapID: response.results.hubmap_id
+                })
+              }else{
+                pHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              pHubIDs.push(uuid)
+              console.debug("UUIDCheck",error);
+              this.props.reportError(error);
+            })
+        });
+        this.setState({
+          previousHubIDs:pHubIDs
+        },() => {
+        })
+      }
+      // NEXT
+      if(this.props.editingDataset && this.props.editingDataset.next_revision_uuids && this.props.editingDataset.next_revision_uuids.length >0){
+        var nHubIDs= [];
+        this.props.editingDataset.next_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              if(response.results.hubmap_id){
+                nHubIDs.push({
+                  type: response.results.entity_type, 
+                  hubmapID: response.results.hubmap_id
+                })
+              }else{
+                nHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              console.debug("UUIDCheck",error);
+              this.props.reportError(error);
+              nHubIDs.push(uuid)
+            })
+        });
+        this.setState({
+          nextHubIDs:nHubIDs
+        },() => {
+        })
+      }
+        // WE GET EM IN ARRAYS NOW!
+        // if(this.props.editingDataset.next_revision_uuid){
+        //   console.debug("next_revision_uuid",this.props.editingDataset.next_revision_uuid);
+        //   entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+        //   .then((response) => {
+        //     console.debug("next_revision_uuid RESPONSE",response.results);
+        //     if(response.results.hubmap_id){
+        //       this.setState({nextHID:response.results.hubmap_id})
+        //     }else{
+        //       console.debug("next_revision_uuid",response);
+        //     }
+        //   })
+        //   .catch((error) => {
+        //     console.debug("next_revision_uuid",error);
+        //     this.props.reportError(error);
+        //   })   
+        // }
         
-        if(this.props.editingDataset.previous_revision_uuid){
-          console.debug("prev_revision_uuid",this.props.editingDataset.previous_revision_uuid);
-          entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((response) => {
-            this.setState({prevHID:response.results.hubmap_id})
-          })
-          .catch((error) => {
-            console.debug("porev",error);
-            this.props.reportError(error);
-          })   
-        }
+        // if(this.props.editingDataset.previous_revision_uuid){
+        //   console.debug("prev_revision_uuid",this.props.editingDataset.previous_revision_uuid);
+        //   entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+        //   .then((response) => {
+        //     this.setState({prevHID:response.results.hubmap_id})
+        //   })
+        //   .catch((error) => {
+        //     console.debug("porev",error);
+        //     this.props.reportError(error);
+        //   })   
+        // }
     
     }
   }
@@ -1675,43 +1632,35 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
         {this.state.previousHubIDs &&(
           <Grid item xs={6}>
             <Typography>Previous Revisions</Typography>
-            <List
-              divider={true}
-              dense={true}
-              sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
-              {this.state.previousHubIDs.map((hid, index) => {
-                return (
-                  <ListItem sx={{display:"flex"}} key={index + 1}  href={"/"+hid+""}>
-                    <ListItemText primary={hid} />
-                  </ListItem>
-                );
-              })}
-            </List>
-          </Grid>
-        )}
-        {this.state.nextHubIDs &&(
-          <Grid item xs={6}>
-
-            <Typography>Next Revisions</Typography>
-
-            {this.state.nextHubIDs ? (
               <List
                 divider={true}
                 dense={true}
                 sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
-                {this.state.nextHubIDs.map((hid, index) => {
+                {this.state.previousHubIDs.map((entity, index) => {
                   return (
-                    <ListItem sx={{display:"flex"}} key={index + 1}  href={"/"+hid+""}>
-                      <ListItemText primary={hid} />
-                    </ListItem>
+                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
+                      <ListItemText primary={entity.hubmapID} />
+                    </ListItemButton>
                   );
                 })}
               </List>
-            ) : (
-              <Skeleton variant="rectangular" width={210} height={118} />
-            )}
-
-
+          </Grid>
+        )}
+        {this.state.nextHubIDs &&(
+          <Grid item xs={6}>
+            <Typography>Next Revisions</Typography>
+              <List
+                divider={true}
+                dense={true}
+                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
+                {this.state.nextHubIDs.map((entity, index) => {
+                  return (
+                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
+                      <ListItemText primary={entity.hubmapID} />
+                    </ListItemButton>
+                  );
+                })}
+              </List>
           </Grid>
           
         )}
