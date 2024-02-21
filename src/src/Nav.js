@@ -23,7 +23,7 @@ import UploadsForm from "./components/uploads/createUploads";
 export const Navigation = (props) => {
   const [userInfo, setUserInfo] = React.useState();
   // const [userGroups, setUserGroups] = React.useState();
-  // const [userDataGroups, setUserDataGroups] = React.useState([]);
+  const [userDataGroups, setUserDataGroups] = React.useState([]);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
   const [anchorEl_I, setAnchorEl_I] = React.useState(null);
   const [anchorEl_B, setAnchorEl_B] = React.useState(null);
@@ -36,7 +36,7 @@ export const Navigation = (props) => {
   useEffect(() => {
     setUserInfo(props.app_info);
     // setUserGroups(props.userGroups);
-    // setUserDataGroups([props.userDataGroups]);
+    setUserDataGroups([props.userDataGroups]);
     // @TODO: Consider moving all the User & User Group info into its own utils, 
 
     if(location.pathname === "/new/upload"){
@@ -123,134 +123,136 @@ export const Navigation = (props) => {
               />
             </a>
             </Typography>
-            <Box className="menu-bar"  sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-              <Button 
-                id="IndividualButton"
-                endIcon={<ArrowDropDownIcon />}
-                aria-controls={open_I ? 'IndividualMenu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open_I ? 'true' : undefined}
-                onClick={handleClick_I} >
-                Individual</Button>
-              <Menu
-                id="IndividualMenu"
-                anchorEl={anchorEl_I}
-                open={open_I}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'IndividualButton',
-                }}>
-                <MenuItem 
-                  className="nav-link" 
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/donor" >
-                  Donor
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/sample" >
-                  Sample
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/dataset" >
-                  Dataset
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/publication" >
-                  Publication
-                </MenuItem>
-              </Menu>
-              <Button 
-                id="BulkButton"
-                endIcon={<ArrowDropDownIcon />}
-                aria-controls={open_B ? 'BulkMenu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open_B ? 'true' : undefined}
-                onClick={handleClick_B} >
-                Bulk</Button>
-              <Menu
-                id="BulkMenu"
-                anchorEl={anchorEl_B}
-                open={open_B}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'BulkButton',
-                }}>
-                <MenuItem 
-                  className="nav-link"
-                  onClick={handleClose}
-                  component={Link}
-                  to="/bulk/donors" >Donors</MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  onClick={handleClose}
-                  component={Link}
-                  to="/bulk/samples" >Samples</MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  onClick={() => OpenUploads()}
-                  to="/bulk/data" >Data</MenuItem>
-              </Menu>
-              <Button 
-                id="sampleMetadataButton"
-                endIcon={<ArrowDropDownIcon />}
-                aria-controls={open_I ? 'sampleMetadataMenu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open_I ? 'true' : undefined}
-                onClick={handleClick_S} >
-                Upload Sample Metadata</Button>
-              <Menu
-                id="sampleMetadataMenu"
-                sx={{ width: "200px" }}
-                anchorEl={anchorEl_S}
-                variant="menu"
-                open={open_S}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'IndividualButton',
-                }}>
-                <MenuItem 
-                  className="nav-link" 
+            
+            {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
+              <Box className="menu-bar"  sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+                <Button 
+                  id="IndividualButton"
+                  endIcon={<ArrowDropDownIcon />}
+                  aria-controls={open_I ? 'IndividualMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_I ? 'true' : undefined}
+                  onClick={handleClick_I} >
+                  Individual</Button>
+                <Menu
+                  id="IndividualMenu"
+                  anchorEl={anchorEl_I}
+                  open={open_I}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'IndividualButton',
+                  }}>
+                  <MenuItem 
+                    className="nav-link" 
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/donor" >
+                    Donor
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/sample" >
+                    Sample
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/dataset" >
+                    Dataset
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/publication" >
+                    Publication
+                  </MenuItem>
+                </Menu>
+                <Button 
+                  id="BulkButton"
+                  endIcon={<ArrowDropDownIcon />}
+                  aria-controls={open_B ? 'BulkMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_B ? 'true' : undefined}
+                  onClick={handleClick_B} >
+                  Bulk</Button>
+                <Menu
+                  id="BulkMenu"
+                  anchorEl={anchorEl_B}
+                  open={open_B}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'BulkButton',
+                  }}>
+                  <MenuItem 
+                    className="nav-link"
+                    onClick={handleClose}
+                    component={Link}
+                    to="/bulk/donors" >Donors</MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    onClick={handleClose}
+                    component={Link}
+                    to="/bulk/samples" >Samples</MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    onClick={() => OpenUploads()}
+                    to="/bulk/data" >Data</MenuItem>
+                </Menu>
+                <Button 
+                  id="sampleMetadataButton"
+                  endIcon={<ArrowDropDownIcon />}
+                  aria-controls={open_I ? 'sampleMetadataMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_I ? 'true' : undefined}
+                  onClick={handleClick_S} >
+                  Upload Sample Metadata</Button>
+                <Menu
+                  id="sampleMetadataMenu"
                   sx={{ width: "200px" }}
-                  component={Link}
-                  onClick={handleClose}
-                  to="/metadata/block" >
-                  Block
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link" 
-                  component={Link}
-                  onClick={handleClose}
-                  to="/metadata/section" >
-                  Section
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link" 
-                  component={Link}
-                  onClick={handleClose}
-                  to="/metadata/suspension" >
-                  Suspension
-                </MenuItem>
-              </Menu>
-              <span className="board">
-                  <Button
-                    target="_blank"
-                    href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
-                    className="flat-link " >
-                      Data Ingest Board
-                  </Button>
-              </span>
-            </Box>
-
+                  anchorEl={anchorEl_S}
+                  variant="menu"
+                  open={open_S}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'IndividualButton',
+                  }}>
+                  <MenuItem 
+                    className="nav-link" 
+                    sx={{ width: "200px" }}
+                    component={Link}
+                    onClick={handleClose}
+                    to="/metadata/block" >
+                    Block
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link" 
+                    component={Link}
+                    onClick={handleClose}
+                    to="/metadata/section" >
+                    Section
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link" 
+                    component={Link}
+                    onClick={handleClose}
+                    to="/metadata/suspension" >
+                    Suspension
+                  </MenuItem>
+                </Menu>
+                <span className="board">
+                    <Button
+                      target="_blank"
+                      href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
+                      className="flat-link " >
+                        Data Ingest Board
+                    </Button>
+                </span>
+              </Box>
+            )}
             <Typography
               variant="h5"
               noWrap
@@ -276,135 +278,138 @@ export const Navigation = (props) => {
               />
             </a>
             </Typography>
-            <Box className="menu-bar" sx={{  display: { xs: 'none', md: 'flex' } }}>
-              <Button 
-                id="IndividualButton"
-                endIcon={<ArrowDropDownIcon />}
-                aria-controls={open_I ? 'IndividualMenu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open_I ? 'true' : undefined}
-                onClick={handleClick_I} >
-                Individual</Button>
-              <Menu
-                id="IndividualMenu"
-                anchorEl={anchorEl_I}
-                open={open_I}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'IndividualButton',
-                }}>
-                <MenuItem 
-                  className="nav-link" 
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/donor" >
-                  Donor
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/sample" >
-                  Sample
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/dataset" >
-                  Dataset
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  component={Link}
-                  onClick={handleClose}
-                  to="/new/publication" >
-                  Publication
-                </MenuItem>
-              </Menu>
-              <Button 
-                id="BulkButton"
-                endIcon={<ArrowDropDownIcon />}
-                aria-controls={open_B ? 'BulkMenu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open_B ? 'true' : undefined}
-                onClick={handleClick_B} >
-                Bulk</Button>
-              <Menu
-                id="BulkMenu"
-                anchorEl={anchorEl_B}
-                open={open_B}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'BulkButton',
-                }}>
-                <MenuItem 
-                  className="nav-link"
-                  onClick={handleClose}
-                  component={Link}
-                  to="/bulk/donors" >Donors</MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  onClick={handleClose}
-                  component={Link}
-                  to="/bulk/samples" >Samples</MenuItem>
-                <MenuItem 
-                  className="nav-link"
-                  onClick={() => OpenUploads()}
-                  to="/bulk/data" >Data</MenuItem>
-              </Menu>
-              <Button 
-                id="sampleMetadataButton"
-                endIcon={<ArrowDropDownIcon />}
-                aria-controls={open_I ? 'sampleMetadataMenu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open_I ? 'true' : undefined}
-                onClick={handleClick_S} >
-                Upload Sample Metadata</Button>
-              <Menu
-                id="sampleMetadataMenu"
-                sx={{ width: "200px" }}
-                anchorEl={anchorEl_S}
-                variant="menu"
-                open={open_S}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'IndividualButton',
-                }}>
-                <MenuItem 
-                  className="nav-link" 
+            {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
+
+              <Box className="menu-bar" sx={{  display: { xs: 'none', md: 'flex' } }}>
+                <Button 
+                  id="IndividualButton"
+                  endIcon={<ArrowDropDownIcon />}
+                  aria-controls={open_I ? 'IndividualMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_I ? 'true' : undefined}
+                  onClick={handleClick_I} >
+                  Individual</Button>
+                <Menu
+                  id="IndividualMenu"
+                  anchorEl={anchorEl_I}
+                  open={open_I}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'IndividualButton',
+                  }}>
+                  <MenuItem 
+                    className="nav-link" 
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/donor" >
+                    Donor
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/sample" >
+                    Sample
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/dataset" >
+                    Dataset
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/publication" >
+                    Publication
+                  </MenuItem>
+                </Menu>
+                <Button 
+                  id="BulkButton"
+                  endIcon={<ArrowDropDownIcon />}
+                  aria-controls={open_B ? 'BulkMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_B ? 'true' : undefined}
+                  onClick={handleClick_B} >
+                  Bulk</Button>
+                <Menu
+                  id="BulkMenu"
+                  anchorEl={anchorEl_B}
+                  open={open_B}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'BulkButton',
+                  }}>
+                  <MenuItem 
+                    className="nav-link"
+                    onClick={handleClose}
+                    component={Link}
+                    to="/bulk/donors" >Donors</MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    onClick={handleClose}
+                    component={Link}
+                    to="/bulk/samples" >Samples</MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    onClick={() => OpenUploads()}
+                    to="/bulk/data" >Data</MenuItem>
+                </Menu>
+                <Button 
+                  id="sampleMetadataButton"
+                  endIcon={<ArrowDropDownIcon />}
+                  aria-controls={open_I ? 'sampleMetadataMenu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open_I ? 'true' : undefined}
+                  onClick={handleClick_S} >
+                  Upload Sample Metadata</Button>
+                <Menu
+                  id="sampleMetadataMenu"
                   sx={{ width: "200px" }}
-                  component={Link}
-                  onClick={handleClose}
-                  to="/metadata/block" >
-                  Block
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link" 
-                  component={Link}
-                  onClick={handleClose}
-                  to="/metadata/section" >
-                  Section
-                </MenuItem>
-                <MenuItem 
-                  className="nav-link" 
-                  component={Link}
-                  onClick={handleClose}
-                  to="/metadata/suspension" >
-                  Suspension
-                </MenuItem>
-              </Menu>
-              <span className="board">
-                  <Button
-                    target="_blank"
-                    href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
-                    className="flat-link " >
-                      Data Ingest Board
-                  </Button>
-              </span>
+                  anchorEl={anchorEl_S}
+                  variant="menu"
+                  open={open_S}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'IndividualButton',
+                  }}>
+                  <MenuItem 
+                    className="nav-link" 
+                    sx={{ width: "200px" }}
+                    component={Link}
+                    onClick={handleClose}
+                    to="/metadata/block" >
+                    Block
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link" 
+                    component={Link}
+                    onClick={handleClose}
+                    to="/metadata/section" >
+                    Section
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link" 
+                    component={Link}
+                    onClick={handleClose}
+                    to="/metadata/suspension" >
+                    Suspension
+                  </MenuItem>
+                </Menu>
+                <span className="board">
+                    <Button
+                      target="_blank"
+                      href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
+                      className="flat-link " >
+                        Data Ingest Board
+                    </Button>
+                </span>
 
 
-          </Box>
+              </Box>
+            )}
     
           <Box  className="menu-bar" sx={{ flexGrow: 1, justifyContent: 'flex-end'}}>
           <div id="MenuRight">
