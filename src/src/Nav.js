@@ -160,13 +160,6 @@ export const Navigation = (props) => {
                     className="nav-link"
                     component={Link}
                     onClick={handleClose}
-                    to="/new/dataset" >
-                    Dataset
-                  </MenuItem>
-                  <MenuItem 
-                    className="nav-link"
-                    component={Link}
-                    onClick={handleClose}
                     to="/new/publication" >
                     Publication
                   </MenuItem>
@@ -310,13 +303,6 @@ export const Navigation = (props) => {
                     onClick={handleClose}
                     to="/new/sample" >
                     Sample
-                  </MenuItem>
-                  <MenuItem 
-                    className="nav-link"
-                    component={Link}
-                    onClick={handleClose}
-                    to="/new/dataset" >
-                    Dataset
                   </MenuItem>
                   <MenuItem 
                     className="nav-link"
