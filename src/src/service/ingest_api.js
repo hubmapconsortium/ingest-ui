@@ -512,8 +512,8 @@ export function ingest_api_upload_bulk_metadata(type, dataFile, auth) {
   var formData = new FormData();
   // formData.append('metadata', dataFile);
   formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);
-  // formData.append('entity_type', "Sample")
-  // formData.append('sub_type', type)
+  formData.append('entity_type', "Sample")
+  formData.append('sub_type', type)
   formData.append('validate_uuids', 1)
   // formData.append('ui_type', 'gui')
   console.debug('%c⊙ DATA', 'color:#00ff7b', formData );

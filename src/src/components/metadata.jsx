@@ -22,10 +22,10 @@ import {entity_api_attach_bulk_metadata} from '../service/entity_api';
 import {ingest_api_upload_bulk_metadata} from '../service/ingest_api';
 import {getErrorList} from "../utils/error_helper";
 import {prettyObject,toTitleCase,urlify} from "../utils/string_helper";
+import {isArray} from "util";
 
 
 export const RenderMetadata = (props) => {
-  var [isLoading, setLoading] = useState(true);
   var [isAttaching, setAttaching] = useState(false);
   var [activeStep, setActiveStep] = React.useState(0);
   var [uploadedFile, setUploadedFile] = React.useState();
@@ -34,7 +34,6 @@ export const RenderMetadata = (props) => {
   var [failedStep, setFailedStep] = React.useState(null);
   var [validatedMeta, setValidatedMeta] = React.useState(null);
   var [attachedMetadata, setAttachedMetadata] = React.useState([]);
-  var [passedMeta, setPassedMeta] = React.useState([]);
   var [path, setPath] = React.useState(null);
   var [issues, setIssues] = React.useState();
   var [table, setTable] = React.useState({data:[],columns:{}});
@@ -82,26 +81,22 @@ export const RenderMetadata = (props) => {
   };
 
   const attachMetadata = () => {
-    console.debug('%c⊙ PATH', 'color:#00ff7b', path );
     setAttaching(true)
     let passes = []
     let fails = []
     let row = 0
     // setIsLoading(true)validatedMeta
-    for (let item of validatedMeta) {
-      // console.debug('%c◉ ValRow ', 'color:#00ff7b', validatedMeta[row].description.uuid);
+    for (let item of validatedMeta[0]) {
       let thisRow = {
-        metadata: item,
+        metadata: item.metadata,
         protocol_url:  item.protocols_io_doi,
-        direct_ancestor_uuid: item.donor_id
+        // direct_ancestor_uuid: item.donor_id
       };
       thisRow.metadata['pathname'] = path
       thisRow.metadata['file_row'] = row
-      console.debug('%c⊙ Attaching Row: ', 'color:#00ff7b', thisRow);       
-      entity_api_attach_bulk_metadata(validatedMeta[row].description.uuid,thisRow,JSON.parse(localStorage.getItem('info')).groups_token)
+      entity_api_attach_bulk_metadata(validatedMeta[0][row].metadata.sample_id,thisRow,JSON.parse(localStorage.getItem('info')).groups_token)
         .then((resp) => {
           if (!resp.error){
-            console.debug('%c⊙', 'color:#00ff7b', 'Success', resp);
             passes.push(resp.results.message)
             setAttachedMetadata(attachedMetadata => [...attachedMetadata, resp.results.message])
             // setAttachedMetadata(passes);
@@ -115,18 +110,7 @@ export const RenderMetadata = (props) => {
         })
       row++ 
     }
-   
-      setTimeout(() => {
-        console.debug('%c◉ attachedMetadata ', 'color:#00ff7b', attachedMetadata,passes);
-        setActiveStep(5)
-      }, 10000);
-
-    
-    // setAttaching(false)
-    // setIsLoading(false)
-    // setBulkSuccess({fails, passes})
-
-}
+  }
 function getColNames() {
   let typeCol = 'sample_category'
   let labIdCol = 'lab_tissue_sample_id'
@@ -136,30 +120,51 @@ function getColNames() {
 
   const handleUploadFile = () => {
     setActiveStep(2);
-    console.debug('%c◉ bulkFile ', 'color:#00ff7b',uploadedFile);
     ingest_api_upload_bulk_metadata(
-      type,
+      toTitleCase(type),
       uploadedFile,
       JSON.parse(localStorage.getItem('info')).groups_token,
     )
       .then((resp) => {
         if (resp.status === 200) {
-          console.debug('%c⊙', 'color:#00ff7b', 'Success', activeStep, resp);
-          console.debug('%c◉ resp.results.description.data ', 'color:#00ff7b', resp.results.description.data);
-          setValidatedMeta(resp.results.description.data);
+          var preparedMeta =[]
+          var results = resp.results.description.data;
           setPath(resp.results.description.pathname);
-          setActiveStep(3);
-          console.debug('%c⊙', 'color:#00ff7b', resp.results.description,resp.results.description.data );
-        }else{ 
-          console.debug('%c⭗ ERROR: ', 'color:#ff005d', resp.error.response.data);
-          var innerDetails = Object.values(resp.error.response.data.description)[0];
-          var deepInnerDetails = Object.values(innerDetails)[0];
-          var packagedValError = {
-            code:resp.error.response.data.code,
-            description: deepInnerDetails,
-            name:resp.error.response.data.name
+          if(isArray(results)){
+            for (const row of results) {
+              var sample = {
+                sampleID: row.description.metadata.sample_id,
+                sourceID: row.description.metadata.source_id,
+                metadata: row.description.metadata
+              }
+              preparedMeta.push(sample)
+            }
+          }else{
+            preparedMeta.push({
+              sampleID: results.metadata.sample_id,
+              sourceID: results.metadata.source_id,
+              metadata: results.metadata
+            })
           }
-          var errorTable = getErrorList(packagedValError)
+          setValidatedMeta([preparedMeta]);
+          setActiveStep(3);
+        }else{ 
+          var err = resp.error.response.data
+          let cleanErr;
+          var outerDetails = Object.keys(resp.error.response.data.description)[0];
+          if(outerDetails==="CEDAR Validation Errors" ){
+            var innerDetails = Object.values(resp.error.response.data.description)[0];
+            var innerVals =Object.values(innerDetails)[0];
+            var errorLabel = Object.keys(innerVals)[0].toString();
+            // cleanErr = innerVals[deepKeys];
+            cleanErr = {
+              description:innerVals
+            }
+          }else{
+            cleanErr = err
+          }
+
+          var errorTable = getErrorList(cleanErr)
           setIssues(resp.error.response.data);
           setFailed(1);
           setFailedStep(2);
@@ -169,13 +174,8 @@ function getColNames() {
         }
       })
       .catch((error) => {
-        console.debug('%c⭗', 'color:#ff005d', 'Error', error,error.description);
+        // console.debug('%c⭗', 'color:#ff005d', 'Error', error,error.description);
       });
-  };
-
-
-  const handleAttach = () => {
-    
   };
 
 
@@ -389,9 +389,11 @@ const handleErrorRow = (row) => {
             border: '1px solid #ff0000',
           }}
           columns={
-            [{" name": "Row",
+            [{
+                "name": "Row",
                 "sortable": true,
-                "width": "100px","style": {backgroundColor: '#fdebed',},
+                "width": "100px",
+                "style": {backgroundColor: '#fdebed',},
                 "selector": row => row.row,
               },{
                 "name": "Error",
@@ -399,11 +401,25 @@ const handleErrorRow = (row) => {
                 "style": {backgroundColor: '#fdebed'},
                 "selector": row => row.error,
                 "format": (row) => {
-                  var d = '"'
-                  const formatError = (val) => val.replaceAll(' '+d, ' <code>').replaceAll(' "', ' <code>').replaceAll(d, '</code>').replaceAll('"', '</code>')
-                  let err = handleErrorRow(row)
-                  err = formatError(err)
-                  return <span dangerouslySetInnerHTML={{__html: urlify(err)}} />
+                    // let err = handleErrorRow(row)
+                    // When it's from Cedar it has off wrapping & comes back deeply nested
+                    var d = '"'
+                    var dSharp = '`'
+                    const formatError = (val) => val.replaceAll(' '+d, ' <code>').replaceAll(' "', ' <code>').replaceAll(d, '</code>').replaceAll('"', '</code>')
+                    const formatErrorSharp = (val) => val.replaceAll(dSharp, '\'')
+                    // const formatErrorOf = (val) => val.substr()
+                    if(row.error){
+                      var rowErr = formatError(row.error)
+                      rowErr = formatErrorSharp(rowErr)
+                      // console.debug('%c◉ rowErr.indexOf("of ") ', 'color:#00ff7b', rowErr.indexOf("of "));
+                      if(rowErr.indexOf("of ") === 0){
+                        rowErr = rowErr.slice(3)
+                      }
+                      return <span dangerouslySetInnerHTML={{__html: urlify(rowErr)}} />
+                    }else{
+                      return <span dangerouslySetInnerHTML={{__html: urlify(row)}} />
+                    }
+                    
                 }
               }
             ]
@@ -428,10 +444,8 @@ var targetBranch ="master";
 var targetFile = (props.type).slice(0, -1).toLowerCase()
 const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/"+targetBranch+"/src/src/assets/Documents/example-"+targetFile+"-registrations.tsv"
   return (
-    <>
         <div className="row">
           <h4>{toTitleCase(props.type)} Metadata Upload</h4>
-          
           <div className=' col-sm-2' id='stepContainer'>
             <Stepper activeStep={activeStep} orientation="vertical">
               {steps.map((label, index) => {
@@ -455,6 +469,5 @@ const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui
           </div>
           
         </div>
-      </>
   );
 };
