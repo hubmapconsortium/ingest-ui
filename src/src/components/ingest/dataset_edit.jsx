@@ -11,22 +11,7 @@ import FormGroup from '@mui/material/FormGroup';
 import Select from '@mui/material/Select'; 
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-
-import Grid from "@mui/material/Grid";
-
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import ListItemButton from '@mui/material/ListItemButton';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
-import Icon from '@mui/material/Icon';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import LaunchIcon from '@mui/icons-material/Launch';
-
-
+import {GridLoader} from "react-spinners";
 import '../../App.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -52,6 +37,7 @@ import {
 import {entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity} from '../../service/entity_api';
 import {ubkg_api_get_assay_type_set,ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {VersionNavigation} from "../../utils/ui_elements";
 import {generateDisplaySubtype, generateDisplaySubtype_UBKG, generateSubtype} from "../../utils/display_subtypes";
 
 import {Alert,AlertTitle} from '@material-ui/lab';
@@ -127,6 +113,8 @@ class DatasetEdit extends Component {
     newVersion:false,
     previousHID:undefined,
     nextHID:undefined,
+    loadingPreviousVersions:true,
+    loadingNextVersions:true,
     previous_revision_uuid:undefined,
     has_other_datatype:false,
     submitErrorResponse:"",
@@ -187,6 +175,12 @@ class DatasetEdit extends Component {
       // Figure out our permissions
       if (this.props.editingDataset) {
         console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
+        if(!this.props.previous_revision_uuids){
+          this.setState({loadingPreviousVersions:false});
+        }
+        if(!this.props.next_revision_uuids){
+          this.setState({loadingNextVersions:false});
+        }
         if (this.props.editingDataset.uuid)
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -337,6 +331,7 @@ class DatasetEdit extends Component {
         this.setState({
           previousHubIDs:pHubIDs
         },() => {
+          this.setState({loadingPreviousVersions:false});
         })
       }
       // NEXT
@@ -363,38 +358,9 @@ class DatasetEdit extends Component {
         this.setState({
           nextHubIDs:nHubIDs
         },() => {
+          this.setState({loadingNextVersions:false});
         })
       }
-        // WE GET EM IN ARRAYS NOW!
-        // if(this.props.editingDataset.next_revision_uuid){
-        //   console.debug("next_revision_uuid",this.props.editingDataset.next_revision_uuid);
-        //   entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-        //   .then((response) => {
-        //     console.debug("next_revision_uuid RESPONSE",response.results);
-        //     if(response.results.hubmap_id){
-        //       this.setState({nextHID:response.results.hubmap_id})
-        //     }else{
-        //       console.debug("next_revision_uuid",response);
-        //     }
-        //   })
-        //   .catch((error) => {
-        //     console.debug("next_revision_uuid",error);
-        //     this.props.reportError(error);
-        //   })   
-        // }
-        
-        // if(this.props.editingDataset.previous_revision_uuid){
-        //   console.debug("prev_revision_uuid",this.props.editingDataset.previous_revision_uuid);
-        //   entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-        //   .then((response) => {
-        //     this.setState({prevHID:response.results.hubmap_id})
-        //   })
-        //   .catch((error) => {
-        //     console.debug("porev",error);
-        //     this.props.reportError(error);
-        //   })   
-        // }
-    
     }
   }
 
@@ -420,20 +386,6 @@ class DatasetEdit extends Component {
         this.props.reportError();
       });
   }
-  // setAssayLists(){
-  //   ubkg_api_get_assay_type_set()
-  //   .then((res) => {
-  //     this.setState({dtl_all:res.data.result.map((value, index) => { return value.name })});
-  //   })
-  //   .catch((err) => {
-  //   })
-  //   ubkg_api_get_assay_type_set("primary")
-  //   .then((res) => {
-  //     this.setState({dtl_primary:res.data.result.map((value, index) => { return value.name })});
-  //   })
-  //   .catch((err) => {
-  //   })
-  // }
 
 
   componentWillUnmount() {
@@ -1588,9 +1540,9 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     var sampleSource = this.getSourceAncestorTypes("Sample");  
     var datasetStatus = this.props.editingDataset.status === "Published";
     var writability = this.state.has_version_priv;
-    var latestVersion = (!this.props.editingDataset.next_revision_uuid  ||  this.props.editingDataset.next_revision_uuid === undefined);
-    if(sampleSource && datasetStatus && writability && latestVersion){
-    // if(true===true){
+    // var latestVersion = (!this.props.editingDataset.next_revision_uuids  ||  this.props.editingDataset.next_revision_uuids[0] === undefined);
+    if(sampleSource && datasetStatus && writability ){
+    // if(true===tru  e){
       return (
         <Button variant="contained" sx={{minWidth:"130px"}} onClick={() => this.handleNewVersion()}> 
           {this.state.submitting && (
@@ -1625,66 +1577,12 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
   }
 
   renderVersionNav() {
-    var next = [];
-    var prev = [];
-    // console.debug('%c◉ previous_revision_uuids ', 'color:#00ff7b', this.props.editingDataset.previous_revision_uuid);
-    // var previousUUIDs = this.props.previous_revision_uuids;
-    // var nextUUIDs = this.props.next_revision_uuids;
-    // var multiList = 
-    return (
-      <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
-        {this.state.previousHubIDs &&(
-          <Grid item xs={6}>
-            <Paper className="p5">
-            <Typography sx={{backgroundColor:'#343a40', color:'#fff', padding:"2px 5px"}}><ChevronLeftIcon /> Previous Revisions</Typography>
-             {this.state.previousHubIDs[0] &&(
-                <List
-                  divider={true}
-                  dense={true}
-                  sx={{maxHeight: '140px', maxWidth:'auto', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit', padding:'0px', backgroundColor:'#f5f5f5'}}>
-                  {this.state.previousHubIDs.map((entity, index) => {
-                    return (
-                      <ListItemButton sx={{width:"100%"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
-                        <ListItemText primary={entity.hubmapID}sx={{padding:'2px 5px'}} /> <LaunchIcon />
-                      </ListItemButton>
-                    );
-                  })}
-                </List>
-              )}
-              {!this.state.previousHubIDs[0] &&(
-                <Typography sx={{padding:"2px 5px", backgroundColor:'#f5f5f5'}}>No Previous Revisions Found</Typography>
-              )}
-            </Paper>
-          </Grid>
-        )}
-        {this.state.nextHubIDs &&(
-          <Grid item xs={6}>
-            <Paper>
-            <Typography sx={{backgroundColor:'#343a40', color:'#fff', padding:"2px 5px"}}><ChevronRightIcon /> Next Revisions</Typography>
-            {this.state.nextHubIDs[0] &&(
-              <List
-                divider={true}
-                dense={true}
-                sx={{maxHeight: '140px', maxWidth:'auto', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit', padding:'0px', backgroundColor:'#f2f2f2'}}>
-                {this.state.nextHubIDs.map((entity, index) => {
-                  return (
-                    <ListItemButton sx={{width:"100%"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
-                      <ListItemText primary={entity.hubmapID}sx={{padding:'2px 5px'}} /> <LaunchIcon />
-                    </ListItemButton>
-                  );
-                })}
-              </List>
-            )}
-            {!this.state.nextHubIDs[0] &&(
-              <Typography sx={{padding:"2px 5px", backgroundColor:'#f5f5f5'}}>No Subsequent Revisions Found</Typography>
-            )}
-          </Paper>
-        </Grid>
-          
-        )}
-      </Grid>
-    )
-}
+    if(this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false){
+      return (VersionNavigation(this.state.previousHubIDs,this.state.nextHubIDs))
+    }else{
+      return ( <GridLoader />)
+    }
+  }
 
 
   // Cancel button

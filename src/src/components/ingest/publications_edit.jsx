@@ -15,15 +15,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormLabel from '@mui/material/FormLabel';
 
-import Grid from "@mui/material/Grid";
-
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import ListItemButton from '@mui/material/ListItemButton';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
+import {GridLoader} from "react-spinners";
 
 import "../../App.css";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -64,6 +56,7 @@ import {generateDisplaySubtype} from "../../utils/display_subtypes";
 import {removeEmptyValues} from "../../utils/constants_helper";
 import {humanize} from "../../utils/string_helper";
 
+import {VersionNavigation} from "../../utils/ui_elements";
 import {Alert,AlertTitle} from "@material-ui/lab";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -139,6 +132,8 @@ class PublicationEdit extends Component {
     newVersion: false,
     previousHID: undefined,
     nextHID: undefined,
+    loadingPreviousVersions:true,
+    loadingNextVersions:true,
     previous_revision_uuid: undefined,
     has_other_datatype: false,
     submitErrorResponse: "",
@@ -240,20 +235,16 @@ class PublicationEdit extends Component {
     }
 
 
-    if(this.props.editingPublication){
-      //consoletable(this.props.editingPublication);
-      //consoledir(this.props.editingPublication);
-    }
-
-    // Checking if we're published and thus should only be writeable
-
-    // Figure out our permissions
-    // console.debug("CHECK PERM", this.props.editingPublication, this.props.editingPublication.uuid);
-    //consoledebug("CHECK PERM", this.props.editingPublication, this.state.editingPublication);
     if (this.props.editingPublication) {
+
+      if(!this.props.editingPublication.previous_revision_uuids){
+        this.setState({loadingPreviousVersions:false});
+      }
+      if(!this.props.editingPublication.next_revision_uuids){
+        this.setState({loadingNextVersions:false});
+      }
+
       if (this.props.editingPublication.uuid)
-      // console.debug("Checking Permissions");
-        // check to see which buttons to enable
         ingest_api_allowable_edit_states(
           this.props.editingPublication.uuid,
           JSON.parse(localStorage.getItem("info")).groups_token
@@ -267,18 +258,11 @@ class PublicationEdit extends Component {
               has_publish_priv: resp.results.has_publish_priv,
               has_admin_priv: resp.results.has_admin_priv,
             });
-
-            // const adminCheck = resp.filter(
-            //   g => g.data_provider === true
-            // );
-            // console.debug("Admin Check", adminCheck, resp);
-
             ingest_api_allowable_edit_states_statusless(
               this.props.editingPublication.uuid,
               JSON.parse(localStorage.getItem("info")).groups_token
             )
               .then((resp) => {
-                //
                 this.setState({
                   has_version_priv: resp.results.has_write_priv,
                 });
@@ -455,6 +439,7 @@ class PublicationEdit extends Component {
         this.setState({
           previousHubIDs:pHubIDs
         },() => {
+          this.setState({loadingPreviousVersions:false});
         })
       }
       // NEXT
@@ -481,6 +466,7 @@ class PublicationEdit extends Component {
         this.setState({
           nextHubIDs:nHubIDs
         },() => {
+          this.setState({loadingNextVersions:false});
         })
       }
     }
@@ -1742,53 +1728,12 @@ class PublicationEdit extends Component {
   }
 
   renderVersionNav() {
-    var next = [];
-    var prev = [];
-    // console.debug('%c◉ previous_revision_uuids ', 'color:#00ff7b', this.props.editingDataset.previous_revision_uuid);
-    // var previousUUIDs = this.props.previous_revision_uuids;
-    // var nextUUIDs = this.props.next_revision_uuids;
-    // var multiList = 
-    return (
-      <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
-        {this.state.previousHubIDs &&(
-          <Grid item xs={6}>
-            <Typography>Previous Revisions</Typography>
-              <List
-                divider={true}
-                dense={true}
-                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
-                {this.state.previousHubIDs.map((entity, index) => {
-                  return (
-                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
-                      <ListItemText primary={entity.hubmapID} />
-                    </ListItemButton>
-                  );
-                })}
-              </List>
-          </Grid>
-        )}
-        {this.state.nextHubIDs &&(
-          <Grid item xs={6}>
-            <Typography>Next Revisions</Typography>
-              <List
-                divider={true}
-                dense={true}
-                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
-                {this.state.nextHubIDs.map((entity, index) => {
-                  return (
-                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
-                      <ListItemText primary={entity.hubmapID} />
-                    </ListItemButton>
-                  );
-                })}
-              </List>
-          </Grid>
-          
-        )}
-      </Grid>
-    )
-}
-
+    if(this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false){
+      return (VersionNavigation(this.state.previousHubIDs,this.state.nextHubIDs))
+    }else{
+      return ( <GridLoader />)
+    }
+  }
 
   // @TODO: Give the button factory another go;
   // As a service along w/ eventual Permission service?
