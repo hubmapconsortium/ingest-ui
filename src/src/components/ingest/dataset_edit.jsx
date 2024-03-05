@@ -115,6 +115,7 @@ class DatasetEdit extends Component {
     nextHID:undefined,
     loadingPreviousVersions:true,
     loadingNextVersions:true,
+    versioned:false,
     previous_revision_uuid:undefined,
     has_other_datatype:false,
     submitErrorResponse:"",
@@ -309,6 +310,7 @@ class DatasetEdit extends Component {
 
       //  NEXT/PREV REVISION LIST BUILD
       if(this.props.editingDataset && this.props.editingDataset.previous_revision_uuids && this.props.editingDataset.previous_revision_uuids.length >0){
+        this.setState({versioned:true});
         var pHubIDs= [];
         this.props.editingDataset.previous_revision_uuids.forEach(function(uuid, index) {
           entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -336,6 +338,7 @@ class DatasetEdit extends Component {
       }
       // NEXT
       if(this.props.editingDataset && this.props.editingDataset.next_revision_uuids && this.props.editingDataset.next_revision_uuids.length >0){
+        this.setState({versioned:true});
         var nHubIDs= [];
         this.props.editingDataset.next_revision_uuids.forEach(function(uuid, index) {
           entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -1776,7 +1779,9 @@ name, display_doi, doi
                 18 identifiers specified by HIPAA
               </span>
             </Alert>
-            {this.renderVersionNav()}
+            {this.state.versioned  && (
+              <>{this.renderVersionNav()}</>
+            )}
             {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
               <Box sx={{ display:'flex'}} >
                 <Box  sx={{ width:"100%" }}><strong>This Dataset is contained in the data Upload </strong> 

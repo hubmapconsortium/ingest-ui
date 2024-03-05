@@ -134,6 +134,7 @@ class PublicationEdit extends Component {
     nextHID: undefined,
     loadingPreviousVersions:true,
     loadingNextVersions:true,
+    versioned:false,
     previous_revision_uuid: undefined,
     has_other_datatype: false,
     submitErrorResponse: "",
@@ -417,6 +418,7 @@ class PublicationEdit extends Component {
 
       //  NEXT/PREV REVISION LIST BUILD
       if(this.props.editingPublication && this.props.editingPublication.previous_revision_uuids && this.props.editingPublication.previous_revision_uuids.length >0){
+        this.setState({versioned:true});
         var pHubIDs= [];
         this.props.editingPublication.previous_revision_uuids.forEach(function(uuid, index) {
           entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -444,6 +446,7 @@ class PublicationEdit extends Component {
       }
       // NEXT
       if(this.props.editingPublication && this.props.editingPublication.next_revision_uuids && this.props.editingPublication.next_revision_uuids.length >0){
+        this.setState({versioned:true});
         var nHubIDs= [];
         this.props.editingPublication.next_revision_uuids.forEach(function(uuid, index) {
           entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -2012,7 +2015,7 @@ class PublicationEdit extends Component {
                 </span>
               </Alert>
 
-              {this.props.editingPublication &&(
+              {this.state.versioned  && this.props.editingPublication &&(
                 <>{this.renderVersionNav()}</>
               )}
 
