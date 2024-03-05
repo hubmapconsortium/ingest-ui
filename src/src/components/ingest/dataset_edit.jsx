@@ -21,6 +21,10 @@ import ListSubheader from '@mui/material/ListSubheader';
 import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
+import Icon from '@mui/material/Icon';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 
 import '../../App.css';
@@ -1595,7 +1599,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
               icon={faSpinner}
               spin
             />
-          )}VERS
+          )}
           {!this.state.submitting && "New Version"}         
         </Button> )
     } 
@@ -1631,37 +1635,51 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
         {this.state.previousHubIDs &&(
           <Grid item xs={6}>
-            <Typography>Previous Revisions</Typography>
-              <List
-                divider={true}
-                dense={true}
-                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
-                {this.state.previousHubIDs.map((entity, index) => {
-                  return (
-                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
-                      <ListItemText primary={entity.hubmapID} />
-                    </ListItemButton>
-                  );
-                })}
-              </List>
+            <Paper className="p5">
+            <Typography sx={{backgroundColor:'#343a40', color:'#fff', padding:"2px 5px"}}><ChevronLeftIcon /> Previous Revisions</Typography>
+             {this.state.previousHubIDs[0] &&(
+                <List
+                  divider={true}
+                  dense={true}
+                  sx={{maxHeight: '140px', maxWidth:'auto', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit', padding:'0px', backgroundColor:'#f5f5f5'}}>
+                  {this.state.previousHubIDs.map((entity, index) => {
+                    return (
+                      <ListItemButton sx={{width:"100%"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
+                        <ListItemText primary={entity.hubmapID}sx={{padding:'2px 5px'}} /> <LaunchIcon />
+                      </ListItemButton>
+                    );
+                  })}
+                </List>
+              )}
+              {!this.state.previousHubIDs[0] &&(
+                <Typography sx={{padding:"2px 5px", backgroundColor:'#f5f5f5'}}>No Previous Revisions Found</Typography>
+              )}
+            </Paper>
           </Grid>
         )}
         {this.state.nextHubIDs &&(
           <Grid item xs={6}>
-            <Typography>Next Revisions</Typography>
+            <Paper>
+            <Typography sx={{backgroundColor:'#343a40', color:'#fff', padding:"2px 5px"}}><ChevronRightIcon /> Next Revisions</Typography>
+            {this.state.nextHubIDs[0] &&(
               <List
                 divider={true}
                 dense={true}
-                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
+                sx={{maxHeight: '140px', maxWidth:'auto', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit', padding:'0px', backgroundColor:'#f2f2f2'}}>
                 {this.state.nextHubIDs.map((entity, index) => {
                   return (
-                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
-                      <ListItemText primary={entity.hubmapID} />
+                    <ListItemButton sx={{width:"100%"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
+                      <ListItemText primary={entity.hubmapID}sx={{padding:'2px 5px'}} /> <LaunchIcon />
                     </ListItemButton>
                   );
                 })}
               </List>
-          </Grid>
+            )}
+            {!this.state.nextHubIDs[0] &&(
+              <Typography sx={{padding:"2px 5px", backgroundColor:'#f5f5f5'}}>No Subsequent Revisions Found</Typography>
+            )}
+          </Paper>
+        </Grid>
           
         )}
       </Grid>
