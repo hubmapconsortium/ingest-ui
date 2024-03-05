@@ -32,15 +32,22 @@ export const RenderCollection = (props) => {
     if (entityUUID) {
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
-        setEntity(response.results);
-        setIsLoadingEntity(false); 
-        })  
-        .catch((error) => {
-          setIsLoadingEntity(false);
-        }); 
-    }else{
-      setIsLoadingEntity(false); 
-    }
+        if (response.status === 200) {
+          if(response.results.entity_type !== "Collection"){
+            navigate("/"+response.results.entity_type+"/"+uuid);
+          }else{
+            setEntity(response.results);
+            setLoading(false);
+          }
+        } else {
+          console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
+          passError(response.status, response.message);
+        }
+      })
+      .catch((error) => {
+        console.debug("entity_api_get_entity ERROR", error);
+        passError(error.status, error.results.error );
+      });
   }, [uuid]);
 
 
