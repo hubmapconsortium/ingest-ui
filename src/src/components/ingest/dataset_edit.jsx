@@ -1531,7 +1531,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       if (this.state.status.toUpperCase() === 'PUBLISHED' ) {
         return (
             <div className="buttonWrapRight">
-                {this.renderNewVersionButtons()}
+                {this.renderNewVersionButtons()} NEWVERS
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
@@ -1595,7 +1595,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
               icon={faSpinner}
               spin
             />
-          )}
+          )}VERS
           {!this.state.submitting && "New Version"}         
         </Button> )
     } 

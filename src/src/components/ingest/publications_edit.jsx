@@ -15,6 +15,16 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormLabel from '@mui/material/FormLabel';
 
+import Grid from "@mui/material/Grid";
+
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import ListItemButton from '@mui/material/ListItemButton';
+import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
+
 import "../../App.css";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -90,6 +100,8 @@ class PublicationEdit extends Component {
     status: "NEW",
     upload: [],
     writeable: true, 
+    nextHubIDs:[],
+    previousHubIDs:[],
 
     editingPublication: this.props.newForm ? {
       publication_status:undefined,
@@ -199,10 +211,10 @@ class PublicationEdit extends Component {
   }
 
   componentDidMount() {
-    console.debug("PublicationEdit: componentDidMount");
+    //consoledebug("PublicationEdit: componentDidMount");
     // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
 
-    console.debug("this.state.validationStatus.publication_doi.length >0", this.state.validationStatus.publication_doi.length >0);
+    //consoledebug("this.state.validationStatus.publication_doi.length >0", this.state.validationStatus.publication_doi.length >0);
     // Modal state as flag for add/remove?
     document.addEventListener("click", this.handleClickOutside);
     this.setAssayLists();
@@ -229,15 +241,15 @@ class PublicationEdit extends Component {
 
 
     if(this.props.editingPublication){
-      console.table(this.props.editingPublication);
-      console.dir(this.props.editingPublication);
+      //consoletable(this.props.editingPublication);
+      //consoledir(this.props.editingPublication);
     }
 
     // Checking if we're published and thus should only be writeable
 
     // Figure out our permissions
     // console.debug("CHECK PERM", this.props.editingPublication, this.props.editingPublication.uuid);
-    console.debug("CHECK PERM", this.props.editingPublication, this.state.editingPublication);
+    //consoledebug("CHECK PERM", this.props.editingPublication, this.state.editingPublication);
     if (this.props.editingPublication) {
       if (this.props.editingPublication.uuid)
       // console.debug("Checking Permissions");
@@ -246,7 +258,7 @@ class PublicationEdit extends Component {
           this.props.editingPublication.uuid,
           JSON.parse(localStorage.getItem("info")).groups_token
         ).then((resp) => {
-          console.debug("Write Check", resp);
+          //consoledebug("Write Check", resp);
           if (resp.status < 300) {
             this.setState({
               writeable: resp.results.has_write_priv,
@@ -282,7 +294,7 @@ class PublicationEdit extends Component {
           }
         })
         .catch((err) => {	
-          console.debug("Error Checking Permissions", err);
+          //consoledebug("Error Checking Permissions", err);
         });
     } else {
       //
@@ -417,33 +429,59 @@ class PublicationEdit extends Component {
 
       // Sets the Hubmap ID labels for Previous and Next version Buttons
       
-      // Sets the Hubmap ID labels for Previous and Next version Buttons  
-      if (this.props.editingPublication.next_revision_uuid) {
-        console.debug("next_revision_uuid", this.props.editingPublication.next_revision_uuid);
-        entity_api_get_entity(this.props.editingPublication.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((response) => {
-            console.debug("next_revision_uuid RESPONSE", response.results);
-            if (response.results.hubmap_id) {
-              this.setState({ nextHID: response.results.hubmap_id })
-            } else {
-              console.debug("next_revision_uuid", response);
-            }
-          })
-          .catch((error) => {
-            console.debug("next_revision_uuid", error);
-            this.props.reportError(error);
-          })
+    
+
+      //  NEXT/PREV REVISION LIST BUILD
+      if(this.props.editingPublication && this.props.editingPublication.previous_revision_uuids && this.props.editingPublication.previous_revision_uuids.length >0){
+        var pHubIDs= [];
+        this.props.editingPublication.previous_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              if(response.results.hubmap_id){
+                pHubIDs.push({
+                  type: response.results.entity_type, 
+                  hubmapID: response.results.hubmap_id
+                })
+              }else{
+                pHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              pHubIDs.push(uuid)
+              //consoledebug("UUIDCheck",error);
+              this.props.reportError(error);
+            })
+        });
+        this.setState({
+          previousHubIDs:pHubIDs
+        },() => {
+        })
       }
-      if (this.props.editingPublication.previous_revision_uuid) {
-        console.debug("prev_revision_uuid", this.props.editingPublication.previous_revision_uuid);
-        entity_api_get_entity(this.props.editingPublication.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((response) => {
-            this.setState({ prevHID: response.results.hubmap_id })
-          })
-          .catch((error) => {
-            console.debug("porev", error);
-            this.props.reportError(error);
-          })
+      // NEXT
+      if(this.props.editingPublication && this.props.editingPublication.next_revision_uuids && this.props.editingPublication.next_revision_uuids.length >0){
+        var nHubIDs= [];
+        this.props.editingPublication.next_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              if(response.results.hubmap_id){
+                nHubIDs.push({
+                  type: response.results.entity_type, 
+                  hubmapID: response.results.hubmap_id
+                })
+              }else{
+                nHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              //consoledebug("UUIDCheck",error);
+              this.props.reportError(error);
+              nHubIDs.push(uuid)
+            })
+        });
+        this.setState({
+          nextHubIDs:nHubIDs
+        },() => {
+        })
       }
     }
   }
@@ -570,7 +608,7 @@ class PublicationEdit extends Component {
   };
 
   handlePublicationStatus = (status) => {
-    console.debug("handlePublicationStatus",status, typeof status);
+    //consoledebug("handlePublicationStatus",status, typeof status);
     var pubVal = false;
     if(status === 'true'){pubVal = true}else{pubVal = false}
     this.setState(prev => ({
@@ -584,7 +622,7 @@ class PublicationEdit extends Component {
 
   handleInputChange = (e) => {
     var { id, value, name } = e.target;
-    console.debug("handleInputChange",name, id+": "+value);
+    //consoledebug("handleInputChange",name, id+": "+value);
     // Strugglin to get the ID from the radio group
     var checkName = (name==="publication_status") ? name : id;
     // console.debug("checkName",checkName);
@@ -897,7 +935,7 @@ class PublicationEdit extends Component {
   };
 
   handleButtonClick = (i, event) => {
-    console.debug("handleButtonClick", i, event);
+    //consoledebug("handleButtonClick", i, event);
     if (event) {
     }
     this.setState(
@@ -937,7 +975,7 @@ class PublicationEdit extends Component {
       if(!isValid){
         var errorSet = removeEmptyValues(this.state.formErrors);
         var result = Object.keys(errorSet);
-        console.debug("result",result);
+        //consoledebug("result",result);
         var fieldString = "";
         for (var r in result) {
           var newString = humanize(result[r]);
@@ -986,7 +1024,7 @@ class PublicationEdit extends Component {
           if(isNaN(data.issue)){delete data.issue}
           if(isNaN(data.volume)){delete data.volume}
 
-          console.debug("data", data);
+          //consoledebug("data", data);
           // throw new Error("TESTIME");
           // get the Source ancestor
           if (
@@ -1034,7 +1072,7 @@ class PublicationEdit extends Component {
                 JSON.parse(localStorage.getItem("info")).groups_token
               )
               .then((response) => {
-                console.debug("NEWVERSION response", response);
+                //consoledebug("NEWVERSION response", response);
                 if (response.status < 300) {
                   //
                   this.setState({
@@ -1094,11 +1132,11 @@ class PublicationEdit extends Component {
               });
             
             }else if(submitIntention === "submit"){
-              console.debug("SUBMITTING data", data);
+              //consoledebug("SUBMITTING data", data);
               data.status = "Submitted"
               entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
-                  console.debug("entity_api_update_entity  SUBMIT response", response);
+                  //consoledebug("entity_api_update_entity  SUBMIT response", response);
                     if (response.status < 300 ) {
                       var ingestURL= process.env.REACT_APP_URL+"/publication/"+this.props.editingPublication.uuid
                       var slackMessage = {
@@ -1106,7 +1144,7 @@ class PublicationEdit extends Component {
                       }
                       ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
                         .then((slackRes) => {
-                          console.debug("slackRes", slackRes);
+                          //consoledebug("slackRes", slackRes);
                           if (response.status < 300) {
                             this.setState({ 
                               submit_error: false, 
@@ -1119,7 +1157,7 @@ class PublicationEdit extends Component {
                           }
                         })
                     } else {
-                      console.debug("entity_api_update_entity SUBMITNONERR error", response);
+                      //consoledebug("entity_api_update_entity SUBMITNONERR error", response);
                       this.setState({ 
                         submit_error: true, 
                         submitting: false, 
@@ -1129,7 +1167,7 @@ class PublicationEdit extends Component {
                     }
                 }) 
                 .catch((error) => {
-                  console.debug("entity_api_update_entity SUBMIT error", error);
+                  //consoledebug("entity_api_update_entity SUBMIT error", error);
                   this.props.reportError(error);
                   this.setState({ 
                     submit_error: true, 
@@ -1146,7 +1184,7 @@ class PublicationEdit extends Component {
                       this.props.onUpdated(response.results);
                     } else {
                       var statusText = "";
-                      console.debug("err", response, response.error);
+                      //consoledebug("err", response, response.error);
                       if(response.err){
                         statusText = response.err.response.status+" "+response.err.response.statusText;
                       }else if(response.error){
@@ -1178,7 +1216,7 @@ class PublicationEdit extends Component {
                       buttonSpinnerTarget:"" });
                  });
             }else{
-              console.debug("UPDATING data", data);
+              //consoledebug("UPDATING data", data);
               // just update
               entity_api_update_entity(this.props.editingPublication.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
@@ -1189,7 +1227,7 @@ class PublicationEdit extends Component {
                         });
                       this.props.onUpdated(response.results);
                     } else {
-                      console.debug("entity_api_update_entity NONERR error", response);
+                      //consoledebug("entity_api_update_entity NONERR error", response);
                       this.setState({ 
                         submit_error: true, 
                         submitting: false, 
@@ -1199,7 +1237,7 @@ class PublicationEdit extends Component {
                     }
                 }) 
                 .catch((error) => {
-                    console.debug("entity_api_update_entity error", error);
+                    //consoledebug("entity_api_update_entity error", error);
                   this.props.reportError(error);
                     this.setState({ 
                     submit_error: true, 
@@ -1226,7 +1264,7 @@ class PublicationEdit extends Component {
               JSON.parse(localStorage.getItem("info")).groups_token
             )
               .then((response) => {
-                console.debug("response", response);
+                //consoledebug("response", response);
                 if (response.status < 300) {
                   this.setState({
                     display_doi: response.results.display_doi,
@@ -1303,7 +1341,7 @@ class PublicationEdit extends Component {
   };
 
   validateProcessor(stateKey, errorMsg) {
-    console.debug("validateProcessor", stateKey, this.state.editingPublication[stateKey]);
+    //consoledebug("validateProcessor", stateKey, this.state.editingPublication[stateKey]);
       if(!this.state.editingPublication[stateKey] || this.state.editingPublication[stateKey].length ===0) {
         this.setState((prevState) => ({
           validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
@@ -1311,7 +1349,7 @@ class PublicationEdit extends Component {
         }));
         return false;
       } else {
-        console.debug("valid", stateKey, this.state.editingPublication[stateKey]);
+        //consoledebug("valid", stateKey, this.state.editingPublication[stateKey]);
         this.setState((prevState) => ({
           validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
           formErrors: { ...prevState.formErrors, [stateKey]: "" },
@@ -1337,7 +1375,7 @@ class PublicationEdit extends Component {
 
       // Because it can be False, pub status needs special handling
       var pubstat = this.state.editingPublication.publication_status;
-      console.debug({pubstat});
+      //consoledebug({pubstat});
       if(pubstat === undefined || pubstat === null || pubstat.length === 0){
         this.setState((prevState) => ({
           validationStatus:  { ...prevState.validationStatus, ['publication_status']: "Status is Required" },
@@ -1643,7 +1681,7 @@ class PublicationEdit extends Component {
       "newFormCheck":newFormCheck,
       "newStateCheck":newStateCheck,
     }
-    console.table("permMatrix",permMatrix)
+    //consoletable("permMatrix",permMatrix)
     
     return (
       <div className="buttonWrapRight">
@@ -1704,35 +1742,53 @@ class PublicationEdit extends Component {
   }
 
   renderVersionNav() {
-    var next = "";
-    var prev = "";
-
+    var next = [];
+    var prev = [];
+    // console.debug('%c◉ previous_revision_uuids ', 'color:#00ff7b', this.props.editingDataset.previous_revision_uuid);
+    // var previousUUIDs = this.props.previous_revision_uuids;
+    // var nextUUIDs = this.props.next_revision_uuids;
+    // var multiList = 
     return (
-      <Box sx={{ width: "50%" }}>
-        {this.props.editingPublication.next_revision_uuid && (
-          <>
-            Next Version:{" "}
-            <Button
-              variant="text"
-              onClick={() => this.handleVersionNavigate("next")}>
-              {" "}
-              {this.state.nextHID}
-            </Button>
-          </>
-        )}<br />
-        {this.props.editingPublication.previous_revision_uuid && (
-          <>
-            Previous Version:{" "}
-            <Button
-              variant="text"
-              onClick={() => this.handleVersionNavigate("prev")}>
-              {this.state.prevHID}
-            </Button>
-          </>
+      <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
+        {this.state.previousHubIDs &&(
+          <Grid item xs={6}>
+            <Typography>Previous Revisions</Typography>
+              <List
+                divider={true}
+                dense={true}
+                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
+                {this.state.previousHubIDs.map((entity, index) => {
+                  return (
+                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
+                      <ListItemText primary={entity.hubmapID} />
+                    </ListItemButton>
+                  );
+                })}
+              </List>
+          </Grid>
         )}
-      </Box>
-    );
-  }
+        {this.state.nextHubIDs &&(
+          <Grid item xs={6}>
+            <Typography>Next Revisions</Typography>
+              <List
+                divider={true}
+                dense={true}
+                sx={{maxHeight: '100px', maxWidth:'200px', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit'}}>
+                {this.state.nextHubIDs.map((entity, index) => {
+                  return (
+                    <ListItemButton sx={{display:"flex"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
+                      <ListItemText primary={entity.hubmapID} />
+                    </ListItemButton>
+                  );
+                })}
+              </List>
+          </Grid>
+          
+        )}
+      </Grid>
+    )
+}
+
 
   // @TODO: Give the button factory another go;
   // As a service along w/ eventual Permission service?
@@ -1824,13 +1880,12 @@ class PublicationEdit extends Component {
 
 
   errorClass(error, e) {
-    console.debug("errorClass", error, e);
+    //consoledebug("errorClass", error, e);
     if (error === "valid") return "is-valid";
     else if (error === "invalid" || error === "is-invalid") return "is-invalid";
     else if (error && error.length && error.length === 0) return "is-invalid";
     else return "";
 
-    // return error.length === 0 ? "" : "is-invalid";
   }
 
   onChangeGlobusLink(newLink, newPublication) {
@@ -1928,50 +1983,6 @@ class PublicationEdit extends Component {
       return this.renderListAssay(val);
     });
   }
-
-  // renderAssayArray() {
-  //   var len = 0;
-  //   var dtlistLen = this.state.dataTypeDropdown.length;
-  //   if (this.props.newForm) {
-  //     dtlistLen = this.props.dtl_primary.length;
-  //   }
-  //   if (
-  //     this.props.editingPublication &&
-  //     this.props.editingPublication.dataset_type
-  //   ) {
-  //     len = this.props.editingPublication.dataset_type.length;
-  //   } else {
-  //     //console.debug("no editingPublication");
-  //   }
-
-  //   if (len > 1) {
-  //     return (
-  //       <>
-  //         <ul>{this.renderMultipleAssays()}</ul>
-  //       </>
-  //     );
-  //   } else {
-  //     return (
-  //       <>
-  //         <Select
-  //           native
-  //           name="dt_select"
-  //           className="form-select"
-  //           disabled={
-  //             !this.state.writeable ||
-  //             !this.state.assay_type_primary ||
-  //             this.state.disableSelectDatatype
-  //           }
-  //           value={this.state.selected_dt}
-  //           id="dt_select"
-  //           onChange={this.handleInputChange}>
-  //           <option></option>
-  //           {this.renderAssayColumn(0, dtlistLen)}
-  //         </Select>
-  //       </>
-  //     );
-  //   }
-  // }
 
   assay_contains_pii(assay) {
     let assay_val = [...assay.values()][0]; // only one assay can now be selected, the Set() is older code
