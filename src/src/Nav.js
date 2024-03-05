@@ -77,9 +77,8 @@ export const Navigation = (props) => {
   };  
 
   function logout(e) {
-    localStorage.removeItem("info");
-    localStorage.removeItem("isAuthenticated");
-    window.location.replace(`${process.env.REACT_APP_URL}`);  
+    window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`);  
+
     
   };
 
