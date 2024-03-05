@@ -34,18 +34,6 @@ export const RenderCollection = (props) => {
       .then((response) => {
         setEntity(response.results);
         setIsLoadingEntity(false); 
-        // ingest_api_allowable_edit_states(entityUUID, authSet.groups_token)
-        //   .then((resp) => {
-        //     console.debug("Write Check", resp);
-        //     if (resp.status < 300) {
-        //       setPermissions(resp.results);
-        //       console.debug('%c⊙', 'color:#00ff7b', "Permissions", resp.results);
-        //       setIsLoadingEntity(false); 
-        //     }
-        //   })
-        //   .catch((error) => { 
-        //     console.debug('%c⭗', 'color:#ff005d', "Permissions", error);
-        //   });
         })  
         .catch((error) => {
           setIsLoadingEntity(false);
