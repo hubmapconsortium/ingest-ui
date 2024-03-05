@@ -36,8 +36,12 @@ export const RenderSample = (props) => {
       .then((response) => {
           setLoadFlag(true);
           if (response.status === 200) {
-            setEntity(response.results);
-            setLoading(false);
+            if(response.results.entity_type !=="Sample"){
+              navigate("/"+response.results.entity_type+"/"+uuid);
+            }else{
+              setEntity(response.results);
+              setLoading(false);
+            }
           } else {  
             passError(response.status, response.message);
           }
