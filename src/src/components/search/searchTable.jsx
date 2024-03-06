@@ -60,22 +60,41 @@ export const RenderSearchTable = (props) => {
   var queryParams = props.packagedQuery?props.packagedQuery : null
 
  useEffect(() => {
+
+
+
   console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
    var formQueries = {};
    if(queryParams){
-
-    if(queryParams.entity_type){formQueries.entity_type = queryParams.entity_type}
-    if(queryParams.keywords){formQueries.keywords = queryParams.keywords}
-    if(queryParams.group_uuid){formQueries.group_uuid = queryParams.group_uuid}
+    var queryTitle = "HubMAP Ingest Portal Search: ";
+    if(queryParams.entity_type && queryParams.entity_type!==null){
+      formQueries.entity_type = queryParams.entity_type
+      queryTitle += "Type: "+queryParams.entity_type + "";
+    }
+    if(queryParams.keywords && queryParams.keywords!==null){
+      formQueries.keywords = queryParams.keywords;
+      queryTitle += "Keywords: "+queryParams.keywords + "";
+    }
+    if(queryParams.group_uuid && queryParams.group_uuid!==null){
+      formQueries.group_uuid = queryParams.group_uuid;
+      queryTitle += "Group: "+queryParams.group_uuid + "";
+    }
+    if(formQueries.length>0){
+      document.title = "HuBMAP Ingest Portal | Search: "+queryTitle + ""
+    }
     console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
     var queryLength = Object.keys(formQueries).length
-    //  console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
+     console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
       setFormFilters(formQueries);
       if(queryLength>0){
         console.debug("Setting search Filters from URL",formQueries);
         setSearchFilters(formQueries);
         // handleSearchClick();
       }// setSearchFilters(searchQueries);
+    }else{
+      if(this.props.modecheck !== "Source") {
+        document.title = ("HuBMAP Ingest Portal ");
+      }
     }
   }, [queryParams]);
 
@@ -330,6 +349,7 @@ export const RenderSearchTable = (props) => {
       if (!props.modecheck) {
         console.debug("%c⊙SETTING URL: ", "color:#FFf07b",  url, params);
         window.history.pushState({}, "", url);
+        document.title = "HuBMAP Ingest Portal Search"
       }
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
@@ -366,12 +386,12 @@ export const RenderSearchTable = (props) => {
               'background':'#eee',
             },
             '.MuiTablePagination-displayedRows':{
-              'margin-top':'1em',
-              'margin-bottom':'1em'
+              'marginTop':'1em',
+              'marginBottom':'1em'
             },
             '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel':{
-              'margin-top':'1em',
-              'margin-bottom':'1em'
+              'marginTop':'1em',
+              'marginBottom':'1em'
             }
           }}
           rows={results.dataRows}

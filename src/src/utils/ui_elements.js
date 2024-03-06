@@ -9,6 +9,16 @@ import HelpTwoToneIcon from '@mui/icons-material/HelpTwoTone';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 
+import Paper from '@material-ui/core/Paper';
+import Grid from "@mui/material/Grid";
+
+import List from '@mui/material/List';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemButton from '@mui/material/ListItemButton';
+import Icon from '@mui/material/Icon';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 const HtmlTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props}  />
@@ -108,3 +118,49 @@ export function InputSelect(params) {
     console.debug("MetadataBadge", status, options[status]);
     return(options[status]);
   }
+
+
+  export function VersionNavigation(previous,next) {
+
+      return (
+        <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
+          {previous &&(
+            <Grid item xs={6}>
+              {renderVersionList(previous,"Previous")}
+            </Grid>
+          )}
+          {next &&(
+            <Grid item xs={6}>
+            {renderVersionList(next,"Next")}
+          </Grid>
+          )}
+        </Grid>
+      )
+  }
+
+  function renderVersionList(list,which){
+    return (
+      <Paper className="p5">
+      <Typography sx={{backgroundColor:'#343a40', color:'#fff', padding:"2px 5px"}}>{which ==="Previous" ? <ChevronLeftIcon /> : <ChevronRightIcon />}{which} List Revisions</Typography>
+        {list[0] &&(
+          <List
+            divider={true}
+            dense={true}
+            sx={{maxHeight: '140px', maxWidth:'auto', overflowY: 'scroll', overflowX:'auto', flexDirection: 'column', flexWrap:'inherit', padding:'0px', backgroundColor:'#f5f5f5'}}>
+            {list.map((entity, index) => {
+              return (
+                <ListItemButton sx={{width:"100%"}} key={index + 1}  href={"/"+entity.type+"/"+entity.hubmapID}>
+                  <ListItemText primary={entity.hubmapID}sx={{padding:'2px 5px'}} /> <LaunchIcon />
+                </ListItemButton>
+              );
+            })}
+          </List>
+        )}
+        {!list[0] &&(
+          <Typography sx={{padding:"2px 5px", backgroundColor:'#f5f5f5'}}>No Revisions Found</Typography>
+        )}
+      </Paper>
+    )
+  }
+
+

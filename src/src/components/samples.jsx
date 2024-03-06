@@ -37,6 +37,7 @@ export const RenderSample = (props) => {
           setLoadFlag(true);
           if (response.status === 200) {
             setEntity(response.results);
+            document.title = ("HuBMAP Ingest Portal | Sample: "+response.results.hubmap_id +"" );
             setLoading(false);
           } else {  
             passError(response.status, response.message);

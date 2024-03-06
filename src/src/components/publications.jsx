@@ -103,6 +103,7 @@ export const RenderPublication = (props) => {
             if (response.status === 200) {
               console.debug("fetchEntity", response.results);
               setEntity(response.results);
+              document.title = ("HuBMAP Ingest Portal | Publication: "+response.results.hubmap_id +"" );
               setIsLoadingEntity(false); 
               var checkAssay = response.results.data_types;
               checkAssayType(checkAssay)

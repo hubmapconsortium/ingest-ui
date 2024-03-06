@@ -11,7 +11,7 @@ import FormGroup from '@mui/material/FormGroup';
 import Select from '@mui/material/Select'; 
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-
+import {GridLoader} from "react-spinners";
 import '../../App.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -34,11 +34,10 @@ import {
   ingest_api_allowable_edit_states_statusless,
   ingest_api_notify_slack
 } from '../../service/ingest_api';
-import {
-  entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity
-} from '../../service/entity_api';
+import {entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity} from '../../service/entity_api';
 import {ubkg_api_get_assay_type_set,ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {VersionNavigation} from "../../utils/ui_elements";
 import {generateDisplaySubtype, generateDisplaySubtype_UBKG, generateSubtype} from "../../utils/display_subtypes";
 
 import {Alert,AlertTitle} from '@material-ui/lab';
@@ -114,11 +113,16 @@ class DatasetEdit extends Component {
     newVersion:false,
     previousHID:undefined,
     nextHID:undefined,
+    loadingPreviousVersions:true,
+    loadingNextVersions:true,
+    versioned:false,
     previous_revision_uuid:undefined,
     has_other_datatype:false,
     submitErrorResponse:"",
     submitErrorStatus:"",
     isValidData:true,
+    previousHubIDs:[],
+    nextHubIDs:[],
     formErrors:{
       contains_human_genetic_sequences:"",
       dataset_type:"",
@@ -129,20 +133,6 @@ class DatasetEdit extends Component {
     },
   };
 
-  // updateStateDataTypeInfo() {
-  //   let dataset_type = null;
-  //   let other_dt = undefined;
-  //   if (this.props.hasOwnProperty('editingDataset')
-  //     && this.props.editingDataset
-  //     && this.props.editingDataset.dataset_type) {
-  //     }
-
-  //     this.setState({
-  //       dataset_type:new Set(this.props.editingDataset.dataset_type),
-  //       has_other_datatype:other_dt !== undefined,
-  //       other_dt:other_dt,
-  //     });
-  //   }
     
     componentDidMount() {
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
@@ -185,6 +175,12 @@ class DatasetEdit extends Component {
       // Figure out our permissions
       if (this.props.editingDataset) {
         console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
+        if(!this.props.previous_revision_uuids){
+          this.setState({loadingPreviousVersions:false});
+        }
+        if(!this.props.next_revision_uuids){
+          this.setState({loadingNextVersions:false});
+        }
         if (this.props.editingDataset.uuid)
         // check to see which buttons to enable
         ingest_api_allowable_edit_states(this.props.editingDataset.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -266,19 +262,6 @@ class DatasetEdit extends Component {
         // Might have to assemble here for promise reasons?
         // ancestorList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
         this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)
-        // this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)
-        //   .then((response) => {
-        //       console.debug('%c⊙ RESP assembleSourceAncestorData', 'color:#00ff7b', response );
-        //       return response
-        //   })
-        //   .catch((error) => {
-        //     console.debug("sourceCompile",error);
-        //     this.props.reportError(error);
-        //   })   
-      
-
-
-        // console.debug('%c⊙ ancestorList', 'color:#8400FF', ancestorList );
       }
       // var sourceList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
       this.setState(
@@ -317,60 +300,69 @@ class DatasetEdit extends Component {
             });
         }
       );
-       // Now tha we've got that all set, 
-      // Here's the hack that disables changing the datatype 
-      // // if it's no longer a base primary type.  
-      // var dtlStatus = this.props.dtl_status;
-      // if(dtlStatus){
-      //   // We are primary type, only priamries in Dropdown
-      //   this.setState({disableSelectDatatype:false,
-      //     dataTypeDropdown:this.props.dtl_primary});
-      // }else{
-      //   // Not primary type, uneditable dropdown should contain all
-      //   this.setState({disableSelectDatatype:true,
-      //     dataTypeDropdown:this.props.dtl_all});
-      // }
-      // var selected = ""
-      // if(this.props.editingDataset  && this.props.editingDataset.dataset_type && this.props.editingDataset.dataset_type.length === 1){
-      //   // Set DT Select by state so it behaves as "controlled"
-      //   selected = this.props.editingDataset.dataset_type[0];
-      //   //
-      // }
+
       this.setState({
         dataset_type:this.props.editingDataset.dataset_type,
         dataTypeDropdown:this.props.dtl_all
       })
 
 
-        // Sets the Hubmap ID labels for Previous and Next version Buttons  
-        if(this.props.editingDataset.next_revision_uuid){
-          console.debug("next_revision_uuid",this.props.editingDataset.next_revision_uuid);
-          entity_api_get_entity(this.props.editingDataset.next_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((response) => {
-            console.debug("next_revision_uuid RESPONSE",response.results);
-            if(response.results.hubmap_id){
-              this.setState({nextHID:response.results.hubmap_id})
-            }else{
-              console.debug("next_revision_uuid",response);
-            }
-          })
-          .catch((error) => {
-            console.debug("next_revision_uuid",error);
-            this.props.reportError(error);
-          })   
-        }
-        if(this.props.editingDataset.previous_revision_uuid){
-          console.debug("prev_revision_uuid",this.props.editingDataset.previous_revision_uuid);
-          entity_api_get_entity(this.props.editingDataset.previous_revision_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((response) => {
-            this.setState({prevHID:response.results.hubmap_id})
-          })
-          .catch((error) => {
-            console.debug("porev",error);
-            this.props.reportError(error);
-          })   
-        }
-    
+      //  NEXT/PREV REVISION LIST BUILD
+      if(this.props.editingDataset && this.props.editingDataset.previous_revision_uuids && this.props.editingDataset.previous_revision_uuids.length >0){
+        this.setState({versioned:true});
+        var pHubIDs= [];
+        this.props.editingDataset.previous_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              if(response.results.hubmap_id){
+                pHubIDs.push({
+                  type: response.results.entity_type, 
+                  hubmapID: response.results.hubmap_id
+                })
+              }else{
+                pHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              pHubIDs.push(uuid)
+              console.debug("UUIDCheck",error);
+              this.props.reportError(error);
+            })
+        });
+        this.setState({
+          previousHubIDs:pHubIDs
+        },() => {
+          this.setState({loadingPreviousVersions:false});
+        })
+      }
+      // NEXT
+      if(this.props.editingDataset && this.props.editingDataset.next_revision_uuids && this.props.editingDataset.next_revision_uuids.length >0){
+        this.setState({versioned:true});
+        var nHubIDs= [];
+        this.props.editingDataset.next_revision_uuids.forEach(function(uuid, index) {
+          entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+            .then((response) => {
+              if(response.results.hubmap_id){
+                nHubIDs.push({
+                  type: response.results.entity_type, 
+                  hubmapID: response.results.hubmap_id
+                })
+              }else{
+                nHubIDs.push(uuid)
+              }
+            })
+            .catch((error) => {
+              console.debug("UUIDCheck",error);
+              this.props.reportError(error);
+              nHubIDs.push(uuid)
+            })
+        });
+        this.setState({
+          nextHubIDs:nHubIDs
+        },() => {
+          this.setState({loadingNextVersions:false});
+        })
+      }
     }
   }
 
@@ -396,20 +388,6 @@ class DatasetEdit extends Component {
         this.props.reportError();
       });
   }
-  // setAssayLists(){
-  //   ubkg_api_get_assay_type_set()
-  //   .then((res) => {
-  //     this.setState({dtl_all:res.data.result.map((value, index) => { return value.name })});
-  //   })
-  //   .catch((err) => {
-  //   })
-  //   ubkg_api_get_assay_type_set("primary")
-  //   .then((res) => {
-  //     this.setState({dtl_primary:res.data.result.map((value, index) => { return value.name })});
-  //   })
-  //   .catch((err) => {
-  //   })
-  // }
 
 
   componentWillUnmount() {
@@ -1511,7 +1489,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       if (this.state.status.toUpperCase() === 'PUBLISHED' ) {
         return (
             <div className="buttonWrapRight">
-                {this.renderNewVersionButtons()}
+                {this.renderNewVersionButtons()} NEWVERS
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
@@ -1564,9 +1542,9 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     var sampleSource = this.getSourceAncestorTypes("Sample");  
     var datasetStatus = this.props.editingDataset.status === "Published";
     var writability = this.state.has_version_priv;
-    var latestVersion = (!this.props.editingDataset.next_revision_uuid  ||  this.props.editingDataset.next_revision_uuid === undefined);
-    if(sampleSource && datasetStatus && writability && latestVersion){
-    // if(true===true){
+    // var latestVersion = (!this.props.editingDataset.next_revision_uuids  ||  this.props.editingDataset.next_revision_uuids[0] === undefined);
+    if(sampleSource && datasetStatus && writability ){
+    // if(true===tru  e){
       return (
         <Button variant="contained" sx={{minWidth:"130px"}} onClick={() => this.handleNewVersion()}> 
           {this.state.submitting && (
@@ -1581,21 +1559,33 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     } 
   }
 
+  renderListItem(uuid){
+    console.debug('%c◉ data ', 'color:#00ff7b', uuid);
+      entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((response) => {
+        console.debug('%c◉ response ', 'color:#00ff7b',response.results.hubmap_id );
+        if(response.results.hubmap_id){
+          return response.results.hubmap_id
+        }else{
+          return uuid
+        }
+      })
+      .catch((error) => {
+        console.debug("UUIDCheck",error);
+        this.props.reportError(error);
+      })   
+
+    
+  }
 
   renderVersionNav() {
-    var next = "";
-    var prev = "";
-    return (
-      <Box sx={{width:"50%"}}>
-        {this.props.editingDataset.next_revision_uuid  && (
-          <>Next Version: <Button variant="text" onClick={() => this.handleVersionNavigate('next')}>   {this.state.nextHID}</Button></>
-        )}<br />
-        {this.props.editingDataset.previous_revision_uuid  && (
-          <>Previous Version: <Button variant="text" onClick={() => this.handleVersionNavigate('prev')}>{this.state.prevHID}</Button></>
-        )}
-      </Box>
-    )
-}
+    if(this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false){
+      return (VersionNavigation(this.state.previousHubIDs,this.state.nextHubIDs))
+    }else{
+      return ( <GridLoader />)
+    }
+  }
+
 
   // Cancel button
   cancelButton() {
@@ -1704,39 +1694,6 @@ name, display_doi, doi
     });
   }
 
-//  renderOneAssay(val, idx) {
-//   var idstr = 'dt_' + val.term.toLowerCase().replace(' ','_');
-
-//   return (
-//     <div 
-//       className='form-group form-check' 
-//       key={idstr}>
-//       <input 
-//         type='radio' 
-//         className='form-check-input' 
-//         name={val.name} 
-//         key={idstr} 
-//         id={idstr}
-//         onChange={this.handleInputChange} 
-//         checked={this.state.dataset_type.has(val.term)}
-//       />
-//       <label className='form-check-label' htmlFor={idstr}>{val.term}</label>
-//     </div>
-//   )
-// }
-
-  // isAssayCheckSet(assay) {
-  //   try {    
-  //     if (this.props.editingDataset.dataset_type) {
-  //       return this.props.editingDataset.dataset_type.includes(assay);
-  //     } else{
-  //       return false
-  //     }
-  //   } catch {
-  //     return ("Error");
-  //    }
-  //  }
-
    renderDatsetTypeDropdown(){
     return (
       <Select
@@ -1763,93 +1720,6 @@ name, display_doi, doi
     )
    }
 
-  // renderAssayColumn(min, max) {
-  //   // Hijacking Select options based on Primary DT status
-  //   // @TODO there will be ways to verify primary status in the near future?
-  //   // if(this.props.dtl_status || this.props.newForm) { // true = primary dt, set options to primary
-  //   //   // console.debug("dtl_primary",this.props.dtl_primary);
-  //   //   return (
-  //   //     this.props.dtl_primary.slice(min, max).map((val, idx) => {return this.renderAssay(val, idx)})
-  //   //     )
-  //   // }else{  // false = Not primary DT, set options to full
-  //   //   return (
-  //   //     this.props.dtl_all.slice(min, max).map((val, idx) =>{
-  //   //       return this.renderAssay(val, idx)
-  //   //     })
-  //   //   )
-  //   // }
-  //   return (
-  //     this.props.dtl_all.slice(min, max).map((val, idx) =>{
-  //       return this.renderAssay(val, idx)
-  //     })
-  //   )
-  // }
-
-
-  // renderAssay(val) {
-  //   return (<option key={val.term} value={val.term} id={val.term}>{val.term}</option>)
-  // }
-
-  // renderListAssay(val) {
-  //   return (<li key={val}>{val}</li>)
-  // }
-
-  // renderStringAssay(val) {
-  //   return ({val})
-  // }
-
-  // renderDisabledNonprimaryDT(val) {
-  //   return (<li key={val}>{val}</li>)
-  // }
-
-
-  // renderMultipleAssays() {
-  //   var arr = Array.from(this.state.dataset_type)
-  //   return (arr.map((val) => {return this.renderListAssay(val)}))
-  // }
-
-   
-  // renderAssayArray() {
-  //     // var len = 0;
-  //     var dtlistLen = this.state.dataTypeDropdown.length;
-  //     if(this.props.newForm){
-  //       dtlistLen = this.props.dtl_primary.length;
-  //     }
-  // 	    return (<>
-  // 		    <Select 
-  //           native
-  //           name="dt_select"
-  //           className="form-select" 
-  //           // disabled={ (!this.state.writeable || !this.state.assay_type_primary) || this.state.disableSelectDatatype }
-  //           disabled={ !this.state.writeable || this.state.disableSelectDatatype }
-  //           value={this.state.dataset_type} 
-  //           id="dt_select" 
-  //           onChange={this.handleInputChange}>
-  //           <option></option>
-  //           {this.renderAssayColumn(0, dtlistLen)}
-  //         </Select>
-  //         </> )
-  
-  //     // }    
-  //   }
-   
-    // assay_contains_pii(assay) {
-    // New Dataset Type resource does not contain Pii Info, 
-    // Requested check removed via slack 
-    // hubmapconsortium.slack.com/archives/GNJ4QBLEL/p1705082366315539?thread_ts=1705076459.524989&cid=GNJ4QBLEL
-    // return false
-    // let assay_val = [...assay.values()][0]   // only one assay can now be selected, the Set() is older code
-    // let assay_val = this.props.dataset_type 
-    // for (let i in this.props.dataTypeList) {
-    //   let e = this.props.dataTypeList
-    //   if (e['name'] === assay) {
-    //     console.debug(" contains-pii e:",e,e['contains-pii']);
-    //     console.debug('%c⊙ PII', 'color:#00ff7b', e['contains-pii'] );
-    //       return e['contains-pii']
-    //   }
-    // }
-    // return false
-    //}
 
   render() {
     return (
@@ -1908,7 +1778,9 @@ name, display_doi, doi
                 18 identifiers specified by HIPAA
               </span>
             </Alert>
-            {this.renderVersionNav()}
+            {this.state.versioned  && (
+              <>{this.renderVersionNav()}</>
+            )}
             {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
               <Box sx={{ display:'flex'}} >
                 <Box  sx={{ width:"100%" }}><strong>This Dataset is contained in the data Upload </strong> 
@@ -2256,100 +2128,7 @@ name, display_doi, doi
                 </div>
               </div>
             )}
- 
-          {/* {this.state.assay_metadata_status !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='assay_metadata_status'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Assay Metadata Status
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.assay_metadata_status === 0 && (
-                  <span className='badge badge-secondary'>No metadata</span>
-                )}
-                {this.state.assay_metadata_status === 1 && (
-                  <span className='badge badge-primary'>Metadata provided</span>
-                )}
-                {this.state.assay_metadata_status === 2 && (
-                  <span className='badge badge-primary'>Metadata curated</span>
-                )}
-              </div>
-            </div>
-          )} */}
-          {/* {this.state.data_metric_availability !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='data_metric_availability'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Data Metric Availability
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.data_metric_availability === 0 && (
-                  <span className='badge badge-secondary'>
-                    No quality metrics are available
-                  </span>
-                )}
-                {this.state.data_metric_availability === 1 && (
-                  <span className='badge badge-primary'>
-                    Quality metrics are available
-                  </span>
-                )}
-              </div>
-            </div>
-          )} */}
-          {/* {this.state.data_processing_level !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='data_processing_level'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Data Proccessing Level
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.data_processing_level === 0 && (
-                  <span className='badge badge-secondary'>
-                    Uploaded data. No standardized processing has been performed
-                    by the HIVE.
-                  </span>
-                )}
-                {this.state.data_processing_level === 1 && (
-                  <span className='badge badge-primary'>
-                    Processing has been performed with a standard HIVE pipeline.
-                  </span>
-                )}
-                {this.state.data_processing_level === 2 && (
-                  <span className='badge badge-primary'>
-                    Additional processing has been performed.
-                  </span>
-                )}
-              </div>
-            </div>
-          )} */}
-          {/* {this.state.dataset_sign_off_status !== undefined && (
-            <div className='form-group row'>
-              <label
-                htmlFor='dataset_sign_off_status'
-                className='col-sm-2 col-form-label text-right'
-              >
-                Dataset Sign Off Status
-              </label>
-              <div className='col-sm-9 my-auto'>
-                {this.state.dataset_sign_off_status === 0 && (
-                  <span className='badge badge-secondary'>
-                    Expert has not signed off on the data
-                  </span>
-                )}
-                {this.state.dataset_sign_off_status === 1 && (
-                  <span className='badge badge-primary'>
-                    Expert has signed off on the data
-                  </span>
-                )}
-              </div>
-            </div>
-          )} */}
+
           <div className="col-8">
             {this.state.submit_error && (
               <Alert severity="error" >

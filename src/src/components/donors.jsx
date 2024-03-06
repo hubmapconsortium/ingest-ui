@@ -25,6 +25,7 @@ export const RenderDonor = (props) => {
         console.debug("useEffect entity_api_get_entity", response);
           if (response.status === 200) {
             setEntity(response.results);
+            document.title = ("HuBMAP Ingest Portal | Donor: "+response.results.hubmap_id +"" );
             //console.debug("entity_data", response.results);
             setLoading(false);
           } else {
