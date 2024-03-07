@@ -96,9 +96,11 @@ export const RenderMetadata = (props) => {
       thisRow.metadata['file_row'] = row
       entity_api_attach_bulk_metadata(validatedMeta[0][row].metadata.sample_id,thisRow,JSON.parse(localStorage.getItem('info')).groups_token)
         .then((resp) => {
+          console.debug('%c◉ RESPONSE ', 'color:#6200FF',resp );
           if (!resp.error){
             passes.push(resp.results.message)
             setAttachedMetadata(attachedMetadata => [...attachedMetadata, resp.results.message])
+            setActiveStep(5);
             // setAttachedMetadata(passes);
           } else {
               fails.push(resp)
