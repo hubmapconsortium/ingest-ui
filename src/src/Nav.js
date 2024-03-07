@@ -76,15 +76,6 @@ export const Navigation = (props) => {
     setUploadsDialog(false);
   };  
 
-  function logout(e) {
-    window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`);  
-
-    
-  };
-
-  
-
-  
   return (
       <AppBar position="static" id="header">
         <Dialog open={uploadsDialog}>
@@ -428,7 +419,7 @@ export const Navigation = (props) => {
               </span>
               <span className="logout">
                 <Button
-                onClick={logout}
+                onClick={() => props.logout()}
                 className="nav-link" >
                   Log Out 
                 </Button>
