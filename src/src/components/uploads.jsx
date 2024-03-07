@@ -7,11 +7,7 @@ import {ErrBox} from "../utils/ui_elements";
 import EditUploads from "./uploads/editUploads";
 import {useNavigate} from "react-router-dom";
 
-
-
-
 export const RenderUpload = (props) => {
-
   let navigate = useNavigate();
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
@@ -30,9 +26,13 @@ export const RenderUpload = (props) => {
     entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
           if (response.status === 200) {
-            setEntity(response.results);
-            document.title = ("HuBMAP Ingest Portal | Data Upload: "+response.results.hubmap_id +"" );
-            setLoading(false);
+            if(response.results.entity_type !== "Upload"){
+              navigate("/"+response.results.entity_type+"/"+uuid);
+            }else{
+              setEntity(response.results);
+              setLoading(false);
+              document.title = ("HuBMAP Ingest Portal | Data Upload: "+response.results.hubmap_id +"" );
+            }
           }else{
             console.error(response.status, response.results.error);
             return(response.status, response.results.error );

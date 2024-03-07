@@ -101,14 +101,16 @@ export const RenderPublication = (props) => {
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
-              console.debug("fetchEntity", response.results);
-              setEntity(response.results);
-              document.title = ("HuBMAP Ingest Portal | Publication: "+response.results.hubmap_id +"" );
-              setIsLoadingEntity(false); 
-              var checkAssay = response.results.data_types;
-              checkAssayType(checkAssay)
+              if(response.results.entity_type !== "Publication"){
+                navigate("/"+response.results.entity_type+"/"+uuid);
+              }else{
+                setEntity(response.results);
+                setIsLoadingEntity(false); 
+                document.title = ("HuBMAP Ingest Portal | Publication: "+response.results.hubmap_id +"" );
+                var checkAssay = response.results.data_types;
+                checkAssayType(checkAssay)
+              }
             }
-            
           })  
           .catch((error) => {
             console.debug("fetchEntity Error", error);

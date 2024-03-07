@@ -92,7 +92,7 @@ export const RenderSearchTable = (props) => {
         // handleSearchClick();
       }// setSearchFilters(searchQueries);
     }else{
-      if(this.props.modecheck !== "Source") {
+      if(props.modecheck !== "Source") {
         document.title = ("HuBMAP Ingest Portal ");
       }
     }

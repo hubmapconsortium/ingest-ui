@@ -5,6 +5,7 @@ import {ErrBox} from "../utils/ui_elements";
 import TissueFormLegacy from "./uuid/tissue_form_components/tissueForm";
 import {useNavigate} from "react-router-dom";
 export const RenderSample = (props) => {
+  
   console.debug("Rendering from NEWER Route, not Legacy Route");
   // let navigate = useNavigate();
   var authSet = JSON.parse(localStorage.getItem("info"));
@@ -36,9 +37,13 @@ export const RenderSample = (props) => {
       .then((response) => {
           setLoadFlag(true);
           if (response.status === 200) {
-            setEntity(response.results);
-            document.title = ("HuBMAP Ingest Portal | Sample: "+response.results.hubmap_id +"" );
-            setLoading(false);
+            if(response.results.entity_type !=="Sample"){
+              navigate("/"+response.results.entity_type+"/"+uuid);
+            }else{
+              setEntity(response.results);
+              setLoading(false);
+              document.title = ("HuBMAP Ingest Portal | Sample: "+response.results.hubmap_id +"" );
+            }
           } else {  
             passError(response.status, response.message);
           }

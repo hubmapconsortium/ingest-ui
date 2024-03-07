@@ -4,10 +4,7 @@ import { entity_api_get_entity} from '../service/entity_api';
 import { ubkg_api_get_assay_type_set } from "../service/ubkg_api";
 import DatasetFormLegacy from "./ingest/dataset_edit";
 import {useNavigate} from "react-router-dom";
-import { useLocation } from 'react-router'
-
-
-
+import {useLocation } from 'react-router'
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import Result from "./uuid/result";
@@ -68,13 +65,16 @@ export const RenderDataset = (props) => {
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
-              setEntity(response.results);
-              setIsLoadingEntity(false); 
-              var checkAssay = response.results.dataset_type;
-              checkAssayType(checkAssay)
-              document.title = ("HuBMAP Ingest Portal | Dataset: "+response.results.hubmap_id +"" );
+              if(response.results.entity_type !== "Dataset"){
+                navigate("/"+response.results.entity_type+"/"+uuid);
+              }else{
+                setEntity(response.results);
+                setIsLoadingEntity(false); 
+                document.title = ("HuBMAP Ingest Portal | Dataset: "+response.results.hubmap_id +"" );
+                var checkAssay = response.results.dataset_type;
+                checkAssayType(checkAssay)
+              }
             }
-            
           })  
           .catch((error) => {
             console.debug("fetchEntity Error", error);
