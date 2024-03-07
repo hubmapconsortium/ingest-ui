@@ -96,7 +96,6 @@ export const RenderMetadata = (props) => {
       thisRow.metadata['file_row'] = row
       entity_api_attach_bulk_metadata(validatedMeta[0][row].metadata.sample_id,thisRow,JSON.parse(localStorage.getItem('info')).groups_token)
         .then((resp) => {
-          console.debug('%c◉ RESPONSE ', 'color:#6200FF',resp );
           if (!resp.error){
             passes.push(resp.results.message)
             setAttachedMetadata(attachedMetadata => [...attachedMetadata, resp.results.message])
@@ -272,8 +271,7 @@ const handleErrorRow = (row) => {
               <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
                 Validating... <br />
                 This step could take a few moments. <br />
-                Please do not refresh, close, or leave the page until the process is
-                complete.
+                Please do not refresh, close, or leave the page until the process is completed
               </Typography>
           </Grid>
         </Grid>
