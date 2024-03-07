@@ -99,6 +99,7 @@ export const RenderMetadata = (props) => {
           if (!resp.error){
             passes.push(resp.results.message)
             setAttachedMetadata(attachedMetadata => [...attachedMetadata, resp.results.message])
+            setActiveStep(5);
             // setAttachedMetadata(passes);
           } else {
               fails.push(resp)
@@ -270,8 +271,7 @@ const handleErrorRow = (row) => {
               <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
                 Validating... <br />
                 This step could take a few moments. <br />
-                Please do not refresh, close, or leave the page until the process is
-                complete.
+                Please do not refresh, close, or leave the page until the process is completed
               </Typography>
           </Grid>
         </Grid>
