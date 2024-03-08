@@ -654,8 +654,7 @@ class EditUploads extends Component{
 
  renderSaveButton() {
     if (["VALID","INVALID", "ERROR", "NEW"].includes(this.state.status.toUpperCase()) && 
-      (this.state.data_admin || this.state.data_curator || this.state.data_group_editor) &&
-      this.state.writeable) {
+      (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)){
       return (
             <Button
             variant="contained"
@@ -715,7 +714,7 @@ renderReorganizeButton() {
   renderHelperText = () => {
       return(
         <div className="helper-text p-2 m-2 align-right w-100 text-right">
-          {["VALID","INVALID", "ERROR", "NEW"].includes(this.state.status.toUpperCase()) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor) && this.state.writeable && (
+          {["VALID","INVALID", "ERROR", "NEW"].includes(this.state.status.toUpperCase()) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor) && (
             <p className="text-small text-end p-0 m-0">Use the <strong>Save</strong> button to save any updates to the Title or Description.</p>
           )}
           {["VALID"].includes(this.state.status.toUpperCase()) && (this.state.data_admin || this.state.data_group_editor) && (
