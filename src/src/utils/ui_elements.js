@@ -11,6 +11,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 
 import Paper from '@material-ui/core/Paper';
 import Grid from "@mui/material/Grid";
+import {GridLoader} from "react-spinners";
 
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -136,6 +137,38 @@ export function InputSelect(params) {
           )}
         </Grid>
       )
+  }
+
+  function wideGridLoader() {
+    return(
+      <>
+        <GridLoader
+        color="#444a65"
+        margin={5}
+        size={5}
+        speedMultiplier={0.2}/>
+        <GridLoader
+          color="#444a65"
+          margin={4}
+          size={10}
+          speedMultiplier={0.5}/>
+        <GridLoader
+          color="#444a65"
+          margin={3}
+          size={15}
+          speedMultiplier={0.8}/>
+        <GridLoader
+          color="#444a65"
+          margin={4}
+          size={10}
+          speedMultiplier={0.5}/>
+        <GridLoader
+          color="#444a65"
+          margin={5}
+          size={5}
+          speedMultiplier={0.2}/>
+      </>
+    )
   }
 
   function renderVersionList(list,which){
