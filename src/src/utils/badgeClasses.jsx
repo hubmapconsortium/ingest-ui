@@ -48,6 +48,9 @@ export function getPublishStatusColor(status, itemID) {
         case "SUBMITTED":
           badge_class = "badge-info";
           break;
+        case "INCOMPLETE":
+          badge_class = "badge-incomplete";
+          break;
         default:
           break;
       }
