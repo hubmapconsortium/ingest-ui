@@ -149,6 +149,7 @@ export function App (props){
     }else{
       setTimerStatus(false);
       setIsLoading(false)
+      setAuthStatus(false);
     }
   }, [ ]);
 
@@ -215,12 +216,23 @@ export function App (props){
   },[])
   
 
+  function clearAuths() {  
+    console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
+    return new Promise((resolve) => {
+      setTimeout(() => { // Give it a chance to cleaer the local storage
+        localStorage.removeItem("info");
+        localStorage.removeItem("isAuthenticated");
+        resolve();
+      }, 2000);
+    });
+  }
 
   function Logout(){
-    localStorage.removeItem("info");
-    localStorage.removeItem("isAuthenticated");
-    window.location.replace(`${process.env.REACT_APP_URL}`);  
+    clearAuths().then((response) => {
+        window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
+      })
   };
+  
   function handleCancel(){
     window.history.back();  
   }
