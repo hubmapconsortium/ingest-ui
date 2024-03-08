@@ -68,11 +68,22 @@ export const RenderDataset = (props) => {
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
-              setEntity(response.results);
+              var newEnt = response.results;
+              // delete newEnt.next_revision_uuids;
+              // If we have versions in original single string format,
+              // lets bundle into an array
+              if(newEnt.next_revision_uuid && ! newEnt.next_revision_uuids){
+                newEnt.next_revision_uuids = [newEnt.next_revision_uuid];
+              }
+              if(newEnt.previous_revision_uuid && ! newEnt.previous_revision_uuids){
+                newEnt.previous_revision_uuids = [newEnt.previous_revision_uuid];
+              }
+              
+              setEntity(newEnt);
               setIsLoadingEntity(false); 
-              var checkAssay = response.results.dataset_type;
+              var checkAssay = newEnt.dataset_type;
               checkAssayType(checkAssay)
-              document.title = ("HuBMAP Ingest Portal | Dataset: "+response.results.hubmap_id +"" );
+              document.title = ("HuBMAP Ingest Portal | Dataset: "+newEnt.hubmap_id +"" );
             }
             
           })  
