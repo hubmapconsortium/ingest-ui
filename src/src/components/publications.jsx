@@ -101,15 +101,22 @@ export const RenderPublication = (props) => {
         .then((response) => {
           console.debug("fetchEntity RESP", response);
             if (response.status === 200) {
-              if(response.results.entity_type !== "Publication"){
-                navigate("/"+response.results.entity_type+"/"+uuid);
-              }else{
-                setEntity(response.results);
+             var newEnt = response.results;
+                // delete newEnt.next_revision_uuids;
+                // If we have versions in original single string format,
+                // lets bundle into an array
+                if(newEnt.next_revision_uuid && ! newEnt.next_revision_uuids){
+                  newEnt.next_revision_uuids = [newEnt.next_revision_uuid];
+                }
+                if(newEnt.previous_revision_uuid && ! newEnt.previous_revision_uuids){
+                  newEnt.previous_revision_uuids = [newEnt.previous_revision_uuid];
+                }
+                
+                setEntity(newEnt);
                 setIsLoadingEntity(false); 
-                document.title = ("HuBMAP Ingest Portal | Publication: "+response.results.hubmap_id +"" );
-                var checkAssay = response.results.data_types;
+                var checkAssay = newEnt.dataset_type;
                 checkAssayType(checkAssay)
-              }
+                document.title = ("HuBMAP Ingest Portal | Dataset: "+newEnt.hubmap_id +"" );
             }
           })  
           .catch((error) => {

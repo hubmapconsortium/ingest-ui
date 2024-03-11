@@ -11,7 +11,9 @@ import FormGroup from '@mui/material/FormGroup';
 import Select from '@mui/material/Select'; 
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+import Grid from "@mui/material/Grid";
 import {GridLoader} from "react-spinners";
+import Skeleton from '@mui/material/Skeleton';
 import '../../App.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -139,11 +141,11 @@ class DatasetEdit extends Component {
       // var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.assay_type_primary,this.state.status.toUpperCase(),this.props.newForm]
       // console.table({permChecks});
       if(this.props.editingDataset && this.props.editingDataset.assigned_to_group_name){
-        console.debug('%c⊙ assigned_to_group_name', 'color:#00ff7b', this.props.editingDataset.assigned_to_group_name );
+        // console.debug('%c⊙ assigned_to_group_name', 'color:#00ff7b', this.props.editingDataset.assigned_to_group_name );
         this.setState({assigned_to_group_name:this.props.editingDataset.assigned_to_group_name})
       }
       if(this.props.editingDataset && this.props.editingDataset.ingest_task){
-        console.debug('%c⊙ ingest_task', 'color:#00ff7b', this.props.editingDataset.ingest_task );
+        // console.debug('%c⊙ ingest_task', 'color:#00ff7b', this.props.editingDataset.ingest_task );
         this.setState({ingest_task:this.props.editingDataset.ingest_task})
       }
       
@@ -174,7 +176,7 @@ class DatasetEdit extends Component {
 
       // Figure out our permissions
       if (this.props.editingDataset) {
-        console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
+        // console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
         if(!this.props.previous_revision_uuids){
           this.setState({loadingPreviousVersions:false});
         }
@@ -1579,11 +1581,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
   }
 
   renderVersionNav() {
-    if(this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false){
-      return (VersionNavigation(this.state.previousHubIDs,this.state.nextHubIDs))
-    }else{
-      return ( <GridLoader />)
-    }
+    return (VersionNavigation(this.state.previousHubIDs,this.state.nextHubIDs))
   }
 
 
@@ -1778,9 +1776,25 @@ name, display_doi, doi
                 18 identifiers specified by HIPAA
               </span>
             </Alert>
-            {this.state.versioned  && (
-              <>{this.renderVersionNav()}</>
+            {this.state.versioned && 
+            (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) &&
+            (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
+                <>{this.renderVersionNav()}</>
             )}
+            {this.state.versioned && 
+            (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
+              <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
+                <Grid item xs={6}>
+                  <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+                  <Skeleton variant="rounded"  height={60} />
+                </Grid>
+                <Grid item xs={6}>
+                <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+                  <Skeleton variant="rounded"  height={60} />
+                </Grid>
+              </Grid>
+            )}
+
             {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
               <Box sx={{ display:'flex'}} >
                 <Box  sx={{ width:"100%" }}><strong>This Dataset is contained in the data Upload </strong> 
