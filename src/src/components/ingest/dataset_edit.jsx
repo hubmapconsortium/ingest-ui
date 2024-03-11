@@ -1776,13 +1776,10 @@ name, display_doi, doi
                 18 identifiers specified by HIPAA
               </span>
             </Alert>
-            {this.state.versioned && 
-            (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) &&
-            (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
+            {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
                 <>{this.renderVersionNav()}</>
             )}
-            {this.state.versioned && 
-            (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
+            {this.state.versioned && (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
               <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
                 <Grid item xs={6}>
                   <Skeleton variant="text" sx={{ fontSize: '1rem' }} />

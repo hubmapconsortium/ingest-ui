@@ -74,27 +74,23 @@ export const RenderPublication = (props) => {
     
     var authSet = JSON.parse(localStorage.getItem("info"));
     setAuthToken(authSet);
-  
-    function checkAssayType(dtype){
-      // These'll likely be changing and it's causing off behavior for publications
-      //  Nuking for now
-      ubkg_api_get_assay_type_set("primary")// the list call only gets primaries for now.
-      .then((response) => {
-        console.debug("checkAssayType Primary", response);
-        setDataTypeList(response.data.result);
-        setDtl_primary(response.data.result);
-        setDtl_all(response.data.result);
-        setDtl_status(true);
-        setIsLoadingDTList(0);
-      }) 
-      .catch(error => {
-        console.debug("checkAssayType Primary Error", error);
-        reportError(error );
-      });
-    }
-    
-
-
+    // function checkAssayType(dtype){
+    //   // These'll likely be changing and it's causing off behavior for publications
+    //   //  Nuking for now
+    //   ubkg_api_get_assay_type_set("primary")// the list call only gets primaries for now.
+    //   .then((response) => {
+    //     console.debug("checkAssayType Primary", response);
+    //     setDataTypeList(response.data.result);
+    //     setDtl_primary(response.data.result);
+    //     setDtl_all(response.data.result);
+    //     setDtl_status(true);
+    //     setIsLoadingDTList(0);
+    //   }) 
+    //   .catch(error => {
+    //     console.debug("checkAssayType Primary Error", error);
+    //     reportError(error );
+    //   });
+    // }
     function fetchEntity(authSet){
       console.debug("fetchEntity", uuid, authSet.groups_token);
       entity_api_get_entity(uuid, authSet.groups_token)
@@ -111,12 +107,9 @@ export const RenderPublication = (props) => {
                 if(newEnt.previous_revision_uuid && ! newEnt.previous_revision_uuids){
                   newEnt.previous_revision_uuids = [newEnt.previous_revision_uuid];
                 }
-                
                 setEntity(newEnt);
                 setIsLoadingEntity(false); 
-                var checkAssay = newEnt.dataset_type;
-                checkAssayType(checkAssay)
-                document.title = ("HuBMAP Ingest Portal | Dataset: "+newEnt.hubmap_id +"" );
+                document.title = ("HuBMAP Ingest Portal | Publication: "+newEnt.hubmap_id +"" );
             }
           })  
           .catch((error) => {
@@ -203,8 +196,8 @@ export const RenderPublication = (props) => {
   }
   
   
-    if (!isLoadingEntity && isLoadingDTList<1 ) {
-      console.debug("Loaded!", dtl_status, dtl_primary, dtl_all);
+    if (!isLoadingEntity ) {
+      // console.debug("Loaded!");
       return ( 
         <div>
           {renderSuccessDialog()}
@@ -216,10 +209,10 @@ export const RenderPublication = (props) => {
           handleCancelForm={handleCancelForm} 
           editingPublication={entity_data} 
           reportError={props.reportError} 
-          dataTypeList={dataTypeList} 
-          dtl_primary={dtl_primary} 
-          dtl_all={dtl_all} 
-          dtl_status={true} 
+          // dataTypeList={dataTypeList} 
+          // dtl_primary={dtl_primary} 
+          // dtl_all={dtl_all} 
+          // dtl_status={true} 
           />
         </div>
       )

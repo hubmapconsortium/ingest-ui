@@ -188,23 +188,23 @@ class PublicationEdit extends Component {
     },
   };
 
-  updateStateDataTypeInfo() {
-    let dataset_type = null;
-    let other_dt = undefined;
-    if (
-      this.props.hasOwnProperty("editingPublication") &&
-      this.props.editingPublication &&
-      this.props.editingPublication.dataset_type
-    ) {
-    }
+  // updateStateDataTypeInfo() {
+  //   let dataset_type = null;
+  //   let other_dt = undefined;
+  //   if (
+  //     this.props.hasOwnProperty("editingPublication") &&
+  //     this.props.editingPublication &&
+  //     this.props.editingPublication.dataset_type
+  //   ) {
+  //   }
 
-    this.setState({
-      // dataset_type: new Set(this.props.editingPublication.dataset_type),
-      dataset_type:this.props.editingPublication.dataset_type,
-      has_other_datatype: other_dt !== undefined,
-      other_dt: other_dt,
-    });
-  }
+  //   this.setState({
+  //     // dataset_type: new Set(this.props.editingPublication.dataset_type),
+  //     dataset_type:this.props.editingPublication.dataset_type,
+  //     has_other_datatype: other_dt !== undefined,
+  //     other_dt: other_dt,
+  //   });
+  // }
 
   componentDidMount() {
     //consoledebug("PublicationEdit: componentDidMount");
@@ -213,7 +213,7 @@ class PublicationEdit extends Component {
     //consoledebug("this.state.validationStatus.publication_doi.length >0", this.state.validationStatus.publication_doi.length >0);
     // Modal state as flag for add/remove?
     document.addEventListener("click", this.handleClickOutside);
-    this.setAssayLists();
+    // this.setAssayLists();
     var savedGeneticsStatus = undefined;
     try {
       var auth = JSON.parse(localStorage.getItem("info")).groups_token;
