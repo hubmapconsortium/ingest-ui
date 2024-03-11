@@ -178,10 +178,10 @@ class DatasetEdit extends Component {
       // Figure out our permissions
       if (this.props.editingDataset) {
         // console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
-        if(!this.props.previous_revision_uuids){
+        if(!this.props.editingDataset.previous_revision_uuids){
           this.setState({loadingPreviousVersions:false});
         }
-        if(!this.props.next_revision_uuids){
+        if(!this.props.editingDataset.next_revision_uuids){
           this.setState({loadingNextVersions:false});
         }
         if (this.props.editingDataset.uuid)

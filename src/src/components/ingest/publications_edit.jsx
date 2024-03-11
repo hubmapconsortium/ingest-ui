@@ -15,7 +15,9 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormLabel from '@mui/material/FormLabel';
 
+import Grid from "@mui/material/Grid";
 import {GridLoader} from "react-spinners";
+import Skeleton from '@mui/material/Skeleton';
 
 import "../../App.css";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -1731,11 +1733,7 @@ class PublicationEdit extends Component {
   }
 
   renderVersionNav() {
-    if(this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false){
-      return (VersionNavigation(this.state.previousHubIDs,this.state.nextHubIDs))
-    }else{
-      return ( <GridLoader />)
-    }
+    return (VersionNavigation(this.state.previousHubIDs,this.state.nextHubIDs))
   }
 
   // @TODO: Give the button factory another go;
@@ -2014,9 +2012,20 @@ class PublicationEdit extends Component {
                   18 identifiers specified by HIPAA
                 </span>
               </Alert>
-
-              {this.state.versioned  && this.props.editingPublication &&(
-                <>{this.renderVersionNav()}</>
+              {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
+                  <>{this.renderVersionNav()}</>
+              )}
+              {this.state.versioned && (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
+                <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
+                  <Grid item xs={6}>
+                    <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+                    <Skeleton variant="rounded"  height={60} />
+                  </Grid>
+                  <Grid item xs={6}>
+                  <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+                    <Skeleton variant="rounded"  height={60} />
+                  </Grid>
+                </Grid>
               )}
 
               {this.props.editingPublication &&
