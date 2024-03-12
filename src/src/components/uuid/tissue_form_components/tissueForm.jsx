@@ -282,7 +282,7 @@ class TissueForm extends Component {
         // run load props from  createnext previous call
           this.setState(
             {
-              editingEntity:this.props.editingEntity,
+              editingEntityProp:this.props.editingEntity,
               specimen_type: this.props.specimenType,
               source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
@@ -302,12 +302,11 @@ class TissueForm extends Component {
         this.hideBackButton();
       }
 
-      if (this.props.editingEntity) {
-        // console.debug('%c◉ ENTITY ', 'color:#00ff7b', this.props.editingEntity);
+      if (this.state.editingEntity) {
         
-        let images = this.props.editingEntity.image_files;
-        let metadatas = this.props.editingEntity.metadata_files;
-        let thumbnail_file = this.props.editingEntity.thumbnail_file;
+        let images = this.state.editingEntity.image_files;
+        let metadatas = this.state.editingEntity.metadata_files;
+        let thumbnail_file = this.state.editingEntity.thumbnail_file;
     
         const image_list = [];
         const metadata_list = [];
