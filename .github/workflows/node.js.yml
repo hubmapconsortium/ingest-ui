@@ -16,6 +16,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 20
+    - name: Set process.env.CI to false
+      run: echo "::set-env name=CI::false"
     - name: Install dependencies
       run: npm install
       working-directory: src
