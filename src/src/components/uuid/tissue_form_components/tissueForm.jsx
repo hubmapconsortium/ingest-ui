@@ -282,6 +282,7 @@ class TissueForm extends Component {
         // run load props from  createnext previous call
           this.setState(
             {
+              editingEntityProp:this.props.editingEntity,
               specimen_type: this.props.specimenType,
               source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
@@ -349,7 +350,7 @@ class TissueForm extends Component {
         this.setState(
           {
             author: this.state.editingEntity.created_by_user_email,
-            organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
+            organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
             visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
             lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id ? this.state.editingEntity.lab_tissue_sample_id : "",
             description:(this.state.editingEntity.description ? this.state.editingEntity.description : ""),
@@ -367,8 +368,8 @@ class TissueForm extends Component {
             source_entity: this.state.editingEntity.direct_ancestor,
             source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
           }, () => {
-            console.debug("ORGANCHECK",this.state.organ, this.isSpecialOrganType(this.state.organ) );
-            if(this.isSpecialOrganType(this.state.organ)){
+            console.debug("ORGANCHECK",this.props.organ, this.isSpecialOrganType(this.props.organ) );
+            if(this.isSpecialOrganType(this.props.organ)){
               this.setState({
                 rui_show_btn: true
               });
