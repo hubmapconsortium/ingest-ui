@@ -368,11 +368,13 @@ class TissueForm extends Component {
             source_entity: this.state.editingEntity.direct_ancestor,
             source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
           }, () => {
-            console.debug("ORGANCHECK",this.props.organ, this.isSpecialOrganType(this.props.organ) );
-            if(this.isSpecialOrganType(this.props.organ)){
+            console.debug("ORGANCHECK",this.props.editingEntity.organ, this.isSpecialOrganType(this.props.editingEntity.organ),this.props.editingEntity.sample_category );
+            if(this.isSpecialOrganType(this.props.editingEntity.organ) && this.props.editingEntity.sample_category !== "organ" ){
               this.setState({
                 rui_show_btn: true
-              });
+              }, () => {
+                console.debug('%c◉ RUISHOW ', 'color:#00ff7b');
+                })
             }
           })
 
@@ -657,7 +659,7 @@ class TissueForm extends Component {
           this.setState({ 
             rui_show_btn: true 
           }, () => {
-            console.debug("Showin RUI Button!");
+            console.debug('%c◉ Showin RUI Button! ', 'color:#00ff7b');
           })
         }
         if (!validateRequired(value)) {
@@ -2254,6 +2256,7 @@ handleAddImage = () => {
             {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
+              this.props.editingEntity.sample_category !=="organ"  &&
               this.isSpecialOrganType(this.state.organ) && 
               this.state.RUI_ACTIVE &&  
               (
