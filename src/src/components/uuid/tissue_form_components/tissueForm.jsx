@@ -350,24 +350,24 @@ class TissueForm extends Component {
 
         this.setState(
           {
-            author: this.props.editingEntity.created_by_user_email,
+            author: this.state.editingEntity.created_by_user_email,
             organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
-            visit: this.props.editingEntity.visit ? this.props.editingEntity.visit : "",
-            lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id ? this.props.editingEntity.lab_tissue_sample_id : "",
-            description:(this.props.editingEntity.description ? this.props.editingEntity.description : ""),
-            protocol_url: this.props.editingEntity.protocol_url,
-            entity_type: this.props.editingEntity.entity_type,
-            specimen_type: this.props.editingEntity.specimen_type, // this.determineSpecimenType(),
-            specimen_type_other: this.props.editingEntity.specimen_type_other,
-            sample_category:this.props.editingEntity.sample_category,
-            rui_location: JSON.stringify(this.props.editingEntity.rui_location, null, 3) || "",
-            rui_check: JSON.stringify(this.props.editingEntity.rui_location, null, 3) ? true : false,
+            visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
+            lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id ? this.state.editingEntity.lab_tissue_sample_id : "",
+            description:(this.state.editingEntity.description ? this.state.editingEntity.description : ""),
+            protocol_url: this.state.editingEntity.protocol_url,
+            entity_type: this.state.editingEntity.entity_type,
+            specimen_type: this.state.editingEntity.specimen_type, // this.determineSpecimenType(),
+            specimen_type_other: this.state.editingEntity.specimen_type_other,
+            sample_category:this.state.editingEntity.sample_category,
+            rui_location: JSON.stringify(this.state.editingEntity.rui_location, null, 3) || "",
+            rui_check: JSON.stringify(this.state.editingEntity.rui_location, null, 3) ? true : false,
             images: image_list,
             metadatas: metadata_list,
             thumbnail: thumbnail_list,
             source_uuid: this.getID(),
-            source_entity: this.props.editingEntity.direct_ancestor,
-            source_entity_type: this.props.editingEntity.direct_ancestor.entity_type,
+            source_entity: this.state.editingEntity.direct_ancestor,
+            source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
           }, () => {
             console.debug("ORGANCHECK",this.props.organ, this.isSpecialOrganType(this.props.organ) );
             if(this.isSpecialOrganType(this.props.organ)){
