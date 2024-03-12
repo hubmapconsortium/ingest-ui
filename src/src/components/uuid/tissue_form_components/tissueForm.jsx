@@ -282,6 +282,7 @@ class TissueForm extends Component {
         // run load props from  createnext previous call
           this.setState(
             {
+              editingEntity:this.props.editingEntity,
               specimen_type: this.props.specimenType,
               source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
@@ -301,11 +302,12 @@ class TissueForm extends Component {
         this.hideBackButton();
       }
 
-      if (this.state.editingEntity) {
+      if (this.props.editingEntity) {
+        // console.debug('%c◉ ENTITY ', 'color:#00ff7b', this.props.editingEntity);
         
-        let images = this.state.editingEntity.image_files;
-        let metadatas = this.state.editingEntity.metadata_files;
-        let thumbnail_file = this.state.editingEntity.thumbnail_file;
+        let images = this.props.editingEntity.image_files;
+        let metadatas = this.props.editingEntity.metadata_files;
+        let thumbnail_file = this.props.editingEntity.thumbnail_file;
     
         const image_list = [];
         const metadata_list = [];
@@ -348,27 +350,27 @@ class TissueForm extends Component {
 
         this.setState(
           {
-            author: this.state.editingEntity.created_by_user_email,
-            organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
-            visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
-            lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id ? this.state.editingEntity.lab_tissue_sample_id : "",
-            description:(this.state.editingEntity.description ? this.state.editingEntity.description : ""),
-            protocol_url: this.state.editingEntity.protocol_url,
-            entity_type: this.state.editingEntity.entity_type,
-            specimen_type: this.state.editingEntity.specimen_type, // this.determineSpecimenType(),
-            specimen_type_other: this.state.editingEntity.specimen_type_other,
-            sample_category:this.state.editingEntity.sample_category,
-            rui_location: JSON.stringify(this.state.editingEntity.rui_location, null, 3) || "",
-            rui_check: JSON.stringify(this.state.editingEntity.rui_location, null, 3) ? true : false,
+            author: this.props.editingEntity.created_by_user_email,
+            organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
+            visit: this.props.editingEntity.visit ? this.props.editingEntity.visit : "",
+            lab_tissue_id: this.props.editingEntity.lab_tissue_sample_id ? this.props.editingEntity.lab_tissue_sample_id : "",
+            description:(this.props.editingEntity.description ? this.props.editingEntity.description : ""),
+            protocol_url: this.props.editingEntity.protocol_url,
+            entity_type: this.props.editingEntity.entity_type,
+            specimen_type: this.props.editingEntity.specimen_type, // this.determineSpecimenType(),
+            specimen_type_other: this.props.editingEntity.specimen_type_other,
+            sample_category:this.props.editingEntity.sample_category,
+            rui_location: JSON.stringify(this.props.editingEntity.rui_location, null, 3) || "",
+            rui_check: JSON.stringify(this.props.editingEntity.rui_location, null, 3) ? true : false,
             images: image_list,
             metadatas: metadata_list,
             thumbnail: thumbnail_list,
             source_uuid: this.getID(),
-            source_entity: this.state.editingEntity.direct_ancestor,
-            source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
+            source_entity: this.props.editingEntity.direct_ancestor,
+            source_entity_type: this.props.editingEntity.direct_ancestor.entity_type,
           }, () => {
-            console.debug("ORGANCHECK",this.state.organ, this.isSpecialOrganType(this.state.organ) );
-            if(this.isSpecialOrganType(this.state.organ)){
+            console.debug("ORGANCHECK",this.props.organ, this.isSpecialOrganType(this.props.organ) );
+            if(this.isSpecialOrganType(this.props.organ)){
               this.setState({
                 rui_show_btn: true
               });

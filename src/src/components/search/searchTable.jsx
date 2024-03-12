@@ -34,6 +34,7 @@ export const RenderSearchTable = (props) => {
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
   // var [searchFilters, setSearchFilters] = useState();
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
+  var [modeCheck, setModeCheck] = useState(props.modecheck ? props.modecheck : null);
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
 
@@ -76,8 +77,12 @@ export const RenderSearchTable = (props) => {
         setSearchFilters(formQueries);
         // handleSearchClick();
       }// setSearchFilters(searchQueries);
+    }else{
+      if(modeCheck !== "Source") {
+        document.title = ("HuBMAP Ingest Portal ");
+      }
     }
-  }, [queryParams]);
+  }, [queryParams,modeCheck]);
 
 
 
