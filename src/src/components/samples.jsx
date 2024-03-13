@@ -92,7 +92,8 @@ export const RenderSample = (props) => {
     }
 
   function onUpdated(data){
-    console.debug("onUpdated", data);
+    // Return to home search once finished here
+    navigate('../')
   }
 
   function handleChangeSamplePage(uuid){

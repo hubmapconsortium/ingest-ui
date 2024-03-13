@@ -1160,7 +1160,8 @@ handleAddImage = () => {
         }  // end of:  if (this.state.sample_count < 1)
 
 
-        if (this.state.editingEntity && !this.state.LocationSaved) {
+        // if (this.state.editingEntity && !this.state.LocationSaved) {
+        if (this.state.editingEntity) {
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
@@ -2579,9 +2580,10 @@ handleAddImage = () => {
 
 
         <Snackbar open={this.state.show_snack} 
+          // sx={{marginTop:"20px"}}
           onClose={this.closeSnack}
           anchorOrigin={{
-              vertical: 'top',
+              vertical: 'bottom',
               horizontal: 'right',
           }}
           autoHideDuration={6000} 
@@ -2589,7 +2591,7 @@ handleAddImage = () => {
           action={
                 <React.Fragment>
                   <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
-                      <FontAwesomeIcon icon={faTimes} size="1x" />
+                      <FontAwesomeIcon icon={faTimes} size="2x" />
                   </IconButton>
                 </React.Fragment>
         }/> 
