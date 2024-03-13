@@ -762,6 +762,7 @@ class TissueForm extends Component {
   }
 
   handleAddRUILocation = e => {
+    console.debug('%c◉ this.props.organ ', 'color:#00ff7b', this.props.organ);
     this.setState({
       rui_click: true,
     });
@@ -2212,7 +2213,7 @@ handleAddImage = () => {
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organList={this.state.organ_types}
                       // organList={this.fetchOrganTypes}
-                      organ={this.state.organ}
+                      organ={this.props.editingEntity.organ}
                       sex={this.state.source_entity.sex}
                       user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
@@ -2303,7 +2304,7 @@ handleAddImage = () => {
                            <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organList={this.state.organ_types}
-                            organ={this.state.source_entity.organ}
+                            organ={this.props.editingEntity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
@@ -2357,7 +2358,7 @@ handleAddImage = () => {
                           <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organList={this.state.organ_types}
-                            organ={this.state.source_entity.organ}
+                            organ={this.props.editingEntity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}

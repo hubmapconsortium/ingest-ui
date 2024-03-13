@@ -37,11 +37,12 @@ export const RenderSample = (props) => {
           setLoadFlag(true);
           if (response.status === 200) {
             var sample = response.results;
+            // console.debug('%c◉ response.result.organ ', 'color:#00ff7b',response.result.organ );
             document.title = ("HuBMAP Ingest Portal | Sample: "+response.results.hubmap_id +"" );
             if (!sample.organ){
               entity_api_get_entity_ancestor(sample.uuid,JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
-                // console.debug('%c◉ RESPONSE entity_api_get_entity_ancestor', 'color:#00ff7b', response.results);
+                console.debug('%c◉ RESPONSE entity_api_get_entity_ancestor', 'color:#00ff7b', response.results,response.results[0].organ);
                 if (response.results[0].organ){
                   sample.organ = response.results[0].organ;
                 }
