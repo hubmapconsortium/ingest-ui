@@ -155,6 +155,7 @@ export function entity_api_update_multiple_entities(data, auth) {
  * 
  * return:  { status, results}
  */
+// @TODO: Rename to reflect Organ endpoint
 export function entity_api_get_entity_ancestor(uuid, auth) { 
   const options = {
       headers: {
