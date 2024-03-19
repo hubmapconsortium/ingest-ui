@@ -270,6 +270,7 @@ export const RenderSearchTable = (props) => {
   }
         
   function handleSearchClick(event) {
+    
     if(event){event.preventDefault()}
     setTableLoading(true);
     setPage(0)
