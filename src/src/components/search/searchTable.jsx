@@ -364,6 +364,8 @@ export const RenderSearchTable = (props) => {
   // }
 
 
+
+
   function renderView() {
     //console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
     return (
@@ -380,6 +382,30 @@ export const RenderSearchTable = (props) => {
 
 
   function renderTable() {
+    var hiddenFields = [
+      "lab_donor_id",
+      "created_by_user_displayname",
+      "lab_tissue_sample_id",
+      "entity_type",
+      "specimen_type",
+      "organ",
+    ];
+
+    function buildColumnFilter(arr) {
+      let obj = {};
+      arr.forEach(value => {
+          obj[value] = false;
+      });
+      return obj;
+    }
+    var columnFilters = buildColumnFilter(hiddenFields)
+    
+    const getTogglableColumns = (columns: GridColDef[]) => {
+      return columns
+        .filter((column) => !hiddenFields.includes(column.field))
+        .map((column) => column.field);
+    };
+
     return (
       <div style={{height:590, width:"100%" }}>
         <DataGrid
@@ -396,15 +422,7 @@ export const RenderSearchTable = (props) => {
               'marginBottom':'1em'
             }
           }}
-          columnVisibilityModel={{
-            // Hide columns defiend here, the other columns will remain visible
-            lab_donor_id: false,
-            created_by_user_displayname:false,
-            lab_tissue_sample_id:false,
-            entity_type:false,
-            specimen_type:false,
-            organ:false,
-          }}
+          columnVisibilityModel={columnFilters}
           rows={results.dataRows}
           columns={results.colDef}
           disableColumnMenu={true}
@@ -412,7 +430,14 @@ export const RenderSearchTable = (props) => {
           columnThreshold={2}
           pagination
           slots={{ toolbar:GridToolbar }}
-          slotProps={{toolbar:{csvOptions:{fileName:"hubmap_ingest_export",},},}}
+          slotProps={{
+            toolbar:{
+              csvOptions:{fileName:"hubmap_ingest_export",}
+            },
+            columnsPanel: {
+              getTogglableColumns,
+            },
+          }}
           hideFooterSelectedRowCount
           rowCount={results.rowCount}
           paginationMode="server"
