@@ -380,6 +380,15 @@ export const RenderSearchTable = (props) => {
               'margin-bottom':'1em'
             }
           }}
+          columnVisibilityModel={{
+            // Hide columns defiend here, the other columns will remain visible
+            lab_donor_id: false,
+            created_by_user_displayname:false,
+            lab_tissue_sample_id:false,
+            entity_type:false,
+            specimen_type:false,
+            organ:false,
+          }}
           rows={results.dataRows}
           columns={results.colDef}
           disableColumnMenu={true}
