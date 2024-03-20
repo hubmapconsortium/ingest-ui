@@ -34,6 +34,7 @@ export const RenderSearchTable = (props) => {
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
   // var [searchFilters, setSearchFilters] = useState();
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
+  var [modeCheck, setModeCheck] = useState(props.modecheck ? props.modecheck : null);
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
 
@@ -92,11 +93,11 @@ export const RenderSearchTable = (props) => {
         // handleSearchClick();
       }// setSearchFilters(searchQueries);
     }else{
-      if(this.props.modecheck !== "Source") {
+      if(modeCheck !== "Source") {
         document.title = ("HuBMAP Ingest Portal ");
       }
     }
-  }, [queryParams]);
+  }, [queryParams,modeCheck]);
 
 
 
@@ -284,6 +285,7 @@ export const RenderSearchTable = (props) => {
   }
         
   function handleSearchClick(event) {
+    
     if(event){event.preventDefault()}
     setTableLoading(true);
     setPage(0)
@@ -393,6 +395,15 @@ export const RenderSearchTable = (props) => {
               'marginTop':'1em',
               'marginBottom':'1em'
             }
+          }}
+          columnVisibilityModel={{
+            // Hide columns defiend here, the other columns will remain visible
+            lab_donor_id: false,
+            created_by_user_displayname:false,
+            lab_tissue_sample_id:false,
+            entity_type:false,
+            specimen_type:false,
+            organ:false,
           }}
           rows={results.dataRows}
           columns={results.colDef}

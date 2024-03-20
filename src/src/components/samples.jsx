@@ -1,6 +1,6 @@
 import React, { useEffect, useState  } from "react";
 import { useParams } from 'react-router-dom';
-import { entity_api_get_entity} from '../service/entity_api';
+import { entity_api_get_entity,entity_api_get_entity_ancestor} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import TissueFormLegacy from "./uuid/tissue_form_components/tissueForm";
 import {useNavigate} from "react-router-dom";
@@ -36,9 +36,30 @@ export const RenderSample = (props) => {
       .then((response) => {
           setLoadFlag(true);
           if (response.status === 200) {
-            setEntity(response.results);
+            var sample = response.results;
+            // console.debug('%c◉ response.result.organ ', 'color:#00ff7b',response.result.organ );
             document.title = ("HuBMAP Ingest Portal | Sample: "+response.results.hubmap_id +"" );
-            setLoading(false);
+            if (!sample.organ){
+              entity_api_get_entity_ancestor(sample.uuid,JSON.parse(localStorage.getItem("info")).groups_token)
+              .then((response) => {
+                console.debug('%c◉ RESPONSE entity_api_get_entity_ancestor', 'color:#00ff7b', response.results,response.results[0].organ);
+                if (response.results[0].organ){
+                  sample.organ = response.results[0].organ;
+                }
+                // console.debug('%c◉ SAMPLE IS NOW  ', 'color:#00ff7b', sample);
+                setEntity(sample);
+                setLoading(false);
+              })
+              .catch((error) => {
+                passError(error.status, error.results.error );
+                setEntity(sample);
+                setLoading(false);
+              });
+            }else{
+              setEntity(sample);
+              setLoading(false);
+            }
+            
           } else {  
             passError(response.status, response.message);
           }
@@ -48,6 +69,7 @@ export const RenderSample = (props) => {
         });
       
   };
+
 
 
   function handleCancel(){
@@ -70,7 +92,8 @@ export const RenderSample = (props) => {
     }
 
   function onUpdated(data){
-    console.debug("onUpdated", data);
+    // Return to home search once finished here
+    navigate('../')
   }
 
   function handleChangeSamplePage(uuid){

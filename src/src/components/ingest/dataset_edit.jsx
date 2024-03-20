@@ -159,7 +159,6 @@ class DatasetEdit extends Component {
         var auth = JSON.parse(localStorage.getItem("info")).groups_token;
         this.setState({groupsToken:auth});
       } catch {
-       
        var auth = "";
       }
 
@@ -673,7 +672,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
                     <span className={"w-100 badge " + getPublishStatusColor(row.status,row.uuid)}> {row.status}</span>   
                 )}</TableCell>
                 <TableCell  className="clicky-cell" align="right" scope="row"> 
-                {this.state.writeable && (
+                {this.state.writeable && (this.props.editingDataset.creation_action !== "Multi-Assay Split" && this.props.editingDataset.creation_action !=="Central Process") && (
                   <React.Fragment>
                     <FontAwesomeIcon
                       className='inline-icon interaction-icon '
@@ -683,7 +682,9 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
                     />
                   </React.Fragment>
                   )}
-                  {!this.state.writeable && (
+                  {(!this.state.writeable || 
+                    this.props.editingDataset.creation_action === "Multi-Assay Split" || 
+                    this.props.editingDataset.creation_action ==="Central Process") && (
                   <small className="text-muted">N/A</small>
                   )}
                 
@@ -695,7 +696,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
         </TableContainer>
         
                  
-        {this.state.writeable && (
+        {this.state.writeable && (this.props.editingDataset.creation_action !== "Multi-Assay Split" && this.props.editingDataset.creation_action !=="Central Process") && (
         <React.Fragment>
           <Box className="mt-2 w-100" width="100%"  display="flex">
             
@@ -888,7 +889,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
             let direct_ancestor_uuid = this.state.source_uuid_list.map((su) => {
                           return su.uuid || su.source_uuid;
             });
-            if (direct_ancestor_uuid) {
+            if (direct_ancestor_uuid && (this.props.editingDataset.creation_action !== "Multi-Assay Split" && this.props.editingDataset.creation_action !=="Central Process")) {
               data["direct_ancestor_uuids"] = direct_ancestor_uuid;
             }
           }
@@ -919,9 +920,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
                  ingest_api_create_dataset(JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                   .then((response) => {
                     if (response.status < 300) {
-                     //
-                       this.setState({display_doi:response.results.display_doi,});
-
+                      this.setState({display_doi:response.results.display_doi,});
                       entity_api_get_globus_url(response.results.uuid, this.state.groupsToken)
                       .then((res) => {
                         this.setState({globus_path:res.results,}, () => {
@@ -993,7 +992,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
                         submitting:false, 
                         submitErrorResponse:response,
                         buttonSpinnerTarget:"" 
-});
+                      });
                       this.props.reportError(response);
                     }
                     // this.props.onUpdated(res.data);
@@ -1015,8 +1014,8 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
                     submitting:false, 
                     submitErrorResponse:error.result.data,
                     buttonSpinnerTarget:"" 
-});
                 });
+              });
               // })
 
             }else if (submitIntention === "processing") {
