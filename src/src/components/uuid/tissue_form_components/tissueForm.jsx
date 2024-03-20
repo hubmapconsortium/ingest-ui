@@ -2214,7 +2214,8 @@ handleAddImage = () => {
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organList={this.state.organ_types}
                       // organList={this.fetchOrganTypes}
-                      organ={this.props.editingEntity.organ}
+                      organ={ this.state.ancestor_organ ? this.state.ancestor_organ : this.state.source_entity.organ}
+                      // organ={ this.props.editingEntity.organ ? this.props.editingEntity.organ}
                       sex={this.state.source_entity.sex}
                       user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
