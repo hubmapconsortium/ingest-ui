@@ -36,7 +36,10 @@ export const RenderSample = (props) => {
       .then((response) => {
           setLoadFlag(true);
           if (response.status === 200) {
-            var sample = response.results;
+            if(response.results.entity_type !=="Sample"){
+              navigate("/"+response.results.entity_type+"/"+uuid);
+            }else{
+              var sample = response.results;
             // console.debug('%c◉ response.result.organ ', 'color:#00ff7b',response.result.organ );
             document.title = ("HuBMAP Ingest Portal | Sample: "+response.results.hubmap_id +"" );
             if (!sample.organ){
@@ -57,9 +60,10 @@ export const RenderSample = (props) => {
               });
             }else{
               setEntity(sample);
-              setLoading(false);
+                setLoading(false);
             }
             
+            }
           } else {  
             passError(response.status, response.message);
           }

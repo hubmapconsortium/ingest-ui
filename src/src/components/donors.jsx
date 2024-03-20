@@ -3,8 +3,10 @@ import { useParams } from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import DonorForm from "./uuid/donor_form_components/donorForm";
+import {useNavigate} from "react-router-dom";
 
 export const RenderDonor = (props) => {
+  let navigate = useNavigate();
   var [entity_data, setEntity] = useState(true);
   var [isLoading, setLoading] = useState(true);
   var [errorHandler, setErrorHandler] = useState({
@@ -23,19 +25,22 @@ export const RenderDonor = (props) => {
     entity_api_get_entity(uuid, authSet.groups_token)
       .then((response) => {
         console.debug("useEffect entity_api_get_entity", response);
-          if (response.status === 200) {
+        if (response.status === 200) {
+          if(response.results.entity_type !== "Donor"){
+            navigate("/"+response.results.entity_type+"/"+uuid);
+          }else{
             setEntity(response.results);
-            //console.debug("entity_data", response.results);
             setLoading(false);
-          } else {
-            console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
-            passError(response.status, response.message);
           }
-        })
-        .catch((error) => {
-          console.debug("entity_api_get_entity ERROR", error);
-          passError(error.status, error.results.error );
-        });
+        } else {
+          console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
+          passError(response.status, response.message);
+        }
+      })
+      .catch((error) => {
+        console.debug("entity_api_get_entity ERROR", error);
+        passError(error.status, error.results.error );
+      });
   }, [uuid]);
 
   function onUpdated(data){
