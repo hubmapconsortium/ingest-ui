@@ -196,23 +196,12 @@ export const RenderSearchTable = (props) => {
     console.debug("useEffect restrictions")
     if (restrictions) {
       console.debug('%c⊙', 'color:#00ff7b', "Restrictions detected: ",restrictions );
-      // setTableLoading(true);
-      // There's a chance it'll want to return the original Sample result after already loading
-      // the datasets. Give it a short moment, hide the table behinda a loader, re-load 
-      // with restrictions & unhide
       if(restrictions.entityType){
-        setFormFilters({
-          entity_type:restrictions.entityType,
-        });
-        // setSearchFilters({
-        //   entity_type:restrictions.entityType,
-        // });
-        setTimeout(() => {
-          // handleSearchClick();
-          // setTableLoading(false);
-        }, 5000);
-      // console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
+        setFormFilters((prevValues) => ({...prevValues,
+          entity_type:restrictions.entityType,}));
       }
+      // console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
+      handleSearchClick();
     }
   }, [restrictions]);
 
