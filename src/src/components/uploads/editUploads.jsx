@@ -144,12 +144,12 @@ class EditUploads extends Component{
 
         //@TODO: Decouple Badge class from this switch that sets writeable state & Validation Messge Style
         // Unless these are a different Badge not RE status but another state? 
-        switch (this.state.status.toUpperCase()) {
+        // BADGE CLASS no longer being defined here, utilizing getPublishStatusColor instead. 
+        switch (entity_data.status.toUpperCase()) {
           case "NEW":
             
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-purple",
               writeable: true
             });
           break;
@@ -157,7 +157,6 @@ class EditUploads extends Component{
             
             this.setState({
               validation_message_style:"error",
-              badge_class: "badge-danger",
               writeable: true
             });
           break;
@@ -165,7 +164,6 @@ class EditUploads extends Component{
             
             this.setState({
               validation_message_style:"warning",
-              badge_class: "badge-danger",
               writeable: true
             });
           break;
@@ -173,7 +171,6 @@ class EditUploads extends Component{
             
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-success",
               writeable: false
             });
           break;
@@ -181,7 +178,6 @@ class EditUploads extends Component{
             
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-secondary",
               writeable: false
             });
             break;
@@ -189,7 +185,6 @@ class EditUploads extends Component{
             
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-info",
               globusLinkText: "Open data repository ",
               writeable: false
             });
@@ -198,7 +193,6 @@ class EditUploads extends Component{
             
             this.setState({
               validation_message_style:null,
-              badge_class: "badge-info",
               globusLinkText: "Open data repository ",
               writeable: true
             });
@@ -211,6 +205,8 @@ class EditUploads extends Component{
         
       });
 
+      console.debug('%c◉ this.state.status.toUpperCase() ', 'color:#00ff7b', entity_data.status);
+      this.setState({badge_class:getPublishStatusColor(entity_data.status)});
       this.setState({
           datarows: this.state.datasets, // Object.values(response.results)
           results_total:  this.state.datasets.length,
