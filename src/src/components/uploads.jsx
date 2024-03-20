@@ -34,6 +34,7 @@ export const RenderUpload = (props) => {
               navigate("/"+response.results.entity_type+"/"+uuid);
             }else{
               setEntity(response.results);
+              document.title = ("HuBMAP Ingest Portal | Data Upload: "+response.results.hubmap_id +"" );
               setLoading(false);
             }
           }else{

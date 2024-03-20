@@ -30,6 +30,8 @@ export const RenderDonor = (props) => {
             navigate("/"+response.results.entity_type+"/"+uuid);
           }else{
             setEntity(response.results);
+            document.title = ("HuBMAP Ingest Portal | Donor: "+response.results.hubmap_id +"" );
+            //console.debug("entity_data", response.results);
             setLoading(false);
           }
         } else {
