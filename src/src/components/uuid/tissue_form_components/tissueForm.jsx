@@ -1562,7 +1562,7 @@ handleAddImage = () => {
                     { this.state.related_group_ids.length > 0 && this.state.related_group_ids.map((item, index) => {
                       if (item.uuid === this.state.editingEntity.uuid) {
                         return (
-                          <li key={item.submission_id} className="active">
+                          <li key={index+"_"+item.submission_id} className="active">
                              <Button 
                               type="button"
                               className="btn btn-link">
@@ -1573,7 +1573,7 @@ handleAddImage = () => {
                       } else {
                         return (
                           <>
-                          <li key={item.submission_id}>
+                          <li key={index+"_"+item.submission_id}>
                           <Button 
                             type="button"
                             className="btn btn-link" 

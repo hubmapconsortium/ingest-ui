@@ -5,9 +5,10 @@ import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import { CollectionForm } from "./collections/collections"
 import { ingest_api_allowable_edit_states} from "../service/ingest_api";
+import {useNavigate} from "react-router-dom";
 
 export const RenderCollection = (props) => {
-
+  let navigate = useNavigate();
   // var isNew = props.new;
   var [isNew] = useState(props.newForm);
   var [authToken] = useState(props.groupsToken);
@@ -32,17 +33,34 @@ export const RenderCollection = (props) => {
     if (entityUUID) {
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
-        setEntity(response.results);
-        setIsLoadingEntity(false); 
-        document.title = ("HuBMAP Ingest Portal | Collection: "+response.results.hubmap_id +"" );
-      })  
+        if (response.status === 200) {
+          if(response.results.entity_type !== "Collection"){
+            navigate("/"+response.results.entity_type+"/"+uuid);
+          }else{
+            setEntity(response.results);
+            setIsLoadingEntity(false);
+          }
+        } else {
+          console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
+          passError(response.status, response.message);
+        }
+      })
       .catch((error) => {
-        setIsLoadingEntity(false);
-      }); 
-    }else{
-      setIsLoadingEntity(false); 
+        console.debug("entity_api_get_entity ERROR", error);
+        passError(error.status, error.results.error );
+      });
     }
-  }, [uuid]);
+  }, [uuid,navigate]);
+
+  function passError(status, message) {
+    console.debug("Error", status, message);
+    setIsLoadingEntity(false);
+    setErrorHandler({
+        status: status,
+        message:message,
+        isError: true 
+      })
+    }
 
 
 
