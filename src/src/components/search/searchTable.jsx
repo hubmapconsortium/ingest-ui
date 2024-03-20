@@ -60,41 +60,42 @@ export const RenderSearchTable = (props) => {
   // Cant reach many hooks like useLocation since we're wrapped in a class
   var queryParams = props.packagedQuery?props.packagedQuery : null
 
- useEffect(() => {
-
-
-
-  console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
-   var formQueries = {};
-   if(queryParams){
-    var queryTitle = "HubMAP Ingest Portal Search: ";
-    if(queryParams.entity_type && queryParams.entity_type!==null){
-      formQueries.entity_type = queryParams.entity_type
-      queryTitle += "Type: "+queryParams.entity_type + "";
-    }
-    if(queryParams.keywords && queryParams.keywords!==null){
-      formQueries.keywords = queryParams.keywords;
-      queryTitle += "Keywords: "+queryParams.keywords + "";
-    }
-    if(queryParams.group_uuid && queryParams.group_uuid!==null){
-      formQueries.group_uuid = queryParams.group_uuid;
-      queryTitle += "Group: "+queryParams.group_uuid + "";
-    }
-    if(formQueries.length>0){
-      document.title = "HuBMAP Ingest Portal | Search: "+queryTitle + ""
-    }
-    console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
-    var queryLength = Object.keys(formQueries).length
-     console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
-      setFormFilters(formQueries);
-      if(queryLength>0){
-        console.debug("Setting search Filters from URL",formQueries);
-        setSearchFilters(formQueries);
-        // handleSearchClick();
-      }// setSearchFilters(searchQueries);
+  useEffect(() => {
+    console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
+    var formQueries = {};
+    if(modeCheck === "Source") {
+      // We dont want it to start with a search on Samples, 
+      // No search till the user clicks, ensures Restrictions aren't 
+      // overridden by initial loads/reloads
+      // document.title = ("HuBMAP Ingest Portal "); 
     }else{
-      if(modeCheck !== "Source") {
-        document.title = ("HuBMAP Ingest Portal ");
+      document.title = ("HuBMAP Ingest Portal ");
+      if(queryParams){
+        var queryTitle = "HubMAP Ingest Portal Search: ";
+        if(queryParams.entity_type && queryParams.entity_type!==null){
+          formQueries.entity_type = queryParams.entity_type
+          queryTitle += "Type: "+queryParams.entity_type + "";
+        }
+        if(queryParams.keywords && queryParams.keywords!==null){
+          formQueries.keywords = queryParams.keywords;
+          queryTitle += "Keywords: "+queryParams.keywords + "";
+        }
+        if(queryParams.group_uuid && queryParams.group_uuid!==null){
+          formQueries.group_uuid = queryParams.group_uuid;
+          queryTitle += "Group: "+queryParams.group_uuid + "";
+        }
+        if(formQueries.length>0){
+          document.title = "HuBMAP Ingest Portal | Search: "+queryTitle + ""
+        }
+        console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
+        var queryLength = Object.keys(formQueries).length
+        console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
+        setFormFilters(formQueries);
+        if(queryLength>0){
+          console.debug("Setting search Filters from URL",formQueries);
+          setSearchFilters(formQueries);
+          // handleSearchClick();
+        }// setSearchFilters(searchQueries);
       }
     }
   }, [queryParams,modeCheck]);
@@ -285,7 +286,7 @@ export const RenderSearchTable = (props) => {
   }
         
   function handleSearchClick(event) {
-    
+    console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', );
     if(event){event.preventDefault()}
     setTableLoading(true);
     setPage(0)
