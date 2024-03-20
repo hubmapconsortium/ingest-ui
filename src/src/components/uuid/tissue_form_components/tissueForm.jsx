@@ -282,6 +282,7 @@ class TissueForm extends Component {
         // run load props from  createnext previous call
           this.setState(
             {
+              editingEntityProp:this.props.editingEntity,
               specimen_type: this.props.specimenType,
               source_entity_type: this.props.source_entity_type ? this.props.source_entity_type : 'Donor',
               source_entity: this.props.direct_ancestor ? this.props.direct_ancestor : "",
@@ -349,7 +350,7 @@ class TissueForm extends Component {
         this.setState(
           {
             author: this.state.editingEntity.created_by_user_email,
-            organ: this.state.editingEntity.organ ? this.state.editingEntity.organ : this.state.editingEntity.direct_ancestor.organ,
+            organ: this.props.editingEntity.organ ? this.props.editingEntity.organ : this.props.editingEntity.direct_ancestor.organ,
             visit: this.state.editingEntity.visit ? this.state.editingEntity.visit : "",
             lab_tissue_id: this.state.editingEntity.lab_tissue_sample_id ? this.state.editingEntity.lab_tissue_sample_id : "",
             description:(this.state.editingEntity.description ? this.state.editingEntity.description : ""),
@@ -367,11 +368,13 @@ class TissueForm extends Component {
             source_entity: this.state.editingEntity.direct_ancestor,
             source_entity_type: this.state.editingEntity.direct_ancestor.entity_type,
           }, () => {
-            console.debug("ORGANCHECK",this.state.organ, this.isSpecialOrganType(this.state.organ) );
-            if(this.isSpecialOrganType(this.state.organ)){
+            console.debug("ORGANCHECK",this.props.editingEntity.organ, this.isSpecialOrganType(this.props.editingEntity.organ),this.props.editingEntity.sample_category );
+            if(this.isSpecialOrganType(this.props.editingEntity.organ) && this.props.editingEntity.sample_category !== "organ" ){
               this.setState({
                 rui_show_btn: true
-              });
+              }, () => {
+                console.debug('%c◉ RUISHOW ', 'color:#00ff7b');
+                })
             }
           })
 
@@ -656,7 +659,7 @@ class TissueForm extends Component {
           this.setState({ 
             rui_show_btn: true 
           }, () => {
-            console.debug("Showin RUI Button!");
+            console.debug('%c◉ Showin RUI Button! ', 'color:#00ff7b');
           })
         }
         if (!validateRequired(value)) {
@@ -759,6 +762,7 @@ class TissueForm extends Component {
   }
 
   handleAddRUILocation = e => {
+    console.debug('%c◉ this.props.organ ', 'color:#00ff7b', this.props.organ);
     this.setState({
       rui_click: true,
     });
@@ -1156,7 +1160,8 @@ handleAddImage = () => {
         }  // end of:  if (this.state.sample_count < 1)
 
 
-        if (this.state.editingEntity && !this.state.LocationSaved) {
+        // if (this.state.editingEntity && !this.state.LocationSaved) {
+        if (this.state.editingEntity) {
           entity_api_update_entity(this.state.editingEntity.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
                   if (response.status === 200) {
@@ -2209,7 +2214,7 @@ handleAddImage = () => {
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
                       organList={this.state.organ_types}
                       // organList={this.fetchOrganTypes}
-                      organ={this.state.organ}
+                      organ={this.props.editingEntity.organ}
                       sex={this.state.source_entity.sex}
                       user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
@@ -2253,6 +2258,7 @@ handleAddImage = () => {
             {this.state.editingEntity &&
               !this.state.multiple_id &&
               this.state.source_entity !== undefined &&
+              this.props.editingEntity.sample_category !=="organ"  &&
               this.isSpecialOrganType(this.state.organ) && 
               this.state.RUI_ACTIVE &&  
               (
@@ -2299,7 +2305,7 @@ handleAddImage = () => {
                            <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organList={this.state.organ_types}
-                            organ={this.state.source_entity.organ}
+                            organ={this.props.editingEntity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
@@ -2353,7 +2359,7 @@ handleAddImage = () => {
                           <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organList={this.state.organ_types}
-                            organ={this.state.source_entity.organ}
+                            organ={this.props.editingEntity.organ}
                             sex={this.state.source_entity.sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
@@ -2574,9 +2580,10 @@ handleAddImage = () => {
 
 
         <Snackbar open={this.state.show_snack} 
+          // sx={{marginTop:"20px"}}
           onClose={this.closeSnack}
           anchorOrigin={{
-              vertical: 'top',
+              vertical: 'bottom',
               horizontal: 'right',
           }}
           autoHideDuration={6000} 
@@ -2584,7 +2591,7 @@ handleAddImage = () => {
           action={
                 <React.Fragment>
                   <IconButton size="small" aria-label="close" color="inherit" onClick={this.closeSnack}>
-                      <FontAwesomeIcon icon={faTimes} size="1x" />
+                      <FontAwesomeIcon icon={faTimes} size="2x" />
                   </IconButton>
                 </React.Fragment>
         }/> 

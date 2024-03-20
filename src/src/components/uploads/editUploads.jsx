@@ -653,9 +653,8 @@ class EditUploads extends Component{
   }
 
  renderSaveButton() {
-    if (["VALID","INVALID", "ERROR", "NEW"].includes(
-      this.state.status.toUpperCase()
-      ) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)) {
+    if (["VALID","INVALID", "ERROR", "NEW"].includes(this.state.status.toUpperCase()) && 
+      (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)){
       return (
             <Button
             variant="contained"
@@ -713,15 +712,17 @@ renderReorganizeButton() {
 
 
   renderHelperText = () => {
-    if(this.state.writeable){
       return(
         <div className="helper-text p-2 m-2 align-right w-100 text-right">
-          <p className="text-small text-end p-0 m-0">Use the <strong>Submit</strong> button when all data has been uploaded and is ready for HIVE review.</p>
-          <p className="text-small text-end p-0 
-          m-0">Use the <strong>Save</strong> button to save any updates to the Title or Description.</p>
+          {["VALID","INVALID", "ERROR", "NEW"].includes(this.state.status.toUpperCase()) && (this.state.data_admin || this.state.data_curator || this.state.data_group_editor) && (
+            <p className="text-small text-end p-0 m-0">Use the <strong>Save</strong> button to save any updates to the Title or Description.</p>
+          )}
+          {["VALID"].includes(this.state.status.toUpperCase()) && (this.state.data_admin || this.state.data_group_editor) && (
+            <p className="text-small text-end p-0 m-0">Use the <strong>Submit</strong> button when all data has been uploaded and is ready for HIVE review.</p>
+          )}
         </div>
       )
-    }
+    
   }
   
   componentDidUpdate(prevProps) { 
@@ -932,11 +933,7 @@ renderReorganizeButton() {
       </div>
       );
     }
-
-    
-
   }
-
 
   renderValidationMessage (){
     if(this.state.validation_message){
@@ -950,12 +947,9 @@ renderReorganizeButton() {
       }
     }
   }
-
-
   
-    // dev int
   render() {
-    console.debug('%c⊙ ALLGROUPS', 'color:#00ff7b', this.props.allGroups );
+    // console.debug('%c⊙ ALLGROUPS', 'color:#00ff7b', this.props.allGroups );
     return (
       <React.Fragment>
         <form>
