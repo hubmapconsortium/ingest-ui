@@ -22,6 +22,7 @@ export const RenderCollection = (props) => {
     isError: null 
   });
   const uuid = useParams();
+  const newForm = props.newForm ? props.newForm : "";
 
   // const reportError = props.reportError;
   // const { firstName, lastName, city } = person;
@@ -30,9 +31,11 @@ export const RenderCollection = (props) => {
   useEffect(() => {
     const entityUUID = uuid.uuid
     var authSet = JSON.parse(localStorage.getItem("info"));
+    console.debug('%c◉ entityUUID ', 'color:#00ff7b', entityUUID);
     if (entityUUID) {
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
+        console.debug('%c◉ response ', 'color:#00ff7b', response);
         if (response.status === 200) {
           if(response.results.entity_type !== "Collection"){
             navigate("/"+response.results.entity_type+"/"+uuid);
@@ -50,8 +53,10 @@ export const RenderCollection = (props) => {
         console.debug("entity_api_get_entity ERROR", error);
         passError(error.status, error.results.error );
       })
+    }else if(newForm && newForm === true){
+      setIsLoadingEntity(false);
     }
-  }, [uuid]);
+  }, [uuid,newForm]);
 
   // @TODO: Dry up, unify error passing 
   function passError(status, message) {
