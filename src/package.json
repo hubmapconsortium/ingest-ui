@@ -46,6 +46,7 @@
     "yup": "^1.0.0"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "cypress": "^13.3.0",
     "react-scripts": "^5.0.1"
   },
