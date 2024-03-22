@@ -36,7 +36,7 @@ RUN yum install -y yum-utils && \
     rm /etc/nginx/conf.d/default.conf && \
     mv nginx.conf /etc/nginx/nginx.conf && \
     mv ingest-ui.conf /etc/nginx/conf.d && \
-    curl -fsSL https://rpm.nodesource.com/setup_18.x | bash - && \
+    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash - && \
     yum install -y nodejs && \
     npm install npm@latest -g && \
     yum clean all
