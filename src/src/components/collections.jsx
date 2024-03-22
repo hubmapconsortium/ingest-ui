@@ -5,9 +5,10 @@ import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
 import { CollectionForm } from "./collections/collections"
 import { ingest_api_allowable_edit_states} from "../service/ingest_api";
+import {useNavigate} from "react-router-dom";
 
 export const RenderCollection = (props) => {
-
+  let navigate = useNavigate();
   // var isNew = props.new;
   var [isNew] = useState(props.newForm);
   var [authToken] = useState(props.groupsToken);
@@ -21,6 +22,7 @@ export const RenderCollection = (props) => {
     isError: null 
   });
   const uuid = useParams();
+  const newForm = props.newForm ? props.newForm : "";
 
   // const reportError = props.reportError;
   // const { firstName, lastName, city } = person;
@@ -29,34 +31,45 @@ export const RenderCollection = (props) => {
   useEffect(() => {
     const entityUUID = uuid.uuid
     var authSet = JSON.parse(localStorage.getItem("info"));
+    console.debug('%c◉ entityUUID ', 'color:#00ff7b', entityUUID);
     if (entityUUID) {
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
-        setEntity(response.results);
-        setIsLoadingEntity(false); 
-        // ingest_api_allowable_edit_states(entityUUID, authSet.groups_token)
-        //   .then((resp) => {
-        //     console.debug("Write Check", resp);
-        //     if (resp.status < 300) {
-        //       setPermissions(resp.results);
-        //       console.debug('%c⊙', 'color:#00ff7b', "Permissions", resp.results);
-        //       setIsLoadingEntity(false); 
-        //     }
-        //   })
-        //   .catch((error) => { 
-        //     console.debug('%c⭗', 'color:#ff005d', "Permissions", error);
-        //   });
-        })  
-        .catch((error) => {
-          setIsLoadingEntity(false);
-        }); 
-    }else{
-      setIsLoadingEntity(false); 
+        console.debug('%c◉ response ', 'color:#00ff7b', response);
+        if (response.status === 200) {
+          if(response.results.entity_type !== "Collection"){
+            navigate("/"+response.results.entity_type+"/"+uuid);
+          }else{
+            setEntity(response.results);
+            setIsLoadingEntity(false);
+            document.title = ("HuBMAP Ingest Portal | Collection: "+response.results.hubmap_id +"" );
+          }
+        } else {
+          console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
+          passError(response.status, response.message);
+        }
+      })
+      .catch((error) => {
+        console.debug("entity_api_get_entity ERROR", error);
+        passError(error.status, error.results.error );
+      })
+    }else if(newForm && newForm === true){
+      setIsLoadingEntity(false);
     }
-  }, [uuid]);
+  }, [uuid,newForm]);
+
+  // @TODO: Dry up, unify error passing 
+  function passError(status, message) {
+    setIsLoadingEntity(false);
+    setErrorHandler({
+        status: status,
+        message:message,
+        isError: true 
+      })
+    }
 
 
-
+  
   var processPlan = (result) => {
     if (isNew) {
       props.onCreated(result)

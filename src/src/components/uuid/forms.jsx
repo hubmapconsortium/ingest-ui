@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
+import { toTitleCase } from "../../utils/string_helper";
 // Originally looked like these would pull in different forms, 
 // given their management in this forms file. However, it 
 // now looks like these load the same forms as elsewhere, 
@@ -161,6 +162,8 @@ class Forms extends Component {
   }
 
   renderForm() {
+    var typeTitle = toTitleCase(this.props.formType);
+    document.title = ("HuBMAP Ingest Portal | New "+typeTitle+"" );
     // We're only using the form loader for New forms, 
     // Edit/View forms use updated wrappers 
     if (this.state.createSuccess) {
@@ -235,6 +238,7 @@ class Forms extends Component {
     } else {
       return null;
     }
+    
   }
 
   render() {

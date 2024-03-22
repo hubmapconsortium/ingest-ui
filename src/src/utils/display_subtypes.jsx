@@ -154,7 +154,7 @@ function get_sample_description_UBKG(tissue_code) {
         
         
 export function generateDisplaySubtype( entity) {
-  console.debug('%c⊙ generateDisplaySubtype', 'color:#00ff7b', entity );
+  // console.debug('%c⊙ generateDisplaySubtype', 'color:#00ff7b', entity );
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'
 

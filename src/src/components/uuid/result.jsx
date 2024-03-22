@@ -5,7 +5,8 @@ import {
   faFolder,
   faLink
 } from "@fortawesome/free-solid-svg-icons";
-import Button from'@material-ui/core/Button';
+import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
 
 class Result extends Component {
   state = { results: [] };
@@ -71,7 +72,7 @@ class Result extends Component {
                     )}
                     {this.props.result.entity.hubmap_id && ( 
                       <div className="portal-jss116 col-sm-12 ml-2">
-                          HuBMAP ID: {this.props.result.entity.hubmap_id}
+                          HuBMAP ID: <Link variant="body2" href={"/"+this.props.result.entity.entity_type.toLowerCase()+"/"+this.props.result.entity.uuid}>{this.props.result.entity.hubmap_id}</Link>
                       </div>
                     )}
                     {this.props.result.entity.submission_id && (
