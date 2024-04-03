@@ -1491,7 +1491,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       if (this.state.status.toUpperCase() === 'PUBLISHED' ) {
         return (
             <div className="buttonWrapRight">
-                {this.renderNewVersionButtons()} NEWVERS
+                {/* {this.renderNewVersionButtons()}  */}
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
                 {this.cancelButton()}
@@ -1541,24 +1541,24 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     user has write access for the dataset.group_uuid/group_name
     dataset.next_revision_uuid is null (or missing altogether)*/
   
-    var sampleSource = this.getSourceAncestorTypes("Sample");  
-    var datasetStatus = this.props.editingDataset.status === "Published";
-    var writability = this.state.has_version_priv;
-    // var latestVersion = (!this.props.editingDataset.next_revision_uuids  ||  this.props.editingDataset.next_revision_uuids[0] === undefined);
-    if(sampleSource && datasetStatus && writability ){
-    // if(true===tru  e){
-      return (
-        <Button variant="contained" sx={{minWidth:"130px"}} onClick={() => this.handleNewVersion()}> 
-          {this.state.submitting && (
-            <FontAwesomeIcon
-              className='inline-icon'
-              icon={faSpinner}
-              spin
-            />
-          )}
-          {!this.state.submitting && "New Version"}         
-        </Button> )
-    } 
+    // var sampleSource = this.getSourceAncestorTypes("Sample");  
+    // var datasetStatus = this.props.editingDataset.status === "Published";
+    // var writability = this.state.has_version_priv;
+    // // var latestVersion = (!this.props.editingDataset.next_revision_uuids  ||  this.props.editingDataset.next_revision_uuids[0] === undefined);
+    // if(sampleSource && datasetStatus && writability ){
+    // // if(true===tru  e){
+    //   return (
+    //     <Button variant="contained" sx={{minWidth:"130px"}} onClick={() => this.handleNewVersion()}> 
+    //       {this.state.submitting && (
+    //         <FontAwesomeIcon
+    //           className='inline-icon'
+    //           icon={faSpinner}
+    //           spin
+    //         />
+    //       )}
+    //       {!this.state.submitting && "New Version"}         
+    //     </Button> )
+    // } 
   }
 
   renderListItem(uuid){
@@ -1776,10 +1776,10 @@ name, display_doi, doi
                 18 identifiers specified by HIPAA
               </span>
             </Alert>
-            {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
+            {/* {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
                 <>{this.renderVersionNav()}</>
-            )}
-            {this.state.versioned && (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
+            )} */}
+            {/* {this.state.versioned && (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
               <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
                 <Grid item xs={6}>
                   <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
@@ -1790,7 +1790,7 @@ name, display_doi, doi
                   <Skeleton variant="rounded"  height={60} />
                 </Grid>
               </Grid>
-            )}
+            )} */}
 
             {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
               <Box sx={{ display:'flex'}} >
