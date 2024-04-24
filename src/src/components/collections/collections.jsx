@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
-import {COLUMN_DEF_MIXED} from "../search/table_constants";
+import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
@@ -519,15 +519,25 @@ export function CollectionForm (props){
     }
     
     var renderAssociationTable = () => {
-      var actionButtons=document.getElementsByClassName('actionButton'); 
-      console.debug('%c◉ actionButtons ', 'color:#00ff7b', actionButtons);
-
-      var actionColumn=document.getElementsByClassName('data-colindex'); 
-      console.debug('%c◉ actionColumn ', 'color:#00ff7b', actionColumn);
+      var hiddenFields = [];
+      var mapTypes = associatedEntities.map(obj => obj.entity_type)
+      if (mapTypes.includes("Dataset") && mapTypes.length === 1) {
+        // add submission_id to hiddenFields
+        hiddenFields.push("submission_id");
+      }
+      function buildColumnFilter(arr) {
+        let obj = {};
+        arr.forEach(value => {
+            obj[value] = false;
+        });
+        return obj;
+      }
+      var columnFilters = buildColumnFilter(hiddenFields)
 
       return (
-        <div style={{ width:"100%" }}>
+        <div style={{ width:"100%", height: 340, padding:"10px 0" }}>
           <DataGrid
+            columnVisibilityModel={columnFilters}
             className='associationTable'
             rows={associatedEntities}
             columns={COLUMN_DEF_MIXED}
@@ -536,7 +546,18 @@ export function CollectionForm (props){
             hideFooterSelectedRowCount
             rowCount={associatedEntities.length}
             onCellClick={handleEvent}
-            // loading={!associatedEntities.length > 0}
+            loading={!associatedEntities.length > 0 && !isNew}
+            sx={{
+              overflow: 'auto',
+              '.MuiDataGrid-virtualScroller': {
+                height: 'auto',
+                overflow: 'hidden',
+              },
+              '.MuiDataGrid-main > div:nth-child(2)': {
+                overflowY: 'auto !important',
+                flex: 'unset !important',
+              },
+            }}
           />
         </div>
       );
@@ -796,9 +817,9 @@ export function CollectionForm (props){
                 custom_title="Search for a Source ID for your Collection"
                 // filter_type="Publication"
                 modecheck="Source"
-                restrictions={{
-                  entityType: "dataset"
-                }}
+                // restrictions={{
+                //   entityType: "dataset"
+                // }}
               />
             </DialogContent>
             <DialogActions>

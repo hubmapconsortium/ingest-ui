@@ -210,6 +210,9 @@ export const COLUMN_DEF_MIXED = [
   }, 
 ];
 
+// LIMITED DATASET TYPE COLUMNS (FOR SOURCE DISPLAY)
+export const COLUMN_DEF_MIXED_SM = shrinkCols;
+
 // Computed column functions
 
 // function getSampleType(params: ValueGetterParams) {
@@ -218,6 +221,12 @@ export const COLUMN_DEF_MIXED = [
 // 	}
 //   return params.getValue('entity_type');
 // }
+
+// Strips the Submission ID column from COLUMN_DEF_MIXED
+function shrinkCols(string){
+  var stripped = COLUMN_DEF_MIXED.delete('submission_id');
+  return stripped
+}
 
 function prettyCase(string){
   // return toTitleCase(string)
