@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
+import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
@@ -21,6 +22,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 
 
 import Alert from '@mui/material/Alert';
@@ -44,7 +46,7 @@ export function CollectionForm (props){
   var [successDialogRender, setSuccessDialogRender] = useState(false);
   var [selectedSource, setSelectedSource] = useState(null);
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
-  var [sourceDatasetDetails, setSourceDatasetDetails] = useState([]);
+  var [associatedEntities, setassociatedEntities] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
@@ -79,11 +81,12 @@ export function CollectionForm (props){
 
   useEffect(() => {
     if (editingCollection) {  
-      setSourceDatasetDetails([]) 
+      setassociatedEntities([]) 
       var formVals = editingCollection; // dont try modifying prop
       var UUIDs = [];
-      if (editingCollection.datasets && editingCollection.datasets.length > 0) {
-        for (const entity of editingCollection.datasets) {
+      if (editingCollection.associations && editingCollection.associations.length > 0) {
+        for (const entity of editingCollection.associations) {
+          entity.id = entity.uuid;
           //When coming from the Entity, the Datasets use dataset_type, from the Search UI they pass display_subtype instead
           if (entity.dataset_type && entity.dataset_type.length > 0) {
             var subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type[0],props.dtl_all);
@@ -91,7 +94,7 @@ export function CollectionForm (props){
           }else {
             
           }
-          setSourceDatasetDetails((rows) => [...rows, entity]); // Populate the info for table
+          setassociatedEntities((rows) => [...rows, entity]); // Populate the info for table
           setSelectedSources((UUIDs) => [...UUIDs, entity.uuid]); // UUID list for translating to form values
           UUIDs.push(entity.uuid);
         }
@@ -111,11 +114,11 @@ export function CollectionForm (props){
 
   const handleSelectClick = (event) => {
     if (!selectedSources.includes(event.row.uuid)) {
-      setSourceDatasetDetails((rows) => [...rows, event.row]); 
+      setassociatedEntities((rows) => [...rows, event.row]); 
       setSelectedSources((UUIDs) => [...UUIDs, event.row.uuid]);
 
       // The state might not update in time so we'll clone push and set
-      var currentUUIDs = sourceDatasetDetails.map(({ uuid }) => uuid)
+      var currentUUIDs = associatedEntities.map(({ uuid }) => uuid)
       currentUUIDs.push(event.row.uuid);
       console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
       setFormValues((prevValues) => ({
@@ -129,15 +132,26 @@ export function CollectionForm (props){
   };
 
 
+  const handleEvent: GridEventListener<'cellClick'> = (
+    params, // GridRowParams
+    event, // MuiEvent<React.MouseEvent<HTMLElement>>
+    details, // GridCallbackDetails
+  ) => {
+    console.debug('%c◉ CELLCLICK params ', 'color:#eeff7b', params.row,params.field);
+    if(params.field === "uuid"){
+      sourceRemover(params.row)
+    }
+  };
+
   const sourceRemover = (row, index) => {
     var sourceUUIDList = selectedSources;
     let filteredUUIDs = sourceUUIDList.filter((item) => item !== row.uuid)
     setSelectedSources(filteredUUIDs);
     console.debug('%c⊙', 'color:#00ff7b', "filteredUUIDs", filteredUUIDs);
     
-    var sourceDetailList = sourceDatasetDetails;
+    var sourceDetailList = associatedEntities;
     let filteredDetailList = sourceDetailList.filter((item, i) => item.uuid !== row.uuid)
-    setSourceDatasetDetails(filteredDetailList);
+    setassociatedEntities(filteredDetailList);
     console.debug('%c⊙', 'color:#00ff7b', "filtered Details", filteredDetailList );
 
     setFormValues((prevValues) => ({
@@ -193,7 +207,7 @@ export function CollectionForm (props){
     var value = formValues.dataset_uuids
     var uuidArray = value;
     var errCount = 0;
-    var processed = sourceDatasetDetails.map(({ uuid }) => uuid); //the state might not update fast enough sequential dupes
+    var processed = associatedEntities.map(({ uuid }) => uuid); //the state might not update fast enough sequential dupes
     setFormErrors((prevValues) => ({
       ...prevValues,
       'bulk_dataset_uuids': ["","",""],
@@ -229,7 +243,7 @@ export function CollectionForm (props){
                 if (!row.display_subtype && row.dataset_type) {
                   // entity does not return display subtype, so we'll generate it
                   row.display_subtype = generateDisplaySubtypeSimple_UBKG(row.dataset_type, props.dtl_all);
-                  setSourceDatasetDetails((rows) => [...rows, row]);
+                  setassociatedEntities((rows) => [...rows, row]);
                   processed.push(row.uuid.toString());
                 }
               } else {
@@ -307,7 +321,7 @@ export function CollectionForm (props){
     }
     // Datasets
     var datasetUUIDs = []
-    sourceDatasetDetails.map((row, index) => {
+    associatedEntities.map((row, index) => {
       datasetUUIDs.push(row.uuid)
     })
     console.debug('%c⊙', 'color:#00ff7b', "datasetUUIDs", datasetUUIDs, datasetUUIDs.length );
@@ -465,7 +479,6 @@ export function CollectionForm (props){
       }
     }
   
-
   
     var renderContribTable = () => {
       return (
@@ -504,6 +517,51 @@ export function CollectionForm (props){
         </TableContainer>
       )
     }
+    
+    var renderAssociationTable = () => {
+      var hiddenFields = [];
+      var mapTypes = associatedEntities.map(obj => obj.entity_type)
+      if (mapTypes.includes("Dataset") && mapTypes.length === 1) {
+        // add submission_id to hiddenFields
+        hiddenFields.push("submission_id");
+      }
+      function buildColumnFilter(arr) {
+        let obj = {};
+        arr.forEach(value => {
+            obj[value] = false;
+        });
+        return obj;
+      }
+      var columnFilters = buildColumnFilter(hiddenFields)
+
+      return (
+        <div style={{ width:"100%", height: 340, padding:"10px 0" }}>
+          <DataGrid
+            columnVisibilityModel={columnFilters}
+            className='associationTable'
+            rows={associatedEntities}
+            columns={COLUMN_DEF_MIXED}
+            disableColumnMenu={true}
+            hideFooterPagination={true}
+            hideFooterSelectedRowCount
+            rowCount={associatedEntities.length}
+            onCellClick={handleEvent}
+            loading={!associatedEntities.length > 0 && !isNew}
+            sx={{
+              overflow: 'auto',
+              '.MuiDataGrid-virtualScroller': {
+                height: 'auto',
+                overflow: 'hidden',
+              },
+              '.MuiDataGrid-main > div:nth-child(2)': {
+                overflowY: 'auto !important',
+                flex: 'unset !important',
+              },
+            }}
+          />
+        </div>
+      );
+    }
 
     var creationSuccess = (response) => {
       var resultInfo = {
@@ -511,15 +569,13 @@ export function CollectionForm (props){
       };
       setEntityInfo(resultInfo);
       props.onProcessed(resultInfo)
-      // setSuccessDialogRender(true);
-      // console.debug("resultInfo", resultInfo);
-      // console.debug();
     }
 
     var formatDatatype = (row) => {
       console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.dataset_type);
       return ("DT");
     }
+
     return (
       <Box
         component="form"
@@ -554,15 +610,15 @@ export function CollectionForm (props){
           </div>
 
           <label htmlFor='dataset_uuids'>
-            Source(s) <span className='text-danger px-2'>*</span>
+            Associated Entities <span className='text-danger px-2'>*</span>
           </label>
           <FontAwesomeIcon
             icon={faQuestionCircle}
             data-tip
-            data-for='source_uuid_tooltip'
+            data-for='associations_uuid_tooltip'
           />
           <ReactTooltip
-            id='source_uuid_tooltip'
+            id='associations_uuid_tooltip'
             className='zindex-tooltip'
             place='right'
             type='info'
@@ -581,28 +637,33 @@ export function CollectionForm (props){
         
           {!loadingDatasets && (<>
           
+          {renderAssociationTable()}
   
-            <TableContainer sx={{ maxHeight: 440 }}>
+            {/* <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
                 <TableHead className="thead-dark font-size-sm">
                   <TableRow className="   " >
-                    <TableCell> Source</TableCell>
-                    <TableCell component="th">Data Type</TableCell>
+                    <TableCell component="th">Hubmap ID</TableCell>
+                    <TableCell component="th">Lab ID</TableCell>
+                    <TableCell component="th">Submission ID</TableCell>
+                    <TableCell component="th">Type</TableCell>
                     <TableCell component="th">Group Name</TableCell>
-                    <TableCell component="th">Status</TableCell>
+                    <TableCell component="th">Status/Access Level</TableCell>
                     <TableCell component="th" align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
-                {sourceDatasetDetails && sourceDatasetDetails.length > 0 && (
+                {associatedEntities && associatedEntities.length > 0 && (
                   <TableBody >
-                    {sourceDatasetDetails.map((row, index) => (
+                    {associatedEntities.map((row, index) => (
                       <TableRow
                         key={(row.hubmap_id + "" + index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
                         // onClick={() => this.handleSourceCellSelection(row)}
                         className="row-selection"
                       >
                         <TableCell className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                        <TableCell className="clicky-cell" scope="row"> {row.display_subtype && (row.display_subtype)} </TableCell>
+                        <TableCell className="clicky-cell" scope="row">{row.lab_id}</TableCell>
+                        <TableCell className="clicky-cell" scope="row">{row.submission_id}</TableCell>
+                        <TableCell className="clicky-cell" scope="row">{row.display_subtype && (row.display_subtype)} </TableCell>
                         <TableCell className="clicky-cell" scope="row">{row.group_name}</TableCell>
                         <TableCell className="clicky-cell" scope="row">{row.status && (
                           <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}> {row.status}</span>
@@ -622,7 +683,7 @@ export function CollectionForm (props){
                   </TableBody>
                 )}
               </Table>
-              </TableContainer>
+            </TableContainer> */}
             {formErrors.bulk_dataset_uuids[0].length > 0 && (
               <Alert variant="filled" severity="error">
                 <strong>Error:</strong> {formErrors.bulk_dataset_uuids[1]}: {formErrors.bulk_dataset_uuids[2]} ({formErrors.bulk_dataset_uuids[2]})
@@ -756,9 +817,9 @@ export function CollectionForm (props){
                 custom_title="Search for a Source ID for your Collection"
                 // filter_type="Publication"
                 modecheck="Source"
-                restrictions={{
-                  entityType: "dataset"
-                }}
+                // restrictions={{
+                //   entityType: "dataset"
+                // }}
               />
             </DialogContent>
             <DialogActions>
