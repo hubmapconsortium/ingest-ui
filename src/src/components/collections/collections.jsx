@@ -535,7 +535,7 @@ export function CollectionForm (props){
       var columnFilters = buildColumnFilter(hiddenFields)
 
       return (
-        <div style={{ width:"100%", height: 340, padding:"10px 0" }}>
+        <div style={{ width:"100%", maxHeight: 340, padding:"10px 0" }}>
           <DataGrid
             columnVisibilityModel={columnFilters}
             className='associationTable'
