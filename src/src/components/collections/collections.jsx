@@ -29,7 +29,7 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faCheck, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
@@ -64,7 +64,7 @@ export function CollectionForm (props){
     description: "",
     dataset_uuids: "",
     creators: [],
-    contacts: [],
+    // contacts: [],
     bulk_dataset_uuids:["","",""]
   });
   var [formValues, setFormValues] = useState({
@@ -72,7 +72,7 @@ export function CollectionForm (props){
     description: '',
     dataset_uuids: [],
     creators: [],
-    contacts: [],
+    // contacts: [],
   });
   // Props
   var [isNew] = useState(props.newForm);
@@ -99,6 +99,9 @@ export function CollectionForm (props){
           UUIDs.push(entity.uuid);
         }
         formVals.dataset_uuids = UUIDs
+      }
+      if (editingCollection.creators && editingCollection.creators.length > 0) {
+        formVals.contributors = editingCollection.creators
       }
       setFormValues(formVals);  
       setLoadingDatasets(false);
@@ -289,7 +292,7 @@ export function CollectionForm (props){
   }
   function validateForm(formValues) {
     var isValid = true;
-    let { title, description, creators, contacts } = formValues;
+    let { title, description, contributors } = formValues;
     let formValuesSubmit = {};
     // Title
     if (!title || title.length === 0) {
@@ -340,16 +343,18 @@ export function CollectionForm (props){
       formValuesSubmit.dataset_uuids = datasetUUIDs  
     }
     //Logic Flipped here to handle check for presence of object details not lack of
-    // Only include if prenent, ignore if not
-    console.debug('%c⊙', 'color:#00ff7b', "Creators",creators );
-    if (creators && (creators[0] && creators[0].version!==undefined)) {
-      formValuesSubmit.creators = creators
+    // Only include if presnent, ignore if not
+    console.debug('%c⊙', 'color:#00ff7b', "contributors",contributors );
+    if (contributors && (contributors[0] && contributors[0].version!==undefined)) {
+      // formValuesSubmit.contributors = contributors
+      // Still called creators on the back end
+      formValuesSubmit.creators = contributors
     } 
     // Do not send blank contacts
-    console.debug('%c⊙', 'color:#00ff7b', "Contacts",contacts );
-    if (contacts && (contacts[0] && contacts[0].version!==undefined)) {
-      formValuesSubmit.contacts = contacts
-    }
+    // console.debug('%c⊙', 'color:#00ff7b', "Contacts",contacts );
+    // if (contacts && (contacts[0] && contacts[0].version!==undefined)) {
+    //   formValuesSubmit.contacts = contacts
+    // }
 
     if (isValid) {
       return formValuesSubmit
@@ -409,6 +414,7 @@ export function CollectionForm (props){
       var newName = grabbedFile.name.replace(/ /g, '_')
       var newFile = new File([grabbedFile], newName);
       if (newFile && newFile.name.length > 0) {
+        console.debug('%c◉ HAVE FILE ', 'color:#00ff7b', newFile);
         Papa.parse(newFile, {
           download: true,
           skipEmptyLines: true,
@@ -428,28 +434,28 @@ export function CollectionForm (props){
     };
 
     var processContacts = (data,source) => {
-      var contacts = []
-      var creators = []
+      // var contacts = []
+      var contributors = []
       // We render two from one TSV if we upload a file
       if (source && source === "grab") {
         for (const row of data.data) {
           console.debug('%c⊙', 'color:#00ff7b', "row", row);
-          creators.push(row)
-          if (row.is_contact==="TRUE") {
-            contacts.push(row)
-          }
+          // if (row.is_contact==="TRUE") {
+          //   contributors.push(row)
+          // }
+          contributors.push(row)
         }
         setFormValues({
-          ...formValues,
-          contacts: contacts,
-          creators: creators
+          formValues,
+          // contacts: contacts,
+          contributors: contributors
         });
       } else {
-        // setFormValues({
-        //   ...formValues,
-        //   contacts: editingCollection.contacts,
-        //   creators: editingCollection.creators
-        // });
+        setFormValues({
+          formValues,
+          // contacts: editingCollection.contacts,
+          creators: editingCollection.contributors
+        });
       
       }
       
@@ -472,7 +478,7 @@ export function CollectionForm (props){
               <TableCell className="clicky-cell" scope="row">{row.name}</TableCell>
               <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
               <TableCell className="clicky-cell" scope="row"> {row.orcid_id} </TableCell>
-            
+              <TableCell className="clicky-cell" scope="row"> {row.is_contact==="TRUE"  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
             </TableRow>
           );
         });
@@ -489,34 +495,35 @@ export function CollectionForm (props){
                 <TableCell> Name</TableCell>
                 <TableCell component="th">Affiliation</TableCell>
                 <TableCell component="th">Orcid</TableCell>
+                <TableCell component="th">Is Contact</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {renderTableRows(formValues.creators)}
+              {renderTableRows(formValues.contributors)}
             </TableBody>
           </Table>
         </TableContainer>
       )
     }
   
-    var renderContactTable = () => {
-      return (
-        <TableContainer style={{ maxHeight: 200 }}>
-          <Table stickyHeader aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
-            <TableHead className="thead-dark font-size-sm">
-              <TableRow className="   " >
-                <TableCell> Name</TableCell>
-                <TableCell component="th">Affiliation</TableCell>
-                <TableCell component="th">Orcid</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {renderTableRows(formValues.contacts)}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
-    }
+    // var renderContactTable = () => {
+    //   return (
+    //     <TableContainer style={{ maxHeight: 200 }}>
+    //       <Table stickyHeader aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
+    //         <TableHead className="thead-dark font-size-sm">
+    //           <TableRow className="   " >
+    //             <TableCell> Name</TableCell>
+    //             <TableCell component="th">Affiliation</TableCell>
+    //             <TableCell component="th">Orcid</TableCell>
+    //           </TableRow>
+    //         </TableHead>
+    //         <TableBody>
+    //           {renderTableRows(formValues.contacts)}
+    //         </TableBody>
+    //       </Table>
+    //     </TableContainer>
+    //   )
+    // }
     
     var renderAssociationTable = () => {
       var hiddenFields = [];
@@ -535,7 +542,7 @@ export function CollectionForm (props){
       var columnFilters = buildColumnFilter(hiddenFields)
 
       return (
-        <div style={{ width:"100%", maxHeight: 340, padding:"10px 0" }}>
+        <div style={{ width:"100%", maxHeight: 340, padding:"10px 0", overflowX:"scroll" }}>
           <DataGrid
             columnVisibilityModel={columnFilters}
             className='associationTable'
@@ -548,6 +555,7 @@ export function CollectionForm (props){
             onCellClick={handleEvent}
             loading={!associatedEntities.length > 0 && !isNew}
             sx={{
+              display: 'inline-block',
               overflow: 'auto',
               '.MuiDataGrid-virtualScroller': {
                 height: 'auto',
@@ -639,51 +647,6 @@ export function CollectionForm (props){
           
           {renderAssociationTable()}
   
-            {/* <TableContainer sx={{ maxHeight: 440 }}>
-              <Table stickyHeader aria-label="Associated Datasets" size="small" className="table table-striped table-hover mb-0">
-                <TableHead className="thead-dark font-size-sm">
-                  <TableRow className="   " >
-                    <TableCell component="th">Hubmap ID</TableCell>
-                    <TableCell component="th">Lab ID</TableCell>
-                    <TableCell component="th">Submission ID</TableCell>
-                    <TableCell component="th">Type</TableCell>
-                    <TableCell component="th">Group Name</TableCell>
-                    <TableCell component="th">Status/Access Level</TableCell>
-                    <TableCell component="th" align="right">Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                {associatedEntities && associatedEntities.length > 0 && (
-                  <TableBody >
-                    {associatedEntities.map((row, index) => (
-                      <TableRow
-                        key={(row.hubmap_id + "" + index)} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to 
-                        // onClick={() => this.handleSourceCellSelection(row)}
-                        className="row-selection"
-                      >
-                        <TableCell className="clicky-cell" scope="row">{row.hubmap_id}</TableCell>
-                        <TableCell className="clicky-cell" scope="row">{row.lab_id}</TableCell>
-                        <TableCell className="clicky-cell" scope="row">{row.submission_id}</TableCell>
-                        <TableCell className="clicky-cell" scope="row">{row.display_subtype && (row.display_subtype)} </TableCell>
-                        <TableCell className="clicky-cell" scope="row">{row.group_name}</TableCell>
-                        <TableCell className="clicky-cell" scope="row">{row.status && (
-                          <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}> {row.status}</span>
-                        )}</TableCell>
-                        <TableCell className="clicky-cell" align="right" scope="row">
-                            <React.Fragment>
-                              <FontAwesomeIcon
-                                className='inline-icon interaction-icon '
-                                icon={faTrash}
-                                color="red"
-                                onClick={() => sourceRemover(row, index)}
-                              />
-                            </React.Fragment>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                )}
-              </Table>
-            </TableContainer> */}
             {formErrors.bulk_dataset_uuids[0].length > 0 && (
               <Alert variant="filled" severity="error">
                 <strong>Error:</strong> {formErrors.bulk_dataset_uuids[1]}: {formErrors.bulk_dataset_uuids[2]} ({formErrors.bulk_dataset_uuids[2]})
@@ -861,22 +824,13 @@ export function CollectionForm (props){
             value={formValues.description}
           />
         </FormControl>
-        <FormControl>
-          <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
-            Contributors
-          </Typography>
-          {formValues.creators && formValues.creators.length > 0 && (
-            <>{renderContribTable()} </>
-          )}
-          {/* {renderContactTable()} */}
-        </FormControl>
 
         <FormControl>
           <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
-            Contacts
+          Contributors
           </Typography>
-          {formValues.contacts && formValues.contacts.length > 0 && (
-            <>{renderContactTable()} </>
+          {formValues.contributors && formValues.contributors.length > 0 && (
+            <>{renderContribTable()} </>
           )}
 
           <div className="text-left">
@@ -884,9 +838,9 @@ export function CollectionForm (props){
               <input
                 accept=".tsv, .csv"
                 type="file"
-                id="FileUploadContacts"
-                name="Contacts"
-                onChange={(e) => handleFileGrab(e, "contacts")}
+                id="FileUploadContriubtors"
+                name="Contributors"
+                onChange={(e) => handleFileGrab(e, "contributors")}
               />
             </label>
           </div>
