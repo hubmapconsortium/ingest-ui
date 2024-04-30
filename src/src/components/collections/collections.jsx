@@ -437,7 +437,7 @@ export function CollectionForm (props){
       // var contacts = []
       var contributors = []
       // We render two from one TSV if we upload a file
-      if (source && source === "grab") {
+      // if (source && source === "grab") {
         for (const row of data.data) {
           console.debug('%c⊙', 'color:#00ff7b', "row", row);
           // if (row.is_contact==="TRUE") {
@@ -445,19 +445,19 @@ export function CollectionForm (props){
           // }
           contributors.push(row)
         }
-        setFormValues({
-          formValues,
+       setFormValues ({
+          ...formValues,
           // contacts: contacts,
           contributors: contributors
         });
-      } else {
-        setFormValues({
-          formValues,
-          // contacts: editingCollection.contacts,
-          creators: editingCollection.contributors
-        });
+      // } else {
+        // setFormValues({
+        //   formValues,
+        //   // contacts: editingCollection.contacts,
+        //   creators: editingCollection.contributors
+        // });
       
-      }
+      // }
       
 
     }
