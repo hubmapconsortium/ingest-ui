@@ -14,7 +14,7 @@ import FormControl from '@mui/material/FormControl';
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-
+import GroupModal from "../uuid/groupModal";
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -23,7 +23,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
-
 
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
@@ -41,7 +40,7 @@ const StyledTextField = styled(TextField)`
   }
 `;
 export function CollectionForm (props){
-  let navigate = useNavigate();
+  // let navigate = useNavigate();
   var [locked, setLocked] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
   var [selectedSource, setSelectedSource] = useState(null);
@@ -50,11 +49,16 @@ export function CollectionForm (props){
   var [selectedSources, setSelectedSources] = useState([]);
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
-  var [warningOpen, setWarningOpen] = React.useState(true);
+  var [warningOpen, setWarningOpen] = React.useState(false);
+  var [openGroupModal, setOpenGroupModal] = useState(false
+  
+  
+  );
   var [lookupShow, setLookupShow] = useState(false);
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
+  var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
   var [entityInfo, setEntityInfo] = useState();
   var [formWarnings, setFormWarnings] = useState({
     bulk_dataset_uuids:""
@@ -72,12 +76,14 @@ export function CollectionForm (props){
     description: '',
     dataset_uuids: [],
     creators: [],
+    group_uuid:"",
     // contacts: [],
   });
   // Props
   var [isNew] = useState(props.newForm);
-  var [editingCollection] = useState(props.editingCollection);
+  var [dataGroups] = useState(props.dataGroups);
   var [datatypeList] = useState(props.dtl_all);
+  var [editingCollection] = useState(props.editingCollection);
 
   useEffect(() => {
     if (editingCollection) {  
@@ -176,21 +182,38 @@ export function CollectionForm (props){
     props.reportError(response,);
   
   }
+
+  const hideGroupModal = (event) => {
+    setOpenGroupModal(false);
+  }
   
 
   const handleInputChange = (event) => {
     const { name, value, type } = event.target;
-    // console.debug("handleInputChange", name, value, type);
+    console.debug("handleInputChange", name, value, type);
     if (type === 'file') {
       setFormValues((prevValues) => ({
         ...prevValues,
         [name]: event.target.files[0],
       }));
     } else {
-      setFormValues((prevValues) => ({
-        ...prevValues,
-        [name]: value,
-      }));
+      if(name === 'groups'){
+        console.debug('%c◉ GROUPS FPOUND ', 'color:#00ff7b', value );
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          'group_uuid': value,
+        }));
+        setValidatingSubmitForm((prevValues) => ({
+          ...prevValues,
+          'group_uuid': value,
+        }));
+        
+      }else{
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          [name]: value,
+        }));
+      }
     }
   };
 
@@ -291,6 +314,7 @@ export function CollectionForm (props){
     );
   }
   function validateForm(formValues) {
+    console.debug('%c◉ validateForm FormValues ', 'color:#00ff7b', );
     var isValid = true;
     let { title, description, contributors } = formValues;
     let formValuesSubmit = {};
@@ -357,7 +381,7 @@ export function CollectionForm (props){
     // }
 
     if (isValid) {
-      return formValuesSubmit
+        return formValuesSubmit
     } else {
       return false
     }
@@ -367,6 +391,8 @@ export function CollectionForm (props){
   const handleSubmit = () => {
     setButtonState("submit");
     var submitForm = validateForm(formValues);
+    console.debug('%c◉ submitForm ', 'color:#00ff7b', );
+    setValidatingSubmitForm(submitForm);
     console.debug('%c⊙', 'color:#00ff7b', "submitForm", submitForm);
     if (submitForm!==false) {
       if (editingCollection) {
@@ -374,7 +400,18 @@ export function CollectionForm (props){
         handleUpdate(submitForm);
       } else {
         console.debug('%c⊙', 'color:#00ff7b', "Creating");
-        handleCreate(submitForm);
+        console.debug('%c⊙', 'color:#00ff7b', "Just need the group");
+        console.debug('%c◉ dataGroups ', 'color:#00ff7b', dataGroups);
+        if (dataGroups.length > 1){
+          setValidatingSubmitForm((prevValues) => ({
+            ...prevValues,
+            "group_uuid": dataGroups[0].uuid //Select Loads with one selected, wont update if unchanged
+          }));
+          setOpenGroupModal(true);
+        } else {
+          // If they only have one datagroup, no need to ask
+          handleCreate(submitForm);
+        }
       }
     }else{
       setButtonState("");
@@ -426,8 +463,7 @@ export function CollectionForm (props){
             });
             processContacts(data,"grab")
           }
-
-        });      
+        });
       } else {
         console.debug("No Data??");
       }
@@ -440,9 +476,6 @@ export function CollectionForm (props){
       // if (source && source === "grab") {
         for (const row of data.data) {
           console.debug('%c⊙', 'color:#00ff7b', "row", row);
-          // if (row.is_contact==="TRUE") {
-          //   contributors.push(row)
-          // }
           contributors.push(row)
         }
        setFormValues ({
@@ -450,16 +483,6 @@ export function CollectionForm (props){
           // contacts: contacts,
           contributors: contributors
         });
-      // } else {
-        // setFormValues({
-        //   formValues,
-        //   // contacts: editingCollection.contacts,
-        //   creators: editingCollection.contributors
-        // });
-      
-      // }
-      
-
     }
 
     var processUUIDs = (event) => {
@@ -505,25 +528,6 @@ export function CollectionForm (props){
         </TableContainer>
       )
     }
-  
-    // var renderContactTable = () => {
-    //   return (
-    //     <TableContainer style={{ maxHeight: 200 }}>
-    //       <Table stickyHeader aria-label="Associated Contacts" size="small" className="table table-striped table-hover mb-0">
-    //         <TableHead className="thead-dark font-size-sm">
-    //           <TableRow className="   " >
-    //             <TableCell> Name</TableCell>
-    //             <TableCell component="th">Affiliation</TableCell>
-    //             <TableCell component="th">Orcid</TableCell>
-    //           </TableRow>
-    //         </TableHead>
-    //         <TableBody>
-    //           {renderTableRows(formValues.contacts)}
-    //         </TableBody>
-    //       </Table>
-    //     </TableContainer>
-    //   )
-    // }
     
     var renderAssociationTable = () => {
       var hiddenFields = [];
@@ -554,18 +558,18 @@ export function CollectionForm (props){
             rowCount={associatedEntities.length}
             onCellClick={handleEvent}
             loading={!associatedEntities.length > 0 && !isNew}
-            sx={{
-              display: 'inline-block',
-              overflow: 'auto',
-              '.MuiDataGrid-virtualScroller': {
-                height: 'auto',
-                overflow: 'hidden',
-              },
-              '.MuiDataGrid-main > div:nth-child(2)': {
-                overflowY: 'auto !important',
-                flex: 'unset !important',
-              },
-            }}
+            // sx={{
+            //   display: 'inline-block',
+            //   overflow: 'auto',
+            //   '.MuiDataGrid-virtualScroller': {
+            //     height: 'auto',
+            //     overflow: 'hidden',
+            //   },
+            //   '.MuiDataGrid-main > div:nth-child(2)': {
+            //     overflowY: 'auto !important',
+            //     flex: 'unset !important',
+            //   },
+            // }}
           />
         </div>
       );
@@ -780,9 +784,9 @@ export function CollectionForm (props){
                 custom_title="Search for a Source ID for your Collection"
                 // filter_type="Publication"
                 modecheck="Source"
-                // restrictions={{
-                //   entityType: "dataset"
-                // }}
+                restrictions={{
+                  entityType: "dataset"
+                }}
               />
             </DialogContent>
             <DialogActions>
@@ -873,6 +877,13 @@ export function CollectionForm (props){
             </Button>
           </div>
         </div>
+        <GroupModal
+          show={openGroupModal}
+          groups={dataGroups}
+          submit={() => handleCreate(validatingSubmitForm)}
+          hide={hideGroupModal}
+          handleInputChange={(event) => handleInputChange(event)}
+        />
         
       </Box>
     );

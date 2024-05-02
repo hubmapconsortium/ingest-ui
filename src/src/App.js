@@ -217,14 +217,16 @@ export function App (props){
   
   
   function clearAuths() {  
-    console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
-    return new Promise((resolve) => {
-      setTimeout(() => { // Give it a chance to cleaer the local storage
-        localStorage.removeItem("info");
-        localStorage.removeItem("isAuthenticated");
-        resolve();
-      }, 2000);
-    });
+    if(process.env.REACT_APP_URL == "http://localhost:8585"){
+      console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
+      return new Promise((resolve) => {
+        setTimeout(() => { // Give it a chance to cleaer the local storage
+          localStorage.removeItem("info");
+          localStorage.removeItem("isAuthenticated");
+          resolve();
+        }, 2000);
+      });
+    }
   }
 
   function Logout(){
@@ -516,7 +518,7 @@ export function App (props){
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
               <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={userDataGroups} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
               <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
               <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />

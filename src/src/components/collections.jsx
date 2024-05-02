@@ -29,10 +29,10 @@ export const RenderCollection = (props) => {
   // let reportError = ;
 
   useEffect(() => {
-    const entityUUID = uuid.uuid
-    var authSet = JSON.parse(localStorage.getItem("info"));
-    console.debug('%c◉ entityUUID ', 'color:#00ff7b', entityUUID);
-    if (entityUUID) {
+    if (!newForm && uuid) {
+      const entityUUID = uuid.uuid
+      var authSet = JSON.parse(localStorage.getItem("info"));
+      console.debug('%c◉ entityUUID ', 'color:#00ff7b', entityUUID);
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
         console.debug('%c◉ response ', 'color:#00ff7b', response);

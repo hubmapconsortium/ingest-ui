@@ -388,6 +388,7 @@ export const RenderSearchTable = (props) => {
       "entity_type",
       "specimen_type",
       "organ",
+      "registered_doi",
     ];
 
     function buildColumnFilter(arr) {
