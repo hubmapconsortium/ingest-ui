@@ -681,7 +681,7 @@ export function CollectionForm (props){
                 >
                   Add {formValues.dataset_uuids && formValues.dataset_uuids.length >= 1 && (
                     "Another"
-                  )} Source
+                  )} Member
                   <FontAwesomeIcon
                     className='fa button-icon m-2'
                     icon={faPlus}
