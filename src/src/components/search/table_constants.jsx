@@ -206,7 +206,16 @@ export const COLUMN_DEF_MIXED = [
   { field: "uuid",
     headerName: "Action",
     sortable: false,
-    renderCell: renderActionButton
+    renderCell: (params: ValueFormatterParams) => (
+      <div sx={{width:"100%"}} className="actionButton" data-target={params.row.uuid} >
+        <FontAwesomeIcon
+          className='inline-icon interaction-icon'
+          icon={faTrash}
+          color="red"
+          // onClick={() => sourceRemover(row, index)}
+        />
+    </div>
+   ), 
   }, 
 ];
 
@@ -261,20 +270,12 @@ function getStatusAccess(params: ValueGetterParams) {
 }
 
 
-function renderActionButton(params: ValueFormatterParams) {
-  console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
-  return(
-    <div sx={{width:"100%"}} className="actionButton" data-target={params.row.uuid} >
-      <FontAwesomeIcon
-        className='inline-icon interaction-icon'
-        icon={faTrash}
-        color="red"
-
-        // onClick={() => sourceRemover(row, index)}
-      />
-    </div>
-  )
-}
+// function renderActionButton(params: ValueFormatterParams) {
+//   console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
+//   return(
+    
+//   )
+// }
 
 function renderStatusAccess(params: ValueFormatterParams) {
   // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);
