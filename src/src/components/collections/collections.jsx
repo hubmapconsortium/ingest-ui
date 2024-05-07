@@ -356,7 +356,7 @@ export function CollectionForm (props){
       console.debug('%c⭗', 'color:#ff005d', "No Datasets" );
       setFormErrors((prevValues) => ({
         ...prevValues,
-        'dataset_uuids': "At least one Source  is required",
+        'dataset_uuids': "At least one Member is required",
       }))
       isValid = false;
     } else {
@@ -531,8 +531,11 @@ export function CollectionForm (props){
     
     var renderAssociationTable = () => {
       var hiddenFields = [];
-      var mapTypes = associatedEntities.map(obj => obj.entity_type)
-      if (mapTypes.includes("Dataset") && mapTypes.length === 1) {
+      // var mapTypes = associatedEntities.map(obj => obj.entity_type.toLowerCase())
+      // var mapTypes = 
+      var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
+
+      if (uniqueTypes.has("dataset") && uniqueTypes.size === 1) {
         // add submission_id to hiddenFields
         hiddenFields.push("submission_id");
       }
@@ -549,7 +552,7 @@ export function CollectionForm (props){
         <div style={{ width:"100%", maxHeight: 340, padding:"10px 0", overflowX:"scroll" }}>
           <DataGrid
             columnVisibilityModel={columnFilters}
-            className='associationTable'
+            className='associationTable w-100'
             rows={associatedEntities}
             columns={COLUMN_DEF_MIXED}
             disableColumnMenu={true}
@@ -558,18 +561,18 @@ export function CollectionForm (props){
             rowCount={associatedEntities.length}
             onCellClick={handleEvent}
             loading={!associatedEntities.length > 0 && !isNew}
-            // sx={{
-            //   display: 'inline-block',
-            //   overflow: 'auto',
-            //   '.MuiDataGrid-virtualScroller': {
-            //     height: 'auto',
-            //     overflow: 'hidden',
-            //   },
-            //   '.MuiDataGrid-main > div:nth-child(2)': {
-            //     overflowY: 'auto !important',
-            //     flex: 'unset !important',
-            //   },
-            // }}
+            sx={{
+              display: 'inline-block',
+              overflow: 'auto',
+              '.MuiDataGrid-virtualScroller': {
+                minHeight: '45px',
+                // overflow: 'scroll',
+              },
+              '.MuiDataGrid-main > div:nth-child(2)': {
+                // overflowY: 'auto !important',
+                // flex: 'unset !important',
+              },
+            }}
           />
         </div>
       );
@@ -733,7 +736,7 @@ export function CollectionForm (props){
                         multiline
                         rows={2}
                         inputProps={{ 'aria-label': 'description' }}
-                        placeholder={"List of Dataset Hubmap IDs or UUIDs,  Comma Seperated "}
+                        placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated "}
                         variant="standard"
                         size="small"
                         fullWidth={true}
@@ -776,12 +779,12 @@ export function CollectionForm (props){
             fullWidth={true}
             maxWidth="lg"
             onClose={() => setLookupShow(false)}
-            aria-labelledby="source-lookup-dialog"
+            aria-labelledby="association-lookup-dialog"
             open={lookupShow}>
             <DialogContent>
               <SearchComponent
                 select={(e) => handleSelectClick(e)}
-                custom_title="Search for a Source ID for your Collection"
+                custom_title="Search for an Associated Dataset for your Collection"
                 // filter_type="Publication"
                 modecheck="Source"
                 restrictions={{
