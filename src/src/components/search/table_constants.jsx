@@ -180,7 +180,7 @@ export const COLUMN_DEF_UPLOADS = [
 
 // MIXED TYPE COLUMNS
 export const COLUMN_DEF_MIXED = [
-  { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180},
+  { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
   { field: "computed_lab_id_type",
     headerName: "Lab ID",
     width: 160,
