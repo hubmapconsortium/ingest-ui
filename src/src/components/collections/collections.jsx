@@ -784,9 +784,9 @@ export function CollectionForm (props){
                 custom_title="Search for an Associated Dataset for your Collection"
                 // filter_type="Publication"
                 modecheck="Source"
-                // restrictions={{
-                //   entityType: "dataset"
-                // }}
+                restrictions={{
+                  entityType: "dataset"
+                }}
               />
             </DialogContent>
             <DialogActions>
