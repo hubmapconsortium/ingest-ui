@@ -531,11 +531,8 @@ export function CollectionForm (props){
     
     var renderAssociationTable = () => {
       var hiddenFields = [];
-      // var mapTypes = associatedEntities.map(obj => obj.entity_type.toLowerCase())
-      // var mapTypes = 
       var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
-
-      if (uniqueTypes.has("dataset") && uniqueTypes.size === 1) {
+      if ( (uniqueTypes.has("dataset") && uniqueTypes.size === 1) ) {
         // add submission_id to hiddenFields
         hiddenFields.push("submission_id");
       }
@@ -549,7 +546,7 @@ export function CollectionForm (props){
       var columnFilters = buildColumnFilter(hiddenFields)
 
       return (
-        <div style={{ width:"100%", maxHeight: 340, padding:"10px 0", overflowX:"scroll" }}>
+        <div style={{ width:"100%", maxHeight: 340, padding:"10px 0" }}>
           <DataGrid
             columnVisibilityModel={columnFilters}
             className='associationTable w-100'
