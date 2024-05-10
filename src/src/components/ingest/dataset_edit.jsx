@@ -4,6 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import FormHelperText from '@mui/material/FormHelperText';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
@@ -16,9 +17,7 @@ import {GridLoader} from "react-spinners";
 import Skeleton from '@mui/material/Skeleton';
 import '../../App.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {
-  faQuestionCircle,faSpinner,faTrash,faPlus,faUserShield
-} from "@fortawesome/free-solid-svg-icons";
+import {faQuestionCircle,faSpinner,faTrash,faPlus,faUserShield} from "@fortawesome/free-solid-svg-icons";
 import ReactTooltip from "react-tooltip";
 import HIPPA from "../uuid/HIPPA.jsx";
 
@@ -26,6 +25,7 @@ import {validateRequired} from "../../utils/validators";
 import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
+import {RevertFeature} from "../../utils/revertModal";
 import SearchComponent from "../search/SearchComponent";
 import {
   ingest_api_allowable_edit_states,
@@ -39,6 +39,7 @@ import {
 import {entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity} from '../../service/entity_api';
 import {ubkg_api_get_assay_type_set,ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {StatusList} from "../../utils/badgeClasses";
 import {VersionNavigation} from "../../utils/ui_elements";
 import {generateDisplaySubtype, generateDisplaySubtype_UBKG, generateSubtype} from "../../utils/display_subtypes";
 
@@ -99,6 +100,7 @@ class DatasetEdit extends Component {
 
     // Page States 
     showSubmitModal:false,
+    showRevertModal:false,
     badge_class:"badge-purple",
     groups_dataprovider:[],
     GroupSelectShow:false,
@@ -107,6 +109,8 @@ class DatasetEdit extends Component {
     other_dt:"",
     buttonSpinnerTarget:"",
     errorSnack:false,
+    popperOpen:false,
+    anchorEl:null,
     disableSelectDatatype:false,
     toggleStatusSet:false,
     statusSetLabel:"Reset Status",
@@ -411,6 +415,9 @@ class DatasetEdit extends Component {
       buttonSpinnerTarget:""
      });
   };
+  hideRevertModal = () => {
+    this.setState({ showRevertModal:false});
+  };
 
   showErrorMsgModal = (msg) => {
     this.setState({ errorMsgShow:true, statusErrorMsg:msg });
@@ -446,6 +453,10 @@ class DatasetEdit extends Component {
   };
   hideSubmitModal = () => {
     this.setState({showSubmitModal:false});
+  };  
+  
+  handleRevert = (status) => {
+    console.debug('%c◉ handleRevert ', 'color:#585bff', status);
   };
 
   handleLookUpClick = () => {
@@ -475,11 +486,9 @@ class DatasetEdit extends Component {
   }; 
 
   handleInputChange = (e) => {
-    const {
- id, name, value 
-} = e.target;
-console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
-    switch (name) {
+  const {id, name, value} = e.target;
+  console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
+      switch (name) {
       case "lab_dataset_id":
         this.setState({lab_dataset_id:value,});
         break;
@@ -557,6 +566,22 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
         break;
     }
   };
+
+  handlePopoverOpen = (event) => {
+    console.debug('%c◉ handlePopoverOpen ', 'color:#ffe921', event.currentTarget);
+    this.setState({showRevertModal:true});
+    //setAnchorEl(event.currentTarget);
+  };
+
+  handlePopoverClose = () => {
+    console.debug('%c◉ handlePopoverClose ', 'color:#ffe921');
+    this.setState({
+      popperOpen:false,
+      anchorEl:null
+    });
+    // setAnchorEl(null);
+  };
+
 
   handleCollectionClick = (collection) => {
     this.setState({collection:collection,
@@ -1360,15 +1385,11 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     )
   }
 
+
   renderManualStatusControl=()=>{
     return(  
       <div className="mt-1">
-        <Button
-          variant="text"
-          className="mx-1"
-          onClick={this.toggleStatSetView}>
-         {this.state.statusSetLabel}
-        </Button>
+        
         {this.state.toggleStatusSet  && (
           <Button
             variant="contained"
@@ -1451,12 +1472,12 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     if (this.state.has_admin_priv === true 
             && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
             && this.state.status.toUpperCase() === "PUBLISHED") {
-         return (
-           <div className="buttonWrapRight">
-                {this.reprocessButton()}
-                {this.cancelButton()}
-            </div>
-          )
+        //  return (
+        //    <div className="buttonWrapRight">
+        //         {this.reprocessButton()}
+        //         {this.cancelButton()}
+        //     </div>
+        //   )
     }
     // console.debug("CheckTwo",this.state.writeable === false && this.state.has_version_priv === false);
     if (this.state.writeable === false ){            
@@ -1534,33 +1555,6 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       );
     }
   
-
-  renderNewVersionButtons() {
-    /*the entity pointed to for at least one dataset.direct_ancestory_uuids is of type sample (ancestor.entity_type == 'Source')
-    dataset.status == 'Published'
-    user has write access for the dataset.group_uuid/group_name
-    dataset.next_revision_uuid is null (or missing altogether)*/
-  
-    // var sampleSource = this.getSourceAncestorTypes("Sample");  
-    // var datasetStatus = this.props.editingDataset.status === "Published";
-    // var writability = this.state.has_version_priv;
-    // // var latestVersion = (!this.props.editingDataset.next_revision_uuids  ||  this.props.editingDataset.next_revision_uuids[0] === undefined);
-    // if(sampleSource && datasetStatus && writability ){
-    // // if(true===tru  e){
-    //   return (
-    //     <Button variant="contained" sx={{minWidth:"130px"}} onClick={() => this.handleNewVersion()}> 
-    //       {this.state.submitting && (
-    //         <FontAwesomeIcon
-    //           className='inline-icon'
-    //           icon={faSpinner}
-    //           spin
-    //         />
-    //       )}
-    //       {!this.state.submitting && "New Version"}         
-    //     </Button> )
-    // } 
-  }
-
   renderListItem(uuid){
     console.debug('%c◉ data ', 'color:#00ff7b', uuid);
       entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -2154,11 +2148,11 @@ name, display_doi, doi
 
           <div className='row'>
             <div className="col-8">
-            {this.state.has_manual_priv && (
-              <>{this.renderManualStatusControl()}</>
-            )}
+                <RevertFeature 
+                  type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
+                  handleRevert={this.handleRevert}
+                />
             </div>
-
             <div className="col-4"> 
               {this.renderButtons()}
             </div>
@@ -2191,7 +2185,8 @@ name, display_doi, doi
             </div>
           </div>
         </Modal>
-      {this.renderSubmitModal()}
+
+        
       </React.Fragment>
     );
   }

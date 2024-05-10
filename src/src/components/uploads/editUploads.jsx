@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import Select from '@mui/material/Select'; 
 import { validateRequired } from "../../utils/validators";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
+import {RevertFeature} from "../../utils/revertModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
