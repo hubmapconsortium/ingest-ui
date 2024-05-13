@@ -1,4 +1,8 @@
 
+
+// @TODO: Figure out where this is being used over the version in src/utils/badgeClasses.jsx
+// & consolidate the two
+
 export function getPublishStatusColor(status, itemID) {
 	var badge_class = "";
 	//console.log('status', status)\
@@ -56,4 +60,24 @@ export function getPublishStatusColor(status, itemID) {
       }
       return badge_class;
     }
+}
+
+export function StatusList() {
+  return([
+    "NEW",
+    "REOPENED",
+    "REORGANIZED",
+    "VALID",
+    "INVALID",
+    "QA",
+    "LOCKED",
+    "PROCESSING",
+    "PUBLISHED",
+    "UNPUBLISHED",
+    "DEPRECATED",
+    "ERROR",
+    "HOLD",
+    "SUBMITTED",
+  ])
+
 }
