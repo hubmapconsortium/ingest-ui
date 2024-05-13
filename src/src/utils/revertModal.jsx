@@ -45,7 +45,11 @@ export const RevertFeature = (props) => {
       .then((response) => {
         if (response.status < 300) {
           props.onUpdated(response.results);
-          console.debug('%c◉ RESPULTD ', 'color:#00ff7b', response.results);
+          function onUpdated(data){
+            console.debug('%c◉ RESPULTD ', 'color:#00ff7b', response.results);
+            console.debug("onUpdated", data);
+            navigate('../')
+          }
         } else {
           console.debug('%c◉ RESPONSE NOGOOD ', 'color:#00ff7b', response.status);
           // this.setState({ 
