@@ -1,5 +1,8 @@
 import React, { useEffect, useState  } from "react";
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -25,6 +28,8 @@ export const RevertFeature = (props) => {
   const [type] = useState(props.type);
   const [uuid] = useState(props.uuid);
   const [RStatus, setRStatus] = useState("");
+  const [revertErrorAlert, setRevertErrorAlert] = useState(false);
+  const [revertError, setRevertError] = useState("");
   const [submittingUpdate, setSubmittingUpdate] = useState(false);
 
   const handleClickOpen = () => {
@@ -45,21 +50,14 @@ export const RevertFeature = (props) => {
       {"status":RStatus}, 
       JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
+        setSubmittingUpdate(false);
         if (response.status < 300) {
-          props.onUpdated(response.results);
-          function onUpdated(data){
-            console.debug('%c◉ RESPULTD ', 'color:#00ff7b', response.results);
-            console.debug("onUpdated", data);
-            navigate('../')
-          }
+          console.debug('%c◉ RESPULTD ', 'color:#00ff7b', response.results);
+          navigate('../', { revertedUUID: uuid })
         } else {
-          console.debug('%c◉ RESPONSE NOGOOD ', 'color:#00ff7b', response.status);
-          // this.setState({ 
-          //   submit_error:true, 
-          //   submitting:false, 
-          //   submittingUpdate:false,
-          //   submitErrorResponse:response.results.statusText
-          // });
+          console.debug('%c◉ RESPONSE NOGOOD ', 'color:#00ff7b', response, response.results.error);
+          setRevertErrorAlert(true);
+          setRevertError(response.results.error);
         }
       })
       .catch((error) => {
@@ -97,6 +95,12 @@ export const RevertFeature = (props) => {
               <CloseIcon />
             </IconButton>
             <DialogContent dividers>
+              {revertErrorAlert && (
+                <Alert severity="error" >
+                  <AlertTitle sx={{width: "auto",float: "left",marginRight: "10px",height:"95%"}}>Error: </AlertTitle>
+                  {revertError}
+                </Alert>
+              )}
               <Typography >
                 Choose a status to revert this <span className="text-da nger">{type}</span> to, then click [Revert] to apply your changes
               </Typography>
@@ -124,12 +128,13 @@ export const RevertFeature = (props) => {
                 onClick={handleClose}>
                 Close
               </Button>
-              <Button
-                className="btn btn-secondary"
-                onClick={(e) => handleClose(e) }
+              <LoadingButton
+                className=""
+                loading={submittingUpdate}
+                onClick={(e) => handleStatusSet(e) }
                 variant="outlined">
                 Revert
-              </Button>          
+              </LoadingButton>          
             </DialogActions>
           </React.Fragment>s
         </Dialog>

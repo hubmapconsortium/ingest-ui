@@ -455,10 +455,6 @@ class DatasetEdit extends Component {
     this.setState({showSubmitModal:false});
   };  
   
-  handleRevert = (status) => {
-    console.debug('%c◉ handleRevert ', 'color:#585bff', status);
-  };
-
   handleLookUpClick = () => {
     if (!this.state.lookUpCancelled) {
       this.setState({LookUpShow:true});
@@ -2149,8 +2145,8 @@ name, display_doi, doi
           <div className='row'>
             <div className="col-8">
                 <RevertFeature 
+                  uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
                   type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
-                  handleRevert={this.handleRevert}
                 />
             </div>
             <div className="col-4"> 

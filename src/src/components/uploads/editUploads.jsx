@@ -562,12 +562,18 @@ class EditUploads extends Component{
         {this.renderHelperText()}
         <Box
           sx={{
-            width: "100%",
-            justifyContent: 'flex-end',
-            display: 'flex',
-            '& > *': {
-              m: 1,
-            },
+            width: "50%",
+            display: 'inline-block',
+          }}>
+            <RevertFeature
+             uuid={this.props.editingUpload ? this.props.editingUpload.uuid : null}
+             type={this.props.editingUpload ? this.props.editingUpload.entity_type : 'entity'}/>
+        </Box>
+        <Box
+          sx={{
+            width: "50%",
+            float: 'right',
+            display: 'inline-block',
             button:{
               m:1,
               align:'right',
