@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef  } from "react";
+import React, { useEffect, useState, useRef, useContext  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import { ubkg_api_get_assay_type_set } from "../service/ubkg_api";
@@ -8,12 +8,13 @@ import {useLocation } from 'react-router'
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import Result from "./uuid/result";
+import { HuBMAPContext } from "./hubmapContext";
 
 
 export const RenderDataset = (props) => {
   const previousValue = useRef(null);
   let navigate = useNavigate();
-
+  const { allGroups } = useContext(HuBMAPContext);
   var [newEntity, setNewEntity] = useState(null);
   var [newResult, setNewResult] = useState(null);
   var [newVersionShow, setNewVersionShow] = useState(false);
@@ -42,8 +43,10 @@ export const RenderDataset = (props) => {
 
 
   var checkAssay = [];
+  console.debug('%c◉ allGroups ', 'color:#2f00ff', allGroups);
   useEffect(() => {
-    
+    // console.debug('%c◉ MINEallGroups ', 'color:#00ff7b', allGroups);
+
     var authSet = JSON.parse(localStorage.getItem("info"));
     setAuthToken(authSet);
   

@@ -15,11 +15,12 @@ import Grid from "@mui/material/Grid";
 import {GridLoader} from "react-spinners";
 import Skeleton from '@mui/material/Skeleton';
 import '../../App.css';
+import {BlameFeature} from "../ui/blameFeature";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,faSpinner,faTrash,faPlus,faUserShield
 } from "@fortawesome/free-solid-svg-icons";
-import ReactTooltip from "react-tooltip";
+import ReactTooltip from "react-tooltip"; 
 import HIPPA from "../uuid/HIPPA.jsx";
 
 import {validateRequired} from "../../utils/validators";
@@ -49,6 +50,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import {ThirtyFpsSharp} from "@mui/icons-material";
 
 
 class DatasetEdit extends Component {
@@ -463,6 +465,12 @@ class DatasetEdit extends Component {
     this.setState({LookUpShow:false,
       lookUpCancelled:true});
   };
+
+  updateBlameData = (data) => {
+    var { name, value } = data.target;
+    console.debug('%c⊙ updateBlameData', 'color:#8b1fff', name, value );
+    this.handleInputChange(data)
+  }
 
   handler = (e) => {
     if (e.key === "Tab") {
@@ -2116,8 +2124,12 @@ name, display_doi, doi
             
           </div>
 					
+          <BlameFeature 
+            assignedGroup={this.state.assigned_group_name}
+            ingestTask={this.state.ingestTask}
+            updateBlameData={(event) =>this.updateBlameData(event)}/>
 					{/* Make this check admin when finished */}
-					{this.props.allGroups && this.state.has_admin_priv && (
+					{/* {this.props.allGroups && this.state.has_admin_priv && (
               <div className="row mt-4  ">
                 <div className='form-group col-6'> 
                   <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
@@ -2138,7 +2150,7 @@ name, display_doi, doi
               
                 </div>
               </div>
-            )}
+          )} */}
 
           <div className="col-8">
             {this.state.submit_error && (
