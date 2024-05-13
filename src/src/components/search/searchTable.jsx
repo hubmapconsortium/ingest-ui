@@ -126,10 +126,11 @@ export const RenderSearchTable = (props) => {
 
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
-
     // Let's make sure the casing is right on the entity based fields\
-    if (searchFilterParams.entity_type && searchFilterParams.entity_type !== "----") {
-      var entityType = searchFilterParams.entity_type;
+    if ((searchFilterParams.entity_type && searchFilterParams.entity_type !== "----") || (restrictions && restrictions.entityType)) {
+      // var entityType = searchFilterParams.entity_type;
+      var entityType = (restrictions && restrictions.entityType) ? restrictions.entityType : searchFilterParams.entity_type;
+      console.debug('%c◉ entityType ', 'color:#00ff7b', entityType);
       delete searchFilterParams.entity_type;
       if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
         searchFilterParams.entity_type = toTitleCase(entityType);
@@ -138,8 +139,17 @@ export const RenderSearchTable = (props) => {
       } else {
         searchFilterParams.organ = entityType.toUpperCase();
       }
-      // console.debug('%c⊙ CLEANED SF', 'color:#00ff7b', searchFilterParams );
-    } 
+    }
+
+    // That searchFilters Update thing above is triggered on search button click,
+    // If we have restrictions, we still need to set the dropdowns accordingly
+    // Before the user does anything
+    if(restrictions && restrictions.entityType){
+      searchFilterParams.entityType = restrictions.entityType;
+      setFormFilters((prevValues) => ({
+        ...prevValues,
+      entity_type:restrictions.entityType,}));
+    }
 
     var fieldSearchSet = resultFieldSet();
     api_search2(
@@ -151,6 +161,7 @@ export const RenderSearchTable = (props) => {
       "newTable"
     )
       .then((response) => {
+        console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
         setTableLoading(false);
         console.debug('%c⊙useEffect Search', 'color:rgb(0 140 255)',  response.total, response.results );
         if (response.total > 0 && response.status === 200) {
@@ -190,20 +201,6 @@ export const RenderSearchTable = (props) => {
       setFiltersLoading(false);
     }
   }, [allGroups,entityTypeList]);
-
-
-  useEffect(() => {
-    console.debug("useEffect restrictions")
-    if (restrictions) {
-      console.debug('%c⊙', 'color:#00ff7b', "Restrictions detected: ",restrictions );
-      if(restrictions.entityType){
-        setFormFilters((prevValues) => ({...prevValues,
-          entity_type:restrictions.entityType,}));
-      }
-      // console.debug('%c⊙', 'color:#00ff7b', "Fire Handlesearchclick" );
-      handleSearchClick();
-    }
-  }, [restrictions]);
 
   function handlePageChange(pageInfo) {
     console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
@@ -286,7 +283,7 @@ export const RenderSearchTable = (props) => {
   }
         
   function handleSearchClick(event) {
-    console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', );
+    // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
     if(event){event.preventDefault()}
     setTableLoading(true);
     setPage(0)
@@ -357,6 +354,7 @@ export const RenderSearchTable = (props) => {
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
     console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
+    // We should apply restrictions here instead
     setSearchFilters(params);
   };
 
@@ -388,6 +386,7 @@ export const RenderSearchTable = (props) => {
       "entity_type",
       "specimen_type",
       "organ",
+      "registered_doi",
     ];
 
     function buildColumnFilter(arr) {

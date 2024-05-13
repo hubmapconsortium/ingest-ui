@@ -1,6 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { faFolder,faTrash } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
@@ -33,12 +33,6 @@ export const COLUMN_DEF_SAMPLE = [
 	    valueGetter: getLabId
   	}, 
     { field: 'display_subtype', headerName: 'Type', width: 200},
-    // { field: 'sample_category', headerName: 'Category',
-    //   renderCell: (params: ValueFormatterParams) => (
-    //     <React.Fragment>
-    //       {toTitleCase(params.value)}                        
-    //     </React.Fragment>
-    //   )},
     { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
@@ -59,29 +53,25 @@ export const COLUMN_DEF_DATASET = [
   { field: 'status', headerName: 'Submission Status', width: 200,
     renderCell: (params: ValueFormatterParams) => (
       <span
-        style={{
-          width: "100px"
-        }}
-        className={"badge " + getPublishStatusColor(params.value,"NA")}>
+        className={"badge " + getPublishStatusColor(params.value,"NA")}
+        style={{width: "100px"}}>
         {params.value}
       </span>
       )
   },
   { field: 'uuid', headerName: 'Data', width: 100,
-  renderCell: (params: ValueFormatterParams) => (
-    <React.Fragment>
-      <button
-        className='btn btn-link'
-        onClick={() => handleDataClick(params.value)}>
-        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
-      </button>                         
-      </React.Fragment>
-    )
-  }
+    renderCell: (params: ValueFormatterParams) => (
+      <React.Fragment>
+        <button
+          className='btn btn-link'
+          onClick={() => handleDataClick(params.value)}>
+          <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+        </button>                         
+        </React.Fragment>
+      )
+    }
 ];
-
-
-// DATASET COLUMNS
+// PUBLICATION COLUMNS
 export const COLUMN_DEF_PUBLICATION = [
   { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   { field: 'group_name', headerName: 'Group Name', width: 200},
@@ -111,7 +101,6 @@ export const COLUMN_DEF_PUBLICATION = [
     )
   }
 ];
-
 // UPLOADS COLUMNS
 export const COLUMN_DEF_UPLOADS = [
   { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
@@ -189,15 +178,64 @@ export const COLUMN_DEF_UPLOADS = [
 ];
 
 
+// MIXED TYPE COLUMNS
+export const COLUMN_DEF_MIXED = [
+  { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
+  { field: "computed_lab_id_type",
+    headerName: "Lab ID",
+    width: 160,
+    //description: "This column has a value getter and is not sortable.",
+    sortable: false,
+    valueGetter: getLabId
+  }, 
+  { field: 'submission_id', headerName: 'Submission ID', width: 160 },
+  { field: "type",
+    headerName: "Type",
+    width: 180,
+    sortable: false,
+    valueGetter: getTypeValue
+  }, 
+  { field: 'group_name', headerName: 'Group Name', width: 200},
+  { field: "statusAccess",
+    width: 180,
+    headerName: "Status / Access Level",
+    sortable: false,
+    valueGetter: getStatusAccess,
+    renderCell: renderStatusAccess
+  }, 
+  { field: "uuid",
+    headerName: "Action",
+    sortable: false,
+    renderCell: (params: ValueFormatterParams) => (
+      <div sx={{width:"100%"}} className="actionButton" data-target={params.row.uuid} >
+        <FontAwesomeIcon
+          className='inline-icon interaction-icon'
+          icon={faTrash}
+          color="red"
+          // onClick={() => sourceRemover(row, index)}
+        />
+    </div>
+   ), 
+  }, 
+];
+
+// LIMITED DATASET TYPE COLUMNS (FOR SOURCE DISPLAY)
+export const COLUMN_DEF_MIXED_SM = shrinkCols;
+
 // Computed column functions
 
 // function getSampleType(params: ValueGetterParams) {
-
 // 	if (params.getValue('entity_type') === 'Sample') {
 // 		return flattenSampleType(SAMPLE_TYPES)[params.getValue("specimen_type")];
 // 	}
 //   return params.getValue('entity_type');
 // }
+
+// Strips the Submission ID column from COLUMN_DEF_MIXED
+function shrinkCols(string){
+  var stripped = COLUMN_DEF_MIXED.delete('submission_id');
+  return stripped
+}
 
 function prettyCase(string){
   // return toTitleCase(string)
@@ -211,6 +249,48 @@ function getLabId(params: ValueGetterParams) {
   } catch { }
 return ""
 //	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
+}
+function getTypeValue(params: ValueGetterParams) {
+  // console.debug('%c◉ getTypeValue params ', 'color:#00ff7b', params);
+  try {
+    return params.row['display_subtype'] || params.row['organ'] || params.row['specimen_type'] || params.row['entity_type']
+   }catch{
+    return ""
+  }
+}
+function getStatusAccess(params: ValueGetterParams) {
+  // console.debug('%c◉ getStatusAccess params ', 'color:#00ff7b', params);
+  if(params.row['status']){
+    return ['status', params.row['status']]
+  }else if(params.row['data_access_level']){
+    return ["access", params.row['data_access_level']]
+  }else{
+    return ["", ""]
+  }
+}
+
+
+// function renderActionButton(params: ValueFormatterParams) {
+//   console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
+//   return(
+    
+//   )
+// }
+
+function renderStatusAccess(params: ValueFormatterParams) {
+  // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);
+  if (params.value[0]==="status") {
+    return (
+      <span
+        className={"badge " + getPublishStatusColor(params.value[1],"NA")}
+        style={{width: "100px"}}>
+        {params.value[1]}
+      </span>
+    )
+  }else{
+    return (params.value[1])
+  }
+ 
 }
 
 function doiLink(doi_url,registered_doi) {
@@ -226,15 +306,15 @@ function doiLink(doi_url,registered_doi) {
   return "";
 }
 
-
 function handleDataClick(dataset_uuid) {
   ingest_api_get_globus_url(dataset_uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((resp) => {
-          if (resp.status === 200) {
-             window.open(resp.results, "_blank");
-          }
+  .then((resp) => {
+    if (resp.status === 200) {
+        window.open(resp.results, "_blank");
+    }
   });
 }
+
 function groupNames(entity) {
   let unique_values = [
     ...new Set(entity.datasets.map((entity) => entity.group_name)),

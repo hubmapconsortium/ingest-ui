@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState,useEffect} from "react";
+import {useState,useEffect,useCallback} from "react";
 import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
 import StandardErrorBoundary from "./utils/errorWrap";
@@ -55,6 +55,7 @@ import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import {keys} from "@material-ui/core/styles/createBreakpoints";
 
 
 export function App (props){
@@ -214,17 +215,31 @@ export function App (props){
       setBannerShow(true)
     }
   },[])
+    
+  useEffect(() => {
+    // Expose server context
+    // easy way to apply the occasional QoL / Dev features &
+    // selectively apply css as needed without additional js processing
+    if( window.hasOwnProperty('REACT_APP_URL')){
+      var url = window.REACT_APP_URL;
+      console.debug('%c◉ REACT_APP_URL', 'color:#00ff7b', url);
+      var stripUrl = url.replace(/(^\w+:|^)\/\//, '');
+      console.debug('%c◉ stripUrl ', 'color:#00ff7b', stripUrl);
+    }
+  },[])
   
   
   function clearAuths() {  
-    console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
-    return new Promise((resolve) => {
-      setTimeout(() => { // Give it a chance to cleaer the local storage
-        localStorage.removeItem("info");
-        localStorage.removeItem("isAuthenticated");
-        resolve();
-      }, 2000);
-    });
+    if(process.env.REACT_APP_URL == "http://localhost:8585"){
+      console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
+      return new Promise((resolve) => {
+        setTimeout(() => { // Give it a chance to cleaer the local storage
+          localStorage.removeItem("info");
+          localStorage.removeItem("isAuthenticated");
+          resolve();
+        }, 2000);
+      });
+    }
   }
 
   function Logout(){
@@ -289,6 +304,7 @@ export function App (props){
   var [errorInfo,setErrorInfo] = useState("");
   var [errorInfoShow,setErrorInfoShow] = useState(false);
   var [errorDetail, setErrorDetail] = useState({});
+  // var [keySet, setKeySet] = useState([]);
 
   function reportError(error, details) {
     console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);
@@ -305,9 +321,8 @@ export function App (props){
     throw (error)
   }
 
-
   return (
-    <div className="App">
+    <div className={"App "+"env-"+process.env.REACT_APP_NODE_ENV}>
       
       <Navigation 
         login={authStatus} 
@@ -516,7 +531,7 @@ export function App (props){
               <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
               <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
               <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={userDataGroups} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
               <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
               <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
