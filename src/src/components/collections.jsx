@@ -29,10 +29,10 @@ export const RenderCollection = (props) => {
   // let reportError = ;
 
   useEffect(() => {
-    const entityUUID = uuid.uuid
-    var authSet = JSON.parse(localStorage.getItem("info"));
-    console.debug('%c◉ entityUUID ', 'color:#00ff7b', entityUUID);
-    if (entityUUID) {
+    if (!newForm && uuid) {
+      const entityUUID = uuid.uuid
+      var authSet = JSON.parse(localStorage.getItem("info"));
+      console.debug('%c◉ entityUUID ', 'color:#00ff7b', entityUUID);
       entity_api_get_entity(entityUUID, authSet.groups_token)
       .then((response) => {
         console.debug('%c◉ response ', 'color:#00ff7b', response);
@@ -40,7 +40,11 @@ export const RenderCollection = (props) => {
           if(response.results.entity_type !== "Collection"){
             navigate("/"+response.results.entity_type+"/"+uuid);
           }else{
-            setEntity(response.results);
+            // Converting the datasets field to a more general 
+            // Associations field, for eventual flexability
+            var collection = response.results;
+            if(collection.datasets){collection.associations = collection.datasets};
+            setEntity(collection);
             setIsLoadingEntity(false);
             document.title = ("HuBMAP Ingest Portal | Collection: "+response.results.hubmap_id +"" );
           }

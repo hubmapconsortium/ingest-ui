@@ -825,4 +825,11 @@ svg.invalid{
   background-color: #d32f2f!important;
   color: white!important;
   font-size:1.1em;
+}.associationTable .MuiDataGrid-footerContainer{
+  display:none;
+}
+.associationTable .MuiDataGrid-columnHeaders{
+  background-color: #343a40;
+  border-color: #454d55;
+  color:#fff;
 }
