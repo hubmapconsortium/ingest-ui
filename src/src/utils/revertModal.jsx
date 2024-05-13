@@ -16,9 +16,11 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {entity_api_update_entity} from '../service/entity_api';
+import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
 
 
 export const RevertFeature = (props) => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(props.open);
   const [type] = useState(props.type);
   const [uuid] = useState(props.uuid);

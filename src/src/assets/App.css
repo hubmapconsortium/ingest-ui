@@ -826,6 +826,14 @@ svg.invalid{
   color: white!important;
   font-size:1.1em;
 }
+.associationTable .MuiDataGrid-footerContainer{
+  display:none;
+}
+.associationTable .MuiDataGrid-columnHeaders{
+  background-color: #343a40;
+  border-color: #454d55;
+  color:#fff;
+}
 #revert_tooltip{
   background-color: #fff!important;
   color: black!important;
