@@ -565,9 +565,12 @@ class EditUploads extends Component{
             width: "50%",
             display: 'inline-block',
           }}>
-            <RevertFeature
-             uuid={this.props.editingUpload ? this.props.editingUpload.uuid : null}
-             type={this.props.editingUpload ? this.props.editingUpload.entity_type : 'entity'}/>
+           {this.state.data_admin && (
+              <RevertFeature 
+                uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
+                type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
+              />
+            )}
         </Box>
         <Box
           sx={{
