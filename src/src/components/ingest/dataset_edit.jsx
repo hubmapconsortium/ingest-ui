@@ -2144,10 +2144,12 @@ name, display_doi, doi
 
           <div className='row'>
             <div className="col-8">
+            {this.state.has_admin_priv && (
                 <RevertFeature 
                   uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
                   type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
                 />
+              )}
             </div>
             <div className="col-4"> 
               {this.renderButtons()}
