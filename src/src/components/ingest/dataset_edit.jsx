@@ -26,6 +26,7 @@ import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
 import GroupModal from "../uuid/groupModal";
 import {RevertFeature} from "../../utils/revertModal";
+import {BlameFeature} from "../ui/blameFeature";
 import SearchComponent from "../search/SearchComponent";
 import {
   ingest_api_allowable_edit_states,
@@ -2146,6 +2147,13 @@ name, display_doi, doi
             <div className="col-8">
             {this.state.has_admin_priv && (
                 <RevertFeature 
+                  uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
+                  type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
+                />
+              )}
+              {this.state.has_admin_priv &&(
+                <BlameFeature
+                  admin={this.state.has_admin_priv}
                   uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
                   type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
                 />
