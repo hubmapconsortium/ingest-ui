@@ -1,56 +1,50 @@
-import React,{Component} from "react";
-import Paper from '@material-ui/core/Paper';
+import {faPlus,faQuestionCircle,faSpinner,faTrash,faUserShield} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import FormHelperText from '@mui/material/FormHelperText';
+import Paper from '@material-ui/core/Paper';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
-import Select from '@mui/material/Select'; 
+import FormHelperText from '@mui/material/FormHelperText';
 import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import Grid from "@mui/material/Grid";
-import {GridLoader} from "react-spinners";
-import Skeleton from '@mui/material/Skeleton';
-import '../../App.css';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faQuestionCircle,faSpinner,faTrash,faPlus,faUserShield} from "@fortawesome/free-solid-svg-icons";
+import React,{Component} from "react";
 import ReactTooltip from "react-tooltip";
+import '../../App.css';
 import HIPPA from "../uuid/HIPPA.jsx";
 
-import {validateRequired} from "../../utils/validators";
 import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
-import Modal from "../uuid/modal";
-import GroupModal from "../uuid/groupModal";
-import {RevertFeature} from "../../utils/revertModal";
-import {BlameFeature} from "../ui/blameFeature";
-import SearchComponent from "../search/SearchComponent";
+import {entity_api_get_entity,entity_api_get_globus_url,entity_api_update_entity} from '../../service/entity_api';
 import {
   ingest_api_allowable_edit_states,
-  ingest_api_create_dataset,
-  ingest_api_dataset_submit,
-  ingest_api_dataset_publish,
-  ingest_api_users_groups,
   ingest_api_allowable_edit_states_statusless,
-  ingest_api_notify_slack
+  ingest_api_create_dataset,
+  ingest_api_dataset_publish,
+  ingest_api_dataset_submit,
+  ingest_api_notify_slack,
+  ingest_api_users_groups
 } from '../../service/ingest_api';
-import {entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity} from '../../service/entity_api';
-import {ubkg_api_get_assay_type_set,ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
+import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
-import {StatusList} from "../../utils/badgeClasses";
+import {RevertFeature} from "../../utils/revertModal";
 import {VersionNavigation} from "../../utils/ui_elements";
-import {generateDisplaySubtype, generateDisplaySubtype_UBKG, generateSubtype} from "../../utils/display_subtypes";
+import {validateRequired} from "../../utils/validators";
+import SearchComponent from "../search/SearchComponent";
+import GroupModal from "../uuid/groupModal";
+import Modal from "../uuid/modal";
 
-import {Alert,AlertTitle} from '@material-ui/lab';
+import {Typography} from "@material-ui/core";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import {Alert,AlertTitle} from '@material-ui/lab';
 
 
 class DatasetEdit extends Component {
@@ -483,8 +477,8 @@ class DatasetEdit extends Component {
   }; 
 
   handleInputChange = (e) => {
-  const {id, name, value} = e.target;
-  console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
+    const {id, name, value} = e.target;
+    console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       switch (name) {
       case "lab_dataset_id":
         this.setState({lab_dataset_id:value,});
@@ -531,6 +525,7 @@ class DatasetEdit extends Component {
         this.setState({selected_group:value});
         break;
       default:
+        this.setState({name:value});
         break;
     }
   };
@@ -994,10 +989,7 @@ class DatasetEdit extends Component {
                 var dataSubmit = {"status":"Submitted"}
                 entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(dataSubmit), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
-                  // We shouldn't need to check agaisnt Trojan errors hiding in 200s anymore,
-                  // if they appear, file as bugs on returning API
                   console.debug("entity_api_update_entity response", response);
-                  // var portalURL= process.env.REACT_APP_PORTAL_URL+"/browse/dataset/"+this.props.editingDataset.uuid
                   var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
                   var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
                   ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
@@ -2109,27 +2101,39 @@ name, display_doi, doi
 					
 					{/* Make this check admin when finished */}
 					{this.props.allGroups && this.state.has_admin_priv && (
-              <div className="row mt-4  ">
-                <div className='form-group col-6'> 
-                  <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
-                  {this.renderGroupAssignment()}
-                  <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
-                </div>
-                <div className='form-group col-6'> 
-                  <label htmlFor='ingest_task'>Ingest Task </label>
-                  <TextField
-                    labelid="ingest_task_label"
-                    name="ingest_task"
-                    id="ingest_task"
-                    helperText="The next task in the data ingest process."
-                    // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-                    fullWidth
-                    value={this.state.ingest_task}
-                    onChange={(event) => this.handleInputChange(event)}/>
-              
-                </div>
+            <div className="row mt-4  ">
+              <div className='form-group col-6'> 
+                <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
+                {this.renderGroupAssignment()}
+                <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
               </div>
-            )}
+              <div className='form-group col-6'> 
+                <label htmlFor='ingest_task'>Ingest Task </label>
+                <TextField
+                  labelid="ingest_task_label"
+                  name="ingest_task"
+                  id="ingest_task"
+                  helperText="The next task in the data ingest process."
+                  // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                  fullWidth
+                  value={this.state.ingest_task}
+                  onChange={(event) => this.handleInputChange(event)}/>
+              </div>
+            </div>
+          )}
+
+          {!this.state.has_admin_priv && this.state.assigned_to_group_name && this.state.ingest_task && (
+            <div className="row mt-4  ">
+              <div className='form-group col-6'> 
+                <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
+                <Typography >{this.state.assigned_to_group_name}</Typography>
+              </div>
+              <div className='form-group col-6'> 
+                <label htmlFor='ingest_task'>Ingest Task </label>
+                <Typography >{this.state.ingest_task}</Typography>
+              </div>
+            </div>
+          )}
 
           <div className="col-8">
             {this.state.submit_error && (
@@ -2151,13 +2155,15 @@ name, display_doi, doi
                   type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
                 />
               )}
-              {this.state.has_admin_priv &&(
+              {/* {this.state.has_admin_priv &&(
                 <BlameFeature
                   admin={this.state.has_admin_priv}
+                  group={this.props.editingDataset.assigned_to_group_name}
+                  task={this.props.editingDataset.ingest_task}
                   uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
                   type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
                 />
-              )}
+              )} */}
             </div>
             <div className="col-4"> 
               {this.renderButtons()}

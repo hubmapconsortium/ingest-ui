@@ -1,26 +1,19 @@
-import React, { useEffect, useState,useContext  } from "react";
-import Button from '@mui/material/Button';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
-import { HuBMAPContext } from "../hubmapContext";
+import React,{useContext,useState} from "react";
+import {entity_api_update_entity} from '../../service/entity_api';
+import {HuBMAPContext} from "../hubmapContext";
 
 
 export const BlameFeature = (props) => {
-  const navigate = useNavigate();
   const { allGroups } = useContext(HuBMAPContext);
   const [uuid] = useState(props.uuid);
   const [propGroup] = useState(props.assignedGroup);
   const [assignedGroup,setAssignedGroup] = useState("nah");
   const [ingestTask] = useState("");
   const [submittingUpdate, setSubmittingUpdate] = useState(false);
-  const updateBlameData = props.updateBlameData
 
 
   useState(() => {
@@ -32,7 +25,26 @@ export const BlameFeature = (props) => {
   }, [assignedGroup]);
 
 
-  
+  const updateBlameData = (event) => {
+    var data = {
+      assigned_to_group_name: assignedGroup,
+      ingest_task: ingestTask,
+    };
+    entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((response) => {
+        if (response.status === 200) {
+          console.debug('%c◉ UPDATED ', 'color:#00ff7b', );
+          // this.props.onUpdated(response.results);
+        } else {
+          console.debug('%c◉ nogo ', 'color:#ff005d', );
+          this.setState({ submit_error: true, submitting: false, submitting_submission:false, button_save: false });
+        }
+      }).catch((error) => {
+        this.setState({ submit_error: true, submitting: false, submitting_submission:false, button_save: false, });
+        
+      });
+  }
+
 	return (
     <>
       <div className="row mt-4  ">
