@@ -1,36 +1,36 @@
 import * as React from "react";
-import {useState,useEffect,useCallback,createContext} from "react";
+import {useEffect,useState} from "react";
+import {Route,Routes,useLocation,useNavigate} from "react-router-dom";
 import {HuBMAPContext} from "./components/hubmapContext";
-import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
-import StandardErrorBoundary from "./utils/errorWrap";
-import ErrorPage from "./utils/errorPage";
-import Login from './components/ui/login';
 import Timer from './components/ui/idle';
+import Login from './components/ui/login';
+import ErrorPage from "./utils/errorPage";
+import StandardErrorBoundary from "./utils/errorWrap";
 
 import LinearProgress from '@mui/material/LinearProgress';
 
+import {Alert} from '@material-ui/lab';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
-import {Alert} from '@material-ui/lab';
+import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
+import Typography from '@mui/material/Typography';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
+import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
-import {ingest_api_users_groups,ingest_api_all_groups} from './service/ingest_api';
+import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
@@ -41,21 +41,20 @@ import {Navigation} from "./Nav";
 
 import Result from "./components/uuid/result";
 
-import {RenderDonor} from "./components/donors";
+import {RenderCollection} from "./components/collections";
 import {RenderDataset} from "./components/datasets";
+import {RenderDonor} from "./components/donors";
+import {RenderMetadata} from "./components/metadata";
+import {RenderPublication} from "./components/publications";
 import {RenderSample} from "./components/samples";
 import {RenderUpload} from "./components/uploads";
-import {RenderPublication} from "./components/publications";
-import {RenderCollection} from "./components/collections";
-import {RenderMetadata} from "./components/metadata";
 
 import {RenderBulk} from "./components/bulk";
 
-import SearchComponent from './components/search/SearchComponent';
-import Forms from "./components/uuid/forms";
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import {keys} from "@material-ui/core/styles/createBreakpoints";
+import SearchComponent from './components/search/SearchComponent';
+import Forms from "./components/uuid/forms";
 
 
 export function App (props){
@@ -230,6 +229,7 @@ export function App (props){
   
   
   function clearAuths() {  
+    console.debug('%c◉ CLEAR AUTHS ', 'color:#00ff7b', );
     if(process.env.REACT_APP_URL == "http://localhost:8585"){
       console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
       return new Promise((resolve) => {
@@ -244,6 +244,7 @@ export function App (props){
 
   function Logout(){
     clearAuths().then((response) => {
+      console.debug('%c◉  response', 'color:#00ff7b',response );
         window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
       })
   };
