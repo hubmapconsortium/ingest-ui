@@ -77,7 +77,8 @@ class RUIIntegration extends Component {
   }
 
   updateRUIConfig() {
-    console.debug('%c◉ thisPROPS RuiInt ', 'color:#00ff7b',this.props.organ, this.props.organList,this.props.organList[this.props.organ] );
+    // console.debug('%c◉ thisPROPS RuiInt ', 'color:#00ff7b',this.props.organ, this.props.organList,this.props.organList[this.props.organ] );
+    console.debug('%c◉ thisPROPS RuiInt ', 'color:#00ff7b', this.props );
     const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
     const organ_info = this.props.organList[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();

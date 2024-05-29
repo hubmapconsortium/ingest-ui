@@ -178,6 +178,32 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
 };
 
 /*
+ * get ancestor list  for the specified Entity 
+ * 
+ * return:  { status, results}
+ */
+export function entity_api_get_entity_ancestor_list(uuid, auth) { 
+  const options = {
+      headers: {
+        Authorization:
+          "Bearer " + auth,
+        "Content-Type": "application/json"
+      }
+    };
+    let url = `${process.env.REACT_APP_ENTITY_API_URL}/ancestors/${uuid}`;
+  return axios 
+    .get(url,options)
+      .then(res => {
+        // console.debug(res);
+        let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(error => {
+        return {error}
+      });
+};
+
+/*
  * get Globus URL
  * 
  * return:  { status, results}

@@ -51,7 +51,8 @@ import { entity_api_get_entity,
     entity_api_update_entity, 
     entity_api_create_entity,
     entity_api_create_multiple_entities, 
-    entity_api_get_entity_ancestor 
+    entity_api_get_entity_ancestor,
+    entity_api_get_entity_ancestor_list
 } from '../../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_all_user_groups, ingest_api_get_associated_ids } from '../../../service/ingest_api';
 // import { useHistory } from "react-router-dom";
@@ -346,7 +347,7 @@ class TissueForm extends Component {
               file_uuid: thumbnail_file.file_uuid
             });         
         } catch {}
-
+        
         this.setState(
           {
             author: this.state.editingEntity.created_by_user_email,
@@ -374,7 +375,7 @@ class TissueForm extends Component {
                 rui_show_btn: true
               }, () => {
                 console.debug('%c◉ RUISHOW ', 'color:#00ff7b');
-                })
+              })
             }
           })
 
@@ -382,6 +383,7 @@ class TissueForm extends Component {
             this.getSourceAncestorOrgan(this.state.editingEntity);
           }
           
+          this.fetchDonorMeta(this.props.editingEntity.uuid);
 
 
       } else {
@@ -403,6 +405,44 @@ class TissueForm extends Component {
       }
 
   }
+
+
+
+  fetchDonorMeta(sourceUUID){
+    // Lets get the donor metadata to sort our values for the RUI
+    entity_api_get_entity_ancestor_list(sourceUUID, JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((res) => {
+        console.debug('%c◉ ANCESTOR LIST ', 'color:#8C00FF', res.results);
+        var donor;
+        if (res.results.length === 1) { //Must be an organ source, so this ancestor must be the donor
+          donor = res.results[0]
+        }else{
+          donor = res.results.filter(d => d.entity_type === "Donor");
+          donor = donor[0]
+        }
+
+        console.debug('%c◉ donor ', 'color:#00ff7b', donor);
+        var donorMeta = donor.metadata.organ_donor_data ? donor.metadata.organ_donor_data : donor.metadata.living_donor_data;
+        console.debug('%c◉ donorMeta ', 'color:#4400FF', donorMeta);
+        var donorSexDetails = donorMeta.filter(m => m.grouping_code === "57312000");
+        // var donorSexDetails = donorMeta.filter(m => m.data_value === "Sex");
+        console.debug('%c◉ donorSexDetails ', 'color:#0011FF', donorSexDetails);
+        var donorSex = donorSexDetails[0].preferred_term;
+        console.debug('%c◉ donorSex ', 'color:#0077FF', donorSex);
+        // return (donorSex ? donorSex : undefined);
+        this.setState({
+          donor_sex: donorSex,
+          sex: donorSex
+        }, () => {
+          // console.debug('%c◉ Donor Meta Loaded ', 'color:#00ff7b', );
+        })
+      })
+      .catch((err) =>{
+        console.debug("ERR entity_api_get_entity_ancestor_list",err);
+        // throw new Error("ERR entity_api_get_entity_ancestor_list");
+      })
+  }
+
 
   fetchOrganTypes(){
     ubkg_api_get_organ_type_set()
@@ -627,7 +667,7 @@ class TissueForm extends Component {
             }
           }));
         } else if (!validateProtocolIODOI(value)) {
-        
+        console.debug('%c◉ validateProtocolIODOI ', 'color:#ff005d',value );
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
@@ -646,7 +686,7 @@ class TissueForm extends Component {
           this.setState(prevState => ({
             formErrors: {
               ...prevState.formErrors,
-              protocol_url: "required"
+              protocol_url: ""
             }
           }));
         }
@@ -1432,8 +1472,6 @@ handleAddImage = () => {
 
   handleLookUpClick = () => {
 //  
-    
-
     if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true
@@ -1446,7 +1484,7 @@ handleAddImage = () => {
      this.setState({
         lookUpCancelled: false
       }); 
-  }
+}
 
   hideLookUpModal = () => {
   
@@ -1472,42 +1510,41 @@ handleAddImage = () => {
   // Callback for the SOURCE for table selection 
   handleSelectClick = selection => {
     let ancestor_organ = ""
-
-    
-
     if (selection) {
       // check to see if we have an "top-level" ancestor 
-
       // Organ added to the Column results for Samples, can pluck it from row.organ now!
       // For Ancestry-reasons, we should still check for the top-level ancestor
       entity_api_get_entity_ancestor( selection.row.uuid, JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
-        // console.debug("selection", selection);
-        // console.debug("handleSelectClick: selection.row.uuid: " + selection.row.uuid, selection.row.organ);
-        // console.debug("handleSelectClick: response.status: " + response.status);
+
         if (response.status === 200) {
             if (response.results.length > 0) {
                 ancestor_organ = response.results[0].organ;   // use "top" ancestor organ
             }
+        } else if (response.error === "400 Bad Request: Unable to get the ancestor organ of an organ.") {
+          ancestor_organ = selection.row.organ;    // the error otherwise crashes
         } else {
-            ancestor_organ = selection.row.organ;  // use the direct ancestor
+          ancestor_organ = selection.row.organ;  // use the direct ancestor
         }
-        
-        
-          this.setState({
-            source_uuid: selection.row.hubmap_id,
-            source_entity: selection.row,
-            source_uuid_list: selection.row.uuid,   // just add the single for now
-            source_entity_type: selection.row.entity_type,
-            organ: ancestor_organ,
-            ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
-            sex: this.getGender(selection.row)
-          }, () => {
-            
-          });
-          
-          this.cancelLookUpModal();
+
+        // SETS SEX VALUES BEING PASSED TO RUI
+        this.fetchDonorMeta(selection.row.uuid);
+
+        this.setState({
+          source_uuid: selection.row.hubmap_id,
+          source_entity: selection.row,
+          source_uuid_list: selection.row.uuid,   // just add the single for now
+          source_entity_type: selection.row.entity_type,
+          organ: ancestor_organ,
+          ancestor_organ: ancestor_organ, // save the acestor organ for the RUI check
+          // sex: this.getGender(selection.row)
+          // sex: this.fetchDonorMeta(selection.row.uuid)
+        }, () => {
+          console.debug('%c◉ SETDONORSEX ', 'color:#7BFF00', this.state.sex);
         });
+        
+        this.cancelLookUpModal();
+      });
     }
   };
 
@@ -2216,7 +2253,8 @@ handleAddImage = () => {
                       // organList={this.fetchOrganTypes}
                       organ={ this.state.ancestor_organ ? this.state.ancestor_organ : this.state.source_entity.organ}
                       // organ={ this.props.editingEntity.organ ? this.props.editingEntity.organ}
-                      sex={this.state.source_entity.sex}
+                      // sex={this.state.source_entity.sex}
+                      sex={this.state.donor_sex}
                       user={this.state.source_entity.created_by_user_displayname}
                       location={this.state.rui_location}
                       parent="TissueForm" />
@@ -2307,7 +2345,8 @@ handleAddImage = () => {
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organList={this.state.organ_types}
                             organ={this.props.editingEntity.organ}
-                            sex={this.state.source_entity.sex}
+                            // sex={this.state.source_entity.sex}
+                            sex={this.state.donor_sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
                             parent="TissueForm" />
@@ -2361,7 +2400,8 @@ handleAddImage = () => {
                           <RUIIntegration handleJsonRUI={this.handleRUIJson}
                             organList={this.state.organ_types}
                             organ={this.props.editingEntity.organ}
-                            sex={this.state.source_entity.sex}
+                            // sex={this.state.source_entity.sex}
+                            sex={this.state.donor_sex}
                             user={this.state.source_entity.created_by_user_displayname}
                             location={this.state.rui_location}
                             parent="TissueForm" />
