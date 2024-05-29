@@ -421,13 +421,13 @@ class TissueForm extends Component {
           donor = donor[0]
         }
 
-        
         console.debug('%c◉ donor ', 'color:#00ff7b', donor);
         var donorMeta = donor.metadata.organ_donor_data ? donor.metadata.organ_donor_data : donor.metadata.living_donor_data;
-        var donorSexDetails = donorMeta.filter(m => m.data_value === "Sex");
-        var donorSex = donorSexDetails[0].preferred_term;
         console.debug('%c◉ donorMeta ', 'color:#4400FF', donorMeta);
+        var donorSexDetails = donorMeta.filter(m => m.grouping_code === "57312000");
+        // var donorSexDetails = donorMeta.filter(m => m.data_value === "Sex");
         console.debug('%c◉ donorSexDetails ', 'color:#0011FF', donorSexDetails);
+        var donorSex = donorSexDetails[0].preferred_term;
         console.debug('%c◉ donorSex ', 'color:#0077FF', donorSex);
         // return (donorSex ? donorSex : undefined);
         this.setState({
