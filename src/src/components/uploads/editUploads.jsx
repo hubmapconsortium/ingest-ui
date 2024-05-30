@@ -1,44 +1,46 @@
-import React, { Component } from "react";
+import {
+  faExternalLinkAlt,
+  faQuestionCircle,
+  faSpinner
+} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {Typography} from "@material-ui/core";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import FormHelperText from '@mui/material/FormHelperText';
-import FormControl from '@mui/material/FormControl';
-import { Link } from 'react-router-dom';
-import Select from '@mui/material/Select'; 
-import { validateRequired } from "../../utils/validators";
-import { getPublishStatusColor } from "../../utils/badgeClasses";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faQuestionCircle,
-  faSpinner,
-  faExternalLinkAlt, faFolder}
-  from "@fortawesome/free-solid-svg-icons";
-import Modal from "../uuid/modal";
-import ReactTooltip from "react-tooltip";
-import { tsToDate } from "../../utils/string_helper";
-import { Alert, AlertTitle } from '@material-ui/lab';
-
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import { ingest_api_get_globus_url, 
-  ingest_api_validate_upload,
-  ingest_api_submit_upload,
-  ingest_api_reorganize_upload,
-  ingest_api_all_user_groups,
-  ingest_api_notify_slack } from '../../service/ingest_api';
+import {Alert,AlertTitle} from '@material-ui/lab';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import FormHelperText from '@mui/material/FormHelperText';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import React,{Component} from "react";
+import {Link} from 'react-router-dom';
+import ReactTooltip from "react-tooltip";
 import {
-    entity_api_update_entity,
-    entity_api_get_globus_url
+  entity_api_get_globus_url,
+  entity_api_update_entity
 } from '../../service/entity_api';
-import { COLUMN_DEF_DATASET} from '../search/table_constants';
+import {
+  ingest_api_all_user_groups,
+  ingest_api_get_globus_url,
+  ingest_api_notify_slack,
+  ingest_api_reorganize_upload,
+  ingest_api_submit_upload,
+  ingest_api_validate_upload
+} from '../../service/ingest_api';
+import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {RevertFeature} from "../../utils/revertModal";
+import {tsToDate} from "../../utils/string_helper";
+import {validateRequired} from "../../utils/validators";
+import {COLUMN_DEF_DATASET} from '../search/table_constants';
+import Modal from "../uuid/modal";
 
 // import { DATA_ADMIN, DATA_CURATOR } from '../../service/user_service'
 class EditUploads extends Component{
@@ -78,8 +80,6 @@ class EditUploads extends Component{
   
 
   componentDidMount() {
-
-    
     const groupsAuth = JSON.parse(localStorage.getItem("info")).groups_token;
     const config = { // Nix this and use the one in the service
       headers: {
@@ -90,22 +90,22 @@ class EditUploads extends Component{
     };
     let entity_data = this.props.editingUpload;
     entity_api_get_globus_url(this.props.editingUpload.uuid, groupsAuth)
-          .then((res) => {
-            
-            this.setState({
-              globus_path: res.results,
-            }); 
-          })
-          .catch((err) => {
-            this.setState({
-              globus_path: " ",
-              globus_path_tips: "Globus URL Unavailable",
-            });
-            if (err.response && err.response.status === 401) {
-              localStorage.setItem("isAuthenticated", false);
-              window.location.reload();
-            }
-          });
+      .then((res) => {
+        
+        this.setState({
+          globus_path: res.results,
+        }); 
+      })
+      .catch((err) => {
+        this.setState({
+          globus_path: " ",
+          globus_path_tips: "Globus URL Unavailable",
+        });
+        if (err.response && err.response.status === 401) {
+          localStorage.setItem("isAuthenticated", false);
+          window.location.reload();
+        }
+      });
     
 
     this.setState({
@@ -272,7 +272,6 @@ class EditUploads extends Component{
 
   handleSave = (i) => {
     this.setState({ button_save: true });
-
     this.validateForm().then((isValid) => {
       if (isValid) {
         if (
@@ -288,18 +287,23 @@ class EditUploads extends Component{
           });
           this.setState({ submitting: true });
           // package the data up
-          let data = {
-            title: this.state.title,
-            description: this.state.description,
-          };
+          let data = {};
+          if (this.props.editingUpload.title !== this.state.title){
+            data["title"]=this.state.title;
+          }
+          if (this.props.editingUpload.description !== this.state.description){
+            data["description"]=this.state.description;
+          }
+
           if(this.state.data_admin){
-            if (this.state.assigned_to_group_name){
+            if (this.state.assigned_to_group_name && this.props.editingUpload.assigned_to_group_name !== this.state.assigned_to_group_name){
               data["assigned_to_group_name"]=this.state.assigned_to_group_name;
             }
-            if (this.state.ingest_task){
+            if (this.state.ingest_task && this.props.editingUpload.ingest_task !== this.state.ingest_task){
               data["ingest_task"]=this.state.ingest_task;
             }
           }
+
           if (this.props.editingUpload) {
             entity_api_update_entity(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
@@ -561,12 +565,30 @@ class EditUploads extends Component{
         {this.renderHelperText()}
         <Box
           sx={{
-            width: "100%",
-            justifyContent: 'flex-end',
-            display: 'flex',
-            '& > *': {
-              m: 1,
-            },
+            width: "50%",
+            display: 'inline-block',
+          }}>
+          {this.state.data_admin && (
+            <RevertFeature 
+              uuid={this.props.editingUpload ? this.props.editingUpload.uuid : null}
+              type={this.props.editingUpload ? this.props.editingUpload.entity_type : 'entity'}
+            />
+          )}
+          {/* {this.state.data_admin &&(
+            <BlameFeature
+              admin={this.state.data_admin}
+              group={this.props.editingUpload.assigned_to_group_name}
+              task={this.props.editingUpload.ingest_task}
+              uuid={this.props.editingUpload ? this.props.editingUpload.uuid : null}
+              type={this.props.editingUpload ? this.props.editingUpload.entity_type : 'entity'}
+            />
+          )} */}
+        </Box>
+        <Box
+          sx={{
+            width: "50%",
+            float: 'right',
+            display: 'inline-block',
             button:{
               m:1,
               align:'right',
@@ -1102,6 +1124,18 @@ renderReorganizeButton() {
                     value={this.state.ingest_task}
                     onChange={(event) => this.updateInputValue(event)}/>
               
+                </div>
+              </div>
+            )}
+            {!this.state.data_admin && this.state.assigned_to_group_name && this.state.ingest_task && (
+              <div className="row mt-4  ">
+                <div className='form-group col-6'> 
+                  <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
+                  <Typography >{this.state.assigned_to_group_name}</Typography>
+                </div>
+                <div className='form-group col-6'> 
+                  <label htmlFor='ingest_task'>Ingest Task </label>
+                  <Typography >{this.state.ingest_task}</Typography>
                 </div>
               </div>
             )}

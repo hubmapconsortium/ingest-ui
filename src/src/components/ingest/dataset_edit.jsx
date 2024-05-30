@@ -1,54 +1,50 @@
-import React,{Component} from "react";
-import Paper from '@material-ui/core/Paper';
+import {faPlus,faQuestionCircle,faSpinner,faTrash,faUserShield} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import Button from '@mui/material/Button';
-import FormHelperText from '@mui/material/FormHelperText';
+import Paper from '@material-ui/core/Paper';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
-import Select from '@mui/material/Select'; 
+import FormHelperText from '@mui/material/FormHelperText';
 import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import Grid from "@mui/material/Grid";
-import {GridLoader} from "react-spinners";
-import Skeleton from '@mui/material/Skeleton';
-import '../../App.css';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {
-  faQuestionCircle,faSpinner,faTrash,faPlus,faUserShield
-} from "@fortawesome/free-solid-svg-icons";
+import React,{Component} from "react";
 import ReactTooltip from "react-tooltip";
+import '../../App.css';
 import HIPPA from "../uuid/HIPPA.jsx";
 
-import {validateRequired} from "../../utils/validators";
 import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
-import Modal from "../uuid/modal";
-import GroupModal from "../uuid/groupModal";
-import SearchComponent from "../search/SearchComponent";
+import {entity_api_get_entity,entity_api_get_globus_url,entity_api_update_entity} from '../../service/entity_api';
 import {
   ingest_api_allowable_edit_states,
-  ingest_api_create_dataset,
-  ingest_api_dataset_submit,
-  ingest_api_dataset_publish,
-  ingest_api_users_groups,
   ingest_api_allowable_edit_states_statusless,
-  ingest_api_notify_slack
+  ingest_api_create_dataset,
+  ingest_api_dataset_publish,
+  ingest_api_dataset_submit,
+  ingest_api_notify_slack,
+  ingest_api_users_groups
 } from '../../service/ingest_api';
-import {entity_api_update_entity,entity_api_get_globus_url,entity_api_get_entity} from '../../service/entity_api';
-import {ubkg_api_get_assay_type_set,ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
+import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {RevertFeature} from "../../utils/revertModal";
 import {VersionNavigation} from "../../utils/ui_elements";
-import {generateDisplaySubtype, generateDisplaySubtype_UBKG, generateSubtype} from "../../utils/display_subtypes";
+import {validateRequired} from "../../utils/validators";
+import SearchComponent from "../search/SearchComponent";
+import GroupModal from "../uuid/groupModal";
+import Modal from "../uuid/modal";
 
-import {Alert,AlertTitle} from '@material-ui/lab';
+import {Typography} from "@material-ui/core";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import {Alert,AlertTitle} from '@material-ui/lab';
 
 
 class DatasetEdit extends Component {
@@ -99,6 +95,7 @@ class DatasetEdit extends Component {
 
     // Page States 
     showSubmitModal:false,
+    showRevertModal:false,
     badge_class:"badge-purple",
     groups_dataprovider:[],
     GroupSelectShow:false,
@@ -107,6 +104,8 @@ class DatasetEdit extends Component {
     other_dt:"",
     buttonSpinnerTarget:"",
     errorSnack:false,
+    popperOpen:false,
+    anchorEl:null,
     disableSelectDatatype:false,
     toggleStatusSet:false,
     statusSetLabel:"Reset Status",
@@ -411,6 +410,9 @@ class DatasetEdit extends Component {
       buttonSpinnerTarget:""
      });
   };
+  hideRevertModal = () => {
+    this.setState({ showRevertModal:false});
+  };
 
   showErrorMsgModal = (msg) => {
     this.setState({ errorMsgShow:true, statusErrorMsg:msg });
@@ -446,8 +448,8 @@ class DatasetEdit extends Component {
   };
   hideSubmitModal = () => {
     this.setState({showSubmitModal:false});
-  };
-
+  };  
+  
   handleLookUpClick = () => {
     if (!this.state.lookUpCancelled) {
       this.setState({LookUpShow:true});
@@ -475,11 +477,9 @@ class DatasetEdit extends Component {
   }; 
 
   handleInputChange = (e) => {
-    const {
- id, name, value 
-} = e.target;
-console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
-    switch (name) {
+    const {id, name, value} = e.target;
+    console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
+      switch (name) {
       case "lab_dataset_id":
         this.setState({lab_dataset_id:value,});
         break;
@@ -525,6 +525,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
         this.setState({selected_group:value});
         break;
       default:
+        this.setState({name:value});
         break;
     }
   };
@@ -557,6 +558,22 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
         break;
     }
   };
+
+  handlePopoverOpen = (event) => {
+    console.debug('%c◉ handlePopoverOpen ', 'color:#ffe921', event.currentTarget);
+    this.setState({showRevertModal:true});
+    //setAnchorEl(event.currentTarget);
+  };
+
+  handlePopoverClose = () => {
+    console.debug('%c◉ handlePopoverClose ', 'color:#ffe921');
+    this.setState({
+      popperOpen:false,
+      anchorEl:null
+    });
+    // setAnchorEl(null);
+  };
+
 
   handleCollectionClick = (collection) => {
     this.setState({collection:collection,
@@ -972,10 +989,7 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
                 var dataSubmit = {"status":"Submitted"}
                 entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(dataSubmit), JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
-                  // We shouldn't need to check agaisnt Trojan errors hiding in 200s anymore,
-                  // if they appear, file as bugs on returning API
                   console.debug("entity_api_update_entity response", response);
-                  // var portalURL= process.env.REACT_APP_PORTAL_URL+"/browse/dataset/"+this.props.editingDataset.uuid
                   var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
                   var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
                   ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
@@ -1360,15 +1374,11 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     )
   }
 
+
   renderManualStatusControl=()=>{
     return(  
       <div className="mt-1">
-        <Button
-          variant="text"
-          className="mx-1"
-          onClick={this.toggleStatSetView}>
-         {this.state.statusSetLabel}
-        </Button>
+        
         {this.state.toggleStatusSet  && (
           <Button
             variant="contained"
@@ -1451,12 +1461,12 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
     if (this.state.has_admin_priv === true 
             && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
             && this.state.status.toUpperCase() === "PUBLISHED") {
-         return (
-           <div className="buttonWrapRight">
-                {this.reprocessButton()}
-                {this.cancelButton()}
-            </div>
-          )
+        //  return (
+        //    <div className="buttonWrapRight">
+        //         {this.reprocessButton()}
+        //         {this.cancelButton()}
+        //     </div>
+        //   )
     }
     // console.debug("CheckTwo",this.state.writeable === false && this.state.has_version_priv === false);
     if (this.state.writeable === false ){            
@@ -1534,33 +1544,6 @@ console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
       );
     }
   
-
-  renderNewVersionButtons() {
-    /*the entity pointed to for at least one dataset.direct_ancestory_uuids is of type sample (ancestor.entity_type == 'Source')
-    dataset.status == 'Published'
-    user has write access for the dataset.group_uuid/group_name
-    dataset.next_revision_uuid is null (or missing altogether)*/
-  
-    // var sampleSource = this.getSourceAncestorTypes("Sample");  
-    // var datasetStatus = this.props.editingDataset.status === "Published";
-    // var writability = this.state.has_version_priv;
-    // // var latestVersion = (!this.props.editingDataset.next_revision_uuids  ||  this.props.editingDataset.next_revision_uuids[0] === undefined);
-    // if(sampleSource && datasetStatus && writability ){
-    // // if(true===tru  e){
-    //   return (
-    //     <Button variant="contained" sx={{minWidth:"130px"}} onClick={() => this.handleNewVersion()}> 
-    //       {this.state.submitting && (
-    //         <FontAwesomeIcon
-    //           className='inline-icon'
-    //           icon={faSpinner}
-    //           spin
-    //         />
-    //       )}
-    //       {!this.state.submitting && "New Version"}         
-    //     </Button> )
-    // } 
-  }
-
   renderListItem(uuid){
     console.debug('%c◉ data ', 'color:#00ff7b', uuid);
       entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
@@ -2118,27 +2101,39 @@ name, display_doi, doi
 					
 					{/* Make this check admin when finished */}
 					{this.props.allGroups && this.state.has_admin_priv && (
-              <div className="row mt-4  ">
-                <div className='form-group col-6'> 
-                  <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
-                  {this.renderGroupAssignment()}
-                  <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
-                </div>
-                <div className='form-group col-6'> 
-                  <label htmlFor='ingest_task'>Ingest Task </label>
-                  <TextField
-                    labelid="ingest_task_label"
-                    name="ingest_task"
-                    id="ingest_task"
-                    helperText="The next task in the data ingest process."
-                    // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-                    fullWidth
-                    value={this.state.ingest_task}
-                    onChange={(event) => this.handleInputChange(event)}/>
-              
-                </div>
+            <div className="row mt-4  ">
+              <div className='form-group col-6'> 
+                <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
+                {this.renderGroupAssignment()}
+                <FormHelperText>The group responsible for the next step in the data ingest process.</FormHelperText>
               </div>
-            )}
+              <div className='form-group col-6'> 
+                <label htmlFor='ingest_task'>Ingest Task </label>
+                <TextField
+                  labelid="ingest_task_label"
+                  name="ingest_task"
+                  id="ingest_task"
+                  helperText="The next task in the data ingest process."
+                  // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                  fullWidth
+                  value={this.state.ingest_task}
+                  onChange={(event) => this.handleInputChange(event)}/>
+              </div>
+            </div>
+          )}
+
+          {!this.state.has_admin_priv && this.state.assigned_to_group_name && this.state.ingest_task && (
+            <div className="row mt-4  ">
+              <div className='form-group col-6'> 
+                <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
+                <Typography >{this.state.assigned_to_group_name}</Typography>
+              </div>
+              <div className='form-group col-6'> 
+                <label htmlFor='ingest_task'>Ingest Task </label>
+                <Typography >{this.state.ingest_task}</Typography>
+              </div>
+            </div>
+          )}
 
           <div className="col-8">
             {this.state.submit_error && (
@@ -2154,11 +2149,22 @@ name, display_doi, doi
 
           <div className='row'>
             <div className="col-8">
-            {this.state.has_manual_priv && (
-              <>{this.renderManualStatusControl()}</>
-            )}
+            {this.state.has_admin_priv && (
+                <RevertFeature 
+                  uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
+                  type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
+                />
+              )}
+              {/* {this.state.has_admin_priv &&(
+                <BlameFeature
+                  admin={this.state.has_admin_priv}
+                  group={this.props.editingDataset.assigned_to_group_name}
+                  task={this.props.editingDataset.ingest_task}
+                  uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
+                  type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
+                />
+              )} */}
             </div>
-
             <div className="col-4"> 
               {this.renderButtons()}
             </div>
@@ -2191,7 +2197,8 @@ name, display_doi, doi
             </div>
           </div>
         </Modal>
-      {this.renderSubmitModal()}
+
+        
       </React.Fragment>
     );
   }
