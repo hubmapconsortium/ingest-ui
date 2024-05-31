@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {useNavigate} from "react-router-dom";
+// import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
@@ -46,6 +46,7 @@ export function CollectionForm (props){
   var [selectedSource, setSelectedSource] = useState(null);
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
   var [associatedEntities, setassociatedEntities] = useState([]);
+  var [associatedEntitiesInitial, setassociatedEntitiesInitial] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
@@ -60,6 +61,7 @@ export function CollectionForm (props){
   var [loadUUIDList, setLoadUUIDList] = useState(false);
   var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
   var [entityInfo, setEntityInfo] = useState();
+  var [pageError, setPageError] = useState("");
   var [formWarnings, setFormWarnings] = useState({
     bulk_dataset_uuids:""
   });
@@ -105,6 +107,7 @@ export function CollectionForm (props){
           UUIDs.push(entity.uuid);
         }
         formVals.dataset_uuids = UUIDs
+        setassociatedEntitiesInitial(UUIDs)
       }
       if (editingCollection.creators && editingCollection.creators.length > 0) {
         formVals.contributors = editingCollection.creators
@@ -304,8 +307,6 @@ export function CollectionForm (props){
     
   }
 
-
-
   function removeEmpty(obj) {
     return Object.fromEntries(
       Object.entries(obj)
@@ -348,8 +349,8 @@ export function CollectionForm (props){
     }
     // Datasets
     var datasetUUIDs = []
-    associatedEntities.map((row, index) => {
-      datasetUUIDs.push(row.uuid)
+      associatedEntities.map((row, index) => {
+        datasetUUIDs.push(row.uuid)
     })
     console.debug('%c⊙', 'color:#00ff7b', "datasetUUIDs", datasetUUIDs, datasetUUIDs.length );
     if (!datasetUUIDs || datasetUUIDs.length === 0) {
@@ -391,13 +392,31 @@ export function CollectionForm (props){
   const handleSubmit = () => {
     setButtonState("submit");
     var submitForm = validateForm(formValues);
-    console.debug('%c◉ submitForm ', 'color:#00ff7b', );
+    // console.debug('%c◉ submitForm ', 'color:#00ff7b', submitForm);
     setValidatingSubmitForm(submitForm);
-    console.debug('%c⊙', 'color:#00ff7b', "submitForm", submitForm);
+    console.debug('%c⊙ setValidatingSubmitForm', 'color:#00ff7b', submitForm);
+
     if (submitForm!==false) {
       if (editingCollection) {
-        console.debug('%c⊙', 'color:#00ff7b', "Updating");
-        handleUpdate(submitForm);
+        // strip the associated UUIDs if they're the same as before 
+        var startingUUIDs = associatedEntitiesInitial.sort();
+        var forumUUIDs = submitForm.dataset_uuids.sort();
+
+        console.debug('%c◉ associatedEntitiesInitial VS forumUUIDs ', 'color:#00ff7b',startingUUIDs, forumUUIDs, startingUUIDs === forumUUIDs );
+        if(startingUUIDs.toString() === forumUUIDs.toString()){
+          console.debug('%c⊙', 'color:#00ff7b', "SAME");
+          delete submitForm.dataset_uuids
+          // setValidatingSubmitForm((prevValues) => ({
+          //   ...prevValues,
+          //   "dataset_uuids": null 
+          // }));
+          var newSubmitForm = submitForm
+          console.debug('%c◉  newSubmitForm', 'color:#00ff7b', newSubmitForm);
+          handleUpdate(newSubmitForm);
+        }else{
+          handleUpdate(submitForm);
+        }
+        
       } else {
         console.debug('%c⊙', 'color:#00ff7b', "Creating");
         console.debug('%c⊙', 'color:#00ff7b', "Just need the group");
@@ -419,18 +438,22 @@ export function CollectionForm (props){
     
   };
 
-    const handleCreate = (formSubmit) => {
-      entity_api_create_entity("collection", formSubmit, props.authToken)
-        .then((response) => {
-          props.onProcessed(response);
-        })
-        .catch((error) => {
-          console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
-        });
-    }
+  const handleCreate = (formSubmit) => {
+    entity_api_create_entity("collection", formSubmit, props.authToken)
+      .then((response) => {
+        props.onProcessed(response);
+      })
+      .catch((error) => {
+        console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
+        setPageError(error.toString());
+        setButtonState("");
+
+      });
+  }
   
   const handleUpdate = (formSubmit) => {
-      // Need to strip out all blank values
+    // Need to only pass what's changed now
+    console.debug('%c◉ formSubmit ', 'color:#00ff7b',formSubmit );
     entity_api_update_entity(formValues.uuid, formSubmit, props.authToken)
       .then((response) => {
         console.debug('%c⊙', 'color:#00ff7b', "handleUpdate response", response, response.results);
@@ -438,11 +461,15 @@ export function CollectionForm (props){
           // Only move on if we're actually good
           props.onProcessed(response.results);
         } else {
-          console.debug('%c⭗', 'color:#ff005d', "handleUpdate NOT RIGHT", response);
+          console.debug('%c⭗', 'color:#ff005d', "handleUpdate NOT RIGHT", response.results.error);
+          setPageError(response.results.error.toString());
+          setButtonState("");
         }
       })
       .catch((error) => {
         console.debug('%c⭗', 'color:#ff005d', "handleUpdate error", error);
+        setPageError(error.toString());
+        setButtonState("");
       });
     }
 
@@ -546,7 +573,7 @@ export function CollectionForm (props){
       var columnFilters = buildColumnFilter(hiddenFields)
 
       return (
-        <div style={{ width:"100%", maxHeight: 340, padding:"10px 0" }}>
+        <div style={{ width:"100%", maxHeight: "340px", overflowX:"auto", padding:"10px 0" }}>
           <DataGrid
             columnVisibilityModel={columnFilters}
             className='associationTable w-100'
@@ -556,19 +583,20 @@ export function CollectionForm (props){
             hideFooterPagination={true}
             hideFooterSelectedRowCount
             rowCount={associatedEntities.length}
+            // rowHeight={45}
             onCellClick={handleEvent}
             loading={!associatedEntities.length > 0 && !isNew}
             sx={{
-              display: 'inline-block',
-              overflow: 'auto',
-              '.MuiDataGrid-virtualScroller': {
-                minHeight: '45px',
-                // overflow: 'scroll',
-              },
-              '.MuiDataGrid-main > div:nth-child(2)': {
-                // overflowY: 'auto !important',
-                // flex: 'unset !important',
-              },
+              // display: 'inline-block',
+              // // overflow: 'auto',
+              // '.MuiDataGrid-virtualScroller': {
+              //   minHeight: '45px',
+              //   // overflow: 'scroll',
+              // },
+              // '.MuiDataGrid-main > div:nth-child(2)': {
+              //   // overflowY: 'auto !important',
+              //   // flex: 'unset !important',
+              // },
             }}
           />
         </div>
@@ -850,6 +878,14 @@ export function CollectionForm (props){
           </div>
         </FormControl>
 
+        {pageError.length > 0 && (
+          <div className="row">
+              <Alert variant="filled" severity="error">
+                <strong>Error:</strong> {pageError}
+              </Alert>
+          </div>
+        )}
+
         <div className="row">
           <div className="buttonWrapRight">
             <Button
@@ -877,6 +913,7 @@ export function CollectionForm (props){
             </Button>
           </div>
         </div>
+
         <GroupModal
           show={openGroupModal}
           groups={dataGroups}
