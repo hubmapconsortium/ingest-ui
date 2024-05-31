@@ -63,82 +63,80 @@ export const RevertFeature = (props) => {
       .catch((error) => {
         console.debug('%c◉ ERROR ', 'color:#ff005d', error);
       });
-    }
+  }
   
 
-    return (
-      <>
-        <ReactTooltip
-          id='revert_tooltip'
-          className='zindex-tooltip revertTooltip'
-          place='top'
-          variant='light'
-          border="#000000"
-          effect='solid'>
-          <p sx={{ color: "black!important", maxWidth: "160px", fontSize:"inherent"}}>
-            Revert this <span sx={{color:'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
-        </ReactTooltip>
-        <Button variant="outlined" onClick={() => handleClickOpen()} data-tip data-for='revert_tooltip'> Revert </Button>
-        <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open}>
-          <React.Fragment>
-            <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-              Select {type} Status
-            </DialogTitle>
-            <IconButton
-              aria-label="close"
-              onClick={handleClose}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-              }}>
-              <CloseIcon />
-            </IconButton>
-            <DialogContent dividers>
-              {revertErrorAlert && (
-                <Alert severity="error" >
-                  <AlertTitle sx={{width: "auto",float: "left",marginRight: "10px",height:"95%"}}>Error: </AlertTitle>
-                  {revertError}
-                </Alert>
-              )}
-              <Typography >
-                Choose a status to revert this <span className="text-da nger">{type}</span> to, then click [Revert] to apply your changes
-              </Typography>
-              
-              <FormControl sx={{ m: 1, width: "100%" }}>
-                <Select
-                  id="revert-status"
-                  value={RStatus}
-                  onChange={handleChange}>
-                <MenuItem value="">
-                    <em>None</em>
-                </MenuItem>
-                <MenuItem value={"New"}>New</MenuItem>
-                <MenuItem value={"Valid"}>Valid</MenuItem>
-                <MenuItem value={"Invalid"}>Invalid</MenuItem>
-                <MenuItem value={"Qa"}>Qa</MenuItem>
-                <MenuItem value={"Submitted"}>Submitted</MenuItem>
-                <MenuItem value={"Incomplete"}>Incomplete</MenuItem>
-                </Select>
-              </FormControl>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                className="btn btn-primary mr-1"
-                onClick={handleClose}>
-                Close
-              </Button>
-              <LoadingButton
-                className=""
-                loading={submittingUpdate}
-                onClick={(e) => handleStatusSet(e) }
-                variant="outlined">
-                Revert
-              </LoadingButton>          
-            </DialogActions>
-          </React.Fragment>s
-        </Dialog>
-      </>
-    );
+  return (
+    <>
+      <ReactTooltip
+        id='revert_tooltip'
+        className='zindex-tooltip revertTooltip'
+        place='top'
+        variant='light'
+        border="#000000"
+        effect='solid'>
+        <p sx={{ color: "black!important", maxWidth: "160px", fontSize:"inherent"}}>
+          Revert this <span sx={{color:'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
+      </ReactTooltip>
+      <Button variant="outlined" onClick={() => handleClickOpen()} data-tip data-for='revert_tooltip'> Revert </Button>
+      <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open}>
+        <React.Fragment>
+          <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+            Select {type} Status
+          </DialogTitle>
+          <IconButton
+            aria-label="close"
+            onClick={handleClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+            }}>
+            <CloseIcon />
+          </IconButton>
+          <DialogContent dividers>
+            {revertErrorAlert && (
+              <Alert severity="error" >
+                <AlertTitle sx={{width: "auto",float: "left",marginRight: "10px",height:"95%"}}>Error: </AlertTitle>
+                {revertError}
+              </Alert>
+            )}
+            <Typography >
+              Choose a status to revert this <span className="text-da nger">{type}</span> to, then click [Revert] to apply your changes
+            </Typography>
+            
+            <FormControl sx={{ m: 1, width: "100%" }}>
+              <Select
+                id="revert-status"
+                value={RStatus}
+                onChange={handleChange}>
+              <MenuItem value=""></MenuItem>
+              <MenuItem value={"New"}>New</MenuItem>
+              <MenuItem value={"Valid"}>Valid</MenuItem>
+              <MenuItem value={"Invalid"}>Invalid</MenuItem>
+              <MenuItem value={"QA"}>QA</MenuItem>
+              <MenuItem value={"Submitted"}>Submitted</MenuItem>
+              <MenuItem value={"Incomplete"}>Incomplete</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              className="btn btn-primary mr-1"
+              onClick={handleClose}>
+              Close
+            </Button>
+            <LoadingButton
+              className=""
+              loading={submittingUpdate}
+              onClick={(e) => handleStatusSet(e) }
+              variant="outlined">
+              Revert
+            </LoadingButton>          
+          </DialogActions>
+        </React.Fragment>
+      </Dialog>
+    </>
+  );
   
 }
