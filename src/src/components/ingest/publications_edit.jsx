@@ -1677,9 +1677,9 @@ class PublicationEdit extends Component {
     return (
       <div className="buttonWrapRight">
         {this.renderButtonOverlay()}
-        {pubCheck && versCheck && latestCheck && (
+        {/* {pubCheck && versCheck && latestCheck && (
           <>{this.renderNewVersionButtons()}</>
-        )}
+        )} */}
         {(subCheck || newStateCheck) && adminCheck && latestCheck && (
           <>{this.processButton()}</>
         )}
@@ -2012,7 +2012,7 @@ class PublicationEdit extends Component {
                   18 identifiers specified by HIPAA
                 </span>
               </Alert>
-              {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
+              {/* {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
                   <>{this.renderVersionNav()}</>
               )}
               {this.state.versioned && (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
@@ -2026,7 +2026,7 @@ class PublicationEdit extends Component {
                     <Skeleton variant="rounded"  height={60} />
                   </Grid>
                 </Grid>
-              )}
+              )} */}
 
               {this.props.editingPublication &&
                 this.props.editingPublication.upload &&

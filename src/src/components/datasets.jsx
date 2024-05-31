@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef  } from "react";
+import React, { useEffect, useState, useRef, useContext  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
 import { ubkg_api_get_assay_type_set } from "../service/ubkg_api";
@@ -8,12 +8,13 @@ import {useLocation } from 'react-router'
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import Result from "./uuid/result";
+import { HuBMAPContext } from "./hubmapContext";
 
 
 export const RenderDataset = (props) => {
   const previousValue = useRef(null);
   let navigate = useNavigate();
-
+  const { allGroups } = useContext(HuBMAPContext);
   var [newEntity, setNewEntity] = useState(null);
   var [newResult, setNewResult] = useState(null);
   var [newVersionShow, setNewVersionShow] = useState(false);
@@ -42,8 +43,10 @@ export const RenderDataset = (props) => {
 
 
   var checkAssay = [];
+  console.debug('%c◉ allGroups ', 'color:#2f00ff', allGroups);
   useEffect(() => {
-    
+    // console.debug('%c◉ MINEallGroups ', 'color:#00ff7b', allGroups);
+
     var authSet = JSON.parse(localStorage.getItem("info"));
     setAuthToken(authSet);
   
@@ -72,8 +75,8 @@ export const RenderDataset = (props) => {
                 // delete newEnt.next_revision_uuids;
                 // If we have versions in original single string format,
                 // lets bundle into an array
-                if(newEnt.next_revision_uuid && ! newEnt.next_revision_uuids){newEnt.next_revision_uuids = [newEnt.next_revision_uuid];}
-                if(newEnt.previous_revision_uuid && ! newEnt.previous_revision_uuids){newEnt.previous_revision_uuids = [newEnt.previous_revision_uuid];}
+                // if(newEnt.next_revision_uuid && ! newEnt.next_revision_uuids){newEnt.next_revision_uuids = [newEnt.next_revision_uuid];}
+                // if(newEnt.previous_revision_uuid && ! newEnt.previous_revision_uuids){newEnt.previous_revision_uuids = [newEnt.previous_revision_uuid];}
                 
                 setEntity(newEnt);
                 setIsLoadingEntity(false); 
@@ -81,11 +84,15 @@ export const RenderDataset = (props) => {
                 checkAssayType(checkAssay)
                 document.title = ("HuBMAP Ingest Portal | Dataset: "+newEnt.hubmap_id +"" );
               }
+            }else{
+              console.debug("NON 200",  response.status, response.data);
+              passError(response.status, response.data);
+              setIsLoadingEntity(false);
             }
           })  
           .catch((error) => {
             console.debug("fetchEntity Error", error);
-            props.reportError(error);
+            passError(error.status, error.results.error );
             setIsLoadingEntity(false);
           }); 
     };

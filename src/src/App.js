@@ -1,36 +1,36 @@
 import * as React from "react";
-import {useState,useEffect,useCallback} from "react";
-import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
-
-import StandardErrorBoundary from "./utils/errorWrap";
-import ErrorPage from "./utils/errorPage";
-import Login from './components/ui/login';
+import {useEffect,useState} from "react";
+import {Route,Routes,useLocation,useNavigate} from "react-router-dom";
+import {HuBMAPContext} from "./components/hubmapContext";
 import Timer from './components/ui/idle';
+import Login from './components/ui/login';
+import ErrorPage from "./utils/errorPage";
+import StandardErrorBoundary from "./utils/errorWrap";
 
 import LinearProgress from '@mui/material/LinearProgress';
 
+import {Alert} from '@material-ui/lab';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
-import {Alert} from '@material-ui/lab';
+import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
+import Typography from '@mui/material/Typography';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
+import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
-import {ingest_api_users_groups,ingest_api_all_groups} from './service/ingest_api';
+import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
@@ -41,21 +41,20 @@ import {Navigation} from "./Nav";
 
 import Result from "./components/uuid/result";
 
-import {RenderDonor} from "./components/donors";
+import {RenderCollection} from "./components/collections";
 import {RenderDataset} from "./components/datasets";
+import {RenderDonor} from "./components/donors";
+import {RenderMetadata} from "./components/metadata";
+import {RenderPublication} from "./components/publications";
 import {RenderSample} from "./components/samples";
 import {RenderUpload} from "./components/uploads";
-import {RenderPublication} from "./components/publications";
-import {RenderCollection} from "./components/collections";
-import {RenderMetadata} from "./components/metadata";
 
 import {RenderBulk} from "./components/bulk";
 
-import SearchComponent from './components/search/SearchComponent';
-import Forms from "./components/uuid/forms";
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import {keys} from "@material-ui/core/styles/createBreakpoints";
+import SearchComponent from './components/search/SearchComponent';
+import Forms from "./components/uuid/forms";
 
 
 export function App (props){
@@ -230,6 +229,7 @@ export function App (props){
   
   
   function clearAuths() {  
+    console.debug('%c◉ CLEAR AUTHS ', 'color:#00ff7b', );
     if(process.env.REACT_APP_URL == "http://localhost:8585"){
       console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
       return new Promise((resolve) => {
@@ -244,6 +244,7 @@ export function App (props){
 
   function Logout(){
     clearAuths().then((response) => {
+      console.debug('%c◉  response', 'color:#00ff7b',response );
         window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
       })
   };
@@ -469,108 +470,109 @@ export function App (props){
               console.error(error);
               console.error(errorInfo);
             }}>
-            <Paper className="px-5 py-4">
-
-
-
-            <Routes>
-
-              
-              
-              <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
-              <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-              <Route path="/login" element={<Login />} />
-              
-              {authStatus && (!userDataGroups || userDataGroups.length === 0) && !isLoading && (
-                <Route path="/new/*" element={ 
-                  <Alert 
-                    variant="filled"
-                    severity="error"
-                     action={
-                      <Button 
-                        color="inherit"
-                        size="large"
-                        onClick={() => {window.history.back()}}>
-                        Cancel
-                      </Button>
-                    }>
-                    You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group
-                  </Alert>
-                  }/>
+            
+            <HuBMAPContext.Provider value={{allGroups }}> 
+            
+              <Paper className="px-5 py-4">
+                <Routes>
 
                   
-              )}
-              
-              {authStatus && (userDataGroups && userDataGroups.length > 0) && !isLoading && (allGroups && allGroups.length > 0) && (
-                <Route path="/new">
-                  <Route index element={<SearchComponent reportError={reportError} />} />
-                  <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                  <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                  <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                  <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                  <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                  <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                  <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
                   
-                  {/* {userDev && (
-                    <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                  <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+                  <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
+                  <Route path="/login" element={<Login />} />
+                  
+                  {authStatus && (!userDataGroups || userDataGroups.length === 0) && !isLoading && (
+                    <Route path="/new/*" element={ 
+                      <Alert 
+                        variant="filled"
+                        severity="error"
+                        action={
+                          <Button 
+                            color="inherit"
+                            size="large"
+                            onClick={() => {window.history.back()}}>
+                            Cancel
+                          </Button>
+                        }>
+                        You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group
+                      </Alert>
+                      }/>
+
+                      
                   )}
-                  {!userDev && (
-                    <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                  )} */}
-                </Route>
-              )}
-              <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
-              <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
-              <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-              <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
-              <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
-              
-              <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-              <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
-              <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
-              <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-              <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={userDataGroups} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                  
+                  {authStatus && (userDataGroups && userDataGroups.length > 0) && !isLoading && (allGroups && allGroups.length > 0) && (
+                    <Route path="/new">
+                      <Route index element={<SearchComponent reportError={reportError} />} />
+                      <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                      <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                      <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
+                      <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                      <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                      <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
+                      
+                      {/* {userDev && (
+                        <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                      )}
+                      {!userDev && (
+                        <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                      )} */}
+                    </Route>
+                  )}
+                  <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
+                  <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
+                  <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
+                  <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
+                  <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
+                  
+                  <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+                  <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+                  <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
+                  <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
+                  <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                  <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={userDataGroups} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
-              <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
-              <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
-              <Route path="/metadata">
-                <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
-                <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
-                <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
-                <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
-              </Route>
-            </Routes>
+                  <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
+                  <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+                  <Route path="/metadata">
+                    <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
+                    <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
+                    <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
+                    <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
+                  </Route>
+                </Routes>
 
-          <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
-            <DialogContent> 
-            {newEntity && (
-                <Result
-                  result={{entity:newEntity}}
-                  onReturn={onCloseSuccess}
-                  onCreateNext={null}
-                  entity={newEntity}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-          <Snackbar 
-            open={showSnack} 
-            onClose={() => setShowSnack(false)}
-            anchorOrigin={{vertical:  'bottom',
-              horizontal:'right',}}
-            autoHideDuration={6000} 
-            action={
-              <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
-                  <FontAwesomeIcon icon={faTimes} size="1x" />
-              </IconButton>
-            }>
-              <Alert severity={"success"}>{snackMessage}</Alert>
-          </Snackbar>  
+                <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+                  <DialogContent> 
+                  {newEntity && (
+                      <Result
+                        result={{entity:newEntity}}
+                        onReturn={onCloseSuccess}
+                        onCreateNext={null}
+                        entity={newEntity}
+                      />
+                    )}
+                  </DialogContent>
+                </Dialog>
+                <Snackbar 
+                  open={showSnack} 
+                  onClose={() => setShowSnack(false)}
+                  anchorOrigin={{vertical:  'bottom',
+                    horizontal:'right',}}
+                  autoHideDuration={6000} 
+                  action={
+                    <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
+                        <FontAwesomeIcon icon={faTimes} size="1x" />
+                    </IconButton>
+                  }>
+                    <Alert severity={"success"}>{snackMessage}</Alert>
+                </Snackbar>  
 
-        </Paper>
-        </StandardErrorBoundary>
+              </Paper>
+            </HuBMAPContext.Provider>
+          </StandardErrorBoundary>
       )}
   </div>
   </div>

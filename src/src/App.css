@@ -899,3 +899,10 @@ svg.invalid {
   border-color: #454d55;
   color:#fff;
 }
+#revert_tooltip{
+  background-color: #fff!important;
+  color: black!important;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: inherit!important;
+}
