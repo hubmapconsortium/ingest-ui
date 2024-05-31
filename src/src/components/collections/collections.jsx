@@ -865,6 +865,9 @@ export function CollectionForm (props){
             <>{renderContribTable()} </>
           )}
 
+          <div className="text-right">
+            <Typography variant='caption'>Please reffer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
+          </div>
           <div className="text-left">
             <label>
               <input
