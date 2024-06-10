@@ -83,38 +83,27 @@ export const RenderMetadata = (props) => {
   };
 
 
-  // async function processItems() {
-  //   let result = 0
-  //   for (const item of items) {
-      
-  //   }
-  //   console.log('All items processed');
+  // const attachmentResults = () => {
+  //   console.debug('%c◉ attachmentResults ', 'color:#00ff7b');
+  //   attachMetadata()
+  //   .then((fails) => {
+  //     console.debug('%c◉ Returned fails from atatchMetadata ', 'color:#00ff7b', fails);
+  //     if(fails.length === 0){
+  //       setActiveStep(5);
+  //     }else{
+  //       console.debug('%c◉ Fails.length over 0 ', 'color:#00ff7b', fails.length);
+  //       setActiveStep(4);
+  //     }
+  //   })
+  //   .catch((error) => {
+  //     console.debug('%c⭗', 'color:#ff005d', 'Error', error);
+  //   });
   // }
-
-  const attachmentResults = () => {
-    console.debug('%c◉ attachmentResults ', 'color:#00ff7b');
-
-    //var result = attachMetadata();
-    //console.debug('%c◉ result ', 'color:#00ff7b', result);
-    attachMetadata()
-    .then((fails) => {
-      console.debug('%c◉ Returned fails from atatchMetadata ', 'color:#00ff7b', fails);
-      if(fails.length === 0){
-        setActiveStep(5);
-      }else{
-        console.debug('%c◉ Fails.length over 0 ', 'color:#00ff7b', fails.length);
-        setActiveStep(4);
-      }
-    })
-    .catch((error) => {
-      console.debug('%c⭗', 'color:#ff005d', 'Error', error);
-    });
-  }
 
 
   const attachMetadata = () => {
     console.debug('%c◉ attachMetadata ', 'color:#00ff7b');
-    return new Promise((resolve, reject) => {
+    // return new Promise((resolve, reject) => {
       setAttaching(true)
       let passes = []
       let fails = []
@@ -132,7 +121,12 @@ export const RenderMetadata = (props) => {
             console.debug('%c◉ resp ', 'color:#7b57ff', resp);
             if (!resp.error){
               console.debug('%c◉ No Error Found ', 'color:#00ff7b', );
-              passes.push(resp.results.message)
+              // passes.push(resp.results.message)
+              passes.push({
+                status:"success",
+                row:  thisRow.metadata['file_row'],
+                message: resp.results.message||resp
+              })
               setAttachedMetadata(attachedMetadata => [...attachedMetadata, resp.results.message])
               // setActiveStep(5);
               // setAttachedMetadata(passes);
@@ -140,11 +134,13 @@ export const RenderMetadata = (props) => {
               console.debug('%c◉ Attach fail ', 'color:#ffe921',resp.error.response.data );
               setActiveStep(4);
               fails.push({
+                status:"failed",
                 row:  thisRow.metadata['file_row'],
                 error: resp.error.response.data||resp
               })
-              var errorTable = getErrorList(resp.error.response.data||resp)
+              var errorTable = fails;
               setIssues(resp.error.response.data);
+              setIssues(resp.error);
               setFailed(1);
               setFailedStep(3);
               console.debug('%c◉ errorTable ', 'color:#ffe921', errorTable);
@@ -157,8 +153,8 @@ export const RenderMetadata = (props) => {
         row++ 
       }
       console.debug('%c◉ Resolving fails... ', 'color:#00ff7b', fails);
-      resolve(fails);
-    });
+      // resolve(fails);  
+    // });
   
 
   }
@@ -350,7 +346,7 @@ const introText = () =>{
             size='large'
             variant="contained" 
             startIcon={<FilePresentIcon />} 
-            onClick={() => attachmentResults()}>
+            onClick={() => attachMetadata()}>
             Attach Metadata 
           </Button>
         </Grid>
@@ -362,6 +358,8 @@ const introText = () =>{
         </Grid>
       </Grid>
     )}
+
+    
     {activeStep ===3 && isAttaching && (
       <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
         <Grid container alignItems="flex-start" xs={2}>
@@ -414,125 +412,121 @@ const introText = () =>{
     )}
 
 
-    {/* Val Fail */}
+    {/* Val Results */}
     {activeStep ===4 && (
-      <>
-      <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
-        <Grid container alignItems="flex-start" xs={2}>
-        <Button 
-            sx={{
-              padding:"1.5em",
-              fontSize: '1.1em',
-            }}
-            color="error"
-            fullWidth
-            size='large'
-            variant="contained" 
-            startIcon={<RestorePageIcon />} 
-            onClick={() => handleReset()}>
-            Try again
-          </Button>
-            
-        </Grid>
-        <Grid xs={10}>
+      <> 
+
+      {isAttaching && (
+        <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
+          <Grid xs={10} container alignItems="flex-start">
             <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
-              There were some prolems with your upload. <br />
-              Please review the error table below and try again. <br />
+              Attaching Metadata now <br />
+              This step could take a few moments. <br />
+              Please do not refresh, close, or leave the page until the process is completed
             </Typography>
-        </Grid>
-      </Grid>    
-      
-      {/* <InvalidTable type={props.type} data={issues} /> */}
-      
-      <DataTable
-        sx={{
-          border: '1px solid #ff0000',
-        }}
-        columns={
-          [{
-              "name": "Row",
-              "sortable": true,
-              "width": "100px",
-              "style": {backgroundColor: '#fdebed',},
-              "selector": row => row.row,
-              "format": (row) => {
-                console.debug('%c◉ row: ', 'color:#ff39c7', row);
-                return <span>{row.row}</span>
-              }
+          </Grid>
+        </Grid>   
+      )}
 
-            },{
-              "name": "Error",
-              "sortable": true,
-              "style": {backgroundColor: '#fdebed'},
-              "selector": row => row.error,
-              "format": (row) => {
-                // If its a simple attachment error, let's get that out of the way 
-                console.debug('%c◉ error type info ', 'color:#ffe921', typeof row);
-                if(typeof row.error === 'string' && row.error.indexOf("error: ") === 0){
-                  // we're likely a API error not a CEDAR error
-                  return <span>{row.error}</span>
-                  // return <span dangerouslySetInnerHTML={{__html: urlify(row)}} />
+      {attachedMetadata.length > 0 && (<> 
+        <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+          The following attachments were successful:
+        </Typography>
+        <DataTable
+          columns={
+            [{" name": "Message",
+                "sortable": true,
+                "selector": row => row,
+              }]
+          }
+          className='attachedMetadata'
+          customStyles={attachedStyles}
+          data={attachedMetadata}
+          pagination />
+        <br />
+      </>)}
+      
+      {table.data.length > 0 && (<> 
+        <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+          The following attachments were <span sx={{color:"red",fontWeight:800 }}>unsuccessful</span>:
+        </Typography>
+        <DataTable
+          sx={{
+            border: '1px solid #ff0000',
+          }}
+          columns={
+            [{
+                "name": "Row",
+                "sortable": true,
+                "width": "100px",
+                // "style": {backgroundColor: '#fdebed',},
+                "selector": row => row.row,
+                "format": (row) => {
+                  console.debug('%c◉ row: ', 'color:#ff39c7', row);
+                  return <span>{row.row}</span>
                 }
-                  // let err = handleErrorRow(row)
-                  // When it's from Cedar it has off wrapping & comes back deeply nested
-                  var d = '"'
-                  var dSharp = '`'
-                  const valType = typeof row
-                  const formatError = (val) => val.replaceAll(' '+d, ' <code>').replaceAll(' "', ' <code>').replaceAll(d, '</code>').replaceAll('"', '</code>')
-                  const formatErrorSharp = (val) => val.replaceAll(dSharp, '\'')
-                  // const formatErrorOf = (val) => val.substr()
-                  if(row.error){
-                    var rowErr = formatError(row.error)
-                    rowErr = formatErrorSharp(rowErr)
-                    // console.debug('%c◉ rowErr.indexOf("of ") ', 'color:#00ff7b', rowErr.indexOf("of "));
-                    if(rowErr.indexOf("of ") === 0){
-                      rowErr = rowErr.slice(3)
-                    }
-                    return <span dangerouslySetInnerHTML={{__html: urlify(rowErr)}} />
-                  }else{
-                    return <span dangerouslySetInnerHTML={{__html: urlify(row)}} />
+
+              },{
+                "name": "Result",
+                "sortable": true,
+                // "style": {backgroundColor: '#fdebed'},
+                "selector": row => row.error || row.error,
+                "format": (row) => {
+                  // If its a simple attachment error, let's get that out of the way 
+                  console.debug('%c◉ error type info ', 'color:#ffe921', typeof row);
+                  if(typeof row.error === 'string' && row.error.indexOf("error: ") === 0){
+                    // we're likely a API error not a CEDAR error
+                    return <span>{row.error}</span>
+                    // return <span dangerouslySetInnerHTML={{__html: urlify(row)}} />
                   }
-                  
+                    // let err = handleErrorRow(row)
+                    // When it's from Cedar it has off wrapping & comes back deeply nested
+                    var d = '"'
+                    var dSharp = '`'
+                    const valType = typeof row
+                    const formatError = (val) => val.replaceAll(' '+d, ' <code>').replaceAll(' "', ' <code>').replaceAll(d, '</code>').replaceAll('"', '</code>')
+                    const formatErrorSharp = (val) => val.replaceAll(dSharp, '\'')
+                    // const formatErrorOf = (val) => val.substr()
+                    if(row.error){
+                      var rowErr = formatError(row.error)
+                      rowErr = formatErrorSharp(rowErr)
+                      // console.debug('%c◉ rowErr.indexOf("of ") ', 'color:#00ff7b', rowErr.indexOf("of "));
+                      if(rowErr.indexOf("of ") === 0){
+                        rowErr = rowErr.slice(3)
+                      }
+                      return <span dangerouslySetInnerHTML={{__html: urlify(rowErr)}} />
+                    }else{
+                      return <span dangerouslySetInnerHTML={{__html: urlify(row)}} />
+                    }
+                    
+                }
               }
-            }
-          ]
-        }
-        className='metadataHasError'
-        data={table.data}
-        pagination />
+            ]
+          }
+          className='metadataHasError'
+          data={table.data}
+          pagination />
+      </>)}
 
-      <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
-        The following attachments were successful:
-      </Typography>
-      <DataTable
-        columns={
-          [{" name": "Message",
-              "sortable": true,
-              "selector": row => row,
-            }]
-        }
-        className='attachedMetadata'
-        customStyles={attachedStyles}
-        data={attachedMetadata}
-        pagination />
-      <br />
+      {issues.length > 0 && (<> 
+        <Alert variant='filled' severity='error'>
+        <Button size='small' variant='link' onClick={() => {setWarningOpen(!warningOpen)}} >View Full Error Response &gt;&gt; </Button>
+          <Collapse in={warningOpen}>
+              {prettyObject(issues)}
+          </Collapse>
+            
+        </Alert>
+      </>)}
 
-      <Alert variant='filled' severity='error'>
-      <Button size='small' variant='link' onClick={() => {setWarningOpen(!warningOpen)}} >View Full Error Response &gt;&gt; </Button>
-        <Collapse in={warningOpen}>
-            {prettyObject(issues)}
-        </Collapse>
-          
-      </Alert>
-      </>
-    )}
-    </>
-)}
+
+    </>)}
+
+  </>)}
 
 
 var targetBranch ="master";
 var targetFile = (props.type).slice(0, -1).toLowerCase()
-const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/"+targetBranch+"/src/src/assets/Documents/example-"+targetFile+"-registrations.tsv"
+const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv"
   return (
         <div className="row">
           <h4>{toTitleCase(props.type)} Metadata Upload</h4>
