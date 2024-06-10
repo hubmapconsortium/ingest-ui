@@ -45,8 +45,13 @@ export const getErrorList = (details) => {
     console.debug('%c⊙ getErrorList', 'color:#00ff7b', details);
     let data = []
     try {
-        let {code, description} = details
-        const keyedErrors = description['Preflight'] || description['Validation Errors'] || description['URL Errors'] || description['Request Errors']
+        let {code, description, name} = details
+        let keyedErrors
+        if(description){
+            keyedErrors = description['Preflight'] || description['Validation Errors'] || description['URL Errors'] || description['Request Errors']
+        }else{
+            keyedErrors = name
+        }
         const errorMessageFormat = (err) => {
             let results = []
             if (typeof err === 'object') {
@@ -59,7 +64,7 @@ export const getErrorList = (details) => {
             console.debug('%c⊙ errorMessageFormat', 'color:#00ff7b', results );
             return results
         }
-        let err = keyedErrors ? keyedErrors : description
+        let err = keyedErrors ? keyedErrors : details
         console.debug('%c⊙err keyedErrors check', 'color:#00ff7b', err );
         if (Array.isArray(err)) {
             if (err.length) {
