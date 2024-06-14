@@ -155,25 +155,13 @@ export const RenderMetadata = (props) => {
           // setAttaching(false);
 
         row++ 
-        // console.debug('%c◉ row  ', 'color:#00ff7b', row);
         if(row === validatedMeta[0].length){
-        //   console.debug('%c◉ DOEN PROCESSING ', 'color:#00ff7b', );
-        //   if(fails.length > 0){
-        //     console.debug('%c◉ fails ', 'color:#00ff7b', fails);
-        //     console.debug('%c◉ attachmentFails ', 'color:#00ff7b', attachmentFails);
-        //     setTable(fails)
-        //     setFailedStep(3);
-        //     setAttaching(false);
-        //   }
-          setProcessed(true);
+          setTimeout(() => {
+            setProcessed(true);
+          }, 3000);
+          
         }
       }
-
-      
-      // resolve(fails);  
-    // });
-  
-
   }
 
 function getColNames() {
@@ -217,6 +205,7 @@ function getColNames() {
           var err = resp.error.response.data
           let cleanErr;
           var outerDetails = Object.keys(resp.error.response.data.description)[0];
+          console.debug('%c◉ outerDetails ', 'color:#00ff7b', outerDetails);
           if(outerDetails==="CEDAR Validation Errors" ){
             var innerDetails = Object.values(resp.error.response.data.description)[0];
             var innerVals =Object.values(innerDetails)[0];
@@ -235,11 +224,13 @@ function getColNames() {
           setFailedStep(2);
           setActiveStep(4);
           setTable(errorTable)
+          setProcessed(true);
           // handleUploadError(valErrors)
         }
       })
       .catch((error) => {
         console.debug('%c⭗', 'color:#ff005d', 'Error', error,error.description);
+        setProcessed(true);
       });
   };
 
@@ -434,16 +425,21 @@ const introText = () =>{
     {activeStep ===4 && (
       <> 
 
+
       {!processed && (
         <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
-          <Grid xs={10} container alignItems="flex-start">
+          <Grid container alignItems="flex-start" xs={2}>
+            <GridLoader color="#444a65" size={23} loading={true} />
+            <GridLoader color="#444a65" size={23} loading={true} />
+          </Grid>
+          <Grid xs={10}>
             <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
               Attaching Metadata now <br />
               This step could take a few moments. <br />
               Please do not refresh, close, or leave the page until the process is completed
             </Typography>
           </Grid>
-        </Grid>   
+        </Grid>
       )}
 
       {attachedMetadata.length > 0 && (<> 
@@ -476,9 +472,7 @@ const introText = () =>{
         <br />
       </>)}
       
-      
-      
-      {attachmentFails.length > 0 && (<> 
+      {(attachmentFails.length > 0 || (table.data && table.data.length >0 ) ) && (<> 
         <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
         <span style={{color:"red",fontSize:"1.5em"}}><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1,color:"red",fontSize:"1.5em"}}/> Warning </span>The following attachments were <span sx={{color:"red",fontWeight:800 }}>unsuccessful</span>:
         </Typography>
@@ -535,7 +529,7 @@ const introText = () =>{
             ]
           }
           className='metadataHasError'
-          data={ activeStep > 2 ? attachmentFails : table.data}
+          data={ !table.data ? attachmentFails : table.data}
           pagination />
       
       </>)}
