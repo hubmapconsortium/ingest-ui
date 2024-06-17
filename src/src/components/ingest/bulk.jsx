@@ -1067,7 +1067,7 @@ renderFileGrabber = () =>{
     var targetBranch ="master";
     var targetFile = (this.props.bulkType).slice(0, -1).toLowerCase()
     const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/"+targetBranch+"/src/src/assets/Documents/example-"+targetFile+"-registrations.tsv"
-    const docs ="https://software.docs.hubmapconsortium.org/bulk-registration/"+this.props.bulkType.toLowerCase().slice(0, -1)+"-bulk-reg.html"
+    const docs ="https://docs.hubmapconsortium.org/bulk-registration/"+this.props.bulkType.toLowerCase().slice(0, -1)+"-bulk-reg.html"
     return (
       <>
         <div className="col-sm-12">
