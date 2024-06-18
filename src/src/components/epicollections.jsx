@@ -3,7 +3,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { useParams } from "react-router-dom";
 import { entity_api_get_entity} from '../service/entity_api';
 import {ErrBox} from "../utils/ui_elements";
-import { CollectionForm } from "./collections/collections"
+import { EPICollectionForm } from "./collections/epicollections"
 import { ingest_api_allowable_edit_states} from "../service/ingest_api";
 import {useNavigate} from "react-router-dom";
 
@@ -97,7 +97,7 @@ export const RenderEPICollection = (props) => {
     }else{
       return (
         <div>
-          <CollectionForm 
+          <EPICollectionForm 
             // packed={searchWrapper}
             authToken={authToken}
             handleCancel={() => props.handleCancel()} 

@@ -42,7 +42,7 @@ import {Navigation} from "./Nav";
 import Result from "./components/uuid/result";
 
 import {RenderCollection} from "./components/collections";
-import RenderEPICollection from "./components/epicollections";
+import {RenderEPICollection} from "./components/epicollections";
 import {RenderDataset} from "./components/datasets";
 import {RenderDonor} from "./components/donors";
 import {RenderMetadata} from "./components/metadata";

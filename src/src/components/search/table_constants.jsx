@@ -178,6 +178,34 @@ export const COLUMN_DEF_UPLOADS = [
 ];
 
 
+// COLLECTIONS  COLUMNS
+export const COLUMN_DEF_EPICOLLECTIONS = [
+  { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
+  { field: 'group_name', headerName: 'Group Name', width: 200},
+  { field: "statusAccess",
+    width: 180,
+    headerName: "Status / Access Level",
+    sortable: false,
+    valueGetter: getStatusAccess,
+    renderCell: renderStatusAccess
+  }, 
+  { field: "uuid",
+    headerName: "Action",
+    sortable: false,
+    renderCell: (params: ValueFormatterParams) => (
+      <div sx={{width:"100%"}} className="actionButton" data-target={params.row.uuid} >
+        <FontAwesomeIcon
+          className='inline-icon interaction-icon'
+          icon={faTrash}
+          color="red"
+          // onClick={() => sourceRemover(row, index)}
+        />
+    </div>
+   ), 
+  }, 
+];
+
+
 // MIXED TYPE COLUMNS
 export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},

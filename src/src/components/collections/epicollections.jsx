@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 // import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
-import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
+import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM,COLUMN_DEF_COLLECTION} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
@@ -33,13 +33,13 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
 import CloseIcon from '@mui/icons-material/Close';
-// import { styled } from "@mui/material/styles";
-// const StyledTextField = styled(TextField)`
-//   textarea {
-//     resize: both;
-//   }
-// `;
-export function Epicollection (props){
+import { styled } from "@mui/material/styles";
+const StyledTextField = styled(TextField)`
+  textarea {
+    resize: both;
+  }
+`;
+export function EPICollectionForm (props){
   // let navigate = useNavigate();
   var [locked, setLocked] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
@@ -441,7 +441,14 @@ export function Epicollection (props){
   const handleCreate = (formSubmit) => {
     entity_api_create_entity("collection", formSubmit, props.authToken)
       .then((response) => {
-        props.onProcessed(response);
+        if(response.status === 200){
+          props.onProcessed(response);
+        }else{
+          console.debug('%c⭗', 'color:#ff005d', "handleCreate NOT RIGHT", response.error, response.error.error);
+          setPageError(response.error.toString());
+          setButtonState("");
+        }
+        
       })
       .catch((error) => {
         console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
@@ -471,7 +478,7 @@ export function Epicollection (props){
         setPageError(error.toString());
         setButtonState("");
       });
-    }
+  }
 
     var handleFileGrab = (e, type) => {
       var grabbedFile = e.target.files[0];
@@ -557,7 +564,7 @@ export function Epicollection (props){
     }
     
     var renderAssociationTable = () => {
-      var hiddenFields = [];
+      var hiddenFields = ["registered_doi"];
       var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
       if ( (uniqueTypes.has("dataset") && uniqueTypes.size === 1) ) {
         // add submission_id to hiddenFields
@@ -573,13 +580,15 @@ export function Epicollection (props){
       var columnFilters = buildColumnFilter(hiddenFields)
 
       return (
-        // <div style={{ width:"100%", maxHeight: "340px", overflowX:"auto", padding:"10px 0" }}>
+
         <div>
+        {/* <div style={{ width:"100%", maxHeight: "340px",  overflowX:"auto", padding:"10px 0" }}> */}
           <DataGrid
             columnVisibilityModel={columnFilters}
             className='associationTable w-100'
+            density='comfortable'
             rows={associatedEntities}
-            columns={COLUMN_DEF_MIXED}
+            columns={COLUMN_DEF_COLLECTION}
             disableColumnMenu={true}
             hideFooterPagination={true}
             hideFooterSelectedRowCount
@@ -587,17 +596,20 @@ export function Epicollection (props){
             // rowHeight={45}
             onCellClick={handleEvent}
             loading={!associatedEntities.length > 0 && !isNew}
+           
             sx={{
+              // minHeight: '200px',
               // display: 'inline-block',
               // // overflow: 'auto',
               // '.MuiDataGrid-virtualScroller': {
               //   minHeight: '45px',
               //   // overflow: 'scroll',
               // },
-              // '.MuiDataGrid-main > div:nth-child(2)': {
-              //   // overflowY: 'auto !important',
-              //   // flex: 'unset !important',
-              // },
+              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {
+                minHeight: '60px',
+                // overflowY: 'auto !important',
+                // flex: 'unset !important',
+              },
             }}
           />
         </div>
@@ -640,7 +652,7 @@ export function Epicollection (props){
                 )}
                 {(props.newForm) && (
                   <span className="mx-1">
-                    Registering a Collection
+                    Registering an EPICollection
                   </span>
                 )}
               </h3>
@@ -754,7 +766,7 @@ export function Epicollection (props){
                         //   display: 'flex',
                         //   flexDirection: 'row', 
                       }}>
-                      {/* <StyledTextField
+                      <StyledTextField
                         name="dataset_uuids"
                         id="dataset_uuids"
                         error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
@@ -773,7 +785,7 @@ export function Epicollection (props){
                           width: '100%',
                           verticalAlign: 'bottom',
                         }}
-                      /> */}
+                      />
                     </FormControl>
                   )}
                 </Collapse>
@@ -814,7 +826,7 @@ export function Epicollection (props){
                 // filter_type="Publication"
                 modecheck="Source"
                 restrictions={{
-                  entityType: "dataset"
+                  entityType: "collection"
                 }}
               />
             </DialogContent>
