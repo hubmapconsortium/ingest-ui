@@ -335,7 +335,7 @@ export function App (props){
         onCreatedReditect={""}
       />       
       
-      {/* <Timer logout={Logout}/> */}
+      <Timer logout={Logout}/>
       <div id="content" className="container">
       <Drawer 
         sx={{

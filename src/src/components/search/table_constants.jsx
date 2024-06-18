@@ -178,7 +178,7 @@ export const COLUMN_DEF_UPLOADS = [
 ];
 
 
-// COLLECTIONS  COLUMNS
+// EPICOLLECTIONS COLUMNS
 export const COLUMN_DEF_EPICOLLECTIONS = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
   { field: 'group_name', headerName: 'Group Name', width: 200},

@@ -445,7 +445,7 @@ export function EPICollectionForm (props){
           props.onProcessed(response);
         }else{
           console.debug('%c⭗', 'color:#ff005d', "handleCreate NOT RIGHT", response.error, response.error.error);
-          setPageError(response.error.toString());
+          setPageError(response.error.error.toString());
           setButtonState("");
         }
         
