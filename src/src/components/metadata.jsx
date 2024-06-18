@@ -474,7 +474,7 @@ const introText = () =>{
       
       {(attachmentFails.length > 0 || (table.data && table.data.length >0 ) ) && (<> 
         <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
-        <span style={{color:"red",fontSize:"1.5em"}}><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1,color:"red",fontSize:"1.5em"}}/> Warning </span>The following attachments were <span sx={{color:"red",fontWeight:800 }}>unsuccessful</span>:
+          <span style={{color:"red",fontSize:"1.5em"}}><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1,color:"red",fontSize:"1.5em"}}/> Warning </span>The following attachments were <span sx={{color:"red",fontWeight:800 }}>unsuccessful</span>:
         </Typography>
         <DataTable
           sx={{
@@ -494,19 +494,19 @@ const introText = () =>{
                 "name": "Result",
                 "sortable": true,
                 // "style": {backgroundColor: '#fdebed'},
-                "selector": row => row.error || row.error,
+                "selector": row => row.error || row,
                 "format": (row) => {
 
                   // If its a simple attachment error, let's get that out of the way 
-                  console.debug('%c◉ error type info ', 'color:#ffe921', typeof row);
+                  // console.debug('%c◉ error type info ', 'color:#ffe921', typeof row);
 
                   if(row.status && row.status === "failed"){
                   // if(typeof row.error === 'string' && row.error.indexOf("error: ") === 0){
                     // we're likely a API error not a CEDAR error
-                    console.debug('%c◉ row ', 'color:#00ff7b', row, row.error);
                     return <span>{row.error}</span>
                   }
                     // let err = handleErrorRow(row)
+                    
                     // When it's from Cedar it has off wrapping & comes back deeply nested
                     var d = '"'
                     var dSharp = '`'
@@ -529,7 +529,7 @@ const introText = () =>{
             ]
           }
           className='metadataHasError'
-          data={ !table.data ? attachmentFails : table.data}
+          data={ (!table.data || table.data.length === 0) ? attachmentFails : table.data}
           pagination />
       
       </>)}
