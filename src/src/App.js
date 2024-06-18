@@ -42,6 +42,7 @@ import {Navigation} from "./Nav";
 import Result from "./components/uuid/result";
 
 import {RenderCollection} from "./components/collections";
+import RenderEPICollection from "./components/epicollections";
 import {RenderDataset} from "./components/datasets";
 import {RenderDonor} from "./components/donors";
 import {RenderMetadata} from "./components/metadata";
@@ -334,7 +335,7 @@ export function App (props){
         onCreatedReditect={""}
       />       
       
-      <Timer logout={Logout}/>
+      {/* <Timer logout={Logout}/> */}
       <div id="content" className="container">
       <Drawer 
         sx={{
@@ -409,172 +410,171 @@ export function App (props){
         <LinearProgress />
       )}
 
-        { !authStatus && (
-          <React.Fragment>
-            <Routes>
-                <Route path="/" element={ <Login />} />
-                <Route path="/*" element={ <Login />} />
-                <Route path="*" element={ <Login />} />
-                <Route path="/login" element={ <Login />} />
-            </Routes>
-          <Dialog
-            open={loginDialogRender}
-            onClose={onCloseLogin}
-            disableEscapeKeyDown={false}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-            onBackdropClick={onCloseLogin}
-          >
-            <DialogTitle 
-              color="white"
-              backgroundColor="red"
-              id="alert-dialog-title"
-            >
-            <React.Fragment>
-            <AnnouncementTwoToneIcon /> Session Has Ended
-            </React.Fragment>
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                <br />
-                It looks like your login session has ended. Please log in again to continue
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={onCloseLogin} autoFocus>
-                Log In
-              </Button>
-            </DialogActions>
-          </Dialog>
-          </React.Fragment>
-
-        )}
-
-        {unregStatus && (
+      { !authStatus && (
+        <React.Fragment>
           <Routes>
-            <Route index element={ 
-                <Alert 
-                  variant="filled"
-                  severity="error">
-                  You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-                </Alert>
-              }/>
+              <Route path="/" element={ <Login />} />
+              <Route path="/*" element={ <Login />} />
+              <Route path="*" element={ <Login />} />
+              <Route path="/login" element={ <Login />} />
           </Routes>
-        )}
+        <Dialog
+          open={loginDialogRender}
+          onClose={onCloseLogin}
+          disableEscapeKeyDown={false}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          onBackdropClick={onCloseLogin}
+        >
+          <DialogTitle 
+            color="white"
+            backgroundColor="red"
+            id="alert-dialog-title"
+          >
+          <React.Fragment>
+          <AnnouncementTwoToneIcon /> Session Has Ended
+          </React.Fragment>
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              <br />
+              It looks like your login session has ended. Please log in again to continue
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onCloseLogin} autoFocus>
+              Log In
+            </Button>
+          </DialogActions>
+        </Dialog>
+        </React.Fragment>
 
-          {authStatus && !timerStatus && !isLoading && !dtloading && !unregStatus &&(
-          <StandardErrorBoundary
-            FallbackComponent={ErrorPage}
-            onError={(error, errorInfo) => {
-              console.log("Error caught!");  
-              console.error(error);
-              console.error(errorInfo);
-            }}>
-            
-            <HuBMAPContext.Provider value={{allGroups }}> 
-            
-              <Paper className="px-5 py-4">
-                <Routes>
-
-                  
-                  
-                  <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
-                  <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-                  <Route path="/login" element={<Login />} />
-                  
-                  {authStatus && (!userDataGroups || userDataGroups.length === 0) && !isLoading && (
-                    <Route path="/new/*" element={ 
-                      <Alert 
-                        variant="filled"
-                        severity="error"
-                        action={
-                          <Button 
-                            color="inherit"
-                            size="large"
-                            onClick={() => {window.history.back()}}>
-                            Cancel
-                          </Button>
-                        }>
-                        You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group
-                      </Alert>
-                      }/>
-
-                      
-                  )}
-                  
-                  {authStatus && (userDataGroups && userDataGroups.length > 0) && !isLoading && (allGroups && allGroups.length > 0) && (
-                    <Route path="/new">
-                      <Route index element={<SearchComponent reportError={reportError} />} />
-                      <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                      <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                      <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                      <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                      <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                      <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
-                      
-                      {/* {userDev && (
-                        <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                      )}
-                      {!userDev && (
-                        <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                      )} */}
-                    </Route>
-                  )}
-                  <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
-                  <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
-                  <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-                  <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
-                  <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
-                  
-                  <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-                  <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-                  <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
-                  <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
-                  <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                  <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={userDataGroups} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
-
-                  <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
-                  <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
-                  <Route path="/metadata">
-                    <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
-                    <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
-                    <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
-                    <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
-                  </Route>
-                </Routes>
-
-                <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
-                  <DialogContent> 
-                  {newEntity && (
-                      <Result
-                        result={{entity:newEntity}}
-                        onReturn={onCloseSuccess}
-                        onCreateNext={null}
-                        entity={newEntity}
-                      />
-                    )}
-                  </DialogContent>
-                </Dialog>
-                <Snackbar 
-                  open={showSnack} 
-                  onClose={() => setShowSnack(false)}
-                  anchorOrigin={{vertical:  'bottom',
-                    horizontal:'right',}}
-                  autoHideDuration={6000} 
-                  action={
-                    <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
-                        <FontAwesomeIcon icon={faTimes} size="1x" />
-                    </IconButton>
-                  }>
-                    <Alert severity={"success"}>{snackMessage}</Alert>
-                </Snackbar>  
-
-              </Paper>
-            </HuBMAPContext.Provider>
-          </StandardErrorBoundary>
       )}
-  </div>
+
+      {unregStatus && (
+        <Routes>
+          <Route index element={ 
+              <Alert 
+                variant="filled"
+                severity="error">
+                You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
+              </Alert>
+            }/>
+        </Routes>
+      )}
+
+      {authStatus && !timerStatus && !isLoading && !dtloading && !unregStatus &&(
+        <StandardErrorBoundary
+          FallbackComponent={ErrorPage}
+          onError={(error, errorInfo) => {
+            console.log("Error caught!");  
+            console.error(error);
+            console.error(errorInfo);
+          }}>
+          <HuBMAPContext.Provider value={{allGroups }}> 
+          
+            <Paper className="px-5 py-4">
+              <Routes>
+                
+                <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+                <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
+                <Route path="/login" element={<Login />} />
+                
+                {authStatus && (!userDataGroups || userDataGroups.length === 0) && !isLoading && (
+                  <Route path="/new/*" element={ 
+                    <Alert 
+                      variant="filled"
+                      severity="error"
+                      action={
+                        <Button 
+                          color="inherit"
+                          size="large"
+                          onClick={() => {window.history.back()}}>
+                          Cancel
+                        </Button>
+                      }>
+                      You do not have privileges to create registrations in this system. Please contact the help desk at help@hubmapconsortium.org and ask to be added to your HuBMAP Component's access group
+                    </Alert>
+                    }/>
+
+                    
+                )}
+                
+                {authStatus && (userDataGroups && userDataGroups.length > 0) && !isLoading && (allGroups && allGroups.length > 0) && (
+                  <Route path="/new">
+                    <Route index element={<SearchComponent reportError={reportError} />} />
+                    <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                    <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                    <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
+                    <Route path='collection' element={<RenderCollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                    <Route path='epicollection' element={<RenderEPICollection dataGroups={userDataGroups}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                    <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                    <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                    <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
+                    
+                    {/* {userDev && (
+                      <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                    )}
+                    {!userDev && (
+                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                    )} */}
+                  </Route>
+                )}
+                <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
+                <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
+                <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
+                <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
+                <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
+                
+                <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+                <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+                <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
+                <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
+                <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={userDataGroups} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken}  dataGroups={userDataGroups} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+
+                <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
+                <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+                <Route path="/metadata">
+                  <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
+                  <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
+                  <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
+                  <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
+                </Route>
+              </Routes>
+
+              <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>
+                <DialogContent> 
+                {newEntity && (
+                    <Result
+                      result={{entity:newEntity}}
+                      onReturn={onCloseSuccess}
+                      onCreateNext={null}
+                      entity={newEntity}
+                    />
+                  )}
+                </DialogContent>
+              </Dialog>
+              <Snackbar 
+                open={showSnack} 
+                onClose={() => setShowSnack(false)}
+                anchorOrigin={{vertical:  'bottom',
+                  horizontal:'right',}}
+                autoHideDuration={6000} 
+                action={
+                  <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
+                      <FontAwesomeIcon icon={faTimes} size="1x" />
+                  </IconButton>
+                }>
+                  <Alert severity={"success"}>{snackMessage}</Alert>
+              </Snackbar>  
+
+            </Paper>
+          </HuBMAPContext.Provider>
+        </StandardErrorBoundary>
+      )}
+    </div>
   </div>
   );
   
