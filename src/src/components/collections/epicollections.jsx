@@ -826,7 +826,7 @@ export function EPICollectionForm (props){
                 // filter_type="Publication"
                 modecheck="Source"
                 restrictions={{
-                  entityType: "collection"
+                  entityType: "dataset"
                 }}
               />
             </DialogContent>
