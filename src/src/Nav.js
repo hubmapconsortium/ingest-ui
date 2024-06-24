@@ -164,7 +164,7 @@ export const Navigation = (props) => {
                     component={Link}
                     onClick={handleClose}
                     to="/new/collection" >
-                    Collection
+                    Collection - Dataset
                   </MenuItem>
                   <MenuItem 
                     className="nav-link"
@@ -332,7 +332,7 @@ export const Navigation = (props) => {
                     component={Link}
                     onClick={handleClose}
                     to="/new/collection" >
-                    Collection
+                    Collection - Dataset
                   </MenuItem>
                   <MenuItem 
                     className="nav-link"
