@@ -164,14 +164,14 @@ export const Navigation = (props) => {
                     component={Link}
                     onClick={handleClose}
                     to="/new/collection" >
-                    Collection
+                    Collection - Dataset
                   </MenuItem>
                   <MenuItem 
                     className="nav-link"
                     component={Link}
                     onClick={handleClose}
                     to="/new/EPICollection" >
-                    EPICollection
+                    Collection - EPIC
                   </MenuItem>
                 </Menu>
                 <Button 
@@ -332,14 +332,14 @@ export const Navigation = (props) => {
                     component={Link}
                     onClick={handleClose}
                     to="/new/collection" >
-                    Collection
+                    Collection - Dataset
                   </MenuItem>
                   <MenuItem 
                     className="nav-link"
                     component={Link}
                     onClick={handleClose}
                     to="/new/EPICollection" >
-                    EPICollection
+                    Collection - EPIC
                   </MenuItem>
                 </Menu>
                 <Button 

@@ -588,7 +588,7 @@ export function EPICollectionForm (props){
             className='associationTable w-100'
             density='comfortable'
             rows={associatedEntities}
-            columns={COLUMN_DEF_COLLECTION}
+            columns={COLUMN_DEF_MIXED}
             disableColumnMenu={true}
             hideFooterPagination={true}
             hideFooterSelectedRowCount
