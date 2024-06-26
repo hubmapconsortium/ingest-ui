@@ -587,16 +587,18 @@ export function CollectionForm (props){
             onCellClick={handleEvent}
             loading={!associatedEntities.length > 0 && !isNew}
             sx={{
+              // minHeight: '200px',
               // display: 'inline-block',
               // // overflow: 'auto',
               // '.MuiDataGrid-virtualScroller': {
               //   minHeight: '45px',
               //   // overflow: 'scroll',
               // },
-              // '.MuiDataGrid-main > div:nth-child(2)': {
-              //   // overflowY: 'auto !important',
-              //   // flex: 'unset !important',
-              // },
+              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {
+                minHeight: '60px',
+                // overflowY: 'auto !important',
+                // flex: 'unset !important',
+              },
             }}
           />
         </div>
