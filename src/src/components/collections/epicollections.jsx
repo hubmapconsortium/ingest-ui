@@ -439,7 +439,7 @@ export function EPICollectionForm (props){
   };
 
   const handleCreate = (formSubmit) => {
-    entity_api_create_entity("collection", formSubmit, props.authToken)
+    entity_api_create_entity("epicollection", formSubmit, props.authToken)
       .then((response) => {
         if(response.status === 200){
           props.onProcessed(response);
@@ -646,7 +646,7 @@ export function EPICollectionForm (props){
               <h3>
                 {!props.newForm && editingCollection && (
                   <span className="">
-                    HuBMAP Collection ID: {editingCollection.hubmap_id}
+                    HuBMAP EPICollection ID: {editingCollection.hubmap_id}
                     {" "}
                   </span>
                 )}
