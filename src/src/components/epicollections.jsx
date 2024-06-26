@@ -37,7 +37,7 @@ export const RenderEPICollection = (props) => {
       .then((response) => {
         console.debug('%c◉ response ', 'color:#00ff7b', response);
         if (response.status === 200) {
-          if(response.results.entity_type !== "Collection"){
+          if(response.results.entity_type !== "Epicollection"){
             navigate("/"+response.results.entity_type+"/"+uuid);
           }else{
             // Converting the datasets field to a more general 
@@ -46,7 +46,7 @@ export const RenderEPICollection = (props) => {
             if(collection.datasets){collection.associations = collection.datasets};
             setEntity(collection);
             setIsLoadingEntity(false);
-            document.title = ("HuBMAP Ingest Portal | Collection: "+response.results.hubmap_id +"" );
+            document.title = ("HuBMAP Ingest Portal | EPICollection: "+response.results.hubmap_id +"" );
           }
         } else {
           console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
