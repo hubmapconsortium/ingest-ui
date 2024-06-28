@@ -88,8 +88,12 @@ export function entity_api_create_entity(entitytype, data, auth) {
         return {status: res.status, results: results}
       })
       .catch((error) => {
-        console.debug("entity_api_create_entity error", error);
-        return {error}
+        console.debug("entity_api_create_entity error", error, error.response);
+        if(error.response && error.response.data){
+          return {error: error.response.data}
+        }else{
+          return {error}
+        }
       });
 };
 

@@ -113,7 +113,6 @@ export const Navigation = (props) => {
               />
             </a>
             </Typography>
-            
             {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
               <Box className="menu-bar"  sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                 <Button 
@@ -159,6 +158,20 @@ export const Navigation = (props) => {
                     onClick={handleClose}
                     to="/new/publication" >
                     Publication
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/collection" >
+                    Collection - Dataset
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/EPICollection" >
+                    Collection - EPIC
                   </MenuItem>
                 </Menu>
                 <Button 
@@ -269,7 +282,6 @@ export const Navigation = (props) => {
             </a>
             </Typography>
             {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
-
               <Box className="menu-bar" sx={{  display: { xs: 'none', md: 'flex' } }}>
                 <Button 
                   id="IndividualButton"
@@ -314,6 +326,20 @@ export const Navigation = (props) => {
                     onClick={handleClose}
                     to="/new/publication" >
                     Publication
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/collection" >
+                    Collection - Dataset
+                  </MenuItem>
+                  <MenuItem 
+                    className="nav-link"
+                    component={Link}
+                    onClick={handleClose}
+                    to="/new/EPICollection" >
+                    Collection - EPIC
                   </MenuItem>
                 </Menu>
                 <Button 

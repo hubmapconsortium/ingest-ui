@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 // import {useNavigate} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
-import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
+import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM,COLUMN_DEF_COLLECTION} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
@@ -39,7 +39,7 @@ const StyledTextField = styled(TextField)`
     resize: both;
   }
 `;
-export function CollectionForm (props){
+export function EPICollectionForm (props){
   // let navigate = useNavigate();
   var [locked, setLocked] = useState(false);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
@@ -439,9 +439,16 @@ export function CollectionForm (props){
   };
 
   const handleCreate = (formSubmit) => {
-    entity_api_create_entity("collection", formSubmit, props.authToken)
+    entity_api_create_entity("epicollection", formSubmit, props.authToken)
       .then((response) => {
-        props.onProcessed(response);
+        if(response.status === 200){
+          props.onProcessed(response);
+        }else{
+          console.debug('%c⭗', 'color:#ff005d', "handleCreate NOT RIGHT", response.error, response.error.error);
+          setPageError(response.error.error.toString());
+          setButtonState("");
+        }
+        
       })
       .catch((error) => {
         console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
@@ -471,7 +478,7 @@ export function CollectionForm (props){
         setPageError(error.toString());
         setButtonState("");
       });
-    }
+  }
 
     var handleFileGrab = (e, type) => {
       var grabbedFile = e.target.files[0];
@@ -557,7 +564,7 @@ export function CollectionForm (props){
     }
     
     var renderAssociationTable = () => {
-      var hiddenFields = [];
+      var hiddenFields = ["registered_doi"];
       var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
       if ( (uniqueTypes.has("dataset") && uniqueTypes.size === 1) ) {
         // add submission_id to hiddenFields
@@ -573,10 +580,13 @@ export function CollectionForm (props){
       var columnFilters = buildColumnFilter(hiddenFields)
 
       return (
-        <div style={{ width:"100%", maxHeight: "340px", overflowX:"auto", padding:"10px 0" }}>
+
+        <div>
+        {/* <div style={{ width:"100%", maxHeight: "340px",  overflowX:"auto", padding:"10px 0" }}> */}
           <DataGrid
             columnVisibilityModel={columnFilters}
             className='associationTable w-100'
+            density='comfortable'
             rows={associatedEntities}
             columns={COLUMN_DEF_MIXED}
             disableColumnMenu={true}
@@ -586,6 +596,7 @@ export function CollectionForm (props){
             // rowHeight={45}
             onCellClick={handleEvent}
             loading={!associatedEntities.length > 0 && !isNew}
+           
             sx={{
               // minHeight: '200px',
               // display: 'inline-block',
@@ -635,13 +646,13 @@ export function CollectionForm (props){
               <h3>
                 {!props.newForm && editingCollection && (
                   <span className="">
-                    HuBMAP Collection ID: {editingCollection.hubmap_id}
+                    HuBMAP EPICollection ID: {editingCollection.hubmap_id}
                     {" "}
                   </span>
                 )}
                 {(props.newForm) && (
                   <span className="mx-1">
-                    Registering a Collection
+                    Registering an EPICollection
                   </span>
                 )}
               </h3>
