@@ -161,7 +161,7 @@ class EditUploads extends Component{
             });
           break;
           case "INVALID":
-            
+          case "INCOMPLETE":
             this.setState({
               validation_message_style:"warning",
               writeable: true
