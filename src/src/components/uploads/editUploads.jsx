@@ -161,7 +161,7 @@ class EditUploads extends Component{
             });
           break;
           case "INVALID":
-            
+          case "INCOMPLETE":
             this.setState({
               validation_message_style:"warning",
               writeable: true
@@ -671,7 +671,7 @@ class EditUploads extends Component{
   }
 
  renderSaveButton() {
-    if (["VALID","INVALID", "ERROR", "NEW"].includes(this.state.status.toUpperCase()) && 
+    if (["VALID","INVALID", "ERROR", "NEW", "INCOMPLETE"].includes(this.state.status.toUpperCase()) &&
       (this.state.data_admin || this.state.data_curator || this.state.data_group_editor)){
       return (
             <Button
