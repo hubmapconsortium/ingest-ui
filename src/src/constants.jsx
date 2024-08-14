@@ -193,6 +193,8 @@ export const RUI_ORGAN_MAPPING = {
   SI: "http://purl.obolibrary.org/obo/UBERON_0002108",
   SK: "http://purl.obolibrary.org/obo/UBERON_0002097",
   SP: "http://purl.obolibrary.org/obo/UBERON_0002106",
+  RT: "https://purl.org/sig/ont/fma/fma54973",
+  LT: "https://purl.org/sig/ont/fma/fma54974",
   // ST: "", // No CCF Reference Organ for Sternum yet
   TH: "http://purl.obolibrary.org/obo/UBERON_0002370",
   TR: "http://purl.obolibrary.org/obo/UBERON_0001004",
