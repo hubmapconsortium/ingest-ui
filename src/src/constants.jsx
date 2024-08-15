@@ -164,6 +164,7 @@ export const ORGAN_TYPES = {
 };
 
 // Direct mapping from HuBMAP Organ Code to appropriate RUI Reference Organ IRIs
+// Note: Always use http, https will not work
 export const RUI_ORGAN_MAPPING = {
   AO: "http://purl.obolibrary.org/obo/UBERON_0000948",
   BL: "http://purl.obolibrary.org/obo/UBERON_0001255",
@@ -193,6 +194,8 @@ export const RUI_ORGAN_MAPPING = {
   SI: "http://purl.obolibrary.org/obo/UBERON_0002108",
   SK: "http://purl.obolibrary.org/obo/UBERON_0002097",
   SP: "http://purl.obolibrary.org/obo/UBERON_0002106",
+  RT: "http://purl.org/sig/ont/fma/fma54973",
+  LT: "http://purl.org/sig/ont/fma/fma54974",
   // ST: "", // No CCF Reference Organ for Sternum yet
   TH: "http://purl.obolibrary.org/obo/UBERON_0002370",
   TR: "http://purl.obolibrary.org/obo/UBERON_0001004",
