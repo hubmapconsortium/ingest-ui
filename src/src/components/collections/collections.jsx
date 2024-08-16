@@ -28,7 +28,7 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faCheck, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faTrash, faCheck,faExclamationTriangle, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
@@ -370,16 +370,21 @@ export function CollectionForm (props){
     //Logic Flipped here to handle check for presence of object details not lack of
     // Only include if presnent, ignore if not
     console.debug('%c⊙', 'color:#00ff7b', "contributors",contributors );
-    if (contributors && (contributors[0] && contributors[0].version!==undefined)) {
+    if (contributors && (contributors[0] && contributors[0].orcid!==undefined)) {
       // formValuesSubmit.contributors = contributors
       // Still called creators on the back end
       formValuesSubmit.creators = contributors
-    } 
-    // Do not send blank contacts
-    // console.debug('%c⊙', 'color:#00ff7b', "Contacts",contacts );
-    // if (contacts && (contacts[0] && contacts[0].version!==undefined)) {
-    //   formValuesSubmit.contacts = contacts
-    // }
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'contributors': "",
+      }))
+    } else{
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'contributors': "Contributors detected but colums are unsupported / improperly formatted. Please referto the examples linked below and try again.",
+      }))
+      isValid = false;
+    }
 
     if (isValid) {
         return formValuesSubmit
@@ -479,6 +484,10 @@ export function CollectionForm (props){
       var newFile = new File([grabbedFile], newName);
       if (newFile && newFile.name.length > 0) {
         console.debug('%c◉ HAVE FILE ', 'color:#00ff7b', newFile);
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          'contributors': "",
+        }))
         Papa.parse(newFile, {
           download: true,
           skipEmptyLines: true,
@@ -525,10 +534,10 @@ export function CollectionForm (props){
               key={("rowName_" + index)}
               className="row-selection"
             >
-              <TableCell className="clicky-cell" scope="row">{row.name}</TableCell>
+              <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
               <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
-              <TableCell className="clicky-cell" scope="row"> {row.orcid_id} </TableCell>
-              <TableCell className="clicky-cell" scope="row"> {row.is_contact==="TRUE"  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+              <TableCell className="clicky-cell" scope="row"> {row.orcid} </TableCell>
+              <TableCell className="clicky-cell" scope="row"> {(row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes")  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
             </TableRow>
           );
         });
@@ -538,21 +547,35 @@ export function CollectionForm (props){
   
     var renderContribTable = () => {
       return (
-        <TableContainer style={{ maxHeight: 200 }}>
-          <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
-            <TableHead className="thead-dark font-size-sm">
-              <TableRow className="   " >
-                <TableCell> Name</TableCell>
-                <TableCell component="th">Affiliation</TableCell>
-                <TableCell component="th">Orcid</TableCell>
-                <TableCell component="th">Is Contact</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {renderTableRows(formValues.contributors)}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <>
+          <TableContainer style={{ maxHeight: 200 }}>
+            <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
+              <TableHead className="thead-dark font-size-sm">
+                <TableRow className="   " >
+                  <TableCell> Name</TableCell>
+                  <TableCell component="th">Affiliation</TableCell>
+                  <TableCell component="th">Orcid</TableCell>
+                  <TableCell component="th">Is Contact</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {renderTableRows(formValues.contributors)}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {formErrors.contributors && formErrors.contributors.length > 0 && (
+            <Box
+              p={1}
+              width="100%"
+              sx={{
+                // backgroundColor: '#FFCACA',
+                color: 'red',
+                padding: '10px',
+              }}   >
+              <FontAwesomeIcon icon={faExclamationTriangle} color="red" className='mr-1 red'/> {formErrors.contributors}
+            </Box>
+          )}  
+        </>
       )
     }
     
@@ -868,7 +891,7 @@ export function CollectionForm (props){
           )}
 
           <div className="text-right">
-            <Typography variant='caption'>Please reffer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
+            <Typography variant='caption'>Please referto the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
           </div>
           <div className="text-left">
             <label>
