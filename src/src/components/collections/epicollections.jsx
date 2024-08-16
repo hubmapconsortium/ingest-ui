@@ -248,6 +248,7 @@ export function EPICollectionForm (props){
 
     for (var datatypeID of uuidArray) {
       let ds = datatypeID.split(' ').join('');
+      let errFlag= 0;
       console.debug('%c⊙', 'color:#00ff7b', "ds",ds, processed.includes(ds), processed );
       setLoadingDatasets(true)
       if (ds.length !== 0 && !processed.includes(ds)) { 
@@ -256,7 +257,7 @@ export function EPICollectionForm (props){
           .then((response) => {
             if ((response.status === 400 || response.status === 404) && response.data && response.data.error) {
               // Not Found / Invalid
-              errCount++;
+              errFlag++;
               setFormErrors((prevValues) => ({
                 ...prevValues,
                 'bulk_dataset_uuids': response.data.error.split(': '),
@@ -264,14 +265,15 @@ export function EPICollectionForm (props){
             }
             else if (response.status !== 200 && response.status !== 400 && response.status !== 404) {
               //Not Validation Errors but AN error
-              errCount++;
+              errFlag++;
               handleErrorParse(response);
             } else {
               let row = response.results;
-              if (!processed.includes(row.uuid)) { 
+              if (!processed.includes(row.uuid)) {  
                 if (!row.display_subtype && row.dataset_type) {
                   // entity does not return display subtype, so we'll generate it
                   row.display_subtype = generateDisplaySubtypeSimple_UBKG(row.dataset_type, props.dtl_all);
+                  row.id=row.uuid;
                   setassociatedEntities((rows) => [...rows, row]);
                   processed.push(row.uuid.toString());
                 }
@@ -296,6 +298,8 @@ export function EPICollectionForm (props){
           'bulk_dataset_uuids': "UUID " + ds + " is already in the list",
         }))
       }
+      errCount += errFlag;
+
     };   
     setLoadingDatasets(false)
     if (errCount >0) { 
