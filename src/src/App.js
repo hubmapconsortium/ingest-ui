@@ -230,7 +230,7 @@ export function App (props){
   
   
   function clearAuths() {  
-    console.debug('%c◉ CLEAR AUTHS ', 'color:#00ff7b', );
+    console.debug('%c◉ CLEAR AUTHS ', 'color:#00ff7b' );
     if(process.env.REACT_APP_URL == "http://localhost:8585"){
       console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
       return new Promise((resolve) => {
@@ -334,8 +334,7 @@ export function App (props){
         userDataGroups={userDataGroups}
         onCreatedReditect={""}
       />       
-      
-      {/* <Timer logout={Logout}/> */}
+      { process.env.REACT_APP_URL!=="http://localhost:8585" && (<Timer logout={Logout}/>)}
       <div id="content" className="container">
       <Drawer 
         sx={{
