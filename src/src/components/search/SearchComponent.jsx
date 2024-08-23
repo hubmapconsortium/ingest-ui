@@ -5,7 +5,7 @@ import LinearProgress from "@material-ui/core/LinearProgress";
 import Alert from '@mui/material/Alert';
 import {GridLoader} from "react-spinners";
 import {SAMPLE_TYPES,ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
-import {ubkg_api_get_organ_type_set} from "../../service/ubkg_api";
+// import {ubkg_api_get_organ_type_set} from "../../service/ubkg_api";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
@@ -103,32 +103,39 @@ class SearchComponent extends Component {
       console.debug("%c⭗", "color:#ff005d",error);
     }
 
-    var organList = {};
+    // SET UP ORGANS
+    var organList = JSON.parse(localStorage.getItem("organs") || "[]");
+    console.debug('%c◉ organList ', 'color:#00ff7b', organList);
+    this.setState({ organ_types: organList }, () => {
+      this.setFilterType();
+    });
+    
+    // var organList = {};
     // console.debug('%c⊙', 'color:#00ff7b', "this.props.organList", this.props.organList );
-    if (this.props.organList) {
-      organList = this.props.organList;
-      this.setState({ organ_types: this.handleSortOrgans(organList) }, () => {
-        this.setFilterType();
-      });
-    } else {
-      // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set" );
-      ubkg_api_get_organ_type_set()
-        .then((res) => {
-          // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set", res );
-          organList = res;
-          this.setState({ organ_types: this.handleSortOrgans(res) }, () => {
-            this.setFilterType();
-          });
-        })
-        .catch((err) => {
-          console.debug(
-            "%c⭗",
-            "color:#ff005d",
-            "ubkg_api_get_organ_type_set ERR",
-            err
-          );
-        });
-    }
+    // if (this.props.organList) {
+    //   organList = this.props.organList;
+    //   this.setState({ organ_types: this.handleSortOrgans(organList) }, () => {
+    //     this.setFilterType();
+    //   });
+    // } else {
+    //   // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set" );
+    //   ubkg_api_get_organ_type_set()
+    //     .then((res) => {
+    //       // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set", res );
+    //       organList = res;
+    //       this.setState({ organ_types: this.handleSortOrgans(res) }, () => {
+    //         this.setFilterType();
+    //       });
+    //     })
+    //     .catch((err) => {
+    //       console.debug(
+    //         "%c⭗",
+    //         "color:#ff005d",
+    //         "ubkg_api_get_organ_type_set ERR",
+    //         err
+    //       );
+    //     });
+    // }
 
     if (this.props.restrictions) {
       // So we can apply the object right to the state instead of do parse tango
@@ -382,11 +389,11 @@ class SearchComponent extends Component {
 
     // LAST: Organs
     var organs = [];
-    var organList = this.state.organ_types;
     try {
-      organList.forEach((value, key) => {
-        organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key;
-      });
+      // organList.forEach((value, key) => {
+      for (const [key, value] of Object.entries(JSON.parse(localStorage.getItem("organs")))) {
+        organs[key] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + value;
+      };
       combinedList.push(organs.sort());
       // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList );
       return combinedList;
