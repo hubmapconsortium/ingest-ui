@@ -1,11 +1,16 @@
 import {faPlus,faQuestionCircle,faSpinner,faTrash,faUserShield} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
+// import Dialog from '@material-ui/core/Dialog';
+// import DialogActions from '@material-ui/core/DialogActions';
+// import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Dialog from '@mui/material/Dialog';
 import Paper from '@material-ui/core/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -109,6 +114,7 @@ class DatasetEdit extends Component {
     errorSnack:false,
     popperOpen:false,
     anchorEl:null,
+    submitLoader:false,
     disableSelectDatatype:false,
     toggleStatusSet:false,
     statusSetLabel:"Reset Status",
@@ -395,7 +401,7 @@ class DatasetEdit extends Component {
     this.setState({ show:true });
   };
 
-  showSubmitModal = () => {
+  launchSubmitModal = () => {
     this.setState({ showSubmitModal:true });
   };
 
@@ -848,6 +854,7 @@ class DatasetEdit extends Component {
   }
 
   handleSubmit = (submitIntention) => {
+    this.setState({submitting:true});
 
     this.validateForm().then((isValid) => {
     
@@ -1000,7 +1007,8 @@ class DatasetEdit extends Component {
                     } else {
                       this.setState({ 
                         submit_error:true, 
-                        submitting:false, 
+                        submitting:false,
+                        submitLoader:false, 
                         submitErrorResponse:response,
                         buttonSpinnerTarget:"" 
                       });
@@ -1011,7 +1019,8 @@ class DatasetEdit extends Component {
                   .catch((error) => {
                     this.setState({ 
                       submit_error:true, 
-                      submitting:false, 
+                      submitting:false,   
+                      submitLoader:false, 
                       submitErrorResponse:error.result.data,
                       buttonSpinnerTarget:"", 
 });
@@ -1022,7 +1031,8 @@ class DatasetEdit extends Component {
                   this.props.reportError(error);
                   this.setState({ 
                     submit_error:true, 
-                    submitting:false, 
+                    submitting:false,   
+                    submitLoader:false, 
                     submitErrorResponse:error.result.data,
                     buttonSpinnerTarget:"" 
                 });
@@ -1066,6 +1076,7 @@ class DatasetEdit extends Component {
                     this.setState({ 
                       submit_error:true, 
                       submitting:false, 
+                      submitLoader:false,
                       submitErrorResponse:error, 
                       submitErrorStatus:error,
                       buttonSpinnerTarget:"" 
@@ -1092,6 +1103,7 @@ class DatasetEdit extends Component {
                   this.setState({ 
                   submit_error:true, 
                   submitting:false, 
+                  submitLoader:false,
                   submitErrorResponse:error.result.data,
                   buttonSpinnerTarget:"" 
                 });
@@ -1489,7 +1501,7 @@ class DatasetEdit extends Component {
                     <Button 
                       className="btn btn-primary mr-1" 
                       variant="contained"
-                      onClick={ () => this.showSubmitModal() }>
+                      onClick={ () => this.launchSubmitModal() }>
                         Submit
                     </Button>
                   </div>
@@ -1520,7 +1532,12 @@ class DatasetEdit extends Component {
   renderSubmitModal = () => {
     // @TODO: Drop this into a Modals util (& stay in sync with publications)
       return (
-          <Dialog aria-labelledby="submit-dialog" open={this.state.showSubmitModal}>
+          <Dialog
+            sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
+            maxWidth="xs" 
+            // sx={{width:"600px!important"}}    
+            aria-labelledby="submit-dialog" 
+            open={this.state.showSubmitModal}>
             <DialogContent>
               <h4>Preparing to Submit</h4>
               <div>  Has all data for this dataset been <br/>
@@ -1528,11 +1545,14 @@ class DatasetEdit extends Component {
                 2	&#41; uploaded to the globus folder?</div>
            </DialogContent>
              <DialogActions>
-              <Button
+             <LoadingButton loading={this.state.submitting} sx={{width:"150px"}} loadingIndicator="Submitting..." variant="outlined" onClick={ () => this.handleSubmit("submit")} submitLoader>
+              Submit
+             </LoadingButton>
+              {/* <Button
               className="btn btn-primary mr-1"
               onClick={ () => this.handleSubmit("submit")}>
               Submit
-            </Button>
+            </Button> */}
             <Button
               className="btn btn-secondary"
               onClick={this.hideSubmitModal}>
@@ -2194,7 +2214,7 @@ class DatasetEdit extends Component {
             </div>
           </div>
         </Modal>
-
+        {this.renderSubmitModal()}
         
       </React.Fragment>
     );
