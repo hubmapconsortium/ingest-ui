@@ -1433,8 +1433,10 @@ class PublicationEdit extends Component {
   }
 
   assembleSourceAncestorData(source_uuids) {
+    var organList=JSON.parse(localStorage.getItem("organs"));
     for (var i = 0; i < source_uuids.length; i++) {
-      var dst = generateDisplaySubtype(source_uuids[i]);
+      // var dst = generateDisplaySubtype(source_uuids[i], JSON.parse(localStorage.getItem("organs")));
+      var dst=organList[source_uuids[i].organ]
       source_uuids[i].display_subtype = dst;
     }
     try {

@@ -72,6 +72,7 @@ export function ubkg_api_get_organ_type_set() {
  */
 export function ubkg_api_get_dataset_type_set() {
   let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
+  // let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
   return axios
     .get(url)
       .then(res => {
@@ -89,45 +90,46 @@ export function ubkg_api_get_dataset_type_set() {
  * UBKG Generate Display Subtype method
  *
  */
-export function ubkg_api_generate_display_subtype(entity) {
-  var display_subtype = ""
-  var entity_type = entity['entity_type']
-  if (entity_type === 'Sample' && 'sample_category' in entity){
-    if (entity['sample_category'].toLowerCase() === 'organ'){
-      if ('organ' in entity) {
-        var organCode = entity['organ'];
-        ubkg_api_get_organ_type_set()
-          .then((res) => {
-            console.debug('%c⊙ generate_subtype', 'color:#8400FF', res[organCode] );
-            display_subtype=(res[organCode])
-            // return (res[organCode])
-          })
-          .catch((error) => {
-            return (error)
-          });
+// export function ubkg_api_generate_display_subtype(entity, organList) {
+//   var display_subtype = ""
+//   var entity_type = entity['entity_type']
+//   if (entity_type === 'Sample' && 'sample_category' in entity){
+//     if (entity['sample_category'].toLowerCase() === 'organ'){
+//       if ('organ' in entity) {
+//         var organCode = entity['organ'];
+//         return (organList[organCode])
+//         // ubkg_api_get_organ_type_set()
+//         //   .then((res) => {
+//         //     console.debug('%c⊙ generate_subtype', 'color:#8400FF', res[organCode] );
+//         //     display_subtype=(res[organCode])
+//         //     // return (res[organCode])
+//         //   })
+//         //   .catch((error) => {
+//         //     return (error)
+//         //   });
           
-      }else{
-        throw new Error("Missing Organ key for  Sample with uuid: {entity['uuid']}")
-      }
-    } else {
-      display_subtype=entity['sample_category'].toString();
-      // return entity['sample_category'].toString();
-    }  
-  }else if (entity_type === 'Dataset' && 'dataset_type' in entity){ 
-    // Datasets store in ugly format, need to reff pretty style
-    display_subtype=entity['dataset_type'].toString()
-    // return (entity['dataset_type'].toString())
-  }else if (entity_type === 'Upload'){ 
-    // Uploads just need language fix
-    return ("Data Upload")
-    display_subtype="Data Upload"
-  }else{ 
-    // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
-    display_subtype= toTitleCase(entity_type.toString())
-    // return ( toTitleCase(entity_type.toString()))
-  }    
-  return display_subtype
-}
+//       }else{
+//         throw new Error("Missing Organ key for  Sample with uuid: {entity['uuid']}")
+//       }
+//     } else {
+//       display_subtype=entity['sample_category'].toString();
+//       // return entity['sample_category'].toString();
+//     }  
+//   }else if (entity_type === 'Dataset' && 'dataset_type' in entity){ 
+//     // Datasets store in ugly format, need to reff pretty style
+//     display_subtype=entity['dataset_type'].toString()
+//     // return (entity['dataset_type'].toString())
+//   }else if (entity_type === 'Upload'){ 
+//     // Uploads just need language fix
+//     display_subtype="Data Upload"
+//     return ("Data Upload")
+//   }else{ 
+//     // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
+//     display_subtype= toTitleCase(entity_type.toString())
+//     return ( toTitleCase(entity_type.toString()))
+//   }    
+//   return display_subtype
+// }
 
 
 
