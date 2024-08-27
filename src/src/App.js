@@ -77,6 +77,7 @@ export function App (props){
   var [userDataGroups, setUserDataGroups] = useState({});
   var [userDev, setUserDev] = useState(false);
   // var [regStatus, setUnregStatus] = useState(false);
+  var [APIErr, setAPIErr] = useState([]);
   var [isLoading, setIsLoading] = useState(true);
   var [dtloading, setDTLoading] = useState(true);
   var [orgloading, setORGLoading] = useState(true);
@@ -148,12 +149,33 @@ export function App (props){
       // if(!localStorage.getItem("organs")){
         ubkg_api_get_organ_type_set()
             .then((res) => {
-              localStorage.setItem("organs",JSON.stringify(res));
-              // setOrganList(res); // Replacing the state with the local storage
-              setORGLoading(false)
+              console.debug('%c◉ RES ', 'color:#00ff7b', res);
+              if(res !== undefined){
+                console.debug('%c◉ ORGAN RES ', 'color:#00ff7b', res);
+                localStorage.setItem("organs",JSON.stringify(res));
+                setORGLoading(false)
+              }else{
+                if(localStorage.getItem("organs")){
+                  // We have a cached copy, phew
+                  setAPIErr(["UBKG API : Organ","Previously loaded ORGAN data will be used until the issue is resolved.",res])
+                  setORGLoading(false)
+                }else{
+                  // Not cached, we cant really go on
+                  setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',res])
+                }
+              }
             })
             .catch((err) => {
-              reportError(err)        
+              // We wana let let this error slide.... inform something is Up 
+              // but use whats already in local storage if its not blank
+              if(localStorage.getItem("organs")){
+                // We have a cached copy, phew
+                setAPIErr("UBKG API Error: Organ Type Set","Previously loaded ORGAN definitions will be used until the issue is resolved.",err)
+                setORGLoading(false)
+              }else{
+                // Not cached, we cant really go on
+                setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',err)
+              }
           })
       // }
 
@@ -161,16 +183,45 @@ export function App (props){
       // if(!localStorage.getItem("datatypes")){
         ubkg_api_get_dataset_type_set()
           .then((res) => {
-            localStorage.setItem("datasetTypes",JSON.stringify(res));
-            setDTLoading(false)
-            // TODO: Eventually remove these & use localstorage 
-            setDataTypeList(res);
-            setDataTypeListAll(res);
+              if(res !== undefined){
+                localStorage.setItem("datasetTypes",JSON.stringify(res));
+                setDTLoading(false)
+                // TODO: Eventually remove these & use localstorage 
+                setDataTypeList(res);
+                setDataTypeListAll(res);
+              }else{
+                if(localStorage.getItem("datasetTypes")){
+                  setAPIErr(["UBKG API : Dataset Types","Previously loaded DATASET TYPE definitions will be used until the issue is resolved.",res])
+                  setORGLoading(false)
+                }else{
+                  setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',res])
+                }
+              }
+            })
+            .catch((err) => {
+              // We wana let let this error slide.... inform something is Up 
+              // but use whats already in local storage if its not blank
+              if(localStorage.getItem("datasetTypes")){
+                // We have a cached copy, phew
+                setAPIErr("UBKG API Error: Dataset Types","Previously loaded DATASET TYPE definitions will be used until the issue is resolved.",err)
+                setORGLoading(false)
+              }else{
+                // Not cached, we cant really go on
+                setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',err)
+              }
           })
-          .catch(error => {
-            console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_dataset_type_set ERROR", error);
-            reportError(error)
-          });
+          //         ubkg_api_get_dataset_type_set()
+          // .then((res) => {
+          //   localStorage.setItem("datasetTypes",JSON.stringify(res));
+          //   setDTLoading(false)
+          //   // TODO: Eventually remove these & use localstorage 
+          //   setDataTypeList(res);
+          //   setDataTypeListAll(res);
+          // })
+          // .catch(error => {
+          //   console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_dataset_type_set ERROR", error);
+          //   reportError(error)
+          // });
       // }
 
     }
@@ -249,6 +300,17 @@ export function App (props){
     }
   }
 
+
+
+  function renderAPIError() {
+    return (
+      <Alert variant="filled" severity="error">
+        There was an error populating from datasource {APIErr[0]}  <br />
+        {APIErr[1]} <br />
+        {APIErr[2]} 
+      </Alert>
+    );
+  }
 
 
   function creationSuccess(entity) {
@@ -369,9 +431,8 @@ export function App (props){
           </Grid>
 
         </Box>
-
-
       </Drawer>
+
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
             <h2>{bannerTitle}</h2>
@@ -422,6 +483,11 @@ export function App (props){
         </React.Fragment>
 
       )}
+
+      {APIErr.length > 0  && (
+        renderAPIError()
+      )}
+      
 
       {unregStatus && (
         <Routes>
