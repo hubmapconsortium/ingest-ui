@@ -192,9 +192,10 @@ export function App (props){
               }else{
                 if(localStorage.getItem("datasetTypes")){
                   setAPIErr(["UBKG API : Dataset Types","Previously loaded DATASET TYPE definitions will be used until the issue is resolved.",res])
-                  setORGLoading(false)
+                  setDTLoading(false)
                 }else{
                   setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',res])
+                  reportError(res)
                 }
               }
             })
@@ -204,10 +205,11 @@ export function App (props){
               if(localStorage.getItem("datasetTypes")){
                 // We have a cached copy, phew
                 setAPIErr("UBKG API Error: Dataset Types","Previously loaded DATASET TYPE definitions will be used until the issue is resolved.",err)
-                setORGLoading(false)
+                setDTLoading(false)
               }else{
                 // Not cached, we cant really go on
                 setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',err)
+                reportError(err)
               }
           })
           //         ubkg_api_get_dataset_type_set()
