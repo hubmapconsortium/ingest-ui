@@ -161,7 +161,7 @@ export function App (props){
                   setORGLoading(false)
                 }else{
                   // Not cached, we cant really go on
-                  setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',res])
+                  setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',res])
                 }
               }
             })
@@ -174,7 +174,7 @@ export function App (props){
                 setORGLoading(false)
               }else{
                 // Not cached, we cant really go on
-                setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',err)
+                setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',err)
               }
           })
       // }
@@ -194,7 +194,7 @@ export function App (props){
                   setAPIErr(["UBKG API : Dataset Types","Previously loaded DATASET TYPE definitions will be used until the issue is resolved.",res])
                   setDTLoading(false)
                 }else{
-                  setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',res])
+                  setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
                   reportError(res)
                 }
               }
@@ -208,7 +208,7 @@ export function App (props){
                 setDTLoading(false)
               }else{
                 // Not cached, we cant really go on
-                setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>',err)
+                setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
                 reportError(err)
               }
           })
