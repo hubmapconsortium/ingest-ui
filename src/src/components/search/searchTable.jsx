@@ -203,7 +203,7 @@ export const RenderSearchTable = (props) => {
   }, [allGroups,entityTypeList]);
 
   function handlePageChange(pageInfo) {
-    console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
+    // console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     setPage(pageInfo.page);
     setPageSize(pageInfo.pageSize);
   }
