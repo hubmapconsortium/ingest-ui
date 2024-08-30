@@ -17,7 +17,6 @@ class GroupModal extends Component {
 
   render() {
     return (
-    
        <Dialog aria-labelledby="group-dialog" open={this.props.show}>
        <DialogContent>
         <div className="row">

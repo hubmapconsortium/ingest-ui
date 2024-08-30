@@ -69,7 +69,7 @@ export function EPICollectionForm (props){
     title:"",
     description: "",
     dataset_uuids: "",
-    creators: [],
+    contributors: [],
     // contacts: [],
     bulk_dataset_uuids:["","",""]
   });
@@ -77,7 +77,7 @@ export function EPICollectionForm (props){
     title: '',
     description: '',
     dataset_uuids: [],
-    creators: [],
+    contributors: [],
     group_uuid:"",
     // contacts: [],
   });
@@ -109,8 +109,8 @@ export function EPICollectionForm (props){
         formVals.dataset_uuids = UUIDs
         setassociatedEntitiesInitial(UUIDs)
       }
-      if (editingCollection.creators && editingCollection.creators.length > 0) {
-        formVals.contributors = editingCollection.creators
+      if (editingCollection.contributors && editingCollection.contributors.length > 0) {
+        formVals.contributors = editingCollection.contributors
       }
       setFormValues(formVals);  
       setLoadingDatasets(false);
@@ -376,8 +376,7 @@ export function EPICollectionForm (props){
     console.debug('%c⊙', 'color:#00ff7b', "contributors",contributors );
     if (contributors && (contributors[0] && contributors[0].orcid!==undefined)) {
       // formValuesSubmit.contributors = contributors
-      // Still called creators on the back end
-      formValuesSubmit.creators = contributors
+      formValuesSubmit.contributors = contributors
       setFormErrors((prevValues) => ({
         ...prevValues,
         'contributors': "",
@@ -454,6 +453,7 @@ export function EPICollectionForm (props){
   };
 
   const handleCreate = (formSubmit) => {
+    setOpenGroupModal(false);
     entity_api_create_entity("epicollection", formSubmit, props.authToken)
       .then((response) => {
         if(response.status === 200){
