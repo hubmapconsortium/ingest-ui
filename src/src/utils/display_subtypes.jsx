@@ -7,7 +7,7 @@
 // otherwise the display name linked to the value of the corresponding description of specimen_type code
 // Dataset: the display names linked to the values in dataset_type as a comma separated list
 
-import { ubkg_api_get_organ_type_set,ubkg_api_get_assay_type_set } from "../service/ubkg_api";
+// import { ubkg_api_get_assay_type_set } from "../service/ubkg_api";
 import { SAMPLE_TYPES } from "../constants";
 
 
@@ -115,46 +115,45 @@ var tissues = {
 
 //  UBKG:
 // Get Organs
-function get_organs_UBKG(organ_code){
-  ubkg_api_get_organ_type_set()
-    .then((res) => {
-      console.debug('%c⊙', 'color:#00ff7b', res);
-      return res;
-    })
-    .catch((error) => {
-      console.error('%c⭗', 'color:#ff005d', "ERROR: ubkg_api_get_organ_type_set",error);
-    });
+// function get_organs_UBKG(organ_code){
+//   // ubkg_api_get_organ_type_set()
+//   //   .then((res) => {
+//   //     console.debug('%c⊙', 'color:#00ff7b', res);
+//   //     return res;
+//   //   })
+//   //   .catch((error) => {
+//   //     console.error('%c⭗', 'color:#ff005d', "ERROR: ubkg_api_get_organ_type_set",error);
+//   //   });
     
- }
-function get_organ_description_UBKG(organ_code) {
-  var organList = get_organs_UBKG();
-  console.debug('%c⊙', 'color:#00ff7b', "organList",organList );
-   console.debug("get_organ_description",organList[organ_code]);
-   return "TEST";
-}
+//  }
+// function get_organ_description_UBKG(organ_code) {
+//   var organList = get_organs_UBKG();
+//   console.debug('%c⊙', 'color:#00ff7b', "organList",organList );
+//    console.debug("get_organ_description",organList[organ_code]);
+//    return "TEST";
+// }
       
 // Get Sample Types
-function get_sample_types_UBKG(tissue_code){
-  ubkg_api_get_assay_type_set()
-    .then((res) => {
-      console.debug('%c⊙', 'color:#00ff7b', res);
-      return res;
-    })
-    .catch((error) => {
-      console.error('%c⭗', 'color:#ff005d', "ERROR: ubkg_api_get_organ_type_set",error);
-    });
-    
- }
-function get_sample_description_UBKG(tissue_code) {
-  var typeList = get_sample_types_UBKG();
-  console.debug('%c⊙', 'color:#00ff7b', "typeList",typeList );
-   console.debug("get_organ_description",typeList[tissue_code]);
-   return "TEST";
- }
-        
-        
+// function get_sample_types_UBKG(tissue_code){
+//   ubkg_api_get_assay_type_set()
+//     .then((res) => {
+//       console.debug('%c⊙', 'color:#00ff7b', res);
+//       return res;
+//     })
+//     .catch((error) => {
+//       console.error('%c⭗', 'color:#ff005d', "ERROR: ubkg_api_get_organ_type_set",error);
+//     });
+//  }
+
+// function get_sample_description_UBKG(tissue_code) {
+//   var typeList = get_sample_types_UBKG();
+//   console.debug('%c⊙', 'color:#00ff7b', "typeList",typeList );
+//    console.debug("get_organ_description",typeList[tissue_code]);
+//    return "TEST";
+//  }
+
 export function generateDisplaySubtype( entity) {
-  // console.debug('%c⊙ generateDisplaySubtype', 'color:#00ff7b', entity );
+    console.debug('%c⊙ generateDisplaySubtype', 'color:#00ff7b', entity );
     var entity_type = entity['entity_type']
     var display_subtype = '{unknown}'
 
@@ -203,7 +202,7 @@ export function generateDisplaySubtypeSimple_UBKG(datatype, datatypeList) {
   }
 }
 
-export function generateDisplaySubtype_UBKG(entity) {
+export function generateDisplaySubtype_UBKG(entity, sourceList) {
     // console.debug('%c⊙ generateDisplaySubtype_UBKG', 'color:#00ff7b',  entity);
 
     var entity_type = entity['entity_type']
@@ -217,7 +216,7 @@ export function generateDisplaySubtype_UBKG(entity) {
         if ('sample_category' in entity){
             if (entity['sample_category'].toLowerCase() === 'organ'){
               if ('organ' in entity) {
-                    display_subtype = get_organ_description_UBKG(entity['organ']);
+                    display_subtype = sourceList(entity['organ']);
                 }else{
                     console.error("Missing missing organ when sample_category is set of Sample with uuid: {entity['uuid']}")
                 }
