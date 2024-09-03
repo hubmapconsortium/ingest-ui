@@ -2,7 +2,6 @@ import * as React from "react";
 import {useEffect,useState} from "react";
 import {Route,Routes,useLocation,useNavigate} from "react-router-dom";
 import {HuBMAPContext} from "./components/hubmapContext";
-import Timer from './components/ui/idle';
 import Login from './components/ui/login';
 import ErrorPage from "./utils/errorPage";
 import StandardErrorBoundary from "./utils/errorWrap";
@@ -36,6 +35,7 @@ import {sortGroupsByDisplay} from "./service/user_service";
 import {BuildError} from "./utils/error_helper";
 // import {htmlDecode} from "./utils/string_helper";
 import {Navigation} from "./Nav";
+import Timer from './components/ui/idle'
 
 /* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
 
@@ -66,20 +66,22 @@ export function App (props){
   var [showSnack, setShowSnack] = useState(false);
   var [newEntity, setNewEntity] = useState(null);
   var [authStatus, setAuthStatus] = useState(false);
-  var [unregStatus, setUnegStatus] = useState(false);
+  var [unregStatus, setUnregStatus] = useState(false);
   var [groupsToken, setGroupsToken] = useState(null);
   var [allGroups, setAllGroups] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
   var [dataTypeList, setDataTypeList] = useState({});
   var [dataTypeListAll, setDataTypeListAll] = useState({});
-  var [organList, setOrganList] = useState();
+  // var [organList, setOrganList] = useState();
   var [userGroups, setUserGroups] = useState({});
   var [userDataGroups, setUserDataGroups] = useState({});
   var [userDev, setUserDev] = useState(false);
-  var [regStatus, setRegStatus] = useState(false);
+  // var [regStatus, setUnregStatus] = useState(false);
   var [isLoggingOut, setIsLoggingOut] = useState(false);
+  var [APIErr, setAPIErr] = useState([]);
   var [isLoading, setIsLoading] = useState(true);
   var [dtloading, setDTLoading] = useState(true);
+  var [orgloading, setORGLoading] = useState(true);
   var [bannerTitle,setBannerTitle] = useState();
   var [bannerDetails,setBannerDetails] = useState();
   var [bannerShow,setBannerShow] = useState(false);
@@ -102,52 +104,36 @@ export function App (props){
 
     if(localStorage.getItem("info")  ){
       console.debug('%c◉ localStorage.getItem("info") ', 'color:#00ff7b', localStorage.getItem("info"));
-      try {
-        ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
-          // console.debug("LocalStorageAuth", results);
+      var token = JSON.parse(localStorage.getItem("info")).groups_token;
+      console.debug('%c◉ Groups Token: ', 'color:#00ff7b', token );
+      ingest_api_all_groups(token)
+      .then((res) => {
+        setAllGroups(sortGroupsByDisplay(res.results));
+      })
+      .catch((err) => {
+        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+      })
 
+      ingest_api_users_groups(token)
+        .then((results) => {
+          setIsLoading(false);
+          setTimerStatus(false);
           if (results && results.status === 200) {
-            // console.debug("LocalStorageAuth", results);
-            setUserGroups(results.results);
-            setUserDataGroups(results.results);
-            if (results.results.length > 0) { 
-              setRegStatus(true); 
-              for (let group in results.results) {
-                if(results.results[group].displayname.includes("IEC")){
-                  setUserDev(true)
-                }
-              }
-            }
             setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-            setTimerStatus(false);
-            setIsLoading(false);
+            setUserDataGroups(results.results);
+            setUserGroups(results.results);
             setAuthStatus(true);
           } else if (results && results.status === 401) {
-            console.debug('%c◉ FAIL WITH 410 ', 'color:#00ff7b', );
-            setGroupsToken(null);
+            console.debug('%c◉ FAIL WITH 410 ', 'color:#00ff7b', results);
             setAuthStatus(false);
-            setRegStatus(false);
-            setTimerStatus(false);
-            setIsLoading(false);
-            if (localStorage.getItem("isHubmapUser")) {
-              // If we were logged out and we have an old token,
-              // We should promopt to sign back in
-              CallLoginDialog();
-            }
+            // setUnregStatus(true);
+            clearAuths();
           } else if (results && results.status === 403 && results.results === "User is not a member of group HuBMAP-read") {
-            // console.debug("HERE results", results, results.results);
+            console.debug('%c◉ UNREG ', 'color:#00ff7b', results );
             setAuthStatus(true);
-            setRegStatus(false);
-            setUnegStatus(true);
-            setIsLoading(false);  
+            setUnregStatus(true);
         }
       });
-      }catch(error){
-        console.debug('%c◉ FAIL WITH ERROR 410 ', 'color:#ff0000', );
-        setTimerStatus(false);
-        setIsLoading(false)
-        throw new Error(error);
-      }
     }else{
       setTimerStatus(false);
       setIsLoading(false)
@@ -155,53 +141,94 @@ export function App (props){
     }
   }, [ ]);
 
-  useEffect(() => {
-    console.debug("useEffect ubkg")
-    ubkg_api_get_dataset_type_set()
-      .then((response) => {
-        console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
-        let dtypes = response;
-        setDataTypeList(dtypes);
-        setDataTypeListAll(dtypes);
-        ubkg_api_get_organ_type_set()
-          .then((res) => {
-            setOrganList(res);
-            setDTLoading(false)
-          })
-          .catch((err) => {
-            reportError(err)
-        })
-      })
-      .catch(error => {
-        if (unregStatus) {
-          setGroupsToken(JSON.parse(localStorage.getItem("info")).groups_token);
-          setTimerStatus(false);
-          CallLoginDialog();
-        } else {
-          console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_assay_type_set ERROR", error);
-            reportError(error)
-        } 
-      });
-  }, [unregStatus ]);
 
   useEffect(() => {
+    //  No need to load the Organs and Datasets in unless we're logged in
     if(localStorage.getItem("info")){
-      try {
-        ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-        .then((res) => {
-          var allGroups = sortGroupsByDisplay(res.results);
-          console.debug('%c⊙ allGroups!!', 'color:#00ff7b', allGroups );
-          setAllGroups(allGroups);
-        })
-        .catch((err) => {
-          console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
-        })
-      } catch (error) {
-        console.debug("%c⭗", "color:#ff005d",error);
-      }
-    }
+      
+      // Load organs into LocalStorage if need be
+      // if(!localStorage.getItem("organs")){
+        ubkg_api_get_organ_type_set()
+            .then((res) => {
+              console.debug('%c◉ RES ', 'color:#00ff7b', res);
+              if(res !== undefined){
+                console.debug('%c◉ ORGAN RES ', 'color:#00ff7b', res);
+                localStorage.setItem("organs",JSON.stringify(res));
+                setORGLoading(false)
+              }else{
+                if(localStorage.getItem("organs")){
+                  // We have a cached copy, phew
+                  setAPIErr(["UBKG API : Organ","Previously loaded ORGAN data will be used until the issue is resolved.",res])
+                  setORGLoading(false)
+                }else{
+                  // Not cached, we cant really go on
+                  setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',res])
+                }
+              }
+            })
+            .catch((err) => {
+              // We wana let let this error slide.... inform something is Up 
+              // but use whats already in local storage if its not blank
+              if(localStorage.getItem("organs")){
+                // We have a cached copy, phew
+                setAPIErr("UBKG API Error: Organ Type Set","Previously loaded ORGAN definitions will be used until the issue is resolved.",err)
+                setORGLoading(false)
+              }else{
+                // Not cached, we cant really go on
+                setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',err)
+              }
+          })
+      // }
 
-  },[])
+      //  Load datatypes into LocalStorage if need be
+      // if(!localStorage.getItem("datatypes")){
+        ubkg_api_get_dataset_type_set()
+          .then((res) => {
+              if(res !== undefined){
+                localStorage.setItem("datasetTypes",JSON.stringify(res));
+                setDTLoading(false)
+                // TODO: Eventually remove these & use localstorage 
+                setDataTypeList(res);
+                setDataTypeListAll(res);
+              }else{
+                if(localStorage.getItem("datasetTypes")){
+                  setAPIErr(["UBKG API : Dataset Types","Previously loaded DATASET TYPE definitions will be used until the issue is resolved.",res])
+                  setDTLoading(false)
+                }else{
+                  setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
+                  reportError(res)
+                }
+              }
+            })
+            .catch((err) => {
+              // We wana let let this error slide.... inform something is Up 
+              // but use whats already in local storage if its not blank
+              if(localStorage.getItem("datasetTypes")){
+                // We have a cached copy, phew
+                setAPIErr("UBKG API Error: Dataset Types","Previously loaded DATASET TYPE definitions will be used until the issue is resolved.",err)
+                setDTLoading(false)
+              }else{
+                // Not cached, we cant really go on
+                setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
+                reportError(err)
+              }
+          })
+          //         ubkg_api_get_dataset_type_set()
+          // .then((res) => {
+          //   localStorage.setItem("datasetTypes",JSON.stringify(res));
+          //   setDTLoading(false)
+          //   // TODO: Eventually remove these & use localstorage 
+          //   setDataTypeList(res);
+          //   setDataTypeListAll(res);
+          // })
+          // .catch(error => {
+          //   console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_dataset_type_set ERROR", error);
+          //   reportError(error)
+          // });
+      // }
+
+    }
+ }, [ ]);
   
   
   useEffect(() => {
@@ -221,13 +248,10 @@ export function App (props){
     // Expose server context
     // easy way to apply the occasional QoL / Dev features &
     // selectively apply css as needed without additional js processing
-    if( window.hasOwnProperty('REACT_APP_URL')){
-      var url = window.REACT_APP_URL;
-      console.debug('%c◉ REACT_APP_URL', 'color:#00ff7b', url);
-      var stripUrl = url.replace(/(^\w+:|^)\/\//, '');
-      console.debug('%c◉ stripUrl ', 'color:#00ff7b', stripUrl);
+    if(userDev){
+      setTimerStatus(true);
     }
-  },[])
+  },[userDev])
   
   
   function clearAuths() {  
@@ -238,6 +262,8 @@ export function App (props){
         setTimeout(() => { // Give it a chance to cleaer the local storage
           localStorage.removeItem("info");
           localStorage.removeItem("isAuthenticated");
+          // Clearing Organs and Dataset Types too
+          // So logging out and back in will reload them
           resolve();
         }, 2000);
       });
@@ -278,6 +304,17 @@ export function App (props){
     }
   }
 
+
+
+  function renderAPIError() {
+    return (
+      <Alert variant="filled" severity="error">
+        There was an error populating from datasource {APIErr[0]}  <br />
+        {APIErr[1]} <br />
+        {APIErr[2]} 
+      </Alert>
+    );
+  }
 
 
   function creationSuccess(entity) {
@@ -336,8 +373,8 @@ export function App (props){
         userGroups={userGroups}
         userDataGroups={userDataGroups}
         onCreatedReditect={""}
-      />       
-      { process.env.REACT_APP_URL!=="http://localhost:8585" && (<Timer logout={Logout}/>)}
+      />             
+      <Timer logout={Logout}/>
       <div id="content" className="container">
       <Drawer 
         sx={{
@@ -351,60 +388,64 @@ export function App (props){
         className="alert-danger"
         anchor='bottom'
         open={errorShow}>
-          <Box  sx={{ 
-            width:          '100%', 
-            padding:        1, 
-            backgroundColor:'#dc3545', 
-            color:"#fff",'& span, h5':{
-                display:'inline-block',
-                padding:"0 5px 0 0 ",
-              }, }
-            }>
-              <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
-              <IconButton
-                sx={{
-                  position:'absolute', right:8, top:4, color:'white' 
-                }}
-                aria-label="close drawer"
-                onClick= {()=> setErrorShow(false)}
-                edge="start">
-                <CloseIcon />
-              </IconButton>
-          </Box>
-          <Box sx={{
-              width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
-            }}>
-            <Grid container>
-              <Grid item xs={7}>
-                <Typography variant="body2" gutterBottom>
-                  There's been an error handling the current task. Please try again later. <br />
-                  If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-                </Typography>
-              </Grid>
-              <Grid item xs={5}>
-                <Typography variant="body2"gutterBottom>
-                  Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
-                </Typography>
-                { errorDetail && errorDetail.length>0 && (
-                  <Typography variant="caption">ERR{errorDetail}</Typography>
-                )}
-                <Collapse in={errorInfoShow}>
-                  <Typography variant="caption">
-                    {errorInfo}
-                  </Typography>
-                </Collapse>
-              </Grid>
-            </Grid>
-          </Box>
-        </Drawer>
 
+
+        <Box  sx={{ 
+          width:          '100%', 
+          padding:        1, 
+          backgroundColor:'#dc3545', 
+          color:          "#fff",
+            '& span, h5':   {display:'inline-block',
+            padding:"0 5px 0 0 ",}, }}>
+            <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+            <IconButton
+              sx={{
+                position:'absolute', right:8, top:4, color:'white' 
+              }}
+              aria-label="close drawer"
+              onClick= {()=> setErrorShow(false)}
+              edge="start">
+              <CloseIcon />
+            </IconButton>
+        </Box>
+
+        <Box sx={{
+            width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
+          }}>
+          <Grid container>
+            <Grid item xs={7}>
+              <Typography variant="body2" gutterBottom>
+                There's been an error handling the current task. Please try again later. <br />
+                If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
+              </Typography>
+            </Grid>
+
+            <Grid item xs={5}>
+              <Typography variant="body2"gutterBottom>
+                Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
+              </Typography>
+              { errorDetail && errorDetail.length>0 && (
+                <Typography variant="caption">ERR{errorDetail}</Typography>
+              )}
+              <Collapse in={errorInfoShow}>
+                <Typography variant="caption">
+                  {errorInfo}
+                </Typography>
+              </Collapse>
+            </Grid>
+          </Grid>
+
+        </Box>
+
+
+      </Drawer>
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
             <h2>{bannerTitle}</h2>
             <div dangerouslySetInnerHTML={{ __html: bannerDetails}} />
           </div>
       )}
-      {isLoading || dtloading || (groupsToken && (!allGroups || allGroups.length<=0)) && (
+      {isLoading || dtloading || orgloading || (groupsToken && (!allGroups || allGroups.length<=0)) && (
         <LinearProgress />
       )}
 
@@ -449,6 +490,11 @@ export function App (props){
 
       )}
 
+      {APIErr.length > 0  && (
+        renderAPIError()
+      )}
+      
+
       {unregStatus && (
         <Routes>
           <Route index element={ 
@@ -474,7 +520,8 @@ export function App (props){
             <Paper className="px-5 py-4">
               <Routes>
                 
-                <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+                {/* <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} /> */}
+                <Route index element={<SearchComponent  entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
                 <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
                 <Route path="/login" element={<Login />} />
                 
