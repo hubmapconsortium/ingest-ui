@@ -70,6 +70,10 @@
   margin-right: 2px;
 }
 
+.logout button div{
+  color: white;
+}
+
 .inline-icon {
   margin-right: 1em;
 }

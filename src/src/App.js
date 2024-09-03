@@ -77,6 +77,7 @@ export function App (props){
   var [userDataGroups, setUserDataGroups] = useState({});
   var [userDev, setUserDev] = useState(false);
   var [regStatus, setRegStatus] = useState(false);
+  var [isLoggingOut, setIsLoggingOut] = useState(false);
   var [isLoading, setIsLoading] = useState(true);
   var [dtloading, setDTLoading] = useState(true);
   var [bannerTitle,setBannerTitle] = useState();
@@ -230,9 +231,9 @@ export function App (props){
   
   
   function clearAuths() {  
-    console.debug('%c◉ CLEAR AUTHS ', 'color:#00ff7b' );
-    if(process.env.REACT_APP_URL == "http://localhost:8585"){
-      console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
+    // console.debug('%c◉ CLEAR AUTHS ', 'color:#00ff7b' );
+    if(process.env.REACT_APP_URL === "http://localhost:8585"){
+      // console.debug('%c◉ clearAuths start ', 'color:#00ff7b' );
       return new Promise((resolve) => {
         setTimeout(() => { // Give it a chance to cleaer the local storage
           localStorage.removeItem("info");
@@ -243,9 +244,10 @@ export function App (props){
     }
   }
 
-  function Logout(){
-    clearAuths().then((response) => {
-      console.debug('%c◉  response', 'color:#00ff7b',response );
+  function Logout(e){
+    setIsLoggingOut(true);
+    clearAuths(e).then((response) => {
+        console.debug('%c◉  response', 'color:#00ff7b',response );
         window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
       })
   };
@@ -329,6 +331,7 @@ export function App (props){
       <Navigation 
         login={authStatus} 
         logout={Logout}
+        isLoggingOut={isLoggingOut}
         app_info={ app_info_storage}
         userGroups={userGroups}
         userDataGroups={userDataGroups}
@@ -348,57 +351,53 @@ export function App (props){
         className="alert-danger"
         anchor='bottom'
         open={errorShow}>
-
-
-        <Box  sx={{ 
-          width:          '100%', 
-          padding:        1, 
-          backgroundColor:'#dc3545', 
-          color:          "#fff",
-            '& span, h5':   {display:'inline-block',
-            padding:"0 5px 0 0 ",}, }}>
-            <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
-            <IconButton
-              sx={{
-                position:'absolute', right:8, top:4, color:'white' 
-              }}
-              aria-label="close drawer"
-              onClick= {()=> setErrorShow(false)}
-              edge="start">
-              <CloseIcon />
-            </IconButton>
-        </Box>
-
-        <Box sx={{
-            width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
-          }}>
-          <Grid container>
-            <Grid item xs={7}>
-              <Typography variant="body2" gutterBottom>
-                There's been an error handling the current task. Please try again later. <br />
-                If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-              </Typography>
-            </Grid>
-
-            <Grid item xs={5}>
-              <Typography variant="body2"gutterBottom>
-                Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
-              </Typography>
-              { errorDetail && errorDetail.length>0 && (
-                <Typography variant="caption">ERR{errorDetail}</Typography>
-              )}
-              <Collapse in={errorInfoShow}>
-                <Typography variant="caption">
-                  {errorInfo}
+          <Box  sx={{ 
+            width:          '100%', 
+            padding:        1, 
+            backgroundColor:'#dc3545', 
+            color:"#fff",'& span, h5':{
+                display:'inline-block',
+                padding:"0 5px 0 0 ",
+              }, }
+            }>
+              <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+              <IconButton
+                sx={{
+                  position:'absolute', right:8, top:4, color:'white' 
+                }}
+                aria-label="close drawer"
+                onClick= {()=> setErrorShow(false)}
+                edge="start">
+                <CloseIcon />
+              </IconButton>
+          </Box>
+          <Box sx={{
+              width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
+            }}>
+            <Grid container>
+              <Grid item xs={7}>
+                <Typography variant="body2" gutterBottom>
+                  There's been an error handling the current task. Please try again later. <br />
+                  If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
                 </Typography>
-              </Collapse>
+              </Grid>
+              <Grid item xs={5}>
+                <Typography variant="body2"gutterBottom>
+                  Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
+                </Typography>
+                { errorDetail && errorDetail.length>0 && (
+                  <Typography variant="caption">ERR{errorDetail}</Typography>
+                )}
+                <Collapse in={errorInfoShow}>
+                  <Typography variant="caption">
+                    {errorInfo}
+                  </Typography>
+                </Collapse>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
+        </Drawer>
 
-        </Box>
-
-
-      </Drawer>
       { !isLoading && bannerShow && (
           <div className="alert alert-info" role="alert">
             <h2>{bannerTitle}</h2>

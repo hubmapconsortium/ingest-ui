@@ -17,6 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 import UploadsForm from "./components/uploads/createUploads";
 
@@ -443,12 +444,10 @@ export const Navigation = (props) => {
                     Edit Profile
                 </Button>
               </span>
-              <span className="logout">
-                <Button
-                onClick={() => props.logout()}
-                className="nav-link" >
+              <span className="logout" >
+                <LoadingButton loading={props.isLoggingOut} color='info' onClick={(e) => props.logout(e)}>
                   Log Out 
-                </Button>
+                </LoadingButton>
               </span>
               {}
             </div>
