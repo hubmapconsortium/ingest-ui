@@ -41,7 +41,7 @@ import SearchComponent from "../../search/SearchComponent";
 //import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
-// import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
+import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
 //import LabIDsModa7l from "../labIdsModal";
@@ -194,26 +194,23 @@ class TissueForm extends Component {
 
   componentDidMount() {
 
-    this.setState({organ_types: JSON.parse(localStorage.getItem("organs"))}, () => {
-      console.log(this.state.organ_types);
-    }, () => {
-      console.log('ERROR: ubkg_api_get_organ_type_set')
+    ubkg_api_get_organ_type_set()
+    .then((res) => {
+      this.setState({organ_types: res}, () => {
+        console.log(this.state.organ_types);
+      }, () => {
+        console.log('ERROR: ubkg_api_get_organ_type_set')
+      });
     });
-
-    // ubkg_api_get_organ_type_set()
-    // .then((res) => {
-    //   this.setState({organ_types: res}, () => {
-    //     console.log(this.state.organ_types);
-    //   }, () => {
-    //     console.log('ERROR: ubkg_api_get_organ_type_set')
-    //   });
-    // });
 
     ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token) // @TODO Multiple places that use this do filtering after, just grab "ingest_api_users_groups" instead? 
       .then(res => {
+        
+        
         const groups = res.results.filter(
           // It filters our read only, but what about other permissions like admin? 
           g => g.data_provider === true
+
         );
         
         //  We have both Data-Provider groups as well as non. 
@@ -447,16 +444,16 @@ class TissueForm extends Component {
   }
 
 
-  // fetchOrganTypes(){
-  //   ubkg_api_get_organ_type_set()
-  //     .then((res) => {
-  //       console.debug("fetchOrganTypes", res);
-  //       return res
-  //     })
-  //     .catch((err) =>{
-  //       console.debug("ERR fetchOrganTypes",err);
-  //     })
-  // }
+  fetchOrganTypes(){
+    ubkg_api_get_organ_type_set()
+      .then((res) => {
+        console.debug("fetchOrganTypes", res);
+        return res
+      })
+      .catch((err) =>{
+        console.debug("ERR fetchOrganTypes",err);
+      })
+  }
 
   checkForRelatedGroupIds(entity) {
          const config = {
@@ -1787,7 +1784,7 @@ handleAddImage = () => {
                             <div className="col-sm-12">
                               <b>Organ Type:</b>{" "}
                               {
-                                JSON.parse(localStorage.getItem("organs"))[
+                                this.state.organ_types[
                                   this.state.source_entity.organ
                                 ]
                               }
@@ -1914,7 +1911,7 @@ handleAddImage = () => {
                         value={this.state.organ}
                       >
                         <option value="">----</option>
-                        {Object.entries(JSON.parse(localStorage.getItem("organs"))).map((op, index) => {
+                        {Object.entries(this.state.organ_types).map((op, index) => {
                           return (
                             <option key={op[0]} value={op[0]}>
                               {op[1]}
@@ -1947,7 +1944,7 @@ handleAddImage = () => {
                           readOnly
                           className="form-control"
                           id="static_organ"
-                          value={this.state.organ === "OT" ? this.state.organ_other : JSON.parse(localStorage.getItem("organs"))[this.state.organ]}>
+                          value={this.state.organ === "OT" ? this.state.organ_other : this.state.organ_types[this.state.organ]}>
                    </input>
                   </div>
                 )}
@@ -2252,8 +2249,7 @@ handleAddImage = () => {
                   { this.state.rui_click && this.state.RUI_ACTIVE && (
                   <Dialog fullScreen aria-labelledby="rui-dialog" open={this.state.rui_click}>
                     <RUIIntegration handleJsonRUI={this.handleRUIJson}
-                      organList={JSON.parse(localStorage.getItem("organs"))}
-                      // organList={this.state.organ_types}
+                      organList={this.state.organ_types}
                       // organList={this.fetchOrganTypes}
                       organ={ this.state.ancestor_organ ? this.state.ancestor_organ : this.state.source_entity.organ}
                       // organ={ this.props.editingEntity.organ ? this.props.editingEntity.organ}
