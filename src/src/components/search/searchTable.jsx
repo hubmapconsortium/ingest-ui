@@ -161,6 +161,10 @@ export const RenderSearchTable = (props) => {
       "newTable"
     )
       .then((response) => {
+        if(response.error){
+          console.debug('%c◉ Error on Search ', 'color:#ff005d', response.error);
+          errorReporting(response.error)
+        }
         console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
         setTableLoading(false);
         console.debug('%c⊙useEffect Search', 'color:rgb(0 140 255)',  response.total, response.results );
