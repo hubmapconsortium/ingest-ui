@@ -97,8 +97,8 @@ export function EPICollectionForm (props){
           entity.id = entity.uuid;
           //When coming from the Entity, the Datasets use dataset_type, from the Search UI they pass display_subtype instead
           if (entity.dataset_type && entity.dataset_type.length > 0) {
-            // var subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type[0],props.dtl_all);
-            entity.display_subtype = entity.dataset_type;
+            var subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type[0],props.dtl_all);
+            entity.display_subtype = subtype;
           }else {
             
           }
