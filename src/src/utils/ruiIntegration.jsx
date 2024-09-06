@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-// import { ubkg_api_get_organ_type_set } from "../service/ubkg_api";
+import { ubkg_api_get_organ_type_set } from "../service/ubkg_api";
 import "../App.css";
 
 
@@ -41,20 +41,15 @@ class RUIIntegration extends Component {
 
   componentDidMount() {
     console.log('RUI...', this.props);
-    this.setState({organ_types: JSON.parse(localStorage.getItem("organs"))}, () => {
-      console.log(this.state.organ_types);
-    }, () => {
-      console.log('ERROR: ubkg_api_get_organ_type_set')
-    });
 
-    // ubkg_api_get_organ_type_set()
-    //   .then((res) => {
-    //     this.setState({organ_types: res}, () => {
-    //       console.log(this.state.organ_types);
-    //     }, () => {
-    //       console.log('ERROR: ubkg_api_get_organ_type_set')
-    //     });
-    //   });
+    ubkg_api_get_organ_type_set()
+      .then((res) => {
+        this.setState({organ_types: res}, () => {
+          console.log(this.state.organ_types);
+        }, () => {
+          console.log('ERROR: ubkg_api_get_organ_type_set')
+        });
+      });
 
     this.updateRUIConfig();
     this.updateDimensions();

@@ -17,7 +17,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import React,{Component, useContext} from "react";
+import React,{Component} from "react";
 import ReactTooltip from "react-tooltip";
 import '../../App.css';
 import HIPPA from "../uuid/HIPPA.jsx";
@@ -33,7 +33,7 @@ import {
   ingest_api_notify_slack,
   ingest_api_users_groups
 } from '../../service/ingest_api';
-// import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
+import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
 import {RevertFeature} from "../../utils/revertModal";
 import {VersionNavigation} from "../../utils/ui_elements";
@@ -50,9 +50,6 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import {Alert,AlertTitle} from '@material-ui/lab';
-
-// import {UBKGContext} from '../../service/context/ubkg_context';
-
 
 
 class DatasetEdit extends Component {
@@ -145,7 +142,7 @@ class DatasetEdit extends Component {
 
     
     componentDidMount() {
-      // var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
+      var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
       // var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.assay_type_primary,this.state.status.toUpperCase(),this.props.newForm]
       // console.table({permChecks});
       if(this.props.editingDataset && this.props.editingDataset.assigned_to_group_name){
@@ -157,6 +154,7 @@ class DatasetEdit extends Component {
         this.setState({ingest_task:this.props.editingDataset.ingest_task})
       }
       
+
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
@@ -166,11 +164,17 @@ class DatasetEdit extends Component {
         var auth = JSON.parse(localStorage.getItem("info")).groups_token;
         this.setState({groupsToken:auth});
       } catch {
-        var auth = "";
+       var auth = "";
       }
 
-      if (!localStorage.getItem("info")){
-        localStorage.setItem("isAuthenticated", false); 
+      if (localStorage.getItem("info")){
+        // @TODO: Evaluate best practices, pass token to Service from within form
+        // Or consider another method for token/service auth handling
+        // Configs should /only/ assembed in the service using the passed token for now
+        const config = {headers:{Authorization:"Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
+            "Content-Type":"application/json",},};
+      }else{
+        localStorage.setItem("isAuthenticated", false);
       }
 
    
@@ -584,7 +588,6 @@ class DatasetEdit extends Component {
 
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
-    console.debug('%c◉ handleSelectClick ', 'color:#00ff7b', selection );
       if(this.state.selectedSource !== selection.row.uuid){
         this.setState({selectedSource:selection.row.uuid} ,() => {    
         var slist=this.state.source_uuid_list;
@@ -1252,14 +1255,11 @@ class DatasetEdit extends Component {
 
   assembleSourceAncestorData(source_uuids){   
     var dst="";
-    var organList=JSON.parse(localStorage.getItem("organs"));
     source_uuids.forEach(function(row, index) {
-      // console.debug('%c◉ row ', 'color:#00ff7b', organList, row.organ, organList[row.organ] );
-      // dst=ubkg_api_generate_display_subtype(row, localStorage.getItem("organs"));
-      dst=organList[row.organ]
-      // console.debug("dst", dst);
+      dst=ubkg_api_generate_display_subtype(row);
+      console.debug("dst", dst);
       source_uuids[index].display_subtype=dst;
-  });
+    });
     
     this.setState({source_uuid_list:source_uuids});  
     return (source_uuids)
@@ -1670,13 +1670,16 @@ class DatasetEdit extends Component {
   }
 
   onChangeGlobusLink(newLink, newDataset) {
-    const {name, display_doi, doi} = newDataset;
+    
+    const {
+name, display_doi, doi
+} = newDataset;
     this.setState({
       globus_url:newLink,
-      name:name, 
-      display_doi:display_doi, 
-      doi:doi, 
-      createSuccess:true
+       name:name, 
+       display_doi:display_doi, 
+       doi:doi, 
+       createSuccess:true
     });
   }
 
