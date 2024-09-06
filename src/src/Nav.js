@@ -92,7 +92,7 @@ export const Navigation = (props) => {
             <Typography
               variant="h6"
               noWrap
-              component="a"
+              // component="a"
               href="/"
               sx={{
                 mr: 2,
@@ -260,7 +260,7 @@ export const Navigation = (props) => {
             <Typography
               variant="h5"
               noWrap
-              component="a"
+              // component="a"
               href="#app-bar-with-responsive-menu"
               sx={{
                 textAlign: 'left',
@@ -274,13 +274,13 @@ export const Navigation = (props) => {
               }}>
               <a className="navbar-brand" href="/">
                 <img
-                src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                height="40"
-                className="d-inline-block align-top"
-                id="MenuLogo"
-                alt="HuBMAP logo"
-              />
-            </a>
+                  src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
+                  height="40"
+                  className="d-inline-block align-top"
+                  id="MenuLogo"
+                  alt="HuBMAP logo"
+                />
+              </a>
             </Typography>
             {props.login &&  userDataGroups[0] &&  userDataGroups[0].length >0 &&(
               <Box className="menu-bar" sx={{  display: { xs: 'none', md: 'flex' } }}>
