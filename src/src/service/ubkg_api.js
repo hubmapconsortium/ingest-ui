@@ -71,7 +71,8 @@ export function ubkg_api_get_organ_type_set() {
  *
  */
 export function ubkg_api_get_dataset_type_set() {
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
+  // let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`;
   return axios
     .get(url)
       .then(res => {
