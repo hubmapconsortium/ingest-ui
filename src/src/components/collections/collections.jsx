@@ -512,17 +512,15 @@ export function CollectionForm (props){
     };
 
     var processContacts = (data,source) => {
-      // var contacts = []
       var contributors = []
       var contacts = []
         for (const row of data.data) {
-          console.debug('%c⊙', 'color:#00ff7b', "row", row);
           contributors.push(row)
           if(row.is_contact === "TRUE"){
             contacts.push(row)
           }
         }
-       setFormValues ({
+        setFormValues ({
           ...formValues,
           contacts: contacts,
           contributors: contributors
