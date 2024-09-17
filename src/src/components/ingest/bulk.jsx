@@ -1064,7 +1064,7 @@ renderFileGrabber = () =>{
 
   render = () =>{
     //@NOTE: File download will only work once the file makes it to the main branch
-    var targetBranch ="master";
+    var targetBranch ="main";
     var targetFile = (this.props.bulkType).slice(0, -1).toLowerCase()
     const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/"+targetBranch+"/src/src/assets/Documents/example-"+targetFile+"-registrations.tsv"
     const docs ="https://docs.hubmapconsortium.org/bulk-registration/"+this.props.bulkType.toLowerCase().slice(0, -1)+"-bulk-reg.html"
