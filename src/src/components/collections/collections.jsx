@@ -320,7 +320,7 @@ export function CollectionForm (props){
   function validateForm(formValues) {
     console.debug('%c◉ validateForm FormValues ', 'color:#00ff7b', );
     var isValid = true;
-    let { title, description, contributors } = formValues;
+    let { title, description, contributors, contacts } = formValues;
     let formValuesSubmit = {};
     // Title
     if (!title || title.length === 0) {
@@ -387,7 +387,10 @@ export function CollectionForm (props){
       }))
       isValid = false;
     }
-
+    // Do not send blank contacts
+    if (contacts && (contacts[0])) {
+      formValuesSubmit.contacts = contacts
+    }
     if (isValid) {
         return formValuesSubmit
     } else {
@@ -509,17 +512,17 @@ export function CollectionForm (props){
     };
 
     var processContacts = (data,source) => {
-      // var contacts = []
       var contributors = []
-      // We render two from one TSV if we upload a file
-      // if (source && source === "grab") {
+      var contacts = []
         for (const row of data.data) {
-          console.debug('%c⊙', 'color:#00ff7b', "row", row);
           contributors.push(row)
+          if(row.is_contact === "TRUE"){
+            contacts.push(row)
+          }
         }
-       setFormValues ({
+        setFormValues ({
           ...formValues,
-          // contacts: contacts,
+          contacts: contacts,
           contributors: contributors
         });
     }
