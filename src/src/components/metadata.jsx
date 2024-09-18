@@ -555,9 +555,7 @@ const introText = () =>{
   </>)}
 
 
-var targetBranch ="master";
 var targetFile = (props.type).toLowerCase()
-// const exampleFile ="https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv"
 const exampleFile ="https://hubmapconsortium.github.io/ingest-validation-tools/sample-"+targetFile+"/current/"
 
   return (
