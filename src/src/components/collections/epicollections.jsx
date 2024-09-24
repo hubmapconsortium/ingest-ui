@@ -70,7 +70,7 @@ export function EPICollectionForm (props){
     description: "",
     dataset_uuids: "",
     contributors: [],
-    // contacts: [],
+    contacts: [],
     bulk_dataset_uuids:["","",""]
   });
   var [formValues, setFormValues] = useState({
@@ -79,7 +79,7 @@ export function EPICollectionForm (props){
     dataset_uuids: [],
     contributors: [],
     group_uuid:"",
-    // contacts: [],
+    contacts: [],
   });
   // Props
   var [isNew] = useState(props.newForm);
@@ -97,7 +97,12 @@ export function EPICollectionForm (props){
           entity.id = entity.uuid;
           //When coming from the Entity, the Datasets use dataset_type, from the Search UI they pass display_subtype instead
           if (entity.dataset_type && entity.dataset_type.length > 0) {
-            var subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type[0],props.dtl_all);
+            var subtype = "";
+            if (typeof entity.dataset_type === 'string'){
+              subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type,props.dtl_all);
+            }else{
+              subtype = generateDisplaySubtypeSimple_UBKG(entity.dataset_type[0],props.dtl_all);
+            }
             entity.display_subtype = subtype;
           }else {
             
@@ -321,7 +326,7 @@ export function EPICollectionForm (props){
   function validateForm(formValues) {
     console.debug('%c◉ validateForm FormValues ', 'color:#00ff7b', );
     var isValid = true;
-    let { title, description, contributors } = formValues;
+    let { title, description, contributors, contacts } = formValues;
     let formValuesSubmit = {};
     // Title
     if (!title || title.length === 0) {
@@ -388,13 +393,10 @@ export function EPICollectionForm (props){
       }))
       isValid = false;
     }
-
     // Do not send blank contacts
-    // console.debug('%c⊙', 'color:#00ff7b', "Contacts",contacts );
-    // if (contacts && (contacts[0] && contacts[0].version!==undefined)) {
-    //   formValuesSubmit.contacts = contacts
-    // }
-
+    if (contacts && (contacts[0])) {
+      formValuesSubmit.contacts = contacts
+    }
     if (isValid) {
         return formValuesSubmit
     } else {
@@ -406,7 +408,6 @@ export function EPICollectionForm (props){
   const handleSubmit = () => {
     setButtonState("submit");
     var submitForm = validateForm(formValues);
-    // console.debug('%c◉ submitForm ', 'color:#00ff7b', submitForm);
     setValidatingSubmitForm(submitForm);
     console.debug('%c⊙ setValidatingSubmitForm', 'color:#00ff7b', submitForm);
 
@@ -522,18 +523,19 @@ export function EPICollectionForm (props){
     }
   };
 
-  var processContacts = (data,source) => {
-    // var contacts = []
+  var processContacts = (data) => {
     var contributors = []
-    // We render two from one TSV if we upload a file
-    // if (source && source === "grab") {
+    var contacts = []
       for (const row of data.data) {
-        console.debug('%c⊙', 'color:#00ff7b', "row", row);
         contributors.push(row)
+        if(row.is_contact === "TRUE"){
+          contacts.push(row)
+          console.debug('%c◉ contact ', 'color:#00ff7b', row);
+        }
       }
       setFormValues ({
         ...formValues,
-        // contacts: contacts,
+        contacts: contacts,
         contributors: contributors
       });
   }

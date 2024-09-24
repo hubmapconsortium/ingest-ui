@@ -80,10 +80,13 @@ export function App (props){
   var [userDataGroups, setUserDataGroups] = useState({});
   
   var [userDev, setUserDev] = useState(false);
+  var [APIErr, setAPIErr] = useState(false);
+  
   // var [regStatus, setRegStatus] = useState(false);
   var [isLoggingOut, setIsLoggingOut] = useState(false);
   var [isLoading, setIsLoading] = useState(true);
   var [dtloading, setDTLoading] = useState(true);
+  var [ORGLoading, setORGLoading] = useState(true);
   var [bannerTitle,setBannerTitle] = useState();
   var [bannerDetails,setBannerDetails] = useState();
   var [bannerShow,setBannerShow] = useState(false);
@@ -94,8 +97,8 @@ export function App (props){
 
   useEffect(() => {
     // API Key Validity Check
-    // console.debug('%c◉ API Key Validity ', 'color:#00ff7b',localStorage.getItem("info") );
     if(localStorage.getItem("info")  ){
+      console.debug('%c◉ API Key Validity ', 'color:#00ff7b',localStorage.getItem("info") );
       console.debug('%c◉ localStorage.getItem("info") ', 'color:#00ff7b', localStorage.getItem("info"));
       // try {
       api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
@@ -126,8 +129,6 @@ export function App (props){
     }else{
       console.debug('%c◉ No Local Storage Key to check validity against ', 'color:#00ff7b', );
     }
-    
-
   },[])
   
   useEffect(() => {
@@ -141,7 +142,6 @@ export function App (props){
       localStorage.setItem("isHubmapUser", true);
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
-
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
         console.debug('%c◉ RESULTS ', 'color:#00ff7b', results);
@@ -167,33 +167,92 @@ export function App (props){
       setIsLoading(false)
       // localStorage.clear();
       // throw new Error(error);
-    
     }
-
   }, [ ]);
+
 
   useEffect(() => {
-    console.debug("useEffect ubkg")
-    ubkg_api_get_dataset_type_set()
-      .then((response) => {
-        console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
-        let dtypes = response;
-        setDataTypeList(dtypes);
-        setDataTypeListAll(dtypes);
+
+    if(localStorage.getItem("info")){
+      
+      // Load organs into LocalStorage if need be
+      if(!localStorage.getItem("organs")){
         ubkg_api_get_organ_type_set()
           .then((res) => {
-            setOrganList(res);
-            setDTLoading(false)
+            if(res !== undefined){
+              localStorage.setItem("organs",JSON.stringify(res));
+              setOrganList(res); // TODO: Eventually remove & use localstorage
+              setORGLoading(false);
+            }else{
+              // Not cached, we cant really go on
+              setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',res])
+              reportError(res)
+              setORGLoading(false);
+            } 
           })
           .catch((err) => {
-            reportError(err)
-        })
-      })
-      .catch(error => {
-          console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_assay_type_set ERROR", error);
-          reportError(error)
-      });
-  }, [ ]);
+              // Not cached, we cant really go on
+              setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',err)
+              reportError(err)
+              setORGLoading(false);
+          })
+      }else{
+        setOrganList(JSON.parse(localStorage.getItem("organs")));
+        setORGLoading(false)
+      }
+
+      //  Load datatypes into LocalStorage if need be
+      if(!localStorage.getItem("datatypes")){
+        ubkg_api_get_dataset_type_set()
+          .then((res) => {
+              if(res !== undefined){
+                localStorage.setItem("datasetTypes",JSON.stringify(res));
+                setDTLoading(false) 
+                // TODO: Eventually remove these & use localstorage
+                setDataTypeList(res);
+                setDataTypeListAll(res);
+              }else{
+                setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
+                reportError(res)
+              }
+            })
+            .catch((err) => {
+              // Not cached, we cant really go on
+              setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
+              reportError(err)
+              
+            })
+      }else{
+        setDataTypeList(JSON.parse(localStorage.getItem("datatypes")));
+        setDataTypeListAll(JSON.parse(localStorage.getItem("datatypes")));
+        setDTLoading(false)
+      }
+    }
+ }, [ ]);
+
+
+  // useEffect(() => {
+  //   console.debug("useEffect ubkg")
+  //   ubkg_api_get_dataset_type_set()
+  //     .then((response) => {
+  //       console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
+  //       let dtypes = response;
+  //       setDataTypeList(dtypes);
+  //       setDataTypeListAll(dtypes);
+  //       ubkg_api_get_organ_type_set()
+  //         .then((res) => {
+  //           setOrganList(res);
+  //           setDTLoading(false)
+  //         })
+  //         .catch((err) => {
+  //           reportError(err)
+  //       })
+  //     })
+  //     .catch(error => {
+  //         console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_assay_type_set ERROR", error);
+  //         reportError(error)
+  //     });
+  // }, [ ]);
 
   useEffect(() => {
     if(localStorage.getItem("info")){
@@ -211,7 +270,6 @@ export function App (props){
         console.debug("%c⭗", "color:#ff005d",error);
       }
     }
-
   },[])
   
   
@@ -278,6 +336,16 @@ export function App (props){
       var lowerTarget = target.toLowerCase();
       navigate(lowerTarget,  { replace: true });
     }
+  }
+
+  function renderAPIError() {
+    return (
+      <Alert variant="filled" severity="error">
+        There was an error populating from datasource {APIErr[0]}  <br />
+        {APIErr[1]} <br />
+        {APIErr[2]} 
+      </Alert>
+    );
   }
 
 
@@ -440,6 +508,10 @@ export function App (props){
           </React.Fragment>
 
         )}
+        
+        {APIErr.length > 0  && (
+          renderAPIError()
+        )}
 
         {unregStatus && (
           <Routes>
@@ -453,7 +525,7 @@ export function App (props){
           </Routes>
         )}
 
-        {authStatus && !timerStatus && !isLoading && !dtloading && !unregStatus &&(
+        {authStatus && !timerStatus && !isLoading && !dtloading && !ORGLoading && !unregStatus &&(
 
             <HuBMAPContext.Provider value={{allGroups }}> 
               <Paper className="px-5 py-4">
