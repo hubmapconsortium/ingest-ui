@@ -263,29 +263,6 @@ export function search_api_get_assay_type(assay) {
     });
 }
 
-export function search_api_get_assay_list(params) {
-  // So the api defaults to primary even if False is passed as ?primary=false
-  var primaryParam = {};
-  if (params) {
-    primaryParam = { params: params };
-  }
-  return (
-    axios
-      // Only regards flag via url for some reason?
-      .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`)
-      .then((res) => {
-        let data = res.data;
-        let dtListMapped = data.result.map((value, index) => {
-          return value;
-        });
-        return { status: res.status, data: dtListMapped };
-      })
-      .catch((error) => {
-        return { error };
-      })
-  );
-}
-
 export function search_api_get_assay_set(scope) {
   // Scope informs either Primary, Alt, or All
   var target = "";
