@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef  } from "react";
 import { useParams }from 'react-router-dom';
 import { entity_api_get_entity} from '../service/entity_api';
-import { ubkg_api_get_assay_type_set } from "../service/ubkg_api";
+import { ubkg_api_get_dataset_type_set } from "../service/ubkg_api";
 import PublicationFormLegacy from "./ingest/publications_edit";
 import {useNavigate} from "react-router-dom";
 import { useLocation } from 'react-router'
@@ -77,13 +77,16 @@ export const RenderPublication = (props) => {
   
     function checkAssayType(dtype){
       // These'll likely be changing and it's causing off behavior for publications
-      //  Nuking for now
-      ubkg_api_get_assay_type_set("primary")// the list call only gets primaries for now.
+      //  // Nuking for now
+      // Just swap for the new dataset types call
+
+      // ubkg_api_get_assay_type_set("primary")// the list call only gets primaries for now.
+      ubkg_api_get_dataset_type_set()
       .then((response) => {
         console.debug("checkAssayType Primary", response);
-        setDataTypeList(response.data.result);
-        setDtl_primary(response.data.result);
-        setDtl_all(response.data.result);
+        setDataTypeList(response);
+        setDtl_primary(response);
+        setDtl_all(response);
         setDtl_status(true);
         setIsLoadingDTList(0);
       }) 

@@ -7,7 +7,7 @@
 // otherwise the display name linked to the value of the corresponding description of specimen_type code
 // Dataset: the display names linked to the values in dataset_type as a comma separated list
 
-import { ubkg_api_get_organ_type_set,ubkg_api_get_assay_type_set } from "../service/ubkg_api";
+import { ubkg_api_get_organ_type_set,ubkg_api_get_dataset_type_set } from "../service/ubkg_api";
 import { SAMPLE_TYPES } from "../constants";
 
 
@@ -134,23 +134,23 @@ function get_organ_description_UBKG(organ_code) {
 }
       
 // Get Sample Types
-function get_sample_types_UBKG(tissue_code){
-  ubkg_api_get_assay_type_set()
-    .then((res) => {
-      console.debug('%c⊙', 'color:#00ff7b', res);
-      return res;
-    })
-    .catch((error) => {
-      console.error('%c⭗', 'color:#ff005d', "ERROR: ubkg_api_get_organ_type_set",error);
-    });
+// function get_sample_types_UBKG(tissue_code){
+//   ubkg_api_get_assay_type_set()
+//     .then((res) => {
+//       console.debug('%c⊙', 'color:#00ff7b', res);
+//       return res;
+//     })
+//     .catch((error) => {
+//       console.error('%c⭗', 'color:#ff005d', "ERROR: ubkg_api_get_organ_type_set",error);
+//     });
     
- }
-function get_sample_description_UBKG(tissue_code) {
-  var typeList = get_sample_types_UBKG();
-  console.debug('%c⊙', 'color:#00ff7b', "typeList",typeList );
-   console.debug("get_organ_description",typeList[tissue_code]);
-   return "TEST";
- }
+//  }
+// function get_sample_description_UBKG(tissue_code) {
+//   var typeList = get_sample_types_UBKG();
+//   console.debug('%c⊙', 'color:#00ff7b', "typeList",typeList );
+//    console.debug("get_organ_description",typeList[tissue_code]);
+//    return "TEST";
+//  }
         
         
 export function generateDisplaySubtype( entity) {
@@ -194,10 +194,9 @@ export function generateDisplaySubtype( entity) {
 
 
 export function generateDisplaySubtypeSimple_UBKG(datatype, datatypeList) {
-  // console.debug('%c⊙', 'color:#00ff7b', "generateDisplaySubtypeSimple_UBKG", datatype, datatypeList);
-  const assayDetail = datatypeList.find(({ term }) => term === datatype);
-  if (assayDetail !==undefined && assayDetail && assayDetail.term) {
-    return assayDetail.term
+  const assayDetail = datatypeList.find(({ dataset_type }) => dataset_type === datatype);
+  if (assayDetail !==undefined && assayDetail && assayDetail.dataset_type) {
+    return assayDetail.dataset_type
   } else {
     return "N/A"
   }

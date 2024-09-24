@@ -1712,8 +1712,8 @@ name, display_doi, doi
         <option value=""></option>
         {this.props.dtl_all.map((type, index) => {
           return (
-            <option key={index + 1} value={type.term}>
-              {type.term}
+            <option key={index + 1} value={type.dataset_type}>
+              {type.dataset_type}
             </option>
           );
         })}
