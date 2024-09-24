@@ -52,7 +52,7 @@ import {
   entity_api_get_entity,
 } from "../../service/entity_api";
 //import { withRouter } from 'react-router-dom';
-import {ubkg_api_get_assay_type_set} from "../../service/ubkg_api";
+// import {ubkg_api_get_assay_type_set} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
 import {generateDisplaySubtype} from "../../utils/display_subtypes";
 import {removeEmptyValues} from "../../utils/constants_helper";
@@ -81,7 +81,7 @@ class PublicationEdit extends Component {
     newForm: this.props.newForm,
     dataset_type:"publication",
     dtl_primary: [],
-    dtl_all: [],
+    // dtl_all: [],
     selected_dt: "",
     dataset_info: "",
     description: "",
@@ -215,7 +215,7 @@ class PublicationEdit extends Component {
     //consoledebug("this.state.validationStatus.publication_doi.length >0", this.state.validationStatus.publication_doi.length >0);
     // Modal state as flag for add/remove?
     document.addEventListener("click", this.handleClickOutside);
-    this.setAssayLists();
+    // this.setAssayLists();
     var savedGeneticsStatus = undefined;
     try {
       var auth = JSON.parse(localStorage.getItem("info")).groups_token;
@@ -477,26 +477,26 @@ class PublicationEdit extends Component {
     }
   }
 
-  setAssayLists() {
-    ubkg_api_get_assay_type_set()
-      .then((res) => {
-        this.setState({
-          dtl_all: res.data.result.map((value, index) => {
-            return value.name;
-          }),
-        });
-      })
-      .catch((err) => {});
-    ubkg_api_get_assay_type_set("primary")
-      .then((res) => {
-        this.setState({
-          dtl_primary: res.data.result.map((value, index) => {
-            return value.name;
-          }),
-        });
-      })
-      .catch((err) => {});
-  }
+  // setAssayLists() {
+  //   ubkg_api_get_assay_type_set()
+  //     .then((res) => {
+  //       this.setState({
+  //         dtl_all: res.data.result.map((value, index) => {
+  //           return value.name;
+  //         }),
+  //       });
+  //     })
+  //     .catch((err) => {});
+  //   ubkg_api_get_assay_type_set("primary")
+  //     .then((res) => {
+  //       this.setState({
+  //         dtl_primary: res.data.result.map((value, index) => {
+  //           return value.name;
+  //         }),
+  //       });
+  //     })
+  //     .catch((err) => {});
+  // }
 
   componentWillUnmount() {
     document.removeEventListener("click", this.handleClickOutside, true);
@@ -1888,28 +1888,28 @@ class PublicationEdit extends Component {
   //   }
   // }
 
-  renderAssayColumn(min, max) {
-    // Hijacking Select options based on Primary DT status
-    if (this.props.dtl_status || this.props.newForm) {
-      // true = primary dt, set options to primary
-      return this.props.dtl_primary.slice(min, max).map((val, idx) => {
-        return this.renderAssay(val, idx);
-      });
-    } else {
-      // false = Not primary DT, set options to full
-      return this.props.dtl_all.slice(min, max).map((val, idx) => {
-        return this.renderAssay(val, idx);
-      });
-    }
-  }
+  // renderAssayColumn(min, max) {
+  //   // Hijacking Select options based on Primary DT status
+  //   if (this.props.dtl_status || this.props.newForm) {
+  //     // true = primary dt, set options to primary
+  //     return this.props.dtl_primary.slice(min, max).map((val, idx) => {
+  //       return this.renderAssay(val, idx);
+  //     });
+  //   } else {
+  //     // false = Not primary DT, set options to full
+  //     return this.props.dtl_all.slice(min, max).map((val, idx) => {
+  //       return this.renderAssay(val, idx);
+  //     });
+  //   }
+  // }
 
-  renderAssay(val) {
-    return (
-      <option key={val.name} value={val.name} id={val.name}>
-        {val.description}
-      </option>
-    );
-  }
+  // renderAssay(val) {
+  //   return (
+  //     <option key={val.name} value={val.name} id={val.name}>
+  //       {val.description}
+  //     </option>
+  //   );
+  // }
 
   renderListAssay(val) {
     return <li key={val}>{val}</li>;

@@ -19,31 +19,31 @@ import { stripHTML,toTitleCase } from '../utils/string_helper'
  *
  * return:  { status, results}
  */
-export function ubkg_api_get_assay_type_set(scope) {
-  // application_context 
-  // console.debug("ubkg_api_get_assay_type_set", scope);
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype?application_context=HUBMAP`;
-  // let url = `${process.env.REACT_APP_SEARCH_API_URL}/v3/assaytype`;
-  // Note: scope == 'all' will not include the query parameter
-  if (scope === 'primary') {
-      url += '&primary=true'
-  } else if (scope === 'alt') {
-      url += '&primary=false'
-  }
-  // console.debug("ubkg_api_get_assay_type_set url", url);
-  return axios
-    .get(url)
-      .then(res => {
-        // let mapCheck = data.result.map((value, index) => { return value });
-        let data = res.data;
-        return {data}
-      })
-      .catch(error => {
-        console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_assaytype", error, error.response);
-        var errorResp = captureError(error);
-        return errorResp
-      });
-};
+// export function ubkg_api_get_assay_type_set(scope) {
+//   // application_context 
+//   // console.debug("ubkg_api_get_assay_type_set", scope);
+//   let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype?application_context=HUBMAP`;
+//   // let url = `${process.env.REACT_APP_SEARCH_API_URL}/v3/assaytype`;
+//   // Note: scope == 'all' will not include the query parameter
+//   if (scope === 'primary') {
+//       url += '&primary=true'
+//   } else if (scope === 'alt') {
+//       url += '&primary=false'
+//   }
+//   // console.debug("ubkg_api_get_assay_type_set url", url);
+//   return axios
+//     .get(url)
+//       .then(res => {
+//         // let mapCheck = data.result.map((value, index) => { return value });
+//         let data = res.data;
+//         return {data}
+//       })
+//       .catch(error => {
+//         console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_assaytype", error, error.response);
+//         var errorResp = captureError(error);
+//         return errorResp
+//       });
+// };
 
 /*
  * UBKG GET organtype/all method
