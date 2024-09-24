@@ -7,7 +7,7 @@
 // otherwise the display name linked to the value of the corresponding description of specimen_type code
 // Dataset: the display names linked to the values in dataset_type as a comma separated list
 
-// import { ubkg_api_get_organ_type_set,ubkg_api_get_assay_type_set,ubkg_api_get_dataset_type_set } from "../service/ubkg_api";
+import { ubkg_api_get_organ_type_set,ubkg_api_get_dataset_type_set } from "../service/ubkg_api";
 import { SAMPLE_TYPES } from "../constants";
 
 

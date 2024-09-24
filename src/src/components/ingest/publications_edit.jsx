@@ -2319,6 +2319,7 @@ class PublicationEdit extends Component {
           <div className="form-group">
           <FormControl fullWidth>
               <TextField
+                required
                 error={this.state.validationStatus.description.length >0}
                 label="Abstract"
                 disabled={!this.state.writeable}
