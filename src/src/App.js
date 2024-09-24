@@ -94,7 +94,7 @@ export function App (props){
 
   useEffect(() => {
     // API Key Validity Check
-    console.debug('%c◉ API Key Validity ', 'color:#00ff7b',localStorage.getItem("info") );
+    // console.debug('%c◉ API Key Validity ', 'color:#00ff7b',localStorage.getItem("info") );
     if(localStorage.getItem("info")  ){
       console.debug('%c◉ localStorage.getItem("info") ', 'color:#00ff7b', localStorage.getItem("info"));
       // try {
@@ -102,21 +102,21 @@ export function App (props){
         .then((results) => {
           console.debug('%c◉ results ', 'color:#00ff7b', results);
           if(results.error && results.error.response && results.error.response.status){
-            console.debug('%c◉ results.error.response.data ', 'color:#ff005d', results.error.response.data);
-            console.debug('%c◉ results.error.response.data.error ', 'color:#ff005d', results.error.response.data.error?results.error.response.data.error:"NOMESSAGE");
-            setLoginError(results.error.response.data.error ? results.error.response.data.error : "API Key Error");
-            console.debug('%c◉  results.error.response.status', 'color:#00ff7b',results.error.response.status );
-            if(results.error.response.status === 401){
-              console.debug('%c◉ EXPIRED ', 'color:#ff005d' );
-              setExpiredKey(true);
-              // setTimerStatus(false);
-              // setIsLoading(false);
-              // setAuthStatus(false);
-              // // reportError("error", "API Key Expired");
-              // localStorage.removeItem('info');
+    console.debug('%c◉ results.error.response.data ', 'color:#ff005d', results.error.response.data);
+            setExpiredKey(true);
+            // console.debug('%c◉ results.error.response.data.error ', 'color:#ff005d', results.error.response.data.error?results.error.response.data.error:"NOMESSAGE");
+            if(results.error.response.status ===401 ){
+              setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
+            }else if(results.error.response.data.error && results.error.response.status !==401){
+              setLoginError(results.error.response.data.error );
+            }else{
+              setLoginError("API Key Error");
             }
           }else if(!results.error){
             console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
+          }else{
+            setExpiredKey(true);
+            console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", results );
           }
         })
         .catch((err) => {
