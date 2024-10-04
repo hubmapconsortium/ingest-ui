@@ -374,7 +374,12 @@ export function EPICollectionForm (props){
     //Logic Flipped here to handle check for presence of object details not lack of
     // Only include if presnent, ignore if not
     console.debug('%c⊙', 'color:#00ff7b', "contributors",contributors );
-    if (contributors && (contributors[0] && contributors[0].orcid!==undefined)) {
+    if (!contributors || contributors.length === 0) {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'contributors': "",
+      }))
+    }else if (contributors && (contributors[0] && contributors[0].orcid!==undefined)) {
       // formValuesSubmit.contributors = contributors
       formValuesSubmit.contributors = contributors
       setFormErrors((prevValues) => ({
@@ -523,7 +528,7 @@ export function EPICollectionForm (props){
     var contacts = []
       for (const row of data.data) {
         contributors.push(row)
-        if(row.is_contact === "TRUE"){
+        if(row.is_contact === "TRUE" || row.is_contact === "YES"){
           contacts.push(row)
           console.debug('%c◉ contact ', 'color:#00ff7b', row);
         }
