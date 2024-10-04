@@ -520,10 +520,13 @@ export function CollectionForm (props){
       var contributors = []
       var contacts = []
         for (const row of data.data) {
-          contributors.push(row)
-          if(row.is_contact === "TRUE"){
+          if(!row.is_contact){
+            row.is_contact = "NO"
+          }else if (row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
             contacts.push(row)
           }
+          contributors.push(row)
+
         }
         setFormValues ({
           ...formValues,
@@ -548,7 +551,7 @@ export function CollectionForm (props){
               <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
               <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
               <TableCell className="clicky-cell" scope="row"> {row.orcid} </TableCell>
-              <TableCell className="clicky-cell" scope="row"> {(row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes")  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+              <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
             </TableRow>
           );
         });
