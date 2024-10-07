@@ -528,10 +528,12 @@ export function EPICollectionForm (props){
     var contacts = []
       for (const row of data.data) {
         contributors.push(row)
-        if(row.is_contact === "TRUE"){
+        if(!row.is_contact){
+          row.is_contact = "NO"
+        }else if(row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
           contacts.push(row)
-          console.debug('%c◉ contact ', 'color:#00ff7b', row);
         }
+        contributors.push(row)
       }
       setFormValues ({
         ...formValues,
@@ -556,8 +558,8 @@ export function EPICollectionForm (props){
             <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
             <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
             <TableCell className="clicky-cell" scope="row"> {row.orcid} </TableCell>
-            <TableCell className="clicky-cell" scope="row"> {(row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes")  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
-          </TableRow>
+            <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+            </TableRow>
         );
       });
     }
