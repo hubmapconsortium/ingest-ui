@@ -17,7 +17,7 @@ Running the following command will create an optimized static build of your app 
 npm run build
 ````
 
-## Docker build for DEV development
+## Docker build for DEV/TEST/PROD development
 
 There are a few configurable environment variables to keep in mind:
 
@@ -27,12 +27,4 @@ There are a few configurable environment variables to keep in mind:
 ```
 cd docker
 ./docker-development.sh [check|config|build|start|stop|down]
-```
-
-## Docker build for deployment on TEST/STAGE/PROD
-
-```
-cd docker
-docker pull hubmap/ingest-ui:2.3.0 (replace with the actual released version number)
-./docker-deployment.sh [start|stop|down]
 ```
