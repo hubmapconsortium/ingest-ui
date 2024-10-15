@@ -313,7 +313,8 @@ export function App (props){
   };
   
   function handleCancel(){
-    window.history.back();  
+    // window.history.back();  
+    navigate("/");
   }
   const onClose = (event, reason) => {
       navigate("/");
