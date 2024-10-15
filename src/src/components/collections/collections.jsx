@@ -4,6 +4,7 @@ import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
+import {ingest_api_publish_collection,ingest_api_user_admin} from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
 import Papa from 'papaparse';
@@ -15,7 +16,7 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import GroupModal from "../uuid/groupModal";
-
+import LoadingButton from '@mui/lab/LoadingButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -23,7 +24,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
-
+import {ErrBox} from "../../utils/ui_elements";
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -48,20 +49,29 @@ export function CollectionForm (props){
   var [associatedEntities, setassociatedEntities] = useState([]);
   var [associatedEntitiesInitial, setassociatedEntitiesInitial] = useState([]);
   var [selectedSources, setSelectedSources] = useState([]);
+  var [publishing, setPublishing] = useState(false);
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
   var [warningOpen, setWarningOpen] = React.useState(false);
-  var [openGroupModal, setOpenGroupModal] = useState(false
-  
-  
-  );
+  var [openGroupModal, setOpenGroupModal] = useState(false);
   var [lookupShow, setLookupShow] = useState(false);
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
   var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
   var [entityInfo, setEntityInfo] = useState();
+  var [userAdmin, setUserAdmin] = useState(false);
   var [pageError, setPageError] = useState("");
+  // var [publishError, setPublishError] = useState({
+  //   status:"",
+  //   message:"",
+  // });
+  // @TODO: See what we can globalize/memoize/notize here
+  var [errorHandler, setErrorHandler] = useState({
+    status: "",
+    message: "",
+    isError: null 
+  });
   var [formWarnings, setFormWarnings] = useState({
     bulk_dataset_uuids:""
   });
@@ -86,6 +96,18 @@ export function CollectionForm (props){
   var [dataGroups] = useState(props.dataGroups);
   var [datatypeList] = useState(props.dtl_all);
   var [editingCollection] = useState(props.editingCollection);
+
+  
+  useEffect(() => {
+    ingest_api_user_admin(JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((results) => {
+          console.debug('%c◉ ADMINCHECK ', 'color:#3F007b', results);
+          setUserAdmin(results)
+        })
+        .catch((err) => {
+          console.debug('%c⭗', 'color:#1f005d', "ingest_api_user_admin ERR", err );
+        })
+  }, []);
 
   useEffect(() => {
     if (editingCollection) {  
@@ -463,6 +485,39 @@ export function CollectionForm (props){
         console.debug('%c⭗', 'color:#ff005d', "handleCreate error", error);
         setPageError(error.toString());
         setButtonState("");
+
+      });
+  }
+  
+  const handlePublish = () => {
+    setPublishing(true)
+    ingest_api_publish_collection(props.authToken,editingCollection.uuid)
+      .then((response) => {
+        console.debug('%c◉ PUBLISHED ', 'color:#00ff7b', );
+        // props.onProcessed(response);
+        if(response.status === 200){
+          // GOOD
+          console.debug('%c◉ Good ', 'color:#00ff7b', response);
+        }else{
+          // BAD 
+          console.debug('%c◉ handlePublishErr Bad result', 'color:#00ff7b', response);
+          setPublishing(false)
+          let authMessage = response.status === 401 ? "User must be Authorized" : response.results.error.toString();
+          setPageError(response.status + " |  " + authMessage);
+          // setPublishError({
+          //   status:response.status,
+          //   message: response.results.error ? response.results.error : response.results.toString()
+          // })
+        }
+      })
+      .catch((error) => {
+        console.debug('%c⭗ handlePublishErr Broken Result', 'color:#ff005d', error);
+        //  status: "",
+        // message: "",
+        // isError: null 
+        setPageError(error.status + " |  " + error.message);
+        // setPageError(error.toString());
+        // setButtonState("");
 
       });
   }
@@ -880,6 +935,18 @@ export function CollectionForm (props){
             value={formValues.title}
           />
         </FormControl>
+        {editingCollection.doi_url  && (
+          <FormControl>
+            <TextField
+              label="DOI url"
+              name="DOIurl"
+              id="DOIurl"
+              disabled={true}
+              variant="standard"
+              value={editingCollection.doi_url}
+            />
+          </FormControl>
+        )}
         <FormControl>
           <TextField
             label="Description"
@@ -895,7 +962,6 @@ export function CollectionForm (props){
             value={formValues.description}
           />
         </FormControl>
-
         <FormControl>
           <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
           Contributors
@@ -903,7 +969,6 @@ export function CollectionForm (props){
           {formValues.contributors && formValues.contributors.length > 0 && (
             <>{renderContribTable()} </>
           )}
-
           <div className="text-right">
             <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
           </div>
@@ -930,6 +995,15 @@ export function CollectionForm (props){
 
         <div className="row">
           <div className="buttonWrapRight">
+            {userAdmin === true && !editingCollection.doi_url && (          
+              <LoadingButton 
+                loading={publishing}
+                onClick={() => handlePublish()}
+                variant="contained">
+                Publish
+              </LoadingButton>  
+            )}
+
             <Button
               variant="contained"
               onClick={() => handleSubmit()}
