@@ -389,7 +389,7 @@ export function EPICollectionForm (props){
     } else{
       setFormErrors((prevValues) => ({
         ...prevValues,
-        'contributors': "Contributors detected but colums are unsupported / improperly formatted. Please referto the examples linked below and try again.",
+        'contributors': "Contributors detected but colums are unsupported / improperly formatted. Please refer to the examples linked below and try again.",
       }))
       isValid = false;
     }
@@ -533,7 +533,7 @@ export function EPICollectionForm (props){
         }else if(row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
           contacts.push(row)
         }
-        contributors.push(row)
+        // contributors.push(row)
       }
       setFormValues ({
         ...formValues,
@@ -557,8 +557,12 @@ export function EPICollectionForm (props){
           >
             <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
             <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
-            <TableCell className="clicky-cell" scope="row"> {row.orcid} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.orcid} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.email	}</TableCell>
             <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.is_principal_investigator	}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.is_operator	}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.metadata_schema_id}</TableCell>
             </TableRow>
         );
       });
@@ -577,7 +581,11 @@ export function EPICollectionForm (props){
                 <TableCell> Name</TableCell>
                 <TableCell component="th">Affiliation</TableCell>
                 <TableCell component="th">Orcid</TableCell>
+                <TableCell component="th">Email</TableCell>
                 <TableCell component="th">Is Contact</TableCell>
+                <TableCell component="th">Is Principal Investigator</TableCell>
+                <TableCell component="th">Is Operator</TableCell>
+                <TableCell component="th">Metadata Schema ID</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -918,7 +926,7 @@ export function EPICollectionForm (props){
         )}
 
         <div className="text-right">
-          <Typography variant='caption'>Please referto the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
+          <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
         </div>
         <div className="text-left">
           <label>
