@@ -525,7 +525,7 @@ export function CollectionForm (props){
           }else if (row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
             contacts.push(row)
           }
-          contributors.push(row)
+          // contributors.push(row)
 
         }
         setFormValues ({
@@ -548,10 +548,14 @@ export function CollectionForm (props){
               key={("rowName_" + index)}
               className="row-selection"
             >
-              <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
-              <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
-              <TableCell className="clicky-cell" scope="row"> {row.orcid} </TableCell>
-              <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.orcid} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.email	}</TableCell>
+            <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.is_principal_investigator	}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.is_operator	}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.metadata_schema_id}</TableCell>
             </TableRow>
           );
         });
@@ -566,10 +570,14 @@ export function CollectionForm (props){
             <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
               <TableHead className="thead-dark font-size-sm">
                 <TableRow className="   " >
-                  <TableCell> Name</TableCell>
-                  <TableCell component="th">Affiliation</TableCell>
-                  <TableCell component="th">Orcid</TableCell>
-                  <TableCell component="th">Is Contact</TableCell>
+                <TableCell> Name</TableCell>
+                <TableCell component="th">Affiliation</TableCell>
+                <TableCell component="th">Orcid</TableCell>
+                <TableCell component="th">Email</TableCell>
+                <TableCell component="th">Is Contact</TableCell>
+                <TableCell component="th">Is Principal Investigator</TableCell>
+                <TableCell component="th">Is Operator</TableCell>
+                <TableCell component="th">Metadata Schema ID</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
