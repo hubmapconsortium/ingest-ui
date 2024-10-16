@@ -380,18 +380,7 @@ export function EPICollectionForm (props){
     // Only include if presnent, ignore if not
     console.debug('%c⊙', 'color:#00ff7b', "contributors",contributors );
     if (contributors && (contributors[0] && contributors[0].orcid!==undefined)) {
-      // formValuesSubmit.contributors = contributors
       formValuesSubmit.contributors = contributors
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-        'contributors': "",
-      }))
-    } else{
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-        'contributors': "Contributors detected but colums are unsupported / improperly formatted. Please refer to the examples linked below and try again.",
-      }))
-      isValid = false;
     }
     // Do not send blank contacts
     if (contacts && (contacts[0])) {
