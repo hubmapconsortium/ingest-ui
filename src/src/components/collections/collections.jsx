@@ -520,13 +520,12 @@ export function CollectionForm (props){
       var contributors = []
       var contacts = []
         for (const row of data.data) {
+          contributors.push(row)
           if(!row.is_contact){
             row.is_contact = "NO"
           }else if (row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
             contacts.push(row)
           }
-          // contributors.push(row)
-
         }
         setFormValues ({
           ...formValues,
