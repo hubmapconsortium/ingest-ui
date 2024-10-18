@@ -401,18 +401,7 @@ export function CollectionForm (props){
     // Only include if presnent, ignore if not
     console.debug('%c⊙', 'color:#00ff7b', "contributors",contributors );
     if (contributors && (contributors[0] && contributors[0].orcid!==undefined)) {
-      // formValuesSubmit.contributors = contributors
       formValuesSubmit.contributors = contributors
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-        'contributors': "",
-      }))
-    } else{
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-        'contributors': "Contributors detected but colums are unsupported / improperly formatted. Please refer to the examples linked below and try again.",
-      }))
-      isValid = false;
     }
     // Do not send blank contacts
     if (contacts && (contacts[0])) {
@@ -575,13 +564,12 @@ export function CollectionForm (props){
       var contributors = []
       var contacts = []
         for (const row of data.data) {
+          contributors.push(row)
           if(!row.is_contact){
             row.is_contact = "NO"
           }else if (row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
             contacts.push(row)
           }
-          contributors.push(row)
-
         }
         setFormValues ({
           ...formValues,
@@ -603,10 +591,14 @@ export function CollectionForm (props){
               key={("rowName_" + index)}
               className="row-selection"
             >
-              <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
-              <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
-              <TableCell className="clicky-cell" scope="row"> {row.orcid} </TableCell>
-              <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.orcid} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.email	}</TableCell>
+            <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.is_principal_investigator	}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.is_operator	}</TableCell>
+            <TableCell className="clicky-cell" scope="row">{row.metadata_schema_id}</TableCell>
             </TableRow>
           );
         });
@@ -621,10 +613,14 @@ export function CollectionForm (props){
             <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
               <TableHead className="thead-dark font-size-sm">
                 <TableRow className="   " >
-                  <TableCell> Name</TableCell>
-                  <TableCell component="th">Affiliation</TableCell>
-                  <TableCell component="th">Orcid</TableCell>
-                  <TableCell component="th">Is Contact</TableCell>
+                <TableCell> Name</TableCell>
+                <TableCell component="th">Affiliation</TableCell>
+                <TableCell component="th">Orcid</TableCell>
+                <TableCell component="th">Email</TableCell>
+                <TableCell component="th">Is Contact</TableCell>
+                <TableCell component="th">Is Principal Investigator</TableCell>
+                <TableCell component="th">Is Operator</TableCell>
+                <TableCell component="th">Metadata Schema ID</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
