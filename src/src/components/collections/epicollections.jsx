@@ -495,28 +495,19 @@ export function EPICollectionForm (props){
         console.debug('%c◉ PUBLISHED ', 'color:#00ff7b', );
         // props.onProcessed(response);
         if(response.status === 200){
-          // GOOD
-          console.debug('%c◉ Good ', 'color:#00ff7b', response);
+          console.debug('%c◉ Good ingest_api_publish_collection ', 'color:#00ff7b', response);
+          props.onProcessed(response.results);
         }else{
-          // BAD 
-          console.debug('%c◉ handlePublishErr Bad result', 'color:#00ff7b', response);
-          setPageError(response.status + " |  " + response.results.error);
+          console.debug('%c◉ ingest_api_publish_collection  Bad result', 'color:#ff337b', response);
           setPublishing(false)
-          // setPublishError({
-          //   status:response.status,
-          //   message: response.results.error ? response.results.error : response.results.toString()
-          // })
+          let authMessage = response.status === 401 ? "User must be Authorized" : response.results.error.toString();
+          setPageError(response.status + " |  " + authMessage);
         }
       })
       .catch((error) => {
         console.debug('%c⭗ handlePublishErr Broken Result', 'color:#ff005d', error);
-        //  status: "",
-        // message: "",
-        // isError: null 
         setPageError(error.status + " |  " + error.message);
-        // setPageError(error.toString());
-        // setButtonState("");
-
+        setPublishing(false);
       });
   }
   
@@ -947,7 +938,7 @@ export function EPICollectionForm (props){
           value={formValues.title}
         />
       </FormControl>
-      {editingCollection.doi_url  && (
+      {editingCollection && editingCollection.doi_url  && (
           <FormControl>
             <TextField
               label="DOI url"
