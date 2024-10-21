@@ -979,7 +979,7 @@ export function CollectionForm (props){
 
         <div className="row">
           <div className="buttonWrapRight">
-            {userAdmin === true && !editingCollection.doi_url && (          
+            {userAdmin === true && (editingCollection && !editingCollection.doi_url) && (          
               <LoadingButton 
                 loading={publishing}
                 onClick={() => handlePublish()}
