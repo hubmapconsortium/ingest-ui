@@ -29,7 +29,7 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faCheck,faExclamationTriangle, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faUpRightFromSquare, faSpinner, faTrash, faCheck,faExclamationTriangle, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
@@ -631,7 +631,6 @@ export function CollectionForm (props){
         </>
       )
     }
-    
     var renderAssociationTable = () => {
       var hiddenFields = [];
       var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
@@ -723,6 +722,11 @@ export function CollectionForm (props){
               </h3>
               {!props.newForm && (
                 <h5>{props.editingCollection.title}</h5>
+              )}
+              {editingCollection && editingCollection.doi_url  && (
+                <h4 className="title_badge">
+                  doi: <a href={editingCollection.doi_url} target='_blank' >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
+                </h4>
               )}
             </div>
           </div>
@@ -919,18 +923,7 @@ export function CollectionForm (props){
             value={formValues.title}
           />
         </FormControl>
-        {editingCollection && editingCollection.doi_url   && (
-          <FormControl>
-            <TextField
-              label="DOI url"
-              name="DOIurl"
-              id="DOIurl"
-              disabled={true}
-              variant="standard"
-              value={editingCollection.doi_url}
-            />
-          </FormControl>
-        )}
+
         <FormControl>
           <TextField
             label="Description"
