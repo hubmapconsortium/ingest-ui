@@ -4,6 +4,7 @@ import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM,COLUMN_DEF_COLLECTION} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
+import {ingest_api_publish_collection,ingest_api_user_admin} from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
 import Papa from 'papaparse';
@@ -15,6 +16,8 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import GroupModal from "../uuid/groupModal";
+import LoadingButton from '@mui/lab/LoadingButton';
+import {ErrBox} from "../../utils/ui_elements";
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -28,7 +31,7 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQuestionCircle, faSpinner, faTrash, faExclamationTriangle, faCheck, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faSpinner, faUpRightFromSquare, faTrash, faExclamationTriangle, faCheck, faPlus,faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
@@ -51,17 +54,26 @@ export function EPICollectionForm (props){
   var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
   var [warningOpen, setWarningOpen] = React.useState(false);
-  var [openGroupModal, setOpenGroupModal] = useState(false
-  
-  
-  );
+  var [openGroupModal, setOpenGroupModal] = useState(false );
   var [lookupShow, setLookupShow] = useState(false);
   var [loadingDatasets, setLoadingDatasets] = useState(true);
   var [hideUUIDList, setHideUUIDList] = useState(true);
   var [loadUUIDList, setLoadUUIDList] = useState(false);
   var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
   var [entityInfo, setEntityInfo] = useState();
+  var [userAdmin, setUserAdmin] = useState(false);
   var [pageError, setPageError] = useState("");
+  var [publishing, setPublishing] = useState(false);
+// var [publishError, setPublishError] = useState({
+  //   status:"",
+  //   message:"",
+  // });
+  // @TODO: See what we can globalize/memoize/notize here
+  var [errorHandler, setErrorHandler] = useState({
+    status: "",
+    message: "",
+    isError: null 
+  });
   var [formWarnings, setFormWarnings] = useState({
     bulk_dataset_uuids:""
   });
@@ -87,6 +99,18 @@ export function EPICollectionForm (props){
   var [datatypeList] = useState(props.dtl_all);
   var [editingCollection] = useState(props.editingCollection);
 
+
+  useEffect(() => {
+    ingest_api_user_admin(JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((results) => {
+          console.debug('%c◉ ADMINCHECK ', 'color:#3F007b', results);
+          setUserAdmin(results)
+        })
+        .catch((err) => {
+          console.debug('%c⭗', 'color:#1f005d', "ingest_api_user_admin ERR", err );
+        })
+  }, []);
+  
   useEffect(() => {
     if (editingCollection) {  
       setassociatedEntities([]) 
@@ -462,6 +486,30 @@ export function EPICollectionForm (props){
 
       });
   }
+
+
+  const handlePublish = () => {
+    setPublishing(true)
+    ingest_api_publish_collection(props.authToken,editingCollection.uuid)
+      .then((response) => {
+        console.debug('%c◉ PUBLISHED ', 'color:#00ff7b', );
+        // props.onProcessed(response);
+        if(response.status === 200){
+          console.debug('%c◉ Good ingest_api_publish_collection ', 'color:#00ff7b', response);
+          props.onProcessed(response.results);
+        }else{
+          console.debug('%c◉ ingest_api_publish_collection  Bad result', 'color:#ff337b', response);
+          setPublishing(false)
+          let authMessage = response.status === 401 ? "User must be Authorized" : response.results.error.toString();
+          setPageError(response.status + " |  " + authMessage);
+        }
+      })
+      .catch((error) => {
+        console.debug('%c⭗ handlePublishErr Broken Result', 'color:#ff005d', error);
+        setPageError(error.status + " |  " + error.message);
+        setPublishing(false);
+      });
+  }
   
   const handleUpdate = (formSubmit) => {
     // Need to only pass what's changed now
@@ -694,6 +742,11 @@ export function EPICollectionForm (props){
             </h3>
             {!props.newForm && (
               <h5>{props.editingCollection.title}</h5>
+            )}
+            {editingCollection && editingCollection.doi_url  && (
+              <h4 className="title_badge">
+                doi: <a href={editingCollection.doi_url} target='_blank' >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
+              </h4>
             )}
           </div>
         </div>
@@ -940,6 +993,14 @@ export function EPICollectionForm (props){
 
       <div className="row">
         <div className="buttonWrapRight">
+          {userAdmin === true && (editingCollection && !editingCollection.doi_url) && (          
+            <LoadingButton 
+              loading={publishing}
+              onClick={() => handlePublish()}
+              variant="contained">
+              Publish
+            </LoadingButton>  
+          )}
           <Button
             variant="contained"
             onClick={() => handleSubmit()}

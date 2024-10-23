@@ -12,7 +12,6 @@ import FormData from "form-data";
 export function ingest_api_users_groups(auth) { 
    const options = {headers:{Authorization: "Bearer " + auth,
         "Content-Type":"application/json"}};
-
   return axios 
  .get(
    `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
@@ -40,6 +39,40 @@ export function ingest_api_users_groups(auth) {
       // throw new Error(error);
       return {error}
     }
+  });
+}
+
+
+/*
+ * Is User Admin
+ *
+ */
+export function ingest_api_user_admin(auth) { 
+   const options = {headers:{Authorization: "Bearer " + auth,
+        "Content-Type":"application/json"}};
+  return axios 
+ .get(
+   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+ .then(res => {
+
+    console.debug('%c◉ res ', 'color:#00ff7b', res);
+    let groups = res.data.groups;
+    console.debug('%c◉ ADMIN ', 'color:#FF227b', groups);
+
+    for (let group in groups) {
+      let groupName = groups[group].name
+      if(groupName.includes("hubmap-data-admin")){
+        return true
+      }else{
+        return false
+      }
+    }
+
+
+ })
+ .catch(error => {
+    console.debug("ERR ingest_api_users_groups", error, error.response);
+    return {error}
   });
 }
 
@@ -533,3 +566,29 @@ export function ingest_api_upload_bulk_metadata(type, dataFile, auth) {
         return {error}
       });
 };
+
+
+
+/* 
+ *  Notify
+ *
+ */
+export function ingest_api_publish_collection(auth, data) { 
+  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${data}/register-doi`;
+  console.debug('%c◉ publish ', 'color:#00ff7b', url,options);
+  return axios 
+     .put(url, data, options)
+      .then(res => {
+          let results = res.data;
+          return {status:res.status, results:results}
+      })
+      .catch(error => {
+        if(error.response){
+          return {status:error.response.status, results:error.response.data}
+        }else{
+          return {error}
+        }
+      });
+};
+

@@ -845,3 +845,14 @@ svg.invalid{
   border-radius: 5px;
   font-size: inherit!important;
 }
+.title_badge{
+  align-items: center;
+  color: rgb(42, 111, 184);
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+  font-weight: 300;
+  gap: 4px;
+  line-height: 1.5;
+}
