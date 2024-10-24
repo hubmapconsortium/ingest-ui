@@ -57,16 +57,15 @@ export function ingest_api_user_admin(auth) {
 
     console.debug('%c◉ res ', 'color:#00ff7b', res);
     let groups = res.data.groups;
-    console.debug('%c◉ ADMIN ', 'color:#FF227b', groups);
-
+    console.debug('%c◉ ADMIN Check:', 'color:#FF227b', groups);
     for (let group in groups) {
       let groupName = groups[group].name
+      console.debug('%c◉ groupName ', 'color:#ffe921', groupName);
       if(groupName.includes("hubmap-data-admin")){
         return true
-      }else{
-        return false
       }
     }
+    return false
 
 
  })
