@@ -856,3 +856,7 @@ svg.invalid{
   gap: 4px;
   line-height: 1.5;
 }
+
+.fullDialog .MuiPaper-root{
+  max-width:1200px!important;
+}

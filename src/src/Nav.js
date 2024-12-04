@@ -18,11 +18,12 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LoadingButton from '@mui/lab/LoadingButton';
-
+import MUIDialog from "./components/ui/dialog";
 import UploadsForm from "./components/uploads/createUploads";
 
 export const Navigation = (props) => {
   const [userInfo, setUserInfo] = React.useState();
+  const [metaModalOpen, setMetaModalOpen] = React.useState(false);
   // const [userGroups, setUserGroups] = React.useState();
   const [userDataGroups, setUserDataGroups] = React.useState([]);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
@@ -32,6 +33,9 @@ export const Navigation = (props) => {
   const open_I = Boolean(anchorEl_I);
   const open_B = Boolean(anchorEl_B);
   const open_S = Boolean(anchorEl_S);
+  var dialogMetadataTitle = 'Metadata Bulk Uploading Temporarily Unavailable';
+  var dialogMetadataMessage = '<strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas</strong>, which are linked from <a href="">this page</a>. The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <ahref="">process outlined here</a>. <strong>Please also <a>update this data pulse check spreadsheet</a></strong> so we know what data is coming from your team. We\'re looking forward to your submissions!<br/> \
+  Please contact <a href="">help@hubmapconsortium.org</a> if you have questions.';
   const location = useLocation();
   let navigate = useNavigate();
   useEffect(() => {
@@ -45,6 +49,12 @@ export const Navigation = (props) => {
     }
   }, [props, props.app_info, location]);
 
+  const handleCancel = () => {
+    setMetaModalOpen(false);
+  }  
+  const handleOpenModal = () => {
+    setMetaModalOpen(true);
+  }
 
   // @TODO: Dry this up
   const handleClick_S = (event) => {
@@ -79,6 +89,12 @@ export const Navigation = (props) => {
 
   return (
       <AppBar position="static" id="header">
+         <MUIDialog 
+          open={metaModalOpen} 
+          handleClose={handleCancel} 
+          title={dialogMetadataTitle}
+          message={dialogMetadataMessage}
+          bgcol = "Red" />
         <Dialog open={uploadsDialog}>
           <DialogContent> 
           <UploadsForm
@@ -227,23 +243,23 @@ export const Navigation = (props) => {
                   <MenuItem 
                     className="nav-link" 
                     sx={{ width: "200px" }}
-                    component={Link}
-                    onClick={handleClose}
-                    to="/metadata/block" >
+                    // component={Link}
+                    to="/metadata/block" 
+                    onClick={() => handleOpenModal(true)}>
                     Block
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    onClick={handleClose}
-                    to="/metadata/section" >
+                    to="/metadata/section" 
+                    onClick={() => handleOpenModal(true)}>
                     Section
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    onClick={handleClose}
-                    to="/metadata/suspension" >
+                    to="/metadata/suspension" 
+                    onClick={() => handleOpenModal(true)}>
                     Suspension
                   </MenuItem>
                 </Menu>
@@ -396,22 +412,22 @@ export const Navigation = (props) => {
                     className="nav-link" 
                     sx={{ width: "200px" }}
                     component={Link}
-                    onClick={handleClose}
-                    to="/metadata/block" >
+                    // to="/metadata/block" 
+                    onClick={() => handleOpenModal(true)}>
                     Block
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    onClick={handleClose}
-                    to="/metadata/section" >
+                    // to="/metadata/section" 
+                    onClick={() => handleOpenModal(true)}>
                     Section
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    onClick={handleClose}
-                    to="/metadata/suspension" >
+                    // to="/metadata/suspension"
+                    onClick={() => handleOpenModal(true)} >
                     Suspension
                   </MenuItem>
                 </Menu>

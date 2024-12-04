@@ -57,7 +57,7 @@ export const RenderMetadata = (props) => {
     whiteSpace: 'nowrap',
     width: 1,
   });
-
+  
   
   var [errorHandler, setErrorHandler] = useState({
     status: '',
@@ -558,6 +558,8 @@ const exampleFile ="https://hubmapconsortium.github.io/ingest-validation-tools/s
 
   return (
         <div className="row">
+
+         
           <h4>{toTitleCase(props.type)} Metadata Upload</h4>
           <div className=' col-sm-2' id='stepContainer'>
             <Stepper activeStep={activeStep} orientation="vertical">
