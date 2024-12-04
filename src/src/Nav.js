@@ -24,6 +24,7 @@ import UploadsForm from "./components/uploads/createUploads";
 export const Navigation = (props) => {
   const [userInfo, setUserInfo] = React.useState();
   const [metaModalOpen, setMetaModalOpen] = React.useState(false);
+  const [exampleLink, setExampleLink] = React.useState("block");
   // const [userGroups, setUserGroups] = React.useState();
   const [userDataGroups, setUserDataGroups] = React.useState([]);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
@@ -34,8 +35,8 @@ export const Navigation = (props) => {
   const open_B = Boolean(anchorEl_B);
   const open_S = Boolean(anchorEl_S);
   var dialogMetadataTitle = 'Metadata Bulk Uploading Temporarily Unavailable';
-  var dialogMetadataMessage = '<strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas</strong>, which are linked from <a href="">this page</a>. The schemas you should use are marked <strong>"use this one"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <ahref="">process outlined here</a>. <strong>Please also <a>update this data pulse check spreadsheet</a></strong> so we know what data is coming from your team. We\'re looking forward to your submissions!<br/> \
-  Please contact <a href="">help@hubmapconsortium.org</a> if you have questions.';
+  var dialogMetadataMessage = "<strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas</strong>, which are linked from <a href=\""+exampleLink+"\"  target=\"_blank\">this page</a>. The schemas you should use are marked <strong>\"use this one\"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <a href=\"https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit#heading=h.d6xf2xeysl78\" target=\"_blank\">process outlined here</a>. <strong>Please also <a href=\"https://docs.google.com/spreadsheets/d/19ZJx_EVyBGKNeW0xxQlOsMdt1DVNZYWmuG014rXsQP4/edit#gid=0\" target=\"_blank\">update this data pulse check spreadsheet</a></strong> so we know what data is coming from your team. We\'re looking forward to your submissions!<br/> \
+  Please contact <a href=\"mailto:help@hubmapconsortium.org\">help@hubmapconsortium.org</a> if you have questions.";
   const location = useLocation();
   let navigate = useNavigate();
   useEffect(() => {
@@ -52,7 +53,11 @@ export const Navigation = (props) => {
   const handleCancel = () => {
     setMetaModalOpen(false);
   }  
-  const handleOpenModal = () => {
+  const handleOpenModal = (type) => {
+    let sampleType = type.toString();
+    console.debug('%c◉ type ', 'color:#00ff7b', type, sampleType, typeof sampleType);
+    setExampleLink("https://hubmapconsortium.github.io/ingest-validation-tools/sample-"+sampleType.toLowerCase()+"/current/")
+    console.debug('%c◉ link ', 'color:#00ff7b', exampleLink);
     setMetaModalOpen(true);
   }
 
@@ -94,6 +99,7 @@ export const Navigation = (props) => {
           handleClose={handleCancel} 
           title={dialogMetadataTitle}
           message={dialogMetadataMessage}
+          // dialogHelpLink={dialogHelpLinkURL}
           bgcol = "Red" />
         <Dialog open={uploadsDialog}>
           <DialogContent> 
@@ -245,21 +251,21 @@ export const Navigation = (props) => {
                     sx={{ width: "200px" }}
                     // component={Link}
                     to="/metadata/block" 
-                    onClick={() => handleOpenModal(true)}>
+                    onClick={() => handleOpenModal("Block")}>
                     Block
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
                     to="/metadata/section" 
-                    onClick={() => handleOpenModal(true)}>
+                    onClick={() => handleOpenModal("Section")}>
                     Section
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
                     to="/metadata/suspension" 
-                    onClick={() => handleOpenModal(true)}>
+                    onClick={() => handleOpenModal("Suspension")}>
                     Suspension
                   </MenuItem>
                 </Menu>
@@ -413,21 +419,21 @@ export const Navigation = (props) => {
                     sx={{ width: "200px" }}
                     component={Link}
                     // to="/metadata/block" 
-                    onClick={() => handleOpenModal(true)}>
+                    onClick={() => handleOpenModal("Block")}>
                     Block
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
                     // to="/metadata/section" 
-                    onClick={() => handleOpenModal(true)}>
+                    onClick={() => handleOpenModal("Section")}>
                     Section
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
                     // to="/metadata/suspension"
-                    onClick={() => handleOpenModal(true)} >
+                    onClick={() => handleOpenModal("Suspension")} >
                     Suspension
                   </MenuItem>
                 </Menu>
