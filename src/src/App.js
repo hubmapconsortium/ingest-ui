@@ -230,30 +230,6 @@ export function App (props){
     }
  }, [ ]);
 
-
-  // useEffect(() => {
-  //   console.debug("useEffect ubkg")
-  //   ubkg_api_get_dataset_type_set()
-  //     .then((response) => {
-  //       console.debug('%c⊙', 'color:#00ff7b', "DATSETTYPES", response );
-  //       let dtypes = response;
-  //       setDataTypeList(dtypes);
-  //       setDataTypeListAll(dtypes);
-  //       ubkg_api_get_organ_type_set()
-  //         .then((res) => {
-  //           setOrganList(res);
-  //           setDTLoading(false)
-  //         })
-  //         .catch((err) => {
-  //           reportError(err)
-  //       })
-  //     })
-  //     .catch(error => {
-  //         console.debug('%c⭗', 'color:#ff005d', "APP ubkg_api_get_assay_type_set ERROR", error);
-  //         reportError(error)
-  //     });
-  // }, [ ]);
-
   useEffect(() => {
     if(localStorage.getItem("info")){
       try {
