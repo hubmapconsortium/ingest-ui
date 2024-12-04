@@ -43,8 +43,8 @@ export default function MUIDialog(props) {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={props.handleClose}>
-            Return
+          <Button style={{position:"relative",margin:"0 auto 0 auto"}} autoFocus onClick={props.handleClose}>
+            OK
           </Button>
         </DialogActions>
       </Dialog>
