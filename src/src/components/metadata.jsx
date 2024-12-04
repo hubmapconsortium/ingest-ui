@@ -124,35 +124,27 @@ export const RenderMetadata = (props) => {
                 message: resp.results.message||resp
               })
             } else {
-              console.debug('%c◉ Attach fail ', 'color:#ffe921',resp.error.response.data,resp.error.response.data.error );
+              // console.debug('%c◉ Attach fail ', 'color:#ffe921',resp.error );
+              let err = resp.error?.response?.data?.error ?? resp.error?.response ?? resp.error ?? resp;
               setAttachmentFails(attachmentFails => [...attachmentFails, {
                 status:"failed",
                 row:  thisRow.metadata['file_row'],
-                error: resp.error.response.data.error||resp
+                error: err
               }])
               fails.push({
                 status:"failed",
                 row:  thisRow.metadata['file_row'],
-                error: resp.error.response.data.error||resp
+                error: err
               })
             }
           })
           .catch((error)=>{
-            console.debug('%c◉ entity_api_attach_bulk_metadata Call ERrr ', 'color:#ff005d', error);
-            // console.debug('%c⭗', 'color:#', 'Error', error);
+              setAttachmentFails(attachmentFails => [...attachmentFails, {
+                status:"failed",
+                row:  thisRow.metadata['file_row'],
+                error: error.toString()
+              }])
           })
-
-          // var errorTable = getErrorList(resp.error.response.data)
-          // attachErrorTable.push(errorTable)
-          
-          
-          // console.debug('%c◉ errorTable ', 'color:#ffe921', fails);
-          // setTable(fails)
-          // // setTable(table => [...table, errorTable])
-          // setIssues(resp.error.response.data);
-          // setFailed(1);
-          // setFailedStep(3);
-          // setAttaching(false);
 
         row++ 
         if(row === validatedMeta[0].length){
@@ -219,7 +211,11 @@ function getColNames() {
           }
 
           var errorTable = getErrorList(cleanErr)
-          setIssues(resp.error.response.data);
+          if(resp.error && resp.error.response){
+            setIssues(resp.error.response.data);
+          }else{
+            setIssues(resp);
+          }
           setFailed(1);
           setFailedStep(2);
           setActiveStep(4);
@@ -229,7 +225,9 @@ function getColNames() {
         }
       })
       .catch((error) => {
-        console.debug('%c⭗', 'color:#ff005d', 'Error', error,error.description);
+        console.debug('%c⭗ Error Handle Upload File', 'color:#ff005d', error,error.description);
+        let errorTable = getErrorList(error)
+        setIssues(error);
         setProcessed(true);
       });
   };
@@ -503,7 +501,7 @@ const introText = () =>{
                   if(row.status && row.status === "failed"){
                   // if(typeof row.error === 'string' && row.error.indexOf("error: ") === 0){
                     // we're likely a API error not a CEDAR error
-                    return <span>{row.error}</span>
+                    return <span>{row.error.toString()}</span>
                   }
                     // let err = handleErrorRow(row)
                     
