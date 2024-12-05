@@ -39,7 +39,6 @@ export default function MUIDialog(props) {
         </IconButton>
         <DialogContent dividers>
           <Typography dangerouslySetInnerHTML={{ __html:props.message }}>
-            
           </Typography>
         </DialogContent>
         <DialogActions>
