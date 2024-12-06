@@ -25,6 +25,7 @@ export const Navigation = (props) => {
   const [userInfo, setUserInfo] = React.useState();
   const [metaModalOpen, setMetaModalOpen] = React.useState(false);
   const [exampleLink, setExampleLink] = React.useState("block");
+  const [disabledLinks] = React.useState(["block","section","suspension"]);
   // const [userGroups, setUserGroups] = React.useState();
   const [userDataGroups, setUserDataGroups] = React.useState([]);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
@@ -55,11 +56,16 @@ export const Navigation = (props) => {
     setMetaModalOpen(false);
   }  
   const handleOpenModal = (type) => {
-    let sampleType = type.toString();
+    let sampleType = type.toString().toLowerCase();
     console.debug('%c◉ type ', 'color:#00ff7b', type, sampleType, typeof sampleType);
-    setExampleLink("https://hubmapconsortium.github.io/ingest-validation-tools/sample-"+sampleType.toLowerCase()+"/current/")
-    console.debug('%c◉ link ', 'color:#00ff7b', exampleLink);
-    setMetaModalOpen(true);
+    if(disabledLinks.includes(sampleType)){
+      setExampleLink("https://hubmapconsortium.github.io/ingest-validation-tools/sample-"+sampleType.toLowerCase()+"/current/")
+      console.debug('%c◉ link ', 'color:#00ff7b', exampleLink);
+      setMetaModalOpen(true);
+    }else{
+      window.location.replace(`${process.env.REACT_APP_URL}/metadata/${sampleType}`);
+      // navigate(""+type);
+    }
   }
 
   // @TODO: Dry this up
