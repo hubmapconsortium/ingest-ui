@@ -52,13 +52,18 @@ import { stripHTML,toTitleCase } from '../utils/string_helper'
  *
  * return: {'AO': 'Aorta' ... }
  */
-export function ubkg_api_get_organ_type_set() {
+export function ubkg_api_get_organ_type_set(format) {
   let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`;
   return axios
     .get(url)
       .then(res => {
         let data = res.data;
-        return data;
+        if(format && format === 'array'){
+          let organArray = Object.entries(data).map(([key, value]) => ({ key, value }));
+          return organArray;
+        }else{
+          return data;
+        }
       })
       .catch(error => {
         console.debug("ubkg_api_get_organ_type_set", error, error.response);
@@ -73,6 +78,25 @@ export function ubkg_api_get_organ_type_set() {
 export function ubkg_api_get_dataset_type_set() {
   // let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
   let url = `${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`;
+  return axios
+    .get(url)
+      .then(res => {
+        let data = res.data;
+        return data;
+      })
+      .catch(error => {
+        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+        captureError(error);
+      });
+};
+
+
+/*
+ * UBKG GET Specilized Dataset Types for Uploads method
+ *
+ */
+export function ubkg_api_get_upload_dataset_types() {
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`; 
   return axios
     .get(url)
       .then(res => {

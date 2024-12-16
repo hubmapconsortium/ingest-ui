@@ -1,20 +1,20 @@
 export function validateRequired(value) {
-  console.debug(typeof value);
-  console.debug("VALUE",value);
+  // console.debug(typeof value);
+  // console.debug("VALUE",value);
   if (typeof value === "string") {
     // console.debug("trim", (value.trim()!==""));
     return value.trim() !== "";
   } else if (typeof value === "object") {
-    console.debug("value length: ",value.length);
+    // console.debug("value length: ",value.length);
     if(value.name === undefined){
-        console.debug("value.name === undefined");
+        // console.debug("value.name === undefined");
       if(value.length<=0){
         return false;
       }else{
         return true;
       }
     }else if(value.name){
-      console.debug(value.name);
+      // console.debug(value.name);
       return value.name.trim() !== "";
     }
   }
