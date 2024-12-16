@@ -1,9 +1,7 @@
-
-
 import React, { useEffect, useState  } from "react";
-// import Select from '@mui/material/Select';import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
-
+// @TODO: Function components like this cant be loaded into any of the class components
+// Once upgraded they'll be able to use this
 
 export const RenderError = (props) => {
   var [errorMSG, setErrorMSG] = useState(true);

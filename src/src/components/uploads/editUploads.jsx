@@ -19,10 +19,12 @@ import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import React,{Component} from "react";
 import {Link} from 'react-router-dom';
 import ReactTooltip from "react-tooltip";
+import { ubkg_api_get_upload_dataset_types } from '../../service/ubkg_api';
 import {
   entity_api_get_globus_url,
   entity_api_update_entity
@@ -51,6 +53,8 @@ class EditUploads extends Component{
     editingEntity: "entity_data",
     title:"title",
     description:"desc",
+    intended_organ:"intended_organ", 
+    intended_dataset_type:"intended_dataset_type", 
     author:"created_by_user_displayname",
     created:"created_timestamp",
     group:"group",
@@ -74,20 +78,21 @@ class EditUploads extends Component{
     button_validate:false,
     button_save:false,
     button_reorganize:false,
-    
+    organList:["organ"],
+    datasetTypes:["organ"],
+    formErrors: {
+      title: "",
+      description: "",
+      intended_organ:"",
+      intended_dataset_type:""
+    },
   }
 
   
 
   componentDidMount() {
     const groupsAuth = JSON.parse(localStorage.getItem("info")).groups_token;
-    const config = { // Nix this and use the one in the service
-      headers: {
-        Authorization:
-          "Bearer " + groupsAuth,
-        "Content-Type": "application/json",
-      },
-    };
+    
     let entity_data = this.props.editingUpload;
     entity_api_get_globus_url(this.props.editingUpload.uuid, groupsAuth)
       .then((res) => {
@@ -106,7 +111,24 @@ class EditUploads extends Component{
           window.location.reload();
         }
       });
-    
+      
+      ubkg_api_get_upload_dataset_types()
+      .then((results) => {
+        console.debug('%c◉ UPLOAD DTYPES  ', 'color:#00ff7b', results);
+        const filteredArray = results.filter(item => item.term !== "UNKNOWN");
+        const sortedArray = filteredArray.sort((a, b) => a.term.localeCompare(b.term));
+        this.setState({ 
+          datasetTypes: sortedArray,
+        });
+      })
+      .catch((error) => {
+        console.debug('%c◉ UPLOAD DTYPES ERROR  ', 'color:#00e5ff',  error);
+        this.setState({ 
+          assetError: true,
+          errorMessage:"Error: Missing Assets: There is an issue loading required assets. \n Please try again in a moment, or contact the help desk for further assistance."
+        })
+      });
+
 
     this.setState({
       // groups: this.props.groups,
@@ -117,6 +139,8 @@ class EditUploads extends Component{
       hid:entity_data.hubmap_id,
       uuid:entity_data.uuid,
       description:entity_data.description,
+      intended_organ:entity_data.intended_organ ? entity_data.intended_organ : "", 
+      intended_dataset_type:entity_data.intended_dataset_type ? entity_data.intended_dataset_type : "", 
       author:entity_data.created_by_user_displayname,
       created:entity_data.created_timestamp,
       group:entity_data.group_uuid,
@@ -133,10 +157,7 @@ class EditUploads extends Component{
       writeable:false,
       globusLinkText: "To add or modify data files go to the data repository ",
       groups: [],
-        formErrors: {
-          title: ""        ,
-          description: ""        },
-      },
+    },
       () => {
 
         // gets fine permissions
@@ -204,6 +225,28 @@ class EditUploads extends Component{
         }
         
       });
+
+      if (localStorage.getItem("organs") && localStorage.getItem("datasetTypes")) {
+        const organs = Object.entries(JSON.parse(localStorage.getItem("organs")));
+        const sortedOrgans = organs.sort((a, b) => a[1].localeCompare(b[1]));
+        console.debug('%c◉ sortedOrgans ', 'color:#00ff7b', sortedOrgans );
+        this.setState({ 
+          organList: sortedOrgans,
+        }, () => {
+          console.debug('%c◉ ORGANSANDDATA ', 'color:#5C3FFF',
+            this.state.organList,
+          );
+        });
+      }else{
+        // if app.js has none, it'll fetch em
+        // Maybe till we handle this in bespoke service we'll simply trigger
+        // an alert & refresg button? 
+        console.debug('%c◉ Missing Organ Assets ', 'color:#00ff7b', localStorage.getItem("organs"));
+        this.setState({ 
+          assetError: true,
+          errorMessage:"Error: Missing Assets: Please refresh the page to reload the missing assets."
+        })
+      }
 
       console.debug('%c◉ this.state.status.toUpperCase() ', 'color:#00ff7b', entity_data.status);
       this.setState({badge_class:getPublishStatusColor(entity_data.status)});
@@ -290,6 +333,12 @@ class EditUploads extends Component{
           let data = {};
           if (this.props.editingUpload.title !== this.state.title){
             data["title"]=this.state.title;
+          }
+          if (this.props.editingUpload.intended_organ !== this.state.intended_organ){
+            data["intended_organ"]=this.state.intended_organ;
+          }
+          if (this.props.editingUpload.intended_dataset_type !== this.state.intended_dataset_type){
+            data["intended_dataset_type"]=this.state.intended_dataset_type;
           }
           if (this.props.editingUpload.description !== this.state.description){
             data["description"]=this.state.description;
@@ -518,34 +567,16 @@ class EditUploads extends Component{
       submitting_submission: false,
     })
   }
+  
 
   handleInputChange = (e) => {
     const { name, value } = e.target;
-    switch (name) {
-      case "title":
-        this.setState({
-          title: value,
-        });
-        break;
-      case "description":
-        this.setState({
-          description: value,
-        });
-        break;
-      case "status":
-        this.setState({
-          new_status: value,
-        });
-        break;
-      default:
-        break;
-    }
-    
-  };
+    this.setState(prev => ({
+      [name]: value
+    }));
+  }
 
   
-
-
   highlightInvalidDatasets(){      
       var matches = document.querySelectorAll("div[data-value='invalid']");
       matches.forEach(function(item) {
@@ -553,8 +584,6 @@ class EditUploads extends Component{
       });
       
   } 
-
-
 
   renderButtonBar(){
     return (
@@ -810,6 +839,28 @@ renderReorganizeButton() {
           formErrors: { ...prevState.formErrors, title: "" },
         }));
       }
+    
+      if (!validateRequired(this.state.intended_dataset_type)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, intended_dataset_type: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, intended_dataset_type: "" },
+        }));
+      }
+   
+      if (!validateRequired(this.state.intended_organ)) {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, intended_organ: "required" },
+        }));
+        isValid = false;
+      } else {
+        this.setState((prevState) => ({
+          formErrors: { ...prevState.formErrors, intended_organ: "" },
+        }));
+      }
 
       if (!validateRequired(this.state.description)) {
         this.setState((prevState) => ({
@@ -844,18 +895,45 @@ renderReorganizeButton() {
 
 
   errorClass(error) {
+    console.debug('%c◉ error ', 'color:#00ff7b', error);
     if (error && error === "valid" ) return "is-valid";
     return error.length === 0 ? "" : "is-invalid";
   }
 
 
   updateInputValue = (evt) => {
-    console.debug('%c⊙ EVT', 'color:#00ff7b', evt.target, evt.target.id, evt );
-    var inputID = evt.target.id;
-    this.setState({
-      [inputID]:evt.target.value
-    });
+    if (evt.target.name.length === 0) { // We get an empty string back from validation
+      evt.target.value = null;
+    } else {
+      const stateUpdateMap = {
+        "title": "title",
+        "description": "description",
+        "intended_organ": "intended_organ",
+        "intended_dataset_type": "intended_dataset_type",
+      };
+      const stateKey = stateUpdateMap[evt.target.name];
+      if (stateKey) {
+        this.setState({
+          [stateKey]: evt.target.value
+        })
+      }else{
+        console.debug('%c◉ Cant Match: ', 'color:#00ff7b', evt.target.id);
+      }
+      this.validateForm();
+    }
   }
+
+  // updateInputValue = (evt) => {
+  //   console.debug('%c⊙ EVT', 'color:#00ff7b', evt.target, evt.target.id, evt );
+  //   var inputID = evt.target.id;
+  //   this.setState({
+  //     [inputID]:evt.target.value
+  //   }, () => {
+  //     console.debug('%c◉ updateInputValue UPDATED ', 'color:#5C3FFF',
+  //       this.state[inputID],
+  //     );
+  //   });
+  // }
 
   renderGroupAssignment = () => {
       return (
@@ -880,6 +958,64 @@ renderReorganizeButton() {
       )
   }
 
+  renderDatasetTypeDropdown(){
+    return (
+      <Select
+        fullWidth
+        size="small"
+        name="intended_dataset_type"
+        className={
+          "form-control " +
+          this.errorClass(this.state.formErrors.intended_dataset_type)
+        }
+        value={this.state.intended_dataset_type} 
+        id="intended_dataset_type" 
+        labelid="type_label"
+        label="Dataset Type"
+        onChange={(e) => this.updateInputValue(e)}>
+        <MenuItem value="" key={0} index={0}></MenuItem>
+        {this.state.datasetTypes.map((type, index) => {
+          return (
+            <MenuItem key={index + 1} value={type.term}>
+              {type.term} 
+            </MenuItem>
+          );
+        })}
+      </Select>
+    )
+  }
+
+  
+  renderOrganDropdown(){
+    // console.debug('%c◉ organList ', 'color:#0033ff', this.state.organList);
+    return (
+      <Select
+        fullWidth
+        size="small"
+        name="intended_organ"
+        className={
+          "form-control " +
+          this.errorClass(this.state.formErrors.intended_organ)
+        }
+        sx={{
+          margin:"10px auto"
+        }}
+        value={this.state.intended_organ} 
+        id="intended_organ" 
+        labelid="organ_label"
+        label="Organ"
+        onChange={(e) => this.updateInputValue(e)}>
+        <MenuItem key={0}  ></MenuItem>
+        {Object.entries(this.state.organList).map(([key, value], index) => {
+          return (
+            <MenuItem key={index + 1} value={value[0]}>
+              {value[1]}
+            </MenuItem>
+          );
+        })}
+      </Select>
+    )
+  }
 
   renderLoadingSpinner() {
       return (
@@ -1127,6 +1263,9 @@ renderReorganizeButton() {
                 </div>
               </div>
             )}
+
+            {this.renderOrganDropdown()}
+            {this.renderDatasetTypeDropdown()}
             {!this.state.data_admin && this.state.assigned_to_group_name && this.state.ingest_task && (
               <div className="row mt-4  ">
                 <div className='form-group col-6'> 
