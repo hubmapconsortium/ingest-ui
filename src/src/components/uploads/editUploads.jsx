@@ -79,7 +79,7 @@ class EditUploads extends Component{
     button_save:false,
     button_reorganize:false,
     organList:["organ"],
-    datasetTypes:["organ"],
+    datasetTypes:["types"],
     formErrors: {
       title: "",
       description: "",
