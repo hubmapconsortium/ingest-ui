@@ -169,20 +169,15 @@ class CreateUploads extends Component {
     ];
     let isValid = true;
     fields.forEach(field => {
-      console.debug('%c◉ fiel;d ', 'color:#00ff7b', field);
-
       const value = this.state[field.name];
-      console.debug('%c◉ Field:  ', 'color:#00ff7b', value, field);
       const errorStatus = validateRequired(value) ? 'valid' : 'invalid';
       if (errorStatus === 'invalid'){
         isValid = false;
       }
-      console.debug('%c◉ error stat ', 'color:#00ff7b', errorStatus);
       this.setState(prevState => ({
         formErrors: { ...prevState.formErrors, [field.errorKey]: errorStatus }
       }));
     });
-    console.debug('%c◉ validateForm ', 'color:#00ff7b', isValid );
     return isValid;
   }
 
