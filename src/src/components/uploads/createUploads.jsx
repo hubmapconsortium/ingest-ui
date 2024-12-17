@@ -170,7 +170,6 @@ class CreateUploads extends Component {
     let isValid = true;
     fields.forEach(field => {
       const value = this.state[field.name];
-      console.debug('%c◉ Field:  ', 'color:#00ff7b', value, field);
       const errorStatus = validateRequired(value) ? 'valid' : 'invalid';
       if (errorStatus === 'invalid'){
         isValid = false;
@@ -179,7 +178,6 @@ class CreateUploads extends Component {
         formErrors: { ...prevState.formErrors, [field.errorKey]: errorStatus }
       }));
     });
-    console.debug('%c◉ validateForm ', 'color:#00ff7b', isValid );
     return isValid;
   }
 
@@ -222,7 +220,10 @@ class CreateUploads extends Component {
         fullWidth
         size="small"
         name="Submission_Type"
-        className={this.state.formErrors["type"]} 
+        className={
+          "form-control " +
+          this.state.formErrors["inteneded_dataset_type"]        
+        }
         value={this.state.inputValue_type} 
         id="Submission_Type" 
         labelid="type_label"
@@ -248,7 +249,10 @@ class CreateUploads extends Component {
         fullWidth
         size="small"
         name="Submission_Organ"
-        className={this.state.formErrors["organ"]} 
+        className={
+          "form-control " +
+          this.state.formErrors["organ"]        
+        }
         value={this.state.inputValue_organ} 
         id="Submission_Organ" 
         labelid="organ_label"

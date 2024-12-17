@@ -860,3 +860,7 @@ svg.invalid{
 .fullDialog .MuiPaper-root{
   max-width:1200px!important;
 }
+
+.form-control.invalid{
+  border: 1px solid red;
+}
