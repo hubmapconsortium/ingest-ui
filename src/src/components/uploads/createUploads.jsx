@@ -111,6 +111,14 @@ class CreateUploads extends Component {
       ){ 
         this.handleError("Please fill in all required fields before submitting.");
         return;
+      }else if(
+        (!this.state.inputValue_title || this.state.inputValue_title ==="") || 
+        (!this.state.inputValue_desc || this.state.inputValue_desc ==="") || 
+        (!this.state.inputValue_organ || this.state.inputValue_organ ==="") || 
+        (!this.state.inputValue_type || this.state.inputValue_type ==="")
+      ){
+        this.handleError("Above marked fields are required.");
+        return
       }else{
         this.handleError("The system has encountered an unrecognized error during validation. \
           Please try again or contact the help desk for further assistance.");
@@ -221,7 +229,7 @@ class CreateUploads extends Component {
         console.debug('%c◉ Cant Match: ', 'color:#00ff7b', evt.target.id);
       }
   
-      this.validateForm();
+      // this.validateForm();
     }
   }
 
@@ -500,7 +508,7 @@ class CreateUploads extends Component {
                     <div className='form-group mb-4'>
                       <label
                         htmlFor='organ'>
-                        Organ <span className='text-danger'>*</span>
+                        Intended Organ Type <span className='text-danger'>*</span>
                       </label>
                       <span className="px-2">
                           <FontAwesomeIcon
@@ -514,7 +522,7 @@ class CreateUploads extends Component {
                             type='info'
                             effect='solid'
                           >
-                            <p>The Organ In Question</p>
+                            <p>Select the organ type that the data in this Upload is intended to be derived from.</p>
                           </ReactTooltip>
                         </span>
                           {this.renderOrganDropdown()}
@@ -523,7 +531,7 @@ class CreateUploads extends Component {
                     <div className='form-group mb-1'>
                       <label
                         htmlFor='datasetTypes'>
-                        Dataset Type <span className='text-danger'>*</span>
+                        Intended Dataset Type <span className='text-danger'>*</span>
                       </label>
                       <span className="px-2">
                           <FontAwesomeIcon
@@ -537,7 +545,7 @@ class CreateUploads extends Component {
                             type='info'
                             effect='solid'
                           >
-                            <p>The Type of Dataset In Question</p>
+                            <p>Select the data type that this Upload will contain.</p>
                           </ReactTooltip>
                         </span>
                         {this.state.datasetTypes.length > 0 && (
