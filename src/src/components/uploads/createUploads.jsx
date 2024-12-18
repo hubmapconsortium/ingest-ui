@@ -101,10 +101,21 @@ class CreateUploads extends Component {
       submitting: true,
       processingUpload: true
     });
+
     if (!this.validateForm()) {
-      this.handleError("The system has encountered an unrecognized error during validation. \
-         Please try again or contact the help desk for further assistance.");
-      return;
+      if(
+        (!this.state.inputValue_title || this.state.inputValue_title ==="") && 
+        (!this.state.inputValue_desc || this.state.inputValue_desc ==="") && 
+        (!this.state.inputValue_organ || this.state.inputValue_organ ==="") && 
+        (!this.state.inputValue_type || this.state.inputValue_type ==="")
+      ){ 
+        this.handleError("Please fill in all required fields before submitting.");
+        return;
+      }else{
+        this.handleError("The system has encountered an unrecognized error during validation. \
+          Please try again or contact the help desk for further assistance.");
+        return;
+      }
     }
     const data = {
       title: this.state.inputValue_title,
@@ -558,8 +569,9 @@ class CreateUploads extends Component {
                 
                   {this.state.submit_error && (
                     <div className='alert alert-danger col-sm-12 mt-4' role='alert'>
-                      Oops! Something went wrong. Please contact administrator for help. <  br/>
-                      <FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/> {this.state.errorMessage.toString()}
+                      Oops! Something went wrong: <  br/>
+                      <FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/> {this.state.errorMessage.toString()} < br/>
+                      If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
                     </div>
                   )}
                   </div>
