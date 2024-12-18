@@ -961,13 +961,16 @@ renderReorganizeButton() {
   renderDatasetTypeDropdown(){
     return (
       <Select
-        fullWidth
+        // fullWidth
         size="small"
         name="intended_dataset_type"
         className={
           "form-control " +
           this.errorClass(this.state.formErrors.intended_dataset_type)
         }
+        sx={{
+          margin:"10px auto"
+        }}
         value={this.state.intended_dataset_type} 
         id="intended_dataset_type" 
         labelid="type_label"
@@ -990,7 +993,7 @@ renderReorganizeButton() {
     // console.debug('%c◉ organList ', 'color:#0033ff', this.state.organList);
     return (
       <Select
-        fullWidth
+        // fullWidth
         size="small"
         name="intended_organ"
         className={
@@ -1003,7 +1006,7 @@ renderReorganizeButton() {
         value={this.state.intended_organ} 
         id="intended_organ" 
         labelid="organ_label"
-        label="Organ"
+        label="Intended Organ Type"
         onChange={(e) => this.updateInputValue(e)}>
         <MenuItem key={0}  ></MenuItem>
         {Object.entries(this.state.organList).map(([key, value], index) => {
@@ -1263,9 +1266,45 @@ renderReorganizeButton() {
                 </div>
               </div>
             )}
+            <div className="row mt-4  ">
+              <div className='form-group col-6'> 
+                <label htmlFor='Organ'>Intended Organ Type <span className='text-danger'>*</span></label>
+                <span className="px-2">
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for='Organ_tooltip'/>
+                  <ReactTooltip
+                    id='Organ_tooltip'
+                    place='top'
+                    type='info'
+                    effect='solid'>
+                    <p>Select the organ type that the data in this Upload is intended to be derived from.</p>
+                  </ReactTooltip>
+                </span>
+                {this.renderOrganDropdown()}
+              </div>
+              <div className='form-group col-6'> 
+                <label htmlFor='Dataset Type'>Intended Dataset Type <span className='text-danger'>*</span></label>
+                <span className="px-2">
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    data-tip
+                    data-for='Dataset Type_tooltip'/>
+                  <ReactTooltip
+                    id='Dataset Type_tooltip'
+                    place='top'
+                    type='info'
+                    effect='solid'>
+                    <p>Select the data type that this Upload will contain.</p>
+                  </ReactTooltip>
+                </span>
+                {this.renderDatasetTypeDropdown()}  
+              </div>
+            </div>
 
-            {this.renderOrganDropdown()}
-            {this.renderDatasetTypeDropdown()}
+
+            
             {!this.state.data_admin && this.state.assigned_to_group_name && this.state.ingest_task && (
               <div className="row mt-4  ">
                 <div className='form-group col-6'> 
