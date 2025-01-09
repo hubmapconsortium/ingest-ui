@@ -910,6 +910,8 @@ renderReorganizeButton() {
         "description": "description",
         "intended_organ": "intended_organ",
         "intended_dataset_type": "intended_dataset_type",
+        "ingest_task": "ingest_task",
+        "assigned_to_group_name": "assigned_to_group_name"
       };
       const stateKey = stateUpdateMap[evt.target.name];
       if (stateKey) {
