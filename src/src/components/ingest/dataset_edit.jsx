@@ -31,7 +31,8 @@ import {
   ingest_api_dataset_publish,
   ingest_api_dataset_submit,
   ingest_api_notify_slack,
-  ingest_api_users_groups
+  ingest_api_users_groups,
+  ingest_api_pipeline_test_privs
 } from '../../service/ingest_api';
 import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
@@ -91,6 +92,7 @@ class DatasetEdit extends Component {
     has_publish_priv:false,
     has_version_priv:false,
     has_manual_priv:false,
+    has_pipeline_testing_priv:false,
     groupsToken:"",
 
     // Data that sets the scene
@@ -143,8 +145,6 @@ class DatasetEdit extends Component {
     
     componentDidMount() {
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
-      // var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.assay_type_primary,this.state.status.toUpperCase(),this.props.newForm]
-      // console.table({permChecks});
       if(this.props.editingDataset && this.props.editingDataset.assigned_to_group_name){
         // console.debug('%c⊙ assigned_to_group_name', 'color:#00ff7b', this.props.editingDataset.assigned_to_group_name );
         this.setState({assigned_to_group_name:this.props.editingDataset.assigned_to_group_name})
@@ -153,7 +153,21 @@ class DatasetEdit extends Component {
         // console.debug('%c⊙ ingest_task', 'color:#00ff7b', this.props.editingDataset.ingest_task );
         this.setState({ingest_task:this.props.editingDataset.ingest_task})
       }
-      
+
+      // Checking Permissions for Pipeline Testing
+      ingest_api_pipeline_test_privs(JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((res) => {
+          if(res.status >= 200  && res.status < 301){
+            this.setState({has_pipeline_testing_priv:res.results.has_pipeline_test_privs});          }
+        })
+        .catch((err) => {
+          if (err.response && err.response.status === 401) {
+            this.props.reportError(err);
+            localStorage.setItem("isAuthenticated", false);
+          }else if(err.status){
+            localStorage.setItem("isAuthenticated", false);
+          }
+        });
 
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
