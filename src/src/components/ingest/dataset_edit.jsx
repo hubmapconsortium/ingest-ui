@@ -1240,9 +1240,21 @@ class DatasetEdit extends Component {
     ingest_api_pipeline_test_submit(JSON.parse(localStorage.getItem("info")).groups_token, {"uuid":this.props.editingDataset.uuid})
       .then((response) => {
         console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
+        let results = "";
+        let title = "";
+        if(response.status === 200){
+          title = "Submitted for Testing";
+          results = "Dataset submitted for test processing";
+        }else if(response.status === 500){
+          title = "Error";
+          results = "Unexpected error occurred, please ask an admin to check the ingest-api logs.";
+        }else{
+          title = "Submission Response: "+response.status;
+          results = response.results;
+        }
         this.toggleFeedbackDialog(
-          "Testing Submitted", 
-          response.results, 
+          title, 
+          results, 
           [{label:"Close", action:()=>{this.clearFeedbackDialog()}}]);
       })
       .catch((error) => {
