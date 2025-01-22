@@ -1240,9 +1240,21 @@ class DatasetEdit extends Component {
     ingest_api_pipeline_test_submit(JSON.parse(localStorage.getItem("info")).groups_token, {"uuid":this.props.editingDataset.uuid})
       .then((response) => {
         console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
+        let results = "";
+        let title = "";
+        if(response.status === 200){
+          title = "Submitted for Testing";
+          results = "Dataset submitted for test processing";
+        }else if(response.status === 500){
+          title = "Error";
+          results = "Unexpected error occurred, please ask an admin to check the ingest-api logs.";
+        }else{
+          title = "Submission Response: "+response.status;
+          results = response.results;
+        }
         this.toggleFeedbackDialog(
-          "Testing Submitted", 
-          response.results, 
+          title, 
+          results, 
           [{label:"Close", action:()=>{this.clearFeedbackDialog()}}]);
       })
       .catch((error) => {
@@ -1465,6 +1477,19 @@ class DatasetEdit extends Component {
     }
   }
 
+  renderSubmitForTestingButton(){
+    return (
+      <Button 
+        style={{width:"230px"}}
+        className="btn btn-primary mr-1" 
+        variant="contained"
+        fullWidth
+        onClick={ () => this.handleSubmitForTesting() }>
+          Submit for Testing
+      </Button>
+    )
+  }
+
 
   renderManualStatusControl=()=>{
     return(  
@@ -1564,10 +1589,13 @@ class DatasetEdit extends Component {
     // console.debug("CheckTwo",this.state.writeable === false && this.state.has_version_priv === false);
     if (this.state.writeable === false ){            
       return (
-            <div className="buttonWrapRight">
-                {this.cancelButton()} 
-            </div>
-          )
+        <div className="buttonWrapRight">
+          {(this.state.has_pipeline_testing_priv || this.state.has_admin_priv) && this.state.is_primary === true &&(
+            <div>{this.renderSubmitForTestingButton()}</div>
+          )}
+          {this.cancelButton()} 
+        </div>
+      )
     } else {
       if (["NEW", "INVALID", "REOPENED", "ERROR", "SUBMITTED"].includes( 
               this.state.status.toUpperCase())) {
@@ -1588,33 +1616,30 @@ class DatasetEdit extends Component {
                   </div>
               )}
               { (this.state.has_pipeline_testing_priv || this.state.has_admin_priv) && this.state.is_primary === true &&(
-                  <div >
-                    <Button 
-                      style={{width:"230px"}}
-                      className="btn btn-primary mr-1" 
-                      variant="contained"
-                      fullWidth
-                      onClick={ () => this.handleSubmitForTesting() }>
-                        Submit for Testing
-                    </Button>
-                  </div>
+                  <div>{this.renderSubmitForTestingButton()}</div>
               )}
+              
               {this.cancelButton()}
             </div>
           )
-      }
-      if (this.state.status.toUpperCase() === 'PUBLISHED' ) {
+      }else if (this.state.status.toUpperCase() === 'PUBLISHED' ) {
         return (
             <div className="buttonWrapRight">
                 {/* {this.renderNewVersionButtons()}  */}
                 {this.aButton("reopened", "Reopen")}
                 {this.aButton("unpublished", "UnPublish")}
+                {(this.state.has_pipeline_testing_priv || this.state.has_admin_priv) && this.state.is_primary === true &&(
+                  <div>{this.renderSubmitForTestingButton()}</div>
+                )}
                 {this.cancelButton()}
             </div>
           )
       }else{
         return(
           <div className="buttonWrapRight">
+            {(this.state.has_pipeline_testing_priv || this.state.has_admin_priv) && this.state.is_primary === true &&(
+              <div>{this.renderSubmitForTestingButton()}</div>
+            )}
             {this.cancelButton()}
           </div>
         )
