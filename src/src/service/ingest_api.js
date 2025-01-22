@@ -591,3 +591,47 @@ export function ingest_api_publish_collection(auth, data) {
       });
 };
 
+/* 
+ *  Pipeline Testing Privledges
+ *
+ */
+export function ingest_api_pipeline_test_privs(auth) { 
+  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/has-pipeline-test-privs`;
+  return axios 
+    .get(url, options)
+    .then(res => {
+      console.debug("ingest_api_pipeline_test_privs",res);
+        let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(error => {
+        console.debug('%c⭗  ingest_api_pipeline_test_privs', 'color:#ff005d',error );
+        // throw new Error(error);
+        return {error}
+      });
+};
+
+
+/* 
+ *  Pipeline Testing Submit
+ *
+ */
+export function ingest_api_pipeline_test_submit(auth, data) { 
+  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${data['uuid']}/submit-for-pipeline-testing`;
+  console.debug('%c◉ url ', 'color:#00ff7b', url);
+  return axios 
+    .post(url, {}, options)
+    .then(res => {
+      console.debug("ingest_api_pipeline_test_submit",res);
+        let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(error => {
+        console.debug('%c⭗  ingest_api_pipeline_test_submit', 'color:#ff005d',error );
+        // throw new Error(error);
+        return {error}
+      });
+};
+
