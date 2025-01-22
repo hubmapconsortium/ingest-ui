@@ -1,8 +1,5 @@
 import {faPlus,faQuestionCircle,faSpinner,faTrash,faUserShield} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-// import Dialog from '@material-ui/core/Dialog';
-// import DialogActions from '@material-ui/core/DialogActions';
-// import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -32,7 +29,8 @@ import {
   ingest_api_dataset_submit,
   ingest_api_notify_slack,
   ingest_api_users_groups,
-  ingest_api_pipeline_test_privs
+  ingest_api_pipeline_test_privs,
+  ingest_api_pipeline_test_submit
 } from '../../service/ingest_api';
 import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
@@ -70,6 +68,7 @@ class DatasetEdit extends Component {
     display_doi:"",
     editingSource:[],
     // globus_path: "",
+    is_primary:false,
     source_uuid_list:[],
     source_uuid_type:"",
     source_uuid:undefined,
@@ -101,6 +100,7 @@ class DatasetEdit extends Component {
     slist:[], 
 
     // Page States 
+    changed:false,
     showSubmitModal:false,
     showRevertModal:false,
     badge_class:"badge-purple",
@@ -129,6 +129,12 @@ class DatasetEdit extends Component {
     has_other_datatype:false,
     submitErrorResponse:"",
     submitErrorStatus:"",
+    showFeedbackDialog:false,
+    feedbackDialog:{
+      title:"",
+      message:"",
+      actions:[]
+    },
     isValidData:true,
     previousHubIDs:[],
     nextHubIDs:[],
@@ -146,11 +152,9 @@ class DatasetEdit extends Component {
     componentDidMount() {
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
       if(this.props.editingDataset && this.props.editingDataset.assigned_to_group_name){
-        // console.debug('%c⊙ assigned_to_group_name', 'color:#00ff7b', this.props.editingDataset.assigned_to_group_name );
         this.setState({assigned_to_group_name:this.props.editingDataset.assigned_to_group_name})
       }
       if(this.props.editingDataset && this.props.editingDataset.ingest_task){
-        // console.debug('%c⊙ ingest_task', 'color:#00ff7b', this.props.editingDataset.ingest_task );
         this.setState({ingest_task:this.props.editingDataset.ingest_task})
       }
 
@@ -165,14 +169,13 @@ class DatasetEdit extends Component {
             this.props.reportError(err);
             localStorage.setItem("isAuthenticated", false);
           }else if(err.status){
-            localStorage.setItem("isAuthenticated", false);
+            this.props.reportError(err);
           }
         });
 
       // @TODO: Better way to listen for off-clicking a modal, seems to trigger rerender of entire page
       // Modal state as flag for add/remove? 
       document.addEventListener("click", this.handleClickOutside);
-      // this.setAssayLists();
       var savedGeneticsStatus = undefined;
       try {
         var auth = JSON.parse(localStorage.getItem("info")).groups_token;
@@ -195,7 +198,11 @@ class DatasetEdit extends Component {
 
       // Figure out our permissions
       if (this.props.editingDataset) {
-        // console.debug("DatasetEdit: componentDidMount: editingDataset: " + this.props.editingDataset.uuid);
+        // Primary check
+        if(this.props.editingDataset.hasOwnProperty('creation_action') && this.props.editingDataset.creation_action === "Create Dataset Activity"){
+          this.setState({is_primary:true});
+        }
+
         if(!this.props.editingDataset.previous_revision_uuids){
           this.setState({loadingPreviousVersions:false});
         }
@@ -281,17 +288,14 @@ class DatasetEdit extends Component {
       if(this.props.editingDataset.direct_ancestors){
         console.debug('%c⊙ direct_ancestors', 'color:#5900FF', this.props.editingDataset.direct_ancestors );
         // Might have to assemble here for promise reasons?
-        // ancestorList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
         this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors)
       }
-      // var sourceList = this.assembleSourceAncestorData(this.props.editingDataset.direct_ancestors);
       this.setState(
         {
           status:this.props.editingDataset.hasOwnProperty('status') ? this.props.editingDataset.status.toUpperCase() : "NEW",
           display_doi:this.props.editingDataset.hubmap_id,
           lab_dataset_id:this.props.editingDataset.lab_dataset_id,
           source_uuid:this.getSourceAncestor(this.props.editingDataset.direct_ancestors),
-          // source_uuid_list:sourceList,
           source_entity:this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors), // Seems like it gets the multiples. Multiple are stored here anyways during selection/editing
           slist:this.getSourceAncestorEntity(this.props.editingDataset.direct_ancestors),
           contains_human_genetic_sequences:savedGeneticsStatus,
@@ -442,6 +446,35 @@ class DatasetEdit extends Component {
     this.setState({ errorMsgShow:false });
   };
 
+  toggleFeedbackDialog = (title,message,actions) => {
+    console.debug('%c◉ toggleFeedback ', 'color:#00ff7b', title, message, actions);
+    this.setState({ 
+        showFeedbackDialog:!this.state.showFeedbackDialog,
+        feedbackDialog:{  
+          title:title || "",
+          message:message || "",
+          actions:actions || [{label:"Close", action:()=>{this.clearFeedbackDialog()}}]
+        }
+    },()=>{
+      console.debug('%c◉ FeedbackDialog', 'color:#00ff7b', this.state.showFeedbackDialog);
+    });
+  };
+
+  clearFeedbackDialog = () => {
+    console.debug('%c◉ clearFeedbackDialog ', 'color:#00ff7b');
+    this.setState({ 
+        showFeedbackDialog:false,
+        feedbackDialog:{  
+          title:"",
+          message:"",
+          actions:[]
+        }
+    },()=>{
+      console.debug('%c◉ FeedbackDialog Cleared', 'color:#00ff7b');
+    });
+  };
+
+
   showConfirmDialog(row,index) {
     this.setState({ 
         confirmDialog:true,
@@ -497,58 +530,35 @@ class DatasetEdit extends Component {
   }; 
 
   handleInputChange = (e) => {
-    const {id, name, value} = e.target;
-    console.debug('%c⊙ handleInputChange', 'color:#00ff7b', id, value  );
-      switch (name) {
-      case "lab_dataset_id":
-        this.setState({lab_dataset_id:value,});
-        break;
-      case "contains_human_genetic_sequences":  
-        let gene_seq = undefined; 
-        if (value === 'yes') {
-          gene_seq = true;
-        } else if(value === 'no'){
-          gene_seq = false;
-        }
-        this.setState({contains_human_genetic_sequences:gene_seq,  // need to convert to a boolean
-        });
-        break;
-      case "description":
-        this.setState({description:value,});
-        break;
-      case "dataset_info":
-        this.setState({dataset_info:value,});
-      break;
-      case "status":
-        this.setState({new_status:value,});
-        break;
-      case "other_dt":
-        this.setState({ other_dt:value });
-        break;
-      case "newStatus":
-        this.setState({ newStatus:value });
-        break;
-      case "assigned_to_group_name":
-        this.setState({ assigned_to_group_name:value });
-        break;
-      case "ingest_task":
-        this.setState({ ingest_task:value });
-        break;
-      case "dt_select":
-        this.setState({
-          has_other_datatype:false,
-          dataset_type:value,
-          dataset_type:value,
-        });
-          break;
-      case "groups":
-        this.setState({selected_group:value});
-        break;
-      default:
-        this.setState({name:value});
-        break;
+    const { name, value } = e.target;
+    this.setState({ changed: true });
+  
+    const stateUpdateMap = {
+      "lab_dataset_id": "lab_dataset_id",
+      "contains_human_genetic_sequences": value === 'yes' ? true : value === 'no' ? false : undefined,
+      "description": "description",
+      "dataset_info": "dataset_info",
+      "status": "new_status",
+      "other_dt": "other_dt",
+      "newStatus": "newStatus",
+      "assigned_to_group_name": "assigned_to_group_name",
+      "ingest_task": "ingest_task",
+      "dt_select": { has_other_datatype: false, dataset_type: value },
+      "groups": "selected_group"
+    };
+  
+    const stateKey = stateUpdateMap[name];
+    if (stateKey) {
+      if (typeof stateKey === 'object') {
+        this.setState(stateKey);
+      } else {
+        this.setState({ [stateKey]: value });
+      }
+    } else {
+      this.setState({ [name]: value });
     }
   };
+
 
   handleInputFocus = (e) => {
     const { name, value } = e.target;
@@ -1206,6 +1216,41 @@ class DatasetEdit extends Component {
     }); 
   }
 
+  handleSaveCheck = () => {
+    if(this.state.changed){
+      this.toggleFeedbackDialog(
+        "Continue Without Saving", 
+        "You have unsaved changes. Are you sure you want to continue without saving?",
+        [
+          {label:"Continue", action:()=>{this.handleSubmitForTesting()}},
+          {label:"Save", action:()=>{this.handleSubmitForTesting()}},
+          {label:"Close", action:()=>{this.clearFeedbackDialog("","","")}},
+        ]);
+    }else{
+      this.handleSubmitForTesting()
+    }
+    // Check if the form data's been updated and warn user about loss without saving
+
+      
+  }
+
+  handleSubmitForTesting = () => {
+    // this.handleContinueWithoutSave();
+    console.debug('%c◉ Submitting for Testing ', 'color:#00ff7b', );
+    ingest_api_pipeline_test_submit(JSON.parse(localStorage.getItem("info")).groups_token, {"uuid":this.props.editingDataset.uuid})
+      .then((response) => {
+        console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
+        this.toggleFeedbackDialog(
+          "Testing Submitted", 
+          response.results, 
+          [{label:"Close", action:()=>{this.clearFeedbackDialog()}}]);
+      })
+      .catch((error) => {
+        this.setState({submit_error:true, 
+          submitting:false,});
+      })
+  }
+
   validateForm() {
     console.debug("validateForm");
     return new Promise((resolve, reject) => {
@@ -1400,6 +1445,26 @@ class DatasetEdit extends Component {
     )
   }
 
+  renderDialogActionButtons(actions){
+    console.debug('%c◉ renderDialogActionButtons ', 'color:#00ff7b', actions);
+    if(actions && actions.length > 1){ // remember: we have the close button by default
+      actions.map((action, index) => {
+      console.debug('%c◉ innermap ACTION ', 'color:#00ff7b', action, actions[index].action);
+        return (
+          <Button
+            key={index}
+            className="btn btn-primary"
+            variant="contained"
+            onClick={actions[index].action}>
+            {actions[index].label}
+          </Button>
+        )
+      
+      })
+
+    }
+  }
+
 
   renderManualStatusControl=()=>{
     return(  
@@ -1462,23 +1527,25 @@ class DatasetEdit extends Component {
       // && this.state.status.toUpperCase() === "PUBLISHED");
       // console.table([this.state.has_admin_priv, this.state.assay_type_primary, this.state.previous_revision_uuid, this.state.status]);
 
+
+
 // @TODO: Handling in a utility will optimize this a bunch
-    var writeCheck = this.state.has_write_priv
-    var adminCheck = this.state.has_admin_priv
-    var manualCheck = this.state.has_manual_priv
-    var versCheck = this.state.has_version_priv
-    var pubCheck = this.state.status === "Published"
-    var newFormCheck = this.props.newForm
-    var newStateCheck = this.state.status === "New"
+    // var writeCheck = this.state.has_write_priv
+    // var adminCheck = this.state.has_admin_priv
+    // var manualCheck = this.state.has_manual_priv
+    // var versCheck = this.state.has_version_priv
+    // var newFormCheck = this.props.newForm
+    // var pubCheck = this.state.status === "Published"
+    // var newStateCheck = this.state.status === "New"
 
     var permMatrix = {
-      "writeCheck":writeCheck,
-      "adminCheck":adminCheck,
-      "versCheck":versCheck,
-      "pubCheck":pubCheck,
-      "newFormCheck":newFormCheck,
-      "newStateCheck":newStateCheck,
-      "manualCheck":manualCheck,
+      "writeCheck":this.state.has_write_priv,
+      "adminCheck":this.state.has_admin_priv,
+      "manualCheck":this.state.has_manual_priv,
+      "versCheck":this.state.has_version_priv,
+      "newFormCheck":this.props.newForm,
+      "pubCheck":this.state.status  === "Published",
+      "newStateCheck":this.state.status=== "New",
     }
     // console.debug("permMatrix")
     // console.table(permMatrix)
@@ -1517,6 +1584,18 @@ class DatasetEdit extends Component {
                       variant="contained"
                       onClick={ () => this.launchSubmitModal() }>
                         Submit
+                    </Button>
+                  </div>
+              )}
+              { (this.state.has_pipeline_testing_priv || this.state.has_admin_priv) && this.state.is_primary === true &&(
+                  <div >
+                    <Button 
+                      style={{width:"230px"}}
+                      className="btn btn-primary mr-1" 
+                      variant="contained"
+                      fullWidth
+                      onClick={ () => this.handleSubmitForTesting() }>
+                        Submit for Testing
                     </Button>
                   </div>
               )}
@@ -1577,6 +1656,31 @@ class DatasetEdit extends Component {
       
       );
     }
+
+    renderFeedbackModall = () => {
+        return (
+            <Dialog
+              sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
+              maxWidth="xs" 
+              // sx={{width:"600px!important"}}    
+              aria-labelledby="feedback-dialog" 
+              open={this.state.showFeedbackDialog}>
+              <DialogContent>
+                <h4>{this.state.feedbackDialog['title']}</h4>
+                <div>{this.state.feedbackDialog['message']}</div>
+             </DialogContent>
+             <DialogActions>
+
+              {/* {() => this.renderDialogActionButtons(this.state.feedbackDialog['actions'])} */}
+              <Button onClick={() => this.toggleFeedbackDialog()} variant="contained" color="primary">
+                Close
+              </Button>
+
+             </DialogActions>
+            </Dialog>
+        
+        );
+      }
   
   renderListItem(uuid){
     console.debug('%c◉ data ', 'color:#00ff7b', uuid);
@@ -2232,6 +2336,7 @@ name, display_doi, doi
           </div>
         </Modal>
         {this.renderSubmitModal()}
+        {this.renderFeedbackModall()}
         
       </React.Fragment>
     );
