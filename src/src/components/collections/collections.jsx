@@ -4,10 +4,11 @@ import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
-import {ingest_api_publish_collection,ingest_api_user_admin} from '../../service/ingest_api';
+import {ingest_api_publish_collection,ingest_api_user_admin, ingest_api_validate_contributors} from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
 import Papa from 'papaparse';
+import {GridLoader} from "react-spinners";
 import ReactTooltip from "react-tooltip";
 import { TextField, Button, Box } from '@mui/material';
 import Paper from '@material-ui/core/Paper';
@@ -42,31 +43,34 @@ const StyledTextField = styled(TextField)`
 `;
 export function CollectionForm (props){
   // let navigate = useNavigate();
-  var [locked, setLocked] = useState(false);
-  var [successDialogRender, setSuccessDialogRender] = useState(false);
-  var [selectedSource, setSelectedSource] = useState(null);
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
   var [associatedEntities, setassociatedEntities] = useState([]);
   var [associatedEntitiesInitial, setassociatedEntitiesInitial] = useState([]);
-  var [selectedSources, setSelectedSources] = useState([]);
-  var [publishing, setPublishing] = useState(false);
-  var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
-  var [warningOpen, setWarningOpen] = React.useState(false);
-  var [openGroupModal, setOpenGroupModal] = useState(false);
-  var [lookupShow, setLookupShow] = useState(false);
-  var [loadingDatasets, setLoadingDatasets] = useState(true);
-  var [hideUUIDList, setHideUUIDList] = useState(true);
-  var [loadUUIDList, setLoadUUIDList] = useState(false);
-  var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
+  var [contributorValidationErrors, setContributorValidationErrors] = useState('');
   var [entityInfo, setEntityInfo] = useState();
-  var [userAdmin, setUserAdmin] = useState(false);
+  var [fileDetails, setFileDetails] = useState();
+  var [hideUUIDList, setHideUUIDList] = useState(true);
+  var [loadingDatasets, setLoadingDatasets] = useState(true);
+  var [loadUUIDList, setLoadUUIDList] = useState(false);
+  var [locked, setLocked] = useState(false);
+  var [disableSubmit, setDisableSubmit] = useState(false);
+  var [validatingContributorsUpload, setValidatingContributorsUpload] = useState(false);
+  var [lookupShow, setLookupShow] = useState(false);
+  var [openGroupModal, setOpenGroupModal] = useState(false);
   var [pageError, setPageError] = useState("");
+  var [publishing, setPublishing] = useState(false);
+  var [selectedSource, setSelectedSource] = useState(null);
+  var [selectedSources, setSelectedSources] = useState([]);
+  var [successDialogRender, setSuccessDialogRender] = useState(false);
+  var [userAdmin, setUserAdmin] = useState(false);
+  var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
+  var [warningOpen, setWarningOpen] = React.useState(false);
   // var [publishError, setPublishError] = useState({
   //   status:"",
   //   message:"",
   // });
-  // @TODO: See what we can globalize/memoize/notize here
+  // @TODO: See what we can glob  alize/memoize/notize here
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
@@ -522,6 +526,10 @@ export function CollectionForm (props){
     }
 
     var handleFileGrab = (e, type) => {
+      console.debug('%c◉ FILEGRAb ', 'color:#00ff7b', );
+      setContributorValidationErrors()
+      setValidatingContributorsUpload(true)
+      setDisableSubmit(true);
       var grabbedFile = e.target.files[0];
       var newName = grabbedFile.name.replace(/ /g, '_')
       var newFile = new File([grabbedFile], newName);
@@ -531,6 +539,43 @@ export function CollectionForm (props){
           ...prevValues,
           'contributors': "",
         }))
+
+        ingest_api_validate_contributors(JSON.parse(localStorage.getItem("info")).groups_token, newFile)
+          .then((response) => {
+            if(response.status === 200){
+              console.debug('%c◉ Success ', 'color:#00ff7b', response);
+              setContributorValidationErrors()
+              setDisableSubmit(false);
+              setFormErrors((prevValues) => ({
+                ...prevValues,
+                'contributors': "",
+              }))
+              setValidatingContributorsUpload(false)
+            }else{
+              let errorSet = response.error.response.data.description;
+              console.debug('%c◉ FAILURE ', 'color:#ff005d', errorSet)
+              if (errorSet == "metadata_schema_id not found in header") {
+                setContributorValidationErrors([
+                  {
+                    "column": "N/A",
+                    "error": "Metadata_schema_id not found in header",
+                    "row": "N/A"
+                  }
+                ]);
+              }else{
+                setContributorValidationErrors(errorSet);
+              }
+              setFormErrors((prevValues) => ({
+                ...prevValues,
+                'contributors': "Please Review the list of errors provided",
+              }))
+              setValidatingContributorsUpload(false)
+            }
+          })
+          .catch((error) => {
+            console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
+          });
+
         Papa.parse(newFile, {
           download: true,
           skipEmptyLines: true,
@@ -571,6 +616,22 @@ export function CollectionForm (props){
       console.debug("handleUUIDList", name, value, type);
     };
 
+    var renderValidatingOverlay = () => {
+      return (
+        <Box sx={{
+          position: 'absolute',
+          backgroundColor: 'rgba(25,25,25,0.8)',
+          color:"white",
+          display:"flex",
+          width:"100%",
+          height:"100%",
+          zIndex: 1000
+        }}>
+          <GridLoader color="#fff"  style={{ margin:"auto"  }} size={23} loading={true}/>
+         </Box >
+      )
+    }
+
     var renderTableRows = (rowDetails) => {
       if (rowDetails.length > 0) {
         return rowDetails.map((row, index) => {
@@ -597,7 +658,10 @@ export function CollectionForm (props){
     var renderContribTable = () => {
       return (
         <>
-          <TableContainer style={{ maxHeight: 200 }}>
+          {validatingContributorsUpload && (
+            renderValidatingOverlay()
+          )}
+          <TableContainer style={{ maxHeight: 600 }}>
             <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
               <TableHead className="thead-dark font-size-sm">
                 <TableRow className="   " >
@@ -612,10 +676,24 @@ export function CollectionForm (props){
                 </TableRow>
               </TableHead>
               <TableBody>
+                {}
                 {renderTableRows(formValues.contributors)}
               </TableBody>
             </Table>
           </TableContainer>
+          {contributorValidationErrors && contributorValidationErrors.length > 0 && (
+            <Box sx={{
+              // height: '500px',
+            }}> 
+              Errors Found: <br />
+
+              <div
+                dangerouslySetInnerHTML={{ __html:renderContributorErrors() }}
+              ></div>
+              {/* {renderContributorErrors()} */}
+            </Box>
+          )}
+          
           {formErrors.contributors && formErrors.contributors.length > 0 && (
             <Box
               p={1}
@@ -631,6 +709,21 @@ export function CollectionForm (props){
         </>
       )
     }
+
+    var renderContributorErrors = () => {
+      console.debug('%c◉ contributorValidationErrors ', 'color:#00ff7b', contributorValidationErrors);
+      let stylizedList = '<ul>';
+        for (const error of contributorValidationErrors) {
+          console.debug('%c◉ contributorValidationErrors error ', 'color:#00ff7b', error, error,error);
+          stylizedList += `<li>${error.error}</li>`;
+        }
+        stylizedList += '</ul>';
+
+        console.log(stylizedList);
+        return stylizedList;
+    }
+
+
     var renderAssociationTable = () => {
       var hiddenFields = [];
       var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
@@ -985,7 +1078,7 @@ export function CollectionForm (props){
               variant="contained"
               onClick={() => handleSubmit()}
               type="button"
-              disabled={locked}
+              disabled={locked || disableSubmit}
               className='float-right'>
               {buttonState === "submit" && (
                 <FontAwesomeIcon
