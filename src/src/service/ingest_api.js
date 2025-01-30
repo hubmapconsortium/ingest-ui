@@ -635,3 +635,28 @@ export function ingest_api_pipeline_test_submit(auth, data) {
       });
 };
 
+/* 
+ * Contibutor TSV Validation
+ *
+ */
+export function ingest_api_validate_contributors(auth,dataFile) { 
+  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate?ensure-latest-cedar-version=true`;
+  var formData = new FormData();
+  formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);
+  formData.append('entity_type', "contributors")
+
+  return axios 
+    .post(url, formData, options)
+    .then(res => {
+      console.debug("ingest_api_validate_contributors",res);
+        let results = res.data;
+        return {status: res.status, results: results}
+      })
+      .catch(error => {
+        console.debug('%c⭗  ingest_api_validate_contributors', 'color:#ff005d',error );
+        // throw new Error(error);
+        return {error}
+      });
+};
+
