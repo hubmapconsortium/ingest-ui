@@ -571,6 +571,14 @@ export function EPICollectionForm (props){
                   "row": "N/A"
                 }
               ]);
+            }else if(errorSet == "This is not the latest version of the metadata specification as defined in CEDAR"){
+              setContributorValidationErrors([
+                {
+                  "column": "N/A",
+                  "error": "This is not the latest version of the metadata specification as defined in CEDAR",
+                  "row": "N/A"
+                }
+              ])
             }else{
               setContributorValidationErrors(errorSet);
             }
