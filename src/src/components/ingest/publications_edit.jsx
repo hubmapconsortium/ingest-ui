@@ -4,7 +4,7 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import Button from "@mui/material/Button";
-
+import LoadingButton from '@mui/lab/LoadingButton';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -953,6 +953,37 @@ class PublicationEdit extends Component {
     window.location.reload();
   };
 
+  handleStatusSet = (e) => {
+    this.setState({submittingUpdate:true});
+    var newStatus = this.state.newStatus;
+    entity_api_update_entity(
+        this.props.editingPublication.uuid, 
+        {"status":newStatus}, 
+        JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((response) => {
+          if (response.status < 300) {
+            this.setState({ 
+              submit_error:false, 
+              submitting:false, 
+              submittingUpdate:false,
+              });
+            this.props.onUpdated(response.results);
+          } else {
+            this.setState({ 
+              submit_error:true, 
+              submitting:false, 
+              submittingUpdate:false,
+              submitErrorResponse:response.results.statusText
+            });
+          }
+        })
+        .catch((error) => {
+          this.setState({submit_error:true, 
+            submitting:false,});
+        });
+  }
+  
+
   handleSubmit = (submitIntention) => {
     
     this.setState({ 
@@ -1611,19 +1642,14 @@ class PublicationEdit extends Component {
          {this.state.statusSetLabel}
         </Button>
         {this.state.toggleStatusSet  && (
-          <Button
-            variant="contained"
+          <LoadingButton 
             className="mx-1"
-            onClick={() => this.handleStatusSet() }>
-            {this.state.submitting && (
-              <FontAwesomeIcon
-                className='inline-icon'
-                icon={faSpinner}
-                spin
-              />
-            )}
-          {!this.state.submittingUpdate && "Update"}         
-          </Button>
+            loading={this.state.submittingUpdate}
+            onClick={() => this.handleStatusSet()}
+            variant="contained">
+            Update
+          </LoadingButton>  
+          
         )}
         <Collapse in={this.state.toggleStatusSet} className="col-7">
           <FormGroup controlId="status">
@@ -2365,9 +2391,7 @@ class PublicationEdit extends Component {
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
           hide={()=> this.hideGroupSelectModal()}
-          submit={() => this.handleSubmit("save")} // It'll only be askign which group pn create
-          // submit={this.handleSubmit} 
-          // submit={this.handleSubmit}  Modal only appears when theres no group, which only happens on new form. Intent is blank
+          submit={() => this.handleSubmit("save")} 
           handleInputChange={this.handleInputChange}
         />
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
