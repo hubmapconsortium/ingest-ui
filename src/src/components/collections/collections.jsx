@@ -4,10 +4,11 @@ import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
-import {ingest_api_publish_collection,ingest_api_user_admin} from '../../service/ingest_api';
+import {ingest_api_publish_collection,ingest_api_user_admin, ingest_api_validate_contributors} from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
 import Papa from 'papaparse';
+import {GridLoader} from "react-spinners";
 import ReactTooltip from "react-tooltip";
 import { TextField, Button, Box } from '@mui/material';
 import Paper from '@material-ui/core/Paper';
@@ -42,31 +43,34 @@ const StyledTextField = styled(TextField)`
 `;
 export function CollectionForm (props){
   // let navigate = useNavigate();
-  var [locked, setLocked] = useState(false);
-  var [successDialogRender, setSuccessDialogRender] = useState(false);
-  var [selectedSource, setSelectedSource] = useState(null);
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
   var [associatedEntities, setassociatedEntities] = useState([]);
   var [associatedEntitiesInitial, setassociatedEntitiesInitial] = useState([]);
-  var [selectedSources, setSelectedSources] = useState([]);
-  var [publishing, setPublishing] = useState(false);
-  var [fileDetails, setFileDetails] = useState();
   var [buttonState, setButtonState] = useState('');
-  var [warningOpen, setWarningOpen] = React.useState(false);
-  var [openGroupModal, setOpenGroupModal] = useState(false);
-  var [lookupShow, setLookupShow] = useState(false);
-  var [loadingDatasets, setLoadingDatasets] = useState(true);
-  var [hideUUIDList, setHideUUIDList] = useState(true);
-  var [loadUUIDList, setLoadUUIDList] = useState(false);
-  var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
+  var [contributorValidationErrors, setContributorValidationErrors] = useState('');
   var [entityInfo, setEntityInfo] = useState();
-  var [userAdmin, setUserAdmin] = useState(false);
+  var [fileDetails, setFileDetails] = useState();
+  var [hideUUIDList, setHideUUIDList] = useState(true);
+  var [loadingDatasets, setLoadingDatasets] = useState(true);
+  var [loadUUIDList, setLoadUUIDList] = useState(false);
+  var [locked, setLocked] = useState(false);
+  var [disableSubmit, setDisableSubmit] = useState(false);
+  var [validatingContributorsUpload, setValidatingContributorsUpload] = useState(false);
+  var [lookupShow, setLookupShow] = useState(false);
+  var [openGroupModal, setOpenGroupModal] = useState(false);
   var [pageError, setPageError] = useState("");
+  var [publishing, setPublishing] = useState(false);
+  var [selectedSource, setSelectedSource] = useState(null);
+  var [selectedSources, setSelectedSources] = useState([]);
+  var [successDialogRender, setSuccessDialogRender] = useState(false);
+  var [userAdmin, setUserAdmin] = useState(false);
+  var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
+  var [warningOpen, setWarningOpen] = React.useState(false);
   // var [publishError, setPublishError] = useState({
   //   status:"",
   //   message:"",
   // });
-  // @TODO: See what we can globalize/memoize/notize here
+  // @TODO: See what we can glob  alize/memoize/notize here
   var [errorHandler, setErrorHandler] = useState({
     status: "",
     message: "",
@@ -217,7 +221,6 @@ export function CollectionForm (props){
     setOpenGroupModal(false);
   }
   
-
   const handleInputChange = (event) => {
     const { name, value, type } = event.target;
     console.debug("handleInputChange", name, value, type);
@@ -337,13 +340,6 @@ export function CollectionForm (props){
     
   }
 
-  function removeEmpty(obj) {
-    return Object.fromEntries(
-      Object.entries(obj)
-        .filter(([_, v]) => v != null)
-        .map(([k, v]) => [k, v === Object(v) ? removeEmpty(v) : v])
-    );
-  }
   function validateForm(formValues) {
     console.debug('%c◉ validateForm FormValues ', 'color:#00ff7b', );
     var isValid = true;
@@ -414,7 +410,6 @@ export function CollectionForm (props){
     }
   }
 
-    
   const handleSubmit = () => {
     setButtonState("submit");
     var submitForm = validateForm(formValues);
@@ -519,502 +514,589 @@ export function CollectionForm (props){
         setPageError(error.toString());
         setButtonState("");
       });
-    }
+  }
 
-    var handleFileGrab = (e, type) => {
-      var grabbedFile = e.target.files[0];
-      var newName = grabbedFile.name.replace(/ /g, '_')
-      var newFile = new File([grabbedFile], newName);
-      if (newFile && newFile.name.length > 0) {
-        console.debug('%c◉ HAVE FILE ', 'color:#00ff7b', newFile);
-        setFormErrors((prevValues) => ({
-          ...prevValues,
-          'contributors': "",
-        }))
-        Papa.parse(newFile, {
-          download: true,
-          skipEmptyLines: true,
-          header: true,
-          complete: data => {
-            setFileDetails({
-              ...fileDetails,
-              [type]: data.data
-            });
-            processContacts(data,"grab")
+  var handleFileGrab = (e, type) => {
+    console.debug('%c◉ FILEGRAb ', 'color:#00ff7b', );
+    setContributorValidationErrors()
+    setValidatingContributorsUpload(true)
+    setDisableSubmit(true);
+    var grabbedFile = e.target.files[0];
+    var newName = grabbedFile.name.replace(/ /g, '_')
+    var newFile = new File([grabbedFile], newName);
+    if (newFile && newFile.name.length > 0) {
+      console.debug('%c◉ HAVE FILE ', 'color:#00ff7b', newFile);
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'contributors': "",
+      }))
+
+      ingest_api_validate_contributors(JSON.parse(localStorage.getItem("info")).groups_token, newFile)
+        .then((response) => {
+          if(response.status === 200){
+            console.debug('%c◉ Success ', 'color:#00ff7b', response);
+            setContributorValidationErrors()
+            setDisableSubmit(false);
+            setFormErrors((prevValues) => ({
+              ...prevValues,
+              'contributors': "",
+            }))
+            setValidatingContributorsUpload(false)
+          }else{
+            let errorSet = response.error.response.data.description;
+            console.debug('%c◉ FAILURE ', 'color:#ff005d', errorSet)
+            if (errorSet == "metadata_schema_id not found in header") {
+              setContributorValidationErrors([
+                {
+                  "column": "N/A",
+                  "error": "Metadata_schema_id not found in header",
+                  "row": "N/A"
+                }
+              ]);
+            }else if(errorSet == "This is not the latest version of the metadata specification as defined in CEDAR"){
+              setContributorValidationErrors([
+                {
+                  "column": "N/A",
+                  "error": "This is not the latest version of the metadata specification as defined in CEDAR",
+                  "row": "N/A"
+                }
+              ]);
+            }else{
+              setContributorValidationErrors(errorSet);
+            }
+            setFormErrors((prevValues) => ({
+              ...prevValues,
+              'contributors': "Please Review the list of errors provided",
+            }))
+            setValidatingContributorsUpload(false)
           }
+        })
+        .catch((error) => {
+          console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
         });
-      } else {
-        console.debug("No Data??");
-      }
-    };
 
-    var processContacts = (data,source) => {
-      var contributors = []
-      var contacts = []
-        for (const row of data.data) {
-          contributors.push(row)
-          if(!row.is_contact){
-            row.is_contact = "NO"
-          }else if (row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
-            contacts.push(row)
-          }
+      Papa.parse(newFile, {
+        download: true,
+        skipEmptyLines: true,
+        header: true,
+        complete: data => {
+          setFileDetails({
+            ...fileDetails,
+            [type]: data.data
+          });
+          processContacts(data,"grab")
         }
-        setFormValues ({
-          ...formValues,
-          contacts: contacts,
-          contributors: contributors
-        });
+      });
+    } else {
+      console.debug("No Data??");
     }
+  };
 
-    var processUUIDs = (event) => {
-      const { name, value, type } = event.target;
-      console.debug("handleUUIDList", name, value, type);
-    };
-
-    var renderTableRows = (rowDetails) => {
-      if (rowDetails.length > 0) {
-        return rowDetails.map((row, index) => {
-          return (
-            <TableRow
-              key={("rowName_" + index)}
-              className="row-selection"
-            >
-            <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
-            <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
-            <TableCell className="clicky-cell" scope="row">{row.orcid} </TableCell>
-            <TableCell className="clicky-cell" scope="row">{row.email	}</TableCell>
-            <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
-            <TableCell className="clicky-cell" scope="row">{row.is_principal_investigator	}</TableCell>
-            <TableCell className="clicky-cell" scope="row">{row.is_operator	}</TableCell>
-            <TableCell className="clicky-cell" scope="row">{row.metadata_schema_id}</TableCell>
-            </TableRow>
-          );
-        });
+  var processContacts = (data,source) => {
+    var contributors = []
+    var contacts = []
+      for (const row of data.data) {
+        contributors.push(row)
+        if(!row.is_contact){
+          row.is_contact = "NO"
+        }else if (row.is_contact && (row.is_contact === "TRUE"|| row.is_contact.toLowerCase()==="yes") ){
+          contacts.push(row)
+        }
       }
+      setFormValues ({
+        ...formValues,
+        contacts: contacts,
+        contributors: contributors
+      });
+  }
+
+  var processUUIDs = (event) => {
+    const { name, value, type } = event.target;
+    console.debug("handleUUIDList", name, value, type);
+  };
+
+  var renderValidatingOverlay = () => {
+    return (
+      <Box sx={{
+        position: 'absolute',
+        backgroundColor: 'rgba(25,25,25,0.8)',
+        color:"white",
+        display:"flex",
+        width:"100%",
+        height:"100%",
+        zIndex: 1000
+      }}>
+        <GridLoader color="#fff"  style={{ margin:"auto"  }} size={23} loading={true}/>
+        </Box >
+    )
+  }
+
+  var renderTableRows = (rowDetails) => {
+    if (rowDetails.length > 0) {
+      return rowDetails.map((row, index) => {
+        return (
+          <TableRow
+            key={("rowName_" + index)}
+            className="row-selection"
+          >
+          <TableCell className="clicky-cell" scope="row">{row.display_name}</TableCell>
+          <TableCell className="clicky-cell" scope="row">{row.affiliation}</TableCell>
+          <TableCell className="clicky-cell" scope="row">{row.orcid} </TableCell>
+          <TableCell className="clicky-cell" scope="row">{row.email	}</TableCell>
+          <TableCell className="clicky-cell" scope="row"> { (row.is_contact && (row.is_contact==="TRUE" || row.is_contact.toLowerCase()==="yes"))  ? <FontAwesomeIcon icon={faCheck} /> : ""} </TableCell>
+          <TableCell className="clicky-cell" scope="row">{row.is_principal_investigator	}</TableCell>
+          <TableCell className="clicky-cell" scope="row">{row.is_operator	}</TableCell>
+          <TableCell className="clicky-cell" scope="row">{row.metadata_schema_id}</TableCell>
+          </TableRow>
+        );
+      });
     }
-  
-  
-    var renderContribTable = () => {
-      return (
-        <>
-          <TableContainer style={{ maxHeight: 200 }}>
-            <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
-              <TableHead className="thead-dark font-size-sm">
-                <TableRow className="   " >
-                <TableCell> Name</TableCell>
-                <TableCell component="th">Affiliation</TableCell>
-                <TableCell component="th">Orcid</TableCell>
-                <TableCell component="th">Email</TableCell>
-                <TableCell component="th">Is Contact</TableCell>
-                <TableCell component="th">Is Principal Investigator</TableCell>
-                <TableCell component="th">Is Operator</TableCell>
-                <TableCell component="th">Metadata Schema ID</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {renderTableRows(formValues.contributors)}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {formErrors.contributors && formErrors.contributors.length > 0 && (
+  }
+
+
+  var renderContribTable = () => {
+    return (
+      <>
+        {validatingContributorsUpload && (
+          renderValidatingOverlay()
+        )}
+        <TableContainer style={{ maxHeight: 600 }}>
+          <Table stickyHeader aria-label="Associated Collaborators" size="small" className="table table-striped table-hover mb-0">
+            <TableHead className="thead-dark font-size-sm">
+              <TableRow className="   " >
+              <TableCell> Name</TableCell>
+              <TableCell component="th">Affiliation</TableCell>
+              <TableCell component="th">Orcid</TableCell>
+              <TableCell component="th">Email</TableCell>
+              <TableCell component="th">Is Contact</TableCell>
+              <TableCell component="th">Is Principal Investigator</TableCell>
+              <TableCell component="th">Is Operator</TableCell>
+              <TableCell component="th">Metadata Schema ID</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {}
+              {renderTableRows(formValues.contributors)}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        {contributorValidationErrors && contributorValidationErrors.length > 0 && (
+          <Box> 
+            Errors Found: <br />
+            <div dangerouslySetInnerHTML={{ __html:renderContributorErrors() }}></div>
+          </Box>
+        )}
+        
+        {formErrors.contributors && formErrors.contributors.length > 0 && (
+          <Box
+            p={1}
+            width="100%"
+            sx={{
+              // backgroundColor: '#FFCACA',
+              color: 'red',
+              padding: '10px',
+            }}   >
+            <FontAwesomeIcon icon={faExclamationTriangle} color="red" className='mr-1 red'/> {formErrors.contributors}
+          </Box>
+        )}  
+      </>
+    )
+  }
+
+  var renderContributorErrors = () => {
+    let stylizedList = '<ul>';
+    for (const error of contributorValidationErrors) {
+        stylizedList += `<li>${error.error}</li>`;
+      }
+    stylizedList += '</ul>';
+    return stylizedList;
+  }
+
+
+  var renderAssociationTable = () => {
+    var hiddenFields = [];
+    var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
+    if ( (uniqueTypes.has("dataset") && uniqueTypes.size === 1) ) {
+      // add submission_id to hiddenFields
+      hiddenFields.push("submission_id");
+    }
+    function buildColumnFilter(arr) {
+      let obj = {};
+      arr.forEach(value => {
+          obj[value] = false;
+      });
+      return obj;
+    }
+    var columnFilters = buildColumnFilter(hiddenFields)
+
+    return (
+      <div style={{ width:"100%", maxHeight: "340px", overflowX:"auto", padding:"10px 0" }}>
+        <DataGrid
+          columnVisibilityModel={columnFilters}
+          className='associationTable w-100'
+          rows={associatedEntities}
+          columns={COLUMN_DEF_MIXED}
+          disableColumnMenu={true}
+          hideFooterPagination={true}
+          hideFooterSelectedRowCount
+          rowCount={associatedEntities.length}
+          // rowHeight={45}
+          onCellClick={handleEvent}
+          loading={!associatedEntities.length > 0 && !isNew}
+          sx={{
+            // minHeight: '200px',
+            // display: 'inline-block',
+            // // overflow: 'auto',
+            // '.MuiDataGrid-virtualScroller': {
+            //   minHeight: '45px',
+            //   // overflow: 'scroll',
+            // },
+            '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {
+              minHeight: '60px',
+              // overflowY: 'auto !important',
+              // flex: 'unset !important',
+            },
+          }}
+        />
+      </div>
+    );
+  }
+
+  var creationSuccess = (response) => {
+    var resultInfo = {
+      entity: response.results
+    };
+    setEntityInfo(resultInfo);
+    props.onProcessed(resultInfo)
+  }
+
+  var formatDatatype = (row) => {
+    console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.dataset_type);
+    return ("DT");
+  }
+
+  return (
+    <Box
+      component="form"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        margin: '0 0',
+      }}
+    >
+      <div className="w-100">
+
+        <div className="row">
+          <div className="col-md-12 mb-4">
+            <h3>
+              {!props.newForm && editingCollection && (
+                <span className="">
+                  HuBMAP Collection ID: {editingCollection.hubmap_id}
+                  {" "}
+                </span>
+              )}
+              {(props.newForm) && (
+                <span className="mx-1">
+                  Registering a Collection
+                </span>
+              )}
+            </h3>
+            {!props.newForm && (
+              <h5>{props.editingCollection.title}</h5>
+            )}
+            {editingCollection && editingCollection.doi_url  && (
+              <h4 className="title_badge">
+                doi: <a href={editingCollection.doi_url} target='_blank' >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
+              </h4>
+            )}
+          </div>
+        </div>
+
+        <label htmlFor='dataset_uuids'>
+          Associated Entities <span className='text-danger px-2'>*</span>
+        </label>
+        <FontAwesomeIcon
+          icon={faQuestionCircle}
+          data-tip
+          data-for='associations_uuid_tooltip'
+        />
+        <ReactTooltip
+          id='associations_uuid_tooltip'
+          className='zindex-tooltip'
+          place='right'
+          type='info'
+          effect='solid'
+        >
+          <p>
+            The source tissue samples or data from which this data was derived.  <br />
+            At least <strong>one source </strong>is required, but multiple may be specified.
+          </p>
+        </ReactTooltip>
+      
+        {loadingDatasets && (
+          <LinearProgress />
+        )}
+        
+      
+        {!loadingDatasets && (<>
+        
+        {renderAssociationTable()}
+
+          {formErrors.bulk_dataset_uuids[0].length > 0 && (
+            <Alert variant="filled" severity="error">
+              <strong>Error:</strong> {formErrors.bulk_dataset_uuids[1]}: {formErrors.bulk_dataset_uuids[2]} ({formErrors.bulk_dataset_uuids[2]})
+            </Alert>
+          )}
+          {formWarnings.bulk_dataset_uuids.length > 0 && (
+            <Collapse in={warningOpen}>
+              <Alert
+                severity='warning' variant='filled' sx={{ mt: 2 }}
+                action={
+                  <IconButton aria-label="close" color="inherit" size="small"onClick={() => {setWarningOpen(false)}}>
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>}>
+                <strong>Notice: </strong>{formWarnings.bulk_dataset_uuids}
+              </Alert>
+            </Collapse>
+            
+          )}
+
+          <Box className="mt-2 w-100" width="100%" display="flex">
+            <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
+              <Button
+                variant="contained"
+                type='button'
+                size="small"
+                className='btn btn-neutral'
+                onClick={() => setLookupShow(true)}
+              >
+                Add {formValues.dataset_uuids && formValues.dataset_uuids.length >= 1 && (
+                  "Another"
+                )} Member
+                <FontAwesomeIcon
+                  className='fa button-icon m-2'
+                  icon={faPlus}
+                />
+              </Button>
+              
+              <Button
+                variant="text"
+                type='link'
+                size="small"
+                className='mx-2'
+                onClick={(event) => handleInputUUIDs(event)}
+              >
+                {hideUUIDList && (<>Bulk</>)}
+                {!hideUUIDList && (<>Add</>)}
+                <FontAwesomeIcon
+                  className='fa button-icon m-2'
+                  icon={faPenToSquare}
+                />
+              </Button>
+            </Box>
+            
+            <Box>
+              <Collapse
+                in={!hideUUIDList}
+                orientation="horizontal"
+                sx={{
+                  overflow: 'hidden',
+                  display: 'inline-box',
+                }}>
+                {loadUUIDList && (
+                  <LinearProgress> </LinearProgress>
+                )}
+                {!loadUUIDList && (
+                  <FormControl
+                    // className='mb-0'
+                    sx={{
+                      verticalAlign: 'bottom',
+                      minWidth: "400px",
+                      overflow: 'hidden',
+                      //   display: 'flex',
+                      //   flexDirection: 'row', 
+                    }}>
+                    <StyledTextField
+                      name="dataset_uuids"
+                      id="dataset_uuids"
+                      error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
+                      disabled={locked}
+                      multiline
+                      rows={2}
+                      inputProps={{ 'aria-label': 'description' }}
+                      placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated "}
+                      variant="standard"
+                      size="small"
+                      fullWidth={true}
+                      onChange={(event) => handleInputChange(event)}
+                      value={formValues.dataset_uuids}
+                      sx={{
+                        marginTop: '10px',
+                        width: '100%',
+                        verticalAlign: 'bottom',
+                      }}
+                    />
+                  </FormControl>
+                )}
+              </Collapse>
+            </Box>
+
+            {!hideUUIDList && (
+              <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
+                <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => {setHideUUIDList(true)}}><CancelPresentationIcon/></IconButton>
+              </Box>
+            )}
+          
+          </Box>
+          {formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 && (
             <Box
               p={1}
               width="100%"
               sx={{
-                // backgroundColor: '#FFCACA',
-                color: 'red',
+                backgroundColor: 'rgb(253, 237, 237)',
                 padding: '10px',
               }}   >
-              <FontAwesomeIcon icon={faExclamationTriangle} color="red" className='mr-1 red'/> {formErrors.contributors}
+              {formErrors.dataset_uuids}
             </Box>
-          )}  
-        </>
-      )
-    }
-    var renderAssociationTable = () => {
-      var hiddenFields = [];
-      var uniqueTypes = new Set(associatedEntities.map(obj => obj.entity_type.toLowerCase()));
-      if ( (uniqueTypes.has("dataset") && uniqueTypes.size === 1) ) {
-        // add submission_id to hiddenFields
-        hiddenFields.push("submission_id");
-      }
-      function buildColumnFilter(arr) {
-        let obj = {};
-        arr.forEach(value => {
-            obj[value] = false;
-        });
-        return obj;
-      }
-      var columnFilters = buildColumnFilter(hiddenFields)
-
-      return (
-        <div style={{ width:"100%", maxHeight: "340px", overflowX:"auto", padding:"10px 0" }}>
-          <DataGrid
-            columnVisibilityModel={columnFilters}
-            className='associationTable w-100'
-            rows={associatedEntities}
-            columns={COLUMN_DEF_MIXED}
-            disableColumnMenu={true}
-            hideFooterPagination={true}
-            hideFooterSelectedRowCount
-            rowCount={associatedEntities.length}
-            // rowHeight={45}
-            onCellClick={handleEvent}
-            loading={!associatedEntities.length > 0 && !isNew}
-            sx={{
-              // minHeight: '200px',
-              // display: 'inline-block',
-              // // overflow: 'auto',
-              // '.MuiDataGrid-virtualScroller': {
-              //   minHeight: '45px',
-              //   // overflow: 'scroll',
-              // },
-              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {
-                minHeight: '60px',
-                // overflowY: 'auto !important',
-                // flex: 'unset !important',
-              },
-            }}
-          />
-        </div>
-      );
-    }
-
-    var creationSuccess = (response) => {
-      var resultInfo = {
-        entity: response.results
-      };
-      setEntityInfo(resultInfo);
-      props.onProcessed(resultInfo)
-    }
-
-    var formatDatatype = (row) => {
-      console.debug('%c⊙', 'color:#00ff7b', "formatDatatype", row, row.display_subtype, row.dataset_type);
-      return ("DT");
-    }
-
-    return (
-      <Box
-        component="form"
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1rem',
-          margin: '0 0',
-        }}
-      >
-        <div className="w-100">
-
-          <div className="row">
-            <div className="col-md-12 mb-4">
-              <h3>
-                {!props.newForm && editingCollection && (
-                  <span className="">
-                    HuBMAP Collection ID: {editingCollection.hubmap_id}
-                    {" "}
-                  </span>
-                )}
-                {(props.newForm) && (
-                  <span className="mx-1">
-                    Registering a Collection
-                  </span>
-                )}
-              </h3>
-              {!props.newForm && (
-                <h5>{props.editingCollection.title}</h5>
-              )}
-              {editingCollection && editingCollection.doi_url  && (
-                <h4 className="title_badge">
-                  doi: <a href={editingCollection.doi_url} target='_blank' >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
-                </h4>
-              )}
-            </div>
-          </div>
-
-          <label htmlFor='dataset_uuids'>
-            Associated Entities <span className='text-danger px-2'>*</span>
-          </label>
-          <FontAwesomeIcon
-            icon={faQuestionCircle}
-            data-tip
-            data-for='associations_uuid_tooltip'
-          />
-          <ReactTooltip
-            id='associations_uuid_tooltip'
-            className='zindex-tooltip'
-            place='right'
-            type='info'
-            effect='solid'
-          >
-            <p>
-              The source tissue samples or data from which this data was derived.  <br />
-              At least <strong>one source </strong>is required, but multiple may be specified.
-            </p>
-          </ReactTooltip>
-        
-          {loadingDatasets && (
-            <LinearProgress />
           )}
-          
-        
-          {!loadingDatasets && (<>
-          
-          {renderAssociationTable()}
-  
-            {formErrors.bulk_dataset_uuids[0].length > 0 && (
-              <Alert variant="filled" severity="error">
-                <strong>Error:</strong> {formErrors.bulk_dataset_uuids[1]}: {formErrors.bulk_dataset_uuids[2]} ({formErrors.bulk_dataset_uuids[2]})
-              </Alert>
-            )}
-            {formWarnings.bulk_dataset_uuids.length > 0 && (
-              <Collapse in={warningOpen}>
-                <Alert
-                  severity='warning' variant='filled' sx={{ mt: 2 }}
-                  action={
-                    <IconButton aria-label="close" color="inherit" size="small"onClick={() => {setWarningOpen(false)}}>
-                      <CloseIcon fontSize="inherit" />
-                    </IconButton>}>
-                  <strong>Notice: </strong>{formWarnings.bulk_dataset_uuids}
-                </Alert>
-              </Collapse>
-             
-            )}
+      
+        </>)}
 
-            <Box className="mt-2 w-100" width="100%" display="flex">
-              <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
-                <Button
-                  variant="contained"
-                  type='button'
-                  size="small"
-                  className='btn btn-neutral'
-                  onClick={() => setLookupShow(true)}
-                >
-                  Add {formValues.dataset_uuids && formValues.dataset_uuids.length >= 1 && (
-                    "Another"
-                  )} Member
-                  <FontAwesomeIcon
-                    className='fa button-icon m-2'
-                    icon={faPlus}
-                  />
-                </Button>
-                
-                <Button
-                  variant="text"
-                  type='link'
-                  size="small"
-                  className='mx-2'
-                  onClick={(event) => handleInputUUIDs(event)}
-                >
-                  {hideUUIDList && (<>Bulk</>)}
-                  {!hideUUIDList && (<>Add</>)}
-                  <FontAwesomeIcon
-                    className='fa button-icon m-2'
-                    icon={faPenToSquare}
-                  />
-                </Button>
-              </Box>
-              
-              <Box>
-                <Collapse
-                  in={!hideUUIDList}
-                  orientation="horizontal"
-                  sx={{
-                    overflow: 'hidden',
-                    display: 'inline-box',
-                  }}>
-                  {loadUUIDList && (
-                    <LinearProgress> </LinearProgress>
-                  )}
-                  {!loadUUIDList && (
-                    <FormControl
-                      // className='mb-0'
-                      sx={{
-                        verticalAlign: 'bottom',
-                        minWidth: "400px",
-                        overflow: 'hidden',
-                        //   display: 'flex',
-                        //   flexDirection: 'row', 
-                      }}>
-                      <StyledTextField
-                        name="dataset_uuids"
-                        id="dataset_uuids"
-                        error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
-                        disabled={locked}
-                        multiline
-                        rows={2}
-                        inputProps={{ 'aria-label': 'description' }}
-                        placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated "}
-                        variant="standard"
-                        size="small"
-                        fullWidth={true}
-                        onChange={(event) => handleInputChange(event)}
-                        value={formValues.dataset_uuids}
-                        sx={{
-                          marginTop: '10px',
-                          width: '100%',
-                          verticalAlign: 'bottom',
-                        }}
-                      />
-                    </FormControl>
-                  )}
-                </Collapse>
-              </Box>
-
-              {!hideUUIDList && (
-                <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
-                  <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => {setHideUUIDList(true)}}><CancelPresentationIcon/></IconButton>
-                </Box>
-              )}
-            
-            </Box>
-            {formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 && (
-              <Box
-                p={1}
-                width="100%"
-                sx={{
-                  backgroundColor: 'rgb(253, 237, 237)',
-                  padding: '10px',
-                }}   >
-                {formErrors.dataset_uuids}
-              </Box>
-            )}
-        
-          </>)}
-
-        
-          <Dialog
-            fullWidth={true}
-            maxWidth="lg"
-            onClose={() => setLookupShow(false)}
-            aria-labelledby="association-lookup-dialog"
-            open={lookupShow}>
-            <DialogContent>
-              <SearchComponent
-                select={(e) => handleSelectClick(e)}
-                custom_title="Search for an Associated Dataset for your Collection"
-                // filter_type="Publication"
-                modecheck="Source"
-                restrictions={{
-                  entityType: "dataset"
-                }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => setLookupShow(false)}
-                variant="contained"
-                color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-
-        <FormControl>
-          <TextField
-            label="Title"
-            name="title"
-            id="title"
-            error={formErrors.title && formErrors.title.length > 0 ? true : false}
-            disabled={false}
-            helperText={formErrors.title && formErrors.title.length > 0 ? "The title of the Collection is Required" : "The title of the Collection" }
-            variant="standard"
-            onChange={handleInputChange}
-            value={formValues.title}
-          />
-        </FormControl>
-
-        <FormControl>
-          <TextField
-            label="Description"
-            name="description"
-            id="description"
-            multiline
-            rows={4}
-            error={formErrors.description && formErrors.description.length > 0 ? true : false}
-            disabled={false}
-            helperText={formErrors.title && formErrors.title.length > 0 ? "A description of the Collection is Required" : "A description of the Collection" }
-            variant="standard"
-            onChange={handleInputChange}
-            value={formValues.description}
-          />
-        </FormControl>
-        <FormControl>
-          <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
-          Contributors
-          </Typography>
-          {formValues.contributors && formValues.contributors.length > 0 && (
-            <>{renderContribTable()} </>
-          )}
-          <div className="text-right">
-            <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
-          </div>
-          <div className="text-left">
-            <label>
-              <input
-                accept=".tsv, .csv"
-                type="file"
-                id="FileUploadContriubtors"
-                name="Contributors"
-                onChange={(e) => handleFileGrab(e, "contributors")}
-              />
-            </label>
-          </div>
-        </FormControl>
-
-        {pageError.length > 0 && (
-          <div className="row">
-              <Alert variant="filled" severity="error">
-                <strong>Error:</strong> {pageError}
-              </Alert>
-          </div>
-        )}
-
-        <div className="row">
-          <div className="buttonWrapRight">
-            {userAdmin === true && (editingCollection && !editingCollection.doi_url) && (          
-              <LoadingButton 
-                loading={publishing}
-                onClick={() => handlePublish()}
-                variant="contained">
-                Publish
-              </LoadingButton>  
-            )}
-
+      
+        <Dialog
+          fullWidth={true}
+          maxWidth="lg"
+          onClose={() => setLookupShow(false)}
+          aria-labelledby="association-lookup-dialog"
+          open={lookupShow}>
+          <DialogContent>
+            <SearchComponent
+              select={(e) => handleSelectClick(e)}
+              custom_title="Search for an Associated Dataset for your Collection"
+              // filter_type="Publication"
+              modecheck="Source"
+              restrictions={{
+                entityType: "dataset"
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
             <Button
+              onClick={() => setLookupShow(false)}
               variant="contained"
-              onClick={() => handleSubmit()}
-              type="button"
-              disabled={locked}
-              className='float-right'>
-              {buttonState === "submit" && (
-                <FontAwesomeIcon
-                  className='inline-icon'
-                  icon={faSpinner}
-                  spin
-                />
-              )}
-              {buttonState !== "submit" && (
-                "Submit"
-              )}
+              color="primary">
+              Close
             </Button>
-            <Button
-              type="button"
-              variant="outlined"
-              onClick={() => props.handleCancel()}>
-              Cancel
-            </Button>
-          </div>
-        </div>
+          </DialogActions>
+        </Dialog>
+      </div>
 
-        <GroupModal
-          show={openGroupModal}
-          groups={dataGroups}
-          submit={() => handleCreate(validatingSubmitForm)}
-          hide={hideGroupModal}
-          handleInputChange={(event) => handleInputChange(event)}
+      <FormControl>
+        <TextField
+          label="Title"
+          name="title"
+          id="title"
+          error={formErrors.title && formErrors.title.length > 0 ? true : false}
+          disabled={false}
+          helperText={formErrors.title && formErrors.title.length > 0 ? "The title of the Collection is Required" : "The title of the Collection" }
+          variant="standard"
+          onChange={handleInputChange}
+          value={formValues.title}
         />
-        
-      </Box>
-    );
-  }
+      </FormControl>
+
+      <FormControl>
+        <TextField
+          label="Description"
+          name="description"
+          id="description"
+          multiline
+          rows={4}
+          error={formErrors.description && formErrors.description.length > 0 ? true : false}
+          disabled={false}
+          helperText={formErrors.title && formErrors.title.length > 0 ? "A description of the Collection is Required" : "A description of the Collection" }
+          variant="standard"
+          onChange={handleInputChange}
+          value={formValues.description}
+        />
+      </FormControl>
+      <FormControl>
+        <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
+        Contributors
+        </Typography>
+        {formValues.contributors && formValues.contributors.length > 0 && (
+          <>{renderContribTable()} </>
+        )}
+        <div className="text-right">
+          <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
+        </div>
+        <div className="text-left">
+          <label>
+            <input
+              accept=".tsv, .csv"
+              type="file"
+              id="FileUploadContriubtors"
+              name="Contributors"
+              onChange={(e) => handleFileGrab(e, "contributors")}
+            />
+          </label>
+        </div>
+      </FormControl>
+
+      {pageError.length > 0 && (
+        <div className="row">
+            <Alert variant="filled" severity="error">
+              <strong>Error:</strong> {pageError}
+            </Alert>
+        </div>
+      )}
+
+      <div className="row">
+        <div className="buttonWrapRight">
+          {userAdmin === true && (editingCollection && !editingCollection.doi_url) && (          
+            <LoadingButton 
+              loading={publishing}
+              onClick={() => handlePublish()}
+              variant="contained">
+              Publish
+            </LoadingButton>  
+          )}
+
+          <Button
+            variant="contained"
+            onClick={() => handleSubmit()}
+            type="button"
+            disabled={locked || disableSubmit}
+            className='float-right'>
+            {buttonState === "submit" && (
+              <FontAwesomeIcon
+                className='inline-icon'
+                icon={faSpinner}
+                spin
+              />
+            )}
+            {buttonState !== "submit" && (
+              "Submit"
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={() => props.handleCancel()}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+
+      <GroupModal
+        show={openGroupModal}
+        groups={dataGroups}
+        submit={() => handleCreate(validatingSubmitForm)}
+        hide={hideGroupModal}
+        handleInputChange={(event) => handleInputChange(event)}
+      />
+      
+    </Box>
+  );
+}
