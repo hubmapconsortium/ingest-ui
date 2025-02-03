@@ -261,9 +261,7 @@ class PublicationEdit extends Component {
               has_publish_priv: resp.results.has_publish_priv,
               has_admin_priv: resp.results.has_admin_priv,
             });
-            if(this.state.has_admin_priv && (
-              this.state.status.toUpperCase()==="ERROR" || 
-              this.state.status.toUpperCase()==="INVALID")){
+            if(this.state.has_admin_priv && this.state.status.toUpperCase()!=="PUBLISHED"){
               this.setState({has_manual_priv:true});
             }
             ingest_api_allowable_edit_states_statusless(
