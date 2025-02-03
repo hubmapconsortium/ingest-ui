@@ -108,9 +108,11 @@ class Result extends Component {
                 <div className="col-sm-12 mt-2 mr-2 mb-2 text-center">
                   {this.props.result !== undefined  && 
                     this.props.result.entity.entity_type === "Donor" && (
-                    <button
-                      className="btn btn-primary m-2"
-                      type="button"
+                    <Button
+                      className="btn btn-success m-2"
+                      variant="contained" 
+                      color="primary"
+                      // type="Button"
                       onClick={() =>
                         this.props.onCreateNext(
                           this.props.result.entity
@@ -118,7 +120,7 @@ class Result extends Component {
                       }
                     >
                       Register an organ from this donor
-                    </button>
+                    </Button>
                   )}
                   { this.props.result !== undefined  && 
                       this.props.result.entity.specimen_type === "organ" && (
