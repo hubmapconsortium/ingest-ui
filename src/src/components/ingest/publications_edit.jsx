@@ -263,15 +263,12 @@ class PublicationEdit extends Component {
             });
             ingest_api_allowable_edit_states_statusless(
               this.props.editingPublication.uuid,
-              JSON.parse(localStorage.getItem("info")).groups_token
-            )
+              JSON.parse(localStorage.getItem("info")).groups_token)
               .then((resp) => {
                 this.setState({
                   has_version_priv: resp.results.has_write_priv,
                 });
-                if(this.state.has_admin_priv && (
-                  this.props.editingPublication.status.toUpperCase()==="ERROR" || 
-                  this.props.editingPublication.status.toUpperCase()==="INVALID")){
+                if(this.state.has_admin_priv &&  this.props.editingPublication.status.toUpperCase()!=="PUBLISHED"){
                   this.setState({has_manual_priv: true});
                 }
               })
