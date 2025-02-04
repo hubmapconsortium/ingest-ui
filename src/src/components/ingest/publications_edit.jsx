@@ -610,10 +610,7 @@ class PublicationEdit extends Component {
 
   handleInputChange = (e) => {
     var { id, value, name } = e.target;
-    //consoledebug("handleInputChange",name, id+": "+value);
-    // Strugglin to get the ID from the radio group
     var checkName = (name==="publication_status") ? name : id;
-    // console.debug("checkName",checkName);
     if(name==="groups"){
       this.setState(prev => ({
         selected_group: value,
@@ -624,13 +621,17 @@ class PublicationEdit extends Component {
         }
       }))
     }else{
-      this.setState(prev => ({
-        editingPublication: {
-          ...prev.editingPublication,
-          [checkName]: value
-          // [id]: valCap
-        }
-      }))
+      if(checkName === "newStatus"){
+        this.setState({newStatus: value});
+      }else{
+        this.setState(prev => ({
+          editingPublication: {
+            ...prev.editingPublication,
+            [checkName]: value
+            // [id]: valCap
+          }
+        }))
+      }
     }
    
     
@@ -970,13 +971,18 @@ class PublicationEdit extends Component {
               submit_error:true, 
               submitting:false, 
               submittingUpdate:false,
-              submitErrorResponse:response.results.statusText
+              submitErrorResponse:response.results.statusText ? response.results.statusText : response.results.error,
+              fieldString:response.results.statusText ? response.results.statusText : response.results.error,
             });
           }
         })
         .catch((error) => {
-          this.setState({submit_error:true, 
-            submitting:false,});
+          this.setState({
+            submit_error:true, 
+            submitting:false,
+            submitErrorResponse:error.toString(),
+            fieldString:error.toString(),
+          });
         });
   }
   
@@ -2365,7 +2371,7 @@ class PublicationEdit extends Component {
           <div className="col-8">
             
             {this.state.submit_error && (
-              <Alert severity="error">
+              <Alert severity="error" className="mb-2" >
                 {this.state.submitErrorResponse && (
                   <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
                 )} <strong>Details:</strong> The following fields are Invalid: {this.state.fieldString} {" "}
