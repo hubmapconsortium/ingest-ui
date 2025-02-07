@@ -4,7 +4,7 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import Button from "@mui/material/Button";
-
+import LoadingButton from '@mui/lab/LoadingButton';
 import Collapse from '@mui/material/Collapse';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -263,15 +263,12 @@ class PublicationEdit extends Component {
             });
             ingest_api_allowable_edit_states_statusless(
               this.props.editingPublication.uuid,
-              JSON.parse(localStorage.getItem("info")).groups_token
-            )
+              JSON.parse(localStorage.getItem("info")).groups_token)
               .then((resp) => {
                 this.setState({
                   has_version_priv: resp.results.has_write_priv,
                 });
-                if(this.state.has_admin_priv && (
-                  this.props.editingPublication.status.toUpperCase()==="ERROR" || 
-                  this.props.editingPublication.status.toUpperCase()==="INVALID")){
+                if(this.state.has_admin_priv &&  this.props.editingPublication.status.toUpperCase()!=="PUBLISHED"){
                   this.setState({has_manual_priv: true});
                 }
               })
@@ -613,10 +610,7 @@ class PublicationEdit extends Component {
 
   handleInputChange = (e) => {
     var { id, value, name } = e.target;
-    //consoledebug("handleInputChange",name, id+": "+value);
-    // Strugglin to get the ID from the radio group
     var checkName = (name==="publication_status") ? name : id;
-    // console.debug("checkName",checkName);
     if(name==="groups"){
       this.setState(prev => ({
         selected_group: value,
@@ -627,13 +621,17 @@ class PublicationEdit extends Component {
         }
       }))
     }else{
-      this.setState(prev => ({
-        editingPublication: {
-          ...prev.editingPublication,
-          [checkName]: value
-          // [id]: valCap
-        }
-      }))
+      if(checkName === "newStatus"){
+        this.setState({newStatus: value});
+      }else{
+        this.setState(prev => ({
+          editingPublication: {
+            ...prev.editingPublication,
+            [checkName]: value
+            // [id]: valCap
+          }
+        }))
+      }
     }
    
     
@@ -952,6 +950,42 @@ class PublicationEdit extends Component {
     );
     window.location.reload();
   };
+
+  handleStatusSet = (e) => {
+    this.setState({submittingUpdate:true});
+    var newStatus = this.state.newStatus;
+    entity_api_update_entity(
+        this.props.editingPublication.uuid, 
+        {"status":newStatus}, 
+        JSON.parse(localStorage.getItem("info")).groups_token)
+        .then((response) => {
+          if (response.status < 300) {
+            this.setState({ 
+              submit_error:false, 
+              submitting:false, 
+              submittingUpdate:false,
+              });
+            this.props.onUpdated(response.results);
+          } else {
+            this.setState({ 
+              submit_error:true, 
+              submitting:false, 
+              submittingUpdate:false,
+              submitErrorResponse:response.results.statusText ? response.results.statusText : response.results.error,
+              fieldString:response.results.statusText ? response.results.statusText : response.results.error,
+            });
+          }
+        })
+        .catch((error) => {
+          this.setState({
+            submit_error:true, 
+            submitting:false,
+            submitErrorResponse:error.toString(),
+            fieldString:error.toString(),
+          });
+        });
+  }
+  
 
   handleSubmit = (submitIntention) => {
     
@@ -1611,19 +1645,14 @@ class PublicationEdit extends Component {
          {this.state.statusSetLabel}
         </Button>
         {this.state.toggleStatusSet  && (
-          <Button
-            variant="contained"
+          <LoadingButton 
             className="mx-1"
-            onClick={() => this.handleStatusSet() }>
-            {this.state.submitting && (
-              <FontAwesomeIcon
-                className='inline-icon'
-                icon={faSpinner}
-                spin
-              />
-            )}
-          {!this.state.submittingUpdate && "Update"}         
-          </Button>
+            loading={this.state.submittingUpdate}
+            onClick={() => this.handleStatusSet()}
+            variant="contained">
+            Update
+          </LoadingButton>  
+          
         )}
         <Collapse in={this.state.toggleStatusSet} className="col-7">
           <FormGroup controlId="status">
@@ -2342,7 +2371,7 @@ class PublicationEdit extends Component {
           <div className="col-8">
             
             {this.state.submit_error && (
-              <Alert severity="error">
+              <Alert severity="error" className="mb-2" >
                 {this.state.submitErrorResponse && (
                   <AlertTitle>{this.state.submitErrorStatus}</AlertTitle>
                 )} <strong>Details:</strong> The following fields are Invalid: {this.state.fieldString} {" "}
@@ -2365,9 +2394,7 @@ class PublicationEdit extends Component {
           show={this.state.GroupSelectShow}
           groups={this.state.groups}
           hide={()=> this.hideGroupSelectModal()}
-          submit={() => this.handleSubmit("save")} // It'll only be askign which group pn create
-          // submit={this.handleSubmit} 
-          // submit={this.handleSubmit}  Modal only appears when theres no group, which only happens on new form. Intent is blank
+          submit={() => this.handleSubmit("save")} 
           handleInputChange={this.handleInputChange}
         />
         <HIPPA show={this.state.show} handleClose={this.hideModal} />
