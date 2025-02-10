@@ -250,23 +250,23 @@ export const Navigation = (props) => {
                   <MenuItem 
                     className="nav-link" 
                     sx={{ width: "200px" }}
-                    // component={Link}
-                    to="/metadata/block" 
-                    onClick={() => handleOpenModal("Block")}>
+                    component={Link}
+                    to="/metadata/block" >
+                    {/* // onClick={() => handleOpenModal("Block")}> */}
                     Block
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    to="/metadata/section" 
-                    onClick={() => handleOpenModal("Section")}>
+                    to="/metadata/section" >
+                    {/* onClick={() => handleOpenModal("Section")}> */}
                     Section
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    to="/metadata/suspension" 
-                    onClick={() => handleOpenModal("Suspension")}>
+                    to="/metadata/suspension" >
+                    {/* // onClick={() => handleOpenModal("Suspension")}> */}
                     Suspension
                   </MenuItem>
                 </Menu>
@@ -419,22 +419,22 @@ export const Navigation = (props) => {
                     className="nav-link" 
                     sx={{ width: "200px" }}
                     component={Link}
-                    // to="/metadata/block" 
-                    onClick={() => handleOpenModal("Block")}>
+                    to="/metadata/block" >
+                    {/* onClick={() => handleOpenModal("Block")}> */}
                     Block
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    // to="/metadata/section" 
-                    onClick={() => handleOpenModal("Section")}>
+                    to="/metadata/section" >
+                    {/* // onClick={() => handleOpenModal("Section")}> */}
                     Section
                   </MenuItem>
                   <MenuItem 
                     className="nav-link" 
                     component={Link}
-                    // to="/metadata/suspension"
-                    onClick={() => handleOpenModal("Suspension")} >
+                    to="/metadata/suspension">
+                    {/* onClick={() => handleOpenModal("Suspension")} > */}
                     Suspension
                   </MenuItem>
                 </Menu>
