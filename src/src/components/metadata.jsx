@@ -30,9 +30,8 @@ import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 export const RenderMetadata = (props) => {
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   var [activeStep, setActiveStep] = React.useState(0);
-  var [uploadedFile, setUploadedFile] = React.useState();
-  var [failed, setFailed] = React.useState(new Set());
-  var [errorRows, setErrorRows] = React.useState(new Set());
+  var [errorRows, setErrorRows] = React.useState([]);
+  var [errorList, setErrorList ] = React.useState([]);
   var [failedStep, setFailedStep] = React.useState(null);
   var [results, setResults] = React.useState(null);
   const steps = ['Upload','Processing', 'Results'];
@@ -63,7 +62,6 @@ export const RenderMetadata = (props) => {
     var newName = grabbedFile.name.replace(/ /g, '_');
     var newFile = new File([grabbedFile], newName);
     if (newFile && newFile.name.length > 0) {
-      setUploadedFile(newFile);
       handleUploadFile(newFile);
     } else {
       console.debug('No Data??');
@@ -77,7 +75,7 @@ function getColNames() {
 }
 
 function renderResults() {
-  let errorList 
+
   return (
     <div>
       <h3>Results:</h3>
@@ -96,19 +94,26 @@ function renderResults() {
       {results === "Failure" && (
         <Box className="mb-2" severity="error" >
           <FontAwesomeIcon icon={faExclamationTriangle} color="red" className="mr-1" /> There were errors encountered when Validating your File:
-          {/* <AlertTitle>There were errors encountered when Validating your File:</AlertTitle> */}
-          {errorRows.map((row, index) => {
-            console.debug('%c◉ row ', 'color:#00ff7b', row);
-            return (
-              <Alert  className="mb-2 p-1" key={index + 1} variant="filled" severity="error" >
-                <AlertTitle>Error: Row {row.row.toString()} Column {row.column.toString()}</AlertTitle>
-                {row.error.toString()}
-              </Alert>
-            );
-          })}
+          {/* Do non IVT, non row error handling first */}
+          {errorList.length >0 && (
+            <Alert  className="mb-2 p-1"  variant="filled" severity="error" >
+              <AlertTitle>Error:</AlertTitle>
+              {errorList.toString()}
+            </Alert>
+          )}
+          {errorRows.length >0 && ( 
+            errorRows.map((row, index) => {
+              return (
+                <Alert  className="mb-2 p-1" key={index + 1} variant="filled" severity="error" >
+                  <AlertTitle>Error: Row {row.row.toString()} Column {row.column.toString()}</AlertTitle>
+                  {row.error.toString()}
+                </Alert>
+              );
+            })
+          )}
         </Box>
       )}
-    </div>
+  </div>
   )
 }
 
@@ -147,33 +152,40 @@ function parseErrorJSON(error) {
           }else if (resp.status === 200) {
             setResults("Success");
           }else{ 
-            var err = resp.error.response.data.error ? resp.error.response.data.error : resp
-            var parsedErrorRows = parseErrorJSON(err);
-            console.debug('%c◉ parsedErrorRows ', 'color:#00ff7b', parsedErrorRows);            
-            setErrorRows(parsedErrorRows);
-            setFailed(1);
-            setFailedStep(2);
             setResults("Failure");
+            setFailedStep(2);
+            var err = resp.error.response.data.error ? resp.error.response.data.error : resp
+            if(!err.includes("row")){
+              // Non Row Error Handling first
+              try{
+                setErrorList(err.toString());
+              }catch(error){
+                console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
+              }
+            }else{
+              //  IVT Row by Row Error Handling
+              try{
+                var parsedErrorRows = parseErrorJSON(err);
+                setErrorRows(parsedErrorRows);
+              }catch(error){
+                console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
+              }
+            }
           }
+          // Always enter the final step regardless of results
           setActiveStep(2);
         })
         .catch((error) => {
-          console.debug('%c⭗ Error Handle Upload File', 'color:#ff005d', error,error.description);
-          let errorTable = getErrorList(error)
-          console.debug('%c◉ errorTable ', 'color:#ff005d', errorTable);
           setActiveStep(2);
           setResults("Error");
         });
     } catch (error) {
+      setFailedStep(2);
       if (error.response){
-        console.debug('%c◉ error.response ', 'color:#00ff7b', error.response);
-        setFailed(1);
-        setFailedStep(2);
+        throw new Error(error.response);
       }else{
-        console.debug('%c◉ !!!ERRORTHO ', 'color:#00ff7b', error);
-        // throw new Error(error);
+        throw new Error(error);
       }
-      console.debug("%c⭗", "color:#ff005d",error);
     }
 };
 
