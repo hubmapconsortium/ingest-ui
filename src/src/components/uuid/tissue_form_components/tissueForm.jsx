@@ -1823,7 +1823,7 @@ handleAddImage = () => {
                   <p>The category of sample.</p>
                 </ReactTooltip>
               </label>
-              {!this.state.readOnly || this.state && (
+              {!this.state.readOnly && !this.state.editingEntity && (
                 <React.Fragment>
                   <div>
                     <select
@@ -1857,7 +1857,7 @@ handleAddImage = () => {
 
                 </React.Fragment>
               )}
-              {this.state.readOnly && (
+              {this.state.readOnly || this.state.editingEntity && (
                 <React.Fragment>
             
                   <div className="col-sm-3">
@@ -1866,12 +1866,9 @@ handleAddImage = () => {
                     type="text" 
                     className="form-control" 
                     id="_readonly_sample_category"
-                   value={(this.state.sample_category)}>
-                   </input>
-                    {/* <p>
-                      {(this.state.sample_category)}
-                    </p> */}
-                    </div>
+                    disabled
+                    value={(this.state.sample_category)} />
+                  </div>
                   
                 </React.Fragment>
               )}
@@ -1885,7 +1882,7 @@ handleAddImage = () => {
                 >
                   Organ Type<span className="text-danger">*</span>
                 </label>
-                {!this.state.readOnly && (
+                {!this.state.readOnly && !this.state.editingEntity &&(
                   <React.Fragment>
                     <div className="col-sm-6">
                       <select
@@ -1926,12 +1923,13 @@ handleAddImage = () => {
                     )}
                   </React.Fragment>
                 )}
-                {this.state.readOnly && (
+                {this.state.readOnly || this.state.editingEntity && (
                   <div>
                    <input type="text"
                           readOnly
                           className="form-control"
                           id="static_organ"
+                          disabled
                           value={this.state.organ === "OT" ? this.state.organ_other : this.state.organ_types[this.state.organ]}>
                    </input>
                   </div>
