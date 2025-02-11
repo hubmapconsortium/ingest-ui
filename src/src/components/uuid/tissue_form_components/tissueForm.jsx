@@ -1072,17 +1072,18 @@ handleAddImage = () => {
           let data = {
 
             protocol_url: this.state.protocol_url,
-            sample_category: this.state.sample_category,
             direct_ancestor_uuid: this.state.source_uuid_list,
             organ_other: this.state.organ_other,
             visit: this.state.visit,
             description: this.state.description,
           };
-
-          if (this.state.sample_category === 'organ') {
-            data["organ"] = this.state.organ;
-
+          if(!this.state.editingEntity){
+            data.sample_category = this.state.sample_category
+            if (this.state.sample_category === 'organ') {
+              data["organ"] = this.state.organ;
+            }
           }
+
 
           // only add these fields if user didn't check multiples
           if (this.state.sample_count < 1) {
