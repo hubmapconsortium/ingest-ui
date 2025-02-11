@@ -1,34 +1,24 @@
 import {faFileDownload} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FileOpenIcon from '@mui/icons-material/FileOpen';
-import FilePresentIcon from '@mui/icons-material/FilePresent';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import RestorePageIcon from '@mui/icons-material/RestorePage';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import Collapse from '@mui/material/Collapse';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import {styled} from '@mui/material/styles';
-import * as prettyBytes from 'pretty-bytes';
-import React,{useState} from 'react';
-import DataTable from 'react-data-table-component';
+import React from 'react';
 import {GridLoader} from "react-spinners";
 import {ingest_api_upload_bulk_metadata} from '../service/ingest_api';
-import {getErrorList} from "../utils/error_helper";
-import {prettyObject,toTitleCase,urlify} from "../utils/string_helper";
-import {isArray} from "util";
+import {toTitleCase} from "../utils/string_helper";
 import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 
 export const RenderMetadata = (props) => {
-  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   var [activeStep, setActiveStep] = React.useState(0);
   var [errorRows, setErrorRows] = React.useState([]);
   var [errorList, setErrorList ] = React.useState([]);
@@ -68,11 +58,6 @@ export const RenderMetadata = (props) => {
     }
   };
 
-function getColNames() {
-  let typeCol = 'sample_category'
-  let labIdCol = 'lab_tissue_sample_id'
-  return {typeCol, labIdCol}
-}
 
 function renderResults() {
 
