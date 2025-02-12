@@ -291,6 +291,8 @@ class TissueForm extends Component {
         this.hideBackButton();
       }
 
+      console.debug('%c◉ this.state.readOnly,', 'color:#00ff7b', this.state.readOnly, !this.state.editingEntity);
+
       if (this.state.editingEntity) {
         
         let images = this.state.editingEntity.image_files;
@@ -1824,10 +1826,13 @@ handleAddImage = () => {
                   <p>The category of sample.</p>
                 </ReactTooltip>
               </label>
-              {!this.state.readOnly && !this.state.editingEntity && (
+
+
+              {/* {!this.state.readOnly && !this.state.editingEntity && ( */}
                 <React.Fragment>
-                  <div>
+                  <div> 
                     <select
+                      disabled = {this.state.readOnly || this.state.editingEntity}
                       name="sample_category"
                       id="sample_category"
                       className={
@@ -1851,30 +1856,12 @@ handleAddImage = () => {
                         <option value="suspension" id="suspension">Suspension</option>
                         </>
                       )}
-
-                    
                     </select>
                   </div>
-
                 </React.Fragment>
-              )}
-              {this.state.readOnly || this.state.editingEntity && (
-                <React.Fragment>
-            
-                  <div className="col-sm-3">
-                   <input 
-                    readOnly 
-                    type="text" 
-                    className="form-control" 
-                    id="_readonly_sample_category"
-                    disabled
-                    value={(this.state.sample_category)} />
-                  </div>
-                  
-                </React.Fragment>
-              )}
-            
             </div>
+
+
             {this.state.sample_category === "organ" && (
               <div className="form-group row">
                 <label
@@ -1883,11 +1870,12 @@ handleAddImage = () => {
                 >
                   Organ Type<span className="text-danger">*</span>
                 </label>
-                {!this.state.readOnly && !this.state.editingEntity &&(
+                {/* {!this.state.readOnly && !this.state.editingEntity &&( */}
                   <React.Fragment>
                     <div className="col-sm-6">
                       <select
                         name="organ"
+                        disabled = {this.state.readOnly || this.state.editingEntity}
                         id="organ"
                         className={
                           "form-control " +
@@ -1910,6 +1898,7 @@ handleAddImage = () => {
                       <div className="col-sm-3">  
                         <input
                           type="text"
+                          disabled = {this.state.readOnly || this.state.editingEntity}
                           name="organ_other"
                           placeholder="Please specify"
                           className={
@@ -1923,18 +1912,6 @@ handleAddImage = () => {
                       </div>
                     )}
                   </React.Fragment>
-                )}
-                {this.state.readOnly || this.state.editingEntity && (
-                  <div>
-                   <input type="text"
-                          readOnly
-                          className="form-control"
-                          id="static_organ"
-                          disabled
-                          value={this.state.organ === "OT" ? this.state.organ_other : this.state.organ_types[this.state.organ]}>
-                   </input>
-                  </div>
-                )}
               </div>
             )}
             {["organ", "biopsy", "blood"].includes(this.state.sample_category) &&
