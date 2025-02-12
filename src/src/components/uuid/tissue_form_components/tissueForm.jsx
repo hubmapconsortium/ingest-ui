@@ -291,6 +291,8 @@ class TissueForm extends Component {
         this.hideBackButton();
       }
 
+      console.debug('%c◉ this.state.readOnly,', 'color:#00ff7b', this.state.readOnly, !this.state.editingEntity);
+
       if (this.state.editingEntity) {
         
         let images = this.state.editingEntity.image_files;
@@ -1670,8 +1672,7 @@ handleAddImage = () => {
           )}
      
           <form className="formSpacer expanded-form" onSubmit={this.handleSubmit}>
-            
-            
+
             <div className="form-group">
               <label htmlFor="source_uuid">
                 Source ID <span className="text-danger">*</span>  <FontAwesomeIcon
@@ -1693,39 +1694,40 @@ handleAddImage = () => {
                   </p>
                 </ReactTooltip>
               </label>
-            
+
+              {/* It was specificially requested we allow the Category / Organ Fields to still remain Interactable on pages that are read only */}
               {!this.state.readOnly && (
-                <React.Fragment>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      name="source_uuid"
-                      id="source_uuid"
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.source_uuid)
-                      }
-                      value={this.state.source_uuid || ''}
-                      onChange={this.handleInputChange}
-                      onFocus={this.handleLookUpClick}
-                      autoComplete='off'
-                    />
-                     <Button
-                      variant="outlined"
-                      className="btn btn-outline-secondary"
-                      type="button"
-                      onClick={this.handleLookUpClick}
-                    >
-                      <FontAwesomeIcon
-                          icon={faSearch}
-                          data-tip
-                          data-for="source_uuid_tooltip"
-                      />
-                    </Button>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    name="source_uuid"
+                    id="source_uuid"
+                    className={"form-control " +this.errorClass(this.state.formErrors.source_uuid)}
+                    value={this.state.source_uuid || ''}
+                    onChange={this.handleInputChange}
+                    onFocus={this.handleLookUpClick}
+                    autoComplete='off'/>
+                    <Button
+                    variant="outlined"
+                    className="btn btn-outline-secondary"
+                    type="button"
+                    onClick={this.handleLookUpClick}>
+                    <FontAwesomeIcon
+                        icon={faSearch}
+                        data-tip
+                        data-for="source_uuid_tooltip"/>
+                  </Button>
+                </div>
+              )}
+              {this.state.readOnly && (
+                 <div>
+                    <input type="text" readOnly className="form-control" id="static_source_uuid" value={this.state.source_uuid}></input>
                   </div>
-                  
-                    <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
-                     <DialogContent>
+              )}
+
+
+                <Dialog fullWidth={true} maxWidth="lg" onClose={this.hideLookUpModal} aria-labelledby="source-lookup-dialog" open={this.state.LookUpShow}>
+                  <DialogContent>
                     <SearchComponent
                       select={this.handleSelectClick}
                       custom_title="Search for a Source ID for your Sample"
@@ -1733,25 +1735,16 @@ handleAddImage = () => {
                       blacklist={['collection']}
                       modecheck="Source"
                     />
-                    </DialogContent>
-                     <DialogActions>
-                      <Button onClick={this.cancelLookUpModal} color="primary">
-                        Close
-                     </Button>
-                    </DialogActions>
-                   </Dialog>
+                  </DialogContent>
+                  <DialogActions>
+                  <Button onClick={this.cancelLookUpModal} color="primary">
+                    Close
+                  </Button>
+                </DialogActions>
+                </Dialog>
+  
 
-                </React.Fragment>
-              )}
-              {this.state.readOnly && (
-                <React.Fragment>
-                 <div>
-                    <input type="text" readOnly className="form-control" id="static_source_uuid" value={this.state.source_uuid}></input>
-                  </div>
-                  
-                </React.Fragment>
-              )}
-            
+
             </div>
             {this.state.source_entity && (
               <div className="form-group row">
@@ -1805,6 +1798,8 @@ handleAddImage = () => {
                 </div>
               </div>
             )}
+
+          
             <div className="form-group">
               <label
                 htmlFor="sample_category">
@@ -1812,34 +1807,29 @@ handleAddImage = () => {
                 <FontAwesomeIcon
                   icon={faQuestionCircle}
                   data-tip
-                  data-for="sample_category_tooltip"
-                />
+                  data-for="sample_category_tooltip"/>
                 <ReactTooltip
                   id="sample_category_tooltip"
                   className={"tooltip"}
                   place="top"
                   type="info"
-                  effect="solid"
-                >
+                  effect="solid">
                   <p>The category of sample.</p>
                 </ReactTooltip>
               </label>
-              {!this.state.readOnly && !this.state.editingEntity && (
-                <React.Fragment>
-                  <div>
-                    <select
-                      name="sample_category"
-                      id="sample_category"
-                      className={
-                        "form-control " +
-                        this.errorClass(this.state.formErrors.sample_category)
-                      }
-                      onChange={this.handleInputChange}
-                      value={this.state.sample_category}
-                    >
-                      {
-                      //@TODO Cant seem to programatically list the options?
+              {/* It was specificially requested we allow the Category / Organ Fields to still remain Interactable on pages that are read only */}
+              {!this.state.readOnly && (
+                <div> 
+                  <select
+                    disabled = {this.state.editingEntity}
+                    name="sample_category"
+                    id="sample_category"
+                    className={
+                      "form-control " +
+                      this.errorClass(this.state.formErrors.sample_category)
                     }
+                    onChange={this.handleInputChange}
+                    value={this.state.sample_category}>
                       <option value="">Select Category</option>
                       {this.state.source_entity_type==="Donor" && (
                         <option value="organ" id="organ">Organ</option>
@@ -1851,51 +1841,49 @@ handleAddImage = () => {
                         <option value="suspension" id="suspension">Suspension</option>
                         </>
                       )}
-
-                    
-                    </select>
-                  </div>
-
-                </React.Fragment>
+                  </select>
+                </div>
               )}
-              {this.state.readOnly || this.state.editingEntity && (
+              {this.state.readOnly && (
                 <React.Fragment>
-            
                   <div className="col-sm-3">
-                   <input 
+                  <input 
                     readOnly 
                     type="text" 
                     className="form-control" 
                     id="_readonly_sample_category"
-                    disabled
-                    value={(this.state.sample_category)} />
-                  </div>
-                  
+                  value={(this.state.sample_category)}>
+                  </input>
+                    {/* <p>
+                      {(this.state.sample_category)}
+                    </p> */}
+                    </div>
                 </React.Fragment>
               )}
-            
             </div>
+
             {this.state.sample_category === "organ" && (
               <div className="form-group row">
                 <label
                   htmlFor="organ"
-                  className="col-sm-2 col-form-label text-right"
-                >
+                  className="col-sm-2 col-form-label text-right">
                   Organ Type<span className="text-danger">*</span>
                 </label>
-                {!this.state.readOnly && !this.state.editingEntity &&(
+                
+                {/* It was specificially requested we allow the Category / Organ Fields to still remain Interactable on pages that are read only */}
+                {!this.state.readOnly && (
                   <React.Fragment>
                     <div className="col-sm-6">
                       <select
                         name="organ"
+                        disabled = {this.state.editingEntity}
                         id="organ"
                         className={
                           "form-control " +
                           this.errorClass(this.state.formErrors.organ)
                         }
                         onChange={this.handleInputChange}
-                        value={this.state.organ}
-                      >
+                        value={this.state.organ}>
                         <option value="">----</option>
                         {Object.entries(this.state.organ_types).map((op, index) => {
                           return (
@@ -1910,6 +1898,7 @@ handleAddImage = () => {
                       <div className="col-sm-3">  
                         <input
                           type="text"
+                          disabled = {this.state.readOnly || this.state.editingEntity}
                           name="organ_other"
                           placeholder="Please specify"
                           className={
@@ -1924,19 +1913,20 @@ handleAddImage = () => {
                     )}
                   </React.Fragment>
                 )}
-                {this.state.readOnly || this.state.editingEntity && (
+                {this.state.readOnly && (
                   <div>
-                   <input type="text"
+                    <input type="text"
                           readOnly
                           className="form-control"
                           id="static_organ"
-                          disabled
                           value={this.state.organ === "OT" ? this.state.organ_other : this.state.organ_types[this.state.organ]}>
-                   </input>
+                    </input>
                   </div>
                 )}
               </div>
             )}
+
+
             {["organ", "biopsy", "blood"].includes(this.state.sample_category) &&
               (!this.state.readOnly || this.state.visit !== undefined) && (
                 <div className="form-group">
