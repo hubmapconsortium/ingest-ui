@@ -76,7 +76,6 @@ export const COLUMN_DEF_PUBLICATION = [
   { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
-  { field: 'created_by_user_email', headerName: 'Created By', width: 210},
   { field: 'data_access_level', headerName: 'Access Level', width: 150},
   { field: 'status', headerName: 'Submission Status', width: 200,
     renderCell: (params: ValueFormatterParams) => (
