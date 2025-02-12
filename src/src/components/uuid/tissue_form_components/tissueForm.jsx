@@ -7,14 +7,9 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Snackbar from '@mui/material/Snackbar';
-
-// import Snackbar from '@material-ui/core/Snackbar';
-//import SnackbarContent from '@material-ui/core/SnackbarContent';
 import Button from '@material-ui/core/Button';
-// import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
-// import IconButton from '@material-ui/core/IconButton';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQuestionCircle,
@@ -27,24 +22,18 @@ import {
   validateRequired,
   validateProtocolIODOI,
   validateSingleProtocolIODOI
-//  validateFileType
 } from "../../../utils/validators";
 import { tsToDate } from "../../../utils/string_helper";
 import check from './check25.jpg';
-//import { getFileNameOnPath, getFileMIMEType } from "../../../utils/file_helper";
 import { flattenSampleType } from "../../../utils/constants_helper";
 import { parseErrorMessage } from "../../../utils/string_helper";
 import ReactTooltip from "react-tooltip";
-//import Protocol from "./protocol";
-//import Modal from "../modal";
 import SearchComponent from "../../search/SearchComponent";
-//import IDSearchModal from "./idSearchModal";
 import GroupModal from "../groupModal";
 import { SAMPLE_TYPES, RUI_ORGAN_TYPES } from "../../../constants";
 import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
 import ImageUpload from "../donor_form_components/imageUpload";
 import MetadataUpload from "../metadataUpload";
-//import LabIDsModa7l from "../labIdsModal";
 import RUIModal from "./ruiModal";
 import RUIIntegration from "./ruiIntegration";
 import { entity_api_get_entity, 
@@ -55,7 +44,6 @@ import { entity_api_get_entity,
     entity_api_get_entity_ancestor_list
 } from '../../../service/entity_api';
 import { ingest_api_allowable_edit_states, ingest_api_all_user_groups, ingest_api_get_associated_ids } from '../../../service/ingest_api';
-// import { useHistory } from "react-router-dom";
 
 class TissueForm extends Component {
   state = {
@@ -1084,17 +1072,18 @@ handleAddImage = () => {
           let data = {
 
             protocol_url: this.state.protocol_url,
-            sample_category: this.state.sample_category,
             direct_ancestor_uuid: this.state.source_uuid_list,
             organ_other: this.state.organ_other,
             visit: this.state.visit,
             description: this.state.description,
           };
-
-          if (this.state.sample_category === 'organ') {
-            data["organ"] = this.state.organ;
-
+          if(!this.state.editingEntity){
+            data.sample_category = this.state.sample_category
+            if (this.state.sample_category === 'organ') {
+              data["organ"] = this.state.organ;
+            }
           }
+
 
           // only add these fields if user didn't check multiples
           if (this.state.sample_count < 1) {
@@ -1835,7 +1824,7 @@ handleAddImage = () => {
                   <p>The category of sample.</p>
                 </ReactTooltip>
               </label>
-              {!this.state.readOnly && (
+              {!this.state.readOnly && !this.state.editingEntity && (
                 <React.Fragment>
                   <div>
                     <select
@@ -1869,7 +1858,7 @@ handleAddImage = () => {
 
                 </React.Fragment>
               )}
-              {this.state.readOnly && (
+              {this.state.readOnly || this.state.editingEntity && (
                 <React.Fragment>
             
                   <div className="col-sm-3">
@@ -1878,12 +1867,9 @@ handleAddImage = () => {
                     type="text" 
                     className="form-control" 
                     id="_readonly_sample_category"
-                   value={(this.state.sample_category)}>
-                   </input>
-                    {/* <p>
-                      {(this.state.sample_category)}
-                    </p> */}
-                    </div>
+                    disabled
+                    value={(this.state.sample_category)} />
+                  </div>
                   
                 </React.Fragment>
               )}
@@ -1897,7 +1883,7 @@ handleAddImage = () => {
                 >
                   Organ Type<span className="text-danger">*</span>
                 </label>
-                {!this.state.readOnly && (
+                {!this.state.readOnly && !this.state.editingEntity &&(
                   <React.Fragment>
                     <div className="col-sm-6">
                       <select
@@ -1938,12 +1924,13 @@ handleAddImage = () => {
                     )}
                   </React.Fragment>
                 )}
-                {this.state.readOnly && (
+                {this.state.readOnly || this.state.editingEntity && (
                   <div>
                    <input type="text"
                           readOnly
                           className="form-control"
                           id="static_organ"
+                          disabled
                           value={this.state.organ === "OT" ? this.state.organ_other : this.state.organ_types[this.state.organ]}>
                    </input>
                   </div>
