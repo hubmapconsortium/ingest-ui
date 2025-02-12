@@ -698,7 +698,6 @@ class PublicationEdit extends Component {
               <TableHead className="thead-dark font-size-sm">
                 <TableRow className="   ">
                   <TableCell> Source ID</TableCell>
-                  <TableCell component="th">Submission ID</TableCell>
                   <TableCell component="th">Subtype</TableCell>
                   <TableCell component="th">Group Name</TableCell>
                   <TableCell component="th">Status</TableCell>
@@ -715,10 +714,6 @@ class PublicationEdit extends Component {
                     className="row-selection">
                     <TableCell className="clicky-cell" scope="row">
                       {row.hubmap_id}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {" "}
-                      {row.submission_id && row.submission_id}{" "}
                     </TableCell>
                     <TableCell className="clicky-cell" scope="row">
                       {row.display_subtype}
