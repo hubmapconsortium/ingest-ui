@@ -1709,6 +1709,7 @@ handleAddImage = () => {
                     autoComplete='off'/>
                     <Button
                     variant="outlined"
+                    disabled={this.state.editingEntity}
                     className="btn btn-outline-secondary"
                     type="button"
                     onClick={this.handleLookUpClick}>
