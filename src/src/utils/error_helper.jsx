@@ -44,8 +44,8 @@ const isUnacceptable = (code) => code === 406
 export const getErrorList = (details) => {
     console.debug('%c⊙ getErrorList', 'color:#00ff7b', details);
     let data = []
+    let {code, description, name} = details.code ? details : {code: 500, description: details.message, name:"Truncated Error:"}
     try {
-        let {code, description, name} = details
         let keyedErrors
         if(description){
             keyedErrors = description['Preflight'] || description['Validation Errors'] || description['URL Errors'] || description['Request Errors']
