@@ -379,41 +379,6 @@ class PublicationEdit extends Component {
             });
         }
       );
-      // Now tha we've got that all set,
-      // Here's the hack that disables changing the datatype
-      // if it's no longer a base primary type.
-      var dtlStatus = this.props.dtl_status;
-
-      // if (dtlStatus) {
-      //   // We are primary type, only priamries in Dropdown
-      //   this.setState({
-      //     disableSelectDatatype: false,
-      //     dataTypeDropdown: this.props.dtl_primary,
-      //   });
-      // } else {
-      //   // Not primary type, uneditable dropdown should contain all
-      //   this.setState({
-      //     disableSelectDatatype: true,
-      //     dataTypeDropdown: this.props.dtl_all,
-      //   });
-      // }
-      // var selected = "";
-      // if (
-      //   this.props.editingPublication &&
-      //   this.props.editingPublication.dataset_type &&
-      //   this.props.editingPublication.dataset_type.length === 1
-      // ) {
-      //   // Set DT Select by state so it behaves as "controlled"
-      //   selected = this.props.editingPublication.dataset_type[0];
-      //   //
-      // }
-      // this.setState({
-      //   selected_dt: selected,
-      // });
-
-      // Sets the Hubmap ID labels for Previous and Next version Buttons
-      
-    
 
       //  NEXT/PREV REVISION LIST BUILD
       if(this.props.editingPublication && this.props.editingPublication.previous_revision_uuids && this.props.editingPublication.previous_revision_uuids.length >0){
@@ -473,27 +438,6 @@ class PublicationEdit extends Component {
       }
     }
   }
-
-  // setAssayLists() {
-  //   ubkg_api_get_assay_type_set()
-  //     .then((res) => {
-  //       this.setState({
-  //         dtl_all: res.data.result.map((value, index) => {
-  //           return value.name;
-  //         }),
-  //       });
-  //     })
-  //     .catch((err) => {});
-  //   ubkg_api_get_assay_type_set("primary")
-  //     .then((res) => {
-  //       this.setState({
-  //         dtl_primary: res.data.result.map((value, index) => {
-  //           return value.name;
-  //         }),
-  //       });
-  //     })
-  //     .catch((err) => {});
-  // }
 
   componentWillUnmount() {
     document.removeEventListener("click", this.handleClickOutside, true);
@@ -754,7 +698,6 @@ class PublicationEdit extends Component {
               <TableHead className="thead-dark font-size-sm">
                 <TableRow className="   ">
                   <TableCell> Source ID</TableCell>
-                  <TableCell component="th">Submission ID</TableCell>
                   <TableCell component="th">Subtype</TableCell>
                   <TableCell component="th">Group Name</TableCell>
                   <TableCell component="th">Status</TableCell>
@@ -771,10 +714,6 @@ class PublicationEdit extends Component {
                     className="row-selection">
                     <TableCell className="clicky-cell" scope="row">
                       {row.hubmap_id}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {" "}
-                      {row.submission_id && row.submission_id}{" "}
                     </TableCell>
                     <TableCell className="clicky-cell" scope="row">
                       {row.display_subtype}
@@ -1884,62 +1823,6 @@ class PublicationEdit extends Component {
     });
   }
 
-  // renderOneAssay(val, idx) {
-  //   var idstr = "dt_" + val.name.toLowerCase().replace(" ", "_");
-
-  //   return (
-  //     <div className="form-group form-check" key={idstr}>
-  //       <input
-  //         type="radio"
-  //         className="form-check-input"
-  //         name={val.name}
-  //         key={idstr}
-  //         id={idstr}
-  //         onChange={this.handleInputChange}
-  //         checked={this.state.dataset_type.has(val.name)}
-  //       />
-  //       <label className="form-check-label" htmlFor={idstr}>
-  //         {val.description}
-  //       </label>
-  //     </div>
-  //   );
-  // }
-
-  // isAssayCheckSet(assay) {
-  //   try {
-  //     if (this.props.editingPublication.dataset_type) {
-  //       return this.props.editingPublication.dataset_type.includes(assay);
-  //     } else {
-  //       return false;
-  //     }
-  //   } catch {
-  //     return "Error";
-  //   }
-  // }
-
-  // renderAssayColumn(min, max) {
-  //   // Hijacking Select options based on Primary DT status
-  //   if (this.props.dtl_status || this.props.newForm) {
-  //     // true = primary dt, set options to primary
-  //     return this.props.dtl_primary.slice(min, max).map((val, idx) => {
-  //       return this.renderAssay(val, idx);
-  //     });
-  //   } else {
-  //     // false = Not primary DT, set options to full
-  //     return this.props.dtl_all.slice(min, max).map((val, idx) => {
-  //       return this.renderAssay(val, idx);
-  //     });
-  //   }
-  // }
-
-  // renderAssay(val) {
-  //   return (
-  //     <option key={val.name} value={val.name} id={val.name}>
-  //       {val.description}
-  //     </option>
-  //   );
-  // }
-
   renderListAssay(val) {
     return <li key={val}>{val}</li>;
   }
@@ -2041,21 +1924,6 @@ class PublicationEdit extends Component {
                   18 identifiers specified by HIPAA
                 </span>
               </Alert>
-              {/* {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
-                  <>{this.renderVersionNav()}</>
-              )}
-              {this.state.versioned && (this.state.loadingPreviousVersions===true || this.state.loadingNextVersions===true) && (
-                <Grid container spacing={2} sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>      
-                  <Grid item xs={6}>
-                    <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
-                    <Skeleton variant="rounded"  height={60} />
-                  </Grid>
-                  <Grid item xs={6}>
-                  <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
-                    <Skeleton variant="rounded"  height={60} />
-                  </Grid>
-                </Grid>
-              )} */}
 
               {this.props.editingPublication &&
                 this.props.editingPublication.upload &&
