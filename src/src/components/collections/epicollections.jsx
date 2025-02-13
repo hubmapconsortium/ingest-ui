@@ -68,6 +68,11 @@ export function EPICollectionForm (props){
   var [userAdmin, setUserAdmin] = useState(false);
   var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
   var [warningOpen, setWarningOpen] = React.useState(false);
+
+  var [errorRows, setErrorRows] = React.useState([]);
+  var [errorList, setErrorList ] = React.useState([]);
+  var [failedStep, setFailedStep] = React.useState(null);
+  var [results, setResults] = React.useState(null);
   // var [publishError, setPublishError] = useState({
   //   status:"",
   //   message:"",
@@ -562,26 +567,28 @@ export function EPICollectionForm (props){
             setValidatingContributorsUpload(false)
           }else{
             let errorSet = response.error.response.data.description;
-            console.debug('%c◉ FAILURE ', 'color:#ff005d', errorSet)
-            if (errorSet == "metadata_schema_id not found in header") {
-              setContributorValidationErrors([
-                {
+            console.debug('%c◉ errorSet.includes("row") ', 'color:#00ff7b', errorSet.includes("row"), errorSet[0].row);
+            if(!errorSet[0].row){
+              // Non Row Error Handling first
+              try{
+                setContributorValidationErrors([{
                   "column": "N/A",
-                  "error": "Metadata_schema_id not found in header",
+                  "error": errorSet.toString(),
                   "row": "N/A"
-                }
-              ]);
-            }else if(errorSet == "This is not the latest version of the metadata specification as defined in CEDAR"){
-              setContributorValidationErrors([
-                {
-                  "column": "N/A",
-                  "error": "This is not the latest version of the metadata specification as defined in CEDAR",
-                  "row": "N/A"
-                }
-              ])
+                }])
+              }catch(error){
+                console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
+              }
             }else{
-              setContributorValidationErrors(errorSet);
+              //  IVT Row by Row Error Handling
+              try{
+                errorSet = errorSet.sort((a, b) => a.row - b.row);
+                setContributorValidationErrors(errorSet);
+              }catch(error){
+                console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
+              }
             }
+
             setFormErrors((prevValues) => ({
               ...prevValues,
               'contributors': "Please Review the list of errors provided",
