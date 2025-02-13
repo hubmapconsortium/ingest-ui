@@ -1654,7 +1654,7 @@ handleAddImage = () => {
           </div>
            {this.state.editingEntity && (
             <React.Fragment>
-            <div className="row">
+            <div className="row mb-2">
               <div className="col-sm-5 offset-sm-1 portal-label">
                   HuBMAP ID: {this.state.editingEntity.hubmap_id}
               </div>
@@ -1694,12 +1694,12 @@ handleAddImage = () => {
                   </p>
                 </ReactTooltip>
               </label>
-
               {/* It was specificially requested we allow the Category / Organ Fields to still remain Interactable on pages that are read only */}
               {!this.state.readOnly && (
                 <div className="input-group">
                   <input
                     type="text"
+                    disabled={this.state.editingEntity}
                     name="source_uuid"
                     id="source_uuid"
                     className={"form-control " +this.errorClass(this.state.formErrors.source_uuid)}
@@ -1717,12 +1717,12 @@ handleAddImage = () => {
                         data-tip
                         data-for="source_uuid_tooltip"/>
                   </Button>
-                </div>
+                </div> 
               )}
               {this.state.readOnly && (
-                 <div>
-                    <input type="text" readOnly className="form-control" id="static_source_uuid" value={this.state.source_uuid}></input>
-                  </div>
+                <div className="mt-2"> 
+                  <input type="text" readOnly className="form-control" id="static_source_uuid" value={this.state.source_uuid} />
+                </div>
               )}
 
 
