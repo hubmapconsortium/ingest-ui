@@ -233,6 +233,7 @@ export function entity_api_get_globus_url(uuid, auth) {
       });
 };
 
+// @TODO  DEPRECATING replaced with newer ingest API call
 export function entity_api_attach_bulk_metadata(uuid,item, auth) { 
   console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item, auth);
   const options = {headers:{Authorization: "Bearer " + auth,
