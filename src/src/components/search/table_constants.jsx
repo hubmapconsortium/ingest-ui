@@ -145,17 +145,18 @@ export const COLUMN_DEF_UPLOADS = [
         <span>{params.value}</span>
       </React.Fragment>
     ),
-  },{
-  field: "datasets.group_name",
-   width: 200,
-   headerName: "Groups",
-   valueGetter: ({ row }) => {
-     if (row.datasets) {
-       return groupNames(row);
-     }
-   },
- },{
-    field: "doi_url",
+  },
+  { field: "group_name", headerName: "Group", width: 210 },
+//   field: "datasets.group_name",
+//    width: 200,
+//    headerName: "Groups",
+//    valueGetter: ({ row }) => {
+//      if (row.datasets) {
+//        return groupNames(row);
+//      }
+//    },
+//  },{
+  { field: "doi_url",
     headerName: "DOI",
     width: 400,
     renderCell: (params: ValueFormatterParams) => (
