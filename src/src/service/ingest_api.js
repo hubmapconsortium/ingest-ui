@@ -542,18 +542,15 @@ export function ingest_api_upload_bulk_metadata(type, dataFile, auth) {
   console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type, auth);
   const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
   var formData = new FormData();
-  // formData.append('metadata', dataFile);
-  formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);
+  formData.append('metadata', new Blob([dataFile],{type: 'file' }),dataFile.name);
   formData.append('entity_type', "Sample")
   formData.append('sub_type', type)
   formData.append('validate_uuids', 1)
-  // formData.append('ui_type', 'gui')
   console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
-  // const data = ["data-testing-notificatons","Beep (O v O)!"]    
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate`;
-  console.debug('%c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`;
+  // console.debug('%c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
   return axios 
-    .post(url,formData,options)
+    .put(url,formData,options)
     .then(res => {
       console.debug("ingest_api_upload_bulk_metadata",res);
         let results = res.data;
@@ -561,6 +558,8 @@ export function ingest_api_upload_bulk_metadata(type, dataFile, auth) {
       })
       .catch(error => {
         console.debug('%c⭗  ingest_api_upload_bulk_metadata', 'color:#ff005d',error );
+        // Is it a server error or just a Validation error? 
+        console.debug('%c◉ error ', 'color:#00ff7b', error, error.status);
         // throw new Error(error);
         return {error}
       });
