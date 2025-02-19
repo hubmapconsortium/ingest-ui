@@ -595,15 +595,41 @@ class TissueForm extends Component {
      });  
   }
 
+  handleInputBlur = e => {
+    const { name, value } = e.target;
+    switch (name) {
+      case "protocol_url":
+        if (!validateProtocolIODOI(value)) {
+          this.setState(prevState => ({
+            formErrors: {
+              ...prevState.formErrors,
+              protocol_url: "Please enter a valid protocols.io URL"
+            }
+          }));
+        } else if (!validateSingleProtocolIODOI(value)) {
+          this.setState(prevState => ({
+            formErrors: {
+              ...prevState.formErrors,
+              protocol_url: "Please enter only one valid protocols.io URL"
+            }
+          }));
+        }else{
+          this.setState(prevState => ({
+            formErrors: {
+             ...prevState.formErrors,
+              protocol_url: ""
+            }
+          }));
+        }
+        break
+      }
+ }
+
   handleInputChange = e => {
     const { name, value } = e.target;
-  
-  
     this.setDirty(true);
-
-    console.debug("handleInputChange", name, value);
-    console.debug(this.state.source_entity.display_subtype, this.isSpecialOrganType(this.state.organ));
-    
+    // console.debug("handleInputChange", name, value);
+   
     switch (name) {
 
       case "lab":
@@ -659,22 +685,7 @@ class TissueForm extends Component {
               protocol_url: "required"
             }
           }));
-        } else if (!validateProtocolIODOI(value)) {
-        console.debug('%c◉ validateProtocolIODOI ', 'color:#ff005d',value );
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_url: "Please enter a valid protocols.io URL"
-            }
-          }));
-        } else if (!validateSingleProtocolIODOI(value)) {
-        
-          this.setState(prevState => ({
-            formErrors: {
-              ...prevState.formErrors,
-              protocol_url: "Please enter only one valid protocols.io URL"
-            }
-          }));
+          //Moved pre-submit validation to OnBlur event so they have a chance to get it right
         } else {
           this.setState(prevState => ({
             formErrors: {
@@ -1404,7 +1415,7 @@ handleAddImage = () => {
             this.setState(prevState => ({
               formErrors: {
                 ...prevState.formErrors,
-                protocol_url_DOI: "Please enter one valid protocols.io DOI"
+                protocol_url: "Please enter one valid protocols.io DOI"
               }
             }));
             isValid = false;
@@ -1424,18 +1435,18 @@ handleAddImage = () => {
         }));
       }
 
-  
-      
+    
+        
       if (this.state.sample_count < 1) { // only validate if we are not doing multiples
       // validate the images
         this.state.images.forEach((image, index) => {
           if (!image.file_name && !validateRequired(image.ref.current.image_file.current.value)) {
-           // ////
+            // ////
             isValid = false;
             image.ref.current.validate();
           }
           if (!validateRequired(image.ref.current.image_file_description.current.value)) {
-             //////
+              //////
             isValid = false;
             image.ref.current.validate();
           }
@@ -1443,25 +1454,26 @@ handleAddImage = () => {
 
         const hasImageDuplicates = new Set(this.state.images).size !== this.state.images.length
         if (hasImageDuplicates) {
-           // image["error"] = "Duplicated file name is not allowed.";
+            // image["error"] = "Duplicated file name is not allowed.";
             isValid = false;
         }
       }
 
-    if (!validateRequired(this.state.source_uuid)) {
-      this.setState(prevState => ({
-        formErrors: { ...prevState.formErrors, source_uuid: "required" }
-      }));
-      isValid = false;
-      resolve(isValid);
-    } else {
+
+      if (!validateRequired(this.state.source_uuid)) {
         this.setState(prevState => ({
-          formErrors: { ...prevState.formErrors, source_uuid: "" }
+          formErrors: { ...prevState.formErrors, source_uuid: "required" }
         }));
+        isValid = false;
         resolve(isValid);
-     
-    }      
-    });
+      } else {
+          this.setState(prevState => ({
+            formErrors: { ...prevState.formErrors, source_uuid: "" }
+          }));
+          resolve(isValid);
+      
+      }      
+      });
   }
 
   handleLookUpClick = () => {
@@ -2014,6 +2026,8 @@ handleAddImage = () => {
                       this.errorClass(this.state.formErrors.protocol_url_DOI)
                     }
                     onChange={this.handleInputChange}
+                    // Let them finish typing before validating
+                    onBlur={this.handleInputBlur}
                     value={this.state.protocol_url}
                     placeholder="protocols.io DOI"
                   />
