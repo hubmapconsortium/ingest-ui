@@ -265,7 +265,7 @@ const exampleFile ="https://hubmapconsortium.github.io/ingest-validation-tools/s
               labelProps.error = true;
             }
             return (
-              <Step key={label} onClick={()=>setActiveStep(index)} sx={{cursor: "pointer"}}>
+              <Step key={label} sx={{cursor: "pointer"}}>
                 <StepLabel {...labelProps}>{label}</StepLabel>
                 {/* <StepContent>{getStepContent(activeStep)}</StepContent> */}
               </Step>
