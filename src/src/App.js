@@ -46,6 +46,7 @@ import {RenderCollection} from "./components/collections";
 import {RenderEPICollection} from "./components/epicollections";
 import {RenderDataset} from "./components/datasets";
 import {RenderDonor} from "./components/donors";
+import {RenderNewDonor} from "./components/newDonor";
 import {RenderMetadata} from "./components/metadata";
 import {RenderPublication} from "./components/publications";
 import {RenderSample} from "./components/samples";
@@ -73,6 +74,8 @@ export function App (props){
   var [groupsToken, setGroupsToken] = useState(null);
   var [allGroups, setAllGroups] = useState(null);
   var [timerStatus, setTimerStatus] = useState(true);
+
+  // Data to fill in UI Elements
   var [dataTypeList, setDataTypeList] = useState({});
   var [dataTypeListAll, setDataTypeListAll] = useState({});
   var [organList, setOrganList] = useState();
@@ -95,53 +98,18 @@ export function App (props){
     Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
   });
 
-  useEffect(() => {
-    // API Key Validity Check
-    if(localStorage.getItem("info")  ){
-      console.debug('%c◉ API Key Validity ', 'color:#00ff7b',localStorage.getItem("info") );
-      console.debug('%c◉ localStorage.getItem("info") ', 'color:#00ff7b', localStorage.getItem("info"));
-      // try {
-      api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
-        .then((results) => {
-          console.debug('%c◉ results ', 'color:#00ff7b', results);
-          if(results.error && results.error.response && results.error.response.status){
-    console.debug('%c◉ results.error.response.data ', 'color:#ff005d', results.error.response.data);
-            setExpiredKey(true);
-            // console.debug('%c◉ results.error.response.data.error ', 'color:#ff005d', results.error.response.data.error?results.error.response.data.error:"NOMESSAGE");
-            if(results.error.response.status ===401 ){
-              setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
-            }else if(results.error.response.data.error && results.error.response.status !==401){
-              setLoginError(results.error.response.data.error );
-            }else{
-              setLoginError("API Key Error");
-            }
-          }else if(!results.error){
-            console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
-          }else{
-            setExpiredKey(true);
-            console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", results );
-          }
-        })
-        .catch((err) => {
-          console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
-        })
-      
-    }else{
-      console.debug('%c◉ No Local Storage Key to check validity against ', 'color:#00ff7b', );
-    }
-  },[])
   
   useEffect(() => {
     console.debug("useEffect URL/Info");
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
-
     if (info !== null) {
       localStorage.setItem("info", info);
       localStorage.setItem("isAuthenticated", true);
       localStorage.setItem("isHubmapUser", true);
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
+    
     try {
       ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token).then((results) => {
         console.debug('%c◉ RESULTS ', 'color:#00ff7b', results);
@@ -165,8 +133,6 @@ export function App (props){
       console.debug('%c◉ error, no results', 'color:#ff0000',error );
       setTimerStatus(false);
       setIsLoading(false)
-      // localStorage.clear();
-      // throw new Error(error);
     }
   }, [ ]);
 
@@ -174,6 +140,28 @@ export function App (props){
   useEffect(() => {
 
     if(localStorage.getItem("info")){
+
+      // Validate our Token
+      api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
+      .then((results) => {
+        if(results.error && results.error.response && results.error.response.status){
+          setExpiredKey(true);
+          if(results.error.response.status ===401 ){
+            setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
+          }else if(results.error.response.data.error && results.error.response.status !==401){
+            setLoginError(results.error.response.data.error );
+          }else{
+            setLoginError("API Key Error");
+          }
+        }else if(!results.error){
+          console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
+        }else{
+          setExpiredKey(true);
+        }
+      })
+      .catch((err) => {
+        console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
+      })
       
       // Load organs into LocalStorage if need be
       if(!localStorage.getItem("organs")){
@@ -227,16 +215,12 @@ export function App (props){
         setDataTypeListAll(JSON.parse(localStorage.getItem("datatypes")));
         setDTLoading(false)
       }
-    }
- }, [ ]);
 
-  useEffect(() => {
-    if(localStorage.getItem("info")){
+      // Get all groups
       try {
         ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
         .then((res) => {
           var allGroups = sortGroupsByDisplay(res.results);
-          console.debug('%c⊙ allGroups!!', 'color:#00ff7b', allGroups );
           setAllGroups(allGroups);
         })
         .catch((err) => {
@@ -245,8 +229,16 @@ export function App (props){
       } catch (error) {
         console.debug("%c⭗", "color:#ff005d",error);
       }
+
+
     }
-  },[])
+ }, [ ]);
+
+  // useEffect(() => {
+  //   if(localStorage.getItem("info")){
+      
+  //   }
+  // },[])
   
   
   useEffect(() => {
@@ -262,20 +254,7 @@ export function App (props){
     }
   },[])
     
-  useEffect(() => {
-    // Expose server context
-    // easy way to apply the occasional QoL / Dev features &
-    // selectively apply css as needed without additional js processing
-    if( window.hasOwnProperty('REACT_APP_URL')){
-      var url = window.REACT_APP_URL;
-      console.debug('%c◉ REACT_APP_URL', 'color:#00ff7b', url);
-      var stripUrl = url.replace(/(^\w+:|^)\/\//, '');
-      console.debug('%c◉ stripUrl ', 'color:#00ff7b', stripUrl);
-    }
-  },[])
-      
-  
-  
+
 
   function Logout(e){
     setIsLoggingOut(true);
@@ -342,7 +321,7 @@ export function App (props){
   }
 
 
-  
+  console.debug('%c◉ Inf ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
   const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const { search } = useLocation();
   // @TODO: is search itself already handling this / is this an old prop drill?
@@ -385,7 +364,7 @@ export function App (props){
       </Snackbar>
       <Navigation 
         login={authStatus} 
-        logout={Logout}
+        // logout={Logout}
         isLoggingOut={isLoggingOut}
         app_info={ app_info_storage}
         userGroups={userGroups}
@@ -544,12 +523,9 @@ export function App (props){
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='upload' element={ <SearchComponent reportError={reportError} />}/> {/*Will make sure the search load under the modal */}
                       
-                      {/* {userDev && (
-                        <Route path='dataset' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeListAll} dtl_primary={dataTypeListPrimary}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                      )}
-                      {!userDev && (
-                        <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                      )} */}
+                      {/* In Develpment here */}
+                      <Route path='/new/donor/n' element={ <RenderNewDonor userGroups={userDataGroups} reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                     
                     </Route>
                   )}
                   <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
@@ -574,6 +550,10 @@ export function App (props){
                     <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
                     <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
                   </Route>
+
+                  {/* In Develpment here */}
+                  <Route path="/donor/:uuid/n" element={<RenderNewDonor userGroups={userDataGroups}  />} />
+
                 </Routes>
 
                 <Dialog aria-labelledby="result-dialog" open={successDialogRender} maxWidth={'800px'}>

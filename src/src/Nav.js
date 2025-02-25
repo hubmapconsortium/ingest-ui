@@ -49,7 +49,8 @@ export const Navigation = (props) => {
     if(location.pathname === "/new/upload"){
       setUploadsDialog(true);
     }
-  }, [props, props.app_info, location]);
+  }, [props.app_info, location]);
+  // }, [props, props.app_info, location]);
 
   const handleCancel = () => {
     setMetaModalOpen(false);
