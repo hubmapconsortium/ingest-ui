@@ -10,11 +10,8 @@ import StandardErrorBoundary from "./utils/errorWrap";
 import LinearProgress from '@mui/material/LinearProgress';
 
 import {Alert} from '@material-ui/lab';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
 import Paper from '@mui/material/Paper';
@@ -29,7 +26,6 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 
-import AnnouncementTwoToneIcon from '@mui/icons-material/AnnouncementTwoTone';
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
 import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
@@ -390,6 +386,7 @@ export function App (props){
       <Navigation 
         login={authStatus} 
         isLoggingOut={isLoggingOut}
+        logout={Logout}
         userDataGroups={JSON.parse(localStorage.getItem("userGroups"))}
         appInfo={JSON.parse(localStorage.getItem("info"))}/>       
       { !userDev && (<Timer logout={Logout}/>)}
@@ -530,10 +527,10 @@ export function App (props){
                         <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                         <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
                         {/* In Develpment here */}
-                        <Route path='donor/n' element={ <RenderNewDonor  onCreated={(response) => creationSuccess(response)} />}/>
+                        <Route path='donor/n' element={ <RenderNewDonor onCreated={(response) => creationSuccess(response)} />}/>
                       </Route>
                    
-                    <Route path="/donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
+                    <Route path=" /donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
                     <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
                     <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
                     <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
