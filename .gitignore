@@ -69,3 +69,4 @@ src/cypress.config.js
 src/cypress.env.json
 
 .idea
+src/cypress.env.json
