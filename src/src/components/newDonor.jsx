@@ -1,7 +1,7 @@
 import React, { useEffect, useState  } from "react";
 import { useParams } from 'react-router-dom';
 import { entity_api_get_entity, entity_api_update_entity,entity_api_create_entity} from '../service/entity_api';
-import {useNavigate} from "react-router-dom";
+// import {useNavigate} from "react-router-dom";
 import LoadingButton from '@mui/lab/LoadingButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import { tsToDate } from "../utils/string_helper";
@@ -20,7 +20,6 @@ import HIPPA from "./ui/HIPPA";
 
 
 export const RenderNewDonor = (props) => {
-  let navigate = useNavigate();
   let [entityData, setEntityData] = useState();
   let [showHippa, setShowHippa] = useState(false);
   let [isLoading, setLoading] = useState(true);
@@ -42,22 +41,20 @@ export const RenderNewDonor = (props) => {
     group_uuid: defaultGroup
   });
   const { uuid } = useParams();
-  const { readOnly } = useState(false);
-  // var showHippa = useState(false);
 
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
-    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     if (uuid && uuid !== "") {
       const authSet = JSON.parse(localStorage.getItem("info"));
       entity_api_get_entity(uuid, authSet.groups_token)
         .then(response => {
-          console.debug("useEffect entity_api_get_entity", response);
+          //console.debug("useEffect entity_api_get_entity", response);
           if (response.status === 200) {
             const entityType = response.results.entity_type;
             if (entityType !== "Donor") { // Are we sure we're loading a Donor? 
-              navigate(`/${entityType}/${uuid}`); //@TODO - somehow handle this detection in App 
+              // @TODO: Move this sort of handling/detection to the outer app, or into component
+              window.location.replace(`${process.env.REACT_APP_URL}/${entityType}/${uuid}`);
             } else {
               const entityData = response.results;
               setEntityData(entityData);
@@ -74,7 +71,7 @@ export const RenderNewDonor = (props) => {
           passError(error);
         });
     } else {
-      console.log('%c◉ NEW FORM ', 'color:#00ff7b');
+      //console.log('%c◉ NEW FORM ', 'color:#00ff7b');
     }
     setLoading(false);
   }, [uuid]);
@@ -83,11 +80,10 @@ export const RenderNewDonor = (props) => {
   function passError(error) {
     setLoading(false);
     setPageErrors(error)
-    // throw new Error("Error: "+status+" "+message);
   }
 
   function toggleHippa() {
-    console.debug('%c◉ tohhleHippa ', 'color:#00ff7b', showHippa );
+    //console.debug('%c◉ tohhleHippa ', 'color:#00ff7b', showHippa );
     setShowHippa(!showHippa);
   }
 
@@ -97,7 +93,7 @@ export const RenderNewDonor = (props) => {
       ...prevValues,
       [id]:value,
     }));
-    console.log(id,value )
+    //console.log(id,value )
   }
   
   function renderHeader() {
@@ -140,7 +136,7 @@ export const RenderNewDonor = (props) => {
           field:"required"
         }));
       }
-      console.log("errors",errors, field);
+      //console.log("errors",errors, field);
     }
     if(errors.length > 0){
       setFormErrors(errors);
@@ -157,13 +153,13 @@ export const RenderNewDonor = (props) => {
         entity_api_update_entity(uuid, JSON.stringify(formValues), JSON.parse(localStorage.getItem("info")).groups_token)
           .then((response) => {
             if (response.status === 200) {
-              console.debug('%c◉ ONUPDATED ', 'color:#00ff7b', );
+              console.debug('%c◉ ON UPDATED! ', 'color:#00ff7b', );
             } else {
-              console.debug('%c◉ SUBMITERROR ', 'color:#00ff7b', response);
+              console.error('%c◉ SUBMIT ERROR ', 'color:#00ff7b', response);
             }
           })
           .catch((error) => {
-            console.debug('%c◉ SUBMITERROR ', 'color:#00ff7b', error);
+            console.error('%c◉ SUBMITERROR ', 'color:#00ff7b', error);
           });
       }else{ // We're in Create mode
         entity_api_create_entity("donor", JSON.stringify(formValues), JSON.parse(localStorage.getItem("info")).groups_token)
@@ -184,7 +180,7 @@ export const RenderNewDonor = (props) => {
   }
   
   function buttonEngine () {
-    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
+    //console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     return (
       <Box sx={{textAlign:"right"}}>
         <Button 
@@ -193,7 +189,6 @@ export const RenderNewDonor = (props) => {
           onClick={()=>window.location.back()}>
             Cancel
         </Button>
-
         {/* Here we compile which buttons they get */}
         {/* @TODO use next form to help work this in to its own UI component? */}
         {( !uuid  &&(
@@ -214,9 +209,6 @@ export const RenderNewDonor = (props) => {
               Update
           </LoadingButton>
         ))}
-        
-
-        
       </Box>
     )
   }
@@ -282,7 +274,6 @@ export const RenderNewDonor = (props) => {
             className="my-3"
             multiline
             rows={4}/>
-            
           <Box className="my-3">  
             <InputLabel variant="standard" htmlFor="group" >
               Group
@@ -302,7 +293,6 @@ export const RenderNewDonor = (props) => {
                 })}
             </Select>
           </Box>
-
           {buttonEngine()}  
         </form>
 
@@ -311,9 +301,6 @@ export const RenderNewDonor = (props) => {
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
         )}
-        
-
-        
       </Box>
     )
   }
