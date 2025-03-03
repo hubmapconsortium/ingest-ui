@@ -1,41 +1,32 @@
 import React,{useEffect} from "react";
 import {Link} from 'react-router-dom';
-import {useLocation} from "react-router-dom";
 import {useNavigate} from "react-router-dom";
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LoadingButton from '@mui/lab/LoadingButton';
-import MUIDialog from "./components/ui/dialog";
 import UploadsForm from "./components/uploads/createUploads";
 
 export const Navigation = (props) => {
-  const [metaModalOpen, setMetaModalOpen] = React.useState(false);
-  const [exampleLink, setExampleLink] = React.useState("block");
   const [userDataGroups, setUserDataGroups] = React.useState([]);
   const [uploadsDialog, setUploadsDialog] = React.useState(false);
-  const [anchorEl_I, setAnchorEl_I] = React.useState(null);
-  const [anchorEl_B, setAnchorEl_B] = React.useState(null);
-  const [anchorEl_S, setAnchorEl_S] = React.useState(null);
-  const open_I = Boolean(anchorEl_I);
-  const open_B = Boolean(anchorEl_B);
-  const open_S = Boolean(anchorEl_S);
-  var dialogMetadataTitle = 'Metadata Bulk Uploading Temporarily Unavailable';
-  var dialogMetadataMessage = "Upload of Sample metadata is currently disabled. Please submit your metadata files to the help desk at <a href=\"mailto:help@hubmapconsortium.org\">help@hubmapconsortium.org</a>. <hr/>\
-  <strong>Please prepare any new data submissions using the new next-generation metadata and directory schemas</strong>, which are linked from <a href=\""+exampleLink+"\"  target=\"_blank\">this page</a>. The schemas you should use are marked <strong>\"use this one\"</strong> on the schema pages. You can validate <strong>next-gen metadata schemas</strong> using the <a href=\"https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit#heading=h.d6xf2xeysl78\" target=\"_blank\">process outlined here</a>. <strong>Please also <a href=\"https://docs.google.com/spreadsheets/d/19ZJx_EVyBGKNeW0xxQlOsMdt1DVNZYWmuG014rXsQP4/edit#gid=0\" target=\"_blank\">update this data pulse check spreadsheet</a></strong> so we know what data is coming from your team. We\'re looking forward to your submissions!<br/> \
-  Please contact <a href=\"mailto:help@hubmapconsortium.org\">help@hubmapconsortium.org</a> if you have questions.";
+  var [anchorEl, setAnchorEl] = React.useState({ 
+    I: null, 
+    B: null, 
+    S: null 
+  });
+  const open_I = Boolean(anchorEl.I);
+  const open_B = Boolean(anchorEl.B);
+  const open_S = Boolean(anchorEl.S);
+
   const navigate = useNavigate();
   const userInfo = props.appInfo
 
@@ -44,37 +35,17 @@ export const Navigation = (props) => {
     setUserDataGroups(props.userDataGroups);
   }, [props]);
 
-  const handleCancel = () => {
-    setMetaModalOpen(false);
-  }  
-  const handleOpenModal = (type) => {
-    let sampleType = type.toString();
-    console.debug('%c◉ type ', 'color:#00ff7b', type, sampleType, typeof sampleType);
-    setExampleLink("https://hubmapconsortium.github.io/ingest-validation-tools/sample-"+sampleType.toLowerCase()+"/current/")
-    console.debug('%c◉ link ', 'color:#00ff7b', exampleLink);
-    setMetaModalOpen(true);
-  }
+  var handleClick = (menu) => (event) => {
+    setAnchorEl(prevState => ({ ...prevState, [menu]: event.currentTarget }));
+  };
 
-  // @TODO: Dry this up
-  const handleClick_S = (event) => {
-    setAnchorEl_S(event.currentTarget);
-  };
-  const handleClick_I = (event) => {
-    setAnchorEl_I(event.currentTarget);
-  };
-  const handleClick_B = (event) => {
-    setAnchorEl_B(event.currentTarget);
-  };
-  
   const handleClose = () => {
-    setAnchorEl_I();
-    setAnchorEl_B();
-    setAnchorEl_S();
+    setAnchorEl({ I: null, B: null, S: null });
   };
-  
+
+
   const OpenUploads = () => {
     setUploadsDialog(true);
-    setAnchorEl_B();
   };
 
   const onClose = () => {
@@ -92,7 +63,7 @@ export const Navigation = (props) => {
     // DYnamically load into thee nav box vs writing twice
     return (
       <>
-        {renderMenuSection("IndividualT", handleClick_I, open_I, anchorEl_I, handleClose, [
+        {renderMenuSection("Individual", handleClick('I'), open_I, anchorEl.I,  [
           { to: "/new/donor", label: "Donor" },
           { to: "/new/sample", label: "Sample" },
           { to: "/new/dataset", label: "Dataset" },
@@ -100,12 +71,12 @@ export const Navigation = (props) => {
           { to: "/new/collection", label: "Collection - Dataset" },
           { to: "/new/EPICollection", label: "Collection - EPIC" },
         ])}
-        {renderMenuSection("Bulk", handleClick_B, open_B, anchorEl_B, handleClose, [
+        {renderMenuSection("Bulk", handleClick('B'), open_B, anchorEl.B,  [
           { to: "/bulk/donors", label: "Donors" },
           { to: "/bulk/samples", label: "Samples" },
           { to: "/bulk/data", label: "Data", onClick: OpenUploads }
         ])}
-        {renderMenuSection("Upload Sample Metadata", handleClick_S, open_S, anchorEl_S, handleClose, [
+        {renderMenuSection("Upload Sample Metadata", handleClick('S'), open_S, anchorEl.S,  [
           { to: "/metadata/block", label: "Block" },
           { to: "/metadata/section", label: "Section" },
           { to: "/metadata/suspension", label: "Suspension" }
@@ -122,7 +93,7 @@ export const Navigation = (props) => {
     );
   };  
 
-  function renderMenuSection(label, handleClick,open,anchorEl, close, items){
+  function renderMenuSection(label, handleClick, open, anchorEl, items){
     let IDLabel = label.toString().replace(/\s+/g, '');
     return( 
       <>
@@ -139,7 +110,7 @@ export const Navigation = (props) => {
           id="IndividualMenu"
           anchorEl={anchorEl}
           open={open}
-          onClose={close}
+          onClose={()=>handleClose()}
           MenuListProps={{
             'aria-labelledby': 'IndividualButton',
           }}>
@@ -179,13 +150,13 @@ export const Navigation = (props) => {
 
   return (
       <AppBar position="static" id="header">
-         <MUIDialog 
+         {/* <MUIDialog 
           open={metaModalOpen} 
           handleClose={handleCancel} 
           title={dialogMetadataTitle}
           message={dialogMetadataMessage}
           // dialogHelpLink={dialogHelpLinkURL}
-          bgcol = "Red" />
+          bgcol = "Red" /> */}
         <Dialog open={uploadsDialog}>
           <DialogContent> 
           <UploadsForm
