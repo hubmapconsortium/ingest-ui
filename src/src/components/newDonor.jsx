@@ -1,24 +1,10 @@
 import React, { useEffect, useState  } from "react";
 import { useParams } from 'react-router-dom';
-import { entity_api_get_entity} from '../service/entity_api';
-import { ingest_api_users_groups} from '../service/ingest_api';
-import { getPerms} from '../service/user_service';
-import {ErrBox} from "../utils/ui_elements";
+import { entity_api_get_entity, entity_api_update_entity,entity_api_create_entity} from '../service/entity_api';
 import {useNavigate} from "react-router-dom";
+import LoadingButton from '@mui/lab/LoadingButton';
 import LinearProgress from '@mui/material/LinearProgress';
-import { FormControl } from '@mui/base/FormControl';
-import ReactTooltip from "react-tooltip";
-import {
-  faQuestionCircle,
- // faPlus,
-  faSpinner,
-  faPaperclip,
-  //faLink,
-  faImages
-  // faTimes
-} from "@fortawesome/free-solid-svg-icons";
 import { tsToDate } from "../utils/string_helper";
-
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -33,85 +19,87 @@ import { validateRequired } from "../utils/validators";
 import HIPPA from "./ui/HIPPA";
 
 
-
 export const RenderNewDonor = (props) => {
   let navigate = useNavigate();
   let [entityData, setEntityData] = useState();
+  let [showHippa, setShowHippa] = useState(false);
   let [isLoading, setLoading] = useState(true);
-  let [permissions, setPermissions] = useState(true);
+  let [isProcessing, setIsProcessing] = useState(false);
+  let [pageErrors, setPageErrors] = useState(false);
   let [formErrors, setFormErrors] = useState({
     lab_donor_id: "",
     label: "",
     protocol_url: "",
     description: "",
   },);
-  let [errorHandler, setErrorHandler] = useState({
-    status: "",
-    message: "",
-    isError: null 
+  const userGroups = JSON.parse(localStorage.getItem("userGroups"))
+  const defaultGroup = userGroups[0].uuid;
+  var [formValues, setFormValues] = useState({
+    lab_donor_id: "",
+    label: "",
+    protocol_url: "",
+    description: "",
+    group_uuid: defaultGroup
   });
   const { uuid } = useParams();
   const { readOnly } = useState(false);
-  
+  // var showHippa = useState(false);
 
   // TODO: Polish Process for loading the requested Entity, If Requested
- 
   // (Including the Entity Type redirect)
   useEffect(() => {
     console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
-    let test = props.userGroups[0].shortname;
-    console.debug('%c◉ test ', 'color:#00ff7b', test);
-    if(uuid && uuid!= ""){
-      let authSet = JSON.parse(localStorage.getItem("info"));
-      console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
+    if (uuid && uuid !== "") {
+      const authSet = JSON.parse(localStorage.getItem("info"));
       entity_api_get_entity(uuid, authSet.groups_token)
-        .then((response) => {
+        .then(response => {
           console.debug("useEffect entity_api_get_entity", response);
           if (response.status === 200) {
-            if(response.results.entity_type !== "Donor"){
-              navigate("/"+response.results.entity_type+"/"+uuid);
-            }else{
-              setEntityData(response.results);
-              document.title = ("HuBMAP Ingest Portal | Donor: "+response.results.hubmap_id +"" );
-              // setPermissions(getPerms(uuid, authSet.groups_token));
-              // console.debug('%c◉ permissios ', 'color:#00ff7b', permissions);
-              setLoading(false);
+            const entityType = response.results.entity_type;
+            if (entityType !== "Donor") { // Are we sure we're loading a Donor? 
+              navigate(`/${entityType}/${uuid}`); //@TODO - somehow handle this detection in App 
+            } else {
+              const entityData = response.results;
+              setEntityData(entityData);
+              setFormValues(entityData);
+              document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           } else {
-            console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
-            // passError(response.status, response.message);
-            setLoading(false);
+            console.error("entity_api_get_entity RESP NOT 200", response.status, response);
           }
         })
-        .catch((error) => {
+        .catch(error => {
           console.debug("entity_api_get_entity ERROR", error);
-          passError(error.status, error.results.error );
-          setLoading(false);
+          passError();
+          passError(error);
         });
-    }else{
-      console.debug('%c◉ NEW FORM ', 'color:#00ff7b', );
-      setLoading(false);
+    } else {
+      console.log('%c◉ NEW FORM ', 'color:#00ff7b');
     }
+    setLoading(false);
   }, [uuid]);
 
 
-  function passError(status, message) {
+  function passError(error) {
     setLoading(false);
-    setErrorHandler({
-      status: status,
-      message:message,
-      isError: true 
-    })
+    setPageErrors(error)
+    // throw new Error("Error: "+status+" "+message);
   }
 
+  function toggleHippa() {
+    console.debug('%c◉ tohhleHippa ', 'color:#00ff7b', showHippa );
+    setShowHippa(!showHippa);
+  }
 
   function handleInputChange(e){
-    const { name, value } = e.target;
-    this.setState(prev => ({
-      [name]: value
+    const { id, value } = e.target;
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      [id]:value,
     }));
+    console.log(id,value )
   }
-
+  
   function renderHeader() {
     let PanelStyle = {
       width:"50%", 
@@ -139,45 +127,62 @@ export const RenderNewDonor = (props) => {
   }
 
   function validateForm() {
+    // So it looks like this no longer gets triggered
+    // and instead the browser has a built in error thing? 
+    // that wont even fire Submit unless required fields are filled?
+    // need to test across a few browsers
     let errors = {}
     let requiredFields = ['label','protocol_url']
     for (let field of requiredFields) {
-      console.debug('%c◉ entityData[field] ', 'color:#00ff7b',field,entityData[field]);
-      if (!validateRequired(entityData[field])) {
-        errors[field] = 'Required';
+      if (!validateRequired(formValues[field])) {
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          field:"required"
+        }));
       }
+      console.log("errors",errors, field);
     }
-    setFormErrors(errors);
+    if(errors.length > 0){
+      setFormErrors(errors);
+    }
     return Object.keys(errors).length === 0;
   }
 
+  function handleSubmit(e){
+    e.preventDefault();
+    setIsProcessing(true);
 
-
-  function handleSubmit(){
-    setEntityData({
-      lab_donor_id: "",
-      label: "",
-      protocol_url: "",
-      description: "",
-      group_name:"",
-    });
     if(validateForm()){
-     console.debug('%c◉ VALID ', 'color:#00ff7b', );
+      if (uuid) { // We're in Edit mode
+        entity_api_update_entity(uuid, JSON.stringify(formValues), JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((response) => {
+            if (response.status === 200) {
+              console.debug('%c◉ ONUPDATED ', 'color:#00ff7b', );
+            } else {
+              console.debug('%c◉ SUBMITERROR ', 'color:#00ff7b', response);
+            }
+          })
+          .catch((error) => {
+            console.debug('%c◉ SUBMITERROR ', 'color:#00ff7b', error);
+          });
+      }else{ // We're in Create mode
+        entity_api_create_entity("donor", JSON.stringify(formValues), JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((response) => {
+            if (response.status === 200) {
+              props.onCreated(response.results);
+            } else {
+              console.error('%c◉ entity_api_create_entity ', 'color:#ff007b', response);
+            }
+          })
+          .catch((error) => {
+            console.error('%c◉ entity_api_create_entity ', 'color:#00ff7b', error);
+          });
+      }
     }else{
-      console.debug('%c◉ INVALnoEnt ', 'color:#00ff7b');
+      console.debug('%c◉ Invalid ', 'color:#00ff7b');
     }
   }
   
-  function handleUpdate(){
-    let groups = ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-    console.debug('%c◉ groups ', 'color:#00ff7b', groups);
-    if(validateForm()){
-     console.debug('%c◉ VALID ', 'color:#00ff7b', );
-    }else{
-      console.debug('%c◉ INVALnoEnt ', 'color:#00ff7b');
-    }
-  }
-
   function buttonEngine () {
     console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     return (
@@ -190,24 +195,24 @@ export const RenderNewDonor = (props) => {
         </Button>
 
         {/* Here we compile which buttons they get */}
+        {/* @TODO use next form to help work this in to its own UI component? */}
         {( !uuid  &&(
-          <Button 
+          <LoadingButton 
             variant="contained" 
+            loading={isProcessing}
             className="m-2" 
             type="submit">
-            {/* onClick={()=>handleUpdate()}> */}
               Generate ID
-          </Button>
+          </LoadingButton>
         ))}
 
         {( uuid && uuid.length > 0 &&(
-          <Button 
+          <LoadingButton 
             variant="contained" 
             className="m-2" 
             type="submit">
-            // onClick={()=>handleUpdate()}>
               Update
-          </Button>
+          </LoadingButton>
         ))}
         
 
@@ -215,111 +220,101 @@ export const RenderNewDonor = (props) => {
       </Box>
     )
   }
-  
 
-  
-    if (!isLoading && errorHandler.isError === true){
-      return (
-        <ErrBox err={errorHandler} />
-      );
-    }else if (isLoading) {
-        return (
-          <div className="card-body ">
-             <LinearProgress />
-          </div>
-        );
-    }else{
-      return (
-        <Box>
-          <Box className="col-sm-12 text-center">
-            <h4>{entityData ? 'Donor Information' : 'Registering a Donor'}</h4>
+  if (isLoading) {
+      return (<LinearProgress />);
+  }else{
+    return (
+      <Box>
+        <Box className="col-sm-12 text-center">
+          <h4>{entityData ? 'Donor Information' : 'Registering a Donor'}</h4>
+        </Box>
+
+        <Alert sx={{maxWidth:"80%", margin:"0 auto"}} icon={false} severity="error">
+          <FontAwesomeIcon icon={faUserShield} /> - Do not provide any Protected Health Information. This includes the{" "} <span style={{ cursor: "pointer" }} className="text-primary" onClick={() => toggleHippa()}> 18 identifiers specified by HIPAA</span>
+        </Alert>
+
+        <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
+        {!isLoading && (uuid && uuid!== "") && renderHeader()}
+        
+        <form onSubmit={(e) => handleSubmit(e)}>
+          <TextField //"Lab's Donor Non-PHI ID "
+            id="lab_donor_id"
+            label="Lab's Donor Non-PHI ID "
+            helperText="An non-PHI id used by the lab when referring to the donor"
+            defaultValue={formValues ? formValues.lab_donor_id : ""}
+            error={formErrors.lab_donor_id !== ""}
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            variant="standard"    
+            className="my-3"/>
+          <TextField //"Deidentified Name "
+            id="label"
+            label="Deidentified Name "
+            helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
+            defaultValue={formValues ? formValues.label : ""}
+            error={formErrors.label !== ""}
+            required
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            variant="standard"    
+            className="my-3"/>
+          <TextField //"Case Selection Protocol "
+            id="protocol_url"
+            label="Case Selection Protocol "
+            helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
+            defaultValue={formValues ? formValues.protocol_url : ""}
+            error={formErrors.protocol_url !== ""}
+            required
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            variant="standard"    
+            className="my-3"/>
+          <TextField //"Description "
+            id="description"
+            label="Description "
+            helperText="Free text field to enter a description of the donor"        
+            defaultValue={formValues ? formValues.description : ""}
+            error={formErrors.description !== ""}
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            variant="standard"    
+            className="my-3"
+            multiline
+            rows={4}/>
+            
+          <Box className="my-3">  
+            <InputLabel variant="standard" htmlFor="group" >
+              Group
+            </InputLabel>
+            <Select // Group
+              label="Group "
+              id="group_name"
+              onChange={(e) => handleInputChange(e)}
+              fullWidth
+              defaultValue={formValues.group_name ? formValues.group_name : defaultGroup}>
+                {userGroups.map((group, index) => {
+                  return (
+                    <MenuItem key={index + 1} value={group.uuid}>
+                      {group.shortname} 
+                    </MenuItem>
+                  );
+                })}
+            </Select>
           </Box>
 
-          <Alert sx={{maxWidth:"80%", margin:"0 auto"}} icon={false} severity="error">
-            <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
-            Protected Health Information.
-            This includes the{" "}        
-            <span
-              style={{ cursor: "pointer" }}
-              className="text-primary">
-              18 identifiers specified by HIPAA
-            </span>
+          {buttonEngine()}  
+        </form>
+
+        {pageErrors && pageErrors.length > 0 && (
+          <Alert variant="filled" severity="error">
+            <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
-          
-          {!isLoading && (uuid && uuid!== "") && renderHeader()}
-          
-          <form onSubmit={handleSubmit()}>
-            <TextField //"Lab's Donor Non-PHI ID "
-              id="lab_donor_id"
-              label="Lab's Donor Non-PHI ID "
-              helperText="An non-PHI id used by the lab when referring to the donor"
-              defaultValue={entityData ? entityData.lab_donor_id : ""}
-              error={formErrors.lab_donor_id !== ""}
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              variant="standard"    
-              className="my-3"/>
-            <TextField //"Deidentified Name "
-              id="label"
-              label="Deidentified Name "
-              helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
-              defaultValue={entityData ? entityData.label : ""}
-              error={formErrors.label !== ""}
-              required
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              variant="standard"    
-              className="my-3"/>
-            <TextField //"Case Selection Protocol "
-              id="protocol_url"
-              label="Case Selection Protocol "
-              helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
-              defaultValue={entityData ? entityData.protocol_url : ""}
-              error={formErrors.protocol_url !== ""}
-              required
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              variant="standard"    
-              className="my-3"/>
-            <TextField //"Description "
-              id="description"
-              label="Description "
-              helperText="Free text field to enter a description of the donor"        
-              defaultValue={entityData ? entityData.description : ""}
-              error={formErrors.description !== ""}
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              variant="standard"    
-              className="my-3"
-              multiline
-              rows={4}/>
-              
-            <Box className="my-3">
-              <InputLabel variant="standard" htmlFor="group" >
-                Group
-              </InputLabel>
-              <Select
-                label="Group "
-                id="group"
-                onChange={(e) => handleInputChange(e)}
-                fullWidth
-                defaultValue={entityData ? entityData.group_name : props.userGroups[0].shortname}>
-                  {props.userGroups.map((group, index) => {
-                    return (
-                      <MenuItem key={index + 1} value={group.shortname}>
-                        {group.shortname} 
-                      </MenuItem>
-                    );
-                  })}
-              </Select>
-            </Box>
+        )}
+        
 
-            {buttonEngine()}  
-          </form>
-          
-
-          
-        </Box>
-      )
-    }
+        
+      </Box>
+    )
   }
+}
