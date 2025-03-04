@@ -34,8 +34,8 @@ export const Navigation = (props) => {
     try{
       if(localStorage.getItem('userGroups') && localStorage.getItem('userGroups') !== undefined){
         const dGroups = JSON.parse(localStorage.getItem('userGroups'))
-        setUserDataGroups(JSON.parse(localStorage.getItem('userGroups')))
-        console.debug('%c◉ setUserDataGroups ', 'color:#00ff7b', userDataGroups, dGroups, JSON.parse(localStorage.getItem('userGroups')))
+        setUserDataGroups(dGroups)
+        // console.debug('%c◉ setUserDataGroups ', 'color:#00ff7b', userDataGroups, dGroups, JSON.parse(localStorage.getItem('userGroups')))
       }
     }catch(e){
       console.error(e)

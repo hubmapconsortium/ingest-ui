@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
+import {ingest_api_allowable_edit_states} from "../service/ingest_api";
 import {
   entity_api_get_entity,
   entity_api_update_entity,
@@ -21,12 +22,26 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import {validateRequired} from "../utils/validators";
 import HIPPA from "./ui/HIPPA";
+import {LocalLaundryServiceOutlined} from "@material-ui/icons";
+import {Typography} from "@mui/material";
 
-export const RenderNewDonor = (props) => {
-  let[entityData, setEntityData] = useState();
+export const DonorForm = (props) => {
+  let[entityData, setEntityData] = useState({
+    lab_donor_id: "",
+    label: "",
+    protocol_url: "",
+    description: "",
+    group_uuid: "",
+  });
   let[showHippa, setShowHippa] = useState(false);
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
+  let[permissions,setPermissions] = useState({ 
+    has_admin_priv: false,
+    has_publish_priv: false,
+    has_submit_priv: false,
+    has_write_priv: false
+  });
   let[pageErrors, setPageErrors] = useState(false);
   let[formErrors, setFormErrors] = useState({
     lab_donor_id: "",
@@ -35,15 +50,18 @@ export const RenderNewDonor = (props) => {
     description: "",
   });
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
+  const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   const defaultGroup = userGroups[0].uuid;
   var[formValues, setFormValues] = useState({
     lab_donor_id: "",
     label: "",
     protocol_url: "",
     description: "",
-    group_uuid: defaultGroup,
+    group_uuid: userGroups[0].uuid,
+    group_name: userGroups[0].shortname,
   });
   const{uuid} = useParams();
+
 
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
@@ -64,7 +82,22 @@ export const RenderNewDonor = (props) => {
             }else{
               const entityData = response.results;
               setEntityData(entityData);
-              setFormValues(entityData);
+              setFormValues({
+                lab_donor_id:entityData.lab_donor_id,
+                label:entityData.label,
+                protocol_url:entityData.protocol_url,
+                description:entityData.description,
+                group_uuid:entityData.group_uuid,
+                group_name:entityData.group_name
+              });
+              ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+              .then((response) => {
+                console.debug('%c◉ ALLOWS ', 'color:#ff005d', response);
+                setPermissions(response.results);
+              })
+              .catch((error) => {
+                console.error("ingest_api_allowable_edit_states ERROR", error);
+              });
               document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
@@ -81,7 +114,9 @@ export const RenderNewDonor = (props) => {
           passError(error);
         });
     }else{
-      //console.log('%c◉ NEW FORM ', 'color:#00ff7b');
+      setPermissions({
+        has_write_priv: true,
+      });
     }
     setLoading(false);
   }, [uuid]);
@@ -158,14 +193,21 @@ export const RenderNewDonor = (props) => {
     if(validateForm()){
       if(uuid){
         // We're in Edit mode
+        let cleanForm ={
+          lab_donor_id: formValues.lab_donor_id,
+          label: formValues.label,
+          protocol_url: formValues.protocol_url,
+          description: formValues.description,
+        }
         entity_api_update_entity(
           uuid,
-          JSON.stringify(formValues),
+          JSON.stringify(cleanForm),
           JSON.parse(localStorage.getItem("info")).groups_token
         )
           .then((response) => {
             if(response.status === 200){
               console.debug("%c◉ ON UPDATED! ", "color:#00ff7b");
+              props.onUpdated(response.results);
             }else{
               console.error("%c◉ SUBMIT ERROR ", "color:#00ff7b", response);
             }
@@ -211,7 +253,7 @@ export const RenderNewDonor = (props) => {
         <Button
           variant="contained"
           className="m-2"
-          onClick={() => window.location.back()}>
+          onClick={() => window.history.back()}>
           Cancel
         </Button>
         {/* Here we compile which buttons they get */}
@@ -226,8 +268,8 @@ export const RenderNewDonor = (props) => {
           </LoadingButton>
         )}
 
-        {uuid && uuid.length > 0 && (
-          <LoadingButton variant="contained" className="m-2" type="submit">
+        {uuid && uuid.length > 0 && permissions.has_write_priv && (
+          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
             Update
           </LoadingButton>
         )}
@@ -235,7 +277,7 @@ export const RenderNewDonor = (props) => {
     );
   }
 
-  return isLoading || !entityData ? <LinearProgress /> : (
+  return isLoading ||(!entityData && !formValues && uuid) ? <LinearProgress /> : (
     <Box>
       <Box className="col-sm-12 text-center">
         <h4>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
@@ -264,10 +306,12 @@ export const RenderNewDonor = (props) => {
           id="lab_donor_id"
           label="Lab's Donor Non-PHI ID "
           helperText="An non-PHI id used by the lab when referring to the donor"
-          defaultValue={formValues ? formValues.lab_donor_id : ""}
+          value={formValues ? formValues.lab_donor_id : ""}
           error={formErrors.lab_donor_id !== ""}
+          InputLabelProps={{ shrink: true }}
           onChange={(e) => handleInputChange(e)}
           fullWidth
+          disabled={!permissions.has_write_priv}
           variant="standard"
           className="my-3"
         />
@@ -275,11 +319,13 @@ export const RenderNewDonor = (props) => {
           id="label"
           label="Deidentified Name "
           helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
-          defaultValue={formValues ? formValues.label : ""}
+          value={formValues ? formValues.label : ""}
           error={formErrors.label !== ""}
           required
+          InputLabelProps={{ shrink: true }}
           onChange={(e) => handleInputChange(e)}
           fullWidth
+          disabled={!permissions.has_write_priv}
           variant="standard"
           className="my-3"
         />
@@ -287,11 +333,13 @@ export const RenderNewDonor = (props) => {
           id="protocol_url"
           label="Case Selection Protocol "
           helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
-          defaultValue={formValues ? formValues.protocol_url : ""}
+          value={formValues ? formValues.protocol_url : ""}
           error={formErrors.protocol_url !== ""}
           required
+          InputLabelProps={{ shrink: true }}
           onChange={(e) => handleInputChange(e)}
           fullWidth
+          disabled={!permissions.has_write_priv}
           variant="standard"
           className="my-3"
         />
@@ -299,35 +347,43 @@ export const RenderNewDonor = (props) => {
           id="description"
           label="Description "
           helperText="Free text field to enter a description of the donor"
-          defaultValue={formValues ? formValues.description : ""}
+          value={formValues ? formValues.description : ""}
           error={formErrors.description !== ""}
+          InputLabelProps={{ shrink: true }}
           onChange={(e) => handleInputChange(e)}
           fullWidth
+          disabled={!permissions.has_write_priv}
           variant="standard"
           className="my-3"
           multiline
           rows={4}
         />
         <Box className="my-3">
-          <InputLabel variant="standard" htmlFor="group">
+          <InputLabel InputLabelProps={{ shrink: true }} variant="standard" htmlFor="group">
             Group
           </InputLabel>
-          <Select // Group
-            label="Group "
-            id="group_name"
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            defaultValue={
-              formValues.group_name ? formValues.group_name : defaultGroup
-            }>
-            {userGroups.map((group, index) => {
-              return(
-                <MenuItem key={index + 1} value={group.uuid}>
-                  {group.shortname}
-                </MenuItem>
-              );
-            })}
-          </Select>
+          {permissions.has_write_priv && (
+            <Select // Group
+              label="Group "
+              id="group_uuid"
+              onChange={(e) => handleInputChange(e)}
+              fullWidth
+              disabled={!permissions.has_write_priv}
+              value={
+                formValues.group_uuid ? formValues.group_uuid : defaultGroup
+              }>
+              {userGroups.map((group, index) => {
+                return( 
+                  <MenuItem key={index + 1} value={group.uuid}>
+                    {group.shortname}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          )}
+          {!permissions.has_write_priv && (
+            <Typography sx={{color:"rgba(0, 0, 0, 0.38)"}}>{formValues.group_name} </Typography>
+          )}
         </Box>
         {buttonEngine()}
       </form>

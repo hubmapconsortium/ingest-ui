@@ -6,9 +6,7 @@ import Timer from './components/ui/idle';
 import Login from './components/ui/login';
 import ErrorPage from "./utils/errorPage";
 import StandardErrorBoundary from "./utils/errorWrap";
-
 import LinearProgress from '@mui/material/LinearProgress';
-
 import {Alert} from '@material-ui/lab';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,44 +15,38 @@ import Drawer from '@mui/material/Drawer';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
-
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
 import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
-
-import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
-import {api_validate_token} from './service/search_api';
-import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
-import {sortGroupsByDisplay} from "./service/user_service";
-import {BuildError} from "./utils/error_helper";
-// import {htmlDecode} from "./utils/string_helper";
-import {Navigation} from "./Nav";
-
-/* Using legacy SearchComponent for now. See comments at the top of the New SearchComponent File  */
-
-import Result from "./components/uuid/result";
-
-import {RenderCollection} from "./components/collections";
-import {RenderEPICollection} from "./components/epicollections";
-import {RenderDataset} from "./components/datasets";
-import {RenderDonor} from "./components/donors";
-import {RenderNewDonor} from "./components/newDonor";
-import {RenderMetadata} from "./components/metadata";
-import {RenderPublication} from "./components/publications";
-import {RenderSample} from "./components/samples";
-import {RenderUpload} from "./components/uploads";
-
-import {RenderBulk} from "./components/bulk";
-
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 
+
+import {BuildError} from "./utils/error_helper";
+import {Navigation} from "./Nav";
+import Result from "./components/uuid/result";
+import {sortGroupsByDisplay} from "./service/user_service";
+import {api_validate_token} from './service/search_api';
+import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
+
+// The legacy form loaders
+import {RenderCollection} from "./components/collections";
+import {RenderEPICollection} from "./components/epicollections";
+import {RenderDataset} from "./components/datasets";
+import {RenderMetadata} from "./components/metadata";
+import {RenderPublication} from "./components/publications";
+import {RenderSample} from "./components/samples";
+import {RenderUpload} from "./components/uploads";
+import {RenderBulk} from "./components/bulk";
+
+// The New Forms
+import {DonorForm} from "./components/newDonor";
 
 export function App(props){
   let navigate = useNavigate();
@@ -166,7 +158,7 @@ export function App(props){
 
     // User Loading Bits Now
     if(localStorage.getItem("info")){
-      
+      console.debug('%c◉ LocalStore Found ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")));
       // Validate our Token
       api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
         .then((results) => {
@@ -244,6 +236,7 @@ export function App(props){
 
     }else{
       // No Info, No Auth, provide login screen nothing else to load
+      console.debug('%c◉ No INFO found ', 'color:#ff005d');
       setIsLoading(false)
     }      
 
@@ -463,9 +456,7 @@ export function App(props){
               </div>
             )}
             {/* {isLoading || (groupsToken && (!allGroups || allGroups.length<=0)) && ( */}
-            {isLoading && (
-              <LinearProgress />
-            )}
+            {isLoading && (<LinearProgress />)}
 
             {!authStatus && !isLoading && (
               <React.Fragment>
@@ -510,7 +501,7 @@ export function App(props){
 
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />
-                      <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                      <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
                       <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
@@ -519,16 +510,16 @@ export function App(props){
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
                       {/* In Develpment here */}
-                      <Route path='donor/n' element={ <RenderNewDonor onCreated={(response) => creationSuccess(response)} />}/>
+                      {/* <Route path='donor/n' element={ <RenderNewDonor onCreated={(response) => creationSuccess(response)} />}/> */}
                     </Route>
                     
-                    <Route path=" /donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
+                    <Route path="/donors" element={<DonorForm />} ></Route>
                     <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
                     <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
                     <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
                     <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
                       
-                    <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+                    <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
                     <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
                     <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
@@ -546,7 +537,7 @@ export function App(props){
                     </Route>
 
                     {/* In Develpment here */}
-                    <Route path="/donor/:uuid/n" element={<RenderNewDonor />} />
+                    {/* <Route path="/donor/:uuid/n" element={<RenderNewDonor />} /> */}
 
                   </Routes>
 
