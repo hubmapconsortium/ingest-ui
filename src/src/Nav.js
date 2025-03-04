@@ -1,85 +1,90 @@
-import React,{useEffect} from "react";
-import {Link} from 'react-router-dom';
-import {useNavigate} from "react-router-dom";
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import LoadingButton from '@mui/lab/LoadingButton';
-import UploadsForm from "./components/uploads/createUploads";
+import React, {useEffect} from 'react'
+import {Link, useNavigate} from 'react-router-dom'
+import AppBar from '@mui/material/AppBar'
+import Box from '@mui/material/Box'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
+import Menu from '@mui/material/Menu'
+import Container from '@mui/material/Container'
+import Button from '@mui/material/Button'
+import MenuItem from '@mui/material/MenuItem'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import LoadingButton from '@mui/lab/LoadingButton'
+import UploadsForm from './components/uploads/createUploads'
 
 export const Navigation = (props) => {
-  const [userDataGroups, setUserDataGroups] = React.useState([]);
-  const [uploadsDialog, setUploadsDialog] = React.useState(false);
-  var [anchorEl, setAnchorEl] = React.useState({ 
-    I: null, 
-    B: null, 
-    S: null 
-  });
-  const open_I = Boolean(anchorEl.I);
-  const open_B = Boolean(anchorEl.B);
-  const open_S = Boolean(anchorEl.S);
+  const[userDataGroups, setUserDataGroups] = React.useState([])
+  const[uploadsDialog, setUploadsDialog] = React.useState(false)
+  const[anchorEl, setAnchorEl] = React.useState({
+    I: null,
+    B: null,
+    S: null
+  })
+  const open_I = Boolean(anchorEl.I)
+  const open_B = Boolean(anchorEl.B)
+  const open_S = Boolean(anchorEl.S)
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const userInfo = props.appInfo
 
   useEffect(() => {
-    // @TODO: Consider moving all the User & User Group info into its own utils, 
-    setUserDataGroups(props.userDataGroups);
-  }, [props]);
+    // @TODO: Consider moving all the User & User Group info into its own utils,
+    try{
+      if(localStorage.getItem('userGroups') && localStorage.getItem('userGroups') !== undefined){
+        const dGroups = JSON.parse(localStorage.getItem('userGroups'))
+        setUserDataGroups(JSON.parse(localStorage.getItem('userGroups')))
+        console.debug('%c◉ setUserDataGroups ', 'color:#00ff7b', userDataGroups, dGroups, JSON.parse(localStorage.getItem('userGroups')))
+      }
+    }catch(e){
+      console.error(e)
+    }
 
-  var handleClick = (menu) => (event) => {
-    setAnchorEl(prevState => ({ ...prevState, [menu]: event.currentTarget }));
-  };
+    // setUserDataGroups(props.userDataGroups);
+  }, [])
+
+  const handleClick = (menu) => (event) => {
+    setAnchorEl(prevState => ({...prevState, [menu]: event.currentTarget}))
+  }
 
   const handleClose = () => {
-    setAnchorEl({ I: null, B: null, S: null });
-  };
-
+    setAnchorEl({I: null, B: null, S: null})
+  }
 
   const OpenUploads = () => {
-    setUploadsDialog(true);
-  };
+    setUploadsDialog(true)
+  }
 
   const onClose = () => {
-    setUploadsDialog(false);
-  };
+    setUploadsDialog(false)
+  }
 
   const onCreated = (data) => {
-    navigate("/Upload/"+data.results.uuid);
-    setUploadsDialog(false);
-  };  
-
-
+    navigate('/Upload/' + data.results.uuid)
+    setUploadsDialog(false)
+  }
 
   function renderMenuButtonBar(){
-    // DYnamically load into thee nav box vs writing twice
-    return (
-      <>
-        {renderMenuSection("Individual", handleClick('I'), open_I, anchorEl.I,  [
-          { to: "/new/donor", label: "Donor" },
-          { to: "/new/sample", label: "Sample" },
-          { to: "/new/dataset", label: "Dataset" },
-          { to: "/new/publication", label: "Publication" },
-          { to: "/new/collection", label: "Collection - Dataset" },
-          { to: "/new/EPICollection", label: "Collection - EPIC" },
+    return(
+      <React.Fragment>
+        {renderMenuSection('Individual', handleClick('I'), open_I, anchorEl.I, [
+          {to: '/new/donor', label: 'Donor'},
+          {to: '/new/sample', label: 'Sample'},
+          {to: '/new/dataset', label: 'Dataset'},
+          {to: '/new/publication', label: 'Publication'},
+          {to: '/new/collection', label: 'Collection - Dataset'},
+          {to: '/new/EPICollection', label: 'Collection - EPIC'}
         ])}
-        {renderMenuSection("Bulk", handleClick('B'), open_B, anchorEl.B,  [
-          { to: "/bulk/donors", label: "Donors" },
-          { to: "/bulk/samples", label: "Samples" },
-          { to: "/bulk/data", label: "Data", onClick: OpenUploads }
+        {renderMenuSection('Bulk', handleClick('B'), open_B, anchorEl.B, [
+          {to: '/bulk/donors', label: 'Donors'},
+          {to: '/bulk/samples', label: 'Samples'},
+          {to: '/bulk/data', label: 'Data', onClick: OpenUploads}
         ])}
-        {renderMenuSection("Upload Sample Metadata", handleClick('S'), open_S, anchorEl.S,  [
-          { to: "/metadata/block", label: "Block" },
-          { to: "/metadata/section", label: "Section" },
-          { to: "/metadata/suspension", label: "Suspension" }
+        {renderMenuSection('Upload Sample Metadata', handleClick('S'), open_S, anchorEl.S, [
+          {to: '/metadata/block', label: 'Block'},
+          {to: '/metadata/section', label: 'Section'},
+          {to: '/metadata/suspension', label: 'Suspension'}
         ])}
         <span className="board">
           <Button
@@ -89,76 +94,77 @@ export const Navigation = (props) => {
               Data Ingest Board
           </Button>
         </span>
-      </>
-    );
-  };  
+      </React.Fragment>
+    )
+  };
 
   function renderMenuSection(label, handleClick, open, anchorEl, items){
-    let IDLabel = label.toString().replace(/\s+/g, '');
-    return( 
-      <>
-        <Button 
+    const IDLabel = label.toString().replace(/\s+/g, '')
+    return(
+      <React.Fragment>
+        <Button
           id={`${IDLabel}IndividualButton`}
+          key={`${IDLabel}IndividualButton` + Math.random()}
           endIcon={<ArrowDropDownIcon />}
           aria-controls={open ? 'IndividualMenu' : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
-          onClick={handleClick} >
+          onClick={handleClick}>
           { label.toString() }
         </Button>
         <Menu
           id="IndividualMenu"
           anchorEl={anchorEl}
           open={open}
-          onClose={()=>handleClose()}
+          onClose={() => handleClose()}
           MenuListProps={{
-            'aria-labelledby': 'IndividualButton',
+            'aria-labelledby': 'IndividualButton'
           }}>
           {items.map((item, index) => {
             // @TODO: We can ditch this once Uploads gets its own page
-            if(item.to === "/bulk/data"){
-              return(renderUploadsButton(item.to, item.label));
+            if(item.to === '/bulk/data'){
+              return(renderUploadsButton(item.to, item.label))
             }else{
-              return(renderMenuButton(item.to, item.label));
+              return(renderMenuButton(item.to, item.label))
             }
           })}
         </Menu>
-      </>
+      </React.Fragment>
     )
   }
   function renderMenuButton(to, label){
     return(
-      <MenuItem 
+      <MenuItem
         className="nav-link"
         component={Link}
         onClick={handleClose}
         to={to} >
         {label}
-      </MenuItem> 
-    );
+      </MenuItem>
+    )
   }
   function renderUploadsButton(to, label){
     return(
-      <MenuItem 
+      <MenuItem
         className="nav-link"
         component={Link}
         onClick={ () => OpenUploads()} >
         {label}
-      </MenuItem> 
-    );
+      </MenuItem>
+    )
   }
 
-  return (
+  return(
       <AppBar position="static" id="header">
-         {/* <MUIDialog 
-          open={metaModalOpen} 
-          handleClose={handleCancel} 
+         {/* <MUIDialog
+          open={metaModalOpen}
+          handleClose={handleCancel}
           title={dialogMetadataTitle}
           message={dialogMetadataMessage}
           // dialogHelpLink={dialogHelpLinkURL}
           bgcol = "Red" /> */}
         <Dialog open={uploadsDialog}>
-          <DialogContent> 
+          <DialogContent>
           <UploadsForm
               onCreated={onCreated}
               cancelEdit={onClose}
@@ -174,12 +180,12 @@ export const Navigation = (props) => {
               href="/"
               sx={{
                 mr: 2,
-                display: { xs: 'flex', md: 'none' },
+                display: {xs: 'flex', md: 'none'},
                 fontFamily: 'monospace',
                 fontWeight: 700,
                 letterSpacing: '.3rem',
                 color: 'inherit',
-                textDecoration: 'none',
+                textDecoration: 'none'
               }}>
               <a className="navbar-brand" href="/">
                 <img
@@ -191,10 +197,9 @@ export const Navigation = (props) => {
               </a>
             </Typography>
 
-            {/* This is all here as vestage from a workaround where the menu wont properly set in place on screens ~720 or narrowe */}
-            {userDataGroups &&  userDataGroups.length >0 &&(
-              <Box className="menu-bar"  sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}> 
-                {renderMenuButtonBar()}  
+            {userDataGroups && userDataGroups.length > 0 && (
+              <Box className="menu-bar" sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
+                {renderMenuButtonBar()}
               </Box>
             )}
             <Typography
@@ -205,12 +210,12 @@ export const Navigation = (props) => {
               sx={{
                 textAlign: 'left',
                 mr: 2,
-                display: { xs: 'none', md: 'flex' },
+                display: {xs: 'none', md: 'flex'},
                 fontFamily: 'monospace',
                 fontWeight: 700,
                 letterSpacing: '.3rem',
                 color: 'inherit',
-                textDecoration: 'none',
+                textDecoration: 'none'
               }}>
               <a className="navbar-brand" href="/">
                 <img
@@ -222,19 +227,19 @@ export const Navigation = (props) => {
                 />
               </a>
             </Typography>
-            {userDataGroups &&  userDataGroups.length >0 &&(
-              <Box className="menu-bar" sx={{  display: { xs: 'none', md: 'flex' } }}>
+            {userDataGroups && userDataGroups.length > 0 && (
+              <Box className="menu-bar" sx={{display: {xs: 'none', md: 'flex'}}}>
                 {renderMenuButtonBar()}
               </Box>
             )}
-    
-          <Box className="menu-bar" sx={{ flexGrow: 1, justifyContent: 'flex-end'}}>
+
+          <Box className="menu-bar" sx={{flexGrow: 1, justifyContent: 'flex-end'}}>
             <div id="MenuRight">
               {(userInfo) && userInfo.email && (
               <div className="float-right">
                 <span className="username">
                   <Typography variant="button" className="username-menu">
-                    {userInfo.email} 
+                    {userInfo.email}
                   </Typography>
                   <Button
                     target="_blank"
@@ -245,11 +250,11 @@ export const Navigation = (props) => {
                   </Button>
                 </span>
                 <span className="logout" >
-                  <LoadingButton 
-                    loading={props.isLoggingOut} 
-                    color='info' 
+                  <LoadingButton
+                    loading={props.isLoggingOut}
+                    color='info'
                     onClick={(e) => props.logout(e)}>
-                    Log Out 
+                    Log Out
                   </LoadingButton>
                 </span>
                 {}
@@ -260,5 +265,5 @@ export const Navigation = (props) => {
         </Toolbar>
       </Container>
     </AppBar>
-  );
+  )
 }
