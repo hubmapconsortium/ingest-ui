@@ -112,7 +112,7 @@ export const RenderNewDonor = (props) => {
     };
 
     return(
-      <Box sx={{maxWidth:"90%", margin:"10px auto 20px auto"}}>
+      <Box sx={{maxWidth: "90%", margin: "10px auto 20px auto "}}>
         <Box className="portal-label " sx={PanelStyle}>
           HuBMAP ID: {entityData.hubmap_id}
         </Box>
@@ -235,112 +235,108 @@ export const RenderNewDonor = (props) => {
     );
   }
 
-  if(isLoading || !entityData){
-    return<LinearProgress />;
-  }else{
-    return(
-      <Box>
-        <Box className="col-sm-12 text-center">
-          <h4>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
-        </Box>
-
-        <Alert
-          sx={{maxWidth: "80%", margin: "0 auto"}}
-          icon={false}
-          severity="error">
-          <FontAwesomeIcon icon={faUserShield} /> - Do not provide any Protected
-          Health Information. This includes the{" "}
-          <span
-            style={{cursor: "pointer"}}
-            className="text-primary"
-            onClick={() => toggleHippa()}>
-            {" "}
-            18 identifiers specified by HIPAA
-          </span>
-        </Alert>
-
-        <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
-        {!isLoading && uuid && uuid !== "" && renderHeader()}
-
-        <form onSubmit={(e) => handleSubmit(e)}>
-          <TextField //"Lab's Donor Non-PHI ID "
-            id="lab_donor_id"
-            label="Lab's Donor Non-PHI ID "
-            helperText="An non-PHI id used by the lab when referring to the donor"
-            defaultValue={formValues ? formValues.lab_donor_id : ""}
-            error={formErrors.lab_donor_id !== ""}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            variant="standard"
-            className="my-3"
-          />
-          <TextField //"Deidentified Name "
-            id="label"
-            label="Deidentified Name "
-            helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
-            defaultValue={formValues ? formValues.label : ""}
-            error={formErrors.label !== ""}
-            required
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            variant="standard"
-            className="my-3"
-          />
-          <TextField //"Case Selection Protocol "
-            id="protocol_url"
-            label="Case Selection Protocol "
-            helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
-            defaultValue={formValues ? formValues.protocol_url : ""}
-            error={formErrors.protocol_url !== ""}
-            required
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            variant="standard"
-            className="my-3"
-          />
-          <TextField //"Description "
-            id="description"
-            label="Description "
-            helperText="Free text field to enter a description of the donor"
-            defaultValue={formValues ? formValues.description : ""}
-            error={formErrors.description !== ""}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            variant="standard"
-            className="my-3"
-            multiline
-            rows={4}
-          />
-          <Box className="my-3">
-            <InputLabel variant="standard" htmlFor="group">
-              Group
-            </InputLabel>
-            <Select // Group
-              label="Group "
-              id="group_name"
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              defaultValue={
-                formValues.group_name ? formValues.group_name : defaultGroup
-              }>
-              {userGroups.map((group, index) => {
-                return(
-                  <MenuItem key={index + 1} value={group.uuid}>
-                    {group.shortname}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </Box>
-          {buttonEngine()}
-        </form>
-
-        {pageErrors && pageErrors.length > 0 && (
-          <Alert variant="filled" severity="error">
-            <strong>Error:</strong> {JSON.stringify(pageErrors)}
-          </Alert>
-        )}
+  return isLoading || !entityData ? <LinearProgress /> : (
+    <Box>
+      <Box className="col-sm-12 text-center">
+        <h4>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
       </Box>
-    );
-  }
+
+      <Alert
+        sx={{maxWidth: "80%", margin: "0 auto"}}
+        icon={false}
+        severity="error">
+        <FontAwesomeIcon icon={faUserShield} /> - Do not provide any Protected
+        Health Information. This includes the{" "}
+        <span
+          style={{cursor: "pointer"}}
+          className="text-primary"
+          onClick={() => toggleHippa()}>
+          {" "}
+          18 identifiers specified by HIPAA
+        </span>
+      </Alert>
+
+      <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
+      {!isLoading && uuid && uuid !== "" && renderHeader()}
+
+      <form onSubmit={(e) => handleSubmit(e)}>
+        <TextField //"Lab's Donor Non-PHI ID "
+          id="lab_donor_id"
+          label="Lab's Donor Non-PHI ID "
+          helperText="An non-PHI id used by the lab when referring to the donor"
+          defaultValue={formValues ? formValues.lab_donor_id : ""}
+          error={formErrors.lab_donor_id !== ""}
+          onChange={(e) => handleInputChange(e)}
+          fullWidth
+          variant="standard"
+          className="my-3"
+        />
+        <TextField //"Deidentified Name "
+          id="label"
+          label="Deidentified Name "
+          helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
+          defaultValue={formValues ? formValues.label : ""}
+          error={formErrors.label !== ""}
+          required
+          onChange={(e) => handleInputChange(e)}
+          fullWidth
+          variant="standard"
+          className="my-3"
+        />
+        <TextField //"Case Selection Protocol "
+          id="protocol_url"
+          label="Case Selection Protocol "
+          helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
+          defaultValue={formValues ? formValues.protocol_url : ""}
+          error={formErrors.protocol_url !== ""}
+          required
+          onChange={(e) => handleInputChange(e)}
+          fullWidth
+          variant="standard"
+          className="my-3"
+        />
+        <TextField //"Description "
+          id="description"
+          label="Description "
+          helperText="Free text field to enter a description of the donor"
+          defaultValue={formValues ? formValues.description : ""}
+          error={formErrors.description !== ""}
+          onChange={(e) => handleInputChange(e)}
+          fullWidth
+          variant="standard"
+          className="my-3"
+          multiline
+          rows={4}
+        />
+        <Box className="my-3">
+          <InputLabel variant="standard" htmlFor="group">
+            Group
+          </InputLabel>
+          <Select // Group
+            label="Group "
+            id="group_name"
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            defaultValue={
+              formValues.group_name ? formValues.group_name : defaultGroup
+            }>
+            {userGroups.map((group, index) => {
+              return(
+                <MenuItem key={index + 1} value={group.uuid}>
+                  {group.shortname}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </Box>
+        {buttonEngine()}
+      </form>
+
+      {pageErrors && pageErrors.length > 0 && (
+        <Alert variant="filled" severity="error">
+          <strong>Error:</strong> {JSON.stringify(pageErrors)}
+        </Alert>
+      )}
+    </Box>
+  );
 };

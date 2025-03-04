@@ -4,7 +4,7 @@ module.exports = {
     es2021: true
   },
   extends: [
-    // 'standard',
+    // 'standard'
     'plugin:react/recommended'
   ],
   overrides: [
@@ -22,22 +22,19 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest',
-    sourceType: 'module',
-    "ecmaFeatures": {
-        "jsx": true
-      }
+    sourceType: 'module'
   },
-  
   plugins: [
     'react'
   ],
   rules: {
+    'indent': ['warn', 2],
     'keyword-spacing': ['warn', {
       before: false,
       after: false,
       overrides: {
-        from:{before:true,after:true},
-        import:{before:false,after:true},
+        from: {before: true, after: true},
+        import: {before: false, after: true},
         static: {after: true}
       }
     }],
@@ -47,6 +44,6 @@ module.exports = {
     'space-before-function-paren': ['warn', 'never'],
     'react/no-unescaped-entities': 0, // disable rule
     'react/prop-types': 0, // disable rule
-    "react/jsx-uses-react": "error",
-}
+		
+  }
 }

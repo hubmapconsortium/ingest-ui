@@ -125,9 +125,9 @@ export function App(props){
           } 
         })
         .catch((err) => {
-            // Not cached, we cant really go on
-            setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',err)
-            reportError(err)
+          // Not cached, we cant really go on
+          setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',err)
+          reportError(err)
         })
     }else{
       // we already have organs
@@ -198,15 +198,15 @@ export function App(props){
       if(!localStorage.getItem("allGroups")){
         try{
           ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((res) => {
-            loadCount()  // the All Groups step
-            var allGroups = sortGroupsByDisplay(res.results);
-            localStorage.setItem("allGroups",JSON.stringify(allGroups));
-            setAllGroups(allGroups);  
-          })
-          .catch((err) => {
-            console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
-          })
+            .then((res) => {
+              loadCount()  // the All Groups step
+              var allGroups = sortGroupsByDisplay(res.results);
+              localStorage.setItem("allGroups",JSON.stringify(allGroups));
+              setAllGroups(allGroups);  
+            })
+            .catch((err) => {
+              console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+            })
         }catch(error){
           console.debug("%c⭗", "color:#ff005d",error);
         }
@@ -219,15 +219,21 @@ export function App(props){
       if(!localStorage.getItem('userGroups') || localStorage.getItem('userGroups') === undefined){
         try{
           ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-          .then((res) => {
-            console.debug('%c◉ results ', 'color:#00ff7b', res.results, res);
-            // setUserDataGroups(res.results);
-            localStorage.setItem("userGroups",JSON.stringify(res.results));
-            loadCount()  // the User's Groups step
-          })
-          .catch((err) => {
-            console.debug('%c⭗', 'color:#ff005d', "userGroups ERR", err );
-          })
+            .then((res) => {
+              console.debug('%c◉ results ', 'color:#00ff7b', res.results, res);
+              // This call lets us check if theyre allowed or not
+              if(res && res.status === 403 && res.results === "User is not a member of group HuBMAP-read"){
+                console.log("User is not a member of group HuBMAP-read");
+                setAuthStatus(true);
+                setUnregStatus(true);
+              }else{
+                localStorage.setItem("userGroups",JSON.stringify(res.results));
+              }
+              loadCount()  // the User's Groups step
+            })
+            .catch((err) => {
+              console.debug('%c⭗', 'color:#ff005d', "userGroups ERR", err );
+            })
         }catch(error){
           console.debug("%c⭗ userGroups", "color:#ff005d",error);
         }
@@ -288,7 +294,7 @@ export function App(props){
     navigate("/");
   }
   const onClose = (event, reason) => {
-      navigate("/");
+    navigate("/");
   }
 
   const onCloseSuccess = (event, reason) => {
@@ -369,7 +375,7 @@ export function App(props){
           anchorOrigin={{vertical: 'top', horizontal: 'center'}}
           autoHideDuration={6000}
           onClose={() => closeExpiredSnack()}>
-            <Alert variant="filled" severity="error">{loginError}</Alert>
+          <Alert variant="filled" severity="error">{loginError}</Alert>
         </Snackbar>
         <Navigation 
           login={authStatus} 
@@ -378,10 +384,10 @@ export function App(props){
           // userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
           appInfo={JSON.parse(localStorage.getItem("info"))}/>       
         { !userDev && (<Timer logout={Logout}/>)}
-        <div id="content" className="container">----
+        <div id="content" className="container">
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
-              onError={(error, errorInfo) => {
+            onError={(error, errorInfo) => {
               console.log("Error caught!");  
               console.error(error);
               console.error(errorInfo);
@@ -406,23 +412,23 @@ export function App(props){
                 padding:        1, 
                 backgroundColor:'#dc3545', 
                 color:          "#fff",
-                  '& span, h5':   {display:'inline-block',
+                '& span, h5':   {display:'inline-block',
                   padding:"0 5px 0 0 ",},}}>
-                  <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
-                  <IconButton
-                    sx={{
-                      position:'absolute', right:8, top:4, color:'white' 
-                    }}
-                    aria-label="close drawer"
-                    onClick= {()=> setErrorShow(false)}
-                    edge="start">
-                    <CloseIcon />
-                  </IconButton>
+                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+                <IconButton
+                  sx={{
+                    position:'absolute', right:8, top:4, color:'white' 
+                  }}
+                  aria-label="close drawer"
+                  onClick= {()=> setErrorShow(false)}
+                  edge="start">
+                  <CloseIcon />
+                </IconButton>
               </Box>
 
               <Box sx={{
-                  width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
-                }}>
+                width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
+              }}>
                 <Grid container>
                   <Grid item xs={7}>
                     <Typography variant="body2" gutterBottom>
@@ -451,10 +457,10 @@ export function App(props){
 
             </Drawer>
             { !isLoading && bannerShow && (
-                <div className="alert alert-info" role="alert">
-                  <h2>{bannerTitle}</h2>
-                  <div dangerouslySetInnerHTML={{__html: bannerDetails}} />
-                </div>
+              <div className="alert alert-info" role="alert">
+                <h2>{bannerTitle}</h2>
+                <div dangerouslySetInnerHTML={{__html: bannerDetails}} />
+              </div>
             )}
             {/* {isLoading || (groupsToken && (!allGroups || allGroups.length<=0)) && ( */}
             {isLoading && (
@@ -464,10 +470,10 @@ export function App(props){
             {!authStatus && !isLoading && (
               <React.Fragment>
                 <Routes>
-                    <Route path="/" element={ <Login />} />
-                    <Route path="/*" element={ <Login />} />
-                    <Route path="*" element={ <Login />} />
-                    <Route path="/login" element={ <Login />} />
+                  <Route path="/" element={ <Login />} />
+                  <Route path="/*" element={ <Login />} />
+                  <Route path="*" element={ <Login />} />
+                  <Route path="/login" element={ <Login />} />
                 </Routes>
               </React.Fragment>
             )}
@@ -483,96 +489,96 @@ export function App(props){
             {unregStatus === true && (
               <Routes>
                 <Route index element={ 
-                    <Alert 
-                      variant="filled"
-                      severity="error"> 
+                  <Alert 
+                    variant="filled"
+                    severity="error"> 
                       You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-                    </Alert>
-                  }/>
+                  </Alert>
+                }/>
               </Routes>
             )}
 
-            {authStatus && !isLoading &&(
-                <HuBMAPContext.Provider value={{allGroups}}> 
-                  <Paper className="px-5 py-4">
-                    {/* {() => renderSuccessDialog()} */}
-                    <Routes>
+            {authStatus && !isLoading && !unregStatus &&(
+              <HuBMAPContext.Provider value={{allGroups}}> 
+                <Paper className="px-5 py-4">
+                  {/* {() => renderSuccessDialog()} */}
+                  <Routes>
                       
-                      <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
-                      <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-                      <Route path="/login" element={<Login />} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
+                    <Route path="/login" element={<Login />} />
 
-                        <Route path="/new">
-                          <Route index element={<SearchComponent reportError={reportError} />} />
-                          <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
-                          <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                          <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                          <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                          <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                          <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
-                          <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                          <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
-                          {/* In Develpment here */}
-                          <Route path='donor/n' element={ <RenderNewDonor onCreated={(response) => creationSuccess(response)} />}/>
-                        </Route>
-                    
-                      <Route path=" /donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
-                      <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
-                      <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-                      <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
-                      <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
-                      
-                      <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-                      <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-                      <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
-                      <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
-                      <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                      <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                      <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
-
-                      <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
-                      <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
-                      <Route path="/metadata">
-                        <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
-                        <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
-                        <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
-                        <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
-                      </Route>
-
+                    <Route path="/new">
+                      <Route index element={<SearchComponent reportError={reportError} />} />
+                      <Route path='donor' element={ <Forms reportError={reportError} formType='donor' onReturn={onClose} handleCancel={handleCancel} />}/>
+                      <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                      <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
+                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                      <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                      <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
                       {/* In Develpment here */}
-                      <Route path="/donor/:uuid/n" element={<RenderNewDonor />} />
+                      <Route path='donor/n' element={ <RenderNewDonor onCreated={(response) => creationSuccess(response)} />}/>
+                    </Route>
+                    
+                    <Route path=" /donors" element={<SearchComponent reportError={reportError} filter_type="donors" urlChange={urlChange}/>} ></Route>
+                    <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
+                    <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
+                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
+                    <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
+                      
+                    <Route path="/donor/:uuid" element={<RenderDonor  reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+                    <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
+                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
+                    <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
+                    <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
-                    </Routes>
+                    <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
+                    <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+                    <Route path="/metadata">
+                      <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
+                      <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
+                      <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
+                      <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
+                    </Route>
 
-                    <Dialog aria-labelledby="result-dialog" open={successDialogRender} sx={{margin:"auto"}}>
-                      <DialogTitle sx={{background:"rgb(209, 231, 221)", marginBottom:"0.5em",}} >Success!</DialogTitle>
-                      <DialogContent sx={{maxWidth:"500px"}}> 
-                        {newEntity && (
-                          <Result
-                            result={{entity:newEntity}}
-                            onReturn={() => onCloseSuccess()}
-                            onCreateNext={() => onCreateNext(newEntity)}
-                            entity={newEntity}
-                          />
-                        )}
-                      </DialogContent>
-                      {/* <DialogActions > Need to Move all of the button handling to here in one go </DialogActions> */}
-                    </Dialog>
-                    <Snackbar 
-                      open={showSnack} 
-                      onClose={() => setShowSnack(false)}
-                      anchorOrigin={{vertical:'bottom',horizontal:'right',}}
-                      autoHideDuration={6000} 
-                      action={
-                        <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
-                            <FontAwesomeIcon icon={faTimes} size="1x" />
-                        </IconButton>
-                      }>
-                        <Alert severity={"success"}>{snackMessage}</Alert>
-                    </Snackbar>  
+                    {/* In Develpment here */}
+                    <Route path="/donor/:uuid/n" element={<RenderNewDonor />} />
 
-                  </Paper>
-                </HuBMAPContext.Provider>
+                  </Routes>
+
+                  <Dialog aria-labelledby="result-dialog" open={successDialogRender} sx={{margin:"auto"}}>
+                    <DialogTitle sx={{background:"rgb(209, 231, 221)", marginBottom:"0.5em",}} >Success!</DialogTitle>
+                    <DialogContent sx={{maxWidth:"500px"}}> 
+                      {newEntity && (
+                        <Result
+                          result={{entity:newEntity}}
+                          onReturn={() => onCloseSuccess()}
+                          onCreateNext={() => onCreateNext(newEntity)}
+                          entity={newEntity}
+                        />
+                      )}
+                    </DialogContent>
+
+                  </Dialog>
+                  <Snackbar 
+                    open={showSnack} 
+                    onClose={() => setShowSnack(false)}
+                    anchorOrigin={{vertical:'bottom',horizontal:'right',}}
+                    autoHideDuration={6000} 
+                    action={
+                      <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
+                        <FontAwesomeIcon icon={faTimes} size="1x" />
+                      </IconButton>
+                    }>
+                    <Alert severity={"success"}>{snackMessage}</Alert>
+                  </Snackbar>  
+
+                </Paper>
+              </HuBMAPContext.Provider>
             )}
 
           </StandardErrorBoundary>

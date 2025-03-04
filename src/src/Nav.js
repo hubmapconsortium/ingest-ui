@@ -100,11 +100,12 @@ export const Navigation = (props) => {
 
   function renderMenuSection(label, handleClick, open, anchorEl, items){
     const IDLabel = label.toString().replace(/\s+/g, '')
+    console.debug('%c◉ anchorEl ', 'color:#00ff7b', anchorEl);
     return(
       <React.Fragment>
         <Button
           id={`${IDLabel}IndividualButton`}
-          key={`${IDLabel}IndividualButton` + Math.random()}
+          // key={`${IDLabel}IndividualButton` + Math.random()}
           endIcon={<ArrowDropDownIcon />}
           aria-controls={open ? 'IndividualMenu' : undefined}
           aria-haspopup="true"
@@ -155,110 +156,103 @@ export const Navigation = (props) => {
   }
 
   return(
-      <AppBar position="static" id="header">
-         {/* <MUIDialog
-          open={metaModalOpen}
-          handleClose={handleCancel}
-          title={dialogMetadataTitle}
-          message={dialogMetadataMessage}
-          // dialogHelpLink={dialogHelpLinkURL}
-          bgcol = "Red" /> */}
-        <Dialog open={uploadsDialog}>
-          <DialogContent>
+    <AppBar position="static" id="header">
+      <Dialog open={uploadsDialog}>
+        <DialogContent>
           <UploadsForm
-              onCreated={onCreated}
-              cancelEdit={onClose}
-            />
-          </DialogContent>
-        </Dialog>
-        <Container maxWidth="xl">
-          <Toolbar disableGutters>
-            <Typography
-              variant="h6"
-              noWrap
-              // component="a"
-              href="/"
-              sx={{
-                mr: 2,
-                display: {xs: 'flex', md: 'none'},
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none'
-              }}>
-              <a className="navbar-brand" href="/">
-                <img
-                  src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                  height="40"
-                  className="d-inline-block align-top"
-                  id="MenuLogo"
-                  alt="HuBMAP logo"/>
-              </a>
-            </Typography>
+            onCreated={onCreated}
+            cancelEdit={onClose}
+          />
+        </DialogContent>
+      </Dialog>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters>
+          <Typography
+            variant="h6"
+            noWrap
+            // component="a"
+            href="/"
+            sx={{
+              mr: 2,
+              display: {xs: 'flex', md: 'none'},
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              letterSpacing: '.3rem',
+              color: 'inherit',
+              textDecoration: 'none'
+            }}>
+            <a className="navbar-brand" href="/">
+              <img
+                src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
+                height="40"
+                className="d-inline-block align-top"
+                id="MenuLogo"
+                alt="HuBMAP logo"/>
+            </a>
+          </Typography>
 
-            {userDataGroups && userDataGroups.length > 0 && (
-              <Box className="menu-bar" sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
-                {renderMenuButtonBar()}
-              </Box>
-            )}
-            <Typography
-              variant="h5"
-              noWrap
-              // component="a"
-              href="#app-bar-with-responsive-menu"
-              sx={{
-                textAlign: 'left',
-                mr: 2,
-                display: {xs: 'none', md: 'flex'},
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none'
-              }}>
-              <a className="navbar-brand" href="/">
-                <img
-                  src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                  height="40"
-                  className="d-inline-block align-top"
-                  id="MenuLogo"
-                  alt="HuBMAP logo"
-                />
-              </a>
-            </Typography>
-            {userDataGroups && userDataGroups.length > 0 && (
-              <Box className="menu-bar" sx={{display: {xs: 'none', md: 'flex'}}}>
-                {renderMenuButtonBar()}
-              </Box>
-            )}
+          {userDataGroups && userDataGroups.length > 0 && (
+            <Box className="menu-bar" sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
+              {renderMenuButtonBar()}
+            </Box>
+          )}
+          <Typography
+            variant="h5"
+            noWrap
+            // component="a"
+            href="#app-bar-with-responsive-menu"
+            sx={{
+              textAlign: 'left',
+              mr: 2,
+              display: {xs: 'none', md: 'flex'},
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              letterSpacing: '.3rem',
+              color: 'inherit',
+              textDecoration: 'none'
+            }}>
+            <a className="navbar-brand" href="/">
+              <img
+                src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
+                height="40"
+                className="d-inline-block align-top"
+                id="MenuLogo"
+                alt="HuBMAP logo"
+              />
+            </a>
+          </Typography>
+          {userDataGroups && userDataGroups.length > 0 && (
+            <Box className="menu-bar" sx={{display: {xs: 'none', md: 'flex'}}}>
+              {renderMenuButtonBar()}
+            </Box>
+          )}
 
           <Box className="menu-bar" sx={{flexGrow: 1, justifyContent: 'flex-end'}}>
             <div id="MenuRight">
               {(userInfo) && userInfo.email && (
-              <div className="float-right">
-                <span className="username">
-                  <Typography variant="button" className="username-menu">
-                    {userInfo.email}
-                  </Typography>
-                  <Button
-                    target="_blank"
-                    href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
-                    // onClick={() => toProfile()}
-                    className="nav-link" >
+                <div className="float-right">
+                  <span className="username">
+                    <Typography variant="button" className="username-menu">
+                      {userInfo.email}
+                    </Typography>
+                    <Button
+                      target="_blank"
+                      href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
+                      // onClick={() => toProfile()}
+                      className="nav-link" >
                       Edit Profile
-                  </Button>
-                </span>
-                <span className="logout" >
-                  <LoadingButton
-                    loading={props.isLoggingOut}
-                    color='info'
-                    onClick={(e) => props.logout(e)}>
+                    </Button>
+                  </span>
+                  <span className="logout" >
+                    <LoadingButton
+                      loading={props.isLoggingOut}
+                      color='info'
+                      onClick={(e) => props.logout(e)}>
                     Log Out
-                  </LoadingButton>
-                </span>
-                {}
-              </div>
+                    </LoadingButton>
+                  </span>
+                  {}
+                </div>
               )}
             </div>
           </Box>
