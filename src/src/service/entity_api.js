@@ -7,71 +7,71 @@ var globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem
  * 
  * return:  { status, results}
  */
-export function entity_api_get_entity(uuid, auth) { 
+export function entity_api_get_entity(uuid, auth){ 
   // console.debug("entity_api_get_entity", auth);
   const options = {
-      headers: {
-        Authorization:
+    headers: {
+      Authorization:
           "Bearer " + globalToken, 
-        "Content-Type": "application/json"
-      }
-    };
+      "Content-Type": "application/json"
+    }
+  };
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`;
   return axios 
     .get(url,options)
-      .then(res => {
-          let results = res.data;
-          return {status: res.status, results: results}
-      })
-      .catch(error => {
-        console.debug("entity_api_get_entity", error, error.response);
-        if(error.response){
-          return error.response
-        }else{
-          return {error}
-        }
-      });
+    .then(res => {
+      let results = res.data;
+      return{status: res.status, results: results}
+    })
+    .catch(error => {
+      console.debug("entity_api_get_entity", error, error.response);
+      if(error.response){
+        return error.response
+      }else{
+        return{error}
+      }
+    });
 };
 
 /* 
  * update_entity - updates data of an existing entity
  *
  */
-export function entity_api_update_entity(uuid, data, auth) { 
+export function entity_api_update_entity(uuid, data, auth){ 
   // console.debug("entity_api_update_entity", data);
   const options = {
-      headers: {
-        'X-Hubmap-Application': 'ingest-api',
-        Authorization:
+    headers: {
+      'X-Hubmap-Application': 'ingest-api',
+      Authorization:
           "Bearer " + globalToken, 
-        "Content-Type": "application/json"
-      }
-    };
+      "Content-Type": "application/json"
+    }
+  };
 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`;
         
   return axios 
-     .put(url, data, options)
-      .then(res => {
-          // console.debug("entity_api_update_entity", res);
-          let results = res.data;
-          return {status: res.status, results: results}
-      })
-      .catch(error => {
-        if(error.response){
-          console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
-          return {status: error.response.status, results: error.response.data}
-        }else{
-          return {error:error.response}
-        }
-      });
+    .put(url, data, options)
+    .then(res => {
+      // console.debug("entity_api_update_entity", res);
+      let results = res.data;
+      return{status: res.status, results: results}
+    })
+    .catch(error => {
+      if(error.response){
+        console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
+        return{status: error.response.status, results: error.response.data}
+      }else{
+        return{error:error.response}
+      }
+    });
 };
 
 /* 
  * create_entity - create a new entity
  *
  */
-export function entity_api_create_entity(entitytype, data, auth) { 
+export function entity_api_create_entity(entitytype, data, auth){ 
   const options = {
     headers: {
       'X-Hubmap-Application': 'ingest-api',
@@ -84,49 +84,49 @@ export function entity_api_create_entity(entitytype, data, auth) {
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${entitytype}`;
         
   return axios 
-     .post(url, data, options)
-      .then(res => {
-          let results = res.data;
-        return {status: res.status, results: results}
-      })
-      .catch((error) => {
-        console.debug("entity_api_create_entity error", error, error.response);
-        if(error.response && error.response.data){
-          return {error: error.response.data}
-        }else{
-          return {error}
-        }
-      });
+    .post(url, data, options)
+    .then(res => {
+      let results = res.data;
+      return{status: res.status, results: results}
+    })
+    .catch((error) => {
+      console.debug("entity_api_create_entity error", error, error.response);
+      if(error.response && error.response.data){
+        return{error: error.response.data}
+      }else{
+        return{error}
+      }
+    });
 };
 
 /* 
  * entity_api_create_multiple_entities - create multiple entities
  *
  */
-export function entity_api_create_multiple_entities(count, data, auth) { 
+export function entity_api_create_multiple_entities(count, data, auth){ 
   const options = {
-      headers: {
-        Authorization:
+    headers: {
+      Authorization:
           "Bearer " + globalToken, 
-        "Content-Type": "application/json"
-      }
-    };
+      "Content-Type": "application/json"
+    }
+  };
 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/multiple-samples/${count}`;
   return axios 
-     .post(url, data, options)
-      .then(res => {
-          let results = res.data;
-          let fin = [];
-           results.forEach( element => {
-              element.checked = false; // add a checked attribute for later UI usage
-              fin.push(element);
-            });
-        return {status: res.status, results: fin}
-      })
-      .catch(error => {
-        return {error}
+    .post(url, data, options)
+    .then(res => {
+      let results = res.data;
+      let fin = [];
+      results.forEach( element => {
+        element.checked = false; // add a checked attribute for later UI usage
+        fin.push(element);
       });
+      return{status: res.status, results: fin}
+    })
+    .catch(error => {
+      return{error}
+    });
 };
 
 
@@ -134,26 +134,26 @@ export function entity_api_create_multiple_entities(count, data, auth) {
  * entity_api_create_multiple_entities - create multiple entities
  *
  */
-export function entity_api_update_multiple_entities(data, auth) { 
+export function entity_api_update_multiple_entities(data, auth){ 
   const options = {
-      headers: {
-        Authorization:
+    headers: {
+      Authorization:
           "Bearer " + globalToken, 
-        "Content-Type": "application/json"
-      }
-    };
+      "Content-Type": "application/json"
+    }
+  };
 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/multiple-samples`;
         
   return axios 
-     .put(url, data, options)
-      .then(res => {
-        let results = res.data;
-        return {status: res.status, results: results}
-      })
-      .catch(error => {
-        return {error}
-      });
+    .put(url, data, options)
+    .then(res => {
+      let results = res.data;
+      return{status: res.status, results: results}
+    })
+    .catch(error => {
+      return{error}
+    });
 };
 
 /*
@@ -162,25 +162,25 @@ export function entity_api_update_multiple_entities(data, auth) {
  * return:  { status, results}
  */
 // @TODO: Rename to reflect Organ endpoint
-export function entity_api_get_entity_ancestor(uuid, auth) { 
+export function entity_api_get_entity_ancestor(uuid, auth){ 
   const options = {
-      headers: {
-        Authorization:
+    headers: {
+      Authorization:
           "Bearer " + globalToken, 
-        "Content-Type": "application/json"
-      }
-    };
+      "Content-Type": "application/json"
+    }
+  };
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`;
   return axios 
     .get(url,options)
-      .then(res => {
-        // console.debug(res);
-        let results = res.data;
-        return {status: res.status, results: results}
-      })
-      .catch(error => {
-        return {error}
-      });
+    .then(res => {
+      // console.debug(res);
+      let results = res.data;
+      return{status: res.status, results: results}
+    })
+    .catch(error => {
+      return{error}
+    });
 };
 
 /*
@@ -188,25 +188,25 @@ export function entity_api_get_entity_ancestor(uuid, auth) {
  * 
  * return:  { status, results}
  */
-export function entity_api_get_entity_ancestor_list(uuid, auth) { 
+export function entity_api_get_entity_ancestor_list(uuid, auth){ 
   const options = {
-      headers: {
-        Authorization:
+    headers: {
+      Authorization:
           "Bearer " + globalToken, 
-        "Content-Type": "application/json"
-      }
-    };
-    let url = `${process.env.REACT_APP_ENTITY_API_URL}/ancestors/${uuid}`;
+      "Content-Type": "application/json"
+    }
+  };
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/ancestors/${uuid}`;
   return axios 
     .get(url,options)
-      .then(res => {
-        // console.debug(res);
-        let results = res.data;
-        return {status: res.status, results: results}
-      })
-      .catch(error => {
-        return {error}
-      });
+    .then(res => {
+      // console.debug(res);
+      let results = res.data;
+      return{status: res.status, results: results}
+    })
+    .catch(error => {
+      return{error}
+    });
 };
 
 /*
@@ -214,7 +214,7 @@ export function entity_api_get_entity_ancestor_list(uuid, auth) {
  * 
  * return:  { status, results}
  */
-export function entity_api_get_globus_url(uuid, auth) { 
+export function entity_api_get_globus_url(uuid, auth){ 
   // console.debug("entity_api_get_globus_url", auth);
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url`;
   const options = {
@@ -226,32 +226,32 @@ export function entity_api_get_globus_url(uuid, auth) {
   };
   return axios
     .get(url, options)
-      .then((res) => {
-        // console.debug("entity_api_get_globus_url", res);
-        return {status: res.status, results: res.data}
-      })
-      .catch((error) => {
-        return {error}
-      });
+    .then((res) => {
+      // console.debug("entity_api_get_globus_url", res);
+      return{status: res.status, results: res.data}
+    })
+    .catch((error) => {
+      return{error}
+    });
 };
 
 // @TODO  DEPRECATING replaced with newer ingest API call
-export function entity_api_attach_bulk_metadata(uuid,item, auth) { 
+export function entity_api_attach_bulk_metadata(uuid,item, auth){ 
   console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item, auth);
   const options = {headers:{Authorization: "Bearer " + globalToken, 
-          "Content-Type":"application/json"}};
+    "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid
 
   return axios 
     .put(url,item,options)
     .then(res => {
       console.debug("ingest_api_attach_bulk_metadata",res);
-        let results = res.data;
-        return {status: res.status, results: results}
-      })
-      .catch(error => {
-        console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error );
-        // throw new Error(error);
-        return {error}
-      });
+      let results = res.data;
+      return{status: res.status, results: results}
+    })
+    .catch(error => {
+      console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error );
+      // throw new Error(error);
+      return{error}
+    });
 };
