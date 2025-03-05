@@ -1,0 +1,72 @@
+#ignore emacs backup files
+*~
+
+BUILD
+
+# mounted VERSION and BUILD file
+src/ingest-api/BUILD
+src/ingest-api/VERSION
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+
+# Docker copied stuff
+docker/ingest-ui/src
+
+# Ignore log files created by docker
+src/log
+
+# log files in any path
+**/*.log
+
+# Rotated log files
+**/*.log*
+
+# UI react-app
+src/node_modules
+src/ingest-ui/.pnp
+src/ingest-ui/.pnp.js
+src/package-lock.json
+
+# testing
+src/react-app/coverage
+thunder-tests/
+
+# env files
+src/.env.*
+src/.env
+
+# misc
+.DS_Store
+src/.DS_Store
+src/npm-debug.log*
+src/yarn-debug.log*
+src/yarn-error.log*
+
+
+
+#ignore the ui build dir
+src/build/*
+!src/build/README.md
+
+#Ignoring the local liveBanner file in Public
+src/public/assets/liveBanner.js
+
+# VS Code 
+*.code-workspace
+favorites.json
+.favorites.json
+.vscode
+.eslintrc.js
+
+# Lock FIles
+*.lock
+*.~lock
+*.~lock.*
+package-lock.json
+
+#cypress
+src/cypress.config.js
+src/cypress.env.json
+
+.idea
