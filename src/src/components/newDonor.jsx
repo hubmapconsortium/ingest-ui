@@ -17,6 +17,7 @@ import TextField from "@mui/material/TextField";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUserShield} from "@fortawesome/free-solid-svg-icons";
 import Alert from "@mui/material/Alert";
+import AlertTitle from '@mui/material/AlertTitle';
 import Button from "@mui/material/Button";
 import {validateRequired} from "../utils/validators";
 import HIPPA from "./ui/HIPPA";
@@ -38,7 +39,7 @@ export const DonorForm = (props) => {
     has_submit_priv: false,
     has_write_priv: false
   });
-  let[pageErrors, setPageErrors] = useState(false);
+  let[pageErrors, setPageErrors] = useState(null);
   let[formErrors, setFormErrors] = useState({
     lab_donor_id: "",
     label: "",
@@ -83,22 +84,28 @@ export const DonorForm = (props) => {
               });
               ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
+                  if(entityData.data_access_level === "public"){
+                    setPermissions({
+                      has_write_priv: false,
+                    });
+                    
+                  }
                   setPermissions(response.results);
                 })
                 .catch((error) => {
                   console.error("ingest_api_allowable_edit_states ERROR", error);
-                  passError(error);
+                  setPageErrors(error);
                 });
               document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
-            passError(response);
+            setPageErrors(response);
           }
         })
         .catch((error) => {
           console.debug("entity_api_get_entity ERROR", error);
-          passError(error);
+          setPageErrors(error);
         });
     }else{
       setPermissions({
@@ -108,10 +115,19 @@ export const DonorForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-  function passError(error){
-    setLoading(false);
-    setPageErrors(error);
-  }
+  // useEffect(() => {
+  //   if(pageErrors){
+  //     console.debug('%c◉ USEEFFECT ERROR ', 'color:#00ff7b', pageErrors, pageErrors.length);
+  //     setLoading(false);
+  //     // setPageErrors(pageErrors);
+  //   }
+  // }, [pageErrors]);
+
+  // function setPageErrors(error){
+  //   console.debug('%c◉ CAUGHT ERROR ', 'color:#00ff7b', );
+  //   setLoading(false);
+  //   setPageErrors(error);
+  // }
 
   function toggleHippa(){
     setShowHippa(!showHippa);
@@ -123,6 +139,110 @@ export const DonorForm = (props) => {
       ...prevValues,
       [id]: value,
     }));
+  }
+
+  function validateForm(){
+    // So it looks like this no longer gets triggered
+    // and instead the browser has a built in error thing?
+    // that wont even fire Submit unless required fields are filled?
+    // need to test across a few browsers
+    let errors = {};
+    let requiredFields = ["label", "protocol_url"];
+    for(let field of requiredFields){
+      if(!validateRequired(formValues[field])){
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          field: "required",
+        }));
+      }
+      // console.log("errors",errors, field);
+    }
+    if(errors.length > 0){
+      setFormErrors(errors);
+    }
+    return Object.keys(errors).length === 0;
+  }
+
+  function handleSubmit(e){
+    e.preventDefault();
+    setIsProcessing(true);
+
+    if(validateForm()){
+      let cleanForm ={
+        lab_donor_id: formValues.lab_donor_id,
+        label: formValues.label,
+        protocol_url: formValues.protocol_url,
+        description: formValues.description,
+      }
+      if(uuid){
+        // We're in Edit mode
+        entity_api_update_entity(uuid,JSON.stringify(cleanForm))
+          .then((response) => {
+            if(response.status === 200){
+              props.onUpdated(response.results);
+            }else{
+              wrapUp(response)
+            }
+          })
+          .catch((error) => {
+            wrapUp(error)
+          });
+      }else{
+        // We're in Create mode
+        // They might not have changed the Group Selector, so lets check for the value
+        let selectedGroup = document.getElementById("group_uuid");
+        if(selectedGroup?.value){
+          cleanForm = {...cleanForm, group_uuid: selectedGroup.value};
+        }
+        entity_api_create_entity("donor",JSON.stringify(cleanForm))
+          .then((response) => {
+            if(response.status === 200){
+              props.onCreated(response.results);
+            }else{
+              wrapUp(response.error ? response.error : response)
+            }
+          })
+          .catch((error) => {
+            wrapUp(error)
+          });
+      }
+    }else{
+      wrapUp(error)
+      console.debug("%c◉ Invalid ", "color:#00ff7b");
+    }
+  }
+
+  function wrapUp(error){
+    setPageErrors(error);
+    setIsProcessing(false);
+  }
+
+  function buttonEngine(){
+    return(
+      <Box sx={{textAlign: "right"}}>
+        <Button
+          variant="contained"
+          className="m-2"
+          onClick={() => window.history.back()}>
+          Cancel
+        </Button>
+        {/* @TODO use next form to help work this in to its own UI component? */}
+        {!uuid && (
+          <LoadingButton
+            variant="contained"
+            loading={isProcessing}
+            className="m-2"
+            type="submit">
+            Generate ID
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && (
+          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
+            Update
+          </LoadingButton>
+        )}
+      </Box>
+    );
   }
 
   function renderHeader(){
@@ -171,112 +291,6 @@ export const DonorForm = (props) => {
     } 
   }
 
-  function validateForm(){
-    // So it looks like this no longer gets triggered
-    // and instead the browser has a built in error thing?
-    // that wont even fire Submit unless required fields are filled?
-    // need to test across a few browsers
-    let errors = {};
-    let requiredFields = ["label", "protocol_url"];
-    for(let field of requiredFields){
-      if(!validateRequired(formValues[field])){
-        setFormErrors((prevValues) => ({
-          ...prevValues,
-          field: "required",
-        }));
-      }
-      //console.log("errors",errors, field);
-    }
-    if(errors.length > 0){
-      setFormErrors(errors);
-    }
-    return Object.keys(errors).length === 0;
-  }
-
-  function handleSubmit(e){
-    e.preventDefault();
-    setIsProcessing(true);
-
-    if(validateForm()){
-      let cleanForm ={
-        lab_donor_id: formValues.lab_donor_id,
-        label: formValues.label,
-        protocol_url: formValues.protocol_url,
-        description: formValues.description,
-      }
-      if(uuid){
-        // We're in Edit mode
-        entity_api_update_entity(
-          uuid,
-          JSON.stringify(cleanForm))
-          .then((response) => {
-            if(response.status === 200){
-              console.debug("%c◉ ON UPDATED! ", "color:#00ff7b");
-              props.onUpdated(response.results);
-            }else{
-              console.error("%c◉ SUBMIT ERROR ", "color:#00ff7b", response);
-              passError(response);
-            }
-          })
-          .catch((error) => {
-            console.error("%c◉ SUBMITERROR ", "color:#00ff7b", error);
-            passError(error);
-          });
-      }else{
-        // We're in Create mode
-        // They might not have changed the Group Selector, so lets check for the value
-        let selectedGroup = document.getElementById("group_uuid");
-        if(selectedGroup?.value){
-          cleanForm = {...cleanForm, group_uuid: selectedGroup.value};
-        }
-        console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
-        entity_api_create_entity("donor",JSON.stringify(cleanForm))
-          .then((response) => {
-            if(response.status === 200){
-              props.onCreated(response.results);
-            }else{
-              passError(response);
-              console.error("%c◉ entity_api_create_entity ","color:#ff007b",response);
-            }
-          })
-          .catch((error) => {
-            passError(error);
-            console.error("%c◉ entity_api_create_entity ","color:#00ff7b",error);
-          });
-      }
-    }else{
-      passError("Form Validation Error");
-      console.debug("%c◉ Invalid ", "color:#00ff7b");
-    }
-  }
-
-  function buttonEngine(){
-    return(
-      <Box sx={{textAlign: "right"}}>
-        <Button
-          variant="contained"
-          className="m-2"
-          onClick={() => window.history.back()}>
-          Cancel
-        </Button>
-        {/* @TODO use next form to help work this in to its own UI component? */}
-        {!uuid && (
-          <LoadingButton
-            variant="contained"
-            loading={isProcessing}
-            className="m-2"
-            type="submit">
-            Generate ID
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && (
-          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
-            Update
-          </LoadingButton>
-        )}
-      </Box>
-    );
-  }
 
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
@@ -284,23 +298,35 @@ export const DonorForm = (props) => {
     return(
       <Box>
         <Box className="col-sm-12 text-center">
-          <h4>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
+          <h4 style={{fontSize:"1.5rem"}}>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
         </Box>
-
-        <Alert
-          sx={{maxWidth: "80%", margin: "0 auto"}}
-          icon={false}
-          severity="error">
-          <FontAwesomeIcon icon={faUserShield} /> - Do not provide any Protected
-          Health Information. This includes the{" "}
-          <span
-            style={{cursor: "pointer"}}
-            className="text-primary"
-            onClick={() => toggleHippa()}>
-            {" "}
-            18 identifiers specified by HIPAA
-          </span>
-        </Alert>
+        
+        {permissions.has_write_priv && (
+          <Alert
+            sx={{maxWidth: "40%", margin: "0 auto", whiteSpace: 'pre-line'}}
+            iconMapping={{
+              error: <FontAwesomeIcon icon={faUserShield} /> ,
+            }}
+            severity="error">
+            <AlertTitle>Warning</AlertTitle>
+              Do not provide any Protected
+              Health Information. This includes the{" "}
+            <span
+              style={{cursor: "pointer"}}
+              className="text-primary"
+              onClick={() => toggleHippa()}>
+              {" "}
+              18 identifiers specified by HIPAA
+            </span>
+          </Alert>
+        )}
+        {entityData && entityData.data_access_level === "public" && (
+          // They might not have write access but not because of data_access_level
+          <Alert severity="warning" sx={{maxWidth: "40%", margin: "0 auto", whiteSpace: 'pre-line'}}>
+            This entity is no longer editable. It was locked when it became publicly
+            acessible when data associated with it was published.
+          </Alert>
+        )}
 
         <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
         {!isLoading && uuid && uuid !== "" && renderHeader()}
@@ -380,7 +406,8 @@ export const DonorForm = (props) => {
           {buttonEngine()}
         </form>
       
-        {pageErrors && pageErrors.length > 0 && (
+
+        {pageErrors && (
           <Alert variant="filled" severity="error">
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
