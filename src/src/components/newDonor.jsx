@@ -10,7 +10,7 @@ import {
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import {tsToDate} from "../utils/string_helper";
-import Select from "@mui/material/Select";
+import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -57,8 +57,6 @@ export const DonorForm = (props) => {
     label: "",
     protocol_url: "",
     description: "",
-    group_uuid: userGroups[0].uuid,
-    group_name: userGroups[0].shortname,
   });
   const{uuid} = useParams();
 
@@ -91,26 +89,22 @@ export const DonorForm = (props) => {
                 group_name:entityData.group_name
               });
               ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-              .then((response) => {
-                console.debug('%c◉ ALLOWS ', 'color:#ff005d', response);
-                setPermissions(response.results);
-              })
-              .catch((error) => {
-                console.error("ingest_api_allowable_edit_states ERROR", error);
-              });
+                .then((response) => {
+                  setPermissions(response.results);
+                })
+                .catch((error) => {
+                  console.error("ingest_api_allowable_edit_states ERROR", error);
+                  passError(error);
+                });
               document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
-            console.error(
-              "entity_api_get_entity RESP NOT 200",
-              response.status,
-              response
-            );
+            console.error("entity_api_get_entity RESP NOT 200",response.status,response);
+            passError(response);
           }
         })
         .catch((error) => {
           console.debug("entity_api_get_entity ERROR", error);
-          passError();
           passError(error);
         });
     }else{
@@ -122,6 +116,7 @@ export const DonorForm = (props) => {
   }, [uuid]);
 
   function passError(error){
+    console.debug('%c◉ Pass Error ', 'color:#00ff7b', error);
     setLoading(false);
     setPageErrors(error);
   }
@@ -132,6 +127,7 @@ export const DonorForm = (props) => {
 
   function handleInputChange(e){
     const{id, value} = e.target;
+    console.debug("%c◉ handleInputChange ", "color:#00ff7b", id, value, e);
     setFormValues((prevValues) => ({
       ...prevValues,
       [id]: value,
@@ -164,6 +160,26 @@ export const DonorForm = (props) => {
     );
   }
 
+  function renderGroupSelectMenu(){
+    if(formValues.group_name){
+      return(
+        <option value={formValues.group_uuid}>
+          {formValues.group_name}
+        </option>
+      )
+    }else{
+      let menuArray = [];
+      for(let group of userGroups){
+        menuArray.push(
+          <option key={group.uuid} value={group.uuid}>
+            {group.shortname}
+          </option>
+        );
+      }
+      return menuArray;
+    } 
+  }
+
   function validateForm(){
     // So it looks like this no longer gets triggered
     // and instead the browser has a built in error thing?
@@ -191,54 +207,44 @@ export const DonorForm = (props) => {
     setIsProcessing(true);
 
     if(validateForm()){
+      let cleanForm ={
+        lab_donor_id: formValues.lab_donor_id,
+        label: formValues.label,
+        protocol_url: formValues.protocol_url,
+        description: formValues.description,
+      }
       if(uuid){
         // We're in Edit mode
-        let cleanForm ={
-          lab_donor_id: formValues.lab_donor_id,
-          label: formValues.label,
-          protocol_url: formValues.protocol_url,
-          description: formValues.description,
-        }
         entity_api_update_entity(
           uuid,
           JSON.stringify(cleanForm),
-          JSON.parse(localStorage.getItem("info")).groups_token
-        )
+          JSON.parse(localStorage.getItem("info")).groups_token        )
           .then((response) => {
             if(response.status === 200){
               console.debug("%c◉ ON UPDATED! ", "color:#00ff7b");
               props.onUpdated(response.results);
             }else{
               console.error("%c◉ SUBMIT ERROR ", "color:#00ff7b", response);
+              passError(response);
             }
           })
           .catch((error) => {
             console.error("%c◉ SUBMITERROR ", "color:#00ff7b", error);
+            passError(error);
           });
       }else{
         // We're in Create mode
-        entity_api_create_entity(
-          "donor",
-          JSON.stringify(formValues),
-          JSON.parse(localStorage.getItem("info")).groups_token
-        )
+        cleanForm.group_uuid = formValues.group_uuid;
+        entity_api_create_entity("donor",JSON.stringify(cleanForm))
           .then((response) => {
             if(response.status === 200){
               props.onCreated(response.results);
             }else{
-              console.error(
-                "%c◉ entity_api_create_entity ",
-                "color:#ff007b",
-                response
-              );
+              console.error("%c◉ entity_api_create_entity ","color:#ff007b",response);
             }
           })
           .catch((error) => {
-            console.error(
-              "%c◉ entity_api_create_entity ",
-              "color:#00ff7b",
-              error
-            );
+            console.error("%c◉ entity_api_create_entity ","color:#00ff7b",error);
           });
       }
     }else{
@@ -247,7 +253,6 @@ export const DonorForm = (props) => {
   }
 
   function buttonEngine(){
-    //console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     return(
       <Box sx={{textAlign: "right"}}>
         <Button
@@ -256,7 +261,6 @@ export const DonorForm = (props) => {
           onClick={() => window.history.back()}>
           Cancel
         </Button>
-        {/* Here we compile which buttons they get */}
         {/* @TODO use next form to help work this in to its own UI component? */}
         {!uuid && (
           <LoadingButton
@@ -267,7 +271,6 @@ export const DonorForm = (props) => {
             Generate ID
           </LoadingButton>
         )}
-
         {uuid && uuid.length > 0 && permissions.has_write_priv && (
           <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
             Update
@@ -277,122 +280,114 @@ export const DonorForm = (props) => {
     );
   }
 
-  return isLoading ||(!entityData && !formValues && uuid) ? <LinearProgress /> : (
-    <Box>
-      <Box className="col-sm-12 text-center">
-        <h4>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
-      </Box>
+  if(isLoading ||(!entityData && !formValues && uuid) ){
+    return(<LinearProgress />);
+  }else{
+    return(
+      <Box>
+        <Box className="col-sm-12 text-center">
+          <h4>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
+        </Box>
 
-      <Alert
-        sx={{maxWidth: "80%", margin: "0 auto"}}
-        icon={false}
-        severity="error">
-        <FontAwesomeIcon icon={faUserShield} /> - Do not provide any Protected
-        Health Information. This includes the{" "}
-        <span
-          style={{cursor: "pointer"}}
-          className="text-primary"
-          onClick={() => toggleHippa()}>
-          {" "}
-          18 identifiers specified by HIPAA
-        </span>
-      </Alert>
+        <Alert
+          sx={{maxWidth: "80%", margin: "0 auto"}}
+          icon={false}
+          severity="error">
+          <FontAwesomeIcon icon={faUserShield} /> - Do not provide any Protected
+          Health Information. This includes the{" "}
+          <span
+            style={{cursor: "pointer"}}
+            className="text-primary"
+            onClick={() => toggleHippa()}>
+            {" "}
+            18 identifiers specified by HIPAA
+          </span>
+        </Alert>
 
-      <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
-      {!isLoading && uuid && uuid !== "" && renderHeader()}
+        <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
+        {!isLoading && uuid && uuid !== "" && renderHeader()}
 
-      <form onSubmit={(e) => handleSubmit(e)}>
-        <TextField //"Lab's Donor Non-PHI ID "
-          id="lab_donor_id"
-          label="Lab's Donor Non-PHI ID "
-          helperText="An non-PHI id used by the lab when referring to the donor"
-          value={formValues ? formValues.lab_donor_id : ""}
-          error={formErrors.lab_donor_id !== ""}
-          InputLabelProps={{ shrink: true }}
-          onChange={(e) => handleInputChange(e)}
-          fullWidth
-          disabled={!permissions.has_write_priv}
-          variant="standard"
-          className="my-3"
-        />
-        <TextField //"Deidentified Name "
-          id="label"
-          label="Deidentified Name "
-          helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
-          value={formValues ? formValues.label : ""}
-          error={formErrors.label !== ""}
-          required
-          InputLabelProps={{ shrink: true }}
-          onChange={(e) => handleInputChange(e)}
-          fullWidth
-          disabled={!permissions.has_write_priv}
-          variant="standard"
-          className="my-3"
-        />
-        <TextField //"Case Selection Protocol "
-          id="protocol_url"
-          label="Case Selection Protocol "
-          helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
-          value={formValues ? formValues.protocol_url : ""}
-          error={formErrors.protocol_url !== ""}
-          required
-          InputLabelProps={{ shrink: true }}
-          onChange={(e) => handleInputChange(e)}
-          fullWidth
-          disabled={!permissions.has_write_priv}
-          variant="standard"
-          className="my-3"
-        />
-        <TextField //"Description "
-          id="description"
-          label="Description "
-          helperText="Free text field to enter a description of the donor"
-          value={formValues ? formValues.description : ""}
-          error={formErrors.description !== ""}
-          InputLabelProps={{ shrink: true }}
-          onChange={(e) => handleInputChange(e)}
-          fullWidth
-          disabled={!permissions.has_write_priv}
-          variant="standard"
-          className="my-3"
-          multiline
-          rows={4}
-        />
-        <Box className="my-3">
-          <InputLabel InputLabelProps={{ shrink: true }} variant="standard" htmlFor="group">
-            Group
-          </InputLabel>
-          {permissions.has_write_priv && (
-            <Select // Group
-              label="Group "
+        <form onSubmit={(e) => handleSubmit(e)}>
+          <TextField //"Lab's Donor Non-PHI ID "
+            id="lab_donor_id"
+            label="Lab's Donor Non-PHI ID "
+            helperText="An non-PHI id used by the lab when referring to the donor"
+            value={formValues ? formValues.lab_donor_id : ""}
+            error={formErrors.lab_donor_id !== ""}
+            InputLabelProps={{shrink: ((uuid || (formValues?.lab_donor_id )) ? true:false)}}
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            disabled={!permissions.has_write_priv}
+            variant="filled"
+            className="my-3"
+          />
+          <TextField //"Deidentified Name "
+            id="label"
+            label="Deidentified Name "
+            helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
+            value={formValues ? formValues.label : ""}
+            error={formErrors.label !== ""}
+            required
+            InputLabelProps={{shrink: ((uuid || (formValues?.label)) ? true:false)}}
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            disabled={!permissions.has_write_priv}
+            variant="filled"
+            className="my-3"
+          />
+          <TextField //"Case Selection Protocol "
+            id="protocol_url"
+            label="Case Selection Protocol "
+            helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
+            value={formValues ? formValues.protocol_url : ""}
+            error={formErrors.protocol_url !== ""}
+            required
+            InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url)) ? true:false)}}
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            disabled={!permissions.has_write_priv}
+            variant="filled"
+            className="my-3"
+          />
+          <TextField //"Description "
+            id="description"
+            label="Description "
+            helperText="Free text field to enter a description of the donor"
+            value={formValues ? formValues.description : ""}
+            error={formErrors.description !== ""}
+            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            disabled={!permissions.has_write_priv}
+            variant="filled"
+            className="my-3"
+            multiline
+            rows={4}
+          />
+          <Box className="my-3">           
+            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group">
+              Group
+            </InputLabel>
+            <NativeSelect
               id="group_uuid"
+              label="Group"
               onChange={(e) => handleInputChange(e)}
               fullWidth
-              disabled={!permissions.has_write_priv}
-              value={
-                formValues.group_uuid ? formValues.group_uuid : defaultGroup
-              }>
-              {userGroups.map((group, index) => {
-                return( 
-                  <MenuItem key={index + 1} value={group.uuid}>
-                    {group.shortname}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          )}
-          {!permissions.has_write_priv && (
-            <Typography sx={{color:"rgba(0, 0, 0, 0.38)"}}>{formValues.group_name} </Typography>
-          )}
-        </Box>
-        {buttonEngine()}
-      </form>
-
-      {pageErrors && pageErrors.length > 0 && (
-        <Alert variant="filled" severity="error">
-          <strong>Error:</strong> {JSON.stringify(pageErrors)}
-        </Alert>
-      )}
-    </Box>
-  );
-};
+              variant="filled" 
+              disabled={uuid?true:false}
+              value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
+              {renderGroupSelectMenu()}
+            </NativeSelect>
+          </Box>
+          {buttonEngine()}
+        </form>
+      
+        {pageErrors && pageErrors.length > 0 && (
+          <Alert variant="filled" severity="error">
+            <strong>Error:</strong> {JSON.stringify(pageErrors)}
+          </Alert>
+        )}
+      </Box>
+    );
+  }
+}
