@@ -3,43 +3,42 @@
 import axios from "axios";
 import FormData from "form-data";
 
-
+var globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
 
 /*
  * User Groups only those data provider groups are return
  *
  */
 export function ingest_api_users_groups(auth) { 
-   const options = {headers:{Authorization: "Bearer " + auth,
+  console.debug('%c◉ Global: ', 'color:#00ff7b', globalToken);
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
-  return axios 
- .get(
-   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
- .then(res => {
-  const group_list = res.data.groups
-          .filter(g => g.data_provider)
-          .map(g => {
-            return g;
-          });
-    // console.debug('API USER GROUPs', group_list);
-    return {status:res.status, results:group_list}
- })
- .catch(error => {
-   console.debug("ERR ingest_api_users_groups", error, error.response);
-   if (error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read") {
-     console.debug("User exists just not in the read group");
-    //  it's not really an /error/ to have anaccount w/o read
-    return {status:200, results:error.response.response} 
-   }
-    if(error.response){
-      return {status:error.response.status, results:error.response.data}
-    }else{
-      console.error('%c⊙ Off Format err', 'color:#ff007b', error); 
-      // console.error(error); 
-      // throw new Error(error);
-      return {error}
-    }
-  });
+  return axios .get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+    .then(res => {
+    const group_list = res.data.groups
+            .filter(g => g.data_provider)
+            .map(g => {
+              return g;
+            });
+      // console.debug('API USER GROUPs', group_list);
+      return {status:res.status, results:group_list}
+    })
+    .catch(error => {
+      console.debug("ERR ingest_api_users_groups", error, error.response);
+      if (error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read") {
+        console.debug("User exists just not in the read group");
+        //  it's not really an /error/ to have anaccount w/o read
+        return {status:200, results:error.response.response} 
+      }
+      if(error.response){
+        return {status:error.response.status, results:error.response.data}
+      }else{
+        console.error('%c⊙ Off Format err', 'color:#ff007b', error); 
+        // console.error(error); 
+        // throw new Error(error);
+        return {error}
+      }
+    });
 }
 
 
@@ -48,7 +47,7 @@ export function ingest_api_users_groups(auth) {
  *
  */
 export function ingest_api_user_admin(auth) { 
-   const options = {headers:{Authorization: "Bearer " + auth,
+   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   return axios 
  .get(
@@ -100,7 +99,7 @@ export function ingest_api_file_upload(data, options) {
  *
  */
 export function ingest_api_all_user_groups(auth) { 
-   const options = {headers:{Authorization: "Bearer " + auth,
+   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
 
   return axios 
@@ -120,7 +119,7 @@ export function ingest_api_all_user_groups(auth) {
  *
  */
 export function ingest_api_all_groups(auth) { 
-   const options = {headers:{Authorization: "Bearer " + auth,
+   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   return axios 
   .get(
@@ -140,7 +139,7 @@ export function ingest_api_all_groups(auth) {
  * return:  { status, results}
  */
 export function ingest_api_allowable_edit_states(uuid, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states`;
   return axios 
@@ -164,7 +163,7 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
  * return:  { status, results}
  */
 export function ingest_api_allowable_edit_states_statusless(uuid, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`;
   return axios 
@@ -183,7 +182,7 @@ export function ingest_api_allowable_edit_states_statusless(uuid, auth) {
  */
 export function ingest_api_create_dataset(data, auth) { 
   // console.debug("ingest_api_create_dataset", data);
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
 
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`;
@@ -203,7 +202,7 @@ export function ingest_api_create_dataset(data, auth) {
  *
  */
 export function ingest_api_create_publication(data, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
 
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/publications`;
@@ -228,7 +227,7 @@ export function ingest_api_create_publication(data, auth) {
  */
 export function ingest_api_dataset_submit(uuid, data, auth) { 
   // console.debug("ingest_api_dataset_submit", data);
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
         
@@ -250,7 +249,7 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
  */
 export function ingest_api_dataset_publish(uuid, data, auth) { 
   // console.debug("ingest_api_dataset_submit", data);
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/publish`;
         
@@ -272,7 +271,7 @@ export function ingest_api_dataset_publish(uuid, data, auth) {
  *
  */
 export function ingest_api_derived_dataset(uuid, data, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
 
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`; // @TODO: Derived? 
@@ -299,7 +298,7 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
   console.debug("Going to : ",type);
   var dataForm = new FormData();
   dataForm.append('file', data);
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"multipart/form-data"},
       onUploadProgress:(ev: ProgressEvent) => {
         const progress = ev.loaded / ev.total * 100;
@@ -332,7 +331,7 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
  */
 export function ingest_api_bulk_entities_register(type, data, auth) { 
   console.debug("Starting Data: ",data);
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"},
       onUploadProgress:(ev: ProgressEvent) => {
         const progress = ev.loaded / ev.total * 100;
@@ -361,7 +360,7 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
    these are multi-labs records
 */
 export function ingest_api_get_associated_ids(uuid, auth) {
-   const options = {headers:{Authorization: "Bearer " + auth,
+   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
    return axios
         .get(
@@ -408,7 +407,7 @@ export function ingest_api_get_associated_ids(uuid, auth) {
 }
 
 export function ingest_api_get_globus_url(uuid, auth) {
-  const config = {headers:{Authorization: "Bearer " + auth,
+  const config = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"multipart/form-data",},};
 
     return axios
@@ -431,7 +430,7 @@ export function ingest_api_get_globus_url(uuid, auth) {
  *
  */
 export function ingest_api_create_upload(data, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`;
@@ -452,7 +451,7 @@ export function ingest_api_create_upload(data, auth) {
  *
  */
 export function ingest_api_submit_upload(uuid, data, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/submit`;
@@ -473,7 +472,7 @@ export function ingest_api_submit_upload(uuid, data, auth) {
  *
  */
 export function ingest_api_validate_upload(uuid, data, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
     
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/validate`;
@@ -495,7 +494,7 @@ export function ingest_api_validate_upload(uuid, data, auth) {
  *
  */
 export function ingest_api_reorganize_upload(uuid, auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
   const data = {}
     
@@ -516,7 +515,7 @@ export function ingest_api_reorganize_upload(uuid, auth) {
  *
  */
 export function ingest_api_notify_slack(auth, data) { 
-  const options = {headers:{Authorization: "Bearer " + auth,
+  const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
   data.send_to_email = true;
   // const data = ["data-testing-notificatons","Beep (O v O)!"]    
@@ -540,7 +539,7 @@ export function ingest_api_notify_slack(auth, data) {
  */
 export function ingest_api_upload_bulk_metadata(type, dataFile, auth) { 
   console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type, auth);
-  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'file' }),dataFile.name);
   formData.append('entity_type', "Sample")
@@ -572,7 +571,7 @@ export function ingest_api_upload_bulk_metadata(type, dataFile, auth) {
  *
  */
 export function ingest_api_publish_collection(auth, data) { 
-  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${data}/register-doi`;
   console.debug('%c◉ publish ', 'color:#00ff7b', url,options);
   return axios 
@@ -595,7 +594,7 @@ export function ingest_api_publish_collection(auth, data) {
  *
  */
 export function ingest_api_pipeline_test_privs(auth) { 
-  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/has-pipeline-test-privs`;
   return axios 
     .get(url, options)
@@ -617,7 +616,7 @@ export function ingest_api_pipeline_test_privs(auth) {
  *
  */
 export function ingest_api_pipeline_test_submit(auth, data) { 
-  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${data['uuid']}/submit-for-pipeline-testing`;
   console.debug('%c◉ url ', 'color:#00ff7b', url);
   return axios 
@@ -639,7 +638,7 @@ export function ingest_api_pipeline_test_submit(auth, data) {
  *
  */
 export function ingest_api_validate_contributors(auth,dataFile) { 
-  const options = {headers:{Authorization: "Bearer " + auth,"Content-Type":"application/json"}};
+  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate?ensure-latest-cedar-version=true`;
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);

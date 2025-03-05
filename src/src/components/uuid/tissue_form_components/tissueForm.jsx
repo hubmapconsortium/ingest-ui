@@ -185,6 +185,13 @@ class TissueForm extends Component {
 
   componentDidMount() {
 
+    // Do we have a source already from the donor creation process?
+
+    let url = new URL(window.location.href);
+    let source = url.searchParams.get("source");
+    console.debug('%c◉ source! ', 'color:#00ff7b', source);
+    // if(source && source.uuid)
+
     ubkg_api_get_organ_type_set()
     .then((res) => {
       this.setState({organ_types: res}, () => {
