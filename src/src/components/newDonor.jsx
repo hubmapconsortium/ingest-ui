@@ -66,7 +66,7 @@ export const DonorForm = (props) => {
   useEffect(() => {
     if(uuid && uuid !== ""){
       const authSet = JSON.parse(localStorage.getItem("info"));
-      entity_api_get_entity(uuid, authSet.groups_token)
+      entity_api_get_entity(uuid)
         .then((response) => {
           //console.debug("useEffect entity_api_get_entity", response);
           if(response.status === 200){
@@ -217,8 +217,7 @@ export const DonorForm = (props) => {
         // We're in Edit mode
         entity_api_update_entity(
           uuid,
-          JSON.stringify(cleanForm),
-          JSON.parse(localStorage.getItem("info")).groups_token        )
+          JSON.stringify(cleanForm))
           .then((response) => {
             if(response.status === 200){
               console.debug("%c◉ ON UPDATED! ", "color:#00ff7b");
