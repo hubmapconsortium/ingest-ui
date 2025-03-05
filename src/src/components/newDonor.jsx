@@ -310,7 +310,7 @@ export const DonorForm = (props) => {
           <TextField //"Lab's Donor Non-PHI ID "
             id="lab_donor_id"
             label="Lab's Donor Non-PHI ID "
-            helperText="An non-PHI id used by the lab when referring to the donor"
+            helperText="A non-PHI id used by the lab when referring to the donor"
             value={formValues ? formValues.lab_donor_id : ""}
             error={formErrors.lab_donor_id !== ""}
             InputLabelProps={{shrink: ((uuid || (formValues?.lab_donor_id )) ? true:false)}}
