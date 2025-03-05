@@ -6,13 +6,11 @@ import {
   entity_api_update_entity,
   entity_api_create_entity,
 } from "../service/entity_api";
-// import {useNavigate} from "react-router-dom";
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import {tsToDate} from "../utils/string_helper";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
 
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -22,8 +20,6 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import {validateRequired} from "../utils/validators";
 import HIPPA from "./ui/HIPPA";
-import {LocalLaundryServiceOutlined} from "@material-ui/icons";
-import {Typography} from "@mui/material";
 
 export const DonorForm = (props) => {
   let[entityData, setEntityData] = useState({
@@ -50,7 +46,6 @@ export const DonorForm = (props) => {
     description: "",
   });
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
-  const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   const defaultGroup = userGroups[0].uuid;
   var[formValues, setFormValues] = useState({
     lab_donor_id: "",
@@ -65,10 +60,8 @@ export const DonorForm = (props) => {
   // (Including the Entity Type redirect)
   useEffect(() => {
     if(uuid && uuid !== ""){
-      const authSet = JSON.parse(localStorage.getItem("info"));
       entity_api_get_entity(uuid)
         .then((response) => {
-          //console.debug("useEffect entity_api_get_entity", response);
           if(response.status === 200){
             const entityType = response.results.entity_type;
             if(entityType !== "Donor"){
@@ -116,7 +109,6 @@ export const DonorForm = (props) => {
   }, [uuid]);
 
   function passError(error){
-    console.debug('%c◉ Pass Error ', 'color:#00ff7b', error);
     setLoading(false);
     setPageErrors(error);
   }
@@ -127,7 +119,6 @@ export const DonorForm = (props) => {
 
   function handleInputChange(e){
     const{id, value} = e.target;
-    console.debug("%c◉ handleInputChange ", "color:#00ff7b", id, value, e);
     setFormValues((prevValues) => ({
       ...prevValues,
       [id]: value,
@@ -233,20 +224,28 @@ export const DonorForm = (props) => {
           });
       }else{
         // We're in Create mode
-        cleanForm.group_uuid = formValues.group_uuid;
+        // They might not have changed the Group Selector, so lets check for the value
+        let selectedGroup = document.getElementById("group_uuid");
+        if(selectedGroup?.value){
+          cleanForm = {...cleanForm, group_uuid: selectedGroup.value};
+        }
+        console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
         entity_api_create_entity("donor",JSON.stringify(cleanForm))
           .then((response) => {
             if(response.status === 200){
               props.onCreated(response.results);
             }else{
+              passError(response);
               console.error("%c◉ entity_api_create_entity ","color:#ff007b",response);
             }
           })
           .catch((error) => {
+            passError(error);
             console.error("%c◉ entity_api_create_entity ","color:#00ff7b",error);
           });
       }
     }else{
+      passError("Form Validation Error");
       console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
