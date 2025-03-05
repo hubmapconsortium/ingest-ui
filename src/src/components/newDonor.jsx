@@ -298,7 +298,7 @@ export const DonorForm = (props) => {
     return(
       <Box>
         <Box className="col-sm-12 text-center">
-          <h4 style={{fontSize:"1.5rem"}}>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
+          <h4 >{entityData ? "Donor Information" : "Registering a Donor"}</h4>
         </Box>
         
         {permissions.has_write_priv && (
