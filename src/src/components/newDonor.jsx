@@ -6,23 +6,19 @@ import {
   entity_api_update_entity,
   entity_api_create_entity,
 } from "../service/entity_api";
-// import {useNavigate} from "react-router-dom";
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import {tsToDate} from "../utils/string_helper";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
 
 import Box from "@mui/material/Box";
+import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faUserShield} from "@fortawesome/free-solid-svg-icons";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import {validateRequired} from "../utils/validators";
 import HIPPA from "./ui/HIPPA";
-import {LocalLaundryServiceOutlined} from "@material-ui/icons";
 import {Typography} from "@mui/material";
 
 export const DonorForm = (props) => {
@@ -42,7 +38,7 @@ export const DonorForm = (props) => {
     has_submit_priv: false,
     has_write_priv: false
   });
-  let[pageErrors, setPageErrors] = useState(false);
+  let[pageErrors, setPageErrors] = useState(null);
   let[formErrors, setFormErrors] = useState({
     lab_donor_id: "",
     label: "",
@@ -50,7 +46,6 @@ export const DonorForm = (props) => {
     description: "",
   });
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
-  const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   const defaultGroup = userGroups[0].uuid;
   var[formValues, setFormValues] = useState({
     lab_donor_id: "",
@@ -65,10 +60,8 @@ export const DonorForm = (props) => {
   // (Including the Entity Type redirect)
   useEffect(() => {
     if(uuid && uuid !== ""){
-      const authSet = JSON.parse(localStorage.getItem("info"));
       entity_api_get_entity(uuid)
         .then((response) => {
-          //console.debug("useEffect entity_api_get_entity", response);
           if(response.status === 200){
             const entityType = response.results.entity_type;
             if(entityType !== "Donor"){
@@ -90,22 +83,28 @@ export const DonorForm = (props) => {
               });
               ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
+                  if(entityData.data_access_level === "public"){
+                    setPermissions({
+                      has_write_priv: false,
+                    });
+                    
+                  }
                   setPermissions(response.results);
                 })
                 .catch((error) => {
                   console.error("ingest_api_allowable_edit_states ERROR", error);
-                  passError(error);
+                  setPageErrors(error);
                 });
               document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
-            passError(response);
+            setPageErrors(response);
           }
         })
         .catch((error) => {
           console.debug("entity_api_get_entity ERROR", error);
-          passError(error);
+          setPageErrors(error);
         });
     }else{
       setPermissions({
@@ -115,69 +114,27 @@ export const DonorForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-  function passError(error){
-    console.debug('%c◉ Pass Error ', 'color:#00ff7b', error);
-    setLoading(false);
-    setPageErrors(error);
-  }
+  // useEffect(() => {
+  //   if(pageErrors){
+  //     console.debug('%c◉ USEEFFECT ERROR ', 'color:#00ff7b', pageErrors, pageErrors.length);
+  //     setLoading(false);
+  //     // setPageErrors(pageErrors);
+  //   }
+  // }, [pageErrors]);
 
-  function toggleHippa(){
-    setShowHippa(!showHippa);
-  }
+  // function setPageErrors(error){
+  //   console.debug('%c◉ CAUGHT ERROR ', 'color:#00ff7b', );
+  //   setLoading(false);
+  //   setPageErrors(error);
+  // }
+
 
   function handleInputChange(e){
     const{id, value} = e.target;
-    console.debug("%c◉ handleInputChange ", "color:#00ff7b", id, value, e);
     setFormValues((prevValues) => ({
       ...prevValues,
       [id]: value,
     }));
-  }
-
-  function renderHeader(){
-    let PanelStyle = {
-      width: "50%",
-      margin: "0 auto",
-      display: "inline-block",
-      boxSizing: "border-box",
-    };
-
-    return(
-      <Box sx={{maxWidth: "90%", margin: "10px auto 20px auto "}}>
-        <Box className="portal-label " sx={PanelStyle}>
-          HuBMAP ID: {entityData.hubmap_id}
-        </Box>
-        <Box className="portal-label " sx={PanelStyle}>
-          Submission ID: {entityData.submission_id}
-        </Box>
-        <Box className="portal-label" sx={PanelStyle}>
-          Entered by: {entityData.created_by_user_email}
-        </Box>
-        <Box className="portal-label" sx={PanelStyle}>
-          Entry Date: {tsToDate(entityData.created_timestamp)}
-        </Box>
-      </Box>
-    );
-  }
-
-  function renderGroupSelectMenu(){
-    if(formValues.group_name){
-      return(
-        <option value={formValues.group_uuid}>
-          {formValues.group_name}
-        </option>
-      )
-    }else{
-      let menuArray = [];
-      for(let group of userGroups){
-        menuArray.push(
-          <option key={group.uuid} value={group.uuid}>
-            {group.shortname}
-          </option>
-        );
-      }
-      return menuArray;
-    } 
   }
 
   function validateForm(){
@@ -194,7 +151,7 @@ export const DonorForm = (props) => {
           field: "required",
         }));
       }
-      //console.log("errors",errors, field);
+      // console.log("errors",errors, field);
     }
     if(errors.length > 0){
       setFormErrors(errors);
@@ -205,7 +162,6 @@ export const DonorForm = (props) => {
   function handleSubmit(e){
     e.preventDefault();
     setIsProcessing(true);
-
     if(validateForm()){
       let cleanForm ={
         lab_donor_id: formValues.lab_donor_id,
@@ -215,40 +171,45 @@ export const DonorForm = (props) => {
       }
       if(uuid){
         // We're in Edit mode
-        entity_api_update_entity(
-          uuid,
-          JSON.stringify(cleanForm))
+        entity_api_update_entity(uuid,JSON.stringify(cleanForm))
           .then((response) => {
             if(response.status === 200){
-              console.debug("%c◉ ON UPDATED! ", "color:#00ff7b");
               props.onUpdated(response.results);
             }else{
-              console.error("%c◉ SUBMIT ERROR ", "color:#00ff7b", response);
-              passError(response);
+              wrapUp(response)
             }
           })
           .catch((error) => {
-            console.error("%c◉ SUBMITERROR ", "color:#00ff7b", error);
-            passError(error);
+            wrapUp(error)
           });
       }else{
         // We're in Create mode
-        cleanForm.group_uuid = formValues.group_uuid;
+        // They might not have changed the Group Selector, so lets check for the value
+        let selectedGroup = document.getElementById("group_uuid");
+        if(selectedGroup?.value){
+          cleanForm = {...cleanForm, group_uuid: selectedGroup.value};
+        }
         entity_api_create_entity("donor",JSON.stringify(cleanForm))
           .then((response) => {
             if(response.status === 200){
               props.onCreated(response.results);
             }else{
-              console.error("%c◉ entity_api_create_entity ","color:#ff007b",response);
+              wrapUp(response.error ? response.error : response)
             }
           })
           .catch((error) => {
-            console.error("%c◉ entity_api_create_entity ","color:#00ff7b",error);
+            wrapUp(error)
           });
       }
     }else{
+      wrapUp(error)
       console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
+  }
+
+  function wrapUp(error){
+    setPageErrors(error);
+    setIsProcessing(false);
   }
 
   function buttonEngine(){
@@ -279,32 +240,90 @@ export const DonorForm = (props) => {
     );
   }
 
+  function renderHeader(){
+  
+    return(
+
+      <Grid container className='p-2'>
+        
+        {!isLoading && uuid && uuid !== "" && ( <React.Fragment>
+          <Grid item xs={12} className="" >  
+            <h3 style={{marginLeft:"-2px"}}>Donor Information</h3>
+          </Grid>
+          <Grid item xs={6} className="" >
+            <Typography>HuBMAP ID: {entityData.hubmap_id}</Typography>
+            <Typography>Entered by: {entityData.created_by_user_email}</Typography>
+            <Typography>Submission ID: {entityData.submission_id}</Typography>
+            <Typography>Entry Date: {tsToDate(entityData.created_timestamp)}</Typography>   
+          </Grid>
+        </React.Fragment>)}
+        {!isLoading && !uuid && ( <React.Fragment>
+          <Grid item xs={6} className="" >  
+            <h3 style={{marginLeft:"-2px"}}>Registering a Donor</h3>
+          </Grid>
+        </React.Fragment>)}
+
+        <Grid item xs={6} className="" >
+          {permissions.has_write_priv && (
+          
+             <HIPPA />
+          )}
+          {entityData && entityData.data_access_level === "public" && (
+            // They might not have write access but not because of data_access_level
+            <Alert severity="warning" sx={{
+              minHeight: "100%",
+              minWidth: "100%",
+              padding: "10px"}}>
+              This entity is no longer editable. It was locked when it became publicly
+              acessible when data associated with it was published.
+            </Alert>
+          )}
+        </Grid>
+      </Grid>
+
+
+    // <Box sx={{maxWidth: "90%", margin: "10px auto 20px auto "}}>
+    //   <Box className="portal-label " sx={PanelStyle}>
+    // <Typography>HuBMAP ID: {entityData.hubmap_id}</Typography>
+    //     <Typography>Entered by: {entityData.created_by_user_email}</Typography>
+    //     <Typography>Submission ID: {entityData.submission_id}</Typography>
+    //     <Typography>Entry Date: {tsToDate(entityData.created_timestamp)}</Typography>
+    //   </Box>
+    //   <Box className="portal-label " sx={PanelStyle}>
+    //     
+    //   </Box>
+    // </Box>
+    );
+  }
+
+  function renderGroupSelectMenu(){
+    if(formValues.group_name){
+      return(
+        <option value={formValues.group_uuid}>
+          {formValues.group_name}
+        </option>
+      )
+    }else{
+      let menuArray = [];
+      for(let group of userGroups){
+        menuArray.push(
+          <option key={group.uuid} value={group.uuid}>
+            {group.shortname}
+          </option>
+        );
+      }
+      return menuArray;
+    } 
+  }
+
+
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
     return(
       <Box>
-        <Box className="col-sm-12 text-center">
-          <h4>{entityData ? "Donor Information" : "Registering a Donor"}</h4>
-        </Box>
 
-        <Alert
-          sx={{maxWidth: "80%", margin: "0 auto"}}
-          icon={false}
-          severity="error">
-          <FontAwesomeIcon icon={faUserShield} /> - Do not provide any Protected
-          Health Information. This includes the{" "}
-          <span
-            style={{cursor: "pointer"}}
-            className="text-primary"
-            onClick={() => toggleHippa()}>
-            {" "}
-            18 identifiers specified by HIPAA
-          </span>
-        </Alert>
-
-        <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
-        {!isLoading && uuid && uuid !== "" && renderHeader()}
+        {renderHeader()}
 
         <form onSubmit={(e) => handleSubmit(e)}>
           <TextField //"Lab's Donor Non-PHI ID "
@@ -381,7 +400,7 @@ export const DonorForm = (props) => {
           {buttonEngine()}
         </form>
       
-        {pageErrors && pageErrors.length > 0 && (
+        {pageErrors && (
           <Alert variant="filled" severity="error">
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
