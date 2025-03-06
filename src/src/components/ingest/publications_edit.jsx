@@ -31,7 +31,7 @@ import {
 import ReactTooltip from "react-tooltip";
 //import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
 //import CreateCollectionModal from "./createCollectionModal";
-import HIPPA from "../uuid/HIPPA.jsx";
+import HIPPA from "../ui/HIPPA.jsx";
 
 import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
 import Modal from "../uuid/modal";
@@ -1911,20 +1911,8 @@ class PublicationEdit extends Component {
               </p>
             </div>
             <div className="col-md-6">
-              <Alert
-                severity="error"
-                className="alert alert-danger"
-                role="alert">
-                <FontAwesomeIcon icon={faUserShield} /> - Do not upload any data
-                containing any of the{" "}
-                <span
-                  style={{ cursor: "pointer" }}
-                  className="text-primary"
-                  onClick={this.showModal}>
-                  18 identifiers specified by HIPAA
-                </span>
-              </Alert>
-
+           
+                <HIPPA />
               {this.props.editingPublication &&
                 this.props.editingPublication.upload &&
                 this.props.editingPublication.upload.uuid && (
@@ -2265,7 +2253,6 @@ class PublicationEdit extends Component {
           submit={() => this.handleSubmit("save")} 
           handleInputChange={this.handleInputChange}
         />
-        <HIPPA show={this.state.show} handleClose={this.hideModal} />
         <Modal
           show={this.state.errorMsgShow}
           handleClose={this.hideErrorMsgModal}>

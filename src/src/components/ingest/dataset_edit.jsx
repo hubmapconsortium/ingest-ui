@@ -17,7 +17,8 @@ import TextField from '@mui/material/TextField';
 import React,{Component} from "react";
 import ReactTooltip from "react-tooltip";
 import '../../App.css';
-import HIPPA from "../uuid/HIPPA.jsx";
+// import HIPPA from "../uuid/HIPPA.jsx";
+import HIPPA from "../ui/HIPPA.jsx";
 
 import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
 import {entity_api_get_entity,entity_api_get_globus_url,entity_api_update_entity} from '../../service/entity_api';
@@ -150,6 +151,7 @@ class DatasetEdit extends Component {
 
     
     componentDidMount() {
+
       var permChecks = [this.state.has_admin_priv,this.state.has_submit_priv,this.state.writeable,this.state.status.toUpperCase(),this.props.newForm]
       if(this.props.editingDataset && this.props.editingDataset.assigned_to_group_name){
         this.setState({assigned_to_group_name:this.props.editingDataset.assigned_to_group_name})
@@ -1912,16 +1914,7 @@ name, display_doi, doi
           </div>
 
           <div className='col-md-6'>
-            <Alert severity="error" className='alert alert-danger' role='alert'>
-              <FontAwesomeIcon icon={faUserShield} /> - Do not upload any
-              data containing any of the{" "}
-              <span
-                style={{ cursor:"pointer" }}
-                className='text-primary'
-                onClick={this.showModal}>
-                18 identifiers specified by HIPAA
-              </span>
-            </Alert>
+            <HIPPA />
             {/* {this.state.versioned && (this.state.loadingPreviousVersions===false && this.state.loadingNextVersions===false) && (this.state.previousHubIDs.length > 0 || this.state.nextHubIDs.length > 0)  && (
                 <>{this.renderVersionNav()}</>
             )} */}
@@ -1937,7 +1930,6 @@ name, display_doi, doi
                 </Grid>
               </Grid>
             )} */}
-
             {this.props.editingDataset && this.props.editingDataset.upload && this.props.editingDataset.upload.uuid  && (
               <Box sx={{ display:'flex'}} >
                 <Box  sx={{ width:"100%" }}><strong>This Dataset is contained in the data Upload </strong> 
@@ -2342,7 +2334,6 @@ name, display_doi, doi
           hide={() => this.hideModal()}
           handleInputChange={this.handleInputChange}
         />
-        <HIPPA show={this.state.show} handleClose={this.hideModal} />
         <Modal
           show={this.state.errorMsgShow}
           handleClose={this.hideErrorMsgModal}
