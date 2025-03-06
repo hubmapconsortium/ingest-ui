@@ -29,7 +29,7 @@ import Forms from "./components/uuid/forms";
 
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
-import Result from "./components/uuid/result";
+import Result from "./components/ui/result";
 import {sortGroupsByDisplay} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";

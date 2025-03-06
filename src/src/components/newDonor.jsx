@@ -13,14 +13,13 @@ import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
 
 import Box from "@mui/material/Box";
+import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faUserShield} from "@fortawesome/free-solid-svg-icons";
 import Alert from "@mui/material/Alert";
-import AlertTitle from '@mui/material/AlertTitle';
 import Button from "@mui/material/Button";
 import {validateRequired} from "../utils/validators";
 import HIPPA from "./ui/HIPPA";
+import {Typography} from "@mui/material";
 
 export const DonorForm = (props) => {
   let[entityData, setEntityData] = useState({
@@ -129,9 +128,6 @@ export const DonorForm = (props) => {
   //   setPageErrors(error);
   // }
 
-  function toggleHippa(){
-    setShowHippa(!showHippa);
-  }
 
   function handleInputChange(e){
     const{id, value} = e.target;
@@ -166,7 +162,6 @@ export const DonorForm = (props) => {
   function handleSubmit(e){
     e.preventDefault();
     setIsProcessing(true);
-
     if(validateForm()){
       let cleanForm ={
         lab_donor_id: formValues.lab_donor_id,
@@ -246,28 +241,58 @@ export const DonorForm = (props) => {
   }
 
   function renderHeader(){
-    let PanelStyle = {
-      width: "50%",
-      margin: "0 auto",
-      display: "inline-block",
-      boxSizing: "border-box",
-    };
-
+  
     return(
-      <Box sx={{maxWidth: "90%", margin: "10px auto 20px auto "}}>
-        <Box className="portal-label " sx={PanelStyle}>
-          HuBMAP ID: {entityData.hubmap_id}
-        </Box>
-        <Box className="portal-label " sx={PanelStyle}>
-          Submission ID: {entityData.submission_id}
-        </Box>
-        <Box className="portal-label" sx={PanelStyle}>
-          Entered by: {entityData.created_by_user_email}
-        </Box>
-        <Box className="portal-label" sx={PanelStyle}>
-          Entry Date: {tsToDate(entityData.created_timestamp)}
-        </Box>
-      </Box>
+
+      <Grid container className='p-2'>
+        
+        {!isLoading && uuid && uuid !== "" && ( <React.Fragment>
+          <Grid item xs={12} className="" >  
+            <h3 style={{marginLeft:"-2px"}}>Donor Information</h3>
+          </Grid>
+          <Grid item xs={6} className="" >
+            <Typography>HuBMAP ID: {entityData.hubmap_id}</Typography>
+            <Typography>Entered by: {entityData.created_by_user_email}</Typography>
+            <Typography>Submission ID: {entityData.submission_id}</Typography>
+            <Typography>Entry Date: {tsToDate(entityData.created_timestamp)}</Typography>   
+          </Grid>
+        </React.Fragment>)}
+        {!isLoading && !uuid && ( <React.Fragment>
+          <Grid item xs={6} className="" >  
+            <h3 style={{marginLeft:"-2px"}}>Registering a Donor</h3>
+          </Grid>
+        </React.Fragment>)}
+
+        <Grid item xs={6} className="" >
+          {permissions.has_write_priv && (
+          
+             <HIPPA />
+          )}
+          {entityData && entityData.data_access_level === "public" && (
+            // They might not have write access but not because of data_access_level
+            <Alert severity="warning" sx={{
+              minHeight: "100%",
+              minWidth: "100%",
+              padding: "10px"}}>
+              This entity is no longer editable. It was locked when it became publicly
+              acessible when data associated with it was published.
+            </Alert>
+          )}
+        </Grid>
+      </Grid>
+
+
+    // <Box sx={{maxWidth: "90%", margin: "10px auto 20px auto "}}>
+    //   <Box className="portal-label " sx={PanelStyle}>
+    // <Typography>HuBMAP ID: {entityData.hubmap_id}</Typography>
+    //     <Typography>Entered by: {entityData.created_by_user_email}</Typography>
+    //     <Typography>Submission ID: {entityData.submission_id}</Typography>
+    //     <Typography>Entry Date: {tsToDate(entityData.created_timestamp)}</Typography>
+    //   </Box>
+    //   <Box className="portal-label " sx={PanelStyle}>
+    //     
+    //   </Box>
+    // </Box>
     );
   }
 
@@ -297,39 +322,8 @@ export const DonorForm = (props) => {
   }else{
     return(
       <Box>
-        <Box className="col-sm-12 text-center">
-          <h4 >{entityData ? "Donor Information" : "Registering a Donor"}</h4>
-        </Box>
-        
-        {permissions.has_write_priv && (
-          <Alert
-            sx={{maxWidth: "40%", margin: "0 auto", whiteSpace: 'pre-line'}}
-            iconMapping={{
-              error: <FontAwesomeIcon icon={faUserShield} /> ,
-            }}
-            severity="error">
-            <AlertTitle>Warning</AlertTitle>
-              Do not provide any Protected
-              Health Information. This includes the{" "}
-            <span
-              style={{cursor: "pointer"}}
-              className="text-primary"
-              onClick={() => toggleHippa()}>
-              {" "}
-              18 identifiers specified by HIPAA
-            </span>
-          </Alert>
-        )}
-        {entityData && entityData.data_access_level === "public" && (
-          // They might not have write access but not because of data_access_level
-          <Alert severity="warning" sx={{maxWidth: "40%", margin: "0 auto", whiteSpace: 'pre-line'}}>
-            This entity is no longer editable. It was locked when it became publicly
-            acessible when data associated with it was published.
-          </Alert>
-        )}
 
-        <HIPPA show={showHippa} handleClose={() => toggleHippa()} />
-        {!isLoading && uuid && uuid !== "" && renderHeader()}
+        {renderHeader()}
 
         <form onSubmit={(e) => handleSubmit(e)}>
           <TextField //"Lab's Donor Non-PHI ID "
@@ -406,7 +400,6 @@ export const DonorForm = (props) => {
           {buttonEngine()}
         </form>
       
-
         {pageErrors && (
           <Alert variant="filled" severity="error">
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
