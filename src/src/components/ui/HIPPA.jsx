@@ -16,7 +16,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUserShield} from "@fortawesome/free-solid-svg-icons";
 
 export const HIPPA = (props) => {
-  let[show, setShow] = useState(props.show);
+  let[show, setShow] = useState(props.show ? props.show : false);
 
   function toggleHippa(){
     setShow(!show);
@@ -50,20 +50,20 @@ export const HIPPA = (props) => {
         aria-labelledby="HIPPA Identifiers"
         aria-describedby="HIPPA Identifiers">
           <DialogTitle sx={{background: "rgb(253, 237, 237)",  "color": "rgb(95, 33, 32)"}}>
-            <Typography id="Dialog-title" variant="h6" component="h2">
+            <Typography id="Dialog-title"  >
               <FontAwesomeIcon sx={{fontSize:"3em"}} icon={faUserShield} />  18 identifiers specified by HIPAA
             </Typography>
           </DialogTitle>
           <DialogContent  >
-            <DialogContentText>
               <Box sx={{
+                color: "rgba(0, 0, 0, 0.6)",
                 display: 'flex',
                 flexDirection: 'column',
                 m: 'auto',
                 width: 'fit-content',}}>
                 <Grid container spacing={2} style={{marginTop: "10px"}}>
                   <Grid item xs={12} sm={6}>
-                      <ol style={{fontSize: ".8em"}}>   
+                      <ol style={{fontSize: ".8em"}}>
                         <li>Names.</li>
                         <li>
                           All geographic subdivisions smaller than a state, including street
@@ -113,7 +113,6 @@ export const HIPPA = (props) => {
                   </Grid>
                 </Grid>
               </Box>
-            </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => toggleHippa()}>Close</Button>

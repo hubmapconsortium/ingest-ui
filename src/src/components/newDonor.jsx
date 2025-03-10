@@ -6,6 +6,12 @@ import {
   entity_api_update_entity,
   entity_api_create_entity,
 } from "../service/entity_api";
+import {
+  validateRequired,
+  validateProtocolIODOI,
+  validateSingleProtocolIODOI
+} from "../utils/validators";
+
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import {tsToDate} from "../utils/string_helper";
@@ -17,7 +23,6 @@ import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import {validateRequired} from "../utils/validators";
 import HIPPA from "./ui/HIPPA";
 import {Typography} from "@mui/material";
 
@@ -137,12 +142,36 @@ export const DonorForm = (props) => {
     }));
   }
 
+  function validateDOI(protocolDOI){
+    if (!validateProtocolIODOI(protocolDOI)) {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+          'protocol_url': "Please enter a valid protocols.io URL"
+        }));
+      return 1
+    } else if (!validateSingleProtocolIODOI(protocolDOI)) {
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+          'protocol_url': "Please enter only one valid protocols.io URL"
+        }));
+      return 1
+    }else{
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+          'protocol_url': ""
+        }));
+      return 0
+    }
+  }
+
   function validateForm(){
-    // So it looks like this no longer gets triggered
-    // and instead the browser has a built in error thing?
-    // that wont even fire Submit unless required fields are filled?
-    // need to test across a few browsers
-    let errors = {};
+    let errors = 0;
+
+    // Required Fields
+    //  So it looks like Required no longer gets triggered
+    //  and instead the browser has a built in error thing?
+    //  that wont even fire Submit unless required fields are filled?
+    //  need to test across a few browsers
     let requiredFields = ["label", "protocol_url"];
     for(let field of requiredFields){
       if(!validateRequired(formValues[field])){
@@ -150,17 +179,19 @@ export const DonorForm = (props) => {
           ...prevValues,
           field: "required",
         }));
+        errors++;
       }
-      // console.log("errors",errors, field);
     }
-    if(errors.length > 0){
-      setFormErrors(errors);
-    }
-    return Object.keys(errors).length === 0;
+
+    // Formatting Validation
+    errors += validateDOI(formValues['protocol_url']);
+
+    // End Validation
+    return errors === 0;
   }
 
   function handleSubmit(e){
-    e.preventDefault();
+    e.preventDefault()    
     setIsProcessing(true);
     if(validateForm()){
       let cleanForm ={
@@ -202,7 +233,7 @@ export const DonorForm = (props) => {
           });
       }
     }else{
-      wrapUp(error)
+      setIsProcessing(false);
       console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
@@ -342,7 +373,7 @@ export const DonorForm = (props) => {
           <TextField //"Deidentified Name "
             id="label"
             label="Deidentified Name "
-            helperText="A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"
+            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label :   "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
             value={formValues ? formValues.label : ""}
             error={formErrors.label !== ""}
             required
@@ -356,7 +387,7 @@ export const DonorForm = (props) => {
           <TextField //"Case Selection Protocol "
             id="protocol_url"
             label="Case Selection Protocol "
-            helperText="The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"
+            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url :   "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
             value={formValues ? formValues.protocol_url : ""}
             error={formErrors.protocol_url !== ""}
             required

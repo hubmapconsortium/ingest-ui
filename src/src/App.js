@@ -81,18 +81,12 @@ export function App(props){
   var[routingMessage] = useState({
     Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
   });
-
   var loadCounter = 0;
-  // addEventListener("storage", (event) => {
-  //   alert("addEventListener Storage Event");
-  // });
   window.onstorage = () => {
-    // When local storage changes, ping the console.
     console.log("onstorage Storage Event");
   };
 
   useEffect(() => {
-    // console.debug("useEffect URL/Info");
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if(info !== null){
@@ -162,11 +156,13 @@ export function App(props){
       // Validate our Token
       api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
         .then((results) => {
+          console.debug('%c◉ results  ', 'color:#b300ff', results);
           loadCount() // the API token step
           if(results.error?.response && results.error.response.status){
             setExpiredKey(true);
             purgeStorage();
             if(results.error.response.status ===401 ){
+              // The API Token Validation seems to provide a 200 response even when the token is expired?
               setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
             }else if(results.error.response.data.error && results.error.response.status !==401){
               setLoginError(results.error.response.data.error );
@@ -191,49 +187,53 @@ export function App(props){
         try{
           ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
             .then((res) => {
-              loadCount()  // the All Groups step
+              loadCount()
               var allGroups = sortGroupsByDisplay(res.results);
               localStorage.setItem("allGroups",JSON.stringify(allGroups));
               setAllGroups(allGroups);  
             })
             .catch((err) => {
-              console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+              loadFailed(err)
             })
         }catch(error){
-          console.debug("%c⭗", "color:#ff005d",error);
+          loadFailed(err)
         }
       }else{
         // we already have groups
         loadCount()  // the All Groups step
       }
 
-      // User Groups
-      if(!localStorage.getItem('userGroups') || localStorage.getItem('userGroups') === undefined){
+      // Load User Groups
+      if(!localStorage.getItem('userGroups') || localStorage.getItem('userGroups') === undefined || localStorage.getItem('userGroups') === "Non-active login" ){
+        console.debug('%c◉ No User Groups Found; Populating now', 'color:#ff005d');
         try{
-          ingest_api_users_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+          ingest_api_users_groups()
             .then((res) => {
-              console.debug('%c◉ results ', 'color:#00ff7b', res.results, res);
-              // This call lets us check if theyre allowed or not
               if(res && res.status === 403 && res.results === "User is not a member of group HuBMAP-read"){
                 console.log("User is not a member of group HuBMAP-read");
                 setAuthStatus(true);
                 setUnregStatus(true);
-              }else{
+              }else if(res.results === "Non-active login"){
+                // The API Token Validation seems to provide a 200 response even when the token is expired?
+                // But here it'll give me the inactiveness for real
+                console.log("Non-active login");
+                setExpiredKey(true);
+                purgeStorage();
+              }else if(res.status === 200){
                 localStorage.setItem("userGroups",JSON.stringify(res.results));
+              }else{
+                // setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
+                loadFailed(res)
               }
-              loadCount()  // the User's Groups step
             })
             .catch((err) => {
-              console.debug('%c⭗', 'color:#ff005d', "userGroups ERR", err );
+              loadFailed(err)
             })
         }catch(error){
-          console.debug("%c⭗ userGroups", "color:#ff005d",error);
+          loadFailed(error);
         }
-      }else{
-        // we already have user groups
-        loadCount()  // the User's Groups step
       }
-
+      loadCount()  // the User's Groups step
     }else{
       // No Info, No Auth, provide login screen nothing else to load
       console.debug('%c◉ No INFO found ', 'color:#ff005d');
@@ -245,13 +245,10 @@ export function App(props){
     // We'll sometimes have details & no title, 
     // but ALWAYS have details
     if( window.hasOwnProperty('REACT_APP_BANNER_DETAILS') && window.REACT_APP_BANNER_DETAILS!==""){
-      // console.log("REACT_APP_BANNER_TITLE", window.REACT_APP_BANNER_TITLE)
-      // console.log("REACT_APP_BANNER_DETAILS", window.REACT_APP_BANNER_DETAILS)
       setBannerTitle(window.REACT_APP_BANNER_TITLE ? window.REACT_APP_BANNER_TITLE : "" );
       setBannerDetails(window.REACT_APP_BANNER_DETAILS);
       setBannerShow(true)
     }
-
   }, []);
 
   function loadCount(){
@@ -261,6 +258,12 @@ export function App(props){
       setIsLoading(false)
       console.log("Loading Complete")
     }
+  }
+
+  function loadFailed(error){
+    loadCounter++; // the step still happend
+    console.debug('%c⭗', 'color:#ff005d', "APP loadFailed", loadCounter, error );
+    reportError(error);
   }
 
   function purgeStorage(){
@@ -273,14 +276,14 @@ export function App(props){
   
 
   function Logout(e){
-    purgeStorage();
     setIsLoggingOut(true);
+    purgeStorage();
     window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
   };  
   
   function closeExpiredSnack(){
     setExpiredKey(false)
-    // window.location.reload();
+    window.location.reload();
   };
   
   function handleCancel(){
@@ -289,7 +292,6 @@ export function App(props){
   const onClose = (event, reason) => {
     navigate("/");
   }
-
   const onCloseSuccess = (event, reason) => {
     setSuccessDialogRender(false);
     onClose();
@@ -327,7 +329,7 @@ export function App(props){
   }
 
 
-  console.debug('%c◉ Inf ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
+  console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
   // const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const{search} = useLocation();
   // Search Query Bits
@@ -374,7 +376,7 @@ export function App(props){
           login={authStatus} 
           isLoggingOut={isLoggingOut}
           logout={Logout}
-          // userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
+          userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
           appInfo={JSON.parse(localStorage.getItem("info"))}/>       
         { !userDev && (<Timer logout={Logout}/>)}
         <div id="content" className="container">
@@ -385,7 +387,6 @@ export function App(props){
               console.error(error);
               console.error(errorInfo);
             }}>
-
             <Drawer 
               sx={{
                 color:'white',
@@ -398,20 +399,10 @@ export function App(props){
               className="alert-danger"
               anchor='bottom'
               open={errorShow}>
-
-
-              <Box  sx={{ 
-                width:          '100%', 
-                padding:        1, 
-                backgroundColor:'#dc3545', 
-                color:          "#fff",
-                '& span, h5':   {display:'inline-block',
-                  padding:"0 5px 0 0 ",},}}>
+              <Box sx={{width:'100%', padding:1, backgroundColor:'#dc3545',  color:"#fff",'& span, h5':{display:'inline-block',padding:"0 5px 0 0 "}}}>
                 <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
                 <IconButton
-                  sx={{
-                    position:'absolute', right:8, top:4, color:'white' 
-                  }}
+                  sx={{position:'absolute', right:8, top:4, color:'white' }}
                   aria-label="close drawer"
                   onClick= {()=> setErrorShow(false)}
                   edge="start">
