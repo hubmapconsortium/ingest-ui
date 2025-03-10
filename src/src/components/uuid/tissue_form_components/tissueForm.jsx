@@ -10,6 +10,8 @@ import Snackbar from '@mui/material/Snackbar';
 // import Snackbar from '@material-ui/core/Snackbar';
 //import SnackbarContent from '@material-ui/core/SnackbarContent';
 // import Button from '@material-ui/core/Button';
+import HIPPA from "../../ui/HIPPA";
+// import HIPPA from "../HIPPA";
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -95,6 +97,7 @@ class TissueForm extends Component {
     issue:"",
     pages_or_article_num:"",
     publication_status:"",
+    show:false,
 
     metadatas: [],
     images: [],
@@ -151,6 +154,10 @@ class TissueForm extends Component {
     this.props.handleChangeSamplePage(uuid);  
     
   }
+
+  showModal = () => {
+    this.setState({ show: true });
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if(prevProps.editingEntity !== this.props.editingEntity){
@@ -1660,19 +1667,8 @@ handleAddImage = () => {
             </React.Fragment>
           )}
           <div className="col-sm-12 text-center"><h4>Sample Information</h4></div>
-          <div
-            className="alert alert-danger col-sm-10 offset-sm-1"
-            role="alert"
-          >
-            <FontAwesomeIcon icon={faUserShield} /> - Do not provide any
-              Protected Health Information. This includes the{" "}
-            <span
-              style={{ cursor: "pointer" }}
-              className="text-primary"
-              onClick={this.showModal}
-            >
-              18 identifiers specified by HIPAA
-              </span>
+          <div style={{maxheight:"150px",  margin:"10px auto"}} >
+            <HIPPA />
           </div>
            {this.state.editingEntity && (
             <React.Fragment>
@@ -2613,6 +2609,7 @@ handleAddImage = () => {
           </form>
           
         </div>
+
         <GroupModal
           show={this.state.GroupSelectShow}
           hide={this.hideGroupSelectModal}
