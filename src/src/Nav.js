@@ -13,9 +13,11 @@ import DialogContent from '@mui/material/DialogContent'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import LoadingButton from '@mui/lab/LoadingButton'
 import UploadsForm from './components/uploads/createUploads'
+import {ingest_api_users_groups} from './service/ingest_api';
+
 
 export const Navigation = (props) => {
-  const[userDataGroups, setUserDataGroups] = React.useState([])
+  const[userDataGroups, setUserDataGroups] = React.useState(props.userDataGroups ? props.userDataGroups : null)
   const[uploadsDialog, setUploadsDialog] = React.useState(false)
   const[anchorEl, setAnchorEl] = React.useState({
     I: null,
@@ -30,18 +32,22 @@ export const Navigation = (props) => {
   const userInfo = props.appInfo
 
   useEffect(() => {
-    // @TODO: Consider moving all the User & User Group info into its own utils,
-    try{
-      if(localStorage.getItem('userGroups') && localStorage.getItem('userGroups') !== undefined){
-        const dGroups = JSON.parse(localStorage.getItem('userGroups'))
-        setUserDataGroups(dGroups)
-        // console.debug('%c◉ setUserDataGroups ', 'color:#00ff7b', userDataGroups, dGroups, JSON.parse(localStorage.getItem('userGroups')))
-      }
-    }catch(e){
-      console.error(e)
+    // we can't depend on the population timing of the UserDataGroups like forms
+    if(!userDataGroups || userDataGroups === null){
+      // Fine we'll get them ourselves
+      ingest_api_users_groups()
+        .then((res) => {
+          if( typeof res.Response === 'string'){
+            // Must be a message not set of groups
+            throw new Error(res.results)
+          }else{
+            setUserDataGroups(res.results)
+          }
+        })
+        .catch((err) => {
+          throw new Error(res.Response)
+        })
     }
-
-    // setUserDataGroups(props.userDataGroups);
   }, [])
 
   const handleClick = (menu) => (event) => {
@@ -191,7 +197,7 @@ export const Navigation = (props) => {
             </a>
           </Typography>
 
-          {userDataGroups && userDataGroups.length > 0 && (
+          {userDataGroups && userDataGroups.length > 0 && userDataGroups !=="Non-active login" && (
             <Box className="menu-bar" sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
               {renderMenuButtonBar()}
             </Box>
@@ -221,7 +227,7 @@ export const Navigation = (props) => {
               />
             </a>
           </Typography>
-          {userDataGroups && userDataGroups.length > 0 && (
+          {userDataGroups && userDataGroups.length > 0 && userDataGroups !=="Non-active login" && (
             <Box className="menu-bar" sx={{display: {xs: 'none', md: 'flex'}}}>
               {renderMenuButtonBar()}
             </Box>
