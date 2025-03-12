@@ -57,7 +57,7 @@ src/public/assets/liveBanner.js
 favorites.json
 .favorites.json
 .vscode
-.eslintrc.js
+# .eslintrc.js
 
 # Lock FIles
 *.lock

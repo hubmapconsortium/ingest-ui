@@ -123,30 +123,23 @@ export function App(props){
     // Load datatypes into LocalStorage if need be
     // Which will be after every new login 
     if(!localStorage.getItem("datatypes")){
-      ubkg_api_get_dataset_type_set()
-        .then((res) => {
-          loadCount() // the DatasetTypes step
-          if(res !== undefined){
-            localStorage.setItem("datasetTypes",JSON.stringify(res));
-            // TODO: Eventually remove these & use localstorage
-            setDataTypeList(res);
-            setDataTypeListAll(res);
-          }else{
-            setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
-            reportError(res)
-          }
-        })
-        .catch((err) => {
-          // Not cached, we cant really go on
-          setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
-          reportError(err)
-          
-        })
+      loadDatasetTypes();
     }else{
       // we already have datatypes
-      loadCount()
-      setDataTypeList(JSON.parse(localStorage.getItem("datatypes")));
-      setDataTypeListAll(JSON.parse(localStorage.getItem("datatypes")));
+      // But are they any good?
+      let dtString = localStorage.getItem("datatypes");
+      let dtif = dtString.includes("[object Object]");
+      if(dtif){
+        // Its a borked object store, we dont actually have it, and something;s gone wrong along the way
+        // Clear and reload to try again?
+        localStorage.removeItem("datatypes");
+        loadDatasetTypes();
+        loadCount()
+      }else{
+        loadCount()
+        setDataTypeList(JSON.parse(localStorage.getItem("datatypes")));
+        setDataTypeListAll(JSON.parse(localStorage.getItem("datatypes")));
+      }
     }
 
 
@@ -250,6 +243,27 @@ export function App(props){
       setBannerShow(true)
     }
   }, []);
+
+  function loadDatasetTypes(){
+    ubkg_api_get_dataset_type_set()
+    .then((res) => {
+      loadCount() // the DatasetTypes step
+      if(res !== undefined){
+        localStorage.setItem("datasetTypes",JSON.stringify(res));
+        // TODO: Eventually remove these & use localstorage
+        setDataTypeList(res);
+        setDataTypeListAll(res);
+      }else{
+        setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
+        reportError(res)
+      }
+    })
+    .catch((err) => {
+      // Not cached, we cant really go on
+      setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
+      reportError(err)
+    })
+  }
 
   function loadCount(){
     loadCounter++;
