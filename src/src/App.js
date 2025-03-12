@@ -34,6 +34,7 @@ import {sortGroupsByDisplay} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
+import {ValidateDTList} from './utils/validators';
 
 // The legacy form loaders
 import {RenderCollection} from "./components/collections";
@@ -94,6 +95,8 @@ export function App(props){
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
     
+
+    // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
@@ -122,33 +125,20 @@ export function App(props){
 
     // Load datatypes into LocalStorage if need be
     // Which will be after every new login 
-    if(!localStorage.getItem("datatypes")){
-      ubkg_api_get_dataset_type_set()
-        .then((res) => {
-          loadCount() // the DatasetTypes step
-          if(res !== undefined){
-            localStorage.setItem("datasetTypes",JSON.stringify(res));
-            // TODO: Eventually remove these & use localstorage
-            setDataTypeList(res);
-            setDataTypeListAll(res);
-          }else{
-            setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
-            reportError(res)
-          }
-        })
-        .catch((err) => {
-          // Not cached, we cant really go on
-          setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
-          reportError(err)
-          
-        })
-    }else{
-      // we already have datatypes
-      loadCount()
-      setDataTypeList(JSON.parse(localStorage.getItem("datatypes")));
-      setDataTypeListAll(JSON.parse(localStorage.getItem("datatypes")));
+    try{
+      const datatypes = localStorage.getItem("datatypes");
+      if (!ValidateDTList(datatypes)) {
+        localStorage.removeItem("datatypes");
+        loadDatasetTypes();
+      } else {
+        setDataTypeList(JSON.parse(datatypes));
+        setDataTypeListAll(JSON.parse(datatypes));
+      }
+      loadCount();
+    }catch(error){
+      console.debug('%c◉ Error,  ', 'color:#ff005d', error);
     }
-
+    
 
     // User Loading Bits Now
     if(localStorage.getItem("info")){
@@ -196,7 +186,7 @@ export function App(props){
               loadFailed(err)
             })
         }catch(error){
-          loadFailed(err)
+          loadFailed(error)
         }
       }else{
         // we already have groups
@@ -250,6 +240,27 @@ export function App(props){
       setBannerShow(true)
     }
   }, []);
+
+  function loadDatasetTypes(){
+    ubkg_api_get_dataset_type_set()
+    .then((res) => {
+      loadCount() // the DatasetTypes step
+      if(res !== undefined){
+        localStorage.setItem("datasetTypes",JSON.stringify(res));
+        // TODO: Eventually remove these & use localstorage
+        setDataTypeList(res);
+        setDataTypeListAll(res);
+      }else{
+        setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
+        reportError(res)
+      }
+    })
+    .catch((err) => {
+      // Not cached, we cant really go on
+      setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
+      reportError(err)
+    })
+  }
 
   function loadCount(){
     loadCounter++;
