@@ -24,7 +24,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import {DataGrid,GridToolbar} from "@mui/x-data-grid";
+import {DataGrid,GridToolbar,GridEventListener} from "@mui/x-data-grid";
 import {ErrBox} from "../../utils/ui_elements";
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
@@ -812,7 +812,7 @@ export function CollectionForm (props){
             )}
             {editingCollection && editingCollection.doi_url  && (
               <h4 className="title_badge">
-                doi: <a href={editingCollection.doi_url} target='_blank' >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
+                doi: <a href={editingCollection.doi_url} target='_blank' rel="noreferrer" >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
               </h4>
             )}
           </div>
@@ -1034,7 +1034,7 @@ export function CollectionForm (props){
           <>{renderContribTable()} </>
         )}
         <div className="text-right">
-          <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
+          <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank' rel="noreferrer">contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank' rel="noreferrer">Example TSV File</a> </Typography>
         </div>
         <div className="text-left">
           <label>

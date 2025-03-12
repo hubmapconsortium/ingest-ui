@@ -1,5 +1,5 @@
 import React,{useEffect,useState} from "react";
-import {DataGrid,GridToolbar} from "@mui/x-data-grid";
+import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
 import {ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
