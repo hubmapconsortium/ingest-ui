@@ -217,10 +217,10 @@ export function search_api_filter_es_query_builder(
   return requestBody.toJSON();
 }
 
-export function fixKeywordText(text) {
-  let x = text.replace(/-/gi, "\\-");
-  return x;
-}
+// export function fixKeywordText(text) {
+//   let x = text.replace(/-/gi, "\\-");
+//   return x;
+// }
 
 // this WAS a  function that reads from a static file groups.jsx
 export function search_api_search_group_list() {
