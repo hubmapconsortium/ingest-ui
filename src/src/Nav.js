@@ -45,7 +45,7 @@ export const Navigation = (props) => {
           }
         })
         .catch((err) => {
-          throw new Error(res.Response)
+          throw new Error(err)
         })
     }
   }, [])

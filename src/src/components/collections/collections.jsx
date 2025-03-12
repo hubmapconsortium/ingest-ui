@@ -24,7 +24,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import {DataGrid,GridToolbar} from "@mui/x-data-grid";
+import {DataGrid,GridToolbar,GridEventListener} from "@mui/x-data-grid";
 import {ErrBox} from "../../utils/ui_elements";
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
@@ -41,6 +41,7 @@ const StyledTextField = styled(TextField)`
     resize: both;
   }
 `;
+
 export function CollectionForm (props){
   // let navigate = useNavigate();
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;

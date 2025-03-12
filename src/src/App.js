@@ -196,7 +196,7 @@ export function App(props){
               loadFailed(err)
             })
         }catch(error){
-          loadFailed(err)
+          loadFailed(error)
         }
       }else{
         // we already have groups
