@@ -34,6 +34,7 @@ import {sortGroupsByDisplay} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
+import {ValidateDTList} from './utils/validators';
 
 // The legacy form loaders
 import {RenderCollection} from "./components/collections";
@@ -94,6 +95,8 @@ export function App(props){
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
     
+
+    // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
@@ -122,26 +125,20 @@ export function App(props){
 
     // Load datatypes into LocalStorage if need be
     // Which will be after every new login 
-    if(!localStorage.getItem("datatypes")){
-      loadDatasetTypes();
-    }else{
-      // we already have datatypes
-      // But are they any good?
-      let dtString = localStorage.getItem("datatypes");
-      let dtif = dtString.includes("[object Object]");
-      if(dtif){
-        // Its a borked object store, we dont actually have it, and something;s gone wrong along the way
-        // Clear and reload to try again?
+    try{
+      const datatypes = localStorage.getItem("datatypes");
+      if (!ValidateDTList(datatypes)) {
         localStorage.removeItem("datatypes");
         loadDatasetTypes();
-        loadCount()
-      }else{
-        loadCount()
-        setDataTypeList(JSON.parse(localStorage.getItem("datatypes")));
-        setDataTypeListAll(JSON.parse(localStorage.getItem("datatypes")));
+      } else {
+        setDataTypeList(JSON.parse(datatypes));
+        setDataTypeListAll(JSON.parse(datatypes));
       }
+      loadCount();
+    }catch(error){
+      console.debug('%c◉ Error,  ', 'color:#ff005d', error);
     }
-
+    
 
     // User Loading Bits Now
     if(localStorage.getItem("info")){
