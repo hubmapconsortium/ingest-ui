@@ -5,6 +5,7 @@ import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
+import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
 
 
 // table column definitions
