@@ -347,16 +347,16 @@ class DonorForm extends Component {
               image_files_to_add.push({
                 temp_file_id: i.ref.current.state.temp_file_id,
                 description: i.ref.current.image_file_description.current.value.replace(
-                  /"/g,
-                  '\\"'
+                  /["\\]/g,
+                  '\\$&'
                 )
               });
             } else {  // this will send image data that may have been updated
               existing_image_files_to_update.push({
                  file_uuid: i.file_uuid,
                  description: i.ref.current.image_file_description.current.value.replace(
-                  /"/g,
-                  '\\"'
+                  /["\\]/g,
+                  '\\$&'
                 )
               })
 

@@ -28,8 +28,8 @@ export function validateProtocolIOURL(value){
 
 export function validateProtocolIODOI(value){
   if(value === undefined || value === "")return true;
-  const patt1= /^(http(s)?:\/\/)?dx.doi.org\/10\.17504\/protocols\.io\..+/;
-  const patt2 = /^(http(s)?:\/\/)?doi.org\/10\.17504\/protocols\.io\..+/;
+  const patt1= /^(http(s)?:\/\/)?dx\.doi\.org\/10\.17504\/protocols\.io\..+/;
+  const patt2 = /^(http(s)?:\/\/)?doi\.org\/10\.17504\/protocols\.io\..+/;
   return patt1.test(value) || patt2.test(value);
 }
 
