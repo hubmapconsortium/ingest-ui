@@ -3,7 +3,7 @@ import React from "react";
 const Login = (props) => {
   const login_url = `${process.env.REACT_APP_BACKEND_URL}/login`;
   function cleanLogin(e){
-    e.preventDefault
+    e.preventDefault();
     console.debug('%c◉ Purging storage... ', 'color:#00ff7b');
     props.purgeStorage();
     console.debug('%c◉ Goodbye! 👋', 'color:#00ff7b');
