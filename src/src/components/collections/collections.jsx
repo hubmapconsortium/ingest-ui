@@ -41,6 +41,7 @@ const StyledTextField = styled(TextField)`
     resize: both;
   }
 `;
+
 export function CollectionForm (props){
   // let navigate = useNavigate();
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
