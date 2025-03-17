@@ -7,7 +7,6 @@ import {
   entity_api_create_entity,
 } from "../service/entity_api";
 import {
-  validateRequired,
   validateProtocolIODOI,
   validateSingleProtocolIODOI
 } from "../utils/validators";
@@ -16,21 +15,29 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
+
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
-import {FormHeader,GroupSelectMenu} from "./ui/formParts";
+import {FormHeader, GroupSelectMenu} from "./ui/formParts";
 
-export const DonorForm = (props) => {
+
+// @TODO: With Donors now in place, good opportunity to test out what can 
+export const SampleForm = (props) => {
   let[entityData, setEntityData] = useState({
-    lab_donor_id: "",
-    label: "",
-    protocol_url: "",
-    description: "",
-    group_uuid: "",
+    source_id:"",
+    sample_category:"",
+    organ_type_donor_source_organ:"",
+    visit:"",
+    preparation_protocol:"",
+    generate_ids_for_multiple_samples:"",
+    number_to_generate:"",
+    lab_sample_id_not_on_multiple:"",
+    description:"",
+    register_location_rui:"",
   });
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
@@ -42,18 +49,30 @@ export const DonorForm = (props) => {
   });
   let[pageErrors, setPageErrors] = useState(null);
   let[formErrors, setFormErrors] = useState({
-    lab_donor_id: "",
-    label: "",
-    protocol_url: "",
-    description: "",
+    source_id:"",
+    sample_category:"",
+    organ_type_donor_source_organ:"",
+    visit:"",
+    preparation_protocol:"",
+    generate_ids_for_multiple_samples:"",
+    number_to_generate:"",
+    lab_sample_id_not_on_multiple:"",
+    description:"",
+    register_location_rui:"",
   });
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const defaultGroup = userGroups[0].uuid;
   var[formValues, setFormValues] = useState({
-    lab_donor_id: "",
-    label: "",
-    protocol_url: "",
-    description: "",
+    source_id:"",
+    sample_category:"",
+    organ_type_donor_source_organ:"",
+    visit:"",
+    preparation_protocol:"",
+    generate_ids_for_multiple_samples:"",
+    number_to_generate:"",
+    lab_sample_id_not_on_multiple:"",
+    description:"",
+    register_location_rui:"",
   });
   const{uuid} = useParams();
 
@@ -66,6 +85,7 @@ export const DonorForm = (props) => {
         .then((response) => {
           if(response.status === 200){
             const entityType = response.results.entity_type;
+            console.debug('%c◉ entityType ', 'color:#b300ff', entityType);
             if(entityType !== "Donor"){
               // Are we sure we're loading a Donor?
               // @TODO: Move this sort of handling/detection to the outer app, or into component
@@ -117,6 +137,7 @@ export const DonorForm = (props) => {
   }, [uuid]);
 
 
+
   function handleInputChange(e){
     const{id, value} = e.target;
     setFormValues((prevValues) => ({
@@ -149,23 +170,12 @@ export const DonorForm = (props) => {
 
   function validateForm(){
     let errors = 0;
-    // Required Fields
-    //  So it looks like Required no longer gets triggered
-    //  and instead the browser has a built in error thing?
-    //  that wont even fire Submit unless required fields are filled?
-    //  need to test across a few browsers
-    let requiredFields = ["label", "protocol_url"];
-    for(let field of requiredFields){
-      if(!validateRequired(formValues[field])){
-        setFormErrors((prevValues) => ({
-          ...prevValues,
-          field: "required",
-        }));
-        errors++;
-      }
-    }
+    // Required Field Validation 
+    // is now handled by the browser's built-in 
+    // form handling thanks to the form tag & handleSubmit
+
     // Formatting Validation
-    errors += validateDOI(formValues['protocol_url']);
+  
     // End Validation
     return errors === 0;
   }
@@ -175,10 +185,7 @@ export const DonorForm = (props) => {
     setIsProcessing(true);
     if(validateForm()){
       let cleanForm ={
-        lab_donor_id: formValues.lab_donor_id,
-        label: formValues.label,
-        protocol_url: formValues.protocol_url,
-        description: formValues.description,
+        
       }
       if(uuid){
         // We're in Edit mode
@@ -257,8 +264,10 @@ export const DonorForm = (props) => {
   }else{
     return(
       <Box>
-
-        <FormHeader entityData={uuid ?  entityData : ["new","Donor"]} permissions={permissions} />
+        
+        <Grid container className='p-2'>
+          <FormHeader entityData={uuid ?  entityData : ["new","Sample"]} permissions={permissions} />
+        </Grid>
 
         <form onSubmit={(e) => handleSubmit(e)}>
           <TextField //"Lab's Donor Non-PHI ID "
@@ -272,51 +281,8 @@ export const DonorForm = (props) => {
             fullWidth
             disabled={!permissions.has_write_priv}
             variant="filled"
-            className="my-3"
-          />
-          <TextField //"Deidentified Name "
-            id="label"
-            label="Deidentified Name "
-            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label :   "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
-            value={formValues ? formValues.label : ""}
-            error={formErrors.label !== ""}
-            required
-            InputLabelProps={{shrink: ((uuid || (formValues?.label)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            variant="filled"
-            className="my-3"
-          />
-          <TextField //"Case Selection Protocol "
-            id="protocol_url"
-            label="Case Selection Protocol "
-            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url :   "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
-            value={formValues ? formValues.protocol_url : ""}
-            error={formErrors.protocol_url !== ""}
-            required
-            InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            variant="filled"
-            className="my-3"
-          />
-          <TextField //"Description "
-            id="description"
-            label="Description "
-            helperText="Free text field to enter a description of the donor"
-            value={formValues ? formValues.description : ""}
-            error={formErrors.description !== ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            variant="filled"
-            className="my-3"
-            multiline
-            rows={4}
-          />
+            className="my-3"/>
+          
           <Box className="my-3">           
             <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group">
               Group
@@ -344,3 +310,4 @@ export const DonorForm = (props) => {
     );
   }
 }
+
