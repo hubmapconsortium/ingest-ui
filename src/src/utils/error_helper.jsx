@@ -1,6 +1,3 @@
-import React from 'react'
-import { urlify } from './string_helper'
-
 
 // Creates a new error object with the given message
 export const BuildError = (message) => {
@@ -15,7 +12,6 @@ export const BuildError = (message) => {
         newError
     )
 }
-  
 
 export const FormatError = (message) => {
     var newError;
@@ -36,15 +32,14 @@ export const FormatError = (message) => {
     }
     return (newError)
 }
-  
 
 // ERR TABLE
-const isUnacceptable = (code) => code === 406
+// const isUnacceptable = (code) => code === 406
 
 export const getErrorList = (details) => {
     console.debug('%c⊙ getErrorList', 'color:#00ff7b', details);
     let data = []
-    let {code, description, name} = details.code ? details : {code: 500, description: details.message, name:"Truncated Error:"}
+    let {code, description, name} = details.code ? details : {code: 500, description: details.message, name: "Truncated Error:"}
     try {
         let keyedErrors
         if(description){
@@ -92,7 +87,6 @@ export const getErrorList = (details) => {
     return {data, columns: tableColumns()}
 };
 
-
 const handleErrorRow = (row) => {
     let err = row.error
     if (typeof row.error === 'object') {
@@ -104,8 +98,8 @@ const handleErrorRow = (row) => {
     }
     return err
 }
-export const tableColumns = (d = '"') => [
-    {   name: 'row',
+export const tableColumns = (d = '"') => [{
+        name: 'row',
         selector: row => row.row,
         sortable: true,
         width: '100px',
@@ -126,5 +120,4 @@ export const tableColumns = (d = '"') => [
         }
     }
 ]
-
 

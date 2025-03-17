@@ -463,10 +463,10 @@ export function App(props){
             {!authStatus && !isLoading && (
               <React.Fragment>
                 <Routes>
-                  <Route path="/" element={ <Login />} />
-                  <Route path="/*" element={ <Login />} />
-                  <Route path="*" element={ <Login />} />
-                  <Route path="/login" element={ <Login />} />
+                  <Route path="/" element={ <Login purgeStorage={() => purgeStorage()}  />} />
+                  <Route path="/*" element={ <Login purgeStorage={() => purgeStorage()}  />} />
+                  <Route path="*" element={ <Login purgeStorage={() => purgeStorage()}  />} />
+                  <Route path="/login" element={ <Login purgeStorage={() => purgeStorage()}  />} />
                 </Routes>
               </React.Fragment>
             )}
@@ -499,7 +499,7 @@ export function App(props){
                       
                     <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
                     <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-                    <Route path="/login" element={<Login />} />
+                    <Route path="/login" element={<Login purgeStorage={() => purgeStorage()}  />} />
 
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />
