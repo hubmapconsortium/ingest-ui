@@ -835,7 +835,7 @@ export function EPICollectionForm (props){
             )}
             {editingCollection && editingCollection.doi_url  && (
               <h4 className="title_badge">
-                doi: <a href={editingCollection.doi_url} target='_blank' >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
+                doi: <a href={editingCollection.doi_url} target='_blank' rel="noreferrer" >{editingCollection.doi_url} </a><FontAwesomeIcon icon={faUpRightFromSquare}/>
               </h4>
             )}
           </div>
@@ -1058,7 +1058,7 @@ export function EPICollectionForm (props){
         )}
 
         <div className="text-right">
-          <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank'>contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank'>Example TSV File</a> </Typography>
+          <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank' rel="noreferrer">contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank' rel="noreferrer">Example TSV File</a> </Typography>
         </div>
         <div className="text-left">
           <label>

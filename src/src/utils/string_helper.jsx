@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 export function truncateString(str, max_length) {
   if (str && str.length > max_length) {
     return str.substring(0, max_length) + "...";
@@ -112,9 +114,11 @@ export function toPlural(str) {
 
 
 export function stripHTML(str) {
+  // Currently only being used in the UBKG API service, to handle responses that return raw HTML instead
   const regexForStripHTML = /<([^</> ]+)[^<>]*?>[^<>]*?<\/\1> */gi;
   try { 
-    const stripContent = str.replaceAll(regexForStripHTML, '');
+    let stripContent = DOMPurify(str);
+    // stripContent = stripContent.replaceAll(regexForStripHTML, '');
     return stripContent;
  }catch(error) {
    return error
