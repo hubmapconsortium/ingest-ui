@@ -26,7 +26,6 @@ import Grid from '@mui/material/Grid';
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 
-
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
@@ -69,7 +68,6 @@ export function App(props){
   var[dataTypeListAll, setDataTypeListAll] = useState({}); //@TODO: Remove & use Local in forms
   var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
   // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
-
   
   var[userDev, setUserDev] = useState(true);
   var[APIErr, setAPIErr] = useState(false);
@@ -80,24 +78,22 @@ export function App(props){
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
   var[routingMessage] = useState({
-    Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
+    Datasets: ["Registering individual datasets is currently disabled.","/new/upload"],
   });
-  var loadCounter = 0;
   window.onstorage = () => {
     console.log("onstorage Storage Event");
   };
 
   useEffect(() => {
+    var loadCounter = 0;
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if(info !== null){
       localStorage.setItem("info", info);
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
-    
 
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
-    
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
     if(!localStorage.getItem("organs")){
@@ -123,113 +119,132 @@ export function App(props){
       loadCount()
     }
 
-    // Load datatypes into LocalStorage if need be
-    // Which will be after every new login 
-    try{
-      const datatypes = localStorage.getItem("datatypes");
-      if (!ValidateDTList(datatypes)) {
-        localStorage.removeItem("datatypes");
-        loadDatasetTypes();
-      } else {
-        setDataTypeList(JSON.parse(datatypes));
-        setDataTypeListAll(JSON.parse(datatypes));
-      }
-      loadCount();
-    }catch(error){
-      console.debug('%c◉ Error,  ', 'color:#ff005d', error);
-    }
-    
-
-    // User Loading Bits Now
-    if(localStorage.getItem("info")){
-      console.debug('%c◉ LocalStore Found ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")));
-      // Validate our Token
-      api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
-        .then((results) => {
-          console.debug('%c◉ results  ', 'color:#b300ff', results);
-          loadCount() // the API token step
-          if(results.error?.response && results.error.response.status){
-            setExpiredKey(true);
-            purgeStorage();
-            if(results.error.response.status ===401 ){
-              // The API Token Validation seems to provide a 200 response even when the token is expired?
-              setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
-            }else if(results.error.response.data.error && results.error.response.status !==401){
-              setLoginError(results.error.response.data.error );
-            }else{
-              setLoginError("API Key Error");
-            }
-          }else if(!results.error){
-            console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
-            setAuthStatus(true);
+    if(!localStorage.getItem("datatypes")){
+      ubkg_api_get_dataset_type_set()
+        .then((res) => {
+          loadCount() // the DatasetTypes step
+          if(res !== undefined){
+            localStorage.setItem("datasetTypes",JSON.stringify(res));
+            // TODO: Eventually remove these & use localstorage
+            setDataTypeList(res);
+            setDataTypeListAll(res);
           }else{
-            purgeStorage();
-            setExpiredKey(true);
+            setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched  Please try again later, or contact help@hubmapconsortium.org',res])
+            reportError(res)
           }
         })
         .catch((err) => {
-          console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
-          reportError(err) 
+          // Not cached, we cant really go on
+          setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched. Please try again later, or contact help@hubmapconsortium.org ',err)
+          reportError(err)
         })
-
-      // Load things we need the auth key for, like All groups
-      if(!localStorage.getItem("allGroups")){
-        try{
-          ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-            .then((res) => {
-              loadCount()
-              var allGroups = sortGroupsByDisplay(res.results);
-              localStorage.setItem("allGroups",JSON.stringify(allGroups));
-              setAllGroups(allGroups);  
-            })
-            .catch((err) => {
-              loadFailed(err)
-            })
-        }catch(error){
-          loadFailed(error)
-        }
-      }else{
-        // we already have groups
-        loadCount()  // the All Groups step
-      }
-
-      // Load User Groups
-      if(!localStorage.getItem('userGroups') || localStorage.getItem('userGroups') === undefined || localStorage.getItem('userGroups') === "Non-active login" ){
-        console.debug('%c◉ No User Groups Found; Populating now', 'color:#ff005d');
-        try{
-          ingest_api_users_groups()
-            .then((res) => {
-              if(res && res.status === 403 && res.results === "User is not a member of group HuBMAP-read"){
-                console.log("User is not a member of group HuBMAP-read");
-                setAuthStatus(true);
-                setUnregStatus(true);
-              }else if(res.results === "Non-active login"){
-                // The API Token Validation seems to provide a 200 response even when the token is expired?
-                // But here it'll give me the inactiveness for real
-                console.log("Non-active login");
-                setExpiredKey(true);
-                purgeStorage();
-              }else if(res.status === 200){
-                localStorage.setItem("userGroups",JSON.stringify(res.results));
-              }else{
-                // setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
-                loadFailed(res)
-              }
-            })
-            .catch((err) => {
-              loadFailed(err)
-            })
-        }catch(error){
-          loadFailed(error);
-        }
-      }
-      loadCount()  // the User's Groups step
+      loadCount() // the DatasetTypes step
     }else{
-      // No Info, No Auth, provide login screen nothing else to load
-      console.debug('%c◉ No INFO found ', 'color:#ff005d');
-      setIsLoading(false)
-    }      
+      // we already have Dataset Types
+      // but are they good
+      if (!ValidateDTList(localStorage.getItem("datatypes"))) {
+        localStorage.removeItem("datatypes");
+      }
+      loadCount()
+    }
 
+    // User Loading Bits Now
+    try{
+      if(localStorage.getItem("info")){ // Cant depend on this, might get wiped on a purge call?
+        console.debug('%c◉ LocalStore Found ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")));
+        // Validate our Token
+        api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
+          .then((results) => {
+            console.debug('%c◉ results  ', 'color:#b300ff', results);
+            loadCount() // the API token step
+            if(results.error?.response && results.error.response.status){
+              setExpiredKey(true);
+              if(results.error.response.status ===401 ){
+                setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
+              }else if(results.error.response.data.error && results.error.response.status !==401){
+                setLoginError(results.error.response.data.error );
+              }else{
+                setLoginError("API Key Error");
+              }
+            }else if(!results.error){
+              console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
+              setAuthStatus(true);
+              try{
+                if( (!localStorage.getItem('userGroups') || localStorage.getItem('userGroups') === undefined || localStorage.getItem('userGroups') === "Non-active login") && localStorage.getItem("info") ){
+                  ingest_api_users_groups()
+                    .then((res) => {
+                      if(res && res.status === 403 && res.results === "User is not a member of group HuBMAP-read"){
+                        console.log("User is not a member of group HuBMAP-read");
+                        setAuthStatus(true);
+                        setUnregStatus(true);
+                      }else if(res.results === "Non-active login" || res.status === 401){ // 401 Capture for non-active login
+                        // The API Token Validation seems to provide a 200 response even when the token is expired?
+                        // Added status check if/when we begin getting 401s directly
+                        console.log("Non-active login");
+                        setExpiredKey(true);
+                        loadFailed(res);
+                      }else if(res.status === 200){
+                        localStorage.setItem("userGroups",JSON.stringify(res.results));
+                      }else{
+                        setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
+                        loadFailed(res)
+                      }
+                    })
+                    .catch((err) => {
+                      loadFailed(err)
+                    })
+                }else{
+                  // we already have user groups
+                }
+              }
+              catch(error){
+                loadFailed(error);
+              }
+              loadCount()  // the User's Groups step
+
+              // All Groups
+              try{
+                if(!localStorage.getItem("allGroups")){
+                  try{
+                    ingest_api_all_groups()
+                      .then((res) => {
+                        var allGroups = sortGroupsByDisplay(res.results);
+                        localStorage.setItem("allGroups",JSON.stringify(allGroups));
+                        setAllGroups(allGroups);  
+                      })
+                      .catch((err) => {
+                        loadFailed(err)
+                      })
+                  }catch(error){
+                    loadFailed(error)
+                  }
+                }else{
+                  // we already have groups
+                }
+              }
+              catch(error){  
+                loadFailed(error)
+              }
+              loadCount()  // the All Groups step
+              
+            }else{
+              setExpiredKey(true);
+            }
+          })
+          .catch((err) => {
+            console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
+            reportError(err) 
+          })
+  
+      }else{
+        // No Info, No Auth, provide login screen nothing else to load
+        console.debug('%c◉ No INFO found ', 'color:#ff005d');
+        setIsLoading(false)
+      }   
+    } 
+    catch(error){
+      setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',error])
+    }
     
     // Banner Setting
     // We'll sometimes have details & no title, 
@@ -239,43 +254,22 @@ export function App(props){
       setBannerDetails(window.REACT_APP_BANNER_DETAILS);
       setBannerShow(true)
     }
-  }, []);
 
-  function loadDatasetTypes(){
-    ubkg_api_get_dataset_type_set()
-    .then((res) => {
-      loadCount() // the DatasetTypes step
-      if(res !== undefined){
-        localStorage.setItem("datasetTypes",JSON.stringify(res));
-        // TODO: Eventually remove these & use localstorage
-        setDataTypeList(res);
-        setDataTypeListAll(res);
-      }else{
-        setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE data were found. Please try again later, or contact help@hubmapconsortium.org',res])
-        reportError(res)
+    function loadCount(){
+      loadCounter++;
+      console.debug('%c⊙', 'color:#00ff7b', "APP loadCounter", loadCounter );
+      if(loadCounter>=5){
+        setIsLoading(false)
+        console.log("Loading Complete")
       }
-    })
-    .catch((err) => {
-      // Not cached, we cant really go on
-      setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found. Please try again later, or contact help@hubmapconsortium.org ',err)
-      reportError(err)
-    })
-  }
-
-  function loadCount(){
-    loadCounter++;
-    console.debug('%c⊙', 'color:#00ff7b', "APP loadCounter", loadCounter );
-    if(loadCounter>=5){
-      setIsLoading(false)
-      console.log("Loading Complete")
     }
-  }
-
-  function loadFailed(error){
-    loadCounter++; // the step still happend
-    console.debug('%c⭗', 'color:#ff005d', "APP loadFailed", loadCounter, error );
-    reportError(error);
-  }
+  
+    function loadFailed(error){
+      console.debug('%c⭗ APP loadFailed', 'color:#ff005d', "", loadCounter, error );
+      reportError(error);
+    }
+  
+  }, []);
 
   function purgeStorage(){
     localStorage.removeItem('info');
@@ -284,7 +278,6 @@ export function App(props){
     localStorage.removeItem('allGroups');
     localStorage.removeItem('userGroups');
   };
-  
 
   function Logout(e){
     setIsLoggingOut(true);
@@ -307,15 +300,13 @@ export function App(props){
     setSuccessDialogRender(false);
     onClose();
   }
-
   
   function urlChange(target){
     if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
-      navigate(lowerTarget,  {replace: true});
+      navigate(lowerTarget, {replace: true});
     }
   }
-
 
   // Success Modal Response
   function creationSuccess(results){
@@ -339,8 +330,7 @@ export function App(props){
     onClose();
   }
 
-
-  console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
+  console.debug('%c◉ Stored Info:', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
   // const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const{search} = useLocation();
   // Search Query Bits
@@ -349,7 +339,7 @@ export function App(props){
   const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
   const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
   const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
-  var[bundledParameters] = useState({entity_type:queryEntity, keywords:queryKeyword, group_uuid:queryGroup});
+  var[bundledParameters] = useState({entity_type: queryEntity, keywords: queryKeyword, group_uuid: queryGroup});
 
   // Error Query Bits
   var[errorShow,setErrorShow] = useState(false);
@@ -359,7 +349,7 @@ export function App(props){
   // var [keySet, setKeySet] = useState([]);
 
   function reportError(error, details){
-    console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);
+    console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
     if(details){
       setErrorDetail(details);
     }
@@ -379,7 +369,7 @@ export function App(props){
         <Snackbar
           open={expiredKey}
           anchorOrigin={{vertical: 'top', horizontal: 'center'}}
-          autoHideDuration={6000}
+          // autoHideDuration={6000}
           onClose={() => closeExpiredSnack()}>
           <Alert variant="filled" severity="error">{loginError}</Alert>
         </Snackbar>
@@ -400,20 +390,22 @@ export function App(props){
             }}>
             <Drawer 
               sx={{
-                color:'white',
-                height:150   ,
-                flexShrink:0,
-                '& .MuiDrawer-paper':{height:   150,
-                  boxSizing:'border-box',},
+                color: 'white',
+                height: 150 ,
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {
+height: 150,
+                  boxSizing: 'border-box',
+},
               }}
               variant="temporary"
               className="alert-danger"
               anchor='bottom'
               open={errorShow}>
-              <Box sx={{width:'100%', padding:1, backgroundColor:'#dc3545',  color:"#fff",'& span, h5':{display:'inline-block',padding:"0 5px 0 0 "}}}>
-                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+              <Box sx={{width: '100%', padding: 1, backgroundColor: '#dc3545', color: "#fff",'& span, h5': {display: 'inline-block',padding: "0 5px 0 0 "}}}>
+                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding: 1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
                 <IconButton
-                  sx={{position:'absolute', right:8, top:4, color:'white' }}
+                  sx={{position: 'absolute', right: 8, top: 4, color: 'white' }}
                   aria-label="close drawer"
                   onClick= {()=> setErrorShow(false)}
                   edge="start">
@@ -422,7 +414,7 @@ export function App(props){
               </Box>
 
               <Box sx={{
-                width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
+                width: '100%', height: '100%', padding: 1, backgroundColor: 'white', color: "#dc3545", 
               }}>
                 <Grid container>
                   <Grid item xs={7}>
@@ -449,7 +441,6 @@ export function App(props){
 
               </Box>
 
-
             </Drawer>
             { !isLoading && bannerShow && (
               <div className="alert alert-info" role="alert">
@@ -463,15 +454,15 @@ export function App(props){
             {!authStatus && !isLoading && (
               <React.Fragment>
                 <Routes>
-                  <Route path="/" element={ <Login purgeStorage={() => purgeStorage()}  />} />
-                  <Route path="/*" element={ <Login purgeStorage={() => purgeStorage()}  />} />
-                  <Route path="*" element={ <Login purgeStorage={() => purgeStorage()}  />} />
-                  <Route path="/login" element={ <Login purgeStorage={() => purgeStorage()}  />} />
+                  <Route path="/" element={ <Login />} />
+                  <Route path="/*" element={ <Login />} />
+                  <Route path="*" element={ <Login />} />
+                  <Route path="/login" element={ <Login />} />
                 </Routes>
               </React.Fragment>
             )}
           
-            {APIErr.length > 0  && (
+            {APIErr.length > 0 && (
               <Alert variant="filled" severity="error">
                 There was an error populating from datasource {APIErr[0]}  
                 {APIErr[1]}
@@ -497,17 +488,17 @@ export function App(props){
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
                     <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-                    <Route path="/login" element={<Login purgeStorage={() => purgeStorage()}  />} />
+                    <Route path="/login" element={<Login />} />
 
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
@@ -518,16 +509,16 @@ export function App(props){
                     <Route path="/donors" element={<DonorForm />} ></Route>
                     <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
                     <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
+                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange} />} ></Route>
                     <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
                       
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
-                    <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
+                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
+                    <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
                     <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
                     <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
                     <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
@@ -543,12 +534,12 @@ export function App(props){
 
                   </Routes>
 
-                  <Dialog aria-labelledby="result-dialog" open={successDialogRender} sx={{margin:"auto"}}>
-                    <DialogTitle sx={{background:"rgb(209, 231, 221)", marginBottom:"0.5em",}} >Success!</DialogTitle>
-                    <DialogContent sx={{maxWidth:"500px"}}> 
+                  <Dialog aria-labelledby="result-dialog" open={successDialogRender} sx={{margin: "auto"}}>
+                    <DialogTitle sx={{background: "rgb(209, 231, 221)", marginBottom: "0.5em",}} >Success!</DialogTitle>
+                    <DialogContent sx={{maxWidth: "500px"}}> 
                       {newEntity && (
                         <Result
-                          result={{entity:newEntity}}
+                          result={{entity: newEntity}}
                           onReturn={() => onCloseSuccess()}
                           onCreateNext={() => onCreateNext(newEntity)}
                           entity={newEntity}
@@ -560,7 +551,7 @@ export function App(props){
                   <Snackbar 
                     open={showSnack} 
                     onClose={() => setShowSnack(false)}
-                    anchorOrigin={{vertical:'bottom',horizontal:'right',}}
+                    anchorOrigin={{vertical: 'bottom',horizontal: 'right',}}
                     autoHideDuration={6000} 
                     action={
                       <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
@@ -581,6 +572,5 @@ export function App(props){
   );
   
 }
-      
 
 export default App
