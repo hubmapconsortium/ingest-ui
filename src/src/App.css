@@ -14,9 +14,28 @@ body {
   padding: 10px;
 }
 
-#body {
+body {
   background-color: #ebebeb;
+  font-family: 'Inter', sans-serif!important;
 }
+
+
+/* Inter Font override */
+/* Avoids having to muck about ThemeProvider nonsense */
+#root{
+  font-family: 'Inter', sans-serif!important;
+}
+.MuiPaper-root,
+.MuiTypography-root,
+.MuiButton-root,
+.MuiFormHelperText-root,
+.MuiInputBase-root,
+.MuiFormLabel-root,
+.MuiInputLabel-root{
+  font-family: 'Inter', sans-serif!important;
+}
+
+
 
 .tooltip {
   width: 250px;
