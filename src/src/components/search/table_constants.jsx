@@ -7,14 +7,13 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
 
-
 // table column definitions
 
 // DONOR COLUMNS
 export const COLUMN_DEF_DONOR = [
   	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 145 },
-  	{ field: 'lab_donor_id', headerName: 'Deidentified Name', width: 190,  hidden: true},
+  	{ field: 'lab_donor_id', headerName: 'Deidentified Name', width: 190, hidden: true},
   	{ field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// { field: 'lab_donor_id', headerName: 'LABID', hide: true}
@@ -41,7 +40,7 @@ export const COLUMN_DEF_SAMPLE = [
     { field: 'lab_donor_id', headerName: 'LABID', hide: true, filterable: false, sortable: false},
     { field: 'lab_tissue_sample_id', headerName: 'LABID', hide: true, filterable: false, sortable: false},
     { field: 'organ', headerName: 'OrganCode', hide: true, filterable: false, sortable: false},
-    { field: 'specimen_type', headerName: 'Specimen Type', hide: true, filterable: false, sortable: false},
+    { field: 'sample_category', headerName: 'Sample Category', hide: true, filterable: false, sortable: false},
  ];
 
 // DATASET COLUMNS
@@ -51,7 +50,8 @@ export const COLUMN_DEF_DATASET = [
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
   { field: 'data_access_level', headerName: 'Access Level', width: 150},
-  { field: 'status', headerName: 'Submission Status', width: 200,
+  {
+ field: 'status', headerName: 'Submission Status', width: 200,
     renderCell: (params: ValueFormatterParams) => (
       <span
         className={"badge " + getPublishStatusColor(params.value,"NA")}
@@ -60,7 +60,8 @@ export const COLUMN_DEF_DATASET = [
       </span>
       )
   },
-  { field: 'uuid', headerName: 'Data', width: 100,
+  {
+ field: 'uuid', headerName: 'Data', width: 100,
     renderCell: (params: ValueFormatterParams) => (
       <React.Fragment>
         <button
@@ -78,7 +79,8 @@ export const COLUMN_DEF_PUBLICATION = [
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
   { field: 'data_access_level', headerName: 'Access Level', width: 150},
-  { field: 'status', headerName: 'Submission Status', width: 200,
+  {
+ field: 'status', headerName: 'Submission Status', width: 200,
     renderCell: (params: ValueFormatterParams) => (
       <span
               style={{
@@ -89,7 +91,8 @@ export const COLUMN_DEF_PUBLICATION = [
             </span>
       )
   },
-  { field: 'uuid', headerName: 'Data', width: 100,
+  {
+ field: 'uuid', headerName: 'Data', width: 100,
   renderCell: (params: ValueFormatterParams) => (
     <React.Fragment>
       <button
@@ -104,8 +107,9 @@ export const COLUMN_DEF_PUBLICATION = [
 // UPLOADS COLUMNS
 export const COLUMN_DEF_UPLOADS = [
   { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
-  { field: 'title', headerName: 'Upload Name', width: 250,
-    renderCell:(params: ValueFormatterParams) => (
+  {
+ field: 'title', headerName: 'Upload Name', width: 250,
+    renderCell: (params: ValueFormatterParams) => (
       <React.Fragment>
         <span>{params.value}</span>
       </React.Fragment>
@@ -113,7 +117,8 @@ export const COLUMN_DEF_UPLOADS = [
   },
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
-  { field: 'status', headerName: 'Submission Status', width: 160,
+  {
+ field: 'status', headerName: 'Submission Status', width: 160,
     renderCell: (params: ValueFormatterParams) => (
       <span
               style={{
@@ -157,7 +162,8 @@ export const COLUMN_DEF_UPLOADS = [
 //      }
 //    },
 //  },{
-  { field: "doi_url",
+  {
+ field: "doi_url",
     headerName: "DOI",
     width: 400,
     renderCell: (params: ValueFormatterParams) => (
@@ -178,23 +184,24 @@ export const COLUMN_DEF_UPLOADS = [
   },
 ];
 
-
 // EPICOLLECTIONS COLUMNS
 export const COLUMN_DEF_EPICOLLECTIONS = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
   { field: 'group_name', headerName: 'Group Name', width: 200},
-  { field: "statusAccess",
+  {
+ field: "statusAccess",
     width: 180,
     headerName: "Status / Access Level",
     sortable: false,
     valueGetter: getStatusAccess,
     renderCell: renderStatusAccess
   }, 
-  { field: "uuid",
+  {
+ field: "uuid",
     headerName: "Action",
     sortable: false,
     renderCell: (params: ValueFormatterParams) => (
-      <div sx={{width:"100%"}} className="actionButton" data-target={params.row.uuid} >
+      <div sx={{width: "100%"}} className="actionButton" data-target={params.row.uuid} >
         <FontAwesomeIcon
           className='inline-icon interaction-icon'
           icon={faTrash}
@@ -206,11 +213,11 @@ export const COLUMN_DEF_EPICOLLECTIONS = [
   }, 
 ];
 
-
 // MIXED TYPE COLUMNS
 export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
-  { field: "computed_lab_id_type",
+  {
+ field: "computed_lab_id_type",
     headerName: "Lab ID",
     width: 160,
     //description: "This column has a value getter and is not sortable.",
@@ -218,25 +225,28 @@ export const COLUMN_DEF_MIXED = [
     valueGetter: getLabId
   }, 
   { field: 'submission_id', headerName: 'Submission ID', width: 160 },
-  { field: "type",
+  {
+ field: "type",
     headerName: "Type",
     width: 180,
     sortable: false,
     valueGetter: getTypeValue
   }, 
   { field: 'group_name', headerName: 'Group Name', width: 200},
-  { field: "statusAccess",
+  {
+ field: "statusAccess",
     width: 180,
     headerName: "Status / Access Level",
     sortable: false,
     valueGetter: getStatusAccess,
     renderCell: renderStatusAccess
   }, 
-  { field: "uuid",
+  {
+ field: "uuid",
     headerName: "Action",
     sortable: false,
     renderCell: (params: ValueFormatterParams) => (
-      <div sx={{width:"100%"}} className="actionButton" data-target={params.row.uuid} >
+      <div sx={{width: "100%"}} className="actionButton" data-target={params.row.uuid} >
         <FontAwesomeIcon
           className='inline-icon interaction-icon'
           icon={faTrash}
@@ -298,7 +308,6 @@ function getStatusAccess(params: ValueGetterParams) {
   }
 }
 
-
 // function renderActionButton(params: ValueFormatterParams) {
 //   console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
 //   return(
@@ -330,7 +339,7 @@ function doiLink(doi_url,registered_doi) {
       </Link>
     );
   } catch(error) {
-    console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error  );
+    console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error );
   }
   return "";
 }

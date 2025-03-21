@@ -57,7 +57,6 @@ export const DonorForm = (props) => {
   });
   const{uuid} = useParams();
 
-
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
@@ -76,12 +75,12 @@ export const DonorForm = (props) => {
               const entityData = response.results;
               setEntityData(entityData);
               setFormValues({
-                lab_donor_id:entityData.lab_donor_id,
-                label:entityData.label,
-                protocol_url:entityData.protocol_url,
-                description:entityData.description,
-                group_uuid:entityData.group_uuid,
-                group_name:entityData.group_name
+                lab_donor_id: entityData.lab_donor_id,
+                label: entityData.label,
+                protocol_url: entityData.protocol_url,
+                description: entityData.description,
+                group_uuid: entityData.group_uuid,
+                group_name: entityData.group_name
               });
               ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
@@ -115,7 +114,6 @@ export const DonorForm = (props) => {
     }
     setLoading(false);
   }, [uuid]);
-
 
   function handleInputChange(e){
     const{id, value} = e.target;
@@ -251,15 +249,14 @@ export const DonorForm = (props) => {
     );
   }
 
-
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
     return(
       <Box>
-
-        <FormHeader entityData={uuid ?  entityData : ["new","Donor"]} permissions={permissions} />
-
+        <Grid container className=''>
+          <FormHeader entityData={uuid ? entityData : ["new","Donor"]} permissions={permissions} />
+        </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <TextField //"Lab's Donor Non-PHI ID "
             id="lab_donor_id"
@@ -277,7 +274,7 @@ export const DonorForm = (props) => {
           <TextField //"Deidentified Name "
             id="label"
             label="Deidentified Name "
-            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label :   "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
+            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label : "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
             value={formValues ? formValues.label : ""}
             error={formErrors.label !== ""}
             required
@@ -291,7 +288,7 @@ export const DonorForm = (props) => {
           <TextField //"Case Selection Protocol "
             id="protocol_url"
             label="Case Selection Protocol "
-            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url :   "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
+            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url : "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
             value={formValues ? formValues.protocol_url : ""}
             error={formErrors.protocol_url !== ""}
             required
@@ -318,7 +315,7 @@ export const DonorForm = (props) => {
             rows={4}
           />
           <Box className="my-3">           
-            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group">
+            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
               Group
             </InputLabel>
             <NativeSelect
