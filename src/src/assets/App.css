@@ -27,7 +27,8 @@
 .MuiFormHelperText-root,
 .MuiInputBase-root,
 .MuiFormLabel-root,
-.MuiInputLabel-root{
+.MuiInputLabel-root,
+.MuiButtonBase-root{
   font-family: 'Inter', sans-serif!important;
 }
 
