@@ -12,11 +12,15 @@ import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 
-// const userGroups = JSON.parse(localStorage.getItem("userGroups"));
+import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
+import {entity_api_get_entity} from "../../service/entity_api";
+
+const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
 
 export const FormHeader = (props) => {
   let entityData = props.entityData;
   let permissions = props.permissions;
+  // console.debug('%c◉ formHeadeer ', 'color:#00ff7b', props);
   return (
     <React.Fragment>
       {topHeader(entityData)}
@@ -76,6 +80,7 @@ function topHeader(entityData){
 }
 
 function infoPanels(entityData,permissions){
+  // console.debug('%c◉ infoPan ', 'color:#00ff7b', entityData,permissions );
   return (
     <Grid item xs={6} className="" >
       {permissions.has_write_priv && (
@@ -116,4 +121,14 @@ export function GroupSelectMenu(formValues){
     }
     return menuArray;
   } 
+}
+
+export function FormCheckRedirect(uuid,entityType,form){
+  console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
+  if(entityType !== form){
+    // @TODO: Move this sort of handling/detection to the outer app, or into component
+    window.location.replace(
+      `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
+    );
+  }
 }

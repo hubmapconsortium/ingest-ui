@@ -1,16 +1,20 @@
 import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
-import {ingest_api_allowable_edit_states} from "../service/ingest_api";
+import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../service/ingest_api";
 import {
   entity_api_get_entity,
   entity_api_update_entity,
   entity_api_create_entity,
+  entity_api_create_multiple_entities,
   entity_api_get_entity_ancestor_organ,
   entity_api_get_entity_ancestor_list
 } from "../service/entity_api";
 import SearchComponent from "./search/SearchComponent";
 
 import Alert from "@mui/material/Alert";
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Collapse from '@mui/material/Collapse';
@@ -25,6 +29,8 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import LoadingButton from "@mui/lab/LoadingButton";
 import NativeSelect from '@mui/material/NativeSelect';
 import Radio from '@mui/material/Radio';
@@ -34,8 +40,9 @@ import TextField from "@mui/material/TextField";
 import {Typography} from "@mui/material";
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-import {FormHeader, GroupSelectMenu} from "./ui/formParts";
+import {FormHeader, GroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
 import { flattenSampleType } from "../utils/constants_helper";
 import { toTitleCase } from "../utils/string_helper";
 import { SAMPLE_CATEGORIES, RUI_ORGAN_TYPES } from "../utils/constants";
@@ -47,7 +54,9 @@ export const SampleForm = (props) => {
   let[isProcessing, setIsProcessing] = useState(false);
   let[pageErrors, setPageErrors] = useState(null);
   let[sourceEntity, setSourceEntity] = useState(null);
+  let[relatedEntities, setRelatedEntities] = useState(null);
   let [checked, setChecked] = React.useState(false);
+  let [checkedMulti, setCheckedMulti] = React.useState(false);
   let [openSearch, setOpenSearch] = React.useState(false);
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const defaultGroup = userGroups[0].uuid;
@@ -71,14 +80,6 @@ export const SampleForm = (props) => {
     register_location_rui: "",
   });  
   let[formValues, setFormValues] = useState({
-    // {"protocol_url":"dx.doi.org/10.17504/protocols.io.bs6fnhbnzxfgzxdfcgv","
-    //   direct_ancestor_uuid":"3b59708ab41093a37291012d2850dd61","
-    //   organ_other":"","
-    //   visit":"","
-    //   description":"aweawea","
-    //   sample_category":"block","
-    //   lab_tissue_sample_id":"awdwe","
-    //   group_uuid":"5bd084c8-edc2-11e8-802f-0e368f3075e8"}
     direct_ancestor_uuid: "",
     sample_category: "",
     organ_type_donor_source_organ: "",
@@ -107,33 +108,35 @@ export const SampleForm = (props) => {
         .then((response) => {
           if(response.status === 200){
             const entityType = response.results.entity_type;
-            console.debug('%c◉ entityType ', 'color:#b300ff', entityType);
-            if(entityType !== "Sample"){
-              // Are we sure we're loading a Donor?
-              // @TODO: Move this sort of handling/detection to the outer app, or into component
-              window.location.replace(
-                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-              );
-            }else{
-              const entityData = response.results;
-              setSourceEntity(entityData.direct_ancestor);
-              setEntityData(entityData);
-              setFormValues(entityData);
-              ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
-                .then((response) => {
-                  if(entityData.data_access_level === "public"){
-                    setPermissions({
-                      has_write_priv: false,
+            FormCheckRedirect(uuid,entityType,"Sample");
+            const entityData = response.results;
+            setSourceEntity(entityData.direct_ancestor);
+            setEntityData(entityData);
+            setFormValues(entityData);
+            ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
+              .then((response) => {
+                const updatedPermissions = {
+                  ...response.results,
+                  ...(entityData.data_access_level === "public" && { has_write_priv: false })
+                };
+                setPermissions(updatedPermissions);
+                ingest_api_get_associated_ids(uuid)
+                  .then((response) => {
+                      setRelatedEntities(response.results)
+                      console.debug('%c◉ response.results.length ', 'color:#00ff7b', response.results.length);
+                      console.debug('%c◉  ingest_api_get_associated_ids', 'color:#00ff7b', response.results, response.results.length);
+                      let message = "This sample is part of a group of " + relatedEntities.length + " other " + entityData.sample_category + " samples, ranging from " + relatedEntities[0].lab_id + " through " + relatedEntities[relatedEntities.length - 1].lab_id;
+                    })
+                    .catch((error) => {
+                      console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
                     });
-                  }
-                  setPermissions(response.results);
-                })
-                .catch((error) => {
-                  console.error("ingest_api_allowable_edit_states ERROR", error);
-                  setPageErrors(error);
-                });
-              document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
-            }
+              })
+              .catch((error) => {
+                console.error("i0ngest_api_allowable_edit_states ERROR", error);
+                setPageErrors(error);
+              });
+          
+            document.title = `HuBMAP Ingest Portal | Sample: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
@@ -153,13 +156,10 @@ export const SampleForm = (props) => {
 
   function handleInputChange(e){
     const{id, value, checked} = e.target;
-    console.debug('%c◉ e ', 'color:#00ff7b', e);
-    console.debug('%c◉ id & val ', 'color:#00ff7b', id, value, checked);
     setFormValues((prevValues) => ({
       ...prevValues,
       [id]: (id ==="generate_ids_for_multiple_samples") ? checked : value
     }));
-
     if(id ==="generate_ids_for_multiple_samples"){
       setChecked(checked)
     }
@@ -167,7 +167,6 @@ export const SampleForm = (props) => {
 
   function validateForm(){
     let errors = 0;
-
     return errors === 0;
   }
 
@@ -190,15 +189,9 @@ export const SampleForm = (props) => {
             wrapUp(error)
           });
       }else{
-
-        console.debug('%c◉ formValues ', 'color:#00ff7b', formValues);
-        console.debug('%c◉ sample_category ', 'color:#00ff7b', formValues.sample_category, formValues.organ);
-        console.debug('%c◉ ', 'color:#00ff7b', (!formValues.sample_category && formValues.organ) ? "organ": formValues.sample_category );
-
         // We're in Create mode
         // They might not have changed the Group Selector, so lets check for the value
         let selectedGroup = document.getElementById("group_uuid");
-
         let createSample = {
           direct_ancestor_uuid: formValues.direct_ancestor_uuid,
           sample_category: (formValues.sample_category === "" && formValues.organ) ? "organ": formValues.sample_category,
@@ -210,8 +203,23 @@ export const SampleForm = (props) => {
           ...(formValues.RUILocation && { rui_location: formValues.RUILocation }),
           ...((!checked && formValues.lab_tissue_sample_id) && { lab_tissue_sample_id: formValues.lab_tissue_sample_id })
         }
-       
-        entity_api_create_entity("sample",JSON.stringify(createSample))
+
+        // Are we making multiples?
+        if(checked){
+          console.debug('%c◉ checked, ', 'color:#00ff7b', formValues.generate_number,createSample,JSON.stringify(createSample));
+          entity_api_create_multiple_entities(formValues.generate_number,JSON.stringify(createSample))
+          .then((response) => {
+            if (response.status === 200) {
+              props.onCreated({new_samples: response.results, entity: createSample});
+            }else{
+              wrapUp(response.error ? response.error : response)
+            }
+          })
+          .catch((error) => {
+            console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
+          });
+        }else{
+          entity_api_create_entity("sample",JSON.stringify(createSample))
           .then((response) => {
             if(response.status === 200){
               props.onCreated(response.results);
@@ -222,6 +230,8 @@ export const SampleForm = (props) => {
           .catch((error) => {
             wrapUp(error)
           });
+        }
+          
       }
     }else{
       setIsProcessing(false);
@@ -242,6 +252,13 @@ export const SampleForm = (props) => {
 
   function handleClose(e){
     setOpenSearch(false);
+  }
+
+  function handleMultiEdit(uuid){
+    if(uuid !== entityData.uuid){
+      window.location.replace(`${process.env.REACT_APP_URL}/Sample/${uuid}`);
+    }
+    // We're already here otherwise
   }
 
   function wrapUp(error){
@@ -287,36 +304,84 @@ export const SampleForm = (props) => {
   }else{
     return(
       <Box>
-
         <Dialog
-            fullWidth={true}
-            maxWidth="lg"
-            // onClose={console.debug("CLOSED!")}
-            onClose={(e) => handleClose(e)}
-            aria-labelledby="source-lookup-dialog"
-            open={openSearch === true ? true : false}>
-            <DialogContent>
-              <SearchComponent
-                select={(e) => handleSelectSource(e)}
-                custom_title="Search for a Source ID for your Sample"
-                filter_type="Sample"
-                blacklist={['collection']}
-                modecheck="Source"
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={(e) => handleClose(e)}
-                variant="contained"
-                color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
+          fullWidth={true}
+          maxWidth="lg"
+          // onClose={console.debug("CLOSED!")}
+          onClose={(e) => handleClose(e)}
+          aria-labelledby="source-lookup-dialog"
+          open={openSearch === true ? true : false}>
+          <DialogContent>
+            <SearchComponent
+              select={(e) => handleSelectSource(e)}
+              custom_title="Search for a Source ID for your Sample"
+              filter_type="Sample"
+              blacklist={['collection']}
+              modecheck="Source"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={(e) => handleClose(e)}
+              variant="contained"
+              color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
          
         <Grid container className=''>
           <FormHeader entityData={uuid ? entityData : ["new","Sample"]} permissions={permissions} />
         </Grid>
+     
+        {uuid && relatedEntities && relatedEntities.length > 1 && (
+          <Alert severity="info" className="m-3" >
+            <Grid container>
+              <Grid item xs={8}>
+                This sample is part of a group of {relatedEntities.length} other {entityData.sample_category} samples, ranging from {relatedEntities[0].hubmap_id } through { relatedEntities[relatedEntities.length - 1].hubmap_id}
+                Click below to expand and view the groups list. Then select an Sample ID to edit the sample data. Press the update button to save your changes. 
+              </Grid>
+              <Grid item xs={4}>
+                <Button onClick={() => setCheckedMulti(!checkedMulti)} variant="contained" color="primary">
+                {checkedMulti ? "Hide" : "Show"} Related Samples
+              </Button>
+              </Grid>
+            </Grid>
+            <Collapse in={checkedMulti}> 
+                {/* <ul className=""> */}
+                <ul 
+                  style={{
+                    maxHeight: "125px", 
+                    overflowY: "scroll", 
+                    marginTop: "20px", 
+                    padding: "10px",
+                    // columnCount: "3"  
+                    display: "flex",
+                    flexDirection: "column",
+                    flexWrap: "wrap",
+                  }}>
+                  {relatedEntities.length > 0 && relatedEntities.map((item, index) => {
+                    return (
+                      <li key={index+"_"+item.submission_id} >
+                          <Button 
+                            style={{
+                              backgroundColor: item.uuid === entityData.uuid ? "#ffffff77" : "none",
+                              border: item.uuid === entityData.uuid ? "1px solid #fff" : "none",
+                            }}
+                            size="small"
+                            onClick={(e) => handleMultiEdit(item.uuid, e)}>
+                          {`${item.submission_id}`}
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {/* </ul> */}
+            </Collapse> 
+
+          </Alert>
+          
+        )}
 
         <form onSubmit={(e) => handleSubmit(e)}>
 
@@ -482,6 +547,10 @@ export const SampleForm = (props) => {
             <TextField
               id="generate_number"
               label="Number to Generate"
+              helperText="The Number of Samples to Generate"
+              onChange={(e) => handleInputChange(e)}
+              value={formValues ? formValues.generate_number : ""}
+              error={formErrors.generate_number ? true : false}
               small />
           </Collapse>
           

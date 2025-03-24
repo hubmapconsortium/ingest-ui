@@ -15,9 +15,9 @@ import LoadingButton from '@mui/lab/LoadingButton'
 import UploadsForm from './components/uploads/createUploads'
 import {ingest_api_users_groups} from './service/ingest_api';
 
-
 export const Navigation = (props) => {
   const[userDataGroups, setUserDataGroups] = React.useState(props.userDataGroups ? props.userDataGroups : null)
+
   const[uploadsDialog, setUploadsDialog] = React.useState(false)
   const[anchorEl, setAnchorEl] = React.useState({
     I: null,
@@ -32,10 +32,11 @@ export const Navigation = (props) => {
   const userInfo = props.appInfo
 
   useEffect(() => {
-    // we can't depend on the population timing of the UserDataGroups like forms
-    if(!userDataGroups || userDataGroups === null){
-      // Fine we'll get them ourselves
-      ingest_api_users_groups()
+    console.debug('%c◉ userGroup UseEffect ', 'color:#00ff7b', );
+    try{
+      let userGroups = JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)
+      if(!userGroups || userGroups === null){
+        ingest_api_users_groups()
         .then((res) => {
           if( typeof res.Response === 'string'){
             // Must be a message not set of groups
@@ -47,6 +48,9 @@ export const Navigation = (props) => {
         .catch((err) => {
           throw new Error(err)
         })
+      }
+    }catch(err){
+      throw new Error(err)
     }
   }, [])
 
@@ -106,7 +110,8 @@ export const Navigation = (props) => {
 
   function renderMenuSection(label, handleClick, open, anchorEl, items){
     const IDLabel = label.toString().replace(/\s+/g, '')
-    console.debug('%c◉ anchorEl ', 'color:#00ff7b', anchorEl);
+    // @TODO: Investigate High Rerender around this
+    // console.debug('%c◉ anchorEl ', 'color:#00ff7b', anchorEl);
     return(
       <React.Fragment>
         <Button
