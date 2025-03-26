@@ -95,12 +95,14 @@ export const SampleForm = (props) => {
   let[formErrors, setFormErrors] = useState({
   });
 
-  let organMenu = Object.keys(organ_types).map((key) => {
-    return(
-      <option key={key} value={key}>{organ_types[key]}</option>
-    )
-  });
-  
+  let organMenu = Object.keys(organ_types)
+  .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
+  .map(key => (
+    <option key={key} value={key}>
+      {organ_types[key]}
+    </option>
+  ));
+
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
@@ -205,9 +207,9 @@ export const SampleForm = (props) => {
   }
 
   function badValError(error){
-    console.debug('%c◉badValError error ', 'color:#00ff7b', error);
-    setValidationError(error);
-
+    console.debug('%c◉badValError error ', 'color:#00ff7b', error,error.response.data.error);
+    setValidationError(error.response.data.error ? error.response.data.error : error);
+    setIsProcessing(false);
   }
  
   function handleSubmit(e){
@@ -222,7 +224,7 @@ export const SampleForm = (props) => {
             if(response.status === 200){
               props.onUpdated(response.results);
             }else{
-              wrapUp(response)
+              badValError(response.error ? response.error : response);
             }
           })
           .catch((error) => {
@@ -253,10 +255,10 @@ export const SampleForm = (props) => {
             if (response.status === 200) {
               props.onCreated({new_samples: response.results, entity: createSample});
             }else if(response.status === 400){
-              // wrapUp(response.error ? response.error : response)
               badValError(response.error ? response.error : response);
             }else{
-              wrapUp(response.error ? response.error : response)
+              badValError(response.error ? response.error : response);
+              // wrapUp(response.error ? response.error : response)
             }
           })
           .catch((error) => {
@@ -270,7 +272,7 @@ export const SampleForm = (props) => {
             if(response.status === 200){
               props.onCreated(response.results);
             }else{
-              wrapUp(response.error ? response.error : response)
+              badValError(response.error ? response.error : response);
             }
           })
           .catch((error) => {
@@ -308,6 +310,7 @@ export const SampleForm = (props) => {
   }
 
   function wrapUp(error){
+    console.debug('%c◉ Wrapup Err ', 'color:#00ff7b');
     setPageErrors(error);
     setIsProcessing(false);
   }
@@ -412,7 +415,7 @@ export const SampleForm = (props) => {
                           <Button 
                             style={{
                               backgroundColor: item.uuid === entityData.uuid ? "#ffffff77" : "none",
-                              border: item.uuid === entityData.uuid ? "1px solid #fff" : "none",
+                              border: item.uuid === entityData.uuid ? "1px solid #1976d2" : "none",
                             }}
                             small={true}
                             onClick={(e) => handleMultiEdit(item.uuid, e)}>
@@ -641,6 +644,11 @@ export const SampleForm = (props) => {
             </NativeSelect>
           </Box>
           
+          {validationError && (
+            <Alert variant="filled" severity="error">
+              <strong>Error:</strong> {JSON.stringify(validationError)}
+            </Alert>
+          )}
           {buttonEngine()}
         </form>
       

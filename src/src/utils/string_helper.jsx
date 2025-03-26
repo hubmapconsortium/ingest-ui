@@ -25,7 +25,6 @@ export function naturalLanguageJoin(strArr) {
   return "";
 }
 
-
 // Camel Case & Strip Underscores
 export function humanize(str) {
   var i, frags = str.split('_');
@@ -82,9 +81,6 @@ export function toTitleCase(str) {
   }else{
     return ""
   }
-
-
-  
   
 }
 
@@ -112,7 +108,6 @@ export function toPlural(str) {
  }
 }
 
-
 export function stripHTML(str) {
   // Currently only being used in the UBKG API service, to handle responses that return raw HTML instead
   const regexForStripHTML = /<([^</> ]+)[^<>]*?>[^<>]*?<\/\1> */gi;
@@ -125,7 +120,7 @@ export function stripHTML(str) {
  }
 }
 
-export function  htmlDecode(input){
+export function htmlDecode(input){
   var e = document.createElement('div');
   e.innerHTML = input;
   return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
@@ -148,3 +143,8 @@ export function urlify(text, blank = true, max = 40) {
   })
 }
 
+export function sortObjectByValues(obj) {
+  const entries = Object.entries(obj);
+  entries.sort((a, b) => a[1].localeCompare(b[1]));
+  return entries;
+}

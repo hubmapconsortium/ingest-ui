@@ -59,6 +59,7 @@ class MultipleListModal extends Component {
                   <Button 
                     // style={{border: "1px solid #ccc ", padding: "5px", margin: "5px"}}
                     small={true}
+                    target="_blank"
                     href={"/sample/"+item.uuid}>
                     {`${item.submission_id}`}
                   </Button>

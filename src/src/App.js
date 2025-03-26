@@ -495,7 +495,7 @@ export function App(props){
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
-                      {/* <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/>  */}
+                      <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
                       <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
@@ -503,9 +503,7 @@ export function App(props){
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
                       {/* In Develpment here */}
-                      {/* <Route path='donor/n' element={ <RenderNewDonor onCreated={(response) => creationSuccess(response)} />}/> */}
-                      <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
-                    </Route>
+\                    </Route>
                     
                     <Route path="/donors" element={<DonorForm />} ></Route>
                     <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
@@ -514,7 +512,7 @@ export function App(props){
                     <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
                       
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
-                    {/* <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} /> */}
+                    <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
                     <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
                     <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
@@ -531,8 +529,6 @@ export function App(props){
                     </Route>
 
                     {/* In Develpment here */}
-                    {/* <Route path="/donor/:uuid/n" element={<RenderNewDonor />} /> */}
-                    <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
 
                   </Routes>
 
@@ -540,21 +536,19 @@ export function App(props){
                     aria-labelledby="result-dialog" 
                     open={successDialogRender} 
                     sx={{margin: "auto"}}
-                    fullWidth={true}
-                    maxWidth="lg">
+                    fullWidth={ (newEntity && newEntity.newSamples) ? true : false}>
                     <DialogTitle sx={{background: "rgb(209, 231, 221)", marginBottom: "0.5em",}} >Success!</DialogTitle>
-                    {/* <DialogContent sx={{maxWidth:"500px"}}>  */}
-                    <DialogContent> 
                       {newEntity && (
-                        <Result
-                          result={{entity: newEntity}}
-                          onReturn={() => onCloseSuccess()}
-                          onCreateNext={() => onCreateNext(newEntity)}
-                          entity={newEntity}
-                        />
+                        <DialogContent sx={newEntity.newSamples ? {maxWidth: "500px"} : {}}> 
+                          {/* <DialogContent>  */}
+                          <Result
+                            result={{entity: newEntity}}
+                            onReturn={() => onCloseSuccess()}
+                            onCreateNext={() => onCreateNext(newEntity)}
+                            entity={newEntity}
+                          />
+                        </DialogContent>
                       )}
-                    </DialogContent>
-
                   </Dialog>
                   <Snackbar 
                     open={showSnack} 
