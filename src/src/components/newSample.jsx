@@ -1,20 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
-import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../service/ingest_api";
-import {
-  entity_api_get_entity,
-  entity_api_update_entity,
-  entity_api_create_entity,
-  entity_api_create_multiple_entities,
-  entity_api_get_entity_ancestor_organ,
-  entity_api_get_entity_ancestor_list
-} from "../service/entity_api";
-import SearchComponent from "./search/SearchComponent";
 
 import Alert from "@mui/material/Alert";
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Collapse from '@mui/material/Collapse';
@@ -29,23 +16,28 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import LoadingButton from "@mui/lab/LoadingButton";
 import NativeSelect from '@mui/material/NativeSelect';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
 import SearchIcon from '@mui/icons-material/Search';
 import TextField from "@mui/material/TextField";
 import {Typography} from "@mui/material";
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
+import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../service/ingest_api";
+import {
+  entity_api_get_entity,
+  entity_api_update_entity,
+  entity_api_create_entity,
+  entity_api_create_multiple_entities,
+  entity_api_get_entity_ancestor,
+  entity_api_get_entity_ancestor_list
+} from "../service/entity_api";
 import {FormHeader, GroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
-import { flattenSampleType } from "../utils/constants_helper";
+import SearchComponent from "./search/SearchComponent";
+import {RUI} from "./RUI";
+import RUIIntegration from "./uuid/tissue_form_components/ruiIntegration";
 import { toTitleCase } from "../utils/string_helper";
-import { SAMPLE_CATEGORIES, RUI_ORGAN_TYPES } from "../utils/constants";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {
@@ -59,6 +51,7 @@ export const SampleForm = (props) => {
   let [checked, setChecked] = React.useState(false);
   let [checkedMulti, setCheckedMulti] = React.useState(false);
   let [openSearch, setOpenSearch] = React.useState(false);
+  let [ruiModal, setRuiModal] = React.useState(true);
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const defaultGroup = userGroups[0].uuid;
   let organ_types = JSON.parse(localStorage.getItem("organs"));
@@ -96,12 +89,12 @@ export const SampleForm = (props) => {
   });
 
   let organMenu = Object.keys(organ_types)
-  .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
-  .map(key => (
-    <option key={key} value={key}>
-      {organ_types[key]}
-    </option>
-  ));
+    .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
+    .map(key => (
+      <option key={key} value={key}>
+        {organ_types[key]}
+      </option>
+    ));
 
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
@@ -116,6 +109,7 @@ export const SampleForm = (props) => {
             setSourceEntity(entityData.direct_ancestor);
             setEntityData(entityData);
             setFormValues(entityData);
+            // fetchDonorMeta(entityData.direct_ancestor.uuid);
             ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
               .then((response) => {
                 const updatedPermissions = {
@@ -347,6 +341,65 @@ export const SampleForm = (props) => {
     return sptype === "organ" ||
       sptype === "blood";
   }
+
+  function handleRUIJson(dataFromChild){
+    console.debug('%c◉ dataFromChild ', 'color:#00ff7b',dataFromChild );
+    // this.setState({
+    //   rui_location: dataFromChild,
+    //   rui_check: true,
+    //   rui_view: true,
+    //   rui_click: false
+    // });
+  };
+
+  function handleRUIMeta(){
+    entity_api_get_entity_ancestor_list(uuid)
+      .then((res) => {
+        console.debug('%c◉  entity_api_get_entity_ancestor_list', 'color:#00ff7b', res);
+        const donorDetails =
+          res.results.length === 1
+            ? res.results[0]
+            : res.results.find((d) => d.entity_type === "Donor");
+        const donorMeta =
+          donorDetails.metadata.organ_donor_data ||
+          donorDetails.metadata.living_donor_data;
+        // Get Sex Details
+        const donorSexDetails = donorMeta.find(
+          (m) => m.grouping_code === "57312000"
+        );
+        return (donorSexDetails)
+      })
+      .catch((error) => {
+        console.debug("error entity_api_get_entity_ancestor_list", error);
+        return (error)
+      });
+  }
+
+  function renderRUI(){   
+    if(sourceEntity){
+      console.debug('%c◉ sourceEntity RUI ', 'color:#0ff07b', sourceEntity, sourceEntity.organ); 
+      let RUIInfo={
+        sex: handleRUIMeta(),
+        organ: sourceEntity.organ,
+        user: sourceEntity.created_by_user_displayname
+      }
+      return ( <>
+        <Dialog fullScreen aria-labelledby="rui-dialog" open={true}>
+          <RUIIntegration 
+            handleJsonRUI={handleRUIJson()}
+            organList={organ_types}
+            location={""}
+            sex={RUIInfo.sex}
+            organ={RUIInfo.organ}
+            user={RUIInfo.user}
+            parent="TissueForm" />
+        </Dialog>
+       
+        </>
+      );
+    }
+    
+  }
     
   if(isLoading ||(!entityData && uuid) ){
     return(<LinearProgress />);
@@ -379,6 +432,8 @@ export const SampleForm = (props) => {
           </DialogActions>
         </Dialog>
          
+        {renderRUI()}
+        
         <Grid container className=''>
           <FormHeader entityData={uuid ? entityData : ["new","Sample"]} permissions={permissions} />
         </Grid>
@@ -445,7 +500,7 @@ export const SampleForm = (props) => {
               InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid )) ? true:false)}}
               variant="filled"
               helperText={(formErrors.direct_ancestor_uuid ? formErrors.direct_ancestor_uuid : "")}
-              small={true}
+              small={"true"}
               required
               endAdornment={
                 <InputAdornment position="end">
@@ -550,7 +605,7 @@ export const SampleForm = (props) => {
             InputLabelProps={{shrink: ((uuid || (formValues?.visit )) ? true:false)}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
-            small={true}
+            small={"true"}
             disabled={!permissions.has_write_priv}
             variant="filled"/>
           
@@ -583,8 +638,8 @@ export const SampleForm = (props) => {
               variant="filled"
               className="my-4" />
           </Collapse>
+          
           {/* generate_ids_for_multiple_samples */}
-
           {!uuid && ( 
             <FormControlLabel 
               control={
@@ -614,7 +669,8 @@ export const SampleForm = (props) => {
               small />
           </Collapse>
           
-          <TextField //"Description "
+          {/* Description */}
+          <TextField 
             id="description"
             label="Description "
             helperText="Free text field to enter a description of the donor"
@@ -628,6 +684,7 @@ export const SampleForm = (props) => {
             multiline
             rows={4}/>
           
+          {/* Group */}
           <Box className="my-4">           
             <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
               Group
@@ -649,6 +706,7 @@ export const SampleForm = (props) => {
               <strong>Error:</strong> {JSON.stringify(validationError)}
             </Alert>
           )}
+
           {buttonEngine()}
         </form>
       
