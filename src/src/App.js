@@ -26,7 +26,6 @@ import Grid from '@mui/material/Grid';
 import SearchComponent from './components/search/SearchComponent';
 import Forms from "./components/uuid/forms";
 
-
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
@@ -70,7 +69,6 @@ export function App(props){
   var[dataTypeListAll, setDataTypeListAll] = useState({}); //@TODO: Remove & use Local in forms
   var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
   // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
-
   
   var[userDev, setUserDev] = useState(true);
   var[APIErr, setAPIErr] = useState(false);
@@ -81,7 +79,7 @@ export function App(props){
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
   var[routingMessage] = useState({
-    Datasets:["Registering individual datasets is currently disabled.","/new/upload"],
+    Datasets: ["Registering individual datasets is currently disabled.","/new/upload"],
   });
   var loadCounter = 0;
   window.onstorage = () => {
@@ -95,7 +93,6 @@ export function App(props){
       localStorage.setItem("info", info);
       window.location.replace(`${process.env.REACT_APP_URL}`);
     }
-    
 
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     
@@ -139,7 +136,6 @@ export function App(props){
     }catch(error){
       console.debug('%c◉ Error,  ', 'color:#ff005d', error);
     }
-    
 
     // User Loading Bits Now
     if(localStorage.getItem("info")){
@@ -230,7 +226,6 @@ export function App(props){
       console.debug('%c◉ No INFO found ', 'color:#ff005d');
       setIsLoading(false)
     }      
-
     
     // Banner Setting
     // We'll sometimes have details & no title, 
@@ -285,7 +280,6 @@ export function App(props){
     localStorage.removeItem('allGroups');
     localStorage.removeItem('userGroups');
   };
-  
 
   function Logout(e){
     setIsLoggingOut(true);
@@ -308,15 +302,13 @@ export function App(props){
     setSuccessDialogRender(false);
     onClose();
   }
-
   
   function urlChange(target){
     if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
-      navigate(lowerTarget,  {replace: true});
+      navigate(lowerTarget, {replace: true});
     }
   }
-
 
   // Success Modal Response
   function creationSuccess(results){
@@ -340,7 +332,6 @@ export function App(props){
     onClose();
   }
 
-
   console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
   // const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const{search} = useLocation();
@@ -350,7 +341,7 @@ export function App(props){
   const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
   const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
   const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
-  var[bundledParameters] = useState({entity_type:queryEntity, keywords:queryKeyword, group_uuid:queryGroup});
+  var[bundledParameters] = useState({entity_type: queryEntity, keywords: queryKeyword, group_uuid: queryGroup});
 
   // Error Query Bits
   var[errorShow,setErrorShow] = useState(false);
@@ -360,7 +351,7 @@ export function App(props){
   // var [keySet, setKeySet] = useState([]);
 
   function reportError(error, details){
-    console.debug('%c⭗', 'color:#ff005d',  "APP reportError", error, details);
+    console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
     if(details){
       setErrorDetail(details);
     }
@@ -401,20 +392,20 @@ export function App(props){
             }}>
             <Drawer 
               sx={{
-                color:'white',
-                height:150   ,
-                flexShrink:0,
-                '& .MuiDrawer-paper':{height:   150,
-                  boxSizing:'border-box',},
+                color: 'white',
+                height: 150 ,
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {height: 150,
+                  boxSizing: 'border-box',},
               }}
               variant="temporary"
               className="alert-danger"
               anchor='bottom'
               open={errorShow}>
-              <Box sx={{width:'100%', padding:1, backgroundColor:'#dc3545',  color:"#fff",'& span, h5':{display:'inline-block',padding:"0 5px 0 0 "}}}>
-                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+              <Box sx={{width: '100%', padding: 1, backgroundColor: '#dc3545', color: "#fff",'& span, h5': {display: 'inline-block',padding: "0 5px 0 0 "}}}>
+                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding: 1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
                 <IconButton
-                  sx={{position:'absolute', right:8, top:4, color:'white' }}
+                  sx={{position: 'absolute', right: 8, top: 4, color: 'white' }}
                   aria-label="close drawer"
                   onClick= {()=> setErrorShow(false)}
                   edge="start">
@@ -423,7 +414,7 @@ export function App(props){
               </Box>
 
               <Box sx={{
-                width:'100%', height:'100%', padding:1, backgroundColor:'white', color:"#dc3545", 
+                width: '100%', height: '100%', padding: 1, backgroundColor: 'white', color: "#dc3545", 
               }}>
                 <Grid container>
                   <Grid item xs={7}>
@@ -450,7 +441,6 @@ export function App(props){
 
               </Box>
 
-
             </Drawer>
             { !isLoading && bannerShow && (
               <div className="alert alert-info" role="alert">
@@ -464,15 +454,15 @@ export function App(props){
             {!authStatus && !isLoading && (
               <React.Fragment>
                 <Routes>
-                  <Route path="/" element={ <Login purgeStorage={() => purgeStorage()}  />} />
-                  <Route path="/*" element={ <Login purgeStorage={() => purgeStorage()}  />} />
-                  <Route path="*" element={ <Login purgeStorage={() => purgeStorage()}  />} />
-                  <Route path="/login" element={ <Login purgeStorage={() => purgeStorage()}  />} />
+                  <Route path="/" element={ <Login purgeStorage={() => purgeStorage()} />} />
+                  <Route path="/*" element={ <Login purgeStorage={() => purgeStorage()} />} />
+                  <Route path="*" element={ <Login purgeStorage={() => purgeStorage()} />} />
+                  <Route path="/login" element={ <Login purgeStorage={() => purgeStorage()} />} />
                 </Routes>
               </React.Fragment>
             )}
           
-            {APIErr.length > 0  && (
+            {APIErr.length > 0 && (
               <Alert variant="filled" severity="error">
                 There was an error populating from datasource {APIErr[0]}  
                 {APIErr[1]}
@@ -498,17 +488,17 @@ export function App(props){
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters}  urlChange={urlChange} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
                     <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-                    <Route path="/login" element={<Login purgeStorage={() => purgeStorage()}  />} />
+                    <Route path="/login" element={<Login purgeStorage={() => purgeStorage()} />} />
 
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/>  */}
                       <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
-                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  dtl_all={dataTypeList} newForm={true} reportError={reportError}  groupsToken={groupsToken}  onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
@@ -520,16 +510,16 @@ export function App(props){
                     <Route path="/donors" element={<DonorForm />} ></Route>
                     <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
                     <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange}  />} ></Route>
+                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange} />} ></Route>
                     <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
                       
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     {/* <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} /> */}
-                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel}  allGroups={allGroups} status="view"/>} />
-                    <Route path="/upload/:uuid" element={<RenderUpload  reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
+                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
+                    <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
                     <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken}  dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)}  reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
                     <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
                     <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
@@ -546,12 +536,18 @@ export function App(props){
 
                   </Routes>
 
-                  <Dialog aria-labelledby="result-dialog" open={successDialogRender} sx={{margin:"auto"}}>
-                    <DialogTitle sx={{background:"rgb(209, 231, 221)", marginBottom:"0.5em",}} >Success!</DialogTitle>
-                    <DialogContent sx={{maxWidth:"500px"}}> 
+                  <Dialog 
+                    aria-labelledby="result-dialog" 
+                    open={successDialogRender} 
+                    sx={{margin: "auto"}}
+                    fullWidth={true}
+                    maxWidth="lg">
+                    <DialogTitle sx={{background: "rgb(209, 231, 221)", marginBottom: "0.5em",}} >Success!</DialogTitle>
+                    {/* <DialogContent sx={{maxWidth:"500px"}}>  */}
+                    <DialogContent> 
                       {newEntity && (
                         <Result
-                          result={{entity:newEntity}}
+                          result={{entity: newEntity}}
                           onReturn={() => onCloseSuccess()}
                           onCreateNext={() => onCreateNext(newEntity)}
                           entity={newEntity}
@@ -563,7 +559,7 @@ export function App(props){
                   <Snackbar 
                     open={showSnack} 
                     onClose={() => setShowSnack(false)}
-                    anchorOrigin={{vertical:'bottom',horizontal:'right',}}
+                    anchorOrigin={{vertical: 'bottom',horizontal: 'right',}}
                     autoHideDuration={6000} 
                     action={
                       <IconButton size="small" aria-label="close" color="inherit" onClick={() => setShowSnack(false)}>
@@ -584,6 +580,5 @@ export function App(props){
   );
   
 }
-      
 
 export default App

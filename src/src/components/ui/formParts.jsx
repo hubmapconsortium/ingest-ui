@@ -12,10 +12,9 @@ import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 
-import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
-import {entity_api_get_entity} from "../../service/entity_api";
-
-const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
+// import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
+// import {entity_api_get_entity} from "../../service/entity_api";
+// const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
 
 export const FormHeader = (props) => {
   let entityData = props.entityData;
@@ -73,7 +72,7 @@ function topHeader(entityData){
   }else{
     return (
     <Grid item xs={6} className="" >  
-      <h3 style={{marginLeft: "-2px"}}> {iconSelection(entityData.entity_type)} Registering a new {entityData[1]}</h3>
+      <h3 style={{marginLeft: "-2px"}}> {iconSelection(entityData[1])} Registering a new {entityData[1]}</h3>
     </Grid>
     )
   }

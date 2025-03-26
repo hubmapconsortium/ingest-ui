@@ -53,6 +53,7 @@ export const SampleForm = (props) => {
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
   let[pageErrors, setPageErrors] = useState(null);
+  let[validationError, setValidationError] = useState(null);
   let[sourceEntity, setSourceEntity] = useState(null);
   let[relatedEntities, setRelatedEntities] = useState(null);
   let [checked, setChecked] = React.useState(false);
@@ -122,10 +123,11 @@ export const SampleForm = (props) => {
                 setPermissions(updatedPermissions);
                 ingest_api_get_associated_ids(uuid)
                   .then((response) => {
-                      setRelatedEntities(response.results)
-                      console.debug('%c◉ response.results.length ', 'color:#00ff7b', response.results.length);
-                      console.debug('%c◉  ingest_api_get_associated_ids', 'color:#00ff7b', response.results, response.results.length);
-                      let message = "This sample is part of a group of " + relatedEntities.length + " other " + entityData.sample_category + " samples, ranging from " + relatedEntities[0].lab_id + " through " + relatedEntities[relatedEntities.length - 1].lab_id;
+                      let related = response.results;
+                      setRelatedEntities(related)
+                      console.debug('%c◉ related.length ', 'color:#00ff7b', related.length);
+                      console.debug('%c◉  ingest_api_get_associated_ids', 'color:#00ff7b', related, related.length);
+                      // let message = "This sample is part of a group of " + related.length + " other " + entityData.sample_category + " samples, ranging from " + related[0].lab_id + " through " + related[related.length - 1].lab_id;
                     })
                     .catch((error) => {
                       console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
@@ -167,9 +169,47 @@ export const SampleForm = (props) => {
 
   function validateForm(){
     let errors = 0;
+
+    // If Sample Category for non donor or  Organ for a Donor  Are missing
+    if( (formValues.sample_category === "" && sourceEntity.entity_type !== "Donor") || (formValues.organ === "" && sourceEntity.entity_type === "Donor") ){
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        sample_category: "Please select a Sample Category",
+        organ: "Please select an Organ"
+      }));
+      errors++;
+    }
+
+    //  Validate The Multiples Generation 
+    console.debug('%c◉ checked check ', 'color:#00ff7b', checked, formValues.generate_number);
+    if (checked) {
+      // Validate generate_number
+      if (!formValues.generate_number || parseInt(formValues.generate_number) <= 0 || isNaN(parseInt(formValues.generate_number))) {
+        setFormErrors(prevErrors => ({
+          ...prevErrors,
+          generate_number: "Please enter a valid number of samples to generate"
+        }));
+        errors++;
+      }
+      // Validate Blank lab_tissue_sample_id
+      if (formValues.lab_tissue_sample_id?.length > 0) {
+        setFormErrors(prevErrors => ({
+          ...prevErrors,
+          generate_number: "Please uncheck this box and remove the Lab Sample ID, then check this box again"
+        }));
+        errors++;
+      }
+    }
+
     return errors === 0;
   }
 
+  function badValError(error){
+    console.debug('%c◉badValError error ', 'color:#00ff7b', error);
+    setValidationError(error);
+
+  }
+ 
   function handleSubmit(e){
     e.preventDefault()    
     setIsProcessing(true);
@@ -190,6 +230,7 @@ export const SampleForm = (props) => {
           });
       }else{
         // We're in Create mode
+
         // They might not have changed the Group Selector, so lets check for the value
         let selectedGroup = document.getElementById("group_uuid");
         let createSample = {
@@ -211,6 +252,9 @@ export const SampleForm = (props) => {
           .then((response) => {
             if (response.status === 200) {
               props.onCreated({new_samples: response.results, entity: createSample});
+            }else if(response.status === 400){
+              // wrapUp(response.error ? response.error : response)
+              badValError(response.error ? response.error : response);
             }else{
               wrapUp(response.error ? response.error : response)
             }
@@ -218,6 +262,8 @@ export const SampleForm = (props) => {
           .catch((error) => {
             console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
           });
+
+        // Nope Just One
         }else{
           entity_api_create_entity("sample",JSON.stringify(createSample))
           .then((response) => {
@@ -368,7 +414,7 @@ export const SampleForm = (props) => {
                               backgroundColor: item.uuid === entityData.uuid ? "#ffffff77" : "none",
                               border: item.uuid === entityData.uuid ? "1px solid #fff" : "none",
                             }}
-                            size="small"
+                            small={true}
                             onClick={(e) => handleMultiEdit(item.uuid, e)}>
                           {`${item.submission_id}`}
                         </Button>
@@ -391,16 +437,18 @@ export const SampleForm = (props) => {
               id="direct_ancestor_uuid"
               value={sourceEntity ? sourceEntity.hubmap_id : ""}
               error={formErrors.direct_ancestor_uuid ? true : false}
-              onClick={() => setOpenSearch(true)}
-              disabled={permissions ?(!permissions.has_write_priv) : true}
+              onClick={() => setOpenSearch(uuid ? false : true)}
+              disabled={uuid?true:false}
               InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid )) ? true:false)}}
               variant="filled"
-              size="small"
+              helperText={(formErrors.direct_ancestor_uuid ? formErrors.direct_ancestor_uuid : "")}
+              small={true}
               required
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
                     aria-label="Select a Source Entity"
+                    disabled={uuid?true:false}
                     onClick={() => setOpenSearch(true)}
                     edge="end">
                     {<SearchIcon />}
@@ -445,15 +493,17 @@ export const SampleForm = (props) => {
           )}
 
           {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type === "Donor") && (
-            <Box className="my-3" >           
+            <Box className="my-4" >           
                 <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="organ">
                   Organ
                 </InputLabel>
                 <NativeSelect
                   id="organ"
                   label="Organ"
+                  required={sourceEntity.entity_type === "Donor"}
                   onChange={(e) => handleInputChange(e)}
                   fullWidth
+                  helperText={(formErrors.organ ? formErrors.organ : "")}
                   inputProps={{style: { padding: "0.8em"}}}
                   sx={{background: "rgba(0, 0, 0, 0.06)"}}
                   disabled={uuid?true:false}
@@ -465,9 +515,10 @@ export const SampleForm = (props) => {
             </Box>
           )}
           {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type !== "Donor") && (
-            <Box className="my-3">
+            <Box className="my-4">
               <NativeSelect
                 id="sample_category"
+                required={sourceEntity.entity_type !== "Donor"}
                 onChange={(e) => handleInputChange(e)}
                 fullWidth
                 inputProps={{
@@ -483,7 +534,7 @@ export const SampleForm = (props) => {
                 <option key={"section"} value={"section"}>Section</option>
                 <option key={"suspension"} value={"suspension"}>Suspension</option>
               </NativeSelect>
-              <FormHelperText id="sampleCategoryIDHelp" className="mb-3">The category of sample</FormHelperText>
+              <FormHelperText id="sampleCategoryIDHelp" className="">The category of sample <span className="error">{(formErrors.sample_category ? formErrors.sample_category : "")}</span></FormHelperText>
             </Box>
           )}
 
@@ -493,11 +544,10 @@ export const SampleForm = (props) => {
             label="Visit "
             helperText="Associated visit in which sample was acquired (Non-PHI number). e.g., baseline"
             value={formValues ? formValues.visit : ""}
-            error={formErrors.visit ? true : false}
             InputLabelProps={{shrink: ((uuid || (formValues?.visit )) ? true:false)}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
-            size="small"
+            small={true}
             disabled={!permissions.has_write_priv}
             variant="filled"/>
           
@@ -507,13 +557,13 @@ export const SampleForm = (props) => {
             label="Preparation Protocol "
             helperText="The protocol used when procuring or preparing the tissue. This must be provided as a protocols.io DOI URL see https://www.protocols.io/"
             value={formValues ? formValues.protocol_url : ""}
-            error={formErrors.protocol_url ? true : false}
+            error={formErrors.protocol_url ? formErrors.protocol_url : undefined} 
             InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url )) ? true:false)}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
             variant="filled"
-            className="my-3"
+            className="mt-4 mb-2"
             required/>
           
           {/* lab_tissue_sample_id */}
@@ -523,34 +573,41 @@ export const SampleForm = (props) => {
               label="Lab Sample ID"
               helperText="An identifier used by the lab to identify the specimen, this can be an identifier from the system used to track the specimen in the lab. This field will be entered by the user."
               value={formValues ? formValues.lab_tissue_sample_id : ""}
-              error={formErrors.lab_tissue_sample_id ? true : false}
               InputLabelProps={{shrink: ((uuid || (formValues?.lab_tissue_sample_id )) ? true:false)}}
               onChange={(e) => handleInputChange(e)}
               fullWidth
               disabled={!permissions.has_write_priv}
               variant="filled"
-              className="my-3" />
+              className="my-4" />
           </Collapse>
           {/* generate_ids_for_multiple_samples */}
+
           {!uuid && ( 
-            <FormControlLabel control={
-              <Checkbox 
-              checked={checked}
-              id= "generate_ids_for_multiple_samples"
-              onChange={(e) => handleInputChange(e)}
-              />
-            } label="Generate Multiple IDs" />
+            <FormControlLabel 
+              control={
+                <Checkbox 
+                checked={checked}
+                error={formErrors.generate_ids_for_multiple_samples ? true : false}
+                id= "generate_ids_for_multiple_samples"
+                helperText=""
+                disabled={!permissions.has_write_priv}
+                onChange={(e) => handleInputChange(e)}
+                />
+              } 
+            label="Generate Multiple IDs" />
           )}
           
           {/*generate_number */}
           <Collapse in={checked}> 
             <TextField
               id="generate_number"
+              required={checked}
               label="Number to Generate"
-              helperText="The Number of Samples to Generate"
+              helperText={(formErrors.generate_number ? formErrors.generate_number : "")}
               onChange={(e) => handleInputChange(e)}
+              fullWidth
               value={formValues ? formValues.generate_number : ""}
-              error={formErrors.generate_number ? true : false}
+              error={formErrors.generate_number ? formErrors.generate_number : false}
               small />
           </Collapse>
           
@@ -559,17 +616,16 @@ export const SampleForm = (props) => {
             label="Description "
             helperText="Free text field to enter a description of the donor"
             value={formValues ? formValues.description : ""}
-            error={formErrors.description ? true : false}
             InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
             variant="filled"
-            className="my-3"
+            className="my-4"
             multiline
             rows={4}/>
           
-          <Box className="my-3">           
+          <Box className="my-4">           
             <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
               Group
             </InputLabel>

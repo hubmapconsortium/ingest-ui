@@ -62,7 +62,7 @@ export function entity_api_update_entity(uuid, data, auth){
         console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
         return{status: error.response.status, results: error.response.data}
       }else{
-        return{error:error.response}
+        return{error: error.response}
       }
     });
 };
@@ -103,7 +103,7 @@ export function entity_api_create_entity(entitytype, data, auth){
  * entity_api_create_multiple_entities - create multiple entities
  *
  */
-export function entity_api_create_multiple_entities(count, data, auth){ 
+export function entity_api_create_multiple_entities(count, data){ 
   const options = {
     headers: {
       Authorization:
@@ -128,7 +128,6 @@ export function entity_api_create_multiple_entities(count, data, auth){
       return{error}
     });
 };
-
 
 /* 
  * entity_api_create_multiple_entities - create multiple entities
@@ -238,8 +237,8 @@ export function entity_api_get_globus_url(uuid, auth){
 // @TODO  DEPRECATING replaced with newer ingest API call
 export function entity_api_attach_bulk_metadata(uuid,item, auth){ 
   console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item, auth);
-  const options = {headers:{Authorization: "Bearer " + globalToken, 
-    "Content-Type":"application/json"}};
+  const options = {headers: {Authorization: "Bearer " + globalToken, 
+    "Content-Type": "application/json"}};
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid
 
   return axios 
