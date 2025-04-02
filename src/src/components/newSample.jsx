@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useMemo} from "react";
 import {useParams} from "react-router-dom";
 
 import Alert from "@mui/material/Alert";
@@ -92,13 +92,22 @@ export const SampleForm = (props) => {
   let[formErrors, setFormErrors] = useState( {
   } );
 
-  let organMenu = Object.keys(organ_types)
-    .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
-    .map(key => (
-      <option key={key} value={key}>
-        {organ_types[key]}
-      </option>
-    ));
+  // let organMenu = Object.keys(organ_types)
+  //   .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
+  //   .map(key => (
+  //     <option key={key} value={key}>
+  //       {organ_types[key]}
+  //     </option>
+  //   ));
+  const organMenu = useMemo(() => {
+    return Object.keys(organ_types)
+      .sort((a, b) => organ_types[a].localeCompare(organ_types[b]))
+      .map((key) => (
+        <option key={key} value={key}>
+          {organ_types[key]}
+        </option>
+      ));
+  }, [organ_types]);
 
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
