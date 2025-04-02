@@ -21,7 +21,7 @@ export function entity_api_get_entity(uuid){
     .then(res => {
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch(error => {
       console.debug("entity_api_get_entity", error, error.response);
       if(error.response){
@@ -29,7 +29,7 @@ export function entity_api_get_entity(uuid){
       }else{
         return{error}
       }
-    });
+    } );
 };
 
 /* 
@@ -44,7 +44,7 @@ export function entity_api_update_entity(uuid, data, auth){
       // console.debug("entity_api_update_entity", res);
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch(error => {
       if(error.response){
         console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
@@ -52,7 +52,7 @@ export function entity_api_update_entity(uuid, data, auth){
       }else{
         return{error: error.response}
       }
-    });
+    } );
 };
 
 /* 
@@ -67,7 +67,7 @@ export function entity_api_create_entity(entitytype, data, auth){
     .then(res => {
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch((error) => {
       console.debug("entity_api_create_entity error", error, error.response);
       if(error.response && error.response.data){
@@ -75,7 +75,7 @@ export function entity_api_create_entity(entitytype, data, auth){
       }else{
         return{error}
       }
-    });
+    } );
 };
 
 /* 
@@ -89,15 +89,15 @@ export function entity_api_create_multiple_entities(count, data){
     .then(res => {
       let results = res.data;
       let fin = [];
-      results.forEach( element => {
+      results.forEach(element => {
         element.checked = false; // add a checked attribute for later UI usage
         fin.push(element);
-      });
+      } );
       return{status: res.status, results: fin}
-    })
+    } )
     .catch(error => {
       return{error}
-    });
+    } );
 };
 
 /* 
@@ -112,10 +112,10 @@ export function entity_api_update_multiple_entities(data, auth){
     .then(res => {
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch(error => {
       return{error}
-    });
+    } );
 };
 
 /*
@@ -132,10 +132,10 @@ export function entity_api_get_entity_ancestor(uuid, auth){
       // console.debug(res);
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch(error => {
       return{error}
-    });
+    } );
 };
 
 export function entity_api_get_entity_ancestor_organ(uuid){ 
@@ -146,10 +146,10 @@ export function entity_api_get_entity_ancestor_organ(uuid){
       // console.debug(res);
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch(error => {
       return{error}
-    });
+    } );
 };
 
 /*
@@ -165,10 +165,10 @@ export function entity_api_get_entity_ancestor_list(uuid, auth){
       // console.debug(res);
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch(error => {
       return{error}
-    });
+    } );
 };
 
 /*
@@ -184,10 +184,10 @@ export function entity_api_get_globus_url(uuid, auth){
     .then((res) => {
       // console.debug("entity_api_get_globus_url", res);
       return{status: res.status, results: res.data}
-    })
+    } )
     .catch((error) => {
       return{error}
-    });
+    } );
 };
 
 // @TODO  DEPRECATING replaced with newer ingest API call
@@ -200,11 +200,11 @@ export function entity_api_attach_bulk_metadata(uuid,item, auth){
       console.debug("ingest_api_attach_bulk_metadata",res);
       let results = res.data;
       return{status: res.status, results: results}
-    })
+    } )
     .catch(error => {
-      console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error );
+      console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error);
       // throw new Error(error);
       return{error}
-    });
+    } );
 };
 

@@ -32,17 +32,13 @@ import {
   entity_api_update_entity,
   entity_api_create_entity,
   entity_api_create_multiple_entities,
-  entity_api_get_entity_ancestor,
   entity_api_get_entity_ancestor_list
 } from "../service/entity_api";
 import {FormHeader, GroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
 import SearchComponent from "./search/SearchComponent";
-import {RUI} from "./RUI";
-import RUIViewDetailModal from "./ui/ruiModalLegacy";
 import RUIIntegration from "./uuid/tissue_form_components/ruiIntegration";
-import { toTitleCase } from "../utils/string_helper";
-import { isRUIEntity } from "../utils/entity_helper";
-import { SAMPLE_CATEGORIES, RUI_ORGAN_TYPES } from "../constants";
+import {toTitleCase} from "../utils/string_helper";
+import {RUI_ORGAN_TYPES} from "../constants";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {
@@ -64,13 +60,13 @@ export const SampleForm = (props) => {
   const userInfo = JSON.parse(localStorage.getItem("info"));
   const defaultGroup = userGroups[0].uuid;
   let organ_types = JSON.parse(localStorage.getItem("organs"));
-  let[permissions,setPermissions] = useState({ 
+  let[permissions,setPermissions] = useState( { 
     has_admin_priv: false,
     has_publish_priv: false,
     has_submit_priv: false,
     has_write_priv: false
-  });
-  let[entityData, setEntityData] = useState({
+  } );
+  let[entityData, setEntityData] = useState( {
     direct_ancestor_uuid: "",
     sample_category: "",
     organ_type_donor_source_organ: "",
@@ -81,8 +77,8 @@ export const SampleForm = (props) => {
     lab_sample_id_not_on_multiple: "",
     description: "",
     register_location_rui: "",
-  });  
-  let[formValues, setFormValues] = useState({
+  } );  
+  let[formValues, setFormValues] = useState( {
     direct_ancestor_uuid: "",
     sample_category: "",
     organ_type_donor_source_organ: "",
@@ -92,9 +88,9 @@ export const SampleForm = (props) => {
     number_to_generate: "",
     lab_tissue_sample_id: "",
     description: "",
-  });
-  let[formErrors, setFormErrors] = useState({
-  });
+  } );
+  let[formErrors, setFormErrors] = useState( {
+  } );
 
   let organMenu = Object.keys(organ_types)
     .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
@@ -134,21 +130,21 @@ export const SampleForm = (props) => {
                     console.debug('%c◉ LOADED BY UUID, PARENT ORG IS:', 'color:#00ff7b', organ);
                     // entityInfo.organ = organ;
                     console.debug('%c◉ RUI_ORGAN_TYPES.includes(organ) ', 'color:#00ff7b', RUI_ORGAN_TYPES.includes(organ));
-                    setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block" ) ? true : false,organ]);
+                    setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block") ? true : false,organ]);
                     // entityInfo.ruiEnabled =(RUI_ORGAN_TYPES.includes(entityInfo.organ) && entityInfo.sample_category==="block" ) ? true : false;
                   }catch(error){
                     console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
                     // return error;
                   }
-                })
+                } )
                 .catch((error) => { 
                   console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
-                })
+                } )
             }else if(entityInfo.direct_ancestor.organ){
               // We already have the Organ from the Source
               // entityInfo.organ = entityInfo.direct_ancestor.organ;
               // entityInfo.ruiEnabled =(RUI_ORGAN_TYPES.includes(entityInfo.organ) && entityInfo.sample_category==="block" ) ? true : false;
-              setRuiEnabled([(RUI_ORGAN_TYPES.includes(entityInfo.direct_ancestor.organ) && entityInfo.sample_category==="block" ) ? true : false,entityInfo.direct_ancestor.organ]);
+              setRuiEnabled([(RUI_ORGAN_TYPES.includes(entityInfo.direct_ancestor.organ) && entityInfo.sample_category==="block") ? true : false,entityInfo.direct_ancestor.organ]);
             }
 
             if(entityInfo.rui_location){
@@ -164,7 +160,7 @@ export const SampleForm = (props) => {
               .then((response) => {
                 const updatedPermissions = {
                   ...response.results,
-                  ...(entityInfo.data_access_level === "public" && { has_write_priv: false })
+                  ...(entityInfo.data_access_level === "public" && {has_write_priv: false} )
                 };
                 setPermissions(updatedPermissions);
                 ingest_api_get_associated_ids(uuid)
@@ -175,15 +171,15 @@ export const SampleForm = (props) => {
                       console.debug('%c◉  ingest_api_get_associated_ids', 'color:#00ff7b', related, related.length);
                     // Is there a RUI enabled organ up the chain?
 
-                    })
+                    } )
                     .catch((error) => {
                       console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
-                    });
-              })
+                    } );
+              } )
               .catch((error) => {
                 console.error("i0ngest_api_allowable_edit_states ERROR", error);
                 setPageErrors(error);
-              });
+              } );
           
             document.title = `HuBMAP Ingest Portal | Sample: ${entityInfo.hubmap_id}`; //@TODO - somehow handle this detection in App
             // console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
@@ -192,26 +188,26 @@ export const SampleForm = (props) => {
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
           }
-        })
+        } )
         .catch((error) => {
           console.debug("entity_api_get_entity ERROR", error);
           setPageErrors(error);
-        });
+        } );
     }else{
-      setPermissions({
+      setPermissions( {
         has_write_priv: true,
-      });
+      } );
       
     }
     setLoading(false);
   }, [uuid]);
 
-  function handleRUIJson (dataFromChild){
-    console.debug('%c◉Form  handleJsonRUI ', 'color:#00ff7b',dataFromChild );
-    setFormValues((prevValues) => ({
+  function handleRUIJson(dataFromChild){
+    console.debug('%c◉Form  handleJsonRUI ', 'color:#00ff7b',dataFromChild);
+    setFormValues((prevValues) => ( {
       ...prevValues,
       rui_location: JSON.stringify(dataFromChild)
-    }));
+    } ));
     console.log("dataFromChild: "+typeof dataFromChild)
     setRUIJson(JSON.parse(dataFromChild))
     setRuiModal([false])
@@ -221,17 +217,17 @@ export const SampleForm = (props) => {
   function handleInputChange(e){
     const{id, value, checked} = e.target;
     console.debug('%c◉ handleInputChange ', 'color:#00ff7b', id, value, checked);
-    setFormValues((prevValues) => ({
+    setFormValues((prevValues) => ( {
       ...prevValues,
       [id]: (id ==="generate_ids_for_multiple_samples") ? checked : value
-    }));
+    } ));
     
     if(id ==="generate_ids_for_multiple_samples"){
       setChecked(checked)
     }
 
     if(id === "sample_category" && value === "block"){
-      console.debug('%c◉ Block! ', 'color:#005EFF' );
+      console.debug('%c◉ Block! ', 'color:#005EFF');
       // if we're a block, lets also check if our Source
       // is rui Enabled
 
@@ -280,11 +276,11 @@ export const SampleForm = (props) => {
               // return error;
             }
           }
-        })
+        } )
         .catch((error) => { 
           console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
           // return error;
-        });
+        } );
     }else if(id === "sample_category" && value !== "block"){
       // Other Sample Cats Dont Count
       setRuiEnabled([false])
@@ -294,32 +290,32 @@ export const SampleForm = (props) => {
   function validateForm(){
     let errors = 0;
     // If Sample Category for non donor or  Organ for a Donor  Are missing
-    if( (formValues.sample_category === "" && sourceEntity.entity_type !== "Donor") || (formValues.organ === "" && sourceEntity.entity_type === "Donor") ){
-      setFormErrors(prevErrors => ({
+    if((formValues.sample_category === "" && sourceEntity.entity_type !== "Donor") || (formValues.organ === "" && sourceEntity.entity_type === "Donor")){
+      setFormErrors(prevErrors => ( {
         ...prevErrors,
         sample_category: "Please select a Sample Category",
         organ: "Please select an Organ"
-      }));
+      } ));
       errors++;
     }
 
     //  Validate The Multiples Generation 
     console.debug('%c◉ checked check ', 'color:#00ff7b', checked, formValues.generate_number);
-    if (checked) {
+    if (checked){
       // Validate generate_number
-      if (!formValues.generate_number || parseInt(formValues.generate_number) <= 0 || isNaN(parseInt(formValues.generate_number))) {
-        setFormErrors(prevErrors => ({
+      if (!formValues.generate_number || parseInt(formValues.generate_number) <= 0 || isNaN(parseInt(formValues.generate_number))){
+        setFormErrors(prevErrors => ( {
           ...prevErrors,
           generate_number: "Please enter a valid number of samples to generate"
-        }));
+        } ));
         errors++;
       }
       // Validate Blank lab_tissue_sample_id
-      if (formValues.lab_tissue_sample_id?.length > 0) {
-        setFormErrors(prevErrors => ({
+      if (formValues.lab_tissue_sample_id?.length > 0){
+        setFormErrors(prevErrors => ( {
           ...prevErrors,
           generate_number: "Please uncheck this box and remove the Lab Sample ID, then check this box again"
-        }));
+        } ));
         errors++;
       }
     }
@@ -349,9 +345,9 @@ export const SampleForm = (props) => {
       protocol_url: formValues.protocol_url,
       visit: formValues.visit,
       description: formValues.description,
-      ...((formValues.sample_category === "" && formValues.organ) && { organ: formValues.organ }),
-      ...((!checked && (formValues.rui_location && formValues.rui_location.length>0)) && { rui_location: RUIJson }),
-      ...((!checked && formValues.lab_tissue_sample_id) && { lab_tissue_sample_id: formValues.lab_tissue_sample_id })
+      ...((formValues.sample_category === "" && formValues.organ) && {organ: formValues.organ} ),
+      ...((!checked && (formValues.rui_location && formValues.rui_location.length>0)) && {rui_location: RUIJson} ),
+      ...((!checked && formValues.lab_tissue_sample_id) && {lab_tissue_sample_id: formValues.lab_tissue_sample_id} )
     }
     console.debug('%c◉ sampleFormData ', 'color:#00ff7b', sampleFormData);
     if(validateForm()){
@@ -365,10 +361,10 @@ export const SampleForm = (props) => {
             }else{
               badValError(response.error ? response.error : response);
             }
-          })
+          } )
           .catch((error) => {
             wrapUp(error)
-          });
+          } );
       }else{
         // We're in Create mode
 
@@ -376,25 +372,25 @@ export const SampleForm = (props) => {
         let selectedGroup = document.getElementById("group_uuid");
         sampleFormData.group_uuid = selectedGroup?.value ? selectedGroup.value : defaultGroup;
         // We need to add the Category back to the Form being submitted 
-        sampleFormData.sample_category = ((formValues.sample_category === "" && formValues.organ) ? "organ": formValues.sample_category )
+        sampleFormData.sample_category = ((formValues.sample_category === "" && formValues.organ) ? "organ": formValues.sample_category)
         // Are we making multiples?
         if(checked){
 
           console.debug('%c◉ checked, ', 'color:#00ff7b', formValues.generate_number,sampleFormData,JSON.stringify(sampleFormData));
           entity_api_create_multiple_entities(formValues.generate_number,JSON.stringify(sampleFormData))
           .then((response) => {
-            if (response.status === 200) {
-              props.onCreated({new_samples: response.results, entity: sampleFormData});
+            if (response.status === 200){
+              props.onCreated( {new_samples: response.results, entity: sampleFormData} );
             }else if(response.status === 400){
               badValError(response.error ? response.error : response);
             }else{
               badValError(response.error ? response.error : response);
               // wrapUp(response.error ? response.error : response)
             }
-          })
+          } )
           .catch((error) => {
             console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
-          });
+          } );
         // Nope Just One
         }else{
           entity_api_create_entity("sample",JSON.stringify(sampleFormData))
@@ -404,10 +400,10 @@ export const SampleForm = (props) => {
             }else{
               badValError(response.error ? response.error : response);
             }
-          })
+          } )
           .catch((error) => {
             wrapUp(error)
-          });
+          } );
         }
           
       }
@@ -427,12 +423,12 @@ export const SampleForm = (props) => {
       // Is this a RUI Organ?
       ruiOrgan = RUI_ORGAN_TYPES.includes(e.row.organ) 
     }
-    setFormValues((prevValues) => ({
+    setFormValues((prevValues) => ( {
       ...prevValues,
       direct_ancestor_uuid: e.row.uuid,
-      ...((e.row.organ) && { organ: e.row.organ }),
-      ...((ruiOrgan === true) && { RUIOrgan: true }),
-    }));
+      ...((e.row.organ) && {organ: e.row.organ} ),
+      ...((ruiOrgan === true) && {RUIOrgan: true} ),
+    } ));
     // If the source is a Donor we already know we're not RUI Enabled abymore
     if(e.row.entity_type === "Donor"){
       setRuiEnabled([false]);
@@ -489,11 +485,11 @@ export const SampleForm = (props) => {
       sptype === "blood";
   }
 
-  function shouldShowRUIInterface() {
+  function shouldShowRUIInterface(){
     return ruiEnabled[0]
   }
     
-  if(isLoading ||(!entityData && uuid) ){
+  if(isLoading ||(!entityData && uuid)){
     return(<LinearProgress />);
   }else{
     return(
@@ -591,7 +587,7 @@ export const SampleForm = (props) => {
                         </Button>
                       </li>
                     );
-                  })}
+                  } )}
                 </ul>
                 {/* </ul> */}
             </Collapse> 
@@ -602,15 +598,15 @@ export const SampleForm = (props) => {
 
         <form onSubmit={(e) => handleSubmit(e)}>
 
-          <FormControl sx={{ width: '100%', mt: 2 }} variant="filled">
-            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid ) ? true:false)}>Source ID</InputLabel>
+          <FormControl sx={{width: '100%', mt: 2}} variant="filled">
+            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid) ? true:false)}>Source ID</InputLabel>
             <FilledInput
               id="direct_ancestor_uuid"
               value={sourceEntity ? sourceEntity.hubmap_id : ""}
               error={formErrors.direct_ancestor_uuid ? true : false}
               onClick={() => setOpenSearch(uuid ? false : true)}
               disabled={uuid?true:false}
-              InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid )) ? true:false)}}
+              InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid)) ? true:false)}}
               variant="filled"
               helperText={(formErrors.direct_ancestor_uuid ? formErrors.direct_ancestor_uuid : "")}
               small={"true"}
@@ -675,7 +671,7 @@ export const SampleForm = (props) => {
                   onChange={(e) => handleInputChange(e)}
                   fullWidth
                   helperText={(formErrors.organ ? formErrors.organ : "")}
-                  inputProps={{style: { padding: "0.8em"}}}
+                  inputProps={{style: {padding: "0.8em"}}}
                   sx={{background: "rgba(0, 0, 0, 0.06)"}}
                   disabled={uuid?true:false}
                   value={formValues.organ ? formValues.organ : ""}>
@@ -693,7 +689,7 @@ export const SampleForm = (props) => {
                 onChange={(e) => handleInputChange(e)}
                 fullWidth
                 inputProps={{
-                  style: { padding: "0.8em"}
+                  style: {padding: "0.8em"}
                 }}
                 sx={{
                   background: "rgba(0, 0, 0, 0.06)"
@@ -715,7 +711,7 @@ export const SampleForm = (props) => {
             label="Visit "
             helperText="Associated visit in which sample was acquired (Non-PHI number). e.g., baseline"
             value={formValues ? formValues.visit : ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.visit )) ? true:false)}}
+            InputLabelProps={{shrink: ((uuid || (formValues?.visit)) ? true:false)}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             small={"true"}
@@ -729,7 +725,7 @@ export const SampleForm = (props) => {
             helperText="The protocol used when procuring or preparing the tissue. This must be provided as a protocols.io DOI URL see https://www.protocols.io/"
             value={formValues ? formValues.protocol_url : ""}
             error={formErrors.protocol_url ? formErrors.protocol_url : false} 
-            InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url )) ? true:false)}}
+            InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url)) ? true:false)}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
@@ -744,7 +740,7 @@ export const SampleForm = (props) => {
               label="Lab Sample ID"
               helperText="An identifier used by the lab to identify the specimen, this can be an identifier from the system used to track the specimen in the lab. This field will be entered by the user."
               value={formValues ? formValues.lab_tissue_sample_id : ""}
-              InputLabelProps={{shrink: ((uuid || (formValues?.lab_tissue_sample_id )) ? true:false)}}
+              InputLabelProps={{shrink: ((uuid || (formValues?.lab_tissue_sample_id)) ? true:false)}}
               onChange={(e) => handleInputChange(e)}
               fullWidth
               disabled={!permissions.has_write_priv}
