@@ -198,7 +198,7 @@ export const SampleForm = (props) => {
   }, [uuid]);
 
   function handleRUIJson(dataFromChild){
-    console.debug('%c◉Form  handleJsonRUI ', 'color:#00ff7b',dataFromChild);
+    console.debug('%c◉Form  handleRUIJson ', 'color:#00ff7b',dataFromChild);
     setFormValues((prevValues) => ( {
       ...prevValues,
       rui_location: JSON.stringify(dataFromChild)
@@ -321,11 +321,12 @@ export const SampleForm = (props) => {
     console.debug('%c◉badValError error ', 'color:#00ff7b', error,error.response.data.error);
     setValidationError(error.response.data.error ? error.response.data.error : error);
     setIsProcessing(false);
-  }  
+  }
+    
   function openRUIDetailModal(){
     console.debug('%c◉  openRUIDetailModal', 'color:#00ff7b');
     console.debug(RUIJson);
-    console.debug(RUIJson.location);
+    // console.debug(RUIJson.location);
     setRUIDetailsModal(true)
   }
  
@@ -511,7 +512,7 @@ export const SampleForm = (props) => {
           </DialogActions>
         </Dialog>
 
-        {shouldShowRUIInterface() && (
+        {shouldShowRUIInterface() && !checked && (
           <Dialog
             fullScreen
             onClose={(e) => handleClose(e)}
@@ -524,6 +525,7 @@ export const SampleForm = (props) => {
               organ={ruiEnabled[1]}
               sex={ruiEnabled[2]}
               user={userInfo.name}
+              closeRUIModal={() => setRuiModal([false])}
               location={RUIJson ? RUIJson : null}
               parent="SamplesForm" />
               {/* <RUI 
@@ -672,6 +674,7 @@ export const SampleForm = (props) => {
                 <FormHelperText id="organIDHelp" className="mb-3">The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.</FormHelperText>
             </Box>
           )}
+
           {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type !== "Donor") && (
             <Box className="my-4">
               <NativeSelect
@@ -787,38 +790,28 @@ export const SampleForm = (props) => {
           {/* RUI REG */}
           { (formValues.direct_ancestor_uuid && sourceEntity.entity_type.toLowerCase() !=="donor") && (!formValues.sample_category || formValues.sample_category === "") && (
             <>
-              <Typography variant="caption">Validating RUI Interface...</Typography>
+              <Typography variant="caption">Validating RUI Interface... Please Select a Sample Category</Typography>
               <LinearProgress />
             </>
           )}
-          {shouldShowRUIInterface() === false && !uuid && (
-            <>
-              <Button
-                onClick={() => setRuiModal([true])}
-                variant="contained"
-                disabled>
-                 Register Location
-              </Button> <br /> 
-              <Typography variant="caption" style={{color: "rgba(0, 0, 0, 0.4)"}}>RUI Interface only available for Qualifying Samples <br /></Typography>
-              <Typography variant="caption" style={{color: "rgba(0, 0, 0, 0.4)"}}>(Must be a Block from a Supported Organ Type)</Typography>
-            </>
-          )}
-          {(shouldShowRUIInterface() === false && uuid) && (    
+
+          {/* {(shouldShowRUIInterface() === false && uuid) && (     */}
+          {(shouldShowRUIInterface() === false) && !checked && (    
             <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
               <Typography variant="caption">RUI Interface not Available < br/></Typography>
               <Typography variant="caption">(Sample must be a Block from a Supported Organ Type)</Typography>
             </Alert>
           )}
-          {shouldShowRUIInterface() === true && !entityData.rui_location && (
+          {shouldShowRUIInterface() === true && !checked && (
             <Button
               onClick={() => setRuiModal([true])}
               variant="contained">
-                Register Location
+                {entityData.rui_location ? "Modify Location Information" : "Register Location"}
             </Button>
           )}          
           
           {/* RUI VIEW */}
-          {formValues.rui_location && (
+          {(formValues.rui_location && (RUIJson && RUIJson !== null)) && (!checked && !uuid) && (
             <React.Fragment>
               <div className="col-sm-2 text-left">
                 <Button
@@ -841,7 +834,7 @@ export const SampleForm = (props) => {
                 <DialogTitle>Sample Location Information</DialogTitle>
                 <DialogContent>
                   <pre>
-                      {JSON.stringify(RUIJson, null, 3)}
+                    {JSON.stringify(RUIJson, null, 3)}
                   </pre>
                 </DialogContent>
                 <DialogActions>
