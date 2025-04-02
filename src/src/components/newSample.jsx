@@ -747,12 +747,12 @@ export const SampleForm = (props) => {
             <FormControlLabel 
               control={
                 <Checkbox 
-                checked={checked}
-                error={formErrors.generate_ids_for_multiple_samples ? true : false}
-                id= "generate_ids_for_multiple_samples"
-                helperText=""
-                disabled={!permissions.has_write_priv}
-                onChange={(e) => handleInputChange(e)}
+                  checked={checked}
+                  error={formErrors.generate_ids_for_multiple_samples ? "true" : "false"}
+                  id= "generate_ids_for_multiple_samples"
+                  helperText=""
+                  disabled={!permissions.has_write_priv}
+                  onChange={(e) => handleInputChange(e)}
                 />
               } 
             label="Generate Multiple IDs" />

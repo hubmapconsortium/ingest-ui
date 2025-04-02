@@ -340,7 +340,7 @@ export function App(props){
   const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
   const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
   const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
-  var[bundledParameters] = useState({entity_type:  queryEntity, keywords:  queryKeyword, group_uuid:  queryGroup});
+  var[bundledParameters] = useState({entity_type: queryEntity, keywords: queryKeyword, group_uuid: queryGroup});
 
   // Error Query Bits
   var[errorShow,setErrorShow] = useState(false);
@@ -397,29 +397,22 @@ export function App(props){
                 '& .MuiDrawer-paper': {
                   height: 150,
                   boxSizing: 'border-box'},
-                color: 'white',
-                height: 150 ,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {height: 150,
-                  boxSizing: 'border-box',},
               }}
               variant="temporary"
               className="alert-danger"
               anchor='bottom'
               open={errorShow}>
-              <Box sx={{width: '100%', padding: 1, backgroundColor: '#dc3545', color: "#fff",'& span, h5': {display: 'inline-block',padding: "0 5px 0 0 "}}}>
-                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding: 1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
-              <Box sx={{width: '100%', padding: 1, backgroundColor: '#dc3545', color: "#fff",'& span, h5': {display: 'inline-block',padding: "0 5px 0 0 "}}}>
-                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding: 1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
-                <IconButton
-                  sx={{position: 'absolute', right: 8, top: 4, color: 'white' }}
-                  sx={{position: 'absolute', right: 8, top: 4, color: 'white' }}
-                  aria-label="close drawer"
-                  onClick= {()=> setErrorShow(false)}
-                  edge="start">
-                  <CloseIcon />
-                </IconButton>
-              </Box>
+                <Box 
+                  sx={{
+                    width: '100%', 
+                    padding: 1, 
+                    backgroundColor: '#dc3545', 
+                    color: "#fff",'& span, h5': {display: 'inline-block',padding: "0 5px 0 0 "}
+                  }}>
+                  <Typography variant="h5" align="left">
+                    <FontAwesomeIcon icon={faExclamationTriangle} sx={{padding: 1}}/>  Sorry!  </Typography>
+                    <Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+                </Box>
 
               <Box sx={{
                 width: '100%', height: '100%', padding: 1, backgroundColor: 'white', color: "#dc3545", 
@@ -470,7 +463,6 @@ export function App(props){
               </React.Fragment>
             )}
           
-            {APIErr.length > 0 && (
             {APIErr.length > 0 && (
               <Alert variant="filled" severity="error">
                 There was an error populating from datasource {APIErr[0]}  
@@ -557,7 +549,7 @@ export function App(props){
                         <DialogContent sx={newEntity.newSamples ? {maxWidth: "500px"} : {}}> 
                           {/* <DialogContent>  */}
                           <Result
-                            result={{entity:  newEntity}}
+                            result={{entity: newEntity}}
                             onReturn={() => onCloseSuccess()}
                             onCreateNext={() => onCreateNext(newEntity)}
                             entity={newEntity}
