@@ -111,7 +111,6 @@ export const SampleForm = (props) => {
             FormCheckRedirect(uuid,entityType,"Sample");
             const entityInfo = response.results;
             setSourceEntity(entityInfo.direct_ancestor);
-            console.debug('%c◉ entityInfo ', 'color:#00ff7b', entityInfo);
             if(entityInfo.direct_ancestor && entityInfo.direct_ancestor.uuid && !entityInfo.direct_ancestor.organ){
               // We dont have the organ directly from the source, so we gotta dig up the tree for it
               entity_api_get_entity_ancestor_list(entityInfo.direct_ancestor.uuid)
@@ -127,7 +126,7 @@ export const SampleForm = (props) => {
                       organObject = ancestorList.results;
                     }
                     organ = organObject.organ ? organObject.organ : undefined;
-                    console.debug('%c◉ LOADED BY UUID, PARENT ORG IS:', 'color:#00ff7b', organ);
+                    // console.debug('%c◉ LOADED BY UUID, PARENT ORG IS:', 'color:#00ff7b', organ);
                     // entityInfo.organ = organ;
                     console.debug('%c◉ RUI_ORGAN_TYPES.includes(organ) ', 'color:#00ff7b', RUI_ORGAN_TYPES.includes(organ));
                     setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block") ? true : false,organ]);
@@ -142,8 +141,6 @@ export const SampleForm = (props) => {
                 } )
             }else if(entityInfo.direct_ancestor.organ){
               // We already have the Organ from the Source
-              // entityInfo.organ = entityInfo.direct_ancestor.organ;
-              // entityInfo.ruiEnabled =(RUI_ORGAN_TYPES.includes(entityInfo.organ) && entityInfo.sample_category==="block" ) ? true : false;
               setRuiEnabled([(RUI_ORGAN_TYPES.includes(entityInfo.direct_ancestor.organ) && entityInfo.sample_category==="block") ? true : false,entityInfo.direct_ancestor.organ]);
             }
 
@@ -180,10 +177,8 @@ export const SampleForm = (props) => {
                 console.error("i0ngest_api_allowable_edit_states ERROR", error);
                 setPageErrors(error);
               } );
-          
-            document.title = `HuBMAP Ingest Portal | Sample: ${entityInfo.hubmap_id}`; //@TODO - somehow handle this detection in App
-            // console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
-            // console.debug('%c◉ RUIJson ', 'color:#00ff7b', RUIJson);
+            
+              document.title = `HuBMAP Ingest Portal | Sample: ${entityInfo.hubmap_id}`; //@TODO - somehow handle this detection in App
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
@@ -273,7 +268,6 @@ export const SampleForm = (props) => {
               setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ)) ? true : false,organ,donorSex]);
             }catch(error){
               console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
-              // return error;
             }
           }
         } )
@@ -338,8 +332,6 @@ export const SampleForm = (props) => {
   function handleSubmit(e){
     e.preventDefault()    
     setIsProcessing(true);
-    // let preparedRUIJson = JSON.parse(RUIJson.location)
-    // console.debug('%c◉ JSON.parse(formValues.rui_location) ', 'color:#00ff7b', typeof JSON.parse(RUIJson));
     let sampleFormData = {
       direct_ancestor_uuid: formValues.direct_ancestor_uuid,
       protocol_url: formValues.protocol_url,
@@ -351,7 +343,6 @@ export const SampleForm = (props) => {
     }
     console.debug('%c◉ sampleFormData ', 'color:#00ff7b', sampleFormData);
     if(validateForm()){
-      // let cleanForm =formValues
       if(uuid){
         // We're in Edit mode
         entity_api_update_entity(uuid,JSON.stringify(sampleFormData))
@@ -371,12 +362,14 @@ export const SampleForm = (props) => {
         // They might not have changed the Group Selector, so lets check for the value
         let selectedGroup = document.getElementById("group_uuid");
         sampleFormData.group_uuid = selectedGroup?.value ? selectedGroup.value : defaultGroup;
+        
         // We need to add the Category back to the Form being submitted 
         sampleFormData.sample_category = ((formValues.sample_category === "" && formValues.organ) ? "organ": formValues.sample_category)
+        
         // Are we making multiples?
         if(checked){
-
           console.debug('%c◉ checked, ', 'color:#00ff7b', formValues.generate_number,sampleFormData,JSON.stringify(sampleFormData));
+          
           entity_api_create_multiple_entities(formValues.generate_number,JSON.stringify(sampleFormData))
           .then((response) => {
             if (response.status === 200){
@@ -385,7 +378,6 @@ export const SampleForm = (props) => {
               badValError(response.error ? response.error : response);
             }else{
               badValError(response.error ? response.error : response);
-              // wrapUp(response.error ? response.error : response)
             }
           } )
           .catch((error) => {
@@ -497,7 +489,6 @@ export const SampleForm = (props) => {
         <Dialog
           fullWidth={true}
           maxWidth="lg"
-          // onClose={console.debug("CLOSED!")}
           onClose={(e) => handleClose(e)}
           aria-labelledby="source-lookup-dialog"
           open={openSearch === true ? true : false}>

@@ -14,7 +14,7 @@ const options = {
  * return:  { status, results}
  */
 export function entity_api_get_entity(uuid){ 
-  // console.debug("entity_api_get_entity", auth);
+  // console.debug("entity_api_get_entity");
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`;
   return axios 
     .get(url,options)
@@ -36,7 +36,7 @@ export function entity_api_get_entity(uuid){
  * update_entity - updates data of an existing entity
  *
  */
-export function entity_api_update_entity(uuid, data, auth){ 
+export function entity_api_update_entity(uuid, data){ 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`;       
   return axios 
     .put(url, data, options)
@@ -59,7 +59,7 @@ export function entity_api_update_entity(uuid, data, auth){
  * create_entity - create a new entity
  *
  */
-export function entity_api_create_entity(entitytype, data, auth){ 
+export function entity_api_create_entity(entitytype, data){ 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${entitytype}`;
         
   return axios 
@@ -104,7 +104,7 @@ export function entity_api_create_multiple_entities(count, data){
  * entity_api_create_multiple_entities - create multiple entities
  *
  */
-export function entity_api_update_multiple_entities(data, auth){ 
+export function entity_api_update_multiple_entities(data){ 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/multiple-samples`;
         
   return axios 
@@ -124,7 +124,7 @@ export function entity_api_update_multiple_entities(data, auth){
  * return:  { status, results}
  */
 // @TODO: Rename to reflect Organ endpoint
-export function entity_api_get_entity_ancestor(uuid, auth){ 
+export function entity_api_get_entity_ancestor(uuid){ 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`;
   return axios 
     .get(url,options)
@@ -157,7 +157,7 @@ export function entity_api_get_entity_ancestor_organ(uuid){
  * 
  * return:  { status, results}
  */
-export function entity_api_get_entity_ancestor_list(uuid, auth){ 
+export function entity_api_get_entity_ancestor_list(uuid){ 
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/ancestors/${uuid}`;
   return axios 
     .get(url,options)
@@ -176,8 +176,8 @@ export function entity_api_get_entity_ancestor_list(uuid, auth){
  * 
  * return:  { status, results}
  */
-export function entity_api_get_globus_url(uuid, auth){ 
-  // console.debug("entity_api_get_globus_url", auth);
+export function entity_api_get_globus_url(uuid){ 
+  // console.debug("entity_api_get_globus_url");
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url`;
   return axios
     .get(url, options)
@@ -191,8 +191,8 @@ export function entity_api_get_globus_url(uuid, auth){
 };
 
 // @TODO  DEPRECATING replaced with newer ingest API call
-export function entity_api_attach_bulk_metadata(uuid,item, auth){ 
-  console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item, auth);
+export function entity_api_attach_bulk_metadata(uuid,item){ 
+  console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item);
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid
   return axios 
     .put(url,item,options)
