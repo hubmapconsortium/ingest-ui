@@ -820,7 +820,7 @@ export const SampleForm = (props) => {
           )}          
           
           {/* RUI VIEW */}
-          {(formValues.rui_location && (RUIJson && RUIJson !== null)) && (!checked && !uuid) && (
+          {(formValues.rui_location ) && !checked && (
             <React.Fragment>
               <div className="col-sm-2 text-left">
                 <Button
