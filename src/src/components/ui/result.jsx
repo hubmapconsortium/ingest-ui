@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import MultipleListModal from "../uuid/tissue_form_components/multipleListModal";
 import Tooltip from '@mui/material/Tooltip';
+import {Typography} from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolder,
@@ -42,32 +43,19 @@ class Result extends Component {
   };
 
   render() {
-    console.debug("Results");
-    console.debug('RESULTS!!!!', this.props.result)
+
     return (
       <React.Fragment> 
 
-        <div className="row">
-          {(this.props.result["new_samples"] 
-                && this.props.result["new_samples"].length > 1) &&
-              //this.state.LabIDsModalShow &&
-              (
-                <React.Fragment>
-                <div>
-                  <MultipleListModal
-                    ids={this.props.result["new_samples"]}
-                    //submit={this.handleSubmit}
-                    handleCancel={this.props.handleReturnClick}
-                  />
-                  </div>
-                </React.Fragment>
-              )
-            }
-        </div>
-        {this.props.result !== undefined  && (
-          <div className="row" style={{padding:"10px 20px",margin:"auto"}}>
-            {this.props.result.entity  && ( 
-              <div className="portal-jss116 col-sm-12 ml-2 mb-2">Save was successful</div>
+        {(this.props.result.entity.new_samples && this.props.result.entity.new_samples.length > 1) && (
+          <MultipleListModal
+            ids={this.props.result.entity.new_samples}
+            handleCancel={this.props.handleReturnClick}/>
+        )}
+
+        {this.props.result !== undefined && (<>
+            {this.props.result.entity && ( 
+              <Typography>Save was successful</Typography>
             )}
             {this.props.result.entity.hubmap_id && ( 
               <div className="portal-jss116 col-sm-12 ml-2">
@@ -100,12 +88,11 @@ class Result extends Component {
                 ><FontAwesomeIcon icon={faLink} data-tip data-for='link_tooltip'/> View in Ingest</a>
               </div>
             )}
-          </div>
-        )}
+        </>)}
         <div className="row">
 
           <div className="col-sm-12 mt-2 mr-2 mb-2 text-center">
-            {this.props.result !== undefined  && this.props.result.entity.entity_type === "Donor" && (
+            {this.props.result !== undefined && this.props.result.entity.entity_type === "Donor" && (
               <Tooltip placement="top-start" title={"Registering organs from a new Donor will return with the release of the new Sample form 🎉"}>
                 <span>
                   <Button
@@ -124,7 +111,7 @@ class Result extends Component {
               </Tooltip>
             )}
             {/* @TODO: this likely needs to update from specimen type */}
-            { this.props.result !== undefined  && this.props.result.entity.specimen_type === "organ" && (
+            { this.props.result !== undefined && this.props.result.organ && (
                 <Tooltip placement="top-start" title={"Registering tisse samples from a new organ will return with the release of the new Sample form 🎉"}>
                   <span>
                     <Button
@@ -151,8 +138,8 @@ class Result extends Component {
               className="btn btn-success"
               variant="contained" 
               color="primary"
-              onClick={this.handleReturnClick}
-            >
+              size="large"
+              onClick={this.handleReturnClick}>
               Done
             </Button>
             </div>

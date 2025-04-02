@@ -3,7 +3,6 @@ import { RUI_ORGAN_MAPPING } from "../../../constants.jsx";
 import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
 import "../../../App.css";
 
-
 class RUIIntegration extends Component {
 
   constructor() {
@@ -71,9 +70,10 @@ class RUIIntegration extends Component {
     window.removeEventListener("resize", this.updateDimensions.bind(this));
   }
 
-
   handleCloseScreenClick = (e) => {
+    console.debug('%c◉ Closing,  handleCloseScreenClick', 'color:#00ff7b', );
     this.setState({ close_rui: true });
+    this.props.closeRUIModal();
   }
 
   updateRUIConfig() {
@@ -85,7 +85,18 @@ class RUIIntegration extends Component {
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
     const sex = this.props.sex;
     const user_name = this.props.user || "";
-    const location = this.props.location === "" ? null : JSON.parse(this.props.location);
+    let location;
+    if(this.props.location && this.props.location !== "") {
+      console.debug('%c◉ TYPEOF ', 'color:#00ff7b', typeof this.props.location, this.props.location);
+      if(typeof this.props.location === "string"){
+        location = JSON.parse(this.props.location);
+      }else if(typeof this.props.location === "object") {
+        location = this.props.location;
+      }
+    }else{
+      location = null;
+    }
+    
     const self = this;
 
     const rui = this.ruiRef.current;
