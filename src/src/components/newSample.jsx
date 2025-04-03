@@ -507,7 +507,7 @@ export const SampleForm = (props) => {
               select={(e) => handleSelectSource(e)}
               custom_title="Search for a Source ID for your Sample"
               filter_type="Sample"
-              blacklist={['collection']}
+              blacklist={['collection',"dataset","upload","publication"]}
               modecheck="Source"
             />
           </DialogContent>
