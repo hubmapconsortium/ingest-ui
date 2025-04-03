@@ -313,14 +313,6 @@ export const SampleForm = (props) => {
         } ));
         errors++;
       }
-      // Validate Blank lab_tissue_sample_id
-      if (formValues.lab_tissue_sample_id?.length > 0){
-        setFormErrors(prevErrors => ( {
-          ...prevErrors,
-          generate_number: "Please uncheck this box and remove the Lab Sample ID, then check this box again"
-        } ));
-        errors++;
-      }
     }
 
     return errors === 0;
@@ -510,12 +502,6 @@ export const SampleForm = (props) => {
               // filter_type="Publication"
               modecheck="Source"
               blacklist={['collection',"dataset","upload","publication"]}/>
-            <SearchComponent
-              select={(e) => handleSelectSource(e)}
-              custom_title="Search for a Source ID for your Sample"
-              filter_type="Sample"
-              modecheck="Source"
-            />
           </DialogContent>
           <DialogActions>
             <Button
@@ -757,6 +743,21 @@ export const SampleForm = (props) => {
               className="my-4" />
           </Collapse>
           
+          {/* Description */}
+          <TextField 
+            id="description"
+            label="Description "
+            helperText="Free text field to enter a description of the donor"
+            value={formValues ? formValues.description : ""}
+            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
+            onChange={(e) => handleInputChange(e)}
+            fullWidth
+            disabled={!permissions.has_write_priv}
+            variant="filled"
+            className="my-4"
+            multiline
+            rows={4}/>
+
           {/* generate_ids_for_multiple_samples */}
           {!uuid && ( 
             <FormControlLabel 
@@ -770,7 +771,7 @@ export const SampleForm = (props) => {
                   onChange={(e) => handleInputChange(e)}
                 />
               } 
-            label="Generate Multiple IDs" />
+            label="Generate multiple samples" />
           )}
           
           {/*generate_number */}
@@ -786,21 +787,6 @@ export const SampleForm = (props) => {
               error={formErrors.generate_number ? formErrors.generate_number : false}
               small={"true"} />
           </Collapse>
-          
-          {/* Description */}
-          <TextField 
-            id="description"
-            label="Description "
-            helperText="Free text field to enter a description of the donor"
-            value={formValues ? formValues.description : ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            variant="filled"
-            className="my-4"
-            multiline
-            rows={4}/>
           
           {/* RUI REG */}
           { (formValues.direct_ancestor_uuid && sourceEntity.entity_type.toLowerCase() !=="donor") && (!formValues.sample_category || formValues.sample_category === "") && (
@@ -819,6 +805,7 @@ export const SampleForm = (props) => {
           )}
           {shouldShowRUIInterface() === true && !checked && (
             <Button
+              className="mt-2"
               onClick={() => setRuiModal([true])}
               variant="contained">
                 {entityData.rui_location ? "Modify Location Information" : "Register Location"}
