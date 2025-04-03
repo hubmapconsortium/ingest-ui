@@ -6,7 +6,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import FilledInput from '@mui/material/FilledInput';
@@ -503,11 +503,17 @@ export const SampleForm = (props) => {
           aria-labelledby="source-lookup-dialog"
           open={openSearch === true ? true : false}>
           <DialogContent>
+          <SearchComponent
+              select={(e) => handleSelectSource(e)}
+              custom_title="Search for a Source ID for your Sample"
+              custom_subtitle="Only Donors or Samples may be selected as sources for newly created samples."
+              // filter_type="Publication"
+              modecheck="Source"
+              blacklist={['collection',"dataset","upload","publication"]}/>
             <SearchComponent
               select={(e) => handleSelectSource(e)}
               custom_title="Search for a Source ID for your Sample"
               filter_type="Sample"
-              blacklist={['collection',"dataset","upload","publication"]}
               modecheck="Source"
             />
           </DialogContent>
@@ -601,7 +607,7 @@ export const SampleForm = (props) => {
         <form onSubmit={(e) => handleSubmit(e)}>
 
           <FormControl sx={{width: '100%', mt: 2}} variant="filled">
-            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid) ? true:false)}>Source ID</InputLabel>
+            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid) ? true:false)}>Source ID * </InputLabel>
             <FilledInput
               id="direct_ancestor_uuid"
               value={sourceEntity ? sourceEntity.hubmap_id : ""}
@@ -610,9 +616,9 @@ export const SampleForm = (props) => {
               disabled={uuid?true:false}
               InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid)) ? true:false)}}
               variant="filled"
+              required={true}
               helperText={(formErrors.direct_ancestor_uuid ? formErrors.direct_ancestor_uuid : "")}
               small={"true"}
-              required
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
