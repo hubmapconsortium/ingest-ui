@@ -2,9 +2,7 @@ import React, { Component } from "react";
 import { ubkg_api_get_organ_type_set } from "../service/ubkg_api";
 import "../App.css";
 
-
 class RUIIntegration extends Component {
-
   constructor() {
     super();
 
@@ -20,6 +18,9 @@ class RUIIntegration extends Component {
     };
 
     this.ruiRef = React.createRef();
+
+    console.log(window.innerWidth)
+    console.log(window.innerHeight)
   }
 
   /**
@@ -69,7 +70,6 @@ class RUIIntegration extends Component {
   componentWillUnmount() {
     window.removeEventListener("resize", this.updateDimensions.bind(this));
   }
-
 
   handleCloseScreenClick = (e) => {
     this.setState({ close_rui: true });
@@ -136,5 +136,3 @@ class RUIIntegration extends Component {
 }
 
 export default RUIIntegration;
-
-//{/** width = {this.state.width} height= {this.state.height} **/}

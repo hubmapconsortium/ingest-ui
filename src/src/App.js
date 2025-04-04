@@ -15,7 +15,6 @@ import Drawer from '@mui/material/Drawer';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
-import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -47,6 +46,7 @@ import {RenderBulk} from "./components/bulk";
 
 // The New Forms
 import {DonorForm} from "./components/newDonor";
+import {SampleForm} from "./components/newSample";
 
 export function App(props){
   let navigate = useNavigate();
@@ -330,7 +330,7 @@ export function App(props){
     onClose();
   }
 
-  console.debug('%c◉ Stored Info:', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
+  console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
   // const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const{search} = useLocation();
   // Search Query Bits
@@ -394,24 +394,24 @@ export function App(props){
                 height: 150 ,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
-height: 150,
-                  boxSizing: 'border-box',
-},
+                  height: 150,
+                  boxSizing: 'border-box'},
               }}
               variant="temporary"
               className="alert-danger"
               anchor='bottom'
               open={errorShow}>
-              <Box sx={{width: '100%', padding: 1, backgroundColor: '#dc3545', color: "#fff",'& span, h5': {display: 'inline-block',padding: "0 5px 0 0 "}}}>
-                <Typography variant="h5" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding: 1}}/>  Sorry!  </Typography><Typography align="left" variant="caption" >Something's gone wrong...</Typography>
-                <IconButton
-                  sx={{position: 'absolute', right: 8, top: 4, color: 'white' }}
-                  aria-label="close drawer"
-                  onClick= {()=> setErrorShow(false)}
-                  edge="start">
-                  <CloseIcon />
-                </IconButton>
-              </Box>
+                <Box 
+                  sx={{
+                    width: '100%', 
+                    padding: 1, 
+                    backgroundColor: '#dc3545', 
+                    color: "#fff",'& span, h5': {display: 'inline-block',padding: "0 5px 0 0 "}
+                  }}>
+                  <Typography variant="h5" align="left">
+                    <FontAwesomeIcon icon={faExclamationTriangle} sx={{padding: 1}}/>  Sorry!  </Typography>
+                    <Typography align="left" variant="caption" >Something's gone wrong...</Typography>
+                </Box>
 
               <Box sx={{
                 width: '100%', height: '100%', padding: 1, backgroundColor: 'white', color: "#dc3545", 
@@ -495,7 +495,7 @@ height: 150,
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
-                      <Route path='sample' element={<Forms reportError={reportError} formType='sample' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                      <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<Forms formType='publication' reportError={reportError} onReturn={onClose} handleCancel={handleCancel} />} /> 
                       <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
@@ -503,7 +503,6 @@ height: 150,
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
                       {/* In Develpment here */}
-                      {/* <Route path='donor/n' element={ <RenderNewDonor onCreated={(response) => creationSuccess(response)} />}/> */}
                     </Route>
                     
                     <Route path="/donors" element={<DonorForm />} ></Route>
@@ -513,10 +512,15 @@ height: 150,
                     <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
                       
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
+                    <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
+                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
+                    <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
                     <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
                     <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
                     <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
                     <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
                     <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
                     <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
@@ -530,23 +534,26 @@ height: 150,
                     </Route>
 
                     {/* In Develpment here */}
-                    {/* <Route path="/donor/:uuid/n" element={<RenderNewDonor />} /> */}
 
                   </Routes>
 
-                  <Dialog aria-labelledby="result-dialog" open={successDialogRender} sx={{margin: "auto"}}>
+                  <Dialog 
+                    aria-labelledby="result-dialog" 
+                    open={successDialogRender} 
+                    sx={{margin: "auto"}}
+                    fullWidth={ (newEntity && newEntity.newSamples) ? true : false}>
                     <DialogTitle sx={{background: "rgb(209, 231, 221)", marginBottom: "0.5em",}} >Success!</DialogTitle>
-                    <DialogContent sx={{maxWidth: "500px"}}> 
                       {newEntity && (
-                        <Result
-                          result={{entity: newEntity}}
-                          onReturn={() => onCloseSuccess()}
-                          onCreateNext={() => onCreateNext(newEntity)}
-                          entity={newEntity}
-                        />
+                        <DialogContent sx={newEntity.newSamples ? {maxWidth: "500px"} : {}}> 
+                          {/* <DialogContent>  */}
+                          <Result
+                            result={{entity: newEntity}}
+                            onReturn={() => onCloseSuccess()}
+                            onCreateNext={() => onCreateNext(newEntity)}
+                            entity={newEntity}
+                          />
+                        </DialogContent>
                       )}
-                    </DialogContent>
-
                   </Dialog>
                   <Snackbar 
                     open={showSnack} 
