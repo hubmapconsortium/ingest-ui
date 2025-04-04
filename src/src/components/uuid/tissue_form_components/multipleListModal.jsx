@@ -49,7 +49,7 @@ class MultipleListModal extends Component {
        
           {/* <Alert className='alert alert-primary'> */}
           <Alert severity="info" className="col-sm-12 mb-2 " role="alert">
-            You have generated multiples samples. Select one of the additoinal samples below to edit in a new tab,  or click done to return to the Main page.
+            You have generated multiple samples. Select one of the additoinal samples below to edit in a new tab,  or click done to return to the Main page.
           </Alert>
 
           <ul className="no-bullets" >

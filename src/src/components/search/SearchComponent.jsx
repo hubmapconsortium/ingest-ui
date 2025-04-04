@@ -44,7 +44,7 @@ class SearchComponent extends Component {
       allGroups: [""],
       groupsLoading: true,
 
-      entityType: "----",
+      entityType: "",
       allTypes: SAMPLE_TYPES,
       entityListLoading: true,
 
@@ -65,6 +65,7 @@ class SearchComponent extends Component {
       pageSize: 100,
       results_total: 0,
       search_title: "Search",
+      search_subtitle: "LIPSUM",
       selectionModel: "",
       show_info_panel: true,
       show_modal: false,
@@ -140,8 +141,8 @@ class SearchComponent extends Component {
     }
 
     if (this.props.packagedQuery) {
-      this.setState(
-        {
+      console.debug('%c◉ packagedQuery ', 'color:#00ff7b', this.props.packagedQuery);
+      this.setState({
           entityType: this.props.packagedQuery.entityType,
           keywords: this.props.packagedQuery.keywords,
           search_filters: {
@@ -157,19 +158,14 @@ class SearchComponent extends Component {
     }
 
     resultFieldSet();
-
-    if (this.props.custom_title) {
-      this.setState({ search_title: this.props.custom_title });
-    }
-
     this.setState({
-        fieldSet: resultFieldSet(),
-      },
-      function () {
-        //
-      }
-    );
-
+      search_title: this.props.custom_title || this.state.search_title,
+      custom_subtitle: this.props.custom_subtitle || this.state.custom_subtitle,
+      fieldSet: resultFieldSet(),
+    },() => {
+      console.debug('%c◉ Set Titles ', 'color:#00ff7b', );
+    }
+  );
   }
 
   // @TODO: Possily move into groups service?
@@ -250,7 +246,6 @@ class SearchComponent extends Component {
     }
   };
 
-
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.editNewEntity !== this.props.editNewEntity) {
       //
@@ -282,16 +277,8 @@ class SearchComponent extends Component {
         () => {}
       );
     }
-    // console.debug('%c⊙', 'color:#00ff7b', "AllGroups", prevState.allGroups, this.state.allGroups );
-    // if (prevState.allGroups !== this.state.allGroups) {
-    //   this.setState({
-    //     allGroups: ["Test"]
-    //   }, () => {
-    //     console.debug('%c⊙', 'color:#00ff7b', "STATE RESET ALLGROUPS" );
-    //   });
-    // }
-  }
 
+  }
 
   handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -404,142 +391,13 @@ class SearchComponent extends Component {
   };
 
   handleSearchClick = () => {
-    // handle this in the function component now 
-    // var group = this.state.search_filters.group;
-    // var entityType = this.state.search_filters.entityType;
-    // var keywords = this.state.search_filters.keywords;
-
-    // // COLUMN setting
-    // let which_cols_def = COLUMN_DEF_SAMPLE; //default
-    // if (entityType) {
-    //   let colSet = entityType.toLowerCase();
-    //   if (which_cols_def) {
-    //     if (colSet === "donor") {
-    //       which_cols_def = COLUMN_DEF_DONOR;
-    //     } else if (colSet === "sample") {
-    //       which_cols_def = COLUMN_DEF_SAMPLE;
-    //     } else if (colSet === "dataset") {
-    //       which_cols_def = COLUMN_DEF_DATASET;
-    //     } else if (colSet === "publication") {
-    //       which_cols_def = COLUMN_DEF_PUBLICATION;
-    //     } else if (colSet === "upload") {
-    //       which_cols_def = COLUMN_DEF_UPLOADS;
-    //     } else if (colSet === "collection") {
-    //       which_cols_def = COLUMN_DEF_COLLECTION;
-    //     }
-    //   }
-    // }
-
-    // let params = {};
-    // var url = new URL(window.location);
-    // if (keywords) {
-    //   params["keywords"] = keywords;
-    //   if (!this.props.modecheck) {
-    //     url.searchParams.set("keywords", keywords);
-    //   }
-    // } else {
-    //   url.searchParams.delete("keywords");
-    // }
-
-    // if (group && group !== "All Components") {
-    //   params["group_uuid"] = group;
-    //   if (!this.props.modecheck) {
-    //     url.searchParams.set("group", group);
-    //   }
-    // } else {
-    //   url.searchParams.delete("group");
-    // }
-
-    // if (entityType && entityType !== "----") {
-    //   if (!this.props.modecheck) {
-    //     url.searchParams.set("entityType", entityType);
-    //   }
-
-    //   if (ENTITY_TYPES.hasOwnProperty(entityType)) {
-    //     params["entity_type"] = toTitleCase(entityType);
-    //   } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType)) {
-    //     params["sample_category"] = entityType;
-    //   } else {
-    //     params["organ"] = entityType;
-    //   }
-    // } else {
-    //   url.searchParams.delete("entityType");
-    // }
-
-    // if (this.state.page !== 0) {
-    //   this.setState({
-    //     table_loading: true,
-    //   });
-    // }
-    // window.history.pushState({}, "", url);
-    // this.setState({
-    //     loading: true,
-    //     filtered: true,
-    //   },() => {
-    //     api_search2(
-    //       params,
-    //       JSON.parse(localStorage.getItem("info")).groups_token,
-    //       this.state.page * this.state.pageSize,
-    //       this.state.pageSize,
-    //       this.state.fieldSet,
-    //       "oldTable"
-    //     ).then((response) => {
-    //       if (response.status === 200) {
-    //         if (response.total === 1) {
-    //           // for single returned items, customize the columns to match
-    //           which_cols_def = this.columnDefType(
-    //             response.results[0].entity_type
-    //           );
-    //         }
-    //         console.debug('%c⊙', 'color:#00ff7b', "APISEARCHRES", response.results );
-    //         this.setState({
-    //           datarows: response.results, // Object.values(response.results)
-    //           results_total: response.total,
-    //           column_def: which_cols_def,
-    //           loading: false,
-    //           table_loading: false,
-    //         });
-    //       } else {
-    //         var errStringMSG = "";
-    //         var errString =
-    //           response.results.data.error.root_cause[0].type +
-    //           " | " +
-    //           response.results.data.error.root_cause[0].reason;
-    //         typeof errString.type === "string"
-    //           ? (errStringMSG = "Error on Search")
-    //           : (errStringMSG = errString);
-    //         this.setState({
-    //           errorState: true,
-    //           error: errStringMSG,
-    //         });
-    //       }
-    //     });
-    //   }
-    // );
-  };
-
-  // columnDefType = (et) => {
-  //   if (et === "Donor") {
-  //     return COLUMN_DEF_DONOR;
-  //   }
-  //   if (et === "Dataset") {
-  //     return COLUMN_DEF_DATASET;
-  //   }
-  //   if (et === "Publication") {
-  //     return COLUMN_DEF_PUBLICATION;
-  //   }
-  //   if (et === "Upload") {
-  //     return COLUMN_DEF_UPLOADS;
-  //   }
-  //   if (et === "Collection") {
-  //     return COLUMN_DEF_COLLECTION;
-  //   }
-  //   return COLUMN_DEF_SAMPLE;
-  // };
+    // Was deprecated, kept this to keep things from exploding I think
+    // @TODO: Address the Search Components in the 2025techdebtcrunch 
+    // eventually
+  }
 
   handleUrlChange = (targetPath) => {
-    if (
-      (!targetPath || targetPath === undefined || targetPath === "") &&
+    if ((!targetPath || targetPath === undefined || targetPath === "") &&
       this.state.modecheck !== "Source"
     ) {
       targetPath = "";
@@ -565,7 +423,6 @@ class SearchComponent extends Component {
       }
     );
   };
-
 
   handleClose = () => {
     this.setState({
@@ -632,7 +489,6 @@ class SearchComponent extends Component {
       });
     }
   };
-
   
   /**
     RENDER SECTION BELOW - All UI Components
@@ -643,7 +499,7 @@ class SearchComponent extends Component {
     if (this.state.data_loading) {
       return (
       <div style={{ width: "100%" }}>
-        <Typography align={"center"}  style={{marginBottom:"20px"}}>
+        <Typography align={"center"} style={{marginBottom: "20px"}}>
           Loading System Data
         </Typography>
         <Typography align={"center"}>
@@ -666,7 +522,7 @@ class SearchComponent extends Component {
           {this.props.routingMessage && (
             <Alert variant="filled" severity="error">
               <strong>Sorry</strong> {this.props.routingMessage[0]+" "} 
-               Please use <Link to={this.props.routingMessage[1]}  className="text-white">Uploads</Link> instead.
+               Please use <Link to={this.props.routingMessage[1]} className="text-white">Uploads</Link> instead.
             </Alert>
           )}
           {/* {this.state.show_search && this.renderFilterControls()} */}
@@ -683,7 +539,8 @@ class SearchComponent extends Component {
                 allGroups={this.state.allGroups}
                 allTypes={this.state.allTypes}
                 columns={this.state.column_def} 
-                searchTitle={this.state.search_title}
+                searchTitle={this.props.custom_title ? this.props.custom_title : null}
+                searchSubtitle={this.props.custom_subtitle ? this.props.custom_subtitle : null}
                 // handleTableCellClick={(params) => this.handleTableCellClick(params)}
                 // handleSearchButtonClick={() => this.handleSearchButtonClick()}
                 handleTableCellClick={this.props.select?(e)=>this.props.select(e):(e)=>this.handleTableCellClick(e)}
@@ -704,7 +561,6 @@ class SearchComponent extends Component {
     return null;
   }
 
-
   renderLoadingBar = () => {
     if (this.state.loading && !this.state.page > 0) {
       return (
@@ -714,32 +570,6 @@ class SearchComponent extends Component {
       );
     }
   };
-
-
-  // renderPreamble() {
-  //   return (
-  //     <Box
-  //       sx={{
-  //         flexDirection: "column",
-  //         justifyContent: "center",
-  //       }}>
-  //       <Typography
-  //         component={"h1"}
-  //         variant={"h4"}
-  //         fontWeight={500}
-  //         align={"center"}>
-  //         {this.state.search_title}
-  //       </Typography>
-
-  //       <Typography align={"center"} variant="subtitle1" gutterBottom>
-  //         Use the filter controls to search for Donors, Samples, Datasets, Data
-  //         Uploads, Publications, or Collections. <br />
-  //         If you know a specific ID you can enter it into the keyword field to
-  //         locate individual entities.
-  //       </Typography>
-  //     </Box>
-  //   );
-  // }
 
 }
 
