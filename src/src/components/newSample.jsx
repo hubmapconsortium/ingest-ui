@@ -56,6 +56,7 @@ export const SampleForm = (props) => {
   let [ruiDetailsModal, setRUIDetailsModal] = React.useState(false);
   let [ruiEnabled, setRuiEnabled] = React.useState(false);
   let [RUIJson, setRUIJson] = React.useState(false);
+  let [RUIDetails, setRUIDetails] = React.useState([null,null]);
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const userInfo = JSON.parse(localStorage.getItem("info"));
   const defaultGroup = userGroups[0].uuid;
@@ -138,6 +139,8 @@ export const SampleForm = (props) => {
                     // console.debug('%c◉ LOADED BY UUID, PARENT ORG IS:', 'color:#00ff7b', organ);
                     // entityInfo.organ = organ;
                     console.debug('%c◉ RUI_ORGAN_TYPES.includes(organ) ', 'color:#00ff7b', RUI_ORGAN_TYPES.includes(organ));
+                    console.debug('%c◉ setRuiEnabled: ', 'color:#E7EEFF;background: #9359FF;padding:200',(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block"));
+                    setRUIDetails([organ])
                     setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block") ? true : false,organ]);
                     // entityInfo.ruiEnabled =(RUI_ORGAN_TYPES.includes(entityInfo.organ) && entityInfo.sample_category==="block" ) ? true : false;
                   }catch(error){
@@ -150,7 +153,9 @@ export const SampleForm = (props) => {
                 } )
             }else if(entityInfo.direct_ancestor.organ){
               // We already have the Organ from the Source
+              console.debug('%c◉ setRuiEnabled:  ', 'color:#E7EEFF;background: #9359FF;padding:200',(RUI_ORGAN_TYPES.includes(entityInfo.direct_ancestor.organ) && entityInfo.sample_category==="block"));
               setRuiEnabled([(RUI_ORGAN_TYPES.includes(entityInfo.direct_ancestor.organ) && entityInfo.sample_category==="block") ? true : false,entityInfo.direct_ancestor.organ]);
+              setRUIDetails([entityInfo.direct_ancestor.organ])
             }
 
             if(entityInfo.rui_location){
@@ -232,9 +237,6 @@ export const SampleForm = (props) => {
 
     if(id === "sample_category" && value === "block"){
       console.debug('%c◉ Block! ', 'color:#005EFF');
-      // if we're a block, lets also check if our Source
-      // is rui Enabled
-
       entity_api_get_entity_ancestor_list(formValues.direct_ancestor_uuid)
         .then((response) => {
           console.debug('%c◉ isRUIEntity Response ', 'color:#00ff7b', response);
@@ -258,10 +260,14 @@ export const SampleForm = (props) => {
           let organ;
           let organObject;
           // Lets skip Right to assembly of RUI Info
-          // If we've already set a ruiOrgan By Selecting it as the Source
+          // If we've already set an ruiOrgan By Selecting it as the Source
           console.debug('%c◉ formValues ', 'color:#ffe921', formValues);
           if(formValues.RUIOrgan && formValues.RUIOrgan === true){
-            setRuiEnabled([true,formValues.organ,donorSex]);
+            setRUIDetails([formValues.organ,donorSex]);
+            setRuiEnabled([true]);
+          }else if(sourceEntity.sample_category !== "block" && sourceEntity.sample_category !== "organ" ){
+            // If the source isnt an Organ or Block, We're not enabling RUI
+            setRuiEnabled([false]);
           }else{
             // We gotta fetch the organ from up the ancestry chain
             // Then assemble the RUI Info
@@ -273,8 +279,14 @@ export const SampleForm = (props) => {
                 organObject = response.results;
               }
               organ = organObject.organ ? organObject.organ : undefined;
-              console.debug('%c◉ isRUIEntity organ:', 'color:#00ff7b', organ);
-              setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ)) ? true : false,organ,donorSex]);
+              console.debug('%c◉ setRuiEnabled:  ', 'color:#E7EEFF;background: #9359FF;padding:200',organ,(RUI_ORGAN_TYPES.includes(organ)));
+              if((RUI_ORGAN_TYPES.includes(organ))){
+                // We're already in the category:block=true bit
+                setRuiEnabled([true]);
+                setRUIDetails([organ,donorSex]);
+              }else{
+                setRuiEnabled([false]);
+              }
             }catch(error){
               console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
             }
@@ -286,6 +298,7 @@ export const SampleForm = (props) => {
         } );
     }else if(id === "sample_category" && value !== "block"){
       // Other Sample Cats Dont Count
+      console.debug('%c◉ setRuiEnabled:  FALSE', 'color:#E7EEFF;background: #9359FF;padding:200');
       setRuiEnabled([false])
     }
   }
@@ -425,6 +438,7 @@ export const SampleForm = (props) => {
     } ));
     // If the source is a Donor we already know we're not RUI Enabled abymore
     if(e.row.entity_type === "Donor"){
+      console.debug('%c◉ setRuiEnabled:  FALSE', 'color:#E7EEFF;background: #9359FF;padding:200');
       setRuiEnabled([false]);
     }
   }
@@ -480,6 +494,7 @@ export const SampleForm = (props) => {
   }
 
   function shouldShowRUIInterface(){
+    console.debug('%c◉ ruiEnabled ', 'color:#00ff7b', ruiEnabled);
     return ruiEnabled[0]
   }
     
@@ -523,8 +538,8 @@ export const SampleForm = (props) => {
             <RUIIntegration 
               handleJsonRUI={(dataFromChild) => handleRUIJson(dataFromChild)}
               organList={organ_types}
-              organ={ruiEnabled[1]}
-              sex={ruiEnabled[2]}
+              organ={RUIDetails[0]}
+              sex={RUIDetails[1]}
               user={userInfo.name}
               closeRUIModal={() => setRuiModal([false])}
               location={RUIJson ? RUIJson : null}
@@ -789,14 +804,6 @@ export const SampleForm = (props) => {
           </Collapse>
           
           {/* RUI REG */}
-          { (formValues.direct_ancestor_uuid && sourceEntity.entity_type.toLowerCase() !=="donor") && (!formValues.sample_category || formValues.sample_category === "") && (
-            <>
-              <Typography variant="caption">Validating RUI Interface... Please Select a Sample Category</Typography>
-              <LinearProgress />
-            </>
-          )}
-
-          {/* {(shouldShowRUIInterface() === false && uuid) && (     */}
           {(shouldShowRUIInterface() === false) && !checked && (    
             <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
               <Typography variant="caption">RUI Interface not Available < br/></Typography>
