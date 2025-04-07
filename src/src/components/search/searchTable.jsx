@@ -27,6 +27,7 @@ import {api_search2} from "../../service/search_api";
 
 export const RenderSearchTable = (props) => {
   var [search_title] = useState(props.searchTitle ? props.searchTitle : "Search");
+  var [search_subtitle] = useState(props.searchSubtitle ? props.searchSubtitle : null);
 
   // TABLE & FILTER VALUES
   var [allGroups] = useState(props.allGroups ? props.allGroups : []);
@@ -40,9 +41,9 @@ export const RenderSearchTable = (props) => {
 
   // TABLE DATA
   var [results, setResults] = React.useState({
-    dataRows:null,
-    rowCount:0,
-    colDef:  COLUMN_DEF_SAMPLE,
+    dataRows: null,
+    rowCount: 0,
+    colDef: COLUMN_DEF_SAMPLE,
   });
 
   //  LOADERS
@@ -100,8 +101,6 @@ export const RenderSearchTable = (props) => {
     }
   }, [queryParams,modeCheck]);
 
-
-
   function resultFieldSet() {
     var fieldObjects = [];
     var fieldArray = fieldObjects.concat(
@@ -148,7 +147,7 @@ export const RenderSearchTable = (props) => {
       searchFilterParams.entityType = restrictions.entityType;
       setFormFilters((prevValues) => ({
         ...prevValues,
-      entity_type:restrictions.entityType,}));
+      entity_type: restrictions.entityType,}));
     }
 
     var fieldSearchSet = resultFieldSet();
@@ -167,18 +166,18 @@ export const RenderSearchTable = (props) => {
         }
         console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
         setTableLoading(false);
-        console.debug('%c⊙useEffect Search', 'color:rgb(0 140 255)',  response.total, response.results );
+        console.debug('%c⊙useEffect Search', 'color:rgb(0 140 255)', response.total, response.results );
         if (response.total > 0 && response.status === 200) {
           setResults({
-            dataRows:response.results,
-            rowCount:response.total,
-            colDef:  columnDefType(response.results[0].entity_type),
+            dataRows: response.results,
+            rowCount: response.total,
+            colDef: columnDefType(response.results[0].entity_type),
           });
         } else if (response.total === 0) {
           setResults({
-            dataRows:response.results,
-            rowCount:response.total,
-            colDef:  COLUMN_DEF_SAMPLE,
+            dataRows: response.results,
+            rowCount: response.total,
+            colDef: COLUMN_DEF_SAMPLE,
           });
         } else {
           var errStringMSG = "";
@@ -198,7 +197,6 @@ export const RenderSearchTable = (props) => {
       });
   }, [page, pageSize, searchFilters]);
 
-
   useEffect(() => {
     console.debug("useEffect groups & types")
     if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
@@ -211,7 +209,6 @@ export const RenderSearchTable = (props) => {
     setPage(pageInfo.page);
     setPageSize(pageInfo.pageSize);
   }
-
   
   function columnDefType(et) {
     if (et === "Donor") {
@@ -232,7 +229,6 @@ export const RenderSearchTable = (props) => {
     return COLUMN_DEF_SAMPLE;
   }
 
-
   function handleInputChange(e) {
     // Values for filtering the table data are set here
     const {name, value } = e.target;
@@ -241,24 +237,24 @@ export const RenderSearchTable = (props) => {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
           setFormFilters((prevValues) => ({...prevValues,
-            group_uuid:value,}));
+            group_uuid: value,}));
         } else {
           setFormFilters((prevValues) => ({...prevValues,
-            group_uuid:"",}));
+            group_uuid: "",}));
         }
         break;
       case "entity_type":
         if (value !== "---") {
           setFormFilters((prevValues) => ({...prevValues,
-            entity_type:value}));
+            entity_type: value}));
         } else {
           setFormFilters((prevValues) => ({...prevValues,
-            entity_type:"",}));
+            entity_type: "",}));
         }
         break
       case "keywords":
         setFormFilters((prevValues) => ({...prevValues,
-          keywords:value,}));
+          keywords: value,}));
         break;
       default:
         break;
@@ -275,14 +271,14 @@ export const RenderSearchTable = (props) => {
   
   function handleClearFilter() {
     setFormFilters({
-      group_uuid:"",
-      entity_type:"",
-      keywords:""
+      group_uuid: "",
+      entity_type: "",
+      keywords: ""
     })
     setSearchFilters({
-      group_uuid:"allcom",
-      entity_type:"---",
-      keywords:""
+      group_uuid: "allcom",
+      entity_type: "---",
+      keywords: ""
     })
   }
         
@@ -351,7 +347,7 @@ export const RenderSearchTable = (props) => {
       
       // If we're not in a special mode, push URL to window
       if (!props.modecheck) {
-        console.debug("%c⊙SETTING URL: ", "color:#FFf07b",  url, params);
+        console.debug("%c⊙SETTING URL: ", "color:#FFf07b", url, params);
         window.history.pushState({}, "", url);
         document.title = "HuBMAP Ingest Portal Search"
       }
@@ -366,11 +362,10 @@ export const RenderSearchTable = (props) => {
   //   // So we can keep the 
   // }
 
-
   function renderView() {
     //console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
     return (
-      <div style={{ width:"100%", textAlign:"center"}}>
+      <div style={{ width: "100%", textAlign: "center"}}>
         {/* {renderFilterControls()} */}
         {!filtersLoading && renderFilterControls()}
         {filtersLoading && <GridLoader/>}
@@ -380,7 +375,6 @@ export const RenderSearchTable = (props) => {
       </div>
     );
   }
-
 
   function renderTable() {
     var hiddenFields = [
@@ -409,46 +403,44 @@ export const RenderSearchTable = (props) => {
     };
 
     return (
-      <div style={{height:590, width:"100%" }}>
+      <div style={{height: 590, width: "100%" }}>
         <DataGrid
           sx={{
-            '.MuiTablePagination-select':{
-              'background':'#eee',
+            '.MuiTablePagination-select': {
+              'background': '#eee',
             },
-            '.MuiTablePagination-displayedRows':{
-              'marginTop':'1em',
-              'marginBottom':'1em'
+            '.MuiTablePagination-displayedRows': {
+              'marginTop': '1em',
+              'marginBottom': '1em'
             },
-            '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel':{
-              'marginTop':'1em',
-              'marginBottom':'1em'
+            '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel': {
+              'marginTop': '1em',
+              'marginBottom': '1em'
             }
           }}
-
-          columnVisibilityModel={columnFilters}
-          rows={results.dataRows}
-          columns={results.colDef}
-          disableColumnMenu={true}
           columnBuffer={2}
+          columns={results.colDef}
           columnThreshold={2}
+          columnVisibilityModel={columnFilters}
+          disableColumnMenu={true}
+          hideFooterSelectedRowCount
+          loading={tableLoading}
+          onCellClick={props.handleTableCellClick ? (e)=> props.handleTableCellClick(e) : (e) => handleTableCellClick(e)} // this allows a props handler to override the local handler
+          onPaginationModelChange={(e) => handlePageChange(e)}
+          pageSizeOptions={[10, 50, 100]}
           pagination
-          slots={{ toolbar:GridToolbar }}
-          rows={results.dataRows}          
+          paginationMode="server"
+          rowCount={results.rowCount}
+          rows={results.dataRows}
+          slots={{ toolbar: GridToolbar }}
           slotProps={{
-            toolbar:{
-              csvOptions:{fileName:"hubmap_ingest_export",}
+            toolbar: {
+              csvOptions: {fileName: "hubmap_ingest_export",}
             },
             columnsPanel: {
               getTogglableColumns,
             },
           }}
-          hideFooterSelectedRowCount
-          rowCount={results.rowCount}
-          paginationMode="server"
-          pageSizeOptions={[10, 50, 100]}
-          onPaginationModelChange={(e) => handlePageChange(e)}
-          loading={tableLoading}
-          onCellClick={props.handleTableCellClick ? (e)=> props.handleTableCellClick(e) : (e) => handleTableCellClick(e)} // this allows a props handler to override the local handler
         />
       </div>
     );
@@ -458,15 +450,24 @@ export const RenderSearchTable = (props) => {
     return (
       <Box
         sx={{flexDirection: "column",
-          justifyContent:"center",}}>
+          justifyContent: "center",
+          marginBottom: 2,}}>
         
-        <span className="portal-label text-center">{search_title} </span>
-        <Typography align={"center"} variant="subtitle1" gutterBottom>
-          Use the filter controls to search for Donors, Samples, Datasets, Data
-          Uploads, Publications, or Collections. <br />
-          If you know a specific ID you can enter it into the keyword field to
-          locate individual entities.
-        </Typography>
+        <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{search_title} </span>
+          {!search_subtitle &&(
+            <Typography align={"center"} variant="subtitle1" gutterBottom >
+              Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
+              If you know a specific ID you can enter it into the keyword field to locate individual entities.
+            </Typography>
+          )}
+          {search_subtitle &&(
+            <Typography align={"center"} variant="caption" gutterBottom>
+              {search_subtitle} <br/>
+              If you know a specific ID you can enter it into the keyword field to locate individual entities.
+
+            </Typography>
+          )}
+          
       </Box>
     );
   }
@@ -485,7 +486,7 @@ export const RenderSearchTable = (props) => {
           <Grid
             container
             spacing={3}
-            sx={{display:"flex",justifyContent:"flex-start",textAlign:"left"}}>
+            sx={{display: "flex",justifyContent: "flex-start",textAlign: "left"}}>
             <Grid item xs={6}>
             <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
               <Select
@@ -583,16 +584,5 @@ export const RenderSearchTable = (props) => {
   }
 
   return renderView();
-  // if (!loading ) {
-  // //console.debug("Loaded!");
-  //   return (
-  //     renderView()
-  //   )
-  // }else{
-  //   return (
-  //     <div className="card-body ">
-  //       <div className="loader">Loading...</div>
-  //     </div>
-  //   );
-  // }
+
 };

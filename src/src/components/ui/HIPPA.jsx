@@ -1,4 +1,4 @@
-import React,  { useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from 'react-router-dom'
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -32,9 +32,10 @@ export const HIPPA = (props) => {
       <Alert
         id="HIPPAAlert"
         severity="error"  
-        sx={{color:"rgb(97, 26, 21)", border:"1px solid #f1aeae", background:"rgb(253, 237, 237)!important"}}
-        iconMapping={{error: <FontAwesomeIcon sx={{fontSize:"3em"}} icon={faUserShield} /> }}>
-        Do not provide any Protected Health Information. This includes the 
+        sx={{color: "rgb(97, 26, 21)", border: "1px solid #f1aeae", background: "rgb(253, 237, 237)!important"}}
+        iconMapping={{error: <FontAwesomeIcon style={{fontSize: "2em"}} icon={faUserShield} /> }}>
+        Do not provide any Protected Health Information. <br />
+         This includes the 
         <span
           style={{cursor: "pointer"}}
           className="text-primary"
@@ -49,12 +50,12 @@ export const HIPPA = (props) => {
         maxWidth="md"
         aria-labelledby="HIPPA Identifiers"
         aria-describedby="HIPPA Identifiers">
-          <DialogTitle sx={{background: "rgb(253, 237, 237)",  "color": "rgb(95, 33, 32)"}}>
-            <Typography id="Dialog-title"  >
-              <FontAwesomeIcon sx={{fontSize:"3em"}} icon={faUserShield} />  18 identifiers specified by HIPAA
+          <DialogTitle sx={{background: "rgb(253, 237, 237)", "color": "rgb(95, 33, 32)"}}>
+            <Typography id="Dialog-title" >
+              <FontAwesomeIcon sx={{fontSize: "3em"}} icon={faUserShield} />  18 identifiers specified by HIPAA
             </Typography>
           </DialogTitle>
-          <DialogContent  >
+          <DialogContent >
               <Box sx={{
                 color: "rgba(0, 0, 0, 0.6)",
                 display: 'flex',
@@ -118,8 +119,6 @@ export const HIPPA = (props) => {
             <Button onClick={() => toggleHippa()}>Close</Button>
           </DialogActions>
       </Dialog>
-
-      
 
     </React.Fragment>
   );

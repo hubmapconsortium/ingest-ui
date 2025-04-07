@@ -14,17 +14,15 @@ import {
 
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
-import {tsToDate} from "../utils/string_helper";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
-
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import HIPPA from "./ui/HIPPA";
-import {Typography} from "@mui/material";
+
+import {FormHeader,GroupSelectMenu} from "./ui/formParts";
 
 export const DonorForm = (props) => {
   let[entityData, setEntityData] = useState({
@@ -34,7 +32,6 @@ export const DonorForm = (props) => {
     description: "",
     group_uuid: "",
   });
-  let[showHippa, setShowHippa] = useState(false);
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
   let[permissions,setPermissions] = useState({ 
@@ -60,7 +57,6 @@ export const DonorForm = (props) => {
   });
   const{uuid} = useParams();
 
-
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
@@ -79,12 +75,12 @@ export const DonorForm = (props) => {
               const entityData = response.results;
               setEntityData(entityData);
               setFormValues({
-                lab_donor_id:entityData.lab_donor_id,
-                label:entityData.label,
-                protocol_url:entityData.protocol_url,
-                description:entityData.description,
-                group_uuid:entityData.group_uuid,
-                group_name:entityData.group_name
+                lab_donor_id: entityData.lab_donor_id,
+                label: entityData.label,
+                protocol_url: entityData.protocol_url,
+                description: entityData.description,
+                group_uuid: entityData.group_uuid,
+                group_name: entityData.group_name
               });
               ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
@@ -119,21 +115,6 @@ export const DonorForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-  // useEffect(() => {
-  //   if(pageErrors){
-  //     console.debug('%c◉ USEEFFECT ERROR ', 'color:#00ff7b', pageErrors, pageErrors.length);
-  //     setLoading(false);
-  //     // setPageErrors(pageErrors);
-  //   }
-  // }, [pageErrors]);
-
-  // function setPageErrors(error){
-  //   console.debug('%c◉ CAUGHT ERROR ', 'color:#00ff7b', );
-  //   setLoading(false);
-  //   setPageErrors(error);
-  // }
-
-
   function handleInputChange(e){
     const{id, value} = e.target;
     setFormValues((prevValues) => ({
@@ -166,7 +147,6 @@ export const DonorForm = (props) => {
 
   function validateForm(){
     let errors = 0;
-
     // Required Fields
     //  So it looks like Required no longer gets triggered
     //  and instead the browser has a built in error thing?
@@ -182,10 +162,8 @@ export const DonorForm = (props) => {
         errors++;
       }
     }
-
     // Formatting Validation
     errors += validateDOI(formValues['protocol_url']);
-
     // End Validation
     return errors === 0;
   }
@@ -271,91 +249,14 @@ export const DonorForm = (props) => {
     );
   }
 
-  function renderHeader(){
-  
-    return(
-
-      <Grid container className='p-2'>
-        
-        {!isLoading && uuid && uuid !== "" && ( <React.Fragment>
-          <Grid item xs={12} className="" >  
-            <h3 style={{marginLeft:"-2px"}}>Donor Information</h3>
-          </Grid>
-          <Grid item xs={6} className="" >
-            <Typography>HuBMAP ID: {entityData.hubmap_id}</Typography>
-            <Typography>Entered by: {entityData.created_by_user_email}</Typography>
-            <Typography>Submission ID: {entityData.submission_id}</Typography>
-            <Typography>Entry Date: {tsToDate(entityData.created_timestamp)}</Typography>   
-          </Grid>
-        </React.Fragment>)}
-        {!isLoading && !uuid && ( <React.Fragment>
-          <Grid item xs={6} className="" >  
-            <h3 style={{marginLeft:"-2px"}}>Registering a Donor</h3>
-          </Grid>
-        </React.Fragment>)}
-
-        <Grid item xs={6} className="" >
-          {permissions.has_write_priv && (
-          
-             <HIPPA />
-          )}
-          {entityData && entityData.data_access_level === "public" && (
-            // They might not have write access but not because of data_access_level
-            <Alert severity="warning" sx={{
-              minHeight: "100%",
-              minWidth: "100%",
-              padding: "10px"}}>
-              This entity is no longer editable. It was locked when it became publicly
-              acessible when data associated with it was published.
-            </Alert>
-          )}
-        </Grid>
-      </Grid>
-
-
-    // <Box sx={{maxWidth: "90%", margin: "10px auto 20px auto "}}>
-    //   <Box className="portal-label " sx={PanelStyle}>
-    // <Typography>HuBMAP ID: {entityData.hubmap_id}</Typography>
-    //     <Typography>Entered by: {entityData.created_by_user_email}</Typography>
-    //     <Typography>Submission ID: {entityData.submission_id}</Typography>
-    //     <Typography>Entry Date: {tsToDate(entityData.created_timestamp)}</Typography>
-    //   </Box>
-    //   <Box className="portal-label " sx={PanelStyle}>
-    //     
-    //   </Box>
-    // </Box>
-    );
-  }
-
-  function renderGroupSelectMenu(){
-    if(formValues.group_name){
-      return(
-        <option value={formValues.group_uuid}>
-          {formValues.group_name}
-        </option>
-      )
-    }else{
-      let menuArray = [];
-      for(let group of userGroups){
-        menuArray.push(
-          <option key={group.uuid} value={group.uuid}>
-            {group.shortname}
-          </option>
-        );
-      }
-      return menuArray;
-    } 
-  }
-
-
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
     return(
       <Box>
-
-        {renderHeader()}
-
+        <Grid container className=''>
+          <FormHeader entityData={uuid ? entityData : ["new","Donor"]} permissions={permissions} />
+        </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <TextField //"Lab's Donor Non-PHI ID "
             id="lab_donor_id"
@@ -373,7 +274,7 @@ export const DonorForm = (props) => {
           <TextField //"Deidentified Name "
             id="label"
             label="Deidentified Name "
-            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label :   "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
+            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label : "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
             value={formValues ? formValues.label : ""}
             error={formErrors.label !== ""}
             required
@@ -387,7 +288,7 @@ export const DonorForm = (props) => {
           <TextField //"Case Selection Protocol "
             id="protocol_url"
             label="Case Selection Protocol "
-            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url :   "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
+            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url : "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
             value={formValues ? formValues.protocol_url : ""}
             error={formErrors.protocol_url !== ""}
             required
@@ -414,7 +315,7 @@ export const DonorForm = (props) => {
             rows={4}
           />
           <Box className="my-3">           
-            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group">
+            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
               Group
             </InputLabel>
             <NativeSelect
@@ -425,7 +326,7 @@ export const DonorForm = (props) => {
               variant="filled" 
               disabled={uuid?true:false}
               value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-              {renderGroupSelectMenu()}
+              <GroupSelectMenu formValues={formValues} />
             </NativeSelect>
           </Box>
           {buttonEngine()}
