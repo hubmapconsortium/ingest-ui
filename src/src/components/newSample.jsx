@@ -466,7 +466,7 @@ export const SampleForm = (props) => {
         <Button
           variant="contained"
           className="m-2"
-          onClick={navigate("/")}>
+          onClick={() => navigate("/")}>
           Cancel
         </Button>
         {/* @TODO use next form to help work this in to its own UI component? */}
@@ -605,10 +605,10 @@ export const SampleForm = (props) => {
           
         )}
 
-        <form onSubmit={(e) => handleSubmit(e)}>
+        <form onSubmit={(e) => handleSubmit(e)} className="mt-2">
 
-          <FormControl sx={{width: '100%', mt: 2}} variant="filled">
-            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid) ? true:false)}>Source ID * </InputLabel>
+          <FormControl sx={{width: '100%'}} >
+            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid) ? true:false)} style={{marginTop: "13px"}}>Source ID * </InputLabel>
             <FilledInput
               id="direct_ancestor_uuid"
               value={sourceEntity ? sourceEntity.hubmap_id : ""}
@@ -616,7 +616,6 @@ export const SampleForm = (props) => {
               onClick={() => setOpenSearch(uuid ? false : true)}
               disabled={uuid?true:false}
               InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid)) ? true:false)}}
-              variant="filled"
               required={true}
               helperText={(formErrors.direct_ancestor_uuid ? formErrors.direct_ancestor_uuid : "")}
               small={"true"}
@@ -725,8 +724,7 @@ export const SampleForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             small={"true"}
-            disabled={!permissions.has_write_priv}
-            variant="filled"/>
+            disabled={!permissions.has_write_priv}/>
           
           {/* Protocol URL  */}
           <TextField 
@@ -739,7 +737,6 @@ export const SampleForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="mt-4 mb-2"
             required/>
           
@@ -754,7 +751,6 @@ export const SampleForm = (props) => {
               onChange={(e) => handleInputChange(e)}
               fullWidth
               disabled={!permissions.has_write_priv}
-              variant="filled"
               className="my-4" />
           </Collapse>
           
@@ -768,7 +764,6 @@ export const SampleForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-4"
             multiline
             rows={4}/>
@@ -874,7 +869,6 @@ export const SampleForm = (props) => {
                 BorderTopLeftRadius: "4px",
                 BorderTopRightRadius: "4px",
               }}
-              variant="filled" 
               disabled={uuid?true:false}
               value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
               <GroupSelectMenu formValues={formValues} />

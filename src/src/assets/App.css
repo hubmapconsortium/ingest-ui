@@ -32,16 +32,7 @@
   font-family: 'Inter', sans-serif!important;
 }
 
-/* MUI Input Overrides */
-.MuiInputBase-root.Mui-disabled {
-  background: rgba(0, 0, 0, 0.12)!important;
-}
-.MuiInputBase-root {
-  background: rgba(0, 0, 0, 0.05)!important;
-}
-
-.tooltip 
-{
+.tooltip {
   width: 250px;
   white-space : normal;
 }

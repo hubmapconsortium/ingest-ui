@@ -228,7 +228,7 @@ export const DonorForm = (props) => {
         <Button
           variant="contained"
           className="m-2"
-          onClick={navigate("/")}>
+          onClick={() => navigate("/")}>
           Cancel
         </Button>
         {/* @TODO use next form to help work this in to its own UI component? */}
@@ -269,7 +269,6 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
           />
           <TextField //"Deidentified Name "
@@ -283,7 +282,6 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
           />
           <TextField //"Case Selection Protocol "
@@ -297,7 +295,6 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
           />
           <TextField //"Description "
@@ -310,7 +307,6 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
             multiline
             rows={4}
@@ -329,7 +325,6 @@ export const DonorForm = (props) => {
                 BorderTopLeftRadius: "4px",
                 BorderTopRightRadius: "4px",
               }}
-              variant="filled" 
               disabled={uuid?true:false}
               value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
               <GroupSelectMenu formValues={formValues} />
