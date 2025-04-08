@@ -813,6 +813,7 @@ export const SampleForm = (props) => {
           {shouldShowRUIInterface() === true && !checked && (
             <Button
               className="mt-2"
+              disabled={!permissions.has_write_priv}
               onClick={() => setRuiModal([true])}
               variant="contained">
                 {entityData.rui_location ? "Modify Location Information" : "Register Location"}
@@ -820,7 +821,7 @@ export const SampleForm = (props) => {
           )}          
           
           {/* RUI VIEW */}
-          {(formValues.rui_location ) && !checked && (
+          {(formValues.rui_location) && !checked && (
             <React.Fragment>
               <div className="col-sm-2 text-left">
                 <Button
