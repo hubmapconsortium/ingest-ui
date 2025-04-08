@@ -869,6 +869,11 @@ export const SampleForm = (props) => {
               label="Group"
               onChange={(e) => handleInputChange(e)}
               fullWidth
+              className="p-2"
+              sx={{
+                BorderTopLeftRadius: "4px",
+                BorderTopRightRadius: "4px",
+              }}
               variant="filled" 
               disabled={uuid?true:false}
               value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
