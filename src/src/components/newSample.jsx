@@ -1,6 +1,5 @@
 import React, {useEffect, useState, useMemo} from "react";
-import {useParams} from "react-router-dom";
-
+import {useParams, useNavigate} from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -42,6 +41,7 @@ import {RUI_ORGAN_TYPES} from "../constants";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {
+  let navigate = useNavigate();
   const{uuid} = useParams();
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
@@ -466,7 +466,7 @@ export const SampleForm = (props) => {
         <Button
           variant="contained"
           className="m-2"
-          onClick={() => window.history.back()}>
+          onClick={navigate("/")}>
           Cancel
         </Button>
         {/* @TODO use next form to help work this in to its own UI component? */}

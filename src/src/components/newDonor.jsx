@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import {ingest_api_allowable_edit_states} from "../service/ingest_api";
 import {
   entity_api_get_entity,
@@ -25,6 +25,7 @@ import Button from "@mui/material/Button";
 import {FormHeader,GroupSelectMenu} from "./ui/formParts";
 
 export const DonorForm = (props) => {
+  let navigate = useNavigate();
   let[entityData, setEntityData] = useState({
     lab_donor_id: "",
     label: "",
@@ -227,7 +228,7 @@ export const DonorForm = (props) => {
         <Button
           variant="contained"
           className="m-2"
-          onClick={() => window.history.back()}>
+          onClick={navigate("/")}>
           Cancel
         </Button>
         {/* @TODO use next form to help work this in to its own UI component? */}
