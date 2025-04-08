@@ -160,7 +160,18 @@ export function App(props){
             if(results.error?.response && results.error.response.status){
               setExpiredKey(true);
               if(results.error.response.status ===401 ){
-                setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
+                // No more message, just full cache-dump and reload
+
+                // Need to give sotrage a chance to clear,
+                setTimeout(() => {
+                  purgeStorage();
+                }, 10);                
+                // THEN lets refresh
+                setTimeout(() => {
+                  window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
+                }, 2000);
+                
+                // setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
               }else if(results.error.response.data.error && results.error.response.status !==401){
                 setLoginError(results.error.response.data.error );
               }else{
