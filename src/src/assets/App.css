@@ -32,8 +32,7 @@
   font-family: 'Inter', sans-serif!important;
 }
 
-.tooltip 
-{
+.tooltip {
   width: 250px;
   white-space : normal;
 }

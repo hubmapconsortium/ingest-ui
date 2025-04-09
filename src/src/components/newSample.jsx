@@ -1,6 +1,5 @@
 import React, {useEffect, useState, useMemo} from "react";
-import {useParams} from "react-router-dom";
-
+import {useParams, useNavigate} from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -42,6 +41,7 @@ import {RUI_ORGAN_TYPES} from "../constants";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {
+  let navigate = useNavigate();
   const{uuid} = useParams();
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
@@ -466,7 +466,7 @@ export const SampleForm = (props) => {
         <Button
           variant="contained"
           className="m-2"
-          onClick={() => window.history.back()}>
+          onClick={() => navigate("/")}>
           Cancel
         </Button>
         {/* @TODO use next form to help work this in to its own UI component? */}
@@ -605,10 +605,10 @@ export const SampleForm = (props) => {
           
         )}
 
-        <form onSubmit={(e) => handleSubmit(e)}>
+        <form onSubmit={(e) => handleSubmit(e)} className="mt-2">
 
-          <FormControl sx={{width: '100%', mt: 2}} variant="filled">
-            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid) ? true:false)}>Source ID * </InputLabel>
+          <FormControl sx={{width: '100%'}} >
+            <InputLabel htmlFor="direct_ancestor_uuid" shrink={(uuid || (formValues?.direct_ancestor_uuid) ? true:false)} style={{marginTop: "13px"}}>Source ID * </InputLabel>
             <FilledInput
               id="direct_ancestor_uuid"
               value={sourceEntity ? sourceEntity.hubmap_id : ""}
@@ -616,7 +616,6 @@ export const SampleForm = (props) => {
               onClick={() => setOpenSearch(uuid ? false : true)}
               disabled={uuid?true:false}
               InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid)) ? true:false)}}
-              variant="filled"
               required={true}
               helperText={(formErrors.direct_ancestor_uuid ? formErrors.direct_ancestor_uuid : "")}
               small={"true"}
@@ -725,8 +724,7 @@ export const SampleForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             small={"true"}
-            disabled={!permissions.has_write_priv}
-            variant="filled"/>
+            disabled={!permissions.has_write_priv}/>
           
           {/* Protocol URL  */}
           <TextField 
@@ -739,7 +737,6 @@ export const SampleForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="mt-4 mb-2"
             required/>
           
@@ -754,7 +751,6 @@ export const SampleForm = (props) => {
               onChange={(e) => handleInputChange(e)}
               fullWidth
               disabled={!permissions.has_write_priv}
-              variant="filled"
               className="my-4" />
           </Collapse>
           
@@ -768,41 +764,45 @@ export const SampleForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-4"
             multiline
             rows={4}/>
 
           {/* generate_ids_for_multiple_samples */}
-          {!uuid && ( 
-            <FormControlLabel 
-              control={
-                <Checkbox 
-                  checked={checked}
-                  error={formErrors.generate_ids_for_multiple_samples ? "true" : "false"}
-                  id= "generate_ids_for_multiple_samples"
-                  helperText=""
-                  disabled={!permissions.has_write_priv}
+          {/* DOnt bother loading if we're gonna be an organ */}
+          {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type !== "Donor") && (
+            <>
+              {!uuid && ( 
+                <FormControlLabel 
+                  control={
+                    <Checkbox 
+                      checked={checked}
+                      error={formErrors.generate_ids_for_multiple_samples ? "true" : "false"}
+                      id= "generate_ids_for_multiple_samples"
+                      helperText=""
+                      disabled={!permissions.has_write_priv}
+                      onChange={(e) => handleInputChange(e)}
+                    />
+                  } 
+                label="Generate multiple samples" />
+              )}
+              
+              {/*generate_number */}
+              <Collapse in={checked}> 
+                <TextField
+                  id="generate_number"
+                  required={checked}
+                  label="Number to Generate"
+                  helperText={(formErrors.generate_number ? formErrors.generate_number : "")}
                   onChange={(e) => handleInputChange(e)}
-                />
-              } 
-            label="Generate multiple samples" />
-          )}
-          
-          {/*generate_number */}
-          <Collapse in={checked}> 
-            <TextField
-              id="generate_number"
-              required={checked}
-              label="Number to Generate"
-              helperText={(formErrors.generate_number ? formErrors.generate_number : "")}
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              value={formValues ? formValues.generate_number : ""}
-              error={formErrors.generate_number ? formErrors.generate_number : false}
-              small={"true"} />
-          </Collapse>
-          
+                  fullWidth
+                  value={formValues ? formValues.generate_number : ""}
+                  error={formErrors.generate_number ? formErrors.generate_number : false}
+                  small={"true"} />
+              </Collapse>
+            </>
+          )}  
+            
           {/* RUI REG */}
           {(shouldShowRUIInterface() === false) && !checked && (    
             <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
@@ -813,6 +813,7 @@ export const SampleForm = (props) => {
           {shouldShowRUIInterface() === true && !checked && (
             <Button
               className="mt-2"
+              disabled={!permissions.has_write_priv}
               onClick={() => setRuiModal([true])}
               variant="contained">
                 {entityData.rui_location ? "Modify Location Information" : "Register Location"}
@@ -820,7 +821,7 @@ export const SampleForm = (props) => {
           )}          
           
           {/* RUI VIEW */}
-          {(formValues.rui_location ) && !checked && (
+          {(formValues.rui_location) && !checked && (
             <React.Fragment>
               <div className="col-sm-2 text-left">
                 <Button
@@ -868,7 +869,11 @@ export const SampleForm = (props) => {
               label="Group"
               onChange={(e) => handleInputChange(e)}
               fullWidth
-              variant="filled" 
+              className="p-2"
+              sx={{
+                BorderTopLeftRadius: "4px",
+                BorderTopRightRadius: "4px",
+              }}
               disabled={uuid?true:false}
               value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
               <GroupSelectMenu formValues={formValues} />
