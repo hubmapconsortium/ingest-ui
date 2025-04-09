@@ -208,15 +208,6 @@ caption {
   display: block !important;
 }
 
-.badge-purple {
-  color: #fff;
-  background-color: #9933cc;
-}
-.badge-incomplete {
-  background-color: rgb(255, 193, 7);
-  color: rgb(33, 37, 41);
-}
-
 .nowrap {
   white-space: nowrap;
 }
@@ -823,34 +814,43 @@ svg.invalid {
 
 .badge-info,
 .btn-info {
-  color: #fff;
-  background-color: #17a2b8;
+  color: #fff!important;
+  background-color: #17a2b8!important;
 }
 
 .badge-neutral,
 .btn-neutral {
-  background-color: #424242;
-  color: white;
+  background-color: #424242!important;
+  color: white!important;
 }
 
 .badge-success,
 .badge-published,
 .badge-valid,
 .btn-success {
-  background-color: #0ecd3a;
-  color: white;
+  background-color: #0ecd3a!important;
+  color: white!important;
 }
 
 .badge-hold,
 .badge-dark,
 .badge-secondary {
-  background-color: #424242;
-  color: white;
+  background-color: #424242!important;
+  color: white!important;
 }
 
 .badge-danger {
-  background-color: rgb(220, 0, 78);
-  color: white;
+  background-color: rgb(220, 0, 78)!important;
+  color: white!important;
+}
+
+.badge-purple {
+  color: #fff!important;
+  background-color: #9933cc!important;
+}
+.badge-incomplete {
+  background-color: rgb(255, 193, 7)!important;
+  color: rgb(33, 37, 41)!important;
 }
 
 .upload-slide-results {

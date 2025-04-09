@@ -516,7 +516,6 @@ export function App(props){
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
                     <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
-                    <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
                     <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
                     <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
                     <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
@@ -531,6 +530,7 @@ export function App(props){
                     </Route>
 
                     {/* In Develpment here */}
+                    <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
 
                   </Routes>
 

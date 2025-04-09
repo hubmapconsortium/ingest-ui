@@ -208,15 +208,6 @@ caption {
   display: block !important;
 }
 
-.badge-purple {
-  color: #fff;
-  background-color: #9933cc;
-}
-.badge-incomplete {
-  background-color: rgb(255, 193, 7);
-  color: rgb(33, 37, 41);
-}
-
 .nowrap {
   white-space: nowrap;
 }
@@ -788,6 +779,18 @@ svg.invalid{
   background-color: rgb(220, 0, 78);
   color:white;
 }
+
+.badge-purple {
+  color: #fff!important;
+  background-color: #9933cc!important;
+}
+.badge-incomplete {
+  background-color: rgb(255, 193, 7)!important;
+  color: rgb(33, 37, 41)!important;
+}
+
+
+
 
 .upload-slide-results{
   padding:10px;

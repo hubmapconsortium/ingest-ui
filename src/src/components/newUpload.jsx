@@ -12,6 +12,7 @@ import {
   validateProtocolIODOI,
   validateSingleProtocolIODOI
 } from "../utils/validators";
+import {getPublishStatusColor} from "../utils/badgeClasses";
 
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -23,8 +24,6 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from '@mui/material/FormHelperText';
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -50,7 +49,7 @@ export const UploadForm = (props) => {
     intended_organ: "",
     intended_dataset_type: "",
     data_provider_group: "",
-    anticipated_complete_upload_month_raw: "",
+    anticipated_complete_upload_month_raw: null,
     anticipated_dataset_count: "",
   });
   let[permissions,setPermissions] = useState({ 
@@ -67,7 +66,7 @@ export const UploadForm = (props) => {
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const defaultGroup = userGroups[0].uuid;
   const{uuid} = useParams();
-
+  
   // Organ Menu Build
   const organ_types = JSON.parse(localStorage.getItem("organs"));
   const organMenu = useMemo(() => {
@@ -84,10 +83,6 @@ export const UploadForm = (props) => {
   
   // Dataset Menu Build
   // Datasets are based not on the basic ontology dataset call but on a specilized call with filters
-
-  const datasetTypeMenu = useMemo(() => {
-    
-    }, []);
 
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
@@ -106,11 +101,12 @@ export const UploadForm = (props) => {
             }else{
               const entityData = response.results;
               let formattedDate = dayjs(entityData.anticipated_complete_upload_month, "YYYY-MM");
-              console.debug('%c◉ formattedDate ', 'color:#00ff7b', formattedDate, entityData.anticipated_complete_upload_month);
+              console.debug('%c◉ formattedDate ', 'color:#D17BFF', formattedDate, entityData.anticipated_complete_upload_month);
               setEntityData({
                 ...entityData,
                 anticipated_complete_upload_month_raw: formattedDate,
               });
+
               setFormValues({
                 title: entityData.title,
                 description: entityData.description,
@@ -129,6 +125,18 @@ export const UploadForm = (props) => {
                     });
                   }
                   setPermissions(response.results);
+                  // if we can't edit, and there is no date set, 
+                  // we'll want to clear out any value in the date picker label
+                  console.debug('%c◉ response.results.has_write_priv ', 'color:#00ff7b', response.results.has_write_priv);
+                  console.debug('%c◉ entityData.anticipated_complete_upload_month ', 'color:#00ff7b', entityData.anticipated_complete_upload_month);
+                  if(response.results.has_write_priv === false && (entityData.anticipated_complete_upload_month ===undefined || entityData.anticipated_complete_upload_month === null)){
+                    console.debug('%c◉ Clear triggered ', 'color:#00ff7b');
+                    // console.debug('%c◉  document.getElementsByClassName(".MuiPickersCalendarHeader-label") ', 'color:#00ff7b', document.getElementsByClassName(".MuiPickersCalendarHeader-label"));
+                    console.debug('%c◉  [0] ', 'color:#00ff7b', document.getElementById("mui-2-grid-label")[0]);
+                    // console.debug('%c◉  [0] ', 'color:#00ff7b', document.getElementsByClassName(".MuiPickersCalendarHeader-label")[0]);
+                    document.getElementById("mui-2-grid-label").innerHTML = "No Date Set";
+                  }
+                  // document.getElementsByClassName("MuiPickersCalendarHeader-label")[0].innerHTML = "";
                 })
                 .catch((error) => {
                   console.error("ingest_api_allowable_edit_states ERROR", error);
@@ -203,7 +211,7 @@ export const UploadForm = (props) => {
         description: formValues.description,
         ...((formValues.intended_organ) && {intended_organ: formValues.intended_organ} ),
         ...((formValues.intended_dataset_type) && {intended_dataset_type: formValues.intended_dataset_type} ),
-        ...((formValues.anticipated_complete_upload_month) && {anticipated_complete_upload_month: formValues.anticipated_complete_upload_month} ),
+        ...((formValues.anticipated_complete_upload_month_raw) && {anticipated_complete_upload_month: formValues.anticipated_complete_upload_month_raw} ),
         ...((formValues.anticipated_dataset_count) && {anticipated_dataset_count: parseInt(formValues.anticipated_dataset_count)} ),
       }
 
@@ -261,7 +269,47 @@ export const UploadForm = (props) => {
     }));
   }
 
+  function statusPermissions(){
+    let buttons = [];
+    let casedStatus = entityData.status ? entityData.status.toUpperCase() : "";
+
+    if(permissions.has_admin_priv){
+      if (
+        casedStatus === "NEW" ||
+        casedStatus === "SUBMITTED" ||
+        casedStatus === "VALID" ||
+        casedStatus === "INVALID" ||
+        casedStatus === "ERROR"){
+          buttons.push("Validate");
+      }
+      if(casedStatus === "SUBMITTED" ){
+        buttons.push("Reorganize");
+      }        
+      if(casedStatus !== "REORGANIZED" ){
+        buttons.push("Revert");
+      }
+    }
+
+    // Group / write privs OR Admin Privs 
+    if(permissions.has_write_priv || permissions.has_admin_priv){
+      if(casedStatus !== "VALID" ){
+        buttons.push("Submit");
+      } 
+      if(casedStatus === "VALID" ||
+        casedStatus === "INVALID" ||
+        casedStatus === "ERROR"||
+        casedStatus === "NEW" ||
+        casedStatus === "INCOMPLETE"){
+        buttons.push("Save");
+      }
+    }
+    console.debug('%c◉ buttons ', 'color:#00ff7b', buttons);
+    return (buttons)
+  }
+
   function buttonEngine(){
+    let buttonList = statusPermissions();
+    console.debug('%c◉ buttonList ', 'color:#00ff7b', buttonList);
     return(
       <Box sx={{textAlign: "right"}}>
         <Button
@@ -282,7 +330,28 @@ export const UploadForm = (props) => {
         )}
         {uuid && uuid.length > 0 && permissions.has_write_priv && (
           <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
-            Update
+            Save
+          </LoadingButton>
+        )}
+
+        {uuid && uuid.length > 0 && permissions.has_write_priv && (
+          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
+            Validdate
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && (
+          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
+            Submit
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && (
+          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
+            Reorganize
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && (
+          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
+            Revert
           </LoadingButton>
         )}
       </Box>
@@ -298,9 +367,10 @@ export const UploadForm = (props) => {
           <FormHeader entityData={uuid ? entityData : ["new","Upload"]} permissions={permissions} />
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
-          <TextField //"Lab's Upload Non-PHI ID "
+          <TextField //"Title "
             id="title"
             label="Title "
+            required
             helperText="A name for this upload. This will be used internally by Consortium members for the purposes of finding this Data Upload"
             value={formValues ? formValues.title : ""}
             error={formErrors.title}
@@ -308,12 +378,12 @@ export const UploadForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
           />
           <TextField //"Description "
             id="description"
             label="Description "
+            required
             helperText="A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload."
             value={formValues ? formValues.description : ""}
             error={formErrors.description}
@@ -321,12 +391,11 @@ export const UploadForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
             multiline
             rows={4}/>
-
-           <div className="row mt-3">
+          
+          <div className="row mt-3">
             <Grid container spacing={2}>
               
               <Grid item sm={8} md={6} lg={5} xl={4} >
@@ -337,12 +406,10 @@ export const UploadForm = (props) => {
                   </InputLabel>
                   <Box
                     sx={{
-                      backgroundColor: "rgba(0, 0, 0, 0.06)",
-                      padding: "20px",
-                      margin: "0 auto",
                       borderTopLeftRadius: "4px",
                       borderTopRightRadius: "4px",
-                      borderBottom: "1px solid rgba(0, 0, 0, 0.4)", 
+                      border: "1px solid rgba(0, 0, 0, 0.15)",
+                      paddingBottom: "1em", 
                     }}>
                     <StaticDatePicker
                       id="anticipated_complete_upload_month_raw"
@@ -351,11 +418,15 @@ export const UploadForm = (props) => {
                       orientation="landscape"
                       openTo="month"
                       disableHighlightToday
+                      showToolbar={false}
+                      maxDate={dayjs("2026-12-31")}
+                      // shouldDisableDate={disablePastCutoff()}
                       // label="Anticipated Completion Month/Year"
                       label=" "
                       views={["year", "month"]}
-                      value={formValues.anticipated_complete_upload_month_raw ? dayjs(formValues.anticipated_complete_upload_month_raw) : null}
+                      value={formValues.anticipated_complete_upload_month ? formValues.anticipated_complete_upload_month : null}
                       disablePast
+                      disabled={!permissions.has_write_priv}
                       onChange={(e) => handleInputChange(e)}
                       renderInput={(params) => <TextField {...params} />}/>
                     <Button
@@ -363,19 +434,20 @@ export const UploadForm = (props) => {
                         marginTop: "1em",
                         float: "right",
                       }}
+                      disabled={!permissions.has_write_priv}
                       onClick={() => clearDate()}>
                       Clear
                     </Button>
                   </Box>
                 </LocalizationProvider>
-                <FormHelperText id="organIDHelp" className="mb-3">The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.</FormHelperText>
+                <FormHelperText id="monthYearIDHelp" className="mb-3">The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.</FormHelperText>
               </Grid>
 
               <Grid item sm={4} md={6} lg={7} xl={8} >
                 {/* Organ */}
                 <Box className="mb-4" >           
                   <InputLabel sx={{color: "rgba(0, 0, 0, 0.6)"}} htmlFor="organ">
-                    Intended Organ Type
+                    Intended Organ Type *
                   </InputLabel>
                   <NativeSelect
                       id="intended_organ"
@@ -384,32 +456,36 @@ export const UploadForm = (props) => {
                       required
                       helperText={(formErrors.intended_organ ? formErrors.intended_organ : "")}
                       inputProps={{style: {padding: "0.8em"}}}
-                      sx={{background: "rgba(0, 0, 0, 0.06)"}}
-                      disabled={uuid?true:false}
+                      disabled={!permissions.has_write_priv}
+                      // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)"} : {}}
                       value={formValues.intended_organ ? formValues.intended_organ : ""}>
                       <option key={"DEFAULT"} value={""}></option>
                       {organMenu}  
                   </NativeSelect>
                   <FormHelperText id="organIDHelp" className="mb-3">Select the organ type that the data in this Upload is intended to be derived from.</FormHelperText>
+                  {formValues.intended_organ && !organ_types[formValues.intended_organ] && (
+                    <Alert variant="filled" severity="error">
+                      <strong>Error:</strong> {`Invalid organ type stored: ${formValues.intended_organ}`}
+                    </Alert>
+                  )}
                 </Box>
                 {/* Dataset */}
 
                 <Box className="mt-4" > 
-
                   <Grid container spacing={2}>
-
                     <Grid item xs={8} >
                       <InputLabel sx={{color: "rgba(0, 0, 0, 0.6)"}} htmlFor="intended_dataset_type">
-                        Intended Dataset Type
+                        Intended Dataset Type *
                       </InputLabel>
                       <NativeSelect
                           id="intended_dataset_type"
+                          required
                           onChange={(e) => handleInputChange(e)}
                           fullWidth
                           helperText={(formErrors.intended_dataset_type ? formErrors.intended_dataset_type : "")}
                           inputProps={{style: {padding: "0.8em"}}}
-                          sx={{background: "rgba(0, 0, 0, 0.06)", padding: "0.15em"}}
-                          disabled={uuid?true:false}
+                          // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)", padding: "0.15em"} : { padding: "0.15em"}}
+                          disabled={!permissions.has_write_priv}
                           value={formValues.intended_dataset_type ? formValues.intended_dataset_type : ""}>
                           <option key={"DEFAULT"} value={""}></option>
                           {datasetMenu}  
@@ -417,16 +493,16 @@ export const UploadForm = (props) => {
                       <FormHelperText id="organIDHelp" className="mb-3">Select the organ type that the data in this Upload is intended to be derived from.</FormHelperText>
                     </Grid>
                     <Grid item xs={4} >
-                      <InputLabel sx={{color: "rgba(0, 0, 0, 0.6)"}} htmlFor="anticipated_dataset_count">
+                      <InputLabel htmlFor="anticipated_dataset_count">
                         Number
                       </InputLabel>
                       <TextField
                         id="anticipated_dataset_count"
                         fullWidth 
+                        disabled={!permissions.has_write_priv}
                         sx={{ padding: "0.09em"}}
                         type="number"
-                        helperText={(formErrors.anticipated_dataset_count ? formErrors.anticipated_dataset_count : "")}
-                        variant="filled"/>
+                        helperText={(formErrors.anticipated_dataset_count ? formErrors.anticipated_dataset_count : "")}/>
                         <FormHelperText id="organIDHelp" className="mb-3">Anticipated number of datasets</FormHelperText>
 
                     </Grid>
@@ -436,7 +512,7 @@ export const UploadForm = (props) => {
 
                 {/* Group */}
                 <Box className="mt-2 mb-3">           
-                  <InputLabel sx={{color: "rgba(0, 0, 0, 0.6)"}} htmlFor="group_uuid">
+                  <InputLabel htmlFor="group_uuid">
                     Group
                   </InputLabel>
                   <NativeSelect
@@ -444,17 +520,15 @@ export const UploadForm = (props) => {
                     label="Group"
                     onChange={(e) => handleInputChange(e)}
                     fullWidth
-                    variant="filled" 
                     disabled={uuid?true:false}
                     value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
                     <GroupSelectMenu formValues={formValues} />
                   </NativeSelect>
                 </Box>
               </Grid>
-
             </Grid>
           </div>
-          {buttonEngine()}
+        {buttonEngine()}
         </form>
       
         {pageErrors && (
