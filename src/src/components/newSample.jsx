@@ -769,35 +769,40 @@ export const SampleForm = (props) => {
             rows={4}/>
 
           {/* generate_ids_for_multiple_samples */}
-          {!uuid && ( 
-            <FormControlLabel 
-              control={
-                <Checkbox 
-                  checked={checked}
-                  error={formErrors.generate_ids_for_multiple_samples ? "true" : "false"}
-                  id= "generate_ids_for_multiple_samples"
-                  helperText=""
-                  disabled={!permissions.has_write_priv}
+          {/* DOnt bother loading if we're gonna be an organ */}
+          {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type !== "Donor") && (
+            <>
+              {!uuid && ( 
+                <FormControlLabel 
+                  control={
+                    <Checkbox 
+                      checked={checked}
+                      error={formErrors.generate_ids_for_multiple_samples ? "true" : "false"}
+                      id= "generate_ids_for_multiple_samples"
+                      helperText=""
+                      disabled={!permissions.has_write_priv}
+                      onChange={(e) => handleInputChange(e)}
+                    />
+                  } 
+                label="Generate multiple samples" />
+              )}
+              
+              {/*generate_number */}
+              <Collapse in={checked}> 
+                <TextField
+                  id="generate_number"
+                  required={checked}
+                  label="Number to Generate"
+                  helperText={(formErrors.generate_number ? formErrors.generate_number : "")}
                   onChange={(e) => handleInputChange(e)}
-                />
-              } 
-            label="Generate multiple samples" />
-          )}
-          
-          {/*generate_number */}
-          <Collapse in={checked}> 
-            <TextField
-              id="generate_number"
-              required={checked}
-              label="Number to Generate"
-              helperText={(formErrors.generate_number ? formErrors.generate_number : "")}
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              value={formValues ? formValues.generate_number : ""}
-              error={formErrors.generate_number ? formErrors.generate_number : false}
-              small={"true"} />
-          </Collapse>
-          
+                  fullWidth
+                  value={formValues ? formValues.generate_number : ""}
+                  error={formErrors.generate_number ? formErrors.generate_number : false}
+                  small={"true"} />
+              </Collapse>
+            </>
+          )}  
+            
           {/* RUI REG */}
           {(shouldShowRUIInterface() === false) && !checked && (    
             <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
