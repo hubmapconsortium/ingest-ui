@@ -13,10 +13,26 @@
 
 #body {
   background-color: #ebebeb;
+  font-family: 'Inter', sans-serif!important;
 }
 
-.tooltip 
-{
+/* Inter Font override */
+/* Avoids having to muck about ThemeProvider nonsense */
+#root{
+  font-family: 'Inter', sans-serif!important;
+}
+.MuiPaper-root,
+.MuiTypography-root,
+.MuiButton-root,
+.MuiFormHelperText-root,
+.MuiInputBase-root,
+.MuiFormLabel-root,
+.MuiInputLabel-root,
+.MuiButtonBase-root{
+  font-family: 'Inter', sans-serif!important;
+}
+
+.tooltip {
   width: 250px;
   white-space : normal;
 }
@@ -482,13 +498,13 @@ caption {
 
 .portal-jss116 {
     font-size: 0.95rem;
-    font-family: Inter Variable, Helvetica, Arial, sans-serif;
+    font-family: "Inter", Helvetica, Arial, sans-serif;
     font-weight: 300;
     line-height: 1.5;
 }
 .portal-alert-text {
     font-size: 0.7rem;
-    font-family: Inter Variable, Helvetica, Arial, sans-serif;
+    font-family: "Inter", Helvetica, Arial, sans-serif;
     font-weight: bold;
     line-height: 1.5;
     color: red;
@@ -496,14 +512,14 @@ caption {
 
 .portal-label {
     font-size: 1.2rem;
-    font-family: Inter Variable, Helvetica, Arial, sans-serif;
+    font-family: "Inter", Helvetica, Arial, sans-serif;
     font-weight: bold;
     line-height: 1.5;
 }
 
 .portal-jss120 {
     font-size: 2.3rem;
-    font-family: Inter Variable, Helvetica, Arial, sans-serif;
+    font-family: "Inter", Helvetica, Arial, sans-serif;
     font-weight: 300;
     line-height: 1.2;
 }
