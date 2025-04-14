@@ -11,6 +11,7 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import Chip from '@mui/material/Chip';
 
@@ -21,11 +22,12 @@ import Chip from '@mui/material/Chip';
 export const FormHeader = (props) => {
   let entityData = props.entityData;
   let permissions = props.permissions;
+  let globusURL = props.globusURL;
   // console.debug('%c◉ formHeadeer ', 'color:#00ff7b', props);
   return (
     <React.Fragment>
       {topHeader(entityData)}
-      {infoPanels(entityData,permissions)}
+      {infoPanels(entityData,permissions,globusURL)}
     </React.Fragment>
   )
 }
@@ -51,7 +53,6 @@ function iconSelection(entity_type){
     default:
       return <BubbleChartIcon style={style} />
   }
-}
 
 function topHeader(entityData){
   
@@ -100,10 +101,27 @@ function topHeader(entityData){
   }
 }
 
-function infoPanels(entityData,permissions){
+function infoPanels(entityData,permissions,globusURL){
   // console.debug('%c◉ infoPan ', 'color:#00ff7b', entityData,permissions );
   return (
     <Grid item xs={6} className="" >
+      {globusURL&& (
+        <Typography className="pb-1">
+          <strong><big>
+            <a href={globusURL}
+              target='_blank'
+              rel='noopener noreferrer'>   
+                {(entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED") && (
+                  <>Open data repository {" "}</>
+                )}
+                {entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
+                  <>To add or modify data files go to the data repository {" "}</>
+                )}
+                <OpenInNewIcon />
+            </a>
+          </big></strong>
+        </Typography>
+      )}
       {permissions.has_write_priv && (
         <HIPPA />
       )}
@@ -123,6 +141,7 @@ function infoPanels(entityData,permissions){
           You do not have permission to modify this item.
         </Alert>
       )}
+
       {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
         // They might not have write access but not because of data_access_level
         <Alert severity="warning" 
