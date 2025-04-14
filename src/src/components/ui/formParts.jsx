@@ -53,6 +53,7 @@ function iconSelection(entity_type){
     default:
       return <BubbleChartIcon style={style} />
   }
+}
 
 function topHeader(entityData){
   
