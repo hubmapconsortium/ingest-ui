@@ -665,7 +665,7 @@ export const UploadForm = (props) => {
                     
                   </Grid>
                 </Box>
-
+                  
                 {/* Group */}
                 {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
                 {!uuid && (

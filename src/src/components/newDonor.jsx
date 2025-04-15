@@ -311,25 +311,30 @@ export const DonorForm = (props) => {
             multiline
             rows={4}
           />
-          <Box className="my-3">           
-            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
-              Group
-            </InputLabel>
-            <NativeSelect
-              id="group_uuid"
-              label="Group"
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              className="p-2"
-              sx={{
-                BorderTopLeftRadius: "4px",
-                BorderTopRightRadius: "4px",
-              }}
-              disabled={uuid?true:false}
-              value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-              <UserGroupSelectMenu formValues={formValues} />
-            </NativeSelect>
-          </Box>
+          
+          {/* Group */}
+          {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
+          {!uuid && (
+            <Box className="my-3">           
+              <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <NativeSelect
+                id="group_uuid"
+                label="Group"
+                onChange={(e) => handleInputChange(e)}
+                fullWidth
+                className="p-2"
+                sx={{
+                  BorderTopLeftRadius: "4px",
+                  BorderTopRightRadius: "4px",
+                }}
+                disabled={uuid?true:false}
+                value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
+                <UserGroupSelectMenu formValues={formValues} />
+              </NativeSelect>
+            </Box>
+          )}
           {buttonEngine()}
         </form>
       

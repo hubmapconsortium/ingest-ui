@@ -70,11 +70,14 @@ function topHeader(entityData){
           )}
         </Grid>
         <Grid item xs={6} className="" >
-          {entityData.entity_type === "Upload" && (
+          {/* {entityData.entity_type === "Upload" && (
             <Typography><strong>Group Name:</strong> {entityData.group_name} </Typography>             
-          )}
+          )} */}
           {entityData.entity_type !== "Upload" && (
             <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography> 
+          )}
+          {entityData.group_name && (
+            <Typography><strong>Group Name:</strong> {entityData.group_name} </Typography>             
           )}
           <Typography><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
           {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
