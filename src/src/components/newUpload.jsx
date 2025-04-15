@@ -20,6 +20,8 @@ import {
   validateSingleProtocolIODOI
 } from "../utils/validators";
 import {getPublishStatusColor} from "../utils/badgeClasses";
+import {RevertFeature} from "../utils/revertModal";
+import {COLUMN_DEF_DATASET_MINI} from './search/table_constants';
 
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -29,18 +31,17 @@ import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
 import FormHelperText from '@mui/material/FormHelperText';
-
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from "@mui/material/Button";
-
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 import {Typography} from "@mui/material";
+import {DataGrid,GridToolbar,GridEventListener} from "@mui/x-data-grid";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export const UploadForm = (props) => {
   let[entityData, setEntityData] = useState({
@@ -138,6 +139,14 @@ export const UploadForm = (props) => {
                 ...((entityData.ingest_task) && {ingest_task: entityData.ingest_task} ),
                 ...((entityData.assigned_to_group_name) && {assigned_to_group_name: entityData.assigned_to_group_name} ),
               });
+
+              // if(entityData.datasets){
+              //   setDatasetTable((prevValues) => ({
+              //     ...prevValues,
+              //     datarows: entityData.datsets,
+              //     results_total: entityData.datsets.length(),
+              //   }));
+              // }
               
               entity_api_get_globus_url(uuid)
                 .then((response) => {
@@ -343,10 +352,6 @@ export const UploadForm = (props) => {
             });
           break;
 
-        case "Revert":
-          console.debug('%c◉ Revert ', 'color:#00ff7b');
-          break;
-
         default:
           console.debug('%c◉ Default ', 'color:#00ff7b');
           break;
@@ -374,57 +379,101 @@ export const UploadForm = (props) => {
     targetHTML[0].innerHTML = "No Date Set";
   }
 
+  function renderDatasets(){
+    if(entityData.datasets && entityData.datasets.length > 0 ){
+      // @TODO: use the Datatables used elsewhere across the site 
+      var compiledCollection = [];
+      for (var i in entityData.datasets){
+        compiledCollection.push({
+          hubmap_id: entityData.datasets[i].hubmap_id,
+          lab_dataset_id: entityData.datasets[i].lab_dataset_id,
+          group_name: entityData.datasets[i].group_name,
+          status: entityData.datasets[i].status,
+          uuid: entityData.datasets[i].uuid,
+          id: entityData.datasets[i].uuid
+        });
+      }
+      return (
+        <div style={{ width: "100%", maxHeight: "340px", overflowX: "auto", padding: "10px 0" }}>
+          <DataGrid
+            columnVisibilityModel={{
+              uuid: false,
+            }}
+            className='associationTable w-100'
+            rows={compiledCollection}
+            rowHeight={75 }
+            columns={COLUMN_DEF_DATASET_MINI}
+            disableColumnMenu={true}
+            hideFooterPagination={true}
+            hideFooterSelectedRowCount
+            rowCount={compiledCollection.length}
+            // onCellClick={handleEvent}
+            loading={!compiledCollection.length > 0 && uuid}
+            sx={{'.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px'},
+            }}
+          />
+        </div>
+      );
+    }
+  }
+
+  function saveCheck(){
+    // Slightly more compelx
+    if(entityData && entityData.status){
+      if((saveStatuses.includes(entityData.status.toLowerCase()) && permissions.has_write_priv) || permissions.has_admin_priv ){
+        return true
+      }else{
+        return false
+      }
+    }
+  }
+
   function buttonEngine(){
     return(
-      <Box sx={{textAlign: "right"}}>
-        <Button
-          variant="contained"
-          className="m-2"
-          onClick={() => window.history.back()}>
-          Cancel
-        </Button>
-        {/* @TODO use next form to help work this in to its own UI component? */}
-        {!uuid && (
-          <LoadingButton
+        <Box sx={{textAlign: "right"}}>
+          <Button
             variant="contained"
-            onClick={(e) => processForm(e,"Create")}
-            loading={isProcessing}
             className="m-2"
-            type="submit">
-            Generate ID
-          </LoadingButton>
-        )}
+            onClick={() => window.history.back()}>
+            Cancel
+          </Button>
+          {/* @TODO use next form to help work this in to its own UI component? */}
+          {!uuid && (
+            <LoadingButton
+              variant="contained"
+              onClick={(e) => processForm(e,"Create")}
+              loading={isProcessing}
+              className="m-2"
+              type="submit">
+              Generate ID
+            </LoadingButton>
+          )}
 
-        {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && saveStatuses.includes(entityData.status.toLowerCase()) && (
-          <LoadingButton loading={isProcessing} variant="contained" className="m-2" onClick={(e) => processForm(e,"Save")}>
-            Save
-          </LoadingButton>
-        )}
+          {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
+            <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
+          )}
+          {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status.toLowerCase() === "valid") &&(
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Submit")}>
+              Submit
+            </LoadingButton>
+          )}
+          {uuid && uuid.length > 0 && permissions.has_admin_priv && entityData.status.toLowerCase() === "submitted" && (
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Reorganize"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Reorganize")}>
+              Reorganize
+            </LoadingButton>
+          )}
+          {uuid && uuid.length > 0 && permissions.has_admin_priv && validateStatuses.includes(entityData.status.toLowerCase()) && (
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Validate"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Validate")}>
+              Validate
+            </LoadingButton>
+          )}
+          {uuid && uuid.length > 0 && saveCheck() === true && (
+            <LoadingButton loading={isProcessing} variant="contained" className="m-1" onClick={(e) => processForm(e,"Save")}>
+              Save
+            </LoadingButton>
+          )}
+        </Box>
 
-        {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status.toLowerCase() === "valid") &&(
-          <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-2" onClick={(e) => processForm(e,"Submit")}>
-            Submit
-          </LoadingButton>
-        )}
-
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && validateStatuses.includes(entityData.status.toLowerCase()) && (
-          <LoadingButton disaled={isProcessing} loading={processingButton === "Validate"} variant="contained" className="m-2" onClick={(e) => processForm(e,"Validate")}>
-            Validate
-          </LoadingButton>
-        )}
-
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && entityData.status.toLowerCase() === "submitted" && (
-          <LoadingButton disaled={isProcessing} loading={processingButton === "Reorganize"} variant="contained" className="m-2" onClick={(e) => processForm(e,"Reorganize")}>
-            Reorganize
-          </LoadingButton>
-        )}
-
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && entityData.status.toLowerCase() !== "submitted" && (
-          <LoadingButton loading={isProcessing} variant="contained" className="m-2" onClick={(e) => processForm(e,"Revert")}>
-            Revert
-          </LoadingButton>
-        )}
-      </Box>
     );
   }
   
@@ -469,6 +518,15 @@ export const UploadForm = (props) => {
             className="my-3"
             multiline
             rows={4}/>
+
+          {entityData.datasets && (
+            <>
+              <Typography sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+                Datasets
+              </Typography>
+              {renderDatasets()}
+            </>
+          )}
           
           <div className="row mt-3">
             <Grid container spacing={2}>
@@ -476,7 +534,7 @@ export const UploadForm = (props) => {
               <Grid item sm={8} md={6} lg={5} xl={4} >
 
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <InputLabel sx={{color: "rgba(0, 0, 0, 0.6)"}} htmlFor="anticipated_complete_upload_month_string">
+                  <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="anticipated_complete_upload_month_string">
                       Anticipated Completion Month/Year
                   </InputLabel>
                   <Box
