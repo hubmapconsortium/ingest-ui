@@ -883,3 +883,8 @@ svg.invalid{
 .form-control.invalid{
   border: 1px solid red;
 }
+
+.invalid label,
+.invalid p{
+  color: rgb(211, 47, 47);
+}
