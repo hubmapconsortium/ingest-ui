@@ -279,7 +279,7 @@ export const UploadForm = (props) => {
     setProcessingButton(target)
     if(validateForm()){
       let selectedGroup = document.getElementById("group_uuid");
-      let selectedGroupUUID = selectedGroup?.value ? selectedGroup.value : defaultGroupUUID;
+      let selectedGroupUUID = (!uuid && selectedGroup?.value) ? selectedGroup.value : defaultGroupUUID;
       console.debug('%c◉ selectedGroupUUID ', 'color:#00ff7b', selectedGroupUUID);
       let cleanForm ={
         title: formValues.title,
@@ -667,21 +667,24 @@ export const UploadForm = (props) => {
                 </Box>
 
                 {/* Group */}
-                <Box className="mt-2 mb-3">           
-                  <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
-                    Group
-                  </InputLabel>
-                  <NativeSelect
-                    id="group_uuid"
-                    label="Group"
-                    onChange={(e) => handleInputChange(e)}
-                    fullWidth
-                    disabled={uuid?true:false}
-                    value={formValues.group_uuid ? formValues.group_uuid : defaultGroupUUID}>
-                    <option key={"0"} value={null}></option>
-                    <UserGroupSelectMenu formValues={formValues} />
-                  </NativeSelect>
-                </Box>
+                {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
+                {!uuid && (
+                  <Box className="mt-2 mb-3">           
+                    <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+                      Group
+                    </InputLabel>
+                    <NativeSelect
+                      id="group_uuid"
+                      label="Group"
+                      onChange={(e) => handleInputChange(e)}
+                      fullWidth
+                      disabled={uuid?true:false}
+                      value={formValues.group_uuid ? formValues.group_uuid : defaultGroupUUID}>
+                      <option key={"0"} value={null}></option>
+                      <UserGroupSelectMenu formValues={formValues} />
+                    </NativeSelect>
+                  </Box>
+                )}
               </Grid>
             </Grid>
           </div>
