@@ -31,6 +31,7 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from '@mui/material/FormHelperText';
 
 import Alert from "@mui/material/Alert";
+import AlertTitle from '@mui/material/AlertTitle';
 import Button from "@mui/material/Button";
 
 import dayjs from "dayjs";
@@ -220,10 +221,20 @@ export const UploadForm = (props) => {
 
   function validateForm(){
     let errors = 0;
-    // Formatting Validation
-    // errors += validateDOI(formValues['protocol_url']);
-    // End Validation
+    // Browser handles requireds, 
+    // picker itself handles date
+    // cant select invalids from dropdowns
+    // so I think we're good here?
     return errors === 0;
+  }
+
+  function renderValidationMessage (){
+    return (
+      <Alert severity={entityData.status.toLowerCase() === "error" ? "error" : "warning"}>
+        <AlertTitle>{entityData.status}</AlertTitle>
+        {entityData.validation_message}
+      </Alert>
+    )
   }
 
   function processResults(response){
@@ -241,8 +252,6 @@ export const UploadForm = (props) => {
     setProcessingButton(target)
     if(validateForm()){
       // Gotta get the Date back out of the picker
-      // let formattedDate = dayjs(formValues.anticipated_complete_upload_month_string, "YYYY-MM");
-
       console.debug('%c◉ formattedDate ', 'color:#2B00FF', formValues.anticipated_complete_upload_month_string);
       let cleanForm ={
         title: formValues.title,
@@ -364,8 +373,6 @@ export const UploadForm = (props) => {
   }
 
   function buttonEngine(){
-    // let buttonList = statusPermissions();
-    // console.debug('%c◉ buttonList ', 'color:#00ff7b', buttonList);
     return(
       <Box sx={{textAlign: "right"}}>
         <Button
@@ -418,7 +425,7 @@ export const UploadForm = (props) => {
       </Box>
     );
   }
-
+  
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
@@ -427,7 +434,11 @@ export const UploadForm = (props) => {
         <Grid container className=''>
           <FormHeader entityData={uuid ? entityData : ["new","Upload"]} permissions={permissions} globusURL={globusPath?globusPath:null}/>
         </Grid>
-        {/* <form onSubmit={(e) => processForm(e,"Submit")}> */}
+        { entityData.status && (entityData.status.toLowerCase() === "error" || entityData.status.toLowerCase() === "invalid" ) && entityData.validation_message && (
+          <Box className="my-3" sx={{border: "1px solid #f1aeae", borderRadius: "4px"}}>
+            {renderValidationMessage()}
+          </Box> 
+        )}
         <form>
           <TextField //"Title "
             id="title"
@@ -482,8 +493,6 @@ export const UploadForm = (props) => {
                       disableHighlightToday
                       showToolbar={false}
                       maxDate={dayjs("2026-12-31")}
-                      // shouldDisableDate={disablePastCutoff()}
-                      // label="Anticipated Completion Month/Year"
                       label=" "
                       views={["year", "month"]}
                       value={formValues.anticipated_complete_upload_month_date ? formValues.anticipated_complete_upload_month_date : null}
@@ -506,6 +515,7 @@ export const UploadForm = (props) => {
               </Grid>
 
               <Grid item sm={4} md={6} lg={7} xl={8} >
+                
                 {/* Organ */}
                 <Box className="mb-4" >           
                   <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="organ">
@@ -531,8 +541,8 @@ export const UploadForm = (props) => {
                     </Alert>
                   )}
                 </Box>
-                {/* Dataset */}
 
+                {/* Dataset */}
                 <Box className="mt-4" > 
                   <Grid container spacing={2}>
                     <Grid item xs={8} >
@@ -590,7 +600,7 @@ export const UploadForm = (props) => {
               </Grid>
             </Grid>
           </div>
-        {buttonEngine()}
+          {buttonEngine()}
         </form>
       
         {pageErrors && (
