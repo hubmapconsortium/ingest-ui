@@ -236,11 +236,8 @@ export const UploadForm = (props) => {
       }
     });
     
-    setFormErrors(prevValues => ({
-      ...prevValues,
-      ...newFormErrors,
-    }));
-    
+    setFormErrors(newFormErrors);
+  
     if(errors > 0){
       setValidationError("Please Fill In the required Fields: " + requiredFields.join(", "));
     }
@@ -618,7 +615,7 @@ export const UploadForm = (props) => {
                 {/* Dataset */}
                 <Box className="mt-4" > 
                   <Grid container spacing={2}>
-                    <Grid item xs={8} className={`${formErrors.intended_organ ? "invalid" : "valid"}`} >
+                    <Grid item xs={8} className={`${formErrors.intended_dataset_type ? "invalid" : "valid"}`} >
                       <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="intended_dataset_type">
                         Intended Dataset Type *
                       </InputLabel>
