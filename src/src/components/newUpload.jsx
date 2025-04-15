@@ -12,15 +12,8 @@ import { ubkg_api_get_upload_dataset_types } from '../service/ubkg_api';
 import {
   entity_api_get_entity,
   entity_api_update_entity,
-  entity_api_create_entity,
   entity_api_get_globus_url
 } from "../service/entity_api";
-import {
-  validateRequired,
-  validateProtocolIODOI,
-  validateSingleProtocolIODOI
-} from "../utils/validators";
-import {getPublishStatusColor} from "../utils/badgeClasses";
 import {RevertFeature} from "../utils/revertModal";
 import {COLUMN_DEF_DATASET_MINI} from './search/table_constants';
 
@@ -40,9 +33,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 import {Typography} from "@mui/material";
-import {DataGrid,GridToolbar,GridEventListener} from "@mui/x-data-grid";
+import {DataGrid} from "@mui/x-data-grid";
 import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
 
 export const UploadForm = (props) => {
   let[entityData, setEntityData] = useState({
@@ -136,10 +128,12 @@ export const UploadForm = (props) => {
                 data_provider_group: entityData.data_provider_group,
                 anticipated_complete_upload_month_string: entityData.anticipated_complete_upload_month,
                 anticipated_complete_upload_month_date: formattedDate["$d"],
+                group_uuid: entityData.group_uuid,
                 anticipated_dataset_count: entityData.anticipated_dataset_count,
                 ...((entityData.ingest_task) && {ingest_task: entityData.ingest_task} ),
                 ...((entityData.assigned_to_group_name) && {assigned_to_group_name: entityData.assigned_to_group_name} ),
               });
+
               entity_api_get_globus_url(uuid)
                 .then((response) => {
                   console.debug('%c◉ GLOBUS PATH: ', 'color:#00ff7b', response.results);
@@ -157,9 +151,9 @@ export const UploadForm = (props) => {
                     });
                   }
                   setPermissions(response.results);
-                  // if we can't edit, and there is no date set, 
-                  // we'll want to clear out any value in the date picker label
-                  if(response.results.has_write_priv === false && (entityData.anticipated_complete_upload_month ===undefined || entityData.anticipated_complete_upload_month === null)){
+                  
+                  // IF we have no data set!
+                  if(entityData.anticipated_complete_upload_month ===undefined || entityData.anticipated_complete_upload_month === null){
                     var targetHTML = document.getElementsByClassName("MuiPickersCalendarHeader-label"); 
                     if(targetHTML && targetHTML[0]){targetHTML[0].innerHTML = "No Date Set";}
                   }
@@ -455,7 +449,7 @@ export const UploadForm = (props) => {
       }
     }
   }
-
+  
   function buttonEngine(){
     return(
         <Box sx={{textAlign: "right"}}>
@@ -698,12 +692,13 @@ export const UploadForm = (props) => {
                 <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
                   Assigned to Group
                 </InputLabel>
+
                 <NativeSelect
                   id="assigned_to_group_name"
                   onChange={(e) => handleInputChange(e)}
                   fullWidth
                   sx={{marginTop: "40px"}}
-                  disabled={!permissions.has_admin_priv}
+                  disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
                   value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : defaultGroupName}>
                   {allGroups.map(group => (
                     <option key={group.uuid} value={group.shortName}>
@@ -726,7 +721,7 @@ export const UploadForm = (props) => {
                   InputLabelProps={{shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}
                   onChange={(e) => handleInputChange(e)}
                   fullWidth
-                  disabled={!permissions.has_admin_priv}
+                  disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
                   className="mt-3"/>
               </Grid>
             </Grid>
