@@ -253,6 +253,11 @@ export const UploadForm = (props) => {
     setValidationError(error.response.data.error ? error.response.data.error : error);
     setIsProcessing(false);
   }
+  function wrapUp(error){
+    console.debug('%c◉badValError error ', 'color:#00ff7b', error,error.error);
+    setPageErrors(error.error ? error.error : error);
+    setIsProcessing(false);
+  }
 
   function renderValidationMessage (){
     return (
@@ -294,9 +299,15 @@ export const UploadForm = (props) => {
           console.debug('%c◉ Create ', 'color:#00ff7b');
           entity_api_create_entity("upload",JSON.stringify(cleanForm))
             .then((response) => {
-              processResults(response);
+              if(response.status === 200){
+                props.onCreated(response.results);
+              }else{
+                console.log("IN RESP")
+                wrapUp(response.error ? response.error : response);
+              }
             })
             .catch((error) => {
+              console.log("IN CATCH")
               wrapUp(error)
             });
           break;
@@ -376,11 +387,6 @@ export const UploadForm = (props) => {
       console.debug('%c◉ Invalid ', 'color:#ff005d');
     }
     
-  }
-
-  function wrapUp(error){
-    setPageErrors(error);
-    setIsProcessing(false);
   }
 
   function clearDate(){
