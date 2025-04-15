@@ -2,6 +2,7 @@ import React, {useEffect, useState, useMemo} from "react";
 import {useParams} from "react-router-dom";
 import {
   ingest_api_allowable_edit_states, 
+  ingest_api_create_upload,
   ingest_api_submit_upload,
   ingest_api_validate_upload,
   ingest_api_reorganize_upload,
@@ -283,6 +284,9 @@ export const UploadForm = (props) => {
     setIsProcessing(true);
     setProcessingButton(target)
     if(validateForm()){
+      let selectedGroup = document.getElementById("group_uuid");
+      let selectedGroupUUID = selectedGroup?.value ? selectedGroup.value : defaultGroupUUID;
+      console.debug('%c◉ selectedGroupUUID ', 'color:#00ff7b', selectedGroupUUID);
       let cleanForm ={
         title: formValues.title,
         description: formValues.description,
@@ -292,12 +296,15 @@ export const UploadForm = (props) => {
         ...((formValues.anticipated_dataset_count) && {anticipated_dataset_count: parseInt(formValues.anticipated_dataset_count)} ),
         ...(((formValues.assigned_to_group_name && formValues.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: formValues.assigned_to_group_name}),
         ...(((formValues.ingest_task && formValues.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: formValues.ingest_task}),
+        ...((!uuid) && {group_uuid: selectedGroupUUID	}),
       }
+      console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
 
       switch(target){
         case "Create":
           console.debug('%c◉ Create ', 'color:#00ff7b');
-          entity_api_create_entity("upload",JSON.stringify(cleanForm))
+
+          ingest_api_create_upload(JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
                 props.onCreated(response.results);
