@@ -164,19 +164,17 @@ export const UploadForm = (props) => {
                   }
                 })
                 .catch((error) => {
-                  console.error("ingest_api_allowable_edit_states ERROR", error);
-                  setPageErrors(error);
+                  wrapUp(error)
                 });
               document.title = `HuBMAP Ingest Portal | Upload: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
-            setPageErrors(response);
+            wrapUp(response)
           }
         })
         .catch((error) => {
-          console.debug("entity_api_get_entity ERROR", error);
-          setPageErrors(error);
+          wrapUp(error)
         });
     }else{
       setPermissions({
@@ -225,6 +223,7 @@ export const UploadForm = (props) => {
   }
 
   function validateForm(){
+    setValidationError(null);
     let errors = 0;
     // Browser handles requireds UNLESS we're not using the baked in form submit
     let requiredFields = ["title", "description", "intended_organ", "intended_dataset_type"]; 
@@ -249,6 +248,12 @@ export const UploadForm = (props) => {
     return errors === 0;
   }
 
+  function badValError(error){
+    console.debug('%c◉badValError error ', 'color:#00ff7b', error,error.response.data.error);
+    setValidationError(error.response.data.error ? error.response.data.error : error);
+    setIsProcessing(false);
+  }
+
   function renderValidationMessage (){
     return (
       <Alert severity={entityData.status.toLowerCase() === "error" ? "error" : "warning"}>
@@ -262,6 +267,7 @@ export const UploadForm = (props) => {
     if (response.status === 200) {
       props.onUpdated(response.results);
     } else {
+      wrapUp(response)
       console.error('%c◉ error ', 'color:#ff005d', response);
     }
   }
