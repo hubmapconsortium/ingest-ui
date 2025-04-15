@@ -22,7 +22,7 @@ import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
-import {FormHeader,GroupSelectMenu} from "./ui/formParts";
+import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 
 export const DonorForm = (props) => {
   let navigate = useNavigate();
@@ -327,7 +327,7 @@ export const DonorForm = (props) => {
               }}
               disabled={uuid?true:false}
               value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-              <GroupSelectMenu formValues={formValues} />
+              <UserGroupSelectMenu formValues={formValues} />
             </NativeSelect>
           </Box>
           {buttonEngine()}

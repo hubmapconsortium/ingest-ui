@@ -39,7 +39,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
-import {FormHeader,GroupSelectMenu} from "./ui/formParts";
+import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 import {Typography} from "@mui/material";
 
 export const UploadForm = (props) => {
@@ -76,7 +76,9 @@ export const UploadForm = (props) => {
   let[globusPath, setGlobusPath] = useState(null);
   let[datasetMenu, setDatasetMenu] = useState();
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
-  const defaultGroup = userGroups[0].uuid;
+  const allGroups = JSON.parse(localStorage.getItem("allGroups"));
+  const defaultGroupUUID = userGroups[0].uuid;
+  const defaultGroupName = userGroups[0].shortname;
   const{uuid} = useParams();
   let saveStatuses = ["submitted", "valid", "invalid", "error", "new"]
   let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
@@ -122,6 +124,7 @@ export const UploadForm = (props) => {
                 ...entityData,
                 anticipated_complete_upload_month_string: formattedDate["$d"],
               });
+              console.debug('%c◉ assigned_to_group_name ', 'color:#00ff7b', entityData.assigned_to_group_name);
 
               setFormValues({
                 title: entityData.title,
@@ -132,8 +135,10 @@ export const UploadForm = (props) => {
                 anticipated_complete_upload_month_string: entityData.anticipated_complete_upload_month,
                 anticipated_complete_upload_month_date: formattedDate["$d"],
                 anticipated_dataset_count: entityData.anticipated_dataset_count,
+                ...((entityData.ingest_task) && {ingest_task: entityData.ingest_task} ),
+                ...((entityData.assigned_to_group_name) && {assigned_to_group_name: entityData.assigned_to_group_name} ),
               });
-             
+              
               entity_api_get_globus_url(uuid)
                 .then((response) => {
                   console.debug('%c◉ GLOBUS PATH: ', 'color:#00ff7b', response.results);
@@ -251,8 +256,6 @@ export const UploadForm = (props) => {
     setIsProcessing(true);
     setProcessingButton(target)
     if(validateForm()){
-      // Gotta get the Date back out of the picker
-      console.debug('%c◉ formattedDate ', 'color:#2B00FF', formValues.anticipated_complete_upload_month_string);
       let cleanForm ={
         title: formValues.title,
         description: formValues.description,
@@ -260,8 +263,8 @@ export const UploadForm = (props) => {
         intended_dataset_type: formValues.intended_dataset_type,
         ...((formValues.anticipated_complete_upload_month_string) && {anticipated_complete_upload_month: formValues.anticipated_complete_upload_month_string} ),
         ...((formValues.anticipated_dataset_count) && {anticipated_dataset_count: parseInt(formValues.anticipated_dataset_count)} ),
-        ...((formValues.assigned_to_group_name && permissions.has_admin_priv) && {assigned_to_group_name: formValues.assigned_to_group_name}),
-        ...((formValues.ingest_task && permissions.has_admin_priv) && {ingest_task: formValues.ingest_task}),
+        ...(((formValues.assigned_to_group_name && formValues.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: formValues.assigned_to_group_name}),
+        ...(((formValues.ingest_task && formValues.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: formValues.ingest_task}),
       }
 
       switch(target){
@@ -350,7 +353,6 @@ export const UploadForm = (props) => {
       }
 
     }else{
-      // INVALID
       console.debug('%c◉ Invalid ', 'color:#ff005d');
     }
     
@@ -593,13 +595,55 @@ export const UploadForm = (props) => {
                     onChange={(e) => handleInputChange(e)}
                     fullWidth
                     disabled={uuid?true:false}
-                    value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-                    <GroupSelectMenu formValues={formValues} />
+                    value={formValues.group_uuid ? formValues.group_uuid : defaultGroupUUID}>
+                    <option key={"0"} value={null}></option>
+                    <UserGroupSelectMenu formValues={formValues} />
                   </NativeSelect>
                 </Box>
               </Grid>
             </Grid>
           </div>
+
+          {uuid && (
+            <Grid container className="my-4 row">
+              <Grid item className='form-group col-6'> 
+                <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+                  Assigned to Group
+                </InputLabel>
+                <NativeSelect
+                  id="assigned_to_group_name"
+                  onChange={(e) => handleInputChange(e)}
+                  fullWidth
+                  sx={{marginTop: "40px"}}
+                  disabled={!permissions.has_admin_priv}
+                  value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : defaultGroupName}>
+                  {allGroups.map(group => (
+                    <option key={group.uuid} value={group.shortName}>
+                      {group.shortName}
+                    </option>
+                  ))}
+                </NativeSelect>
+                <FormHelperText sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>The group responsible for the next step in the data ingest process.</FormHelperText>
+              </Grid>
+              <Grid item className='form-group col-6'> 
+                <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+                  Ingest Task
+                </InputLabel>
+                <TextField //" Ingest Task "
+                  id="ingest_task"
+                  // label="Ingest Task"
+                  helperText="The next task in the data ingest process."
+                  value={formValues ? formValues.ingest_task : ""}
+                  error={formErrors.ingest_task}
+                  InputLabelProps={{shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}
+                  onChange={(e) => handleInputChange(e)}
+                  fullWidth
+                  disabled={!permissions.has_admin_priv}
+                  className="mt-3"/>
+              </Grid>
+            </Grid>
+          )}
+
           {buttonEngine()}
         </form>
       

@@ -227,7 +227,7 @@ export function statusBadge(status){
   )
 }
 
-export function GroupSelectMenu(formValues){
+export function UserGroupSelectMenu(formValues){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));
   if(formValues.group_name){
     return(

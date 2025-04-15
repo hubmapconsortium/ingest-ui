@@ -33,7 +33,7 @@ import {
   entity_api_create_multiple_entities,
   entity_api_get_entity_ancestor_list
 } from "../service/entity_api";
-import {FormHeader, GroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
+import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
 import SearchComponent from "./search/SearchComponent";
 import RUIIntegration from "./uuid/tissue_form_components/ruiIntegration";
 import {toTitleCase} from "../utils/string_helper";
@@ -876,7 +876,7 @@ export const SampleForm = (props) => {
               }}
               disabled={uuid?true:false}
               value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-              <GroupSelectMenu formValues={formValues} />
+              <UserGroupSelectMenu formValues={formValues} />
             </NativeSelect>
           </Box>
           
