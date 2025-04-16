@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import {ingest_api_allowable_edit_states} from "../service/ingest_api";
 import {
   entity_api_get_entity,
@@ -22,9 +22,10 @@ import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
-import {FormHeader,GroupSelectMenu} from "./ui/formParts";
+import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 
 export const DonorForm = (props) => {
+  let navigate = useNavigate();
   let[entityData, setEntityData] = useState({
     lab_donor_id: "",
     label: "",
@@ -227,7 +228,7 @@ export const DonorForm = (props) => {
         <Button
           variant="contained"
           className="m-2"
-          onClick={() => window.history.back()}>
+          onClick={() => navigate("/")}>
           Cancel
         </Button>
         {/* @TODO use next form to help work this in to its own UI component? */}
@@ -268,7 +269,6 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
           />
           <TextField //"Deidentified Name "
@@ -282,7 +282,6 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
           />
           <TextField //"Case Selection Protocol "
@@ -296,7 +295,6 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
           />
           <TextField //"Description "
@@ -309,26 +307,34 @@ export const DonorForm = (props) => {
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
-            variant="filled"
             className="my-3"
             multiline
             rows={4}
           />
-          <Box className="my-3">           
-            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
-              Group
-            </InputLabel>
-            <NativeSelect
-              id="group_uuid"
-              label="Group"
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              variant="filled" 
-              disabled={uuid?true:false}
-              value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-              <GroupSelectMenu formValues={formValues} />
-            </NativeSelect>
-          </Box>
+          
+          {/* Group */}
+          {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
+          {!uuid && (
+            <Box className="my-3">           
+              <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <NativeSelect
+                id="group_uuid"
+                label="Group"
+                onChange={(e) => handleInputChange(e)}
+                fullWidth
+                className="p-2"
+                sx={{
+                  BorderTopLeftRadius: "4px",
+                  BorderTopRightRadius: "4px",
+                }}
+                disabled={uuid?true:false}
+                value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
+                <UserGroupSelectMenu formValues={formValues} />
+              </NativeSelect>
+            </Box>
+          )}
           {buttonEngine()}
         </form>
       

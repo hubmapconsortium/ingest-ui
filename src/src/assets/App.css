@@ -32,8 +32,7 @@
   font-family: 'Inter', sans-serif!important;
 }
 
-.tooltip 
-{
+.tooltip {
   width: 250px;
   white-space : normal;
 }
@@ -223,15 +222,6 @@ caption {
 
 .display-block {
   display: block !important;
-}
-
-.badge-purple {
-  color: #fff;
-  background-color: #9933cc;
-}
-.badge-incomplete {
-  background-color: rgb(255, 193, 7);
-  color: rgb(33, 37, 41);
 }
 
 .nowrap {
@@ -806,6 +796,18 @@ svg.invalid{
   color:white;
 }
 
+.badge-purple {
+  color: #fff!important;
+  background-color: #9933cc!important;
+}
+.badge-incomplete {
+  background-color: rgb(255, 193, 7)!important;
+  color: rgb(33, 37, 41)!important;
+}
+
+
+
+
 .upload-slide-results{
   padding:10px;
   margin:10px;
@@ -880,4 +882,9 @@ svg.invalid{
 
 .form-control.invalid{
   border: 1px solid red;
+}
+
+.invalid label,
+.invalid p{
+  color: rgb(211, 47, 47);
 }

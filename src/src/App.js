@@ -46,6 +46,7 @@ import {RenderBulk} from "./components/bulk";
 
 // The New Forms
 import {DonorForm} from "./components/newDonor";
+import {UploadForm} from "./components/newUpload";
 import {SampleForm} from "./components/newSample";
 
 export function App(props){
@@ -160,7 +161,18 @@ export function App(props){
             if(results.error?.response && results.error.response.status){
               setExpiredKey(true);
               if(results.error.response.status ===401 ){
-                setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
+                // No more message, just full cache-dump and reload
+
+                // Need to give sotrage a chance to clear,
+                setTimeout(() => {
+                  purgeStorage();
+                }, 10);                
+                // THEN lets refresh
+                setTimeout(() => {
+                  window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
+                }, 2000);
+                
+                // setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
               }else if(results.error.response.data.error && results.error.response.status !==401){
                 setLoginError(results.error.response.data.error );
               }else{
@@ -395,7 +407,8 @@ export function App(props){
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
                   height: 150,
-                  boxSizing: 'border-box'},
+                  boxSizing: 'border-box'
+},
               }}
               variant="temporary"
               className="alert-danger"
@@ -489,6 +502,7 @@ export function App(props){
                   <Routes>
                       
                     <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
                     <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
                     <Route path="/login" element={<Login />} />
 
@@ -501,7 +515,7 @@ export function App(props){
                       <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
-                      <Route path='upload' element={ <SearchComponent reportError={reportError} />}/>
+                      <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
                     </Route>
                     
@@ -514,13 +528,8 @@ export function App(props){
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
-                    <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
-                    <Route path="/sample/:uuid" element={<RenderSample reportError={reportError} handleCancel={handleCancel} status="view"/>} />
-                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
-                    <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} />
+                    {/* <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} /> */}
                     <Route path="/publication/:uuid" element={<RenderPublication reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
                     <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
                     <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
@@ -534,6 +543,7 @@ export function App(props){
                     </Route>
 
                     {/* In Develpment here */}
+                    <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
 
                   </Routes>
 

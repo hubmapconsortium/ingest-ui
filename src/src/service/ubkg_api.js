@@ -1,8 +1,6 @@
 import axios from "axios";
 import { stripHTML,toTitleCase } from '../utils/string_helper'
 
-
-
 /*
  * UBKG GET assaytype method
  *
@@ -48,7 +46,7 @@ import { stripHTML,toTitleCase } from '../utils/string_helper'
 /*
  * UBKG GET organtype/all method
  *
- * NOTE: This endpoint does not yet exist in UBKG
+ * 
  *
  * return: {'AO': 'Aorta' ... }
  */
@@ -90,7 +88,6 @@ export function ubkg_api_get_dataset_type_set() {
       });
 };
 
-
 /*
  * UBKG GET Specilized Dataset Types for Uploads method
  *
@@ -108,7 +105,6 @@ export function ubkg_api_get_upload_dataset_types() {
         captureError(error);
       });
 };
-
 
 /*
  * UBKG Generate Display Subtype method
@@ -153,9 +149,6 @@ export function ubkg_api_generate_display_subtype(entity) {
   }    
   return display_subtype
 }
-
-
-
 
 function captureError (error){
 
