@@ -883,8 +883,13 @@ svg.invalid{
 .form-control.invalid{
   border: 1px solid red;
 }
-
+/* Coloring for a field in error on parts not wrapped */
 .invalid label,
 .invalid p{
   color: rgb(211, 47, 47);
+}
+
+/* Uploads Task Assignment Input Hover clearing */
+.taskInputStyling select:focus{
+  background-color: white!important;
 }

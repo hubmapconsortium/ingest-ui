@@ -250,7 +250,11 @@ export const UploadForm = (props) => {
     
     setFormErrors(newFormErrors);
 
+    if(errors>0){
       setValidationError("Please Fill In the required Fields: " + niceNames.join(", "));
+    }else{
+      setValidationError(null);
+    }
     // picker itself handles date
     // cant select invalids from dropdowns
     // so I think we're good here?
@@ -456,10 +460,16 @@ export const UploadForm = (props) => {
 
   function saveCheck(){
     // Slightly more compelx
+    let sc = entityData.status ? saveStatuses.includes(entityData.status.toLowerCase()) : false;
+    let st = entityData.status ? entityData.status.toLowerCase() : null;
+    console.debug('%c◉ sc ', 'color:#00ff7b', sc, st);
+
     if(entityData && entityData.status){
-      if((saveStatuses.includes(entityData.status.toLowerCase()) && permissions.has_write_priv) || permissions.has_admin_priv ){
+      if(saveStatuses.includes(entityData.status.toLowerCase()) && (permissions.has_write_priv === true || permissions.has_admin_priv === true) ){
+        console.debug('%c◉ RET TRU ', 'color:#ff005d', );
         return true
       }else{
+        console.debug('%c◉ RET FALSE ', 'color:#00ff7b', );
         return false
       }
     }
@@ -505,7 +515,7 @@ export const UploadForm = (props) => {
             </LoadingButton>
           )}
           {uuid && uuid.length > 0 && saveCheck() === true && (
-            <LoadingButton loading={isProcessing} variant="contained" className="m-1" onClick={(e) => processForm(e,"Save")}>
+            <LoadingButton disabled={!saveCheck} loading={isProcessing} variant="contained" className="m-1" onClick={(e) => processForm(e,"Save")}>
               Save
             </LoadingButton>
           )}
@@ -517,6 +527,11 @@ export const UploadForm = (props) => {
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
+    let taskInputStyling = {
+      background: permissions.has_write_priv ? "#fff" : "none", 
+      border: "1px solid rgba(0, 0, 0, 0.23)",
+      borderRadius: "4px"
+    }
     return(
       <Box>
         <Grid container className=''>
@@ -594,7 +609,7 @@ export const UploadForm = (props) => {
                         slotProps={{ field: { clearable: true, error: false, fullWidth: true } }}
                         maxDate={dayjs("2026-12-31")}
                         disableHighlightToday
-                      />
+                        disabled = { (permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }/>
                     </Box>
                   </LocalizationProvider>
                   <FormHelperText id="monthYearIDHelp" className="mb-3">The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.</FormHelperText>
@@ -607,7 +622,7 @@ export const UploadForm = (props) => {
                     border: "1px solid #eeeeee",
                     borderRadius: "4px",
                     padding: "1em",
-                    background: "#eeeeee80"
+                    background: "#eeeeee40"
                   }}>
                   {/* <Typography>Task Management:</Typography> */}
 
@@ -617,6 +632,7 @@ export const UploadForm = (props) => {
                     </InputLabel>
                     <TextField //" Ingest Task "
                       id="ingest_task"
+                      sx={(permissions.has_admin_priv && entityData.status !== "Reorganized") ? {background: "#fff"} : {background: "none"}}
                       // label="Ingest Task"
                       helperText="The next task in the data ingest process."
                       value={formValues ? formValues.ingest_task : ""}
@@ -625,7 +641,7 @@ export const UploadForm = (props) => {
                       onChange={(e) => handleInputChange(e)}
                       fullWidth
                       disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
-                      className="mt-3"/>
+                      className="mt-3 taskInputStyling"/>
                   </Box>
                   <Divider />
                   <Box className="col-12 mt-3 ">
@@ -636,7 +652,8 @@ export const UploadForm = (props) => {
                       id="assigned_to_group_name"
                       onChange={(e) => handleInputChange(e)}
                       fullWidth
-                      sx={{marginTop: "15px"}}
+                      className="mt-2 taskInputStyling"
+                      sx={{...taskInputStyling, padding: "0.8em"}}
                       disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
                       value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}>
                         <option key={"0000"} value={""}></option>

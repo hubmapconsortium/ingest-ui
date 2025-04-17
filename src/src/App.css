@@ -956,3 +956,9 @@ svg.invalid {
 .invalid p{
   color: rgb(211, 47, 47);
 }
+
+
+/* Uploads Task Assignment Input Hover clearing */
+.taskInputStyling select:focus{
+  background-color: white!important;
+}

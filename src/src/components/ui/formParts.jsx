@@ -95,7 +95,7 @@ function topHeader(entityData){
         </Grid>
         {entityData[1] === "Upload" && (
           <Grid item xs={6} className="" >
-            <Typography> 
+            <Typography sx={{marginRight: "10px"}} >
               Register a new Data Upload that will be used to bulk upload data, which will be organized by HIVE into multiple datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
             </Typography>
           </Grid>
@@ -129,7 +129,7 @@ function infoPanels(entityData,permissions,globusURL){
       {permissions.has_write_priv && (
         <HIPPA />
       )}
-      {!permissions.has_write_priv && (
+      {!permissions.has_write_priv && !permissions.has_admin_priv && (
         <Alert  
           variant="caption" 
           severity="info" 
