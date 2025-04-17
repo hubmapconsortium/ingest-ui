@@ -96,7 +96,7 @@ function topHeader(entityData){
         {entityData[1] === "Upload" && (
           <Grid item xs={6} className="" >
             <Typography> 
-              Register a new Data Upload which will be used to bulk upload data which will organized by the HIVE into multiple Datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
+              Register a new Data Upload that will be used to bulk upload data, which will be organized by HIVE into multiple datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
             </Typography>
           </Grid>
         )}
@@ -115,10 +115,10 @@ function infoPanels(entityData,permissions,globusURL){
             <a href={globusURL}
               target='_blank'
               rel='noopener noreferrer'>   
-                {(entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED") && (
+                {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
                   <>Open data repository {" "}</>
                 )}
-                {entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
+                {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
                   <>To add or modify data files go to the data repository {" "}</>
                 )}
                 <OpenInNewIcon />
