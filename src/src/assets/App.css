@@ -819,7 +819,7 @@ svg.invalid{
 
 .thead-dark th {
   color: #fff;
-  background-color: #343a40;
+  background-color: #444a65;
   border-color: #454d55;
 }
 
@@ -853,7 +853,7 @@ svg.invalid{
   display:none;
 }
 .associationTable .MuiDataGrid-columnHeaders{
-  background-color: #343a40;
+  background-color: #444a65;
   border-color: #454d55;
   color:#fff;
 }
@@ -888,8 +888,6 @@ svg.invalid{
 .invalid p{
   color: rgb(211, 47, 47);
 }
-
-/* Uploads Task Assignment Input Hover clearing */
-.taskInputStyling select:focus{
-  background-color: white!important;
+.taskAssignment.disabled{
+  opacity: 0.2;
 }

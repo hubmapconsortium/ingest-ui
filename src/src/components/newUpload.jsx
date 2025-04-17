@@ -435,7 +435,7 @@ export const UploadForm = (props) => {
         });
       }
       return (
-        <div style={{ width: "100%", maxHeight: "340px", overflowX: "auto", padding: "10px 0" }}>
+        <div style={{ width: "100%", }}>
           <DataGrid
             columnVisibilityModel={{
               uuid: false,
@@ -447,10 +447,11 @@ export const UploadForm = (props) => {
             disableColumnMenu={true}
             hideFooterPagination={true}
             hideFooterSelectedRowCount
+            autoHeight
             rowCount={compiledCollection.length}
             // onCellClick={handleEvent}
             loading={!compiledCollection.length > 0 && uuid}
-            sx={{'.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px'},
+            sx={{'.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px'},background: "rgba(0, 0, 0, 0.04)"
             }}
           />
         </div>
@@ -515,7 +516,7 @@ export const UploadForm = (props) => {
             </LoadingButton>
           )}
           {uuid && uuid.length > 0 && saveCheck() === true && (
-            <LoadingButton disabled={!saveCheck} loading={isProcessing} variant="contained" className="m-1" onClick={(e) => processForm(e,"Save")}>
+            <LoadingButton disabled={!saveCheck} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Save")}>
               Save
             </LoadingButton>
           )}
@@ -577,191 +578,189 @@ export const UploadForm = (props) => {
 
           {entityData.datasets && (
             <>
-              <Typography sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+              {/* <Typography sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
                 Datasets
-              </Typography>
+              </Typography> */}
+              <InputLabel 
+                className="mb-1"
+                sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="datasets">
+                Datasets
+              </InputLabel>
               {renderDatasets()}
             </>
           )}
           
           <div className="row mt-3">
-            <Grid container spacing={2}>
-              
-              <Grid item sm={8} md={6} lg={5} xl={4} >
-                <Box className="col-12">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="anticipated_complete_upload_month_string">
-                        Anticipated Completion Month/Year
-                    </InputLabel>
-                    <Box>
-                      <DatePicker
-                        // label={'"month"'}
-                        openTo="month"
-                        
-                        // hiddenLabel={true}
-                        clearable
-                        defaultValue={(formValues && formValues.anticipated_complete_upload_month) ? dayjs(entityData.anticipated_complete_upload_month, "YYYY-MM") : dayjs("")}
-                        onChange={(e) => handleInputChange(e)}
-                        format="YYYY-MM"
-                        views={['year', 'month']}
-                        id="anticipated_complete_upload_month_string"
-                        disablePast 
-                        slotProps={{ field: { clearable: true, error: false, fullWidth: true } }}
-                        maxDate={dayjs("2026-12-31")}
-                        disableHighlightToday
-                        disabled = { (permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }/>
-                    </Box>
-                  </LocalizationProvider>
-                  <FormHelperText id="monthYearIDHelp" className="mb-3">The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.</FormHelperText>
-                </Box>
-
-                {/* TASK ASSIGNMENT */}
-                {uuid && (
-                  <Box
-                  sx={{
-                    border: "1px solid #eeeeee",
-                    borderRadius: "4px",
-                    padding: "1em",
-                    background: "#eeeeee40"
-                  }}>
-                  {/* <Typography>Task Management:</Typography> */}
-
-                  <Box className="col-12 mb-3 ">
-                    <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
-                      Ingest Task
-                    </InputLabel>
-                    <TextField //" Ingest Task "
-                      id="ingest_task"
-                      sx={(permissions.has_admin_priv && entityData.status !== "Reorganized") ? {background: "#fff"} : {background: "none"}}
-                      // label="Ingest Task"
-                      helperText="The next task in the data ingest process."
-                      value={formValues ? formValues.ingest_task : ""}
-                      error={formErrors.ingest_task}
-                      InputLabelProps={{shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}
-                      onChange={(e) => handleInputChange(e)}
-                      fullWidth
-                      disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
-                      className="mt-3 taskInputStyling"/>
-                  </Box>
-                  <Divider />
-                  <Box className="col-12 mt-3 ">
-                    <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
-                      Assigned to Group
-                    </InputLabel>
-                    <NativeSelect
-                      id="assigned_to_group_name"
-                      onChange={(e) => handleInputChange(e)}
-                      fullWidth
-                      className="mt-2 taskInputStyling"
-                      sx={{...taskInputStyling, padding: "0.8em"}}
-                      disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
-                      value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}>
-                        <option key={"0000"} value={""}></option>
-                        {allGroups.map(group => (
-                          <option key={group.uuid} value={group.shortName}>
-                            {group.shortName}
-                          </option>
-                        ))}
-                    </NativeSelect>
-                    <FormHelperText sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>The group responsible for the next step in the data ingest process.</FormHelperText>
-                  </Box>
-                 
-                </Box>)}
-
-              </Grid>
-
-              <Grid item sm={4} md={6} lg={7} xl={8} >
                 
-                {/* Organ */}
-                <Box className={`mb-4 ${formErrors.intended_organ ? "invalid" : "valid"}`} >           
-                  <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="organ">
-                    Intended Organ Type *
+            {/* Organ */}
+            <Box className={` col-6 ${formErrors.intended_organ ? "invalid" : "valid"}`} >           
+              <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="organ">
+                Intended Organ Type *
+              </InputLabel>
+              <NativeSelect
+                  id="intended_organ"
+                  name="Intended Organ"
+                  onChange={(e) => handleInputChange(e)}
+                  fullWidth
+                  required
+                  error={formErrors.intended_organ}
+                  helperText={(formErrors.intended_organ ? formErrors.intended_organ : "")}
+                  inputProps={{style: {padding: "0.8em"}}}
+                  disabled={!permissions.has_write_priv}
+                  // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)"} : {}}
+                  value={formValues.intended_organ ? formValues.intended_organ : ""}>
+                  <option key={"DEFAULT"} value={""}></option>
+                  {organMenu}  
+              </NativeSelect>
+              <FormHelperText id="organIDHelp" className="" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} >Select the organ type that the data in this Upload is intended to be derived from. {formErrors.intended_organ ? formErrors.intended_organ : ""} </FormHelperText>
+              {formValues.intended_organ && !organ_types[formValues.intended_organ] && (
+                <Alert variant="filled" severity="error">
+                  <strong>Error:</strong> {`Invalid organ type stored: ${formValues.intended_organ}`}
+                </Alert>
+              )}
+            </Box>
+
+            {/* Dataset */}
+            <Box className=" col-6" > 
+              <Grid container spacing={2}>
+                <Grid item xs={12} className={`${formErrors.intended_dataset_type ? "invalid" : "valid"}`} >
+                  <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="intended_dataset_type">
+                    Intended Dataset Type *
                   </InputLabel>
                   <NativeSelect
-                      id="intended_organ"
-                      name="Intended Organ"
-                      onChange={(e) => handleInputChange(e)}
-                      fullWidth
+                      id="intended_dataset_type"
                       required
-                      error={formErrors.intended_organ}
-                      helperText={(formErrors.intended_organ ? formErrors.intended_organ : "")}
-                      inputProps={{style: {padding: "0.8em"}}}
-                      disabled={!permissions.has_write_priv}
-                      // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)"} : {}}
-                      value={formValues.intended_organ ? formValues.intended_organ : ""}>
-                      <option key={"DEFAULT"} value={""}></option>
-                      {organMenu}  
-                  </NativeSelect>
-                  <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} >Select the organ type that the data in this Upload is intended to be derived from. {formErrors.intended_organ ? formErrors.intended_organ : ""} </FormHelperText>
-                  {formValues.intended_organ && !organ_types[formValues.intended_organ] && (
-                    <Alert variant="filled" severity="error">
-                      <strong>Error:</strong> {`Invalid organ type stored: ${formValues.intended_organ}`}
-                    </Alert>
-                  )}
-                </Box>
-
-                {/* Dataset */}
-                <Box className="mt-4" > 
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} className={`${formErrors.intended_dataset_type ? "invalid" : "valid"}`} >
-                      <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="intended_dataset_type">
-                        Intended Dataset Type *
-                      </InputLabel>
-                      <NativeSelect
-                          id="intended_dataset_type"
-                          required
-                          onChange={(e) => handleInputChange(e)}
-                          fullWidth
-                          name="Intended Dataset Type"
-                          error={formErrors.intended_dataset_type}
-                          helperText={(formErrors.intended_dataset_type ? formErrors.intended_dataset_type : "")}
-                          inputProps={{style: {padding: "0.8em"}}}
-                          // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)", padding: "0.15em"} : { padding: "0.15em"}}
-                          disabled={!permissions.has_write_priv}
-                          value={formValues.intended_dataset_type ? formValues.intended_dataset_type : ""}>
-                          <option key={"DEFAULT"} value={""}></option>
-                          {datasetMenu}  
-                      </NativeSelect>
-                      <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>Select the organ type that the data in this Upload is intended to be derived from.</FormHelperText>
-                    </Grid>
-                    <Grid xs={12} sx={{marginLeft: "15px"}}>
-                    <InputLabel htmlFor="anticipated_dataset_count" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
-                      Number
-                    </InputLabel>
-                    <TextField
-                      id="anticipated_dataset_count"
-                      fullWidth 
-                      onChange={(e) => handleInputChange(e)}
-                      disabled={!permissions.has_write_priv}
-                      sx={{ padding: "0.09em"}}
-                      type="number"
-                      value={formValues.anticipated_dataset_count ? formValues.anticipated_dataset_count : ""}/>
-                      <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>Anticipated number of datasets</FormHelperText>
-                  </Grid>
-                  </Grid>
-                </Box>
-                  
-                {/* Group */}
-                {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
-                {!uuid && (
-                  <Box className="mt-2 mb-3">           
-                    <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
-                      Group
-                    </InputLabel>
-                    <NativeSelect
-                      id="group_uuid"
-                      label="Group"
                       onChange={(e) => handleInputChange(e)}
                       fullWidth
-                      disabled={uuid?true:false}
-                      value={formValues.group_uuid ? formValues.group_uuid : defaultGroupUUID}>
-                      <option key={"0"} value={null}></option>
-                      <UserGroupSelectMenu formValues={formValues} />
-                    </NativeSelect>
-                  </Box>
-                )}
+                      name="Intended Dataset Type"
+                      error={formErrors.intended_dataset_type}
+                      helperText={(formErrors.intended_dataset_type ? formErrors.intended_dataset_type : "")}
+                      inputProps={{style: {padding: "0.8em"}}}
+                      // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)", padding: "0.15em"} : { padding: "0.15em"}}
+                      disabled={!permissions.has_write_priv}
+                      value={formValues.intended_dataset_type ? formValues.intended_dataset_type : ""}>
+                      <option key={"DEFAULT"} value={""}></option>
+                      {datasetMenu}  
+                  </NativeSelect>
+                  <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>Select the organ type that the data in this Upload is intended to be derived from.</FormHelperText>
+                </Grid>
+                
               </Grid>
-            </Grid>
+            </Box>
+
+          </div>
+
+          <div className="row mt-3">
+            {/* DATE */}
+            <Box className="col-6">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="anticipated_complete_upload_month_string">
+                    Anticipated Completion Month/Year
+                </InputLabel>
+                <Box>
+                  <DatePicker
+                    // label={'"month"'}
+                    openTo="month"
+                    // hiddenLabel={true}
+                    clearable
+                    defaultValue={(formValues && formValues.anticipated_complete_upload_month) ? dayjs(entityData.anticipated_complete_upload_month, "YYYY-MM") : dayjs("")}
+                    onChange={(e) => handleInputChange(e)}
+                    format="YYYY-MM"
+                    views={['year', 'month']}
+                    id="anticipated_complete_upload_month_string"
+                    disablePast 
+                    slotProps={{ field: { clearable: true, error: false, fullWidth: true } }}
+                    maxDate={dayjs("2026-12-31")}
+                    disableHighlightToday
+                    disabled={!permissions.has_write_priv}/>
+                </Box>
+              </LocalizationProvider>
+              <FormHelperText id="monthYearIDHelp" className="mb-3">The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.</FormHelperText>
+            </Box>
+
+            <Box className="col-6">
+              <InputLabel htmlFor="anticipated_dataset_count" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+              Anticipated Number of Datasets
+              </InputLabel>
+              <TextField
+                id="anticipated_dataset_count"
+                fullWidth 
+                onChange={(e) => handleInputChange(e)}
+                disabled={!permissions.has_write_priv}
+                sx={{ padding: "0.09em"}}
+                type="number"
+                value={formValues.anticipated_dataset_count ? formValues.anticipated_dataset_count : ""}/>
+                <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>The total number of datasets that this Upload will eventually contain. &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </FormHelperText> {/* trying to reach two lines to pair with rest */}
+            </Box>
+          </div>
+
+          <div className={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false ? "taskAssignment disabled row my-3" : "row my-3"}>
+            {/* TASK ASSIGNMENT */}
+            {uuid && (<>
+                <Box className={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false ? "col-6 taskAssignment disabled" : "col-6"}>
+                  <InputLabel htmlFor="ingest_task" >
+                    Ingest Task
+                  </InputLabel>
+                  <TextField //" Ingest Task "
+                    id="ingest_task"
+                    // sx={{ paddingBottom: "400px"}}
+                    // label="Ingest Task"
+                    // helperText=""
+                    value={formValues ? formValues.ingest_task : ""}
+                    error={formErrors.ingest_task}
+                    InputLabelProps={{shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}
+                    onChange={(e) => handleInputChange(e)}
+                    fullWidth
+                    disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
+                    className="taskInputStyling"/>
+                    <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>The next task in the data ingest process.</FormHelperText>
+                </Box>
+                
+                <Box className="col-6 ">
+                  <InputLabel htmlFor="assigned_to_group_name">
+                    Assigned to Group
+                  </InputLabel>
+                  <NativeSelect
+                    id="assigned_to_group_name"
+                    onChange={(e) => handleInputChange(e)}
+                    fullWidth
+                    inputProps={{style: {padding: "0.8em"}}}
+                    className="taskInputStyling"
+                    // sx={{...taskInputStyling, padding: "0.8em"}}
+                    disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
+                    value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}>
+                      <option key={"0000"} value={""}></option>
+                      {allGroups.map(group => (
+                        <option key={group.uuid} value={group.shortName}>
+                          {group.shortName}
+                        </option>
+                      ))}
+                  </NativeSelect>
+                  <FormHelperText disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false ? true : false }>The group responsible for the next step in the data ingest process.</FormHelperText>
+                </Box>
+              
+              </>)}
+
+              {/* Group */}
+              {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
+              {!uuid && (
+                <Box className="mb-3 col-6">           
+                  <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+                    Group
+                  </InputLabel>
+                  <NativeSelect
+                    id="group_uuid"
+                    label="Group"
+                    onChange={(e) => handleInputChange(e)}
+                    fullWidth
+                    disabled={uuid?true:false}
+                    value={formValues.group_uuid ? formValues.group_uuid : defaultGroupUUID}>
+                    <option key={"0"} value={null}></option>
+                    <UserGroupSelectMenu formValues={formValues} />
+                  </NativeSelect>
+                </Box>
+              )}
+           
           </div>
           
           {validationError && (
