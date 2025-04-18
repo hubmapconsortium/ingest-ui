@@ -1,4 +1,4 @@
-import React, { useEffect, useState  } from "react";
+import React, { useEffect, useState } from "react";
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
@@ -20,7 +20,6 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {entity_api_update_entity} from '../service/entity_api';
 import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
-
 
 export const RevertFeature = (props) => {
   const navigate = useNavigate();
@@ -47,7 +46,7 @@ export const RevertFeature = (props) => {
     setSubmittingUpdate(true);
     entity_api_update_entity(
       uuid, 
-      {"status":RStatus}, 
+      {"status": RStatus}, 
       JSON.parse(localStorage.getItem("info")).groups_token)
       .then((response) => {
         setSubmittingUpdate(false);
@@ -64,7 +63,6 @@ export const RevertFeature = (props) => {
         console.debug('%c◉ ERROR ', 'color:#ff005d', error);
       });
   }
-  
 
   return (
     <>
@@ -75,13 +73,13 @@ export const RevertFeature = (props) => {
         variant='light'
         border="#000000"
         effect='solid'>
-        <p sx={{ color: "black!important", maxWidth: "160px", fontSize:"inherent"}}>
-          Revert this <span sx={{color:'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
+        <p sx={{ color: "black!important", maxWidth: "160px", fontSize: "inherent"}}>
+          Revert this <span sx={{color: 'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
       </ReactTooltip>
-      <Button variant="outlined" onClick={() => handleClickOpen()} data-tip data-for='revert_tooltip'> Revert </Button>
-      <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open}>
+      <Button variant="contained" onClick={() => handleClickOpen()} data-tip data-for='revert_tooltip'> Revert </Button>
+      <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open} fullWidth={true} maxWidth={"sm"}>
         <React.Fragment>
-          <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          <DialogTitle sx={{ m: 0, p: 2, background: "#444a65", color: "White" }} id="customized-dialog-title">
             Select {type} Status
           </DialogTitle>
           <IconButton
@@ -97,7 +95,7 @@ export const RevertFeature = (props) => {
           <DialogContent dividers>
             {revertErrorAlert && (
               <Alert severity="error" >
-                <AlertTitle sx={{width: "auto",float: "left",marginRight: "10px",height:"95%"}}>Error: </AlertTitle>
+                <AlertTitle sx={{width: "auto",float: "left",marginRight: "10px",height: "95%"}}>Error: </AlertTitle>
                 {revertError}
               </Alert>
             )}
@@ -105,7 +103,7 @@ export const RevertFeature = (props) => {
               Choose a status to revert this <span className="text-da nger">{type}</span> to, then click [Revert] to apply your changes
             </Typography>
             
-            <FormControl sx={{ m: 1, width: "100%" }}>
+            <FormControl fullWidth>
               <Select
                 id="revert-status"
                 value={RStatus}

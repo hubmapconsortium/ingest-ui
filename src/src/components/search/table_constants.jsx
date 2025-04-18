@@ -73,6 +73,31 @@ export const COLUMN_DEF_DATASET = [
       )
     }
 ];
+
+// DATASET COLUMNS FOR THE UPLOADS VIEW / MINIFIED
+export const COLUMN_DEF_DATASET_MINI = [
+  { field: 'hubmap_id', headerName: 'HubMAP ID',flex: 0.5,
+    renderCell: (params: ValueFormatterParams) => (
+      <button
+        className='btn btn-primary'
+        onClick={() => handleOpenPage(params.value)}>
+       {params.value}
+      </button>     
+      )
+   },
+  { field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200},
+  { field: 'group_name', headerName: 'Group Name', width: 200},
+  { field: 'status', headerName: 'Submission Status', flex: 0.5,
+    renderCell: (params: ValueFormatterParams) => (
+      <span
+        className={"badge " + getPublishStatusColor(params.value,"NA")}
+        style={{width: "100px"}}>
+        {params.value}
+      </span>
+      )
+  },
+  { field: 'uuid', headerName: 'UUID', hide: true, filterable: false, sortable: false},
+];
 // PUBLICATION COLUMNS
 export const COLUMN_DEF_PUBLICATION = [
   { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
@@ -351,6 +376,11 @@ function handleDataClick(dataset_uuid) {
         window.open(resp.results, "_blank");
     }
   });
+}
+
+function handleOpenPage(dataset_uuid) {
+  let url = `${process.env.REACT_APP_URL}/dataset/${dataset_uuid}/`
+  window.open(url, "_blank");
 }
 
 function groupNames(entity) {

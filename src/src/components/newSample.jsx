@@ -33,7 +33,7 @@ import {
   entity_api_create_multiple_entities,
   entity_api_get_entity_ancestor_list
 } from "../service/entity_api";
-import {FormHeader, GroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
+import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
 import SearchComponent from "./search/SearchComponent";
 import RUIIntegration from "./uuid/tissue_form_components/ruiIntegration";
 import {toTitleCase} from "../utils/string_helper";
@@ -190,9 +190,7 @@ export const SampleForm = (props) => {
               .catch((error) => {
                 console.error("i0ngest_api_allowable_edit_states ERROR", error);
                 setPageErrors(error);
-              } );
-            
-              document.title = `HuBMAP Ingest Portal | Sample: ${entityInfo.hubmap_id}`; //@TODO - somehow handle this detection in App
+              } );            
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
@@ -860,25 +858,28 @@ export const SampleForm = (props) => {
           )}
 
           {/* Group */}
-          <Box className="my-4">           
-            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
-              Group
-            </InputLabel>
-            <NativeSelect
-              id="group_uuid"
-              label="Group"
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              className="p-2"
-              sx={{
-                BorderTopLeftRadius: "4px",
-                BorderTopRightRadius: "4px",
-              }}
-              disabled={uuid?true:false}
-              value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-              <GroupSelectMenu formValues={formValues} />
-            </NativeSelect>
-          </Box>
+          {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
+          {!uuid && (
+            <Box className="my-4">           
+              <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <NativeSelect
+                id="group_uuid"
+                label="Group"
+                onChange={(e) => handleInputChange(e)}
+                fullWidth
+                className="p-2"
+                sx={{
+                  BorderTopLeftRadius: "4px",
+                  BorderTopRightRadius: "4px",
+                }}
+                disabled={uuid?true:false}
+                value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
+                <UserGroupSelectMenu formValues={formValues} />
+              </NativeSelect>
+            </Box>
+          )}
           
           {validationError && (
             <Alert variant="filled" severity="error">

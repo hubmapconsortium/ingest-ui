@@ -8,17 +8,12 @@ import Menu from '@mui/material/Menu'
 import Container from '@mui/material/Container'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
-import Dialog from '@mui/material/Dialog'
-import DialogContent from '@mui/material/DialogContent'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import LoadingButton from '@mui/lab/LoadingButton'
-import UploadsForm from './components/uploads/createUploads'
 import {ingest_api_users_groups} from './service/ingest_api';
 
 export const Navigation = (props) => {
   const[userDataGroups, setUserDataGroups] = React.useState(props.userDataGroups ? props.userDataGroups : null)
-
-  const[uploadsDialog, setUploadsDialog] = React.useState(false)
   const[anchorEl, setAnchorEl] = React.useState({
     I: null,
     B: null,
@@ -28,7 +23,6 @@ export const Navigation = (props) => {
   const open_B = Boolean(anchorEl.B)
   const open_S = Boolean(anchorEl.S)
 
-  const navigate = useNavigate()
   const userInfo = props.appInfo
 
   useEffect(() => {
@@ -52,7 +46,7 @@ export const Navigation = (props) => {
     }catch(err){
       throw new Error(err)
     }
-  }, [])
+  }, [props])
 
   const handleClick = (menu) => (event) => {
     setAnchorEl(prevState => ({...prevState, [menu]: event.currentTarget}))
@@ -60,19 +54,6 @@ export const Navigation = (props) => {
 
   const handleClose = () => {
     setAnchorEl({I: null, B: null, S: null})
-  }
-
-  const OpenUploads = () => {
-    setUploadsDialog(true)
-  }
-
-  const onClose = () => {
-    setUploadsDialog(false)
-  }
-
-  const onCreated = (data) => {
-    navigate('/Upload/' + data.results.uuid)
-    setUploadsDialog(false)
   }
 
   function renderMenuButtonBar(){
@@ -89,7 +70,7 @@ export const Navigation = (props) => {
         {renderMenuSection('Bulk', handleClick('B'), open_B, anchorEl.B, [
           {to: '/bulk/donors', label: 'Donors'},
           {to: '/bulk/samples', label: 'Samples'},
-          {to: '/bulk/data', label: 'Data', onClick: OpenUploads}
+          {to: '/new/upload', label: 'Data'}
         ])}
         {renderMenuSection('Upload Sample Metadata', handleClick('S'), open_S, anchorEl.S, [
           {to: '/metadata/block', label: 'Block'},
@@ -133,20 +114,16 @@ export const Navigation = (props) => {
             'aria-labelledby': 'IndividualButton'
           }}>
           {items.map((item, index) => {
-            // @TODO: We can ditch this once Uploads gets its own page
-            if(item.to === '/bulk/data'){
-              return(renderUploadsButton(item.to, item.label))
-            }else{
-              return(renderMenuButton(item.to, item.label))
-            }
+            return(renderMenuButton(item.to, item.label, index))
           })}
         </Menu>
       </React.Fragment>
     )
   }
-  function renderMenuButton(to, label){
+  function renderMenuButton(to, label, index){
     return(
       <MenuItem
+        key={index}
         className="nav-link"
         component={Link}
         onClick={handleClose}
@@ -155,27 +132,9 @@ export const Navigation = (props) => {
       </MenuItem>
     )
   }
-  function renderUploadsButton(to, label){
-    return(
-      <MenuItem
-        className="nav-link"
-        component={Link}
-        onClick={ () => OpenUploads()} >
-        {label}
-      </MenuItem>
-    )
-  }
 
   return(
     <AppBar position="static" id="header">
-      <Dialog open={uploadsDialog}>
-        <DialogContent>
-          <UploadsForm
-            onCreated={onCreated}
-            cancelEdit={onClose}
-          />
-        </DialogContent>
-      </Dialog>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography
