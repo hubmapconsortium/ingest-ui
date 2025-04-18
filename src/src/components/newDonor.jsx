@@ -148,11 +148,6 @@ export const DonorForm = (props) => {
 
   function validateForm(){
     let errors = 0;
-    // Required Fields
-    //  So it looks like Required no longer gets triggered
-    //  and instead the browser has a built in error thing?
-    //  that wont even fire Submit unless required fields are filled?
-    //  need to test across a few browsers
     let requiredFields = ["label", "protocol_url"];
     for(let field of requiredFields){
       if(!validateRequired(formValues[field])){

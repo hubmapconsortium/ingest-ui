@@ -883,7 +883,7 @@ svg.invalid {
 
 .thead-dark th {
   color: #fff;
-  background-color: #343a40;
+  background-color: #444a65;
   border-color: #454d55;
 }
 
@@ -921,7 +921,7 @@ svg.invalid {
   display:none;
 }
 .associationTable .MuiDataGrid-columnHeaders{
-  background-color: #343a40;
+  background-color: #444a65;
   border-color: #454d55;
   color:#fff;
 }
@@ -952,7 +952,11 @@ svg.invalid {
   border: 1px solid red;
 }
 
+/* Coloring for a field in error on parts not wrapped */
 .invalid label,
 .invalid p{
   color: rgb(211, 47, 47);
+}
+.taskAssignment.disabled{
+  opacity: 0.7;
 }
