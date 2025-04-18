@@ -17,7 +17,10 @@ import {
 import {RevertFeature} from "../utils/revertModal";
 import {COLUMN_DEF_DATASET_MINI} from './search/table_constants';
 
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import LoadingButton from "@mui/lab/LoadingButton";
+import Collapse from '@mui/material/Collapse';
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
@@ -28,8 +31,6 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from "@mui/material/Button";
-import Divider from '@mui/material/Divider';
-import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
 import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 import {Typography} from "@mui/material";
 import {DataGrid} from "@mui/x-data-grid";
@@ -54,10 +55,13 @@ export const UploadForm = (props) => {
     intended_organ: "",
     intended_dataset_type: "",
     data_provider_group: "",
+    anticipated_complete_upload_month: "",
     anticipated_complete_upload_month_string: "",
     anticipated_complete_upload_month_date: "2026-12", //Needs ANY date to avoid crashing, clears on blank val after load
     anticipated_dataset_count: "",
   });
+  let[formErrors, setFormErrors] = useState({});
+  let[valErrorMessages, setValErrorMessages] = useState([]);
   let[permissions,setPermissions] = useState({ 
     has_admin_priv: false,
     has_publish_priv: false,
@@ -67,20 +71,18 @@ export const UploadForm = (props) => {
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
   let[processingButton, setProcessingButton] = useState(false);
-  let[showTaskPanel, setShowTaskPanel] = useState(false);
   let[pageErrors, setPageErrors] = useState(null);
-  let[formErrors, setFormErrors] = useState({});
   let[globusPath, setGlobusPath] = useState(null);
   let[datasetMenu, setDatasetMenu] = useState();
+  let[expandVMessage, setExpandVMessage] = useState(false);
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   const defaultGroupUUID = userGroups[0].uuid;
-  const defaultGroupName = userGroups[0].shortname;
-  const{uuid} = useParams();
   let saveStatuses = ["submitted", "valid", "invalid", "error", "new"]
   let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
   let[validationError, setValidationError] = useState(null);
-  
+  const{uuid} = useParams();
+ 
   // Organ Menu Build
   const organ_types = JSON.parse(localStorage.getItem("organs"));
   const organMenu = useMemo(() => {
@@ -114,68 +116,41 @@ export const UploadForm = (props) => {
               );
             }else{
               const entityData = response.results;
-              console.debug('%c◉ entityData.anticipated_complete_upload_month ', 'color:#00ff7b', entityData.anticipated_complete_upload_month);
-
-              if(entityData.anticipated_complete_upload_month_date){
-                let formattedDate = dayjs(entityData.anticipated_complete_upload_month, "YYYY-MM");
-                console.debug('%c◉ formattedDate ', 'color:#D17BFF', formattedDate, entityData.anticipated_complete_upload_month);
-                console.debug('%c◉ $D  ', 'color:#D17BFF', formattedDate["$d"]);
-                // setEntityData({
-                //   ...entityData,
-                //   // anticipated_complete_upload_month_date: formattedDate["$d"],
-                //   // anticipated_complete_upload_month_string: formattedDate["$d"],
-                // });
-              }
-              setEntityData({
-                ...entityData,  
-              });
-              
-              console.debug('%c◉ assigned_to_group_name ', 'color:#00ff7b', entityData.assigned_to_group_name);
+              console.group("Entity Info");
+              console.table(entityData);
+              console.groupEnd();
+              setEntityData(entityData)
               setFormValues({
                 title: entityData.title,
                 description: entityData.description,
                 intended_organ: entityData.intended_organ,
                 intended_dataset_type: entityData.intended_dataset_type,
                 data_provider_group: entityData.data_provider_group,
-                // anticipated_complete_upload_month_date: entityData.anticipated_complete_upload_month,
-                // anticipated_complete_upload_month_string: entityData.anticipated_complete_upload_month,
-                // anticipated_complete_upload_month_date: formattedDate["$d"],
                 group_uuid: entityData.group_uuid,
                 anticipated_dataset_count: entityData.anticipated_dataset_count,
-                // ...((entityData.anticipated_complete_upload_month) && {anticipated_complete_upload_month_date: entityData.anticipated_complete_upload_month} ),
-                ...((entityData.anticipated_complete_upload_month) && {anticipated_complete_upload_month: entityData.anticipated_complete_upload_month} ),
                 ...((entityData.ingest_task) && {ingest_task: entityData.ingest_task} ),
                 ...((entityData.assigned_to_group_name) && {assigned_to_group_name: entityData.assigned_to_group_name} ),
+                anticipated_complete_upload_month: entityData.anticipated_complete_upload_month,
               });
 
               entity_api_get_globus_url(uuid)
                 .then((response) => {
                   console.debug('%c◉ GLOBUS PATH: ', 'color:#00ff7b', response.results);
                   setGlobusPath(response.results);
-                })
-                .catch((error) => {
-                  console.error("entity_api_get_globus_url ERROR", error);
-                })
+                }) //Nothing's wrong if this fails; no need to catch
 
               ingest_api_allowable_edit_states(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
                 .then((response) => {
+                  setPermissions(response.results);
                   if(entityData.data_access_level === "public"){
                     setPermissions({
                       has_write_priv: false,
                     });
                   }
-                  setPermissions(response.results);
-                  
-                  // IF we have no data set!
-                  if(entityData.anticipated_complete_upload_month ===undefined || entityData.anticipated_complete_upload_month === null){
-                    var targetHTML = document.getElementsByClassName("MuiPickersCalendarHeader-label"); 
-                    if(targetHTML && targetHTML[0]){targetHTML[0].innerHTML = "No Date Set";}
-                  }
                 })
                 .catch((error) => {
                   wrapUp(error)
                 });
-              document.title = `HuBMAP Ingest Portal | Upload: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
@@ -210,8 +185,11 @@ export const UploadForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-  function handleInputChange(e){
+  function handleInputChange(e, test){
     console.debug('%c◉ e', 'color:#00ff7b', e);
+    if(test){
+      console.debug('%c◉ TESTTTT ', 'color:#00ff7b', test);
+    }
     if(e && e.target){
       const{id, value} = e.target;
       setFormValues((prevValues) => ({
@@ -235,46 +213,39 @@ export const UploadForm = (props) => {
 
   function validateForm(){
     setValidationError(null);
+    setValErrorMessages(null);
     let errors = 0;
     // Browser handles requireds UNLESS we're not using the baked in form submit
     let requiredFields = ["title", "description", "intended_organ", "intended_dataset_type"]; 
-    let niceNames = []
+    let e_messages=[]
     let newFormErrors = {};
     requiredFields.forEach(field => {
       if (!formValues[field] || formValues[field] === "") {
-        newFormErrors[field] = true;
-        niceNames.push(document.getElementById([field]).getAttribute("name"));
+        let fieldName = document.getElementById([field]).getAttribute("name")
+        newFormErrors[field] = true
+        e_messages.push(fieldName+" is a required field");
         errors++;
       }
     });
-    
+    if(formValues.anticipated_dataset_count && isNaN(formValues.anticipated_dataset_count)){
+      newFormErrors['anticipated_dataset_count'] = true;
+      e_messages.push("Anticipated Dataset Count must be a number");
+      errors++;
+    }
     setFormErrors(newFormErrors);
-
+    setValErrorMessages(e_messages);
+    console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
     if(errors>0){
-      setValidationError("Please Fill In the required Fields: " + niceNames.join(", "));
+     setValidationError("Please Review the following fields and try again.");
     }else{
       setValidationError(null);
-    }
-    // picker itself handles date
-    // cant select invalids from dropdowns
-    // so I think we're good here?
+    }    
     return errors === 0;
-  }
-
-  function badValError(error){
-    console.debug('%c◉badValError error ', 'color:#00ff7b', error,error.response.data.error);
-    setValidationError(error.response.data.error ? error.response.data.error : error);
-    setIsProcessing(false);
-  }
-  function wrapUp(error){
-    console.debug('%c◉badValError error ', 'color:#00ff7b', error,error.error);
-    setPageErrors(error.error ? error.error : error);
-    setIsProcessing(false);
   }
 
   function renderValidationMessage (){
     return (
-      <Alert severity={entityData.status.toLowerCase() === "error" ? "error" : "warning"}>
+      <Alert severity={entityData.status.toLowerCase() === "error" ? "error" : "warning"} >
         <AlertTitle>{entityData.status}</AlertTitle>
         {entityData.validation_message}
       </Alert>
@@ -290,7 +261,12 @@ export const UploadForm = (props) => {
     }
   }
 
-  function processForm(e,target){
+  function wrapUp(error){
+    setPageErrors(error.error ? error.error : error);
+    setIsProcessing(false);
+  }
+
+  function submitForm(e,target){
     console.debug('%c◉ target ', 'color:#00ff7b', target);
     e.preventDefault()    
     setIsProcessing(true);
@@ -298,7 +274,6 @@ export const UploadForm = (props) => {
     if(validateForm()){
       let selectedGroup = document.getElementById("group_uuid");
       let selectedGroupUUID = (!uuid && selectedGroup?.value) ? selectedGroup.value : defaultGroupUUID;
-      console.debug('%c◉ selectedGroupUUID ', 'color:#00ff7b', selectedGroupUUID);
       let cleanForm ={
         title: formValues.title,
         description: formValues.description,
@@ -310,7 +285,9 @@ export const UploadForm = (props) => {
         ...(((formValues.ingest_task && formValues.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: formValues.ingest_task}),
         ...((!uuid) && {group_uuid: selectedGroupUUID	}),
       }
-      console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
+      console.group("Form valid, sending following info:");
+      console.table(cleanForm);
+      console.groupEnd();
 
       switch(target){
         case "Create":
@@ -408,18 +385,6 @@ export const UploadForm = (props) => {
     
   }
 
-  function clearDate(){
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      anticipated_complete_upload_month_string: "",
-      anticipated_complete_upload_month_date: "",
-      anticipated_complete_upload_month: "",
-    }));
-    console.debug('%c◉ ClearDate Trigger ', 'color:#00ff7b');
-    // var targetHTML = document.getElementsByClassName("MuiPickersCalendarHeader-label"); 
-    // targetHTML[0].innerHTML = "No Date Set";
-  }
-
   function renderDatasets(){
     if(entityData.datasets && entityData.datasets.length > 0 ){
       // @TODO: use the Datatables used elsewhere across the site 
@@ -489,7 +454,7 @@ export const UploadForm = (props) => {
           {!uuid && (
             <LoadingButton
               variant="contained"
-              onClick={(e) => processForm(e,"Create")}
+              onClick={(e) => submitForm(e,"Create")}
               loading={isProcessing}
               className="m-2"
               type="submit">
@@ -501,22 +466,22 @@ export const UploadForm = (props) => {
             <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
           )}
           {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status && (entityData.status.toLowerCase() === "valid")) &&(
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Submit")}>
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Submit")}>
               Submit
             </LoadingButton>
           )}
           {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && entityData.status.toLowerCase() === "submitted") && (
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Reorganize"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Reorganize")}>
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Reorganize"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Reorganize")}>
               Reorganize
             </LoadingButton>
           )}
           {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && validateStatuses.includes(entityData.status.toLowerCase())) && (
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Validate"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Validate")}>
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Validate"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Validate")}>
               Validate
             </LoadingButton>
           )}
           {uuid && uuid.length > 0 && saveCheck() === true && (
-            <LoadingButton disabled={!saveCheck} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => processForm(e,"Save")}>
+            <LoadingButton disabled={!saveCheck} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Save")}>
               Save
             </LoadingButton>
           )}
@@ -528,24 +493,21 @@ export const UploadForm = (props) => {
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
-    let taskInputStyling = {
-      background: permissions.has_write_priv ? "#fff" : "none", 
-      border: "1px solid rgba(0, 0, 0, 0.23)",
-      borderRadius: "4px"
-    }
+
     return(
       <Box>
         <Grid container className=''>
-
-            <FormHeader entityData={uuid ? entityData : ["new","Upload"]} permissions={permissions} globusURL={globusPath?globusPath:null}/>
-
+          <FormHeader entityData={uuid ? entityData : ["new","Upload"]} permissions={permissions} globusURL={globusPath?globusPath:null}/>
         </Grid>
         { entityData.status && (entityData.status.toLowerCase() === "error" || entityData.status.toLowerCase() === "invalid" ) && entityData.validation_message && (
-          <Box className="my-3" sx={{border: "1px solid #f1aeae", borderRadius: "4px"}}>
+          <><Collapse in={expandVMessage} collapsedSize="150px" className="mt-3" sx={{border: "1px solid #f1aeae", borderRadius: "4px", }}>
             {renderValidationMessage()}
-          </Box> 
+          </Collapse> 
+          <Button startIcon={ !expandVMessage ? <ExpandMoreIcon /> : <ExpandLessIcon /> } size="small" variant="text" onClick={()=>setExpandVMessage(!expandVMessage)} sx={{float: "right"}}>
+            Click to { !expandVMessage ? "View All" : "Collapse" }
+          </Button></>
         )}
-        <form onSubmit={(e) => processForm(e,"Create")}>
+        <form onSubmit={(e) => submitForm(e,"Create")}>
           <TextField //"Title "
             id="title"
             label="Title "
@@ -578,9 +540,6 @@ export const UploadForm = (props) => {
 
           {entityData.datasets && (
             <>
-              {/* <Typography sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
-                Datasets
-              </Typography> */}
               <InputLabel 
                 className="mb-1"
                 sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="datasets">
@@ -607,7 +566,6 @@ export const UploadForm = (props) => {
                   helperText={(formErrors.intended_organ ? formErrors.intended_organ : "")}
                   inputProps={{style: {padding: "0.8em"}}}
                   disabled={!permissions.has_write_priv}
-                  // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)"} : {}}
                   value={formValues.intended_organ ? formValues.intended_organ : ""}>
                   <option key={"DEFAULT"} value={""}></option>
                   {organMenu}  
@@ -634,7 +592,7 @@ export const UploadForm = (props) => {
                       fullWidth
                       name="Intended Dataset Type"
                       error={formErrors.intended_dataset_type}
-                      helperText={(formErrors.intended_dataset_type ? formErrors.intended_dataset_type : "")}
+                      helperText={(formErrors.intended_dataset_type ? formErrors.intended_dataset_type : "aaaa")}
                       inputProps={{style: {padding: "0.8em"}}}
                       // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)", padding: "0.15em"} : { padding: "0.15em"}}
                       disabled={!permissions.has_write_priv}
@@ -659,11 +617,9 @@ export const UploadForm = (props) => {
                 </InputLabel>
                 <Box>
                   <DatePicker
-                    // label={'"month"'}
                     openTo="month"
-                    // hiddenLabel={true}
                     clearable
-                    defaultValue={(formValues && formValues.anticipated_complete_upload_month) ? dayjs(entityData.anticipated_complete_upload_month, "YYYY-MM") : dayjs("")}
+                    value={(formValues && formValues.anticipated_complete_upload_month) ? dayjs(formValues.anticipated_complete_upload_month, "YYYY-MM") : dayjs("")}
                     onChange={(e) => handleInputChange(e)}
                     format="YYYY-MM"
                     views={['year', 'month']}
@@ -679,18 +635,19 @@ export const UploadForm = (props) => {
             </Box>
 
             <Box className="col-6">
-              <InputLabel htmlFor="anticipated_dataset_count" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
-              Anticipated Number of Datasets
-              </InputLabel>
-              <TextField
+
+              <TextField //"Title "
                 id="anticipated_dataset_count"
-                fullWidth 
+                label="Anticipated Number of Datasets "
+                name="Anticipated Number of Datasets "
+                helperText={"The total number of datasets that this Upload will eventually contain."}
+                value={formValues ? formValues.anticipated_dataset_count : ""}
+                error={formErrors.anticipated_dataset_count}
+                InputLabelProps={{shrink: ((uuid || (formValues?.anticipated_dataset_count )) ? true:false)}}
                 onChange={(e) => handleInputChange(e)}
+                fullWidth
                 disabled={!permissions.has_write_priv}
-                sx={{ padding: "0.09em"}}
-                type="number"
-                value={formValues.anticipated_dataset_count ? formValues.anticipated_dataset_count : ""}/>
-                <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>The total number of datasets that this Upload will eventually contain. &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </FormHelperText> {/* trying to reach two lines to pair with rest */}
+                className="my-3"/>
             </Box>
           </div>
 
@@ -703,9 +660,6 @@ export const UploadForm = (props) => {
                   </InputLabel>
                   <TextField //" Ingest Task "
                     id="ingest_task"
-                    // sx={{ paddingBottom: "400px"}}
-                    // label="Ingest Task"
-                    // helperText=""
                     value={formValues ? formValues.ingest_task : ""}
                     error={formErrors.ingest_task}
                     InputLabelProps={{shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}
@@ -726,7 +680,6 @@ export const UploadForm = (props) => {
                     fullWidth
                     inputProps={{style: {padding: "0.8em"}}}
                     className="taskInputStyling"
-                    // sx={{...taskInputStyling, padding: "0.8em"}}
                     disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }
                     value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}>
                       <option key={"0000"} value={""}></option>
@@ -763,11 +716,16 @@ export const UploadForm = (props) => {
            
           </div>
           
-          {validationError && (
-            <Alert variant="filled" severity="error">
-              <strong>Error:</strong> {JSON.stringify(validationError)}
+          {validationError && (<>
+            <Alert severity="error">
+              <AlertTitle>Please Review the following problems:</AlertTitle>
+              {valErrorMessages.map(error => (
+                <Typography >
+                  {error}
+                </Typography>
+              ))}
             </Alert>
-          )}
+            </>)}
 
           {buttonEngine()}
         </form>

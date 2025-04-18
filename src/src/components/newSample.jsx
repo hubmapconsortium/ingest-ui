@@ -190,9 +190,7 @@ export const SampleForm = (props) => {
               .catch((error) => {
                 console.error("i0ngest_api_allowable_edit_states ERROR", error);
                 setPageErrors(error);
-              } );
-            
-              document.title = `HuBMAP Ingest Portal | Sample: ${entityInfo.hubmap_id}`; //@TODO - somehow handle this detection in App
+              } );            
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);

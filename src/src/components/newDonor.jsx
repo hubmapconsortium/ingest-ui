@@ -97,7 +97,6 @@ export const DonorForm = (props) => {
                   console.error("ingest_api_allowable_edit_states ERROR", error);
                   setPageErrors(error);
                 });
-              document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
