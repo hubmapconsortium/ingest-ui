@@ -266,6 +266,14 @@ export const UploadForm = (props) => {
     setIsProcessing(false);
   }
 
+  function openDataset(e){
+      if (e.hasOwnProperty("row")) {
+        let url = `${process.env.REACT_APP_URL}/dataset/${e.row.uuid}/`
+        window.open(url, "_blank");
+      }
+    
+  }
+
   function submitForm(e,target){
     console.debug('%c◉ target ', 'color:#00ff7b', target);
     e.preventDefault()    
@@ -407,17 +415,19 @@ export const UploadForm = (props) => {
             }}
             className='associationTable w-100'
             rows={compiledCollection}
-            rowHeight={75 }
             columns={COLUMN_DEF_DATASET_MINI}
             disableColumnMenu={true}
             hideFooterPagination={true}
             hideFooterSelectedRowCount
+            onCellClick={(e)=> openDataset(e)} 
             autoHeight
             rowCount={compiledCollection.length}
-            // onCellClick={handleEvent}
             loading={!compiledCollection.length > 0 && uuid}
-            sx={{'.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px'},background: "rgba(0, 0, 0, 0.04)"
-            }}
+            sx={{
+              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px'},
+              background: "rgba(0, 0, 0, 0.04)",
+              cursor: "cell!important"
+              }}
           />
         </div>
       );
