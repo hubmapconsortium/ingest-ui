@@ -3,7 +3,6 @@ import Grid from '@mui/material/Grid';
 import Alert from "@mui/material/Alert";
 import Typography from '@mui/material/Typography';
 import {tsToDate} from "../../utils/string_helper";
-import HIPPA from "./HIPPA";
 import WarningIcon from '@mui/icons-material/Warning';
 import PersonIcon from '@mui/icons-material/Person';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
@@ -12,18 +11,14 @@ import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-
 import Chip from '@mui/material/Chip';
-
-// import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
-// import {entity_api_get_entity} from "../../service/entity_api";
-// const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
+import HIPPA from "./HIPPA";
 
 export const FormHeader = (props) => {
   let entityData = props.entityData;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
-  // console.debug('%c◉ formHeadeer ', 'color:#00ff7b', props);
+  document.title = `HuBMAP Ingest Portal | ${entityData.entity_type}: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
   return (
     <React.Fragment>
       {topHeader(entityData)}
@@ -63,18 +58,24 @@ function topHeader(entityData){
         <Grid item xs={12} className="" >  
 
           {entityData.entity_type === "Upload" && (
-            <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}  {entityData.status ? statusBadge(entityData.status) : ""}  HuBMAP {entityData.entity_type} {entityData.hubmap_id}</h3>   
+            <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)} HuBMAP {entityData.entity_type} {entityData.hubmap_id} </h3>   
           )}
-          {entityData.entity_type !== "Upload" && (
+          {/* {entityData.entity_type !== "Upload" && (
             <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
+          )} */}
+          {entityData.entity_type !== "Upload" && (
+           <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}  {entityData.status ? statusBadge(entityData.status) : ""}  HuBMAP {entityData.entity_type} {entityData.hubmap_id}</h3>   
+            
+            // <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
           )}
         </Grid>
         <Grid item xs={6} className="" >
-          {/* {entityData.entity_type === "Upload" && (
-            <Typography><strong>Group Name:</strong> {entityData.group_name} </Typography>             
-          )} */}
-          {entityData.entity_type !== "Upload" && (
+         
+          {/* {entityData.entity_type !== "Upload" && (
             <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography> 
+          )} */}
+          {entityData.status && (
+            <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
           )}
           {entityData.group_name && (
             <Typography><strong>Group Name:</strong> {entityData.group_name} </Typography>             
@@ -129,6 +130,19 @@ function infoPanels(entityData,permissions,globusURL){
       {permissions.has_write_priv && (
         <HIPPA />
       )}
+    {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
+        // They might not have write access but not because of data_access_level
+        <Alert severity="warning" 
+          iconMapping={{warning: <WarningIcon style={{fontSize: "2em"}} />}}
+          sx={{
+            // minHeight: "100%",
+            minWidth: "100%",
+            padding: "10px"
+          }}>
+          This entity is no longer editable. It was locked when it became publicly
+          acessible when data associated with it was published.
+        </Alert>
+      )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
         <Alert  
           variant="caption" 
@@ -143,20 +157,6 @@ function infoPanels(entityData,permissions,globusURL){
             warning: <WarningIcon style={{fontSize: "2em"}} />
           }} >
           You do not have permission to modify this item.
-        </Alert>
-      )}
-
-      {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
-        // They might not have write access but not because of data_access_level
-        <Alert severity="warning" 
-          iconMapping={{warning: <WarningIcon style={{fontSize: "2em"}} />}}
-          sx={{
-            // minHeight: "100%",
-            minWidth: "100%",
-            padding: "10px"
-          }}>
-          This entity is no longer editable. It was locked when it became publicly
-          acessible when data associated with it was published.
         </Alert>
       )}
      
@@ -226,7 +226,7 @@ export function badgeClass(status){
 export function statusBadge(status){
   console.debug('%c◉ status: ', 'color:#00ff7b', status);
   return (
-    <Chip className={badgeClass(status)} label={status.toUpperCase()} sx={{marginBottom: "10px"}} />
+    <Chip className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
 
