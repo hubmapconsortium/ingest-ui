@@ -56,8 +56,6 @@ export const UploadForm = (props) => {
     intended_dataset_type: "",
     data_provider_group: "",
     anticipated_complete_upload_month: "",
-    anticipated_complete_upload_month_string: "",
-    anticipated_complete_upload_month_date: "2026-12", //Needs ANY date to avoid crashing, clears on blank val after load
     anticipated_dataset_count: "",
   });
   let[formErrors, setFormErrors] = useState({});
@@ -198,15 +196,9 @@ export const UploadForm = (props) => {
       }));
     }else if (e && e.$d){
       let selectedDate = new Date(e.$d);
-      let monthFix = selectedDate.getMonth() < 10 ? "0"+(selectedDate.getMonth()+1) : selectedDate.getMonth();
-      let unFormattedDate = selectedDate.getFullYear() + "-" + (monthFix);
-      let formattedDate = dayjs(unFormattedDate, "YYYY-MM");
-      console.debug('%c◉ ym ', 'color:#00ff7b', formattedDate["$d"], formattedDate, unFormattedDate);
       setFormValues((prevValues) => ({
         ...prevValues,
-        anticipated_complete_upload_month_string: unFormattedDate,
-        anticipated_complete_upload_month_date: formattedDate,
-        anticipated_complete_upload_month: unFormattedDate,
+        anticipated_complete_upload_month: dayjs(selectedDate).format("YYYY-MM")
       }));
     }
   }
@@ -287,7 +279,7 @@ export const UploadForm = (props) => {
         description: formValues.description,
         intended_organ: formValues.intended_organ,
         intended_dataset_type: formValues.intended_dataset_type,
-        ...((formValues.anticipated_complete_upload_month_string) && {anticipated_complete_upload_month: formValues.anticipated_complete_upload_month_string} ),
+        ...((formValues.anticipated_complete_upload_month) && {anticipated_complete_upload_month: formValues.anticipated_complete_upload_month} ),
         ...((formValues.anticipated_dataset_count) && {anticipated_dataset_count: parseInt(formValues.anticipated_dataset_count)} ),
         ...(((formValues.assigned_to_group_name && formValues.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: formValues.assigned_to_group_name}),
         ...(((formValues.ingest_task && formValues.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: formValues.ingest_task}),
@@ -622,7 +614,7 @@ export const UploadForm = (props) => {
             {/* DATE */}
             <Box className="col-6">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="anticipated_complete_upload_month_string">
+                <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="anticipated_complete_upload_month">
                     Anticipated Completion Month/Year
                 </InputLabel>
                 <Box>
@@ -633,7 +625,7 @@ export const UploadForm = (props) => {
                     onChange={(e) => handleInputChange(e)}
                     format="YYYY-MM"
                     views={['year', 'month']}
-                    id="anticipated_complete_upload_month_string"
+                    id="anticipated_complete_upload_month"
                     disablePast 
                     slotProps={{ field: { clearable: true, error: false, fullWidth: true } }}
                     maxDate={dayjs("2026-12-31")}
