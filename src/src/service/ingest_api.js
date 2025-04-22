@@ -514,7 +514,7 @@ export function ingest_api_reorganize_upload(uuid, auth) {
  *  Notify
  *
  */
-export function ingest_api_notify_slack(auth, data) { 
+export function ingest_api_notify_slack(data) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
   data.send_to_email = true;

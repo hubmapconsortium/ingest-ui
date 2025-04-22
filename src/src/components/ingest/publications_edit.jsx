@@ -1106,7 +1106,7 @@ class PublicationEdit extends Component {
                       var slackMessage = {
                         "message": "Publication has been submitted ("+ingestURL+")"
                       }
-                      ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
+                      ingest_api_notify_slack(slackMessage)
                         .then((slackRes) => {
                           //consoledebug("slackRes", slackRes);
                           if (response.status < 300) {

@@ -84,11 +84,9 @@ export const UploadForm = (props) => {
   // Organ Menu Build
   const organ_types = JSON.parse(localStorage.getItem("organs"));
   const organMenu = useMemo(() => {
-
-    console.debug('%c◉ organ_types ', 'color:#00ff7b',organ_types );
     return Object.keys(organ_types)
-    .sort((a, b) => organ_types[a].localeCompare(organ_types[b]))
-    .map((key) => (
+      .sort((a, b) => organ_types[a].localeCompare(organ_types[b]))
+      .map((key) => (
       <option key={key} value={key}>
           {organ_types[key]}
         </option>
@@ -133,7 +131,6 @@ export const UploadForm = (props) => {
 
               entity_api_get_globus_url(uuid)
                 .then((response) => {
-                  console.debug('%c◉ GLOBUS PATH: ', 'color:#00ff7b', response.results);
                   setGlobusPath(response.results);
                 }) //Nothing's wrong if this fails; no need to catch
 
@@ -151,7 +148,6 @@ export const UploadForm = (props) => {
                 });
             }
           }else{
-            console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             wrapUp(response)
           }
         })
@@ -178,16 +174,14 @@ export const UploadForm = (props) => {
         )));
       })
       .catch((error) => {
-        console.debug('%c◉ UPLOAD DTYPES ERROR  ', 'color:#00e5ff', error);
+        wrapUp(error);
       });
     setLoading(false);
   }, [uuid]);
 
   function handleInputChange(e, test){
-    console.debug('%c◉ e', 'color:#00ff7b', e);
-    if(test){
-      console.debug('%c◉ TESTTTT ', 'color:#00ff7b', test);
-    }
+    // console.debug('%c◉ e', 'color:#00ff7b', e);
+
     if(e && e.target){
       const{id, value} = e.target;
       setFormValues((prevValues) => ({
@@ -226,7 +220,7 @@ export const UploadForm = (props) => {
     }
     setFormErrors(newFormErrors);
     setValErrorMessages(e_messages);
-    console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
+    // console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
     if(errors>0){
      setValidationError("Please Review the following fields and try again.");
     }else{
@@ -245,15 +239,16 @@ export const UploadForm = (props) => {
   }
 
   function processResults(response){
+    console.debug('%c◉ ✅ Processing Results: ', 'color:#00ff7b', response);
     if (response.status === 200) {
       props.onUpdated(response.results);
     } else {
       wrapUp(response)
-      console.error('%c◉ error ', 'color:#ff005d', response);
     }
   }
 
   function wrapUp(error){
+    console.error('%c◉⚠️ WRAP UP ERROR: ', 'color:#ff005d', error);
     setPageErrors(error.error ? error.error : error);
     setIsProcessing(false);
   }
@@ -267,7 +262,6 @@ export const UploadForm = (props) => {
   }
 
   function submitForm(e,target){
-    console.debug('%c◉ target ', 'color:#00ff7b', target);
     e.preventDefault()    
     setIsProcessing(true);
     setProcessingButton(target)
@@ -292,18 +286,15 @@ export const UploadForm = (props) => {
       switch(target){
         case "Create":
           console.debug('%c◉ Create ', 'color:#00ff7b');
-
           ingest_api_create_upload(JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
                 props.onCreated(response.results);
               }else{
-                console.log("IN RESP")
                 wrapUp(response.error ? response.error : response);
               }
             })
             .catch((error) => {
-              console.log("IN CATCH")
               wrapUp(error)
             });
           break;
@@ -324,21 +315,16 @@ export const UploadForm = (props) => {
           ingest_api_submit_upload(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
-                console.debug('%c◉ response ', 'color:#00ff7b', response);
-                var ingestURL= `${process.env.REACT_APP_URL}/upload/${uuid}`;
-                var slackMessage = {"message": "Upload has been submitted ("+ingestURL+")"}
+                var slackMessage = {"message": `Upload has been submitted (${process.env.REACT_APP_URL}/upload/${uuid})`}
                 ingest_api_notify_slack(slackMessage)
                   .then((slackRes) => {
-                    console.debug('%c◉ slackRes` ', 'color:#00ff7b', slackRes);
                     if (slackRes.status === 200) {
                       processResults(response);
                     } else {
-                      console.debug('%c◉ SLAXCK MESSAGE ERROR ', 'color:#ff005d', slackRes);
                       wrapUp(slackRes);
                     }
                   })
                   .catch((error) => {
-                    console.debug('%c◉  ingest_api_notify_slack error', 'color:#ff005d', error);
                     wrapUp(error);
                   })
               }else{
@@ -430,14 +416,10 @@ export const UploadForm = (props) => {
     // Slightly more compelx
     let sc = entityData.status ? saveStatuses.includes(entityData.status.toLowerCase()) : false;
     let st = entityData.status ? entityData.status.toLowerCase() : null;
-    console.debug('%c◉ sc ', 'color:#00ff7b', sc, st);
-
     if(entityData && entityData.status){
       if(saveStatuses.includes(entityData.status.toLowerCase()) && (permissions.has_write_priv === true || permissions.has_admin_priv === true) ){
-        console.debug('%c◉ RET TRU ', 'color:#ff005d', );
         return true
       }else{
-        console.debug('%c◉ RET FALSE ', 'color:#00ff7b', );
         return false
       }
     }
