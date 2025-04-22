@@ -1025,7 +1025,7 @@ class DatasetEdit extends Component {
                   console.debug("entity_api_update_entity response", response);
                   var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
                   var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
-                  ingest_api_notify_slack(JSON.parse(localStorage.getItem("info")).groups_token, slackMessage)
+                  ingest_api_notify_slack(slackMessage)
                   .then((slackRes) => {
                     console.debug("slackRes", slackRes);
                     if (response.status < 300) {

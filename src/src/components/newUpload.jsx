@@ -226,7 +226,7 @@ export const UploadForm = (props) => {
     }
     setFormErrors(newFormErrors);
     setValErrorMessages(e_messages);
-    console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
+    // console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
     if(errors>0){
      setValidationError("Please Review the following fields and try again.");
     }else{
@@ -245,6 +245,7 @@ export const UploadForm = (props) => {
   }
 
   function processResults(response){
+    console.debug('%c◉ ✅ Processing Results... ', 'color:#00ff7b', response);
     if (response.status === 200) {
       props.onUpdated(response.results);
     } else {
@@ -254,6 +255,7 @@ export const UploadForm = (props) => {
   }
 
   function wrapUp(error){
+    console.debug('%c◉ ⚠️ WRAPPIN UP ERROR:E=', 'color:#ff005d', error);
     setPageErrors(error.error ? error.error : error);
     setIsProcessing(false);
   }
@@ -325,12 +327,13 @@ export const UploadForm = (props) => {
             .then((response) => {
               if(response.status === 200){
                 console.debug('%c◉ response ', 'color:#00ff7b', response);
-                var ingestURL= `${process.env.REACT_APP_URL}/upload/${uuid}`;
-                var slackMessage = {"message": "Upload has been submitted ("+ingestURL+")"}
+                var slackMessage = {"message": `Upload has been submitted (${process.env.REACT_APP_URL}/upload/${uuid})`}
+                console.debug('%c◉ Message for slack: ', 'color:#00ff7b',slackMessage );
                 ingest_api_notify_slack(slackMessage)
                   .then((slackRes) => {
                     console.debug('%c◉ slackRes` ', 'color:#00ff7b', slackRes);
                     if (slackRes.status === 200) {
+                      console.debug('%c◉ SLACKRES ', 'color:#00ff7b',response );
                       processResults(response);
                     } else {
                       console.debug('%c◉ SLAXCK MESSAGE ERROR ', 'color:#ff005d', slackRes);
