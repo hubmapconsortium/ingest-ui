@@ -22,20 +22,18 @@ import {
   COLUMN_DEF_DATASET,
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
+  COLUMN_DEF_MIXED,
 } from "./table_constants";
 import {api_search2} from "../../service/search_api";
 
 export const RenderSearchTable = (props) => {
-  var [search_title] = useState(props.searchTitle ? props.searchTitle : "Search");
-  var [search_subtitle] = useState(props.searchSubtitle ? props.searchSubtitle : null);
+  // LocalStorage Loaders
+  const allGroups = JSON.parse(localStorage.getItem("allGroups")) && [];
+  const organs = JSON.parse(localStorage.getItem("organs")) && [];
 
   // TABLE & FILTER VALUES
-  var [allGroups] = useState(props.allGroups ? props.allGroups : []);
-  var [entityTypeList] = useState(props.allTypes ? props.allTypes : []);
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
-  // var [searchFilters, setSearchFilters] = useState();
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
-  var [modeCheck, setModeCheck] = useState(props.modecheck ? props.modecheck : null);
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
 
@@ -43,11 +41,13 @@ export const RenderSearchTable = (props) => {
   var [results, setResults] = React.useState({
     dataRows: null,
     rowCount: 0,
-    colDef: COLUMN_DEF_SAMPLE,
+    colDef: COLUMN_DEF_PUBLICATION,
+    // colDef: COLUMN_DEF_MIXED,
+    // colDef: COLUMN_DEF_SAMPLE,
   });
 
   //  LOADERS
-  var [loading, setLoading] = useState(true);
+  // var [loading, setLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
   var [filtersLoading, setFiltersLoading] = useState(true);
 
@@ -56,19 +56,16 @@ export const RenderSearchTable = (props) => {
   var [errorState, setErrorState] = useState();
   
   // PROPS
-  const restrictions = props.restrictions ? props.restrictions : null;
-  const urlChange = props.urlChange;
-  // Cant reach many hooks like useLocation since we're wrapped in a class
-  var queryParams = props.packagedQuery?props.packagedQuery : null
+  const queryParams = props.packagedQuery ?? null;
+  const restrictions = props.restrictions ?? null;
+  const entityTypeList = props.entityTypeList ?? [];
+  const urlChange = props.urlChange ?? null;
 
   useEffect(() => {
     console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
     var formQueries = {};
-    if(modeCheck === "Source") {
-      // We dont want it to start with a search on Samples, 
-      // No search till the user clicks, ensures Restrictions aren't 
-      // overridden by initial loads/reloads
-      // document.title = ("HuBMAP Ingest Portal "); 
+    if(props.modeCheck && props.modeCheck === "Source") {
+      // We could move the logic for pre-populating the search filters here?
     }else{
       document.title = ("HuBMAP Ingest Portal ");
       if(queryParams){
@@ -99,7 +96,7 @@ export const RenderSearchTable = (props) => {
         }// setSearchFilters(searchQueries);
       }
     }
-  }, [queryParams,modeCheck]);
+  }, [queryParams]);
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -171,7 +168,8 @@ export const RenderSearchTable = (props) => {
           setResults({
             dataRows: response.results,
             rowCount: response.total,
-            colDef: columnDefType(response.results[0].entity_type),
+            colDef: COLUMN_DEF_MIXED,
+            // colDef: columnDefType(response.results[0].entity_type),
           });
         } else if (response.total === 0) {
           setResults({
@@ -197,12 +195,12 @@ export const RenderSearchTable = (props) => {
       });
   }, [page, pageSize, searchFilters]);
 
-  useEffect(() => {
-    console.debug("useEffect groups & types")
-    if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
-      setFiltersLoading(false);
-    }
-  }, [allGroups,entityTypeList]);
+  // useEffect(() => {
+  //   console.debug("useEffect groups & types")
+  //   if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
+  //     setFiltersLoading(false);
+  //   }
+  // }, [allGroups,entityTypeList]);
 
   function handlePageChange(pageInfo) {
     // console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
@@ -210,29 +208,29 @@ export const RenderSearchTable = (props) => {
     setPageSize(pageInfo.pageSize);
   }
   
-  function columnDefType(et) {
-    if (et === "Donor") {
-      return COLUMN_DEF_DONOR;
-    }
-    if (et === "Dataset") {
-      return COLUMN_DEF_DATASET;
-    }
-    if (et === "Publication") {
-      return COLUMN_DEF_PUBLICATION;
-    }
-    if (et === "Upload") {
-      return COLUMN_DEF_UPLOADS;
-    }
-    if (et === "Collection") {
-      return COLUMN_DEF_COLLECTION;
-    }
-    return COLUMN_DEF_SAMPLE;
-  }
+  // function columnDefType(et) {
+  //   if (et === "Donor") {
+  //     return COLUMN_DEF_DONOR;
+  //   }
+  //   if (et === "Dataset") {
+  //     return COLUMN_DEF_DATASET;
+  //   }
+  //   if (et === "Publication") {
+  //     return COLUMN_DEF_PUBLICATION;
+  //   }
+  //   if (et === "Upload") {
+  //     return COLUMN_DEF_UPLOADS;
+  //   }
+  //   if (et === "Collection") {
+  //     return COLUMN_DEF_COLLECTION;
+  //   }
+  //   return COLUMN_DEF_SAMPLE;
+  // }
 
   function handleInputChange(e) {
     // Values for filtering the table data are set here
     const {name, value } = e.target;
-    console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
+    // console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
     switch (name) {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
@@ -281,7 +279,7 @@ export const RenderSearchTable = (props) => {
       keywords: ""
     })
   }
-        
+   
   function handleSearchClick(event) {
     // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
     if(event){event.preventDefault()}
@@ -298,7 +296,7 @@ export const RenderSearchTable = (props) => {
       entityType = formFilters.sample_category;
     }
     var keywords = formFilters.keywords;
-    let which_cols_def = COLUMN_DEF_SAMPLE; //default
+    let which_cols_def = COLUMN_DEF_MIXED; //default
     if (entityType) {
       let colSet = entityType.toLowerCase();
       if (which_cols_def) {
@@ -318,45 +316,35 @@ export const RenderSearchTable = (props) => {
       }
     }
 
-      let params = {}; // Will become the searchFilters
-      var url = new URL(window.location); // Only used outside in basic / homepage Mode
+    // Setting Up The Params 
+    // Logic Tidied up and stashed in 
+    let params = {}; // Will become the searchFilters
+    let url = new URL(window.location); // Now Also Used in Source/Related Mode Settings
+    updateQueryParams(params, url, "keywords", keywords);
+    updateQueryParams(params, url, "group_uuid", group_uuid, "All Components");
+    updateQueryParams(params, url, "entity_type", entityType, "----");
 
-      if (keywords) {
-        params["keywords"] = keywords.trim();
-        url.searchParams.set("keywords", keywords);
-      } else {
-        url.searchParams.delete("keywords");
-      }
-      if (group_uuid && group_uuid !== "All Components") {
-        params["group_uuid"] = group_uuid;
-        url.searchParams.set("group_uuid", group_uuid);
-      } else {
-        url.searchParams.delete("group_uuid");
-      }
-      // Here's where we sort out if the query's getting either:
-      //  an entity type, sample category, or an organ
-      // Doing this IN search now to avoid miscasting from URL
-      if (entityType && entityType !== "----") {
-        console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
-        params["entity_type"] = entityType;
-        url.searchParams.set("entity_type", entityType);
-      } else {
-        console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
-        url.searchParams.delete("entity_type");
-      } 
-      
-      // If we're not in a special mode, push URL to window
-      if (!props.modecheck) {
-        console.debug("%c⊙SETTING URL: ", "color:#FFf07b", url, params);
-        window.history.pushState({}, "", url);
-        document.title = "HuBMAP Ingest Portal Search"
-      }
-    // Since useEffect is watching searchFilters, 
-    // maybe we can just set it here and it'll search on its own?
+    if (!props.modecheck) {
+      document.title = "HuBMAP Ingest Portal Search"
+      window.history.pushState({}, "", url);
+      console.debug("%c⊙ Adding to Window History: ", "color:#7B86FF", url, params);
+    }
+
     console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
-    // We should apply restrictions here instead
     setSearchFilters(params);
   };
+
+  // The Actuall Setting Function called above 
+  function updateQueryParams(params, url, key, value, excludeValue = "----") {
+    if (value && value !== excludeValue) {
+      params[key] = value.trim();
+      url.searchParams.set(key, value);
+      console.debug(`%c⊙ ${key} set to:`, 'color:#00ff7b', value);
+    } else {
+      url.searchParams.delete(key);
+      console.debug(`%c⊙ ${key} removed`, 'color:#00ff7b');
+    }
+  }
 
   // function renderGridLoader() {
   //   // So we can keep the 
@@ -453,16 +441,16 @@ export const RenderSearchTable = (props) => {
           justifyContent: "center",
           marginBottom: 2,}}>
         
-        <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{search_title} </span>
-          {!search_subtitle &&(
+        <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{props.searchTitle ?? "Search"} </span>
+          {!props.searchSubtitle &&(
             <Typography align={"center"} variant="subtitle1" gutterBottom >
               Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
             </Typography>
           )}
-          {search_subtitle &&(
+          {props.searchSubtitle &&(
             <Typography align={"center"} variant="caption" gutterBottom>
-              {search_subtitle} <br/>
+              {props.searchSubtitle} <br/>
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
 
             </Typography>

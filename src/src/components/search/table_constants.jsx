@@ -216,14 +216,22 @@ export const COLUMN_DEF_EPICOLLECTIONS = [
 // MIXED TYPE COLUMNS
 export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
+  // {
+  //   field: "computed_lab_id_type",
+  //   headerName: "Lab ID",
+  //   width: 160,
+  //   //description: "This column has a value getter and is not sortable.",
+  //   sortable: false,
+  //   valueGetter: getLabId
+  // }, 
   {
- field: "computed_lab_id_type",
+    field: "computed_lab_id_type",
     headerName: "Lab ID",
-    width: 160,
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
+    width: 173,
     valueGetter: getLabId
-  }, 
+  }, { field: 'display_subtype', headerName: 'Type', width: 200},
   { field: 'submission_id', headerName: 'Submission ID', width: 160 },
   {
  field: "type",

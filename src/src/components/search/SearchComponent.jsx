@@ -369,7 +369,8 @@ class SearchComponent extends Component {
 
     // LAST: Organs
     var organs = [];
-    var organList = this.state.organ_types;
+    var organList = JSON.parse(localStorage.getItem("organs"));
+    // var organList = this.state.organ_types;
     try {
       organList.forEach((value, key) => {
         organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key;
