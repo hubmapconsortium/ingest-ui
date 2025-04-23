@@ -107,7 +107,6 @@ function topHeader(entityData){
 }
 
 function infoPanels(entityData,permissions,globusURL){
-  // console.debug('%c◉ infoPan ', 'color:#00ff7b', entityData,permissions );
   return (
     <Grid item xs={6} className="" >
       {globusURL&& (
@@ -166,7 +165,6 @@ function infoPanels(entityData,permissions,globusURL){
 
 export function badgeClass(status){
   var badge_class = "";
-	//console.log('status', status)\
   if(status=== undefined || !status){
     badge_class = "badge-danger";
     console.log("No Status Value for this unit ");
@@ -224,9 +222,8 @@ export function badgeClass(status){
 }
 
 export function statusBadge(status){
-  console.debug('%c◉ status: ', 'color:#00ff7b', status);
   return (
-    <Chip className={badgeClass(status)} label={status.toUpperCase()} size="small" />
+    <Chip sx={{fontWeight: "bold"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
 
