@@ -5,6 +5,7 @@ import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
+import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
 
 // table column definitions
@@ -72,6 +73,33 @@ export const COLUMN_DEF_DATASET = [
         </React.Fragment>
       )
     }
+];
+
+// DATASET COLUMNS FOR THE UPLOADS VIEW / MINIFIED
+export const COLUMN_DEF_DATASET_MINI = [
+  { field: 'hubmap_id', headerName: 'HubMAP ID',width: 220,
+    renderCell: (params: ValueFormatterParams) => (
+      <Button
+        fullWidth
+        variant="contained"
+        className="m-2"
+        onClick={(e) => handleOpenPage(e,params.value)}>
+       {params.value}
+      </Button>     
+      )
+   },
+  { field: 'lab_dataset_id', headerName: 'Lab Name/ID', flex: 0.5},
+  { field: 'group_name', headerName: 'Group Name', flex: 0.4},
+  { field: 'status', headerName: 'Submission Status', flex: 0.3,
+    renderCell: (params: ValueFormatterParams) => (
+      <span
+        className={"badge " + getPublishStatusColor(params.value,"NA")}
+        style={{width: "100px",margin: "0px auto"}}>
+        {params.value}
+      </span>
+      )
+  },
+  { field: 'uuid', headerName: 'UUID', hide: true, filterable: false, sortable: false},
 ];
 // PUBLICATION COLUMNS
 export const COLUMN_DEF_PUBLICATION = [
@@ -351,6 +379,12 @@ function handleDataClick(dataset_uuid) {
         window.open(resp.results, "_blank");
     }
   });
+}
+
+function handleOpenPage(e,dataset_uuid) {
+  e.preventDefault()    
+  let url = `${process.env.REACT_APP_URL}/dataset/${dataset_uuid}/`
+  window.open(url, "_blank");
 }
 
 function groupNames(entity) {

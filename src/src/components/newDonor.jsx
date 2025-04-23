@@ -22,7 +22,7 @@ import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
-import {FormHeader,GroupSelectMenu} from "./ui/formParts";
+import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 
 export const DonorForm = (props) => {
   let navigate = useNavigate();
@@ -97,7 +97,6 @@ export const DonorForm = (props) => {
                   console.error("ingest_api_allowable_edit_states ERROR", error);
                   setPageErrors(error);
                 });
-              document.title = `HuBMAP Ingest Portal | Donor: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
             }
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
@@ -148,11 +147,6 @@ export const DonorForm = (props) => {
 
   function validateForm(){
     let errors = 0;
-    // Required Fields
-    //  So it looks like Required no longer gets triggered
-    //  and instead the browser has a built in error thing?
-    //  that wont even fire Submit unless required fields are filled?
-    //  need to test across a few browsers
     let requiredFields = ["label", "protocol_url"];
     for(let field of requiredFields){
       if(!validateRequired(formValues[field])){
@@ -311,25 +305,30 @@ export const DonorForm = (props) => {
             multiline
             rows={4}
           />
-          <Box className="my-3">           
-            <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
-              Group
-            </InputLabel>
-            <NativeSelect
-              id="group_uuid"
-              label="Group"
-              onChange={(e) => handleInputChange(e)}
-              fullWidth
-              className="p-2"
-              sx={{
-                BorderTopLeftRadius: "4px",
-                BorderTopRightRadius: "4px",
-              }}
-              disabled={uuid?true:false}
-              value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
-              <GroupSelectMenu formValues={formValues} />
-            </NativeSelect>
-          </Box>
+          
+          {/* Group */}
+          {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
+          {!uuid && (
+            <Box className="my-3">           
+              <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <NativeSelect
+                id="group_uuid"
+                label="Group"
+                onChange={(e) => handleInputChange(e)}
+                fullWidth
+                className="p-2"
+                sx={{
+                  BorderTopLeftRadius: "4px",
+                  BorderTopRightRadius: "4px",
+                }}
+                disabled={uuid?true:false}
+                value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
+                <UserGroupSelectMenu formValues={formValues} />
+              </NativeSelect>
+            </Box>
+          )}
           {buttonEngine()}
         </form>
       
