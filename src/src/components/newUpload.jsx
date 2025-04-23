@@ -35,6 +35,7 @@ import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 import {Typography} from "@mui/material";
 import {DataGrid} from "@mui/x-data-grid";
 import dayjs from "dayjs";
+import isBetween from "dayjs";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -80,6 +81,7 @@ export const UploadForm = (props) => {
   let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
   let[validationError, setValidationError] = useState(null);
   const{uuid} = useParams();
+  dayjs.extend(isBetween);
  
   // Organ Menu Build
   const organ_types = JSON.parse(localStorage.getItem("organs"));
@@ -201,7 +203,10 @@ export const UploadForm = (props) => {
     setValidationError(null);
     setValErrorMessages(null);
     let errors = 0;
-    // Browser handles requireds UNLESS we're not using the baked in form submit
+    console.debug('%c◉  Form Values:', 'color:#00ff7b' );
+    console.table(formValues );
+
+    // Requireds
     let requiredFields = ["title", "description", "intended_organ", "intended_dataset_type"]; 
     let e_messages=[]
     let newFormErrors = {};
@@ -213,19 +218,36 @@ export const UploadForm = (props) => {
         errors++;
       }
     });
+
+    // Count is a #
     if(formValues.anticipated_dataset_count && isNaN(formValues.anticipated_dataset_count)){
       newFormErrors['anticipated_dataset_count'] = true;
       e_messages.push("Anticipated Dataset Count must be a number");
       errors++;
     }
+
+    // They Could have Typed the Date... is it within range?
+    if(formValues.anticipated_complete_upload_month && formValues.anticipated_complete_upload_month !== ""){
+      const earliest = dayjs().subtract(1, 'day')
+      const latest = dayjs('2026-12-31')
+      const selectedDate = dayjs(formValues.anticipated_complete_upload_month, 'YYYY-MM')
+      if(!selectedDate.isBetween(earliest, latest, 'day', '[)')){
+        newFormErrors['anticipated_complete_upload_month'] = true;
+        e_messages.push("Please select a date between "+earliest.format("YYYY-MM") + " and " + latest.format("YYYY-MM"));
+      }
+    }
+
+    // Final Judgement
     setFormErrors(newFormErrors);
     setValErrorMessages(e_messages);
-    // console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
+    console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
     if(errors>0){
      setValidationError("Please Review the following fields and try again.");
     }else{
       setValidationError(null);
     }    
+    console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
+    // return false;
     return errors === 0;
   }
 
@@ -251,6 +273,7 @@ export const UploadForm = (props) => {
     console.error('%c◉⚠️ WRAP UP ERROR: ', 'color:#ff005d', error);
     setPageErrors(error.error ? error.error : error);
     setIsProcessing(false);
+    setProcessingButton(false);
   }
 
   function openDataset(e){
@@ -364,8 +387,8 @@ export const UploadForm = (props) => {
       }
 
     }else{
-
       setIsProcessing(false);
+      setProcessingButton(false);
       console.debug('%c◉ Invalid ', 'color:#ff005d');
     }
     
@@ -423,6 +446,14 @@ export const UploadForm = (props) => {
         return false
       }
     }
+  }
+
+  function colorizeField(field) {
+    return formErrors[field]
+      ? "rgb(211, 47, 47)!important" // Error color
+      : !permissions.has_write_priv
+      ? "rgba(0, 0, 0, 0.3)!important" // Disabled color
+      : "rgba(0, 0, 0, 0.6)!important"; // Default color
   }
   
   function buttonEngine(){
@@ -484,7 +515,7 @@ export const UploadForm = (props) => {
           <FormHeader entityData={uuid ? entityData : ["new","Upload"]} permissions={permissions} globusURL={globusPath?globusPath:null}/>
         </Grid>
         { entityData.status && (entityData.status.toLowerCase() === "error" || entityData.status.toLowerCase() === "invalid" ) && entityData.validation_message && (
-          <><Collapse in={expandVMessage} collapsedSize="150px" className="mt-3" sx={{border: "1px solid #f1aeae", borderRadius: "4px", }}>
+          <><Collapse in={expandVMessage} collapsedSize="50px" className="mt-3" sx={{border: "1px solid #f1aeae", borderRadius: "4px", }}>
             {renderValidationMessage()}
           </Collapse> 
           <Button startIcon={ !expandVMessage ? <ExpandMoreIcon /> : <ExpandLessIcon /> } size="small" variant="text" onClick={()=>setExpandVMessage(!expandVMessage)} sx={{float: "right"}}>
@@ -547,7 +578,6 @@ export const UploadForm = (props) => {
                   fullWidth
                   required
                   error={formErrors.intended_organ}
-                  helperText={(formErrors.intended_organ ? formErrors.intended_organ : "")}
                   inputProps={{style: {padding: "0.8em"}}}
                   disabled={!permissions.has_write_priv}
                   value={formValues.intended_organ ? formValues.intended_organ : ""}>
@@ -576,7 +606,7 @@ export const UploadForm = (props) => {
                       fullWidth
                       name="Intended Dataset Type"
                       error={formErrors.intended_dataset_type}
-                      helperText={(formErrors.intended_dataset_type ? formErrors.intended_dataset_type : "aaaa")}
+                      // helperText={(formErrors.intended_dataset_type ? formErrors.intended_dataset_type : "aaaa")}
                       inputProps={{style: {padding: "0.8em"}}}
                       // sx={ uuid ? { background: "rgba(0, 0, 0, 0.07)", padding: "0.15em"} : { padding: "0.15em"}}
                       disabled={!permissions.has_write_priv}
@@ -596,7 +626,7 @@ export const UploadForm = (props) => {
             {/* DATE */}
             <Box className="col-6">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="anticipated_complete_upload_month">
+                <InputLabel sx={{color: colorizeField("anticipated_complete_upload_month")}} htmlFor="anticipated_complete_upload_month">
                     Anticipated Completion Month/Year
                 </InputLabel>
                 <Box>
@@ -610,12 +640,13 @@ export const UploadForm = (props) => {
                     id="anticipated_complete_upload_month"
                     disablePast 
                     slotProps={{ field: { clearable: true, error: false, fullWidth: true } }}
+                    sx={{color: colorizeField("anticipated_complete_upload_month"), borderRadius: "4px", outline: formErrors.anticipated_complete_upload_month ? "1px solid red" : "none"}}
                     maxDate={dayjs("2026-12-31")}
                     disableHighlightToday
                     disabled={!permissions.has_write_priv}/>
                 </Box>
               </LocalizationProvider>
-              <FormHelperText id="monthYearIDHelp" className="mb-3">The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.</FormHelperText>
+              <FormHelperText sx={{color: colorizeField("anticipated_complete_upload_month")}} id="monthYearIDHelp" className="mb-3">The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.</FormHelperText>
             </Box>
 
             <Box className="col-6">
