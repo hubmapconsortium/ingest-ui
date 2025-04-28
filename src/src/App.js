@@ -315,6 +315,8 @@ export function App(props){
   function urlChange(target){
     if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
+      let url = new URL(window.location);
+      window.history.pushState({}, "", url);
       navigate(lowerTarget, {replace: true});
     }
   }

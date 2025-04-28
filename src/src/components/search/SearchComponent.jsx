@@ -5,6 +5,7 @@ import LinearProgress from "@material-ui/core/LinearProgress";
 import Alert from '@mui/material/Alert';
 import {GridLoader} from "react-spinners";
 import {SAMPLE_TYPES,ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
+import {sortGroupsByDisplay} from "../../service/user_service";
 import {ubkg_api_get_organ_type_set} from "../../service/ubkg_api";
 import {
   COLUMN_DEF_DONOR,
@@ -12,9 +13,8 @@ import {
   COLUMN_DEF_SAMPLE,
   COLUMN_DEF_DATASET,
   COLUMN_DEF_UPLOADS,
+  COLUMN_DEF_MIXED,
 } from "./table_constants";
-import {ingest_api_allowable_edit_states,ingest_api_all_groups} from "../../service/ingest_api";
-import {entity_api_get_entity} from "../../service/entity_api";
 import {RenderSearchTable} from "./searchTable";
 // Creation donor_form_components
 
@@ -25,7 +25,8 @@ function resultFieldSet() {
     COLUMN_DEF_COLLECTION,
     COLUMN_DEF_DATASET,
     COLUMN_DEF_UPLOADS,
-    COLUMN_DEF_DONOR
+    COLUMN_DEF_DONOR,
+    COLUMN_DEF_MIXED,
   );
   const unique = [...new Set(fieldArray.map((item) => item.field))];
   //
@@ -42,6 +43,7 @@ class SearchComponent extends Component {
 
       group: "All Components",
       allGroups: [""],
+      // allGroups: localStorage.getItem("allGroups") ? this.sortGroupsByDisplay(JSON.parse(localStorage.getItem("allGroups"))) : [],
       groupsLoading: true,
 
       entityType: "",
@@ -85,51 +87,22 @@ class SearchComponent extends Component {
 
   componentDidMount() {
     try {
-      ingest_api_all_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-      .then((res) => {
-        var allGroups = this.sortGroupsByDisplay(res.results);
+      if(!this.state.allGroups || (this.state.allGroups && this.state.allGroups.length > 0)){
+        let sorted = sortGroupsByDisplay(this.state.allGroups)
+        console.debug('%c◉ sorted ', 'color:#00ff7b', sorted);
         this.setState({
-          allGroups: allGroups, 
-          isAuthenticated: true
-        }, () => { 
-          this.setState({
-            groupsLoading: false,
-          });
+          allGroups: sortGroupsByDisplay(this.state.allGroups),
+          groupsLoading: false,
         });
-      })
-      .catch((err) => {
-        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
-      })
+      }
+
     } catch (error) {
       console.debug("%c⭗", "color:#ff005d",error);
     }
 
-    var organList = {};
-    // console.debug('%c⊙', 'color:#00ff7b', "this.props.organList", this.props.organList );
-    if (this.props.organList) {
-      organList = this.props.organList;
-      this.setState({ organ_types: this.handleSortOrgans(organList) }, () => {
-        this.setFilterType();
-      });
-    } else {
-      // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set" );
-      ubkg_api_get_organ_type_set()
-        .then((res) => {
-          // console.debug('%c⊙', 'color:#00ff7b', "ubkg_api_get_organ_type_set", res );
-          organList = res;
-          this.setState({ organ_types: this.handleSortOrgans(res) }, () => {
-            this.setFilterType();
-          });
-        })
-        .catch((err) => {
-          console.debug(
-            "%c⭗",
-            "color:#ff005d",
-            "ubkg_api_get_organ_type_set ERR",
-            err
-          );
-        });
-    }
+    this.setState({ organ_types: this.handleSortOrgans(JSON.parse(localStorage.getItem("organs"))) }, () => {
+      this.setFilterType();
+    });
 
     if (this.props.restrictions) {
       // So we can apply the object right to the state instead of do parse tango
@@ -168,55 +141,10 @@ class SearchComponent extends Component {
   );
   }
 
-  // @TODO: Possily move into groups service?
-  //  Not actually reltated to the user so not going to user service
-  // only used to assemblw dropdown though
-  sortGroupsByDisplay = (obj) => {
-    var result = {
-      TMC: [],
-      RTI: [],
-      TTD: [],
-      DP: [],
-      TC: [],
-      MC: [],
-      EXT: [],
-      IEC: [],
-    };
-    var sortedResult = [];
-    // put em all in their right slots
-    for (var key in obj) {
-      var shortname = obj[key].shortname;
-      // console.debug('%c⊙', 'color:#00ff7b', "shortname", shortname );
-      var prefix = shortname.split(" ");
-      if (
-        ["TMC", "RTI", "TTD", "DP", "TC", "MC", "EXT", "IEC"].includes(
-          prefix[0]
-        )
-      ) {
-        result[prefix[0]].push({
-          shortName: obj[key].shortname,
-          uuid: obj[key].uuid,
-        });
-      }
-    }
-    // compile them by slot in specific order
-    sortedResult.push(
-      result["TMC"],
-      result["RTI"],
-      result["TTD"],
-      result["DP"],
-      result["TC"],
-      result["MC"],
-      result["EXT"],
-      result["IEC"]
-    );
-    // FLatten it!
-    var sortedResultFlat = sortedResult.flat();
-    return sortedResultFlat;
-  };
+  // };
 
-  handleSortOrgans = (organList) => {
-    // console.debug('%c⊙', 'color:#00ff7b', "handleSortOrgans", organList );
+  handleSortOrgans = () => {
+    let organList = JSON.parse(localStorage.getItem("organs"));
     let sortedDataProp = {};
     let sortedDataArray = [];
     var sortedMap = new Map();
@@ -224,6 +152,7 @@ class SearchComponent extends Component {
       let value = organList[key];
       sortedDataProp[value] = key;
       sortedDataArray.push(value);
+      console.debug('%c◉ OL: ', 'color:#00ff7b', key,value);
     }
     sortedDataArray = sortedDataArray.sort();
     for (const [index, element] of sortedDataArray.entries()) {
@@ -335,13 +264,16 @@ class SearchComponent extends Component {
       this.setState({
         data_loading: false,
         entityListLoading: false,
-      },()=>{});
+      },()=>{
+        console.debug('%c◉ SETTING FILTER TYPSES DONE LOADING ', 'color:#00ff7b', this.state.allTypes);
+      });
     });
   };
 
   combinedTypeOptions = () => {
     // Simplified to handle replacement of Types with Categories
     var combinedList = [];
+    let combinedCheck = [false,false,false];
     // FIRST: Main Entity Types
     // We're either going to use a whitelist, blacklist or all of em
     var entityList = ENTITY_TYPES;
@@ -362,21 +294,19 @@ class SearchComponent extends Component {
       }
       combinedList.push(entityList);
     }
-
+    
     // NEXT: Sample Categories
     combinedList.push(SAMPLE_CATEGORIES);
     // @TODO: Switch these to UBKG too?
 
     // LAST: Organs
     var organs = [];
-    var organList = JSON.parse(localStorage.getItem("organs"));
-    // var organList = this.state.organ_types;
+    var organList = this.handleSortOrgans() ;
     try {
       organList.forEach((value, key) => {
         organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key;
       });
       combinedList.push(organs.sort());
-      // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList );
       return combinedList;
     } catch (error) {
       console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
@@ -439,56 +369,8 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params) => {
-    // console.debug('%c⊙ cell click SC', 'color:#00ff7b',  params);
-    if (params.field === "uuid") return; // skip this field
-    if (params.hasOwnProperty("row")) {
-      var typeText = params.row.entity_type.toLowerCase();
-      this.props.urlChange(typeText + "/" + params.row.uuid);
-      /* We're controlling the Routing and Most other views from the outer App wrapping, not within the SearchComponent Itself Anymore */
-      // Exception being Uploads
-      entity_api_get_entity(
-        params.row.uuid,
-        JSON.parse(localStorage.getItem("info")).groups_token
-      ).then((response) => {
-        if (response.status === 200) {
-          let entity_data = response.results;
-          if (entity_data.read_only_state) {
-            ingest_api_allowable_edit_states(
-              params.row.uuid,
-              JSON.parse(localStorage.getItem("info")).groups_token
-            ).then((resp) => {
-              //
-              let read_only_state = false;
-              if (resp.status === 200) {
-                read_only_state = !resp.results.has_write_priv; //results map opposite for UI
-              }
-              this.setState({
-                updateSuccess: null,
-                editingEntity: entity_data,
-                readOnly: read_only_state, // used for hidding UI components
-                editForm: true,
-                show_modal: true,
-                show_search: false,
-                loading: false,
-              });
-            });
-          } else {
-            this.setState({
-              updateSuccess: null,
-              editingEntity: entity_data,
-              readOnly: "read_only_state", // used for hidding UI components
-              editForm: true,
-              show_modal: true,
-              show_search: false,
-              loading: false,
-            });
-          }
-          this.handleUrlChange(
-            entity_data.entity_type + "/" + entity_data.uuid
-          );
-        }
-      });
-    }
+    // The one already inside the tbale component is *way* cleaner
+    console.debug("%c⊙ SC Wrapper handleTableCellClick? How'd you get here?", 'color:#FF00B7');
   };
   
   /**
@@ -516,10 +398,13 @@ class SearchComponent extends Component {
         </div>
       )
     }
-    if (this.state.isAuthenticated) {
+    if (this.state.show_search) {
       // console.debug('%c⊙', 'color:#00ff7b', "AUTHED" );
       return (
         <div style={{ width: "100%" }}>
+          {/* loading: {JSON.stringify(this.state.loading)} |
+          entityListLoading: {JSON.stringify(this.state.entityListLoading)} |
+          groupsLoading: {JSON.stringify(this.state.groupsLoading)} | */}
           {this.props.routingMessage && (
             <Alert variant="filled" severity="error">
               <strong>Sorry</strong> {this.props.routingMessage[0]+" "} 
@@ -528,24 +413,18 @@ class SearchComponent extends Component {
           )}
           {/* {this.state.show_search && this.renderFilterControls()} */}
           {this.state.loading && this.renderLoadingBar()}
-          {this.state.show_search &&
-          !this.state.groupsLoading &&
-          !this.state.entityListLoading && (
+          {this.state.show_search && (
             // this.renderTable()}
             <div>
               <RenderSearchTable 
                 // data={this.state.datarows} 
                 packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
                 restrictions={this.props.restrictions}
-                allGroups={this.state.allGroups}
-                allTypes={this.state.allTypes}
                 columns={this.state.column_def} 
+                allTypes={this.state.allTypes}
                 searchTitle={this.props.custom_title ? this.props.custom_title : null}
                 searchSubtitle={this.props.custom_subtitle ? this.props.custom_subtitle : null}
-                // handleTableCellClick={(params) => this.handleTableCellClick(params)}
-                // handleSearchButtonClick={() => this.handleSearchButtonClick()}
-                handleTableCellClick={this.props.select?(e)=>this.props.select(e):(e)=>this.handleTableCellClick(e)}
-                // select={this.props.select?this.props.select:null}
+                handleTableCellClick={this.props.select?(e)=>this.props.select(e):null}
                 reportError={(error) => this.props.reportError(error)}
                 urlChange={(target) => this.props.urlChange(target) } />
             </div>

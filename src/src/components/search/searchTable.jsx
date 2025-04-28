@@ -28,8 +28,8 @@ import {api_search2} from "../../service/search_api";
 
 export const RenderSearchTable = (props) => {
   // LocalStorage Loaders
-  const allGroups = JSON.parse(localStorage.getItem("allGroups")) && [];
-  const organs = JSON.parse(localStorage.getItem("organs")) && [];
+  const allGroups = JSON.parse(localStorage.getItem("allGroups"));
+  const organs = JSON.parse(localStorage.getItem("organs"));
 
   // TABLE & FILTER VALUES
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
@@ -56,15 +56,16 @@ export const RenderSearchTable = (props) => {
   var [errorState, setErrorState] = useState();
   
   // PROPS
-  const queryParams = props.packagedQuery ?? null;
   const restrictions = props.restrictions ?? null;
   const entityTypeList = props.entityTypeList ?? [];
   const urlChange = props.urlChange ?? null;
 
   useEffect(() => {
+    const modeCheck = props.modeCheck ?? null;
+    const queryParams = props.packagedQuery ?? null;
     console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
     var formQueries = {};
-    if(props.modeCheck && props.modeCheck === "Source") {
+    if(modeCheck && modeCheck === "Source") {
       // We could move the logic for pre-populating the search filters here?
     }else{
       document.title = ("HuBMAP Ingest Portal ");
@@ -87,7 +88,7 @@ export const RenderSearchTable = (props) => {
         }
         console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
         var queryLength = Object.keys(formQueries).length
-        console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
+        console.debug('%c◉ Setting Form Filters (useEffect): ', 'color:#00ff7b', formQueries);
         setFormFilters(formQueries);
         if(queryLength>0){
           console.debug("Setting search Filters from URL",formQueries);
@@ -96,7 +97,7 @@ export const RenderSearchTable = (props) => {
         }// setSearchFilters(searchQueries);
       }
     }
-  }, [queryParams]);
+  }, [props]);
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -146,8 +147,8 @@ export const RenderSearchTable = (props) => {
         ...prevValues,
       entity_type: restrictions.entityType,}));
     }
-
     var fieldSearchSet = resultFieldSet();
+    console.debug('%c◉ fieldSearchSet ', 'color:#00ff7b', fieldSearchSet);
     api_search2(
       searchFilterParams,
       JSON.parse(localStorage.getItem("info")).groups_token,
@@ -175,7 +176,8 @@ export const RenderSearchTable = (props) => {
           setResults({
             dataRows: response.results,
             rowCount: response.total,
-            colDef: COLUMN_DEF_SAMPLE,
+            // colDef: COLUMN_DEF_SAMPLE,
+            colDef: COLUMN_DEF_MIXED,
           });
         } else {
           var errStringMSG = "";
@@ -193,44 +195,24 @@ export const RenderSearchTable = (props) => {
         //props.reportError(error);
         console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
-  }, [page, pageSize, searchFilters]);
+  }, [page, pageSize, searchFilters,restrictions]);
 
-  // useEffect(() => {
-  //   console.debug("useEffect groups & types")
-  //   if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
-  //     setFiltersLoading(false);
-  //   }
-  // }, [allGroups,entityTypeList]);
+  useEffect(() => {
+    console.debug("useEffect groups & types check")
+    if( (allGroups && allGroups.length>0) && (props.allTypes && props.allTypes.length>0) ){
+      setFiltersLoading(false);
+    }
+  }, [allGroups,props.allTypes]);
 
   function handlePageChange(pageInfo) {
-    // console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     setPage(pageInfo.page);
     setPageSize(pageInfo.pageSize);
   }
-  
-  // function columnDefType(et) {
-  //   if (et === "Donor") {
-  //     return COLUMN_DEF_DONOR;
-  //   }
-  //   if (et === "Dataset") {
-  //     return COLUMN_DEF_DATASET;
-  //   }
-  //   if (et === "Publication") {
-  //     return COLUMN_DEF_PUBLICATION;
-  //   }
-  //   if (et === "Upload") {
-  //     return COLUMN_DEF_UPLOADS;
-  //   }
-  //   if (et === "Collection") {
-  //     return COLUMN_DEF_COLLECTION;
-  //   }
-  //   return COLUMN_DEF_SAMPLE;
-  // }
 
   function handleInputChange(e) {
     // Values for filtering the table data are set here
     const {name, value } = e.target;
-    // console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
+    console.debug("%c⊙", "color:#FF7300", "HandleInputChange", name, value, e);
     switch (name) {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
@@ -264,6 +246,7 @@ export const RenderSearchTable = (props) => {
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
       urlChange(typeText + "/" + params.row.uuid);
+      window.history.pushState({}, "", typeText + "/" + params.row.uuid);
     }
   }
   
@@ -323,7 +306,7 @@ export const RenderSearchTable = (props) => {
     updateQueryParams(params, url, "keywords", keywords);
     updateQueryParams(params, url, "group_uuid", group_uuid, "All Components");
     updateQueryParams(params, url, "entity_type", entityType, "----");
-
+    console.debug('%c◉ params ', 'color:#00ff7b', params);
     if (!props.modecheck) {
       document.title = "HuBMAP Ingest Portal Search"
       window.history.pushState({}, "", url);
@@ -369,11 +352,15 @@ export const RenderSearchTable = (props) => {
       "lab_donor_id",
       "created_by_user_displayname",
       "lab_tissue_sample_id",
-      "entity_type",
       "specimen_type",
       "organ",
       "registered_doi",
     ];
+
+    // We'll  want to selectively hide some additional fields if we're not in Mixed View
+    if (results.colDef !== COLUMN_DEF_MIXED) {
+      hiddenFields.push("entity_type",)
+    }
 
     function buildColumnFilter(arr) {
       let obj = {};
@@ -509,7 +496,7 @@ export const RenderSearchTable = (props) => {
                 onChange={(e) => handleInputChange(e)}
                 disabled={props.restrictions && props.restrictions.entityType?true:false}>
                 <option value="---">---</option>
-                {entityTypeList.map((optgs, index) => {
+                {props.allTypes.map((optgs, index) => {
                   // console.debug('%c⊙', 'color:#00ff7b', optgs, index );
                   return (
                     <optgroup

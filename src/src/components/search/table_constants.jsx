@@ -216,16 +216,7 @@ export const COLUMN_DEF_EPICOLLECTIONS = [
 // MIXED TYPE COLUMNS
 export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
-  // {
-  //   field: "computed_lab_id_type",
-  //   headerName: "Lab ID",
-  //   width: 160,
-  //   //description: "This column has a value getter and is not sortable.",
-  //   sortable: false,
-  //   valueGetter: getLabId
-  // }, 
-  {
-    field: "computed_lab_id_type",
+  { field: "computed_lab_id_type",
     headerName: "Lab ID",
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
@@ -233,24 +224,21 @@ export const COLUMN_DEF_MIXED = [
     valueGetter: getLabId
   }, { field: 'display_subtype', headerName: 'Type', width: 200},
   { field: 'submission_id', headerName: 'Submission ID', width: 160 },
-  {
- field: "type",
+  { field: "type",
     headerName: "Type",
     width: 180,
     sortable: false,
     valueGetter: getTypeValue
   }, 
   { field: 'group_name', headerName: 'Group Name', width: 200},
-  {
- field: "statusAccess",
+  { field: "statusAccess",
     width: 180,
     headerName: "Status / Access Level",
     sortable: false,
     valueGetter: getStatusAccess,
     renderCell: renderStatusAccess
   }, 
-  {
- field: "uuid",
+  { field: "uuid",
     headerName: "Action",
     sortable: false,
     renderCell: (params: ValueFormatterParams) => (

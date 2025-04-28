@@ -115,11 +115,14 @@ export function search_api_filter_es_query_builder(
   // console.debug("%c⊙queryBits:", "color:#00ff7b", fields, from, size, colFields);
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
+  if(fields["keywords"]){console.log(fields["keywords"])}
+  
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {
     // if keywords contain a wildcard
     boolQuery = esb
       .queryStringQuery(fields["keywords"])
       .fields(ES_SEARCHABLE_WILDCARDS);
+      console.debug('%c◉ boolQuery ', 'color:#00ff7b', boolQuery);
   } else {
     boolQuery = esb.boolQuery();
     // if no field criteria is sent just default to a
@@ -140,6 +143,8 @@ export function search_api_filter_es_query_builder(
       } else if (fields["group_uuid"]) {
         // this'll be from the dropdown,
         // if its a collection, we wanna search the datasets of it, not it itself
+        // @TODO: We now just grab the Group assigned directly to it, so this can get nixed 
+        // with the Collection form upgrade 
         if (fields["entity_type"] === "Collection") {
           boolQuery.must(
             esb.matchQuery("datasets.group_uuid.keyword", fields["group_uuid"])
