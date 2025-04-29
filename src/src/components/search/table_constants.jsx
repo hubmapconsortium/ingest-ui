@@ -211,13 +211,14 @@ export const COLUMN_DEF_MIXED = [
     sortable: false,
     valueGetter: getLabId
   }, 
-  { field: 'submission_id', headerName: 'Submission ID', width: 160 },
+  { field: 'submission_id', headerName: 'Submission ID', width: 100 },
   { field: "type",
     headerName: "Type",
     width: 180,
     sortable: false,
     valueGetter: getTypeValue
   }, 
+  { field: 'entity_type', headerName: 'Entity Type', width: 200},
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: "statusAccess",
     width: 180,
