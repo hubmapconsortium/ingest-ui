@@ -2,7 +2,7 @@ import React,{useEffect,useState} from "react";
 import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
-import {ENTITY_TYPES,SAMPLE_CATEGORIES} from "../../constants";
+import {SAMPLE_CATEGORIES} from "../../constants";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -15,6 +15,7 @@ import TextField from '@mui/material/TextField';
 import {GridLoader} from "react-spinners";
 import {RenderError} from "../../utils/errorAlert";
 import {toTitleCase} from "../../utils/string_helper";
+import {combineTypeOptionsComplete} from "../ui/formParts";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
@@ -22,6 +23,7 @@ import {
   COLUMN_DEF_DATASET,
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
+  COLUMN_DEF_MIXED,
 } from "./table_constants";
 import {api_search2} from "../../service/search_api";
 
@@ -31,11 +33,11 @@ export const RenderSearchTable = (props) => {
 
   // TABLE & FILTER VALUES
   var [allGroups] = useState(props.allGroups ? props.allGroups : []);
-  var [entityTypeList] = useState(props.allTypes ? props.allTypes : []);
+  // var [allGroups] = useState(props.allGroups ? props.allGroups : []);
+  var [entityTypeList, setEntityTypeList] = useState(props.allTypes ? props.allTypes : []);
   var [formFilters, setFormFilters] = useState(props.searchFilters ? props.searchFilters : {});
   // var [searchFilters, setSearchFilters] = useState();
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
-  var [modeCheck, setModeCheck] = useState(props.modecheck ? props.modecheck : null);
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
 
@@ -49,7 +51,7 @@ export const RenderSearchTable = (props) => {
   //  LOADERS
   var [loading, setLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
-  var [filtersLoading, setFiltersLoading] = useState(true);
+  // var [filtersLoading, setFiltersLoading] = useState(false);
 
   // ERROR THINGS
   var [error, setError] = useState();
@@ -60,16 +62,22 @@ export const RenderSearchTable = (props) => {
   const urlChange = props.urlChange;
   // Cant reach many hooks like useLocation since we're wrapped in a class
   var queryParams = props.packagedQuery?props.packagedQuery : null
+  
+  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
 
   useEffect(() => {
     console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
     var formQueries = {};
-    if(modeCheck === "Source") {
+    if(props.modecheck === "Source") {
       // We dont want it to start with a search on Samples, 
       // No search till the user clicks, ensures Restrictions aren't 
       // overridden by initial loads/reloads
       // document.title = ("HuBMAP Ingest Portal "); 
     }else{
+      // If we're Modeless, we also want to ditch any restrictions
+      // and make sure, till we can revisit all this, that the Fresh search Starts Fresh
+      console.debug('%c◉ MODELESS ', 'color:#00ff7b', );
+      // setEntityTypeList(combineTypeOptionsComplete());
       document.title = ("HuBMAP Ingest Portal ");
       if(queryParams){
         var queryTitle = "HubMAP Ingest Portal Search: ";
@@ -99,7 +107,16 @@ export const RenderSearchTable = (props) => {
         }// setSearchFilters(searchQueries);
       }
     }
-  }, [queryParams,modeCheck]);
+
+    // If we're on the main home page, re-set the Dropdown Values
+    // Using modecheck causes re-renders/crashing, 
+    // I think because we're the child of a Class Component  
+    let url = new URL(window.location.href);
+    if(url.pathname === "/"){
+      console.debug('%c◉ HOMEPAGE ', 'color:#FFBF00');
+      setEntityTypeList(combineTypeOptionsComplete());
+    }
+  }, [queryParams,props.modecheck]);
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -108,7 +125,8 @@ export const RenderSearchTable = (props) => {
       COLUMN_DEF_COLLECTION,
       COLUMN_DEF_DATASET,
       COLUMN_DEF_UPLOADS,
-      COLUMN_DEF_DONOR
+      COLUMN_DEF_DONOR,
+      COLUMN_DEF_MIXED
     );
     const unique = [...new Set(fieldArray.map((item) => item.field))];
     return unique;
@@ -122,21 +140,31 @@ export const RenderSearchTable = (props) => {
     setTableLoading(true);
     console.debug("useEffect loadTable");
     console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilterParams );
+    // Lets just reset this dang thing then set again with proper filters later
+    setEntityTypeList(combineTypeOptionsComplete());
 
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
     // Let's make sure the casing is right on the entity based fields\
-    if ((searchFilterParams.entity_type && searchFilterParams.entity_type !== "----") || (restrictions && restrictions.entityType)) {
+    if (searchFilterParams.entity_type && searchFilterParams.entity_type !== "----") {
       // var entityType = searchFilterParams.entity_type;
-      var entityType = (restrictions && restrictions.entityType) ? restrictions.entityType : searchFilterParams.entity_type;
-      console.debug('%c◉ entityType ', 'color:#00ff7b', entityType);
-      delete searchFilterParams.entity_type;
-      if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
-        searchFilterParams.entity_type = toTitleCase(entityType);
-      } else if (SAMPLE_CATEGORIES.hasOwnProperty(entityType.toLowerCase())) {
-        searchFilterParams.sample_category = entityType.toLowerCase();
+      // console.debug('%c◉ entityType ', 'color:#00ff7b', entityType);
+      let entityTypes = { // @TODO: Find out why the imported ENTITY_TYPES is corrupted/truncated
+        donor: "Donor" ,
+        sample: "Sample",
+        dataset: "Dataset", 
+        upload: "Data Upload",
+        publication: "Publication",
+        collection: "Collection"
+      }
+     
+      if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
+        searchFilterParams.entity_type = toTitleCase(searchFilterParams.entity_type);
+      } else if (SAMPLE_CATEGORIES.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
+        searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
       } else {
-        searchFilterParams.organ = entityType.toUpperCase();
+        // Coughs on Restricted Source Selector for EPICollections
+        searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
       }
     }
 
@@ -144,7 +172,7 @@ export const RenderSearchTable = (props) => {
     // If we have restrictions, we still need to set the dropdowns accordingly
     // Before the user does anything
     if(restrictions && restrictions.entityType){
-      searchFilterParams.entityType = restrictions.entityType;
+      searchFilterParams.entity_type = toTitleCase(restrictions.entityType);
       setFormFilters((prevValues) => ({
         ...prevValues,
       entity_type: restrictions.entityType,}));
@@ -165,20 +193,33 @@ export const RenderSearchTable = (props) => {
           errorReporting(response.error)
         }
         console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
-        setTableLoading(false);
-        console.debug('%c⊙useEffect Search', 'color:rgb(0 140 255)', response.total, response.results );
+
+        console.debug('%c⊙useEffect Search', 'color:#008CFF', response.total, response.results );
         if (response.total > 0 && response.status === 200) {
+          
+          // console.debug('%c◉ searchFilterParams.entity_type ', 'color:#008CFF', searchFilterParams.entity_type);
+          let colDefs;
+          if(simpleColumns.includes(searchFilterParams.entity_type) ){
+            colDefs = columnDefType(searchFilterParams.entity_type);
+          }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
+            colDefs = COLUMN_DEF_MIXED
+          }else{
+            colDefs = COLUMN_DEF_SAMPLE
+          }
+          console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
           setResults({
             dataRows: response.results,
             rowCount: response.total,
-            colDef: columnDefType(response.results[0].entity_type),
+            colDef: colDefs,
           });
+          setTableLoading(false);
         } else if (response.total === 0) {
           setResults({
             dataRows: response.results,
             rowCount: response.total,
-            colDef: COLUMN_DEF_SAMPLE,
+            colDef: COLUMN_DEF_MIXED,
           });
+          setTableLoading(false);
         } else {
           var errStringMSG = "";
           var errString =response.results.data.error.root_cause[0].type +" | " +response.results.data.error.root_cause[0].reason;
@@ -187,6 +228,7 @@ export const RenderSearchTable = (props) => {
               : (errStringMSG = errString);
             setErrorState(true)
             setError(errStringMSG)
+            setTableLoading(false);
           }
       })
       .catch((error) => {
@@ -195,14 +237,7 @@ export const RenderSearchTable = (props) => {
         //props.reportError(error);
         console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
-  }, [page, pageSize, searchFilters]);
-
-  useEffect(() => {
-    console.debug("useEffect groups & types")
-    if( (allGroups && allGroups.length>0) && (entityTypeList && entityTypeList.length>0) ){
-      setFiltersLoading(false);
-    }
-  }, [allGroups,entityTypeList]);
+  }, [page, pageSize, searchFilters, restrictions]);
 
   function handlePageChange(pageInfo) {
     // console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
@@ -211,6 +246,7 @@ export const RenderSearchTable = (props) => {
   }
   
   function columnDefType(et) {
+    console.debug('%c◉ columnDefType ', 'color:#00ff7b', et );
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
     }
@@ -225,6 +261,9 @@ export const RenderSearchTable = (props) => {
     }
     if (et === "Collection") {
       return COLUMN_DEF_COLLECTION;
+    }
+    if (et === "Mixed") {
+      return COLUMN_DEF_MIXED;
     }
     return COLUMN_DEF_SAMPLE;
   }
@@ -244,11 +283,14 @@ export const RenderSearchTable = (props) => {
         }
         break;
       case "entity_type":
+        console.debug('%c◉ Entity Time ', 'color:#00ff7b', value);
         if (value !== "---") {
+          console.debug('%c◉ Setting Entity Type from formFilters ', 'color:#00ff7b', );
           setFormFilters((prevValues) => ({...prevValues,
             entity_type: value}));
-        } else {
-          setFormFilters((prevValues) => ({...prevValues,
+          } else {
+            console.debug('%c◉ Clearing Entity Type from formFilters ', 'color:#00ff7b', );
+            setFormFilters((prevValues) => ({...prevValues,
             entity_type: "",}));
         }
         break
@@ -336,6 +378,7 @@ export const RenderSearchTable = (props) => {
       // Here's where we sort out if the query's getting either:
       //  an entity type, sample category, or an organ
       // Doing this IN search now to avoid miscasting from URL
+      console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
       if (entityType && entityType !== "----") {
         console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
         params["entity_type"] = entityType;
@@ -353,7 +396,7 @@ export const RenderSearchTable = (props) => {
       }
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
-    console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
+    console.debug('%c⊙ searchFilters', 'color:#00ff7b', params);
     // We should apply restrictions here instead
     setSearchFilters(params);
   };
@@ -367,8 +410,8 @@ export const RenderSearchTable = (props) => {
     return (
       <div style={{ width: "100%", textAlign: "center"}}>
         {/* {renderFilterControls()} */}
-        {!filtersLoading && renderFilterControls()}
-        {filtersLoading && <GridLoader/>}
+        { renderFilterControls()}
+        {/* {filtersLoading && <GridLoader/>} */}
         {results.dataRows && results.dataRows.length > 0 && renderTable()}
         {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
           <div className="text-center">No record found.</div>)}
@@ -378,14 +421,19 @@ export const RenderSearchTable = (props) => {
 
   function renderTable() {
     var hiddenFields = [
-      "lab_donor_id",
       "created_by_user_displayname",
       "lab_tissue_sample_id",
-      "entity_type",
       "specimen_type",
       "organ",
       "registered_doi",
     ];
+
+    if (results.colDef !== COLUMN_DEF_MIXED) {
+      hiddenFields.push("entity_type",)
+    }    
+    if (results.colDef === COLUMN_DEF_MIXED && (!props.modecheck || props.modecheck !== "Source")) {
+      hiddenFields.push("uuid",)
+    }
 
     function buildColumnFilter(arr) {
       let obj = {};
