@@ -56,6 +56,8 @@ export const SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * s
 //   { other: "Other" }
 // ];
 
+// @TODO: Find out where these are getting WARPED by Search Filtering
+// See: Samples and EPICollections
 export const ENTITY_TYPES = { // Use this instead of Types
   donor: "Donor" ,
   sample: "Sample",
@@ -77,7 +79,6 @@ export const SAMPLE_CATEGORIES = { // Use this instead of Types
    section: "Section", 
    suspension: "Suspension",
 }
-
 
 // These ones show on the Create new Donor/Sample page
 export const TISSUE_TYPES = {
@@ -121,7 +122,7 @@ export const TISSUE_TYPES = {
     protein: "Protein",
     rna_total: "RNA, total",
     ran_poly_a_enriched: "RNA, poly-A enriched",
-    sequence_library:"Sequence Library"
+    sequence_library: "Sequence Library"
   },{
     other: "Other" }]
 };

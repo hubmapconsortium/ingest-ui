@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid';
 import Alert from "@mui/material/Alert";
 import Typography from '@mui/material/Typography';
 import {tsToDate} from "../../utils/string_helper";
+import {SAMPLE_CATEGORIES} from "../../constants";
 import HIPPA from "./HIPPA";
 import WarningIcon from '@mui/icons-material/Warning';
 import PersonIcon from '@mui/icons-material/Person';
@@ -131,3 +132,59 @@ export function FormCheckRedirect(uuid,entityType,form){
     );
   }
 }
+
+export function combineTypeOptionsComplete () {
+  // Removes the Whitelist / Blacklist stuff,
+  // mostly for use for resetting the main Search Page View
+
+  var combinedList = [];
+
+  // FIRST: Main Entity Types
+  combinedList.push({  // @TODO: Find out why Importing Warps this
+    donor: "Donor" ,
+    sample: "Sample",
+    dataset: "Dataset", 
+    upload: "Data Upload",
+    publication: "Publication",
+    collection: "Collection"});
+
+  // NEXT: Sample Categories
+  combinedList.push(SAMPLE_CATEGORIES);
+  // @TODO: Switch these to UBKG too?
+
+  // LAST: Organs
+  let organs = [];
+  let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
+  try {
+    organList.forEach((value, key) => {
+      organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key; // Gives it that Indent
+    });
+    combinedList.push(organs.sort());
+    console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList );
+    return combinedList;
+  } catch (error) {
+    console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
+    var errStringMSG = "";
+    typeof error.type === "string"
+      ? (errStringMSG = "Error on Organ Assembly")
+      : (errStringMSG = error);
+    console.debug('%c◉ ERROR  ', 'color:#ff005d', error);
+  }
+};
+
+export function handleSortOrgans(organList){
+  // console.debug('%c⊙', 'color:#00ff7b', "handleSortOrgans", organList );
+  let sortedDataProp = {};
+  let sortedDataArray = [];
+  var sortedMap = new Map();
+  for (let key in organList) {
+    let value = organList[key];
+    sortedDataProp[value] = key;
+    sortedDataArray.push(value);
+  }
+  sortedDataArray = sortedDataArray.sort();
+  for (const [index, element] of sortedDataArray.entries()) {
+    sortedMap.set(element, sortedDataProp[element]);
+  }
+  return sortedMap;
+};
