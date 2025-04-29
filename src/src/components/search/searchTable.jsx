@@ -22,6 +22,7 @@ import {
   COLUMN_DEF_DATASET,
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
+  COLUMN_DEF_MIXED,
 } from "./table_constants";
 import {api_search2} from "../../service/search_api";
 
@@ -60,6 +61,8 @@ export const RenderSearchTable = (props) => {
   const urlChange = props.urlChange;
   // Cant reach many hooks like useLocation since we're wrapped in a class
   var queryParams = props.packagedQuery?props.packagedQuery : null
+
+  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
 
   useEffect(() => {
     console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
@@ -108,7 +111,8 @@ export const RenderSearchTable = (props) => {
       COLUMN_DEF_COLLECTION,
       COLUMN_DEF_DATASET,
       COLUMN_DEF_UPLOADS,
-      COLUMN_DEF_DONOR
+      COLUMN_DEF_DONOR,
+      COLUMN_DEF_MIXED
     );
     const unique = [...new Set(fieldArray.map((item) => item.field))];
     return unique;
@@ -128,8 +132,8 @@ export const RenderSearchTable = (props) => {
     // Let's make sure the casing is right on the entity based fields\
     if ((searchFilterParams.entity_type && searchFilterParams.entity_type !== "----") || (restrictions && restrictions.entityType)) {
       // var entityType = searchFilterParams.entity_type;
-      var entityType = (restrictions && restrictions.entityType) ? restrictions.entityType : searchFilterParams.entity_type;
-      console.debug('%c◉ entityType ', 'color:#00ff7b', entityType);
+      let entityType = (restrictions && restrictions.entityType) ? restrictions.entityType : searchFilterParams.entity_type;
+      console.debug('%c◉ entityType ', 'color:#004CFF',searchFilterParams, entityType);
       delete searchFilterParams.entity_type;
       if (ENTITY_TYPES.hasOwnProperty(entityType.toLowerCase())) {
         searchFilterParams.entity_type = toTitleCase(entityType);
@@ -138,6 +142,7 @@ export const RenderSearchTable = (props) => {
       } else {
         searchFilterParams.organ = entityType.toUpperCase();
       }
+      console.debug('%c◉ searchFilterParams ', 'color:#004CFF', searchFilterParams);
     }
 
     // That searchFilters Update thing above is triggered on search button click,
@@ -166,18 +171,29 @@ export const RenderSearchTable = (props) => {
         }
         console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
         setTableLoading(false);
-        console.debug('%c⊙useEffect Search', 'color:rgb(0 140 255)', response.total, response.results );
+        console.debug('%c⊙useEffect Search', 'color:#008CFF', response.total, response.results );
         if (response.total > 0 && response.status === 200) {
+          
+          console.debug('%c◉ searchFilterParams.entity_type ', 'color:#008CFF', searchFilterParams.entity_type);
+          let colDefs;
+          if(simpleColumns.includes(searchFilterParams.entity_type) ){
+            colDefs = columnDefType(searchFilterParams.entity_type);
+          }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
+            colDefs = COLUMN_DEF_MIXED
+          }else{
+            colDefs = COLUMN_DEF_SAMPLE
+          }
+          console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
           setResults({
             dataRows: response.results,
             rowCount: response.total,
-            colDef: columnDefType(response.results[0].entity_type),
+            colDef: colDefs,
           });
         } else if (response.total === 0) {
           setResults({
             dataRows: response.results,
             rowCount: response.total,
-            colDef: COLUMN_DEF_SAMPLE,
+            colDef: COLUMN_DEF_MIXED,
           });
         } else {
           var errStringMSG = "";
@@ -195,7 +211,7 @@ export const RenderSearchTable = (props) => {
         //props.reportError(error);
         console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
-  }, [page, pageSize, searchFilters]);
+  }, [page, pageSize, searchFilters, restrictions]);
 
   useEffect(() => {
     console.debug("useEffect groups & types")
@@ -211,6 +227,7 @@ export const RenderSearchTable = (props) => {
   }
   
   function columnDefType(et) {
+    console.debug('%c◉ columnDefType ', 'color:#00ff7b', et );
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
     }
@@ -225,6 +242,9 @@ export const RenderSearchTable = (props) => {
     }
     if (et === "Collection") {
       return COLUMN_DEF_COLLECTION;
+    }
+    if (et === "Mixed") {
+      return COLUMN_DEF_MIXED;
     }
     return COLUMN_DEF_SAMPLE;
   }
@@ -244,11 +264,14 @@ export const RenderSearchTable = (props) => {
         }
         break;
       case "entity_type":
+        console.debug('%c◉ Entity Time ', 'color:#00ff7b', value);
         if (value !== "---") {
+          console.debug('%c◉ Setting Entity Type from formFilters ', 'color:#00ff7b', );
           setFormFilters((prevValues) => ({...prevValues,
             entity_type: value}));
-        } else {
-          setFormFilters((prevValues) => ({...prevValues,
+          } else {
+            console.debug('%c◉ Clearing Entity Type from formFilters ', 'color:#00ff7b', );
+            setFormFilters((prevValues) => ({...prevValues,
             entity_type: "",}));
         }
         break
@@ -336,6 +359,7 @@ export const RenderSearchTable = (props) => {
       // Here's where we sort out if the query's getting either:
       //  an entity type, sample category, or an organ
       // Doing this IN search now to avoid miscasting from URL
+      console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
       if (entityType && entityType !== "----") {
         console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
         params["entity_type"] = entityType;
@@ -353,7 +377,7 @@ export const RenderSearchTable = (props) => {
       }
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
-    console.debug('%c⊙ searchFilters', 'color:#00ff7b', searchFilters);
+    console.debug('%c⊙ searchFilters', 'color:#00ff7b', params);
     // We should apply restrictions here instead
     setSearchFilters(params);
   };
@@ -378,14 +402,19 @@ export const RenderSearchTable = (props) => {
 
   function renderTable() {
     var hiddenFields = [
-      "lab_donor_id",
       "created_by_user_displayname",
       "lab_tissue_sample_id",
-      "entity_type",
       "specimen_type",
       "organ",
       "registered_doi",
     ];
+
+    if (results.colDef !== COLUMN_DEF_MIXED) {
+      hiddenFields.push("entity_type",)
+    }    
+    if (results.colDef === COLUMN_DEF_MIXED && (!modeCheck || modeCheck !== "Source")) {
+      hiddenFields.push("uuid",)
+    }
 
     function buildColumnFilter(arr) {
       let obj = {};
