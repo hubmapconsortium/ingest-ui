@@ -15,6 +15,10 @@ import HIPPA from "./HIPPA";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Chip from '@mui/material/Chip';
 
+// import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
+// import {entity_api_get_entity} from "../../service/entity_api";
+// const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
+
 export const FormHeader = (props) => {
   let entityData = props.entityData;
   let permissions = props.permissions;
