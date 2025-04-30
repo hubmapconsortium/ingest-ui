@@ -2,10 +2,6 @@ import React from "react";
 import Grid from '@mui/material/Grid';
 import Alert from "@mui/material/Alert";
 import Typography from '@mui/material/Typography';
-<<<<<<< HEAD
-=======
-import {tsToDate} from "../../utils/string_helper";
->>>>>>> main
 import WarningIcon from '@mui/icons-material/Warning';
 import PersonIcon from '@mui/icons-material/Person';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
@@ -13,19 +9,11 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-<<<<<<< HEAD
 import {tsToDate} from "../../utils/string_helper";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import HIPPA from "./HIPPA";
-
-// import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
-// import {entity_api_get_entity} from "../../service/entity_api";
-// const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
-=======
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Chip from '@mui/material/Chip';
-import HIPPA from "./HIPPA";
->>>>>>> main
 
 export const FormHeader = (props) => {
   let entityData = props.entityData;
