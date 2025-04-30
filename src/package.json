@@ -1,6 +1,6 @@
 {
   "name": "ingest-ui",
-  "version": "2.6.26",
+  "version": "2.6.28",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -17,11 +17,12 @@
     "@mui/lab": "^5.0.0-alpha.120",
     "@mui/material": "^5.2.8",
     "@mui/x-data-grid": "^6.18.0",
-    "@mui/x-date-pickers": "^5.0.20",
+    "@mui/x-date-pickers": "^7.0.00",
     "@stefftek/tick.js": "^1.1.1",
     "axios": "^0.24.0",
     "axios-hooks": "^3.0.0",
     "bootstrap": "^5.2.0-beta1",
+    "dayjs": "^1.11.13",
     "dompurify": "^3.2.4",
     "elastic-builder": "^2.16.0",
     "formik": "^2.2.9",
