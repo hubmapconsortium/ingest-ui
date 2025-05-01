@@ -12,6 +12,8 @@ import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import {tsToDate} from "../../utils/string_helper";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import HIPPA from "./HIPPA";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Chip from '@mui/material/Chip';
 
 // import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 // import {entity_api_get_entity} from "../../service/entity_api";
