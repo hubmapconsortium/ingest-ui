@@ -61,34 +61,14 @@ function topHeader(entityData){
     return (
       <React.Fragment>
         <Grid item xs={12} className="" >  
-
-          {entityData.entity_type === "Upload" && (
-            <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)} HuBMAP {entityData.entity_type} {entityData.hubmap_id} </h3>   
-          )}
-          {/* {entityData.entity_type !== "Upload" && (
-            <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
-          )} */}
-          {entityData.entity_type !== "Upload" && (
-           <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}  {entityData.status ? statusBadge(entityData.status) : ""}  HuBMAP {entityData.entity_type} {entityData.hubmap_id}</h3>   
-            
-            // <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
-          )}
+          <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
         </Grid>
         <Grid item xs={6} className="" >
-         
-          {/* {entityData.entity_type !== "Upload" && (
-            <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography> 
-          )} */}
-          {entityData.status && (
-            <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
-          )}
-          {entityData.group_name && (
-            <Typography><strong>Group Name:</strong> {entityData.group_name} </Typography>             
-          )}
+          <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
           <Typography><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
-          {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
-            <Typography><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
-          )}
+            {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
+              <Typography><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+            )}
           <Typography><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
         </Grid>
       </React.Fragment>
