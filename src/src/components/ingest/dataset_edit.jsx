@@ -642,6 +642,7 @@ class DatasetEdit extends Component {
   }
 
   renderGroupAssignment = () => {
+    let allDisplayGroups = JSON.parse(localStorage.getItem("allGroups"));
       return (
         <Select
           fullWidth
@@ -651,12 +652,11 @@ class DatasetEdit extends Component {
           label="Assigned to Group Name"
           value={this.state.assigned_to_group_name}
           onChange={(event) => this.handleInputChange(event)}>
-
           <MenuItem value=""></MenuItem>
-          {this.props.allGroups.map((group, index) => {
+          {allDisplayGroups.map((group, index) => {
             return (
               <MenuItem key={index + 1} value={Object.values(group)[0]}>
-                {Object.values(group)[0]}
+                {group.displayname}
               </MenuItem>
             );
           })}
@@ -2255,7 +2255,7 @@ name, display_doi, doi
           </div>
 					
 					{/* Make this check admin when finished */}
-					{this.props.allGroups && this.state.has_admin_priv && (
+          {JSON.parse(localStorage.getItem("allGroups")) && this.state.has_admin_priv && (
             <div className="row mt-4  ">
               <div className='form-group col-6'> 
                 <label htmlFor='assigned_to_group_name'>Assigned to Group Name </label>
