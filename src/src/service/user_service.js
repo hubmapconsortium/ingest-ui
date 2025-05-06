@@ -1,7 +1,8 @@
 import { createContext } from 'react';
-import {ingest_api_all_groups} from './ingest_api'
+import {ingest_api_all_groups, ingest_api_user_admin} from './ingest_api'
 
 export const UserContext = createContext('Default Value');
+export const userInfo = JSON.parse(localStorage.getItem("info")); 
 
 export function getAllGroups(auth){
     try {
@@ -34,7 +35,6 @@ export function getAllSortedGrouops(auth){
     }
 }
 
-// @TODO: Possily move into groups service?
 export function sortGroupsByDisplay(obj) {
     var result = {
       TMC: [],
@@ -71,3 +71,14 @@ export function sortGroupsByDisplay(obj) {
     var sortedResultFlat = sortedResult.flat();
     return sortedResultFlat;
 };
+
+export function adminStatusValidation() {
+  return ingest_api_user_admin(userInfo.groups_token)
+    .then((results) => {
+      return results
+    })
+    .catch((err) => {
+      console.debug('%c⭗', 'color:#003BDF', "ingest_api_user_admin ERR", err );
+      return new Error(err)
+    })
+}
