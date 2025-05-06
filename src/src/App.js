@@ -28,7 +28,7 @@ import Forms from "./components/uuid/forms";
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
-import {sortGroupsByDisplay} from "./service/user_service";
+import {sortGroupsByDisplay,adminStatusValidation} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
@@ -71,19 +71,23 @@ export function App(props){
   // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
   
   var[userDev, setUserDev] = useState(true);
+  var[adminStatus, setAdminStatus] = useState(false);
   var[APIErr, setAPIErr] = useState(false);
-  
+
   var[isLoggingOut, setIsLoggingOut] = useState(false);
   var[isLoading, setIsLoading] = useState(true);
   var[bannerTitle,setBannerTitle] = useState();
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
+
   var[routingMessage] = useState({
     Datasets: ["Registering individual datasets is currently disabled.","/new/upload"],
   });
   window.onstorage = () => {
     console.log("onstorage Storage Event");
   };
+
+
 
   useEffect(() => {
     var loadCounter = 0;
@@ -152,6 +156,7 @@ export function App(props){
     // User Loading Bits Now
     try{
       if(localStorage.getItem("info")){ // Cant depend on this, might get wiped on a purge call?
+        // let info = JSON.parse(localStorage.getItem("info"));
         console.debug('%c◉ LocalStore Found ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")));
         // Validate our Token
         api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
@@ -181,6 +186,14 @@ export function App(props){
             }else if(!results.error){
               console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
               setAuthStatus(true);
+              adminStatusValidation()
+                .then((adminCheck) => {
+                  setAdminStatus(adminCheck);
+                })
+                .catch((err) => {
+                  console.debug('%c◉ setAdminStatus Error ', 'color:#ff005d', err);
+                })
+
               try{
                 if( (!localStorage.getItem('userGroups') || localStorage.getItem('userGroups') === undefined || localStorage.getItem('userGroups') === "Non-active login") && localStorage.getItem("info") ){
                   ingest_api_users_groups()
@@ -196,6 +209,7 @@ export function App(props){
                         setExpiredKey(true);
                         loadFailed(res);
                       }else if(res.status === 200){
+                        console.debug('%c◉ UserGroups from ingest_api_users_groups ', 'color:#b300ff', res.results);
                         localStorage.setItem("userGroups",JSON.stringify(res.results));
                       }else{
                         setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
@@ -238,7 +252,7 @@ export function App(props){
                 loadFailed(error)
               }
               loadCount()  // the All Groups step
-              
+
             }else{
               setExpiredKey(true);
             }
@@ -377,7 +391,7 @@ export function App(props){
 
   return(
     <React.Fragment>
-      <div className={"App env-"+process.env.REACT_APP_NODE_ENV}>
+      <div className={"App env-"+process.env.REACT_APP_NODE_ENV }>
         <Snackbar
           open={expiredKey}
           anchorOrigin={{vertical: 'top', horizontal: 'center'}}
@@ -408,7 +422,7 @@ export function App(props){
                 '& .MuiDrawer-paper': {
                   height: 150,
                   boxSizing: 'border-box'
-},
+                },
               }}
               variant="temporary"
               className="alert-danger"
@@ -497,7 +511,7 @@ export function App(props){
 
             {authStatus && !isLoading && !unregStatus &&(
               <HuBMAPContext.Provider value={{allGroups}}> 
-                <Paper className="px-5 py-4">
+                <Paper className={"px-5 py-4 admin-"+(adminStatus)}>
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
