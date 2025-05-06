@@ -53,6 +53,7 @@ export function sortGroupsByDisplay(obj) {
       if (["TMC", "RTI", "TTD", "DP", "TC", "MC", "EXT", "IEC"].includes(prefix[0])){
         result[prefix[0]].push({
           shortName: obj[key].shortname,
+          displayname: obj[key].displayname,
           uuid: obj[key].uuid,
         });
       }
