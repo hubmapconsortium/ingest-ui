@@ -14,7 +14,7 @@ import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
 export const COLUMN_DEF_DONOR = [
   	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 145 },
-  	{ field: 'lab_donor_id', headerName: 'Deidentified Name', width: 190, hidden: true},
+  	{ field: 'lab_donor_id', headerName: 'Lab ID', width: 190},
   	{ field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// { field: 'lab_donor_id', headerName: 'LABID', hide: true}
@@ -181,17 +181,7 @@ export const COLUMN_DEF_UPLOADS = [
     ),
   },
   { field: "group_name", headerName: "Group", width: 210 },
-//   field: "datasets.group_name",
-//    width: 200,
-//    headerName: "Groups",
-//    valueGetter: ({ row }) => {
-//      if (row.datasets) {
-//        return groupNames(row);
-//      }
-//    },
-//  },{
-  {
- field: "doi_url",
+  {field: "doi_url",
     headerName: "DOI",
     width: 400,
     renderCell: (params: ValueFormatterParams) => (
@@ -216,16 +206,14 @@ export const COLUMN_DEF_UPLOADS = [
 export const COLUMN_DEF_EPICOLLECTIONS = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
   { field: 'group_name', headerName: 'Group Name', width: 200},
-  {
- field: "statusAccess",
+  { field: "statusAccess",
     width: 180,
     headerName: "Status / Access Level",
     sortable: false,
     valueGetter: getStatusAccess,
     renderCell: renderStatusAccess
   }, 
-  {
- field: "uuid",
+  { field: "uuid",
     headerName: "Action",
     sortable: false,
     renderCell: (params: ValueFormatterParams) => (
@@ -244,33 +232,30 @@ export const COLUMN_DEF_EPICOLLECTIONS = [
 // MIXED TYPE COLUMNS
 export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
-  {
- field: "computed_lab_id_type",
-    headerName: "Lab ID",
+  { field: "computed_lab_id_type",
+    headerName: "Lab Name/ID",
     width: 160,
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
     valueGetter: getLabId
   }, 
-  { field: 'submission_id', headerName: 'Submission ID', width: 160 },
-  {
- field: "type",
+  { field: 'submission_id', headerName: 'Submission ID', width: 100 },
+  { field: "type",
     headerName: "Type",
     width: 180,
     sortable: false,
     valueGetter: getTypeValue
   }, 
+  { field: 'entity_type', headerName: 'Entity Type', width: 200},
   { field: 'group_name', headerName: 'Group Name', width: 200},
-  {
- field: "statusAccess",
+  { field: "statusAccess",
     width: 180,
     headerName: "Status / Access Level",
     sortable: false,
     valueGetter: getStatusAccess,
     renderCell: renderStatusAccess
   }, 
-  {
- field: "uuid",
+  { field: "uuid",
     headerName: "Action",
     sortable: false,
     renderCell: (params: ValueFormatterParams) => (
