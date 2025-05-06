@@ -699,8 +699,8 @@ export const UploadForm = (props) => {
                     value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}>
                       <option key={"0000"} value={""}></option>
                       {allGroups.map(group => (
-                        <option key={group.uuid} value={group.shortName}>
-                          {group.shortName}
+                        <option key={group.uuid} value={group.displayname}>
+                          {group.displayname}
                         </option>
                       ))}
                   </NativeSelect>
