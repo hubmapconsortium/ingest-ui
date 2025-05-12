@@ -425,9 +425,10 @@ export const UploadForm = (props) => {
             rowCount={compiledCollection.length}
             loading={!compiledCollection.length > 0 && uuid}
             sx={{
-              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px'},
+              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px',overflowY:'scroll!important',maxHeight:'350px'},
               background: "rgba(0, 0, 0, 0.04)",
-              cursor: "cell!important"
+              cursor: "cell!important",
+              
               }}
           />
         </div>
