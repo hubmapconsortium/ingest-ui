@@ -15,6 +15,7 @@ import {
 } from "./table_constants";
 import {ingest_api_allowable_edit_states,ingest_api_all_groups} from "../../service/ingest_api";
 import {entity_api_get_entity} from "../../service/entity_api";
+import {toTitleCase} from "../../utils/string_helper";
 import {RenderSearchTable} from "./searchTable";
 // Creation donor_form_components
 
@@ -343,52 +344,55 @@ class SearchComponent extends Component {
     // Simplified to handle replacement of Types with Categories
     var combinedList = [];
     // FIRST: Main Entity Types
-    // We're either going to use a whitelist, blacklist or all of em
-    var entityList = ENTITY_TYPES;
-    if (!this.props.blacklist && !this.props.whitelist) {
-      combinedList.push(entityList); // ALLoffem
+    if (this.props.whitelist) {
+      // Not in use at this time
+      // combinedList.push(entityList); // ALLoffem
     } else {
-      for (const [key, value] of Object.entries(entityList)) {
-        if (
-          // if we've got a Blacklist this IS on it, nix it from the entity types, OR
-          (this.props.blacklist &&
-            this.props.blacklist.includes(key.toLowerCase())) ||
-          // If we've got a whitelist and this is NOT on it, nix it from the entity types
-          (this.props.whitelist &&
-            !this.props.whitelist.includes(key.toLowerCase()))
-        ) {
-          delete entityList[key];
+      // FIRST: Entity Types
+      let filteredEntities = {};
+      for (const [key, value] of Object.entries(ENTITY_TYPES)) {
+        if (this.props.blacklist && !this.props.blacklist.includes(key)){
+          // if we've got a Blacklist this isnt there, add it to our list
+          filteredEntities[key] = value;
+        }else if(!this.props.blacklist){
+          // No blacklist? Just add it 
+          filteredEntities[key] = value;
         }
       }
-      combinedList.push(entityList);
-    }
+      console.debug('%c◉ filteredEntities ', 'color:#00ff7b', filteredEntities);
+      // If we have a blacklist, push the filtered version, otherwise full
+      combinedList.push(filteredEntities);
 
-    // NEXT: Sample Categories
-    combinedList.push(SAMPLE_CATEGORIES);
-    // @TODO: Switch these to UBKG too?
+      // NEXT: Sample Categories
+      combinedList.push(SAMPLE_CATEGORIES);
+      // @TODO: Switch these to UBKG too?
+      
+      // LAST: Organs
+      var organs = [];
+      var organList = this.state.organ_types;
+      try {
+        organList.forEach((value, key) => {
+          organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key;
+        });
+        combinedList.push(organs.sort());
+        // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList );
+        // And Wrap it up & send back
+        return combinedList;
+      } catch (error) {
+        console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
+        var errStringMSG = "";
+        typeof error.type === "string"
+          ? (errStringMSG = "Error on Organ Assembly")
+          : (errStringMSG = error);
+        this.setState({
+          errorState: true,
+          error: errStringMSG,
+        });
+      }
 
-    // LAST: Organs
-    var organs = [];
-    var organList = this.state.organ_types;
-    try {
-      organList.forEach((value, key) => {
-        organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key;
-      });
-      combinedList.push(organs.sort());
-      // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList );
-      return combinedList;
-    } catch (error) {
-      console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
-      var errStringMSG = "";
-      typeof error.type === "string"
-        ? (errStringMSG = "Error on Organ Assembly")
-        : (errStringMSG = error);
-      this.setState({
-        errorState: true,
-        error: errStringMSG,
-      });
     }
-  };
+  }
+
 
   handleSearchClick = () => {
     // Was deprecated, kept this to keep things from exploding I think
@@ -398,7 +402,7 @@ class SearchComponent extends Component {
 
   handleUrlChange = (targetPath) => {
     if ((!targetPath || targetPath === undefined || targetPath === "") &&
-      this.state.modecheck !== "Source"
+      this.props.modecheck !== "Source"
     ) {
       targetPath = "";
     }
@@ -534,6 +538,7 @@ class SearchComponent extends Component {
             <div>
               <RenderSearchTable 
                 // data={this.state.datarows} 
+                modecheck={this.props.modecheck}
                 packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
                 restrictions={this.props.restrictions}
                 allGroups={this.state.allGroups}
