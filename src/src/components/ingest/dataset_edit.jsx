@@ -655,7 +655,7 @@ class DatasetEdit extends Component {
           <MenuItem value=""></MenuItem>
           {allDisplayGroups.map((group, index) => {
             return (
-              <MenuItem key={index + 1} value={Object.values(group)[0]}>
+              <MenuItem key={index + 1} value={group.displayname}>
                 {group.displayname}
               </MenuItem>
             );
@@ -2196,8 +2196,6 @@ name, display_doi, doi
                       <small id='PHIHelpBlock' className='form-text text-muted'>
                         Will this data contain any human genomic sequence data? 
                       </small>
-                      
-                    
                     </div>
                   )}
                   {this.errorClass(this.state.formErrors.contains_human_genetic_sequences) && (
@@ -2205,7 +2203,6 @@ name, display_doi, doi
                           {this.state.formErrors.contains_human_genetic_sequences}
                         </Alert>
                     )}
-                
                 </div>
 
             </div>
@@ -2307,18 +2304,8 @@ name, display_doi, doi
             {this.state.has_admin_priv && (
                 <RevertFeature 
                   uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
-                  type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
-                />
+                  type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}/>
               )}
-              {/* {this.state.has_admin_priv &&(
-                <BlameFeature
-                  admin={this.state.has_admin_priv}
-                  group={this.props.editingDataset.assigned_to_group_name}
-                  task={this.props.editingDataset.ingest_task}
-                  uuid={this.props.editingDataset ? this.props.editingDataset.uuid : null}
-                  type={this.props.editingDataset ? this.props.editingDataset.entity_type : 'entity'}
-                />
-              )} */}
             </div>
             <div className="col-4"> 
               {this.renderButtons()}
