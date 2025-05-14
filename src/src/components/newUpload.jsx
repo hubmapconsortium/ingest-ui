@@ -425,9 +425,10 @@ export const UploadForm = (props) => {
             rowCount={compiledCollection.length}
             loading={!compiledCollection.length > 0 && uuid}
             sx={{
-              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px'},
+              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px',overflowY:'scroll!important',maxHeight:'350px'},
               background: "rgba(0, 0, 0, 0.04)",
-              cursor: "cell!important"
+              cursor: "cell!important",
+              
               }}
           />
         </div>
@@ -699,8 +700,8 @@ export const UploadForm = (props) => {
                     value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}>
                       <option key={"0000"} value={""}></option>
                       {allGroups.map(group => (
-                        <option key={group.uuid} value={group.shortName}>
-                          {group.shortName}
+                        <option key={group.uuid} value={group.displayname}>
+                          {group.displayname}
                         </option>
                       ))}
                   </NativeSelect>
