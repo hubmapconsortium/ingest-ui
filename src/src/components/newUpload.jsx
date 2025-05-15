@@ -17,6 +17,19 @@ import {
 import {RevertFeature} from "../utils/revertModal";
 import {COLUMN_DEF_DATASET_MINI} from './search/table_constants';
 
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import InfoIcon from '@mui/icons-material/Info';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import LoadingButton from "@mui/lab/LoadingButton";
@@ -41,6 +54,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export const UploadForm = (props) => {
+  const [open, setOpen] = useState(true);
+  const [SWAT, setSWAT] = useState(false);
+  const [MOSDAP, setMOSDAP] = useState(false);
+  let [submitProcessModal, setSubmitProcessModal] = useState(false);
   let[entityData, setEntityData] = useState({
     title: "",
     description: "",
@@ -199,6 +216,11 @@ export const UploadForm = (props) => {
     }
   }
 
+  function handleClose(){
+
+    setOpen(false);
+  };
+  
   function validateForm(){
     setValidationError(null);
     setValErrorMessages(null);
@@ -284,6 +306,7 @@ export const UploadForm = (props) => {
     
   }
 
+
   function submitForm(e,target){
     e.preventDefault()    
     setIsProcessing(true);
@@ -335,10 +358,20 @@ export const UploadForm = (props) => {
 
         case "Submit":
           console.debug('%c◉ Submit ', 'color:#00ff7b');
+          // We open that follow up Modal first now,
+          // then from THERE, continue submitting
+          setSubmitProcessModal(false);
+          // Lets grab the SWAT/MOSDAP checkboxes
+          cleanForm.prioritiy_project_list = [ SWAT?" ":null, MOSDAP?" ":null].filter(Boolean);
           ingest_api_submit_upload(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
                 var slackMessage = {"message": `Upload has been submitted (${process.env.REACT_APP_URL}/upload/${uuid})`}
+                if(cleanForm.prioritiy_project_list.length === 2){
+                  slackMessage.slackMessage += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} and ${cleanForm.prioritiy_project_list[1]} projects.`
+                }else if (cleanForm.prioritiy_project_list.length === 1){
+                  slackMessage.slackMessage += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} project.`
+                }
                 ingest_api_notify_slack(slackMessage)
                   .then((slackRes) => {
                     if (slackRes.status === 200) {
@@ -356,7 +389,7 @@ export const UploadForm = (props) => {
             })
             .catch((error) => {
               wrapUp(error)
-            });
+          });
           break;
          
         case "Validate":
@@ -394,6 +427,10 @@ export const UploadForm = (props) => {
     
   }
 
+  function submitModalOpen(){
+    setSubmitProcessModal(true);
+  }
+  
   function renderDatasets(){
     if(entityData.datasets && entityData.datasets.length > 0 ){
       // @TODO: use the Datatables used elsewhere across the site 
@@ -482,7 +519,7 @@ export const UploadForm = (props) => {
             <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
           )}
           {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status && (entityData.status.toLowerCase() === "valid")) &&(
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Submit")}>
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={() => submitModalOpen()}>
               Submit
             </LoadingButton>
           )}
@@ -505,7 +542,94 @@ export const UploadForm = (props) => {
 
     );
   }
-  
+
+  function renderSubmitDialog(){
+    return(
+      <Dialog
+        maxWidth='sm'
+        onClose={() => setSubmitProcessModal(false)}
+        aria-labelledby="customized-dialog-title"
+        open={submitProcessModal}>
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title"> 
+          Submitting Upload... 
+        </DialogTitle>
+          <IconButton
+            sx={(theme) => ({
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: theme.palette.grey[500],
+            })}
+            aria-label="close"
+            onClick={() => setSubmitProcessModal(false)}>
+            <CloseIcon />
+          </IconButton>
+        <DialogContent dividers>
+          <Typography gutterBottom>This data will be used for:</Typography>
+          <FormGroup>
+            <Box>
+              <FormControlLabel sx={{margin:"0px 10px"}} control={<Checkbox checked={SWAT} onChange={() => setSWAT(!SWAT)}/>} label="SWAT" />
+              <Tooltip
+                placement="top" 
+                title="SWAT Info TBD  "
+                slotProps={{
+                  popper: {
+                    modifiers: [{
+                      name: 'offset',
+                      options: {
+                        offset: [0, -20],
+                      }
+                    }],
+                  }
+                }}>
+                <Typography variant="caption" sx={{
+                  position: "relative",
+                  bottom: "5px",
+                  right: "5px",}} >
+                    <HelpOutlineOutlinedIcon style={{ fontSize: 16 }} />
+                </Typography>
+              </Tooltip>
+            </Box>
+            <Box>
+              <FormControlLabel sx={{margin:"0px 10px"}} control={<Checkbox checked={MOSDAP} onChange={() => setMOSDAP(!MOSDAP)}/>} label="MOSDAP" />
+              <Tooltip
+                placement="top" 
+                title="MOSDAP Info TBD"
+                slotProps={{
+                  popper: {
+                    modifiers: [{
+                      name: 'offset',
+                      options: {
+                        offset: [0, -20],
+                      }
+                    }],
+                  }
+                }}>
+                <Typography variant="caption" sx={{
+                  position: "relative",
+                  bottom: "5px",
+                  right: "5px",}} >
+                    <HelpOutlineOutlinedIcon style={{ fontSize: 16 }} />
+                </Typography>
+              </Tooltip>
+            </Box>
+
+          </FormGroup>
+        </DialogContent>
+        <DialogActions>
+          
+          <Button sx={{margin:"0 10px"}} onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button sx={{margin:"0 10px"}} variant="contained" onClick={(e)=>submitForm(e,"Submit")}>
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
@@ -745,7 +869,8 @@ export const UploadForm = (props) => {
 
           {buttonEngine()}
         </form>
-      
+
+        {renderSubmitDialog()}
         {pageErrors && (
           <Alert variant="filled" severity="error">
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
