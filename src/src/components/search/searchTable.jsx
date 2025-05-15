@@ -68,6 +68,7 @@ export const RenderSearchTable = (props) => {
   useEffect(() => {
     console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
     var formQueries = {};
+    console.debug('%c◉ props.modecheck ', 'color:#000;background:#00ff7b', props.modecheck);
     if(props.modecheck === "Source") {
       // We dont want it to start with a search on Samples, 
       // No search till the user clicks, ensures Restrictions aren't 
@@ -114,7 +115,7 @@ export const RenderSearchTable = (props) => {
     let url = new URL(window.location.href);
     if(url.pathname === "/"){
       console.debug('%c◉ HOMEPAGE ', 'color:#FFBF00');
-      setEntityTypeList(combineTypeOptionsComplete());
+      // setEntityTypeList(combineTypeOptionsComplete());
     }
   }, [queryParams,props.modecheck]);
 
@@ -141,7 +142,7 @@ export const RenderSearchTable = (props) => {
     console.debug("useEffect loadTable");
     console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilterParams );
     // Lets just reset this dang thing then set again with proper filters later
-    setEntityTypeList(combineTypeOptionsComplete());
+    // setEntityTypeList(combineTypeOptionsComplete());
 
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
