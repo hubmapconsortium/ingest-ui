@@ -518,7 +518,7 @@ export const UploadForm = (props) => {
           {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
             <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
           )}
-          {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status && (entityData.status.toLowerCase() === "valid")) &&(
+          {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status && (entityData.status.toLowerCase() !== "reorganized")) &&(
             <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={() => submitModalOpen()}>
               Submit
             </LoadingButton>
