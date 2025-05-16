@@ -434,7 +434,13 @@ export const UploadForm = (props) => {
   }
 
   function submitModalOpen(){
-    setSubmitProcessModal(true);
+    // We Need to Validate the whole thing first now I guess
+    
+    if(validateForm()){
+      setSubmitProcessModal(true);
+    }else{
+      // Dont bother
+    }
   }
   
   function renderDatasets(){
