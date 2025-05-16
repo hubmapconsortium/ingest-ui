@@ -624,7 +624,7 @@ export const UploadForm = (props) => {
         </DialogContent>
         <DialogActions>
           
-          <Button sx={{margin:"0 10px"}} onClick={handleClose}>
+          <Button sx={{margin:"0 10px"}} onClick={() => setSubmitProcessModal(false)}>
             Cancel
           </Button>
           <Button sx={{margin:"0 10px"}} variant="contained" onClick={(e)=>submitForm(e,"Submit")}>
