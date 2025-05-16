@@ -368,10 +368,11 @@ export const UploadForm = (props) => {
               if(response.status === 200){
                 var slackMessage = {"message": `Upload has been submitted (${process.env.REACT_APP_URL}/upload/${uuid})`}
                 if(cleanForm.prioritiy_project_list.length === 2){
-                  slackMessage.slackMessage += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} and ${cleanForm.prioritiy_project_list[1]} projects.`
+                  slackMessage.message += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} and ${cleanForm.prioritiy_project_list[1]} projects.`
                 }else if (cleanForm.prioritiy_project_list.length === 1){
-                  slackMessage.slackMessage += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} project.`
+                  slackMessage.message += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} project.`
                 }
+                console.debug('%c◉ slackMessage ', 'color:#00ff7b', slackMessage);
                 ingest_api_notify_slack(slackMessage)
                   .then((slackRes) => {
                     if (slackRes.status === 200) {
