@@ -55,8 +55,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export const UploadForm = (props) => {
   const [open, setOpen] = useState(true);
-  const [SWAT, setSWAT] = useState(false);
-  const [MOSDAP, setMOSDAP] = useState(false);
   let [submitProcessModal, setSubmitProcessModal] = useState(false);
   let[entityData, setEntityData] = useState({
     title: "",
@@ -99,6 +97,13 @@ export const UploadForm = (props) => {
   let[validationError, setValidationError] = useState(null);
   const{uuid} = useParams();
   dayjs.extend(isBetween);
+  const [SWAT, setSWAT] = useState(false);
+  const [MOSDAP, setMOSDAP] = useState(false);
+  let projectPriorityValues=[
+    {name:"SWAT (Integration Paper)",description:"For questions about the SWAT effort, email Ajay"},
+    {name:"MOSDAP",description:"For questions about the MOSDAP effort, email Gloria Pryhuber"},
+  ]
+
  
   // Organ Menu Build
   const organ_types = JSON.parse(localStorage.getItem("organs"));
@@ -362,7 +367,7 @@ export const UploadForm = (props) => {
           // then from THERE, continue submitting
           setSubmitProcessModal(false);
           // Lets grab the SWAT/MOSDAP checkboxes
-          cleanForm.prioritiy_project_list = [ SWAT?"SWAT":null, MOSDAP?"MOSDAP":null].filter(Boolean);
+          cleanForm.prioritiy_project_list = [ SWAT?"SWAT (Integration Paper)":null, MOSDAP?"MOSDAP":null].filter(Boolean);
           ingest_api_submit_upload(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
@@ -429,7 +434,13 @@ export const UploadForm = (props) => {
   }
 
   function submitModalOpen(){
-    setSubmitProcessModal(true);
+    // We Need to Validate the whole thing first now I guess
+    
+    if(validateForm()){
+      setSubmitProcessModal(true);
+    }else{
+      // Dont bother
+    }
   }
   
   function renderDatasets(){
@@ -569,10 +580,10 @@ export const UploadForm = (props) => {
           <Typography gutterBottom>This data will be used for:</Typography>
           <FormGroup>
             <Box>
-              <FormControlLabel sx={{margin:"0px 10px"}} control={<Checkbox checked={SWAT} onChange={() => setSWAT(!SWAT)}/>} label="SWAT" />
+              <FormControlLabel sx={{margin:"0px 10px"}} control={<Checkbox checked={SWAT} onChange={() => setSWAT(!SWAT)}/>} label={projectPriorityValues[0].name} />
               <Tooltip
                 placement="top" 
-                title="SWAT Info TBD  "
+                title={projectPriorityValues[0].description}
                 slotProps={{
                   popper: {
                     modifiers: [{
@@ -592,10 +603,10 @@ export const UploadForm = (props) => {
               </Tooltip>
             </Box>
             <Box>
-              <FormControlLabel sx={{margin:"0px 10px"}} control={<Checkbox checked={MOSDAP} onChange={() => setMOSDAP(!MOSDAP)}/>} label="MOSDAP" />
+              <FormControlLabel sx={{margin:"0px 10px"}} control={<Checkbox checked={MOSDAP} onChange={() => setMOSDAP(!MOSDAP)}/>} label={projectPriorityValues[1].name} />
               <Tooltip
                 placement="top" 
-                title="MOSDAP Info TBD"
+                title={projectPriorityValues[1].description}
                 slotProps={{
                   popper: {
                     modifiers: [{
@@ -619,7 +630,7 @@ export const UploadForm = (props) => {
         </DialogContent>
         <DialogActions>
           
-          <Button sx={{margin:"0 10px"}} onClick={handleClose}>
+          <Button sx={{margin:"0 10px"}} onClick={() => setSubmitProcessModal(false)}>
             Cancel
           </Button>
           <Button sx={{margin:"0 10px"}} variant="contained" onClick={(e)=>submitForm(e,"Submit")}>
