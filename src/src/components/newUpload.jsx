@@ -367,7 +367,7 @@ export const UploadForm = (props) => {
           // then from THERE, continue submitting
           setSubmitProcessModal(false);
           // Lets grab the SWAT/MOSDAP checkboxes
-          cleanForm.prioritiy_project_list = [ SWAT?"SWAT":null, MOSDAP?"MOSDAP":null].filter(Boolean);
+          cleanForm.prioritiy_project_list = [ SWAT?"SWAT (Integration Paper)":null, MOSDAP?"MOSDAP":null].filter(Boolean);
           ingest_api_submit_upload(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
