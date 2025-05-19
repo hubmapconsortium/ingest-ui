@@ -562,7 +562,7 @@ export const UploadForm = (props) => {
         onClose={() => setSubmitProcessModal(false)}
         aria-labelledby="customized-dialog-title"
         open={submitProcessModal}>
-        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title"> 
+        <DialogTitle sx={{ m: 0, p: 2, background: "#444a65", color: "White" }} id="customized-dialog-title"> 
           Submitting Upload... 
         </DialogTitle>
           <IconButton
