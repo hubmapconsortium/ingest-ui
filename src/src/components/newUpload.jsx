@@ -367,15 +367,15 @@ export const UploadForm = (props) => {
           // then from THERE, continue submitting
           setSubmitProcessModal(false);
           // Lets grab the SWAT/MOSDAP checkboxes
-          cleanForm.prioritiy_project_list = [ SWAT?"SWAT (Integration Paper)":null, MOSDAP?"MOSDAP":null].filter(Boolean);
+          cleanForm.priority_project_list = [ SWAT?"SWAT (Integration Paper)":null, MOSDAP?"MOSDAP":null].filter(Boolean);
           ingest_api_submit_upload(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
                 var slackMessage = {"message": `Upload has been submitted (${process.env.REACT_APP_URL}/upload/${uuid})`}
-                if(cleanForm.prioritiy_project_list.length === 2){
-                  slackMessage.message += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} and ${cleanForm.prioritiy_project_list[1]} projects.`
-                }else if (cleanForm.prioritiy_project_list.length === 1){
-                  slackMessage.message += `\nThis data will be used for the ${cleanForm.prioritiy_project_list[0]} project.`
+                if(cleanForm.priority_project_list.length === 2){
+                  slackMessage.message += `\nThis data will be used for the ${cleanForm.priority_project_list[0]} and ${cleanForm.priority_project_list[1]} projects.`
+                }else if (cleanForm.priority_project_list.length === 1){
+                  slackMessage.message += `\nThis data will be used for the ${cleanForm.priority_project_list[0]} project.`
                 }
                 console.debug('%c◉ slackMessage ', 'color:#00ff7b', slackMessage);
                 ingest_api_notify_slack(slackMessage)
@@ -562,7 +562,7 @@ export const UploadForm = (props) => {
         onClose={() => setSubmitProcessModal(false)}
         aria-labelledby="customized-dialog-title"
         open={submitProcessModal}>
-        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title"> 
+        <DialogTitle sx={{ m: 0, p: 2, background: "#444a65", color: "White" }} id="customized-dialog-title"> 
           Submitting Upload... 
         </DialogTitle>
           <IconButton
