@@ -458,7 +458,7 @@ export function ingest_api_submit_upload(uuid, data, auth) {
   return axios 
      .put(url, data, options)
       .then(res => {
-          let results = res.data;
+        let results = res.data;
         return {status:res.status, results:results}
       })
       .catch(error => {
