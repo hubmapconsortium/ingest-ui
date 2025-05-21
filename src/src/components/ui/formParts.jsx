@@ -55,8 +55,15 @@ function iconSelection(entity_type){
   }
 }
 
+function buildPriorityProjectList(list){
+  if(list.length>1){
+    return list.join(",");
+  }else{
+    return list[0]
+  }
+}	
+
 function topHeader(entityData){
-  
   if(entityData[0] !== "new"){
     return (
       <React.Fragment>
@@ -67,6 +74,9 @@ function topHeader(entityData){
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
           {entityData.status && (
             <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
+          )}
+          {entityData.priority_project_list	 && (
+            <Typography><strong>Project Priority:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
           )}
           <Typography><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
           {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
