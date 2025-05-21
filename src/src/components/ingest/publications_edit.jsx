@@ -188,8 +188,7 @@ class PublicationEdit extends Component {
     dataset_uuids:[],
     dataset_uuids_string:"",
     sourceBulkError:"",
-    
-    
+    sourceBulkWarning:"",    
   };
 
   updateStateDataTypeInfo() {
@@ -568,10 +567,17 @@ class PublicationEdit extends Component {
     var { id, value, name } = e.target;
     var checkName = (name==="publication_status") ? name : id;
     if (name==="dataset_uuids_string"){
-      this.setState({
-        dataset_uuids_string: value,
-        dataset_uuids: value.split(",").map((item) => item.trim())
-      })
+      let cleanVal = [...new Set(value.split(",").map((item) => item.trim()))];
+      cleanVal = removeEmptyValues(cleanVal);
+      cleanVal = cleanVal.filter(val => val && val.trim && val.trim() !== "");
+      console.debug('%c◉ cleanVal ', 'color:#00ff7b', cleanVal);
+      if(cleanVal.length>0){
+        this.setState({
+          dataset_uuids_string: value,
+          dataset_uuids: value.split(",").map((item) => item.trim())
+        })
+      }
+      
     }else if(name==="groups"){
       this.setState(prev => ({
         selected_group: value,
@@ -616,29 +622,30 @@ class PublicationEdit extends Component {
         formErrors: { ...prevState.formErrors, ['source_uuid_list']:"" }, 
         sourceBulkError:"",
       }));
-      // If we're closing the interface and have values IN the interface, lets commit them to the table
-      // clear out what we do have to start rebuild
-      this.setState({
-        source_uuid_list:[], // Defines Rows For Table, not just UUID list
-      },() => {
-        // We need to make sure these new IDs get Row Info, 
-        // that they all do, really
-        let updatedUUIDList = this.state.dataset_uuids_string.split(",")
-        let uniqueUUIDListUpdate = [...new Set(updatedUUIDList)];
-        console.debug('%c◉ updatedUUIDList ', 'color:#00ff7b', updatedUUIDList);
+        // Ok, we want to Save what's Stored for data in the Table
+        let datasetTableRows = this.state.source_uuid_list;
+        console.log()
+        
+        // Clear out warnings
+        this.setState({
+          sourceBulkWarning: ""
+        })
+        
+        let originalUUIDList = this.state.source_uuid_list.map(dataset => dataset.uuid);
+        let uniqueUUIDListUpdate = [...new Set(this.state.dataset_uuids_string.split(", "))];
+        let repeatList = []
 
         uniqueUUIDListUpdate.forEach((dataset) => {
-          console.debug('%c◉ dataset ', 'color:#2158FF', dataset);
-          console.debug('%c◉ inclkusdes: ', 'color:#2158FF', this.state.dataset_uuids.includes(dataset));
-
-          entity_api_get_entity(dataset)
+          if(!originalUUIDList.includes(dataset) && dataset.length >0 ){
+            console.log("DATASET "+dataset+" NOT Included");
+            entity_api_get_entity(dataset)
             .then((response) => {
               console.debug('%c◉ ⚠️ Response ', 'background-color:#00ff7b', response);
               if(response.results){
                 this.setState({
                   hideUUIDList: false,
                   source_uuid_list: [...this.state.source_uuid_list, response.results],
-                  dataset_uuids: [...this.state.dataset_uuids, response.results.uuid],
+                  dataset_uuids: [...this.state.dataset_uuids, response.results.uuid.trim()],
                 })
               }else{
                 if(response.data && response.data.error ){
@@ -658,10 +665,24 @@ class PublicationEdit extends Component {
               //consoledebug("UUIDCheck",error);
               this.props.reportError(error);
             })
-
+          }else{
+            console.log("DATASET "+dataset+" IS ALREADY Included");
+            repeatList.push(dataset)
+            this.setState({
+              sourceBulkWarning: "The Following Datasets are already Included: "+repeatList.join(", ")
+            })
+          }
         });
 
-      })
+        // If Some are in the table and not in the Bulk input, nix em
+        // uniqueUUIDListUpdate.forEach((dataset)
+        originalUUIDList.forEach((dataset) => {
+          if(!uniqueUUIDListUpdate.includes(dataset)){
+            this.sourceRemover({uuid:dataset});
+          }
+        })
+
+      // })
     }
   }
 
@@ -854,6 +875,14 @@ class PublicationEdit extends Component {
                 <Alert severity="error" className="mb-2" >
                   <AlertTitle>Source Selection Error:</AlertTitle>
                   {this.state.sourceBulkError? this.state.sourceBulkError: ""} 
+                </Alert>
+              </Collapse>
+              <Collapse
+                in={this.state.sourceBulkWarning}
+                orientation="vertical">
+                <Alert severity="warning" className="mb-2" >
+                  <AlertTitle>Source Selection Warning:</AlertTitle>
+                  {(this.state.sourceBulkWarning && this.state.sourceBulkWarning.length > 0)? this.state.sourceBulkWarning.split('\n').map(warn => <p>{warn}</p>): ""} 
                 </Alert>
               </Collapse>
             </Box>
