@@ -57,7 +57,7 @@ function iconSelection(entity_type){
 
 function buildPriorityProjectList(list){
   if(list.length>1){
-    return list.join(",");
+    return list.join(", ");
   }else{
     return list[0]
   }
@@ -76,13 +76,13 @@ function topHeader(entityData){
             <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
           )}
           {entityData.priority_project_list	 && (
-            <Typography><strong>Project Priority:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
+            <Typography variant="caption" sx={{display:"inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
           )}
-          <Typography><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+          <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
           {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
-            <Typography><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+            <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
           )}
-          <Typography><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
+          <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
         </Grid>
       </React.Fragment>
     )
