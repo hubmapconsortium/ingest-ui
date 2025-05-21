@@ -1,75 +1,73 @@
 import React,{Component} from "react";
-import Paper from "@material-ui/core/Paper";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import Button from "@mui/material/Button";
-import LoadingButton from '@mui/lab/LoadingButton';
-import Collapse from '@mui/material/Collapse';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import TextField from '@mui/material/TextField';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormLabel from '@mui/material/FormLabel';
-
-import Grid from "@mui/material/Grid";
-import {GridLoader} from "react-spinners";
-import Skeleton from '@mui/material/Skeleton';
-
-import "../../App.css";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
+  faExternalLinkAlt,faPenToSquare,
+  faPlus,
   faQuestionCircle,
   faSpinner,
   faTrash,
-  faPlus,
   faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Alert from "@mui/material/Alert";
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Collapse from '@mui/material/Collapse';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormLabel from '@mui/material/FormLabel';
+import IconButton from '@mui/material/IconButton';
+import Paper from "@mui/material/Paper";
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import Select from "@mui/material/Select";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TextField from '@mui/material/TextField';
 import ReactTooltip from "react-tooltip";
-//import IDSearchModal from "../uuid/tissue_form_components/idSearchModal";
-//import CreateCollectionModal from "./createCollectionModal";
-import HIPPA from "../ui/HIPPA.jsx";
 
-import {faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
-import Modal from "../uuid/modal";
-import GroupModal from "../uuid/groupModal";
-import SearchComponent from "../search/SearchComponent";
+import "../../App.css";
 import {
-  ingest_api_create_publication,
-  ingest_api_allowable_edit_states,
-  ingest_api_dataset_submit,
-  ingest_api_users_groups,
-  ingest_api_allowable_edit_states_statusless,
-  ingest_api_notify_slack,
-} from "../../service/ingest_api";
-import {
-  entity_api_update_entity,
-  entity_api_get_globus_url,
   entity_api_create_entity,
   entity_api_get_entity,
+  entity_api_get_globus_url,
+  entity_api_update_entity,
 } from "../../service/entity_api";
-//import { withRouter } from 'react-router-dom';
-// import {ubkg_api_get_assay_type_set} from "../../service/ubkg_api";
+import {
+  ingest_api_allowable_edit_states,
+  ingest_api_allowable_edit_states_statusless,
+  ingest_api_create_publication,
+  ingest_api_dataset_submit,
+  ingest_api_notify_slack,
+  ingest_api_users_groups,
+} from "../../service/ingest_api";
+import {VersionNavigation} from "../../utils/ui_elements";
+import SearchComponent from "../search/SearchComponent";
+import HIPPA from "../ui/HIPPA.jsx";
+import GroupModal from "../uuid/groupModal";
+import Modal from "../uuid/modal";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
-import {generateDisplaySubtype} from "../../utils/display_subtypes";
 import {removeEmptyValues} from "../../utils/constants_helper";
+import {generateDisplaySubtype} from "../../utils/display_subtypes";
 import {humanize} from "../../utils/string_helper";
 
-import {VersionNavigation} from "../../utils/ui_elements";
-import {Alert,AlertTitle} from "@material-ui/lab";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-
-import Box from "@material-ui/core/Box";
-
-import Select from "@material-ui/core/Select";
+import {styled} from "@mui/material/styles";
+const StyledTextField = styled(TextField)`
+  textarea {
+    resize: both;
+  }
+`;
 
 // function Alert(props) {
 //   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -91,16 +89,13 @@ class PublicationEdit extends Component {
     source_uuid_list: [],
     source_uuid_type: "",
     source_uuid: undefined,
-    source_uuids: [],
     status: "NEW",
     upload: [],
     writeable: true, 
     nextHubIDs:[],
     previousHubIDs:[],
 
-    editingPublication: this.props.newForm ? {
-      publication_status:undefined,
-    } : this.props.editingPublication,
+    editingPublication: this.props.newForm ? {publication_status:undefined} : this.props.editingPublication,
 
     // User Privs & Info
     groups: [],
@@ -188,6 +183,13 @@ class PublicationEdit extends Component {
       publication_url: "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
       publication_status: "if the publication has been published yet or not",
     },
+    hideUUIDList:true,
+    loadUUIDList:true,
+    dataset_uuids:[],
+    dataset_uuids_string:"",
+    sourceBulkError:"",
+    
+    
   };
 
   updateStateDataTypeInfo() {
@@ -239,7 +241,23 @@ class PublicationEdit extends Component {
 
 
     if (this.props.editingPublication) {
-
+      
+      // Populate the UUID ONLY source list
+      let entity = this.props.editingPublication
+      let uuidList = []
+      if(entity.direct_ancestors){
+        for (let i = 0; i < entity.direct_ancestors.length; i++) {
+          if (entity.direct_ancestors[i].hasOwnProperty("uuid")) {
+            console.debug('%c◉ entity.direct_ancestors[i].uuid ', 'color:#00ff7b', entity.direct_ancestors[i].uuid);
+            uuidList.push(entity.direct_ancestors[i].uuid)
+          }
+        }
+        this.setState({
+          dataset_uuids: uuidList,
+          dataset_uuids_string: uuidList.join(", ")
+        });
+      }
+      
       if(!this.props.editingPublication.previous_revision_uuids){
         this.setState({loadingPreviousVersions:false});
       }
@@ -308,12 +326,6 @@ class PublicationEdit extends Component {
 
     // Sets up the Entity's info  if we're not new here
     if (this.props.editingPublication && !this.props.newForm) {
-      try {
-        // use only the first direct ancestor
-        this.setState({
-          source_uuids: this.props.editingPublication.direct_ancestors,
-        });
-      } catch { }
 
       if (this.props.editingPublication === "") {
         savedGeneticsStatus = false;
@@ -555,7 +567,12 @@ class PublicationEdit extends Component {
   handleInputChange = (e) => {
     var { id, value, name } = e.target;
     var checkName = (name==="publication_status") ? name : id;
-    if(name==="groups"){
+    if (name==="dataset_uuids_string"){
+      this.setState({
+        dataset_uuids_string: value,
+        dataset_uuids: value.split(",").map((item) => item.trim())
+      })
+    }else if(name==="groups"){
       this.setState(prev => ({
         selected_group: value,
         editingPublication: {
@@ -578,9 +595,75 @@ class PublicationEdit extends Component {
       }
     }
    
-    
-    
   };
+
+  handleInputUUIDs = (e) => {
+    e.preventDefault();
+    if(e.target.innerText && e.target.innerText === "BULK"){
+      this.setState({
+        // Lets make sure the field is freshest BEFORE opening it up
+        dataset_uuids_string: this.state.dataset_uuids.join(", ")
+      },() => {
+        this.setState({
+           hideUUIDList: false,
+        })
+      })
+    } 
+
+    if (e.target.innerText && e.target.innerText === "ADD"){
+      // Lets clear out the previous errors first
+      this.setState(prevState => ({
+        formErrors: { ...prevState.formErrors, ['source_uuid_list']:"" }, 
+        sourceBulkError:"",
+      }));
+      // If we're closing the interface and have values IN the interface, lets commit them to the table
+      // clear out what we do have to start rebuild
+      this.setState({
+        source_uuid_list:[], // Defines Rows For Table, not just UUID list
+      },() => {
+        // We need to make sure these new IDs get Row Info, 
+        // that they all do, really
+        let updatedUUIDList = this.state.dataset_uuids_string.split(",")
+        let uniqueUUIDListUpdate = [...new Set(updatedUUIDList)];
+        console.debug('%c◉ updatedUUIDList ', 'color:#00ff7b', updatedUUIDList);
+
+        uniqueUUIDListUpdate.forEach((dataset) => {
+          console.debug('%c◉ dataset ', 'color:#2158FF', dataset);
+          console.debug('%c◉ inclkusdes: ', 'color:#2158FF', this.state.dataset_uuids.includes(dataset));
+
+          entity_api_get_entity(dataset)
+            .then((response) => {
+              console.debug('%c◉ ⚠️ Response ', 'background-color:#00ff7b', response);
+              if(response.results){
+                this.setState({
+                  hideUUIDList: false,
+                  source_uuid_list: [...this.state.source_uuid_list, response.results],
+                  dataset_uuids: [...this.state.dataset_uuids, response.results.uuid],
+                })
+              }else{
+                if(response.data && response.data.error ){
+                  console.debug('%c◉ response.data.error ', 'color:#ff005d', response.data.error);
+                  this.setState(prevState => ({
+                    formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" }, 
+                    sourceBulkError: response.data.error,
+                  }));
+                }else{
+                  this.props.reportError(response);
+                }
+              
+              }
+            })
+            .catch((error) => {
+              console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+              //consoledebug("UUIDCheck",error);
+              this.props.reportError(error);
+            })
+
+        });
+
+      })
+    }
+  }
 
   handleInputFocus = (e) => {
     const { name, value } = e.target;
@@ -623,13 +706,14 @@ class PublicationEdit extends Component {
   // this is used to handle the row selection from the SOURCE ID search (idSearchModal)
   handleSelectClick = (selection) => {
     if (this.state.selectedSource !== selection.row.uuid) {
-      this.setState(
-        {
+      this.setState({
           selectedSource: selection.row.uuid,
-        },
-        () => {
+        },() => {
           var slist = this.state.source_uuid_list;
-          slist.push(selection.row);   
+          slist.push(selection.row);
+          let dlist = this.state.dataset_uuids;
+          dlist.push(selection.row.uuid);
+
           this.setState((prevState) => ({
             source_uuid: selection.row.hubmap_id,
             source_uuid_list: slist,
@@ -638,6 +722,9 @@ class PublicationEdit extends Component {
             LookUpShow: false,
             validationStatus:  { ...prevState.validationStatus, ['source_uuid_list']: "" },
             formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },  
+            dataset_uuids: dlist,
+            dataset_uuids_string: dlist.join(", ")
+
           }));
           this.hideLookUpModal();
         }
@@ -688,7 +775,10 @@ class PublicationEdit extends Component {
           </ReactTooltip>
 
           <TableContainer
-            // className={this.errorClass(this.state.formErrors.source_uuid_list)}
+            // className={this.state.formErrors.source_uuid_list && this.state.formErrors.source_uuid_list.length > 0 ? "border border-danger" : ""}
+            sx={
+              this.state.formErrors.source_uuid_list ?  {border : "1px solid red",} : {}
+            }
             component={Paper}
             style={{ maxHeight: 450 }}>
             <Table
@@ -701,9 +791,11 @@ class PublicationEdit extends Component {
                   <TableCell component="th">Subtype</TableCell>
                   <TableCell component="th">Group Name</TableCell>
                   <TableCell component="th">Status</TableCell>
-                  <TableCell component="th" align="right">
-                    Action
-                  </TableCell>
+                  {this.state.writeable && (
+                    <TableCell component="th" align="right">
+                      Action
+                    </TableCell>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -716,7 +808,7 @@ class PublicationEdit extends Component {
                       {row.hubmap_id}
                     </TableCell>
                     <TableCell className="clicky-cell" scope="row">
-                      {row.display_subtype}
+                      {row.dataset_type ? row.dataset_type : row.display_subtype}
                     </TableCell>
                     <TableCell className="clicky-cell" scope="row">
                       {row.group_name}
@@ -733,31 +825,112 @@ class PublicationEdit extends Component {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell
-                      className="clicky-cell"
-                      align="right"
-                      scope="row">
-                      {this.state.writeable && (
-                        <React.Fragment>
-                          <FontAwesomeIcon
-                            className="inline-icon interaction-icon "
-                            icon={faTrash}
-                            color="red"
-                            onClick={() => this.sourceRemover(row, index)}
-                          />
-                        </React.Fragment>
-                      )}
-                      {!this.state.writeable && (
-                        <small className="text-muted">N/A</small>
-                      )}
-                    </TableCell>
+                    {this.state.writeable && (
+                      <TableCell
+                        className="clicky-cell"
+                        align="right"
+                        scope="row">
+                          <React.Fragment>
+                            <FontAwesomeIcon
+                              className="inline-icon interaction-icon "
+                              icon={faTrash}
+                              color="red"
+                              onClick={() => this.sourceRemover(row, index)}
+                            />
+                          </React.Fragment>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
+          
+          {this.state.writeable && (<>
+            <Box className="w-100" width="100%">
+              <Collapse
+                in={this.state.sourceBulkError}
+                orientation="vertical">
+                <Alert severity="error" className="mb-2" >
+                  <AlertTitle>Source Selection Error:</AlertTitle>
+                  {this.state.sourceBulkError? this.state.sourceBulkError: ""} 
+                </Alert>
+              </Collapse>
+            </Box>
+            <Box className="mt-2 w-100" width="100%" display="flex">
+              <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row">
+                <Button
+                    variant="contained"
+                    type="button"
+                    size="small"
+                    className="btn btn-neutral"
+                    onClick={() => this.handleLookUpClick()}>
+                    Add{" "}
+                    {this.state.dataset_uuids &&
+                      this.state.dataset_uuids.length >= 1 &&
+                      "Another"}{" "}
+                    Source
+                    <FontAwesomeIcon
+                      className="fa button-icon m-2"
+                      icon={faPlus}
+                    />
+                  </Button>
+                <Button
+                  variant="text"
+                  type='link'
+                  size="small"
+                  className='mx-2'
+                  onClick={(event) => this.handleInputUUIDs(event)}>
+                  {this.state.hideUUIDList && (<>Bulk</>)}
+                  {!this.state.hideUUIDList && (<>Add</>)}
+                  <FontAwesomeIcon className='fa button-icon m-2' icon={faPenToSquare}/>
+                </Button>
+              </Box>
+              <Collapse
+                in={!this.state.hideUUIDList}
+                orientation="horizontal"
+                sx={{
+                  overflow: 'hidden',
+                  display: 'inline-box',
+                }}>
+                  <FormControl
+                    sx={{
+                      verticalAlign: 'bottom',
+                      minWidth: "400px",
+                      overflow: 'hidden', 
+                    }}>
+                    <StyledTextField
+                      name="dataset_uuids_string"
+                      id="dataset_uuids_string"
+                      error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
+                      multiline
+                      rows={2}
+                      inputProps={{ 'aria-label': 'description' }}
+                      placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
+                      variant="standard"
+                      size="small"
+                      fullWidth={true}
+                      onChange={(event) => this.handleInputChange(event)}
+                      value={this.state.dataset_uuids_string}
+                      sx={{
+                        marginTop: '10px',
+                        width: '100%',
+                        verticalAlign: 'bottom',
+                      }}/>
+                  </FormControl>
+              </Collapse>
 
-          {this.state.writeable && (
+              {!this.state.hideUUIDList && (
+                <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
+                  <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => this.setState({hideUUIDList:true})}><CancelPresentationIcon/></IconButton>
+                </Box>
+              )}
+          
+            </Box>
+           
+          </>)}
+
+          {/* {this.state.writeable && (
             <React.Fragment>
               <Box className="mt-2 w-100" width="100%" display="flex">
                 <Box p={1} className="m-0  text-right" flexShrink={0}>
@@ -768,8 +941,8 @@ class PublicationEdit extends Component {
                     className="btn btn-neutral"
                     onClick={() => this.handleLookUpClick()}>
                     Add{" "}
-                    {this.state.source_uuids &&
-                      this.state.source_uuids.length >= 1 &&
+                    {this.state.dataset_uuids &&
+                      this.state.dataset_uuids.length >= 1 &&
                       "Another"}{" "}
                     Source
                     <FontAwesomeIcon
@@ -778,25 +951,16 @@ class PublicationEdit extends Component {
                     />
                   </Button>
                 </Box>
-
                 <Box p={1} width="100%">
                   {this.state.validationStatus.source_uuid_list && this.state.validationStatus.source_uuid_list.length>0  && (
                     <Alert severity="error" width="100% ">
                       Invalid Source: At least one source must be added.
                     </Alert>
                   )}
-                  {/* {this.errorClass(this.state.formErrors.source_uuid_list) && (
-                    <Alert severity="error" width="100% ">
-                      {this.state.formErrors.source_uuid_list}{" "}
-                      {this.state.formErrors.source_uuid}
-                    </Alert>
-                  )} */}
                 </Box>
-
-                {/*  */}
               </Box>
             </React.Fragment>
-          )}
+          )} */}
         </div>
       );
     } else if (this.state.writeable && this.state.editingPublication) {
@@ -928,22 +1092,32 @@ class PublicationEdit extends Component {
 
   handleSubmit = (submitIntention) => {
     
+  console.log("!!!CURR FRM ERR", this.state.formErrors);
+
     this.setState({ 
       submitting: true,
       buttonSpinnerTarget: submitIntention.toLowerCase(), 
     });
 
     this.validateForm().then((isValid) => {
+
+      console.log("CURR FRM ERR", this.state.formErrors);
       // For whatever reason getting the set of invalid fields just Does Not Function in the validateForm func
       // Even though all of the data is there and dev tools SHOWS the state values,  everything else just ignores it because curses or whatever
       if(!isValid){
-        var errorSet = removeEmptyValues(this.state.formErrors);
-        var result = Object.keys(errorSet);
+        console.log("NOTVALID CURR FRM ERR", this.state.formErrors);
+        let errorSet = removeEmptyValues(this.state.formErrors);
+        let result = Object.keys(errorSet);
+        console.debug('%c◉ ERRORSET ', 'color:#ff005d',errorSet, result);
         //consoledebug("result",result);
-        var fieldString = "";
-        for (var r in result) {
-          var newString = humanize(result[r]);
-          fieldString = fieldString+newString+", ";
+        let fieldString = "";
+        for (let r in result) {
+          console.debug('%c◉ result r ', 'color:#00ff7b', r, result[r]);
+          if(result[r].length >0 ){
+            let newString = humanize(result[r]);
+            fieldString = fieldString+newString+", ";
+            console.log(newString )
+          }
         }
         fieldString = fieldString.replace(/,\s*$/, "");
         this.setState({ fieldString: fieldString}); 
@@ -1328,6 +1502,7 @@ class PublicationEdit extends Component {
       let isValid =   true;
 
       // Check required fields
+      // The Processor here will wipe the previosu error, so run it first
       var requiredFields = ["title","publication_venue","publication_date","publication_url","description" ];
       var errorMsg = "Field is Required"
       requiredFields.forEach((field) => {
@@ -1368,7 +1543,7 @@ class PublicationEdit extends Component {
           formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },
         }));
       }
-       
+
       
       // Check Int values are ints
       var intFields = ["issue", "volume"];
@@ -1386,9 +1561,17 @@ class PublicationEdit extends Component {
             formErrors: { ...prevState.formErrors, [field]: "" },
           }));
         }
-
-        
       });
+
+      // is the Source Bulk erroring?
+      if(this.state.sourceBulkError.length > 0){
+        this.setState((prevState) => ({
+          validationStatus:  { ...prevState.validationStatus, ['source_uuid_list']: this.state.sourceBulkError },
+          formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" },
+        }));
+        isValid = false;
+        resolve(isValid);
+      }
       
       // Not Resolved invalid, so clear validations
       this.setState({ isValidData: isValid });
