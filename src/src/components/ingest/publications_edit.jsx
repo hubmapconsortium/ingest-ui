@@ -14,6 +14,7 @@ import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import ClearIcon from '@mui/icons-material/Clear';
 import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -23,6 +24,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
+import {GridLoader} from "react-spinners";
 import IconButton from '@mui/material/IconButton';
 import Paper from "@mui/material/Paper";
 import Radio from '@mui/material/Radio';
@@ -36,11 +38,12 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from '@mui/material/TextField';
 import ReactTooltip from "react-tooltip";
-
+import Fade from '@mui/material/Fade';
 import "../../App.css";
 import {
   entity_api_create_entity,
   entity_api_get_entity,
+  entity_api_get_these_entities,
   entity_api_get_globus_url,
   entity_api_update_entity,
 } from "../../service/entity_api";
@@ -188,7 +191,9 @@ class PublicationEdit extends Component {
     dataset_uuids:[],
     dataset_uuids_string:"",
     sourceBulkError:"",
-    sourceBulkWarning:"",    
+    sourceBulkWarning:"",
+    sourceBulkStatus:"loading",
+    fadeInBulkBox:false,
   };
 
   updateStateDataTypeInfo() {
@@ -244,16 +249,18 @@ class PublicationEdit extends Component {
       // Populate the UUID ONLY source list
       let entity = this.props.editingPublication
       let uuidList = []
+      let hidList = []
       if(entity.direct_ancestors){
         for (let i = 0; i < entity.direct_ancestors.length; i++) {
           if (entity.direct_ancestors[i].hasOwnProperty("uuid")) {
             console.debug('%c◉ entity.direct_ancestors[i].uuid ', 'color:#00ff7b', entity.direct_ancestors[i].uuid);
             uuidList.push(entity.direct_ancestors[i].uuid)
+            hidList.push(entity.direct_ancestors[i].hubmap_id)
           }
         }
         this.setState({
           dataset_uuids: uuidList,
-          dataset_uuids_string: uuidList.join(", ")
+          dataset_uuids_string: hidList.join(", ")
         });
       }
       
@@ -563,6 +570,14 @@ class PublicationEdit extends Component {
     
   };
 
+  handleCloseBulk = (e) => {
+    e.preventDefault();
+      this.setState({
+        hideUUIDList:true,
+        fadeInBulkBox:false,
+      })
+  }
+
   handleInputChange = (e) => {
     var { id, value, name } = e.target;
     var checkName = (name==="publication_status") ? name : id;
@@ -571,12 +586,12 @@ class PublicationEdit extends Component {
       cleanVal = removeEmptyValues(cleanVal);
       cleanVal = cleanVal.filter(val => val && val.trim && val.trim() !== "");
       console.debug('%c◉ cleanVal ', 'color:#00ff7b', cleanVal);
-      if(cleanVal.length>0){
-        this.setState({
-          dataset_uuids_string: value,
-          dataset_uuids: value.split(",").map((item) => item.trim())
-        })
-      }
+      // if(cleanVal.length>0){
+      this.setState({
+        dataset_uuids_string: value,
+        dataset_uuids: value.split(",").map((item) => item.trim())
+      })
+      // }
       
     }else if(name==="groups"){
       this.setState(prev => ({
@@ -616,71 +631,91 @@ class PublicationEdit extends Component {
       })
     } 
 
-    if (e.target.innerText && e.target.innerText === "ADD"){
+    if (e.target.innerText && e.target.innerText === "UPDATE"){
+
       // Lets clear out the previous errors first
       this.setState(prevState => ({
         formErrors: { ...prevState.formErrors, ['source_uuid_list']:"" }, 
         sourceBulkError:"",
       }));
-        // Ok, we want to Save what's Stored for data in the Table
-        let datasetTableRows = this.state.source_uuid_list;
-        console.log()
-        
-        // Clear out warnings
-        this.setState({
-          sourceBulkWarning: ""
-        })
-        
-        let originalUUIDList = this.state.source_uuid_list.map(dataset => dataset.uuid);
-        let uniqueUUIDListUpdate = [...new Set(this.state.dataset_uuids_string.split(", "))];
-        let repeatList = []
+      // Ok, we want to Save what's Stored for data in the Table
+      let datasetTableRows = this.state.source_uuid_list;
+      console.log("datasetTableRows", datasetTableRows);
+    
+      let cleanList = this.state.dataset_uuids_string.trim().split(", ")
 
-        uniqueUUIDListUpdate.forEach((dataset) => {
-          if(!originalUUIDList.includes(dataset) && dataset.length >0 ){
-            console.log("DATASET "+dataset+" NOT Included");
-            entity_api_get_entity(dataset)
-            .then((response) => {
-              console.debug('%c◉ ⚠️ Response ', 'background-color:#00ff7b', response);
-              if(response.results){
-                this.setState({
-                  hideUUIDList: false,
-                  source_uuid_list: [...this.state.source_uuid_list, response.results],
-                  dataset_uuids: [...this.state.dataset_uuids, response.results.uuid.trim()],
-                })
-              }else{
-                if(response.data && response.data.error ){
-                  console.debug('%c◉ response.data.error ', 'color:#ff005d', response.data.error);
-                  this.setState(prevState => ({
-                    formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" }, 
-                    sourceBulkError: response.data.error,
-                  }));
-                }else{
-                  this.props.reportError(response);
-                }
-              
-              }
-            })
-            .catch((error) => {
-              console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-              //consoledebug("UUIDCheck",error);
-              this.props.reportError(error);
-            })
-          }else{
-            console.log("DATASET "+dataset+" IS ALREADY Included");
-            repeatList.push(dataset)
+      entity_api_get_these_entities(cleanList)
+        .then((response) => {
+          console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
+
+          let entities = response.results
+          let entityDetails = entities.map(obj => obj.results)
+          let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
+          let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";
+          
+          this.setState({
+            source_uuid_list: entityDetails,
+            dataset_uuids: entityHIDs,
+            sourceBulkWarning: response.message ? response.message : "",
+            sourceBulkError: errors? errors : null,
+          },() => {
             this.setState({
-              sourceBulkWarning: "The Following Datasets are already Included: "+repeatList.join(", ")
+              hideUUIDList: true,
+              sourceBulkStatus: "complete"
             })
-          }
+          })
+        })
+        .catch((error) => {
+          console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+          this.props.reportError(error);
         });
 
-        // If Some are in the table and not in the Bulk input, nix em
-        // uniqueUUIDListUpdate.forEach((dataset)
-        originalUUIDList.forEach((dataset) => {
-          if(!uniqueUUIDListUpdate.includes(dataset)){
-            this.sourceRemover({uuid:dataset});
-          }
-        })
+      // uniqueUUIDListUpdate.forEach((dataset) => {
+      //   if(!originalUUIDList.includes(dataset) && dataset.length >0 ){
+      //     console.log("DATASET "+dataset+" NOT Included");
+      //     entity_api_get_entity(dataset)
+      //     .then((response) => {
+      //       console.debug('%c◉ ⚠️ Response ', 'background-color:#00ff7b', response);
+      //       if(response.results){
+      //         this.setState({
+      //           hideUUIDList: false,
+      //           source_uuid_list: [...this.state.source_uuid_list, response.results],
+      //           dataset_uuids: [...this.state.dataset_uuids, response.results.uuid.trim()],
+      //         })
+      //       }else{
+      //         if(response.data && response.data.error ){
+      //           console.debug('%c◉ response.data.error ', 'color:#ff005d', response.data.error);
+      //           this.setState(prevState => ({
+      //             formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" }, 
+      //             sourceBulkError: response.data.error,
+      //           }));
+      //         }else{
+      //           this.props.reportError(response);
+      //         }
+            
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+      //       //consoledebug("UUIDCheck",error);
+      //       this.props.reportError(error);
+      //     })
+      //   }else{
+      //     console.log("DATASET "+dataset+" IS ALREADY Included");
+      //     repeatList.push(dataset)
+      //     this.setState({
+      //       sourceBulkWarning: "The Following Datasets are already Included: "+repeatList.join(", ")
+      //     })
+      //   }
+      // });
+
+      // // If Some are in the table and not in the Bulk input, nix em
+      // // uniqueUUIDListUpdate.forEach((dataset)
+      // originalUUIDList.forEach((dataset) => {
+      //   if(!uniqueUUIDListUpdate.includes(dataset)){
+      //     this.sourceRemover({uuid:dataset});
+      //   }
+      // })
 
       // })
     }
@@ -733,7 +768,7 @@ class PublicationEdit extends Component {
           var slist = this.state.source_uuid_list;
           slist.push(selection.row);
           let dlist = this.state.dataset_uuids;
-          dlist.push(selection.row.uuid);
+          dlist.push(selection.row.hubmap_id);
 
           this.setState((prevState) => ({
             source_uuid: selection.row.hubmap_id,
@@ -795,84 +830,111 @@ class PublicationEdit extends Component {
             </p>
           </ReactTooltip>
 
-          <TableContainer
-            // className={this.state.formErrors.source_uuid_list && this.state.formErrors.source_uuid_list.length > 0 ? "border border-danger" : ""}
-            sx={
-              this.state.formErrors.source_uuid_list ?  {border : "1px solid red",} : {}
-            }
-            component={Paper}
-            style={{ maxHeight: 450 }}>
-            <Table
-              aria-label="Associated Publications"
-              size="small"
-              className="table table-striped table-hover mb-0">
-              <TableHead className="thead-dark font-size-sm">
-                <TableRow className="   ">
-                  <TableCell> Source ID</TableCell>
-                  <TableCell component="th">Subtype</TableCell>
-                  <TableCell component="th">Group Name</TableCell>
-                  <TableCell component="th">Status</TableCell>
-                  {this.state.writeable && (
-                    <TableCell component="th" align="right">
-                      Action
-                    </TableCell>
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.state.source_uuid_list.map((row, index) => (
-                  <TableRow
-                    key={row.hubmap_id + "" + index} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to
-                    // onClick={() => this.handleSourceCellSelection(row)}
-                    className="row-selection">
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.hubmap_id}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.dataset_type ? row.dataset_type : row.display_subtype}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.group_name}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.status && (
-                        <span
-                          className={
-                            "w-100 badge " +
-                            getPublishStatusColor(row.status, row.uuid)
-                          }>
-                          {" "}
-                          {row.status}
-                        </span>
+          <Box sx={{
+            position:"relative",
+            top:0,
+            transitionProperty: "height",
+            transitionTimingFunction: "ease-in",
+            transitionDuration: "1s"
+            }}> 
+              <Box clasName="sourceShade" sx={{
+                opacity: this.state.sourceBulkStatus==="loading"?1:0, 
+                background: "#444a65", 
+                width: "100%", 
+                height:"45px", 
+                position: "absolute", 
+                color: "white", 
+                zIndex: 999, 
+                padding:"10px", 
+                boxSizing: "border-box" ,
+                borderRadius:"0.375rem",
+                transitionProperty: "opacity",
+                transitionTimingFunction: "ease-in",
+                transitionDuration: "0.5s"
+                }}>
+                  <GridLoader size="2px" color="white" width="30px"/> Loading ... 
+              </Box> 
+              <Box sx={{background:"#eee"}}>
+                <TableContainer
+                  sx={this.state.formErrors.source_uuid_list ?  {border : "1px solid red",} : {}}
+                  component={Paper}
+                  style={{ maxHeight: 450 }}>
+                <Table
+                  aria-label="Associated Publications"
+                  size="small"
+                  className="table table-striped table-hover mb-0">
+                  <TableHead className="thead-dark font-size-sm">
+                    <TableRow className="   ">
+                      <TableCell> Source ID</TableCell>
+                      <TableCell component="th">Subtype</TableCell>
+                      <TableCell component="th">Group Name</TableCell>
+                      <TableCell component="th">Status</TableCell>
+                      {this.state.writeable && (
+                        <TableCell component="th" align="right">
+                          Action
+                        </TableCell>
                       )}
-                    </TableCell>
-                    {this.state.writeable && (
-                      <TableCell
-                        className="clicky-cell"
-                        align="right"
-                        scope="row">
-                          <React.Fragment>
-                            <FontAwesomeIcon
-                              className="inline-icon interaction-icon "
-                              icon={faTrash}
-                              color="red"
-                              onClick={() => this.sourceRemover(row, index)}
-                            />
-                          </React.Fragment>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {this.state.source_uuid_list.map((row, index) => (
+                      <TableRow
+                        key={row.hubmap_id + "" + index} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to
+                        // onClick={() => this.handleSourceCellSelection(row)}
+                        className="row-selection">
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.hubmap_id}
+                        </TableCell>
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.dataset_type ? row.dataset_type : row.display_subtype}
+                        </TableCell>
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.group_name}
+                        </TableCell>
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.status && (
+                            <span
+                              className={
+                                "w-100 badge " +
+                                getPublishStatusColor(row.status, row.uuid)
+                              }>
+                              {" "}
+                              {row.status}
+                            </span>
+                          )}
+                        </TableCell>
+                        {this.state.writeable && (
+                          <TableCell
+                            className="clicky-cell"
+                            align="right"
+                            scope="row">
+                              <React.Fragment>
+                                <FontAwesomeIcon
+                                  className="inline-icon interaction-icon "
+                                  icon={faTrash}
+                                  color="red"
+                                  onClick={() => this.sourceRemover(row, index)}
+                                />
+                              </React.Fragment>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          </Box>
           
           {this.state.writeable && (<>
             <Box className="w-100" width="100%">
               <Collapse
                 in={this.state.sourceBulkError}
                 orientation="vertical">
-                <Alert severity="error" className="mb-2" >
+                <Alert 
+                  className="m-0"
+                  severity="error" 
+                  onClose={() => {this.setState({sourceBulkError:false})}}>
                   <AlertTitle>Source Selection Error:</AlertTitle>
                   {this.state.sourceBulkError? this.state.sourceBulkError: ""} 
                 </Alert>
@@ -880,84 +942,118 @@ class PublicationEdit extends Component {
               <Collapse
                 in={this.state.sourceBulkWarning}
                 orientation="vertical">
-                <Alert severity="warning" className="mb-2" >
+                <Alert severity="warning" className="m-0" onClose={() => {this.setState({sourceBulkWarning:false})}}>
                   <AlertTitle>Source Selection Warning:</AlertTitle>
                   {(this.state.sourceBulkWarning && this.state.sourceBulkWarning.length > 0)? this.state.sourceBulkWarning.split('\n').map(warn => <p>{warn}</p>): ""} 
                 </Alert>
               </Collapse>
             </Box>
-            <Box className="mt-2 w-100" width="100%" display="flex">
-              <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row">
+
+            <Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
+
+
+              <Box p={1} className="m-0 text-right" id="bulkButtons" display="inline-flex" flexDirection="row" >
                 <Button
-                    variant="contained"
-                    type="button"
-                    size="small"
-                    className="btn btn-neutral"
-                    onClick={() => this.handleLookUpClick()}>
-                    Add{" "}
-                    {this.state.dataset_uuids &&
-                      this.state.dataset_uuids.length >= 1 &&
-                      "Another"}{" "}
-                    Source
-                    <FontAwesomeIcon
-                      className="fa button-icon m-2"
-                      icon={faPlus}
-                    />
-                  </Button>
+                  sx={{maxHeight:"35px",verticalAlign: 'bottom',}}
+                  variant="contained"
+                  type="button"
+                  size="small"
+                  className="btn btn-neutral"
+                  onClick={() => this.handleLookUpClick()}>
+                  Add
+                  <FontAwesomeIcon
+                    className="fa button-icon m-2"
+                    icon={faPlus}
+                  />
+                </Button>
                 <Button
+                  sx={{maxHeight:"35px",verticalAlign: 'bottom'}}
                   variant="text"
                   type='link'
                   size="small"
                   className='mx-2'
                   onClick={(event) => this.handleInputUUIDs(event)}>
                   {this.state.hideUUIDList && (<>Bulk</>)}
-                  {!this.state.hideUUIDList && (<>Add</>)}
+                  {!this.state.hideUUIDList && (<>UPDATE</>)}
                   <FontAwesomeIcon className='fa button-icon m-2' icon={faPenToSquare}/>
                 </Button>
               </Box>
-              <Collapse
-                in={!this.state.hideUUIDList}
-                orientation="horizontal"
-                sx={{
-                  overflow: 'hidden',
-                  display: 'inline-box',
-                }}>
-                  <FormControl
-                    sx={{
-                      verticalAlign: 'bottom',
-                      minWidth: "400px",
-                      overflow: 'hidden', 
-                    }}>
-                    <StyledTextField
-                      name="dataset_uuids_string"
-                      id="dataset_uuids_string"
-                      error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
-                      multiline
-                      rows={2}
-                      inputProps={{ 'aria-label': 'description' }}
-                      placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
-                      variant="standard"
-                      size="small"
-                      fullWidth={true}
-                      onChange={(event) => this.handleInputChange(event)}
-                      value={this.state.dataset_uuids_string}
-                      sx={{
-                        marginTop: '10px',
-                        width: '100%',
-                        verticalAlign: 'bottom',
-                      }}/>
-                  </FormControl>
-              </Collapse>
 
-              {!this.state.hideUUIDList && (
-                <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
-                  <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => this.setState({hideUUIDList:true})}><CancelPresentationIcon/></IconButton>
-                </Box>
-              )}
-          
+
+
+              <Box
+                display="flex" 
+                flexDirection="row"
+                className="m-0 col-9 row"
+                sx={{
+                  overflowX:"visible",
+                  overflowY:"visible",
+                  padding:"0px",  
+                  maxHeight:"45px",
+                  background:"#ededed"}}>
+
+
+                <Collapse 
+                  in={!this.state.hideUUIDList} 
+                  orientation="horizontal" 
+                  className="row"
+                  width="100%"
+                  sx={{
+                    // [`&.${collapseClasses.root}`]: {
+                    //   width: "100%",
+                    // },
+                  }}
+                  addEndListener={() => {
+                    console.log("fadeInBulkBox",this.state.fadeInBulkBox)
+                    this.setState({fadeInBulkBox:true})
+                  }}>
+                    <Box
+                      display="inline-flex"
+                      flexDirection="row"
+                      sx={{ 
+                        overflow: "hidden",
+                        width:"650px"}}>
+                      <StyledTextField
+                        name="dataset_uuids_string"
+                        display="flex"
+                        id="dataset_uuids_string"
+                        error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
+                        multiline
+                        inputProps={{ 'aria-label': 'description' }}
+                        placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
+                        variant="standard"
+                        size="small"
+                        fullWidth={true}
+                        onChange={(event) => this.handleInputChange(event)}
+                        value={this.state.dataset_uuids_string}
+                        sx={{
+                          overflow:"hidden",
+                          marginTop: '10px',
+                          verticalAlign: 'bottom',
+                          width:"100%",
+                          // transitionProperty: "opacity",
+                          // transitionDuration: "250ms",
+                          // transitionDelay: "50ms",
+                          // transitionTimingFunction: "ease-out",
+                          // opacity:this.state.fadeInBulkBox? 1: 0,
+                        }}/>
+                      <Button
+                        // display={!this.state.fadeInBulkBox ? "flex" : "none"}
+                        variant="text"
+                        type='link'
+                        size="small"
+                        onClick={(e) => this.handleCloseBulk(e) }>
+                        <ClearIcon size="small"/>
+                      </Button>
+                    </Box>
+                </Collapse>
+
+                
+              </Box>
             </Box>
            
-          </>)}
+          </>
+          )}
 
           {/* {this.state.writeable && (
             <React.Fragment>
