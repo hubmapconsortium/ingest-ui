@@ -965,7 +965,7 @@ class PublicationEdit extends Component {
                         error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
                         multiline
                         inputProps={{ 'aria-label': 'description' }}
-                        placeholder="HBM123.ABC.456, HBM789.DEF.789, [...etc]"
+                        placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
                         variant="standard"
                         size="small"
                         fullWidth={true}
