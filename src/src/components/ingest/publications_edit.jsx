@@ -571,6 +571,7 @@ class PublicationEdit extends Component {
       this.setState({
         hideUUIDList: true,
         fadeInBulkBox: false,
+        sourceBulkStatus: "complete",
       })
   }
 
@@ -991,7 +992,6 @@ class PublicationEdit extends Component {
           </>
           )}
 
-         
         </div>
       );
     } else if (this.state.writeable && this.state.editingPublication) {
