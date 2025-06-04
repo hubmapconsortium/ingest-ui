@@ -5,15 +5,14 @@ import {
   faQuestionCircle,
   faSpinner,
   faTrash,
-  faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import ClearIcon from '@mui/icons-material/Clear';
 import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -23,7 +22,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormLabel from '@mui/material/FormLabel';
-import IconButton from '@mui/material/IconButton';
+import {GridLoader} from "react-spinners";
 import Paper from "@mui/material/Paper";
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -36,11 +35,11 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from '@mui/material/TextField';
 import ReactTooltip from "react-tooltip";
-
 import "../../App.css";
 import {
   entity_api_create_entity,
   entity_api_get_entity,
+  entity_api_get_these_entities,
   entity_api_get_globus_url,
   entity_api_update_entity,
 } from "../../service/entity_api";
@@ -77,7 +76,7 @@ class PublicationEdit extends Component {
   state = {
     // The Entity Itself
     newForm: this.props.newForm,
-    dataset_type:"publication",
+    dataset_type: "publication",
     dtl_primary: [],
     // dtl_all: [],
     selected_dt: "",
@@ -92,10 +91,10 @@ class PublicationEdit extends Component {
     status: "NEW",
     upload: [],
     writeable: true, 
-    nextHubIDs:[],
-    previousHubIDs:[],
+    nextHubIDs: [],
+    previousHubIDs: [],
 
-    editingPublication: this.props.newForm ? {publication_status:undefined} : this.props.editingPublication,
+    editingPublication: this.props.newForm ? {publication_status: undefined} : this.props.editingPublication,
 
     // User Privs & Info
     groups: [],
@@ -112,7 +111,7 @@ class PublicationEdit extends Component {
     slist: [],
 
     // Page States
-    showSubmitModal:false,
+    showSubmitModal: false,
     badge_class: "badge-purple",
     groups_dataprovider: [],
     GroupSelectShow: false,
@@ -122,43 +121,43 @@ class PublicationEdit extends Component {
     buttonSpinnerTarget: "",
     errorSnack: false,
     disableSelectDatatype: false,
-    statusSetLabel:"Reset Status",
+    statusSetLabel: "Reset Status",
     toggleStatusSet: false,
 
     // Form Validation & processing
     newVersion: false,
     previousHID: undefined,
     nextHID: undefined,
-    loadingPreviousVersions:true,
-    loadingNextVersions:true,
-    versioned:false,
+    loadingPreviousVersions: true,
+    loadingNextVersions: true,
+    versioned: false,
     previous_revision_uuid: undefined,
     has_other_datatype: false,
     submitErrorResponse: "",
     submitErrorStatus: "",
     isValidData: true,
-    fieldString:"",
+    fieldString: "",
     formErrors: {
-      title:"",
-      issue:"",
-      volume:"",
-      pages_or_article_num:"",
-      description:"",
-      source_uuid_list:"",
-      source_uuid:"",
-      publication_date:"",
-      publication_venue:"",
-      publication_doi:"",
-      omap_doi:"",
-      publication_url:"",
-      publication_status:"",
+      title: "",
+      issue: "",
+      volume: "",
+      pages_or_article_num: "",
+      description: "",
+      source_uuid_list: "",
+      source_uuid: "",
+      publication_date: "",
+      publication_venue: "",
+      publication_doi: "",
+      omap_doi: "",
+      publication_url: "",
+      publication_status: "",
     },
     validationStatus: {
-      title:"",
-      issue:"",
-      volume:"",
-      pages_or_article_num:"",
-      description:"",
+      title: "",
+      issue: "",
+      volume: "",
+      pages_or_article_num: "",
+      description: "",
       source_uuid_list: "",
       source_uuid: "",
       publication_date: "",
@@ -169,11 +168,11 @@ class PublicationEdit extends Component {
       publication_status: ""
     },
     fieldDescriptons: {
-      title:"The title of the publication",
-      issue:"The issue number of the journal that it was published in.",
-      volume:"The volume number of a journal that it was published in.",
-      pages_or_article_num:'The pages or the article number in the publication journal e.g., "23", "23-49", "e1003424.',
-      description:"Free text description of the publication",
+      title: "The title of the publication",
+      issue: "The issue number of the journal that it was published in.",
+      volume: "The volume number of a journal that it was published in.",
+      pages_or_article_num: 'The pages or the article number in the publication journal e.g., "23", "23-49", "e1003424.',
+      description: "Free text description of the publication",
       source_uuid_list: "",
       source_uuid: "",
       publication_date: "The date of publication",
@@ -183,16 +182,17 @@ class PublicationEdit extends Component {
       publication_url: "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
       publication_status: "if the publication has been published yet or not",
     },
-    hideUUIDList:true,
-    loadUUIDList:true,
-    dataset_uuids:[],
-    dataset_uuids_string:"",
-    sourceBulkError:"",
-    sourceBulkWarning:"",    
+    hideUUIDList: true,
+    loadUUIDList: true,
+    dataset_uuids: [],
+    dataset_uuids_string: "",
+    sourceBulkError: "",
+    sourceBulkWarning: "",
+    sourceBulkStatus: "loading",
+    fadeInBulkBox: false,
   };
 
   updateStateDataTypeInfo() {
-    let dataset_type = null;
     let other_dt = undefined;
     if (
       this.props.hasOwnProperty("editingPublication") &&
@@ -203,7 +203,7 @@ class PublicationEdit extends Component {
 
     this.setState({
       // dataset_type: new Set(this.props.editingPublication.dataset_type),
-      dataset_type:this.props.editingPublication.dataset_type,
+      dataset_type: this.props.editingPublication.dataset_type,
       has_other_datatype: other_dt !== undefined,
       other_dt: other_dt,
     });
@@ -227,41 +227,39 @@ class PublicationEdit extends Component {
       // @TODO: Evaluate best practices, pass token to Service from within form
       // Or consider another method for token/service auth handling
       // Configs should /only/ assembed in the service using the passed token for now
-      const config = {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("info")).groups_token,
-          "Content-Type": "application/json",
-        },
-      };
     } else {
       localStorage.setItem("isAuthenticated", false);
     }
-
 
     if (this.props.editingPublication) {
       
       // Populate the UUID ONLY source list
       let entity = this.props.editingPublication
       let uuidList = []
+      let hidList = []
       if(entity.direct_ancestors){
         for (let i = 0; i < entity.direct_ancestors.length; i++) {
           if (entity.direct_ancestors[i].hasOwnProperty("uuid")) {
             console.debug('%c◉ entity.direct_ancestors[i].uuid ', 'color:#00ff7b', entity.direct_ancestors[i].uuid);
             uuidList.push(entity.direct_ancestors[i].uuid)
+            hidList.push(entity.direct_ancestors[i].hubmap_id)
           }
         }
         this.setState({
           dataset_uuids: uuidList,
-          dataset_uuids_string: uuidList.join(", ")
-        });
+          dataset_uuids_string: hidList.join(", ")
+         },() => {
+        this.setState({
+           sourceBulkStatus: "complete",
+        })
+      })
       }
       
       if(!this.props.editingPublication.previous_revision_uuids){
-        this.setState({loadingPreviousVersions:false});
+        this.setState({loadingPreviousVersions: false});
       }
       if(!this.props.editingPublication.next_revision_uuids){
-        this.setState({loadingNextVersions:false});
+        this.setState({loadingNextVersions: false});
       }
 
       if (this.props.editingPublication.uuid)
@@ -285,7 +283,7 @@ class PublicationEdit extends Component {
                 this.setState({
                   has_version_priv: resp.results.has_write_priv,
                 });
-                if(this.state.has_admin_priv &&  this.props.editingPublication.status.toUpperCase()!=="PUBLISHED"){
+                if(this.state.has_admin_priv && this.props.editingPublication.status.toUpperCase()!=="PUBLISHED"){
                   this.setState({has_manual_priv: true});
                 }
               })
@@ -294,11 +292,13 @@ class PublicationEdit extends Component {
               });
           }
         })
-        .catch((err) => {	
+        .catch(() => {	
           //consoledebug("Error Checking Permissions", err);
         });
     } else {
-      //
+      this.setState({
+        sourceBulkStatus: "complete",
+      })
     }
 
     ingest_api_users_groups(auth)
@@ -393,9 +393,9 @@ class PublicationEdit extends Component {
 
       //  NEXT/PREV REVISION LIST BUILD
       if(this.props.editingPublication && this.props.editingPublication.previous_revision_uuids && this.props.editingPublication.previous_revision_uuids.length >0){
-        this.setState({versioned:true});
+        this.setState({versioned: true});
         var pHubIDs= [];
-        this.props.editingPublication.previous_revision_uuids.forEach(function(uuid, index) {
+        this.props.editingPublication.previous_revision_uuids.forEach(function(uuid) {
           entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
               if(response.results.hubmap_id){
@@ -414,16 +414,16 @@ class PublicationEdit extends Component {
             })
         });
         this.setState({
-          previousHubIDs:pHubIDs
+          previousHubIDs: pHubIDs
         },() => {
-          this.setState({loadingPreviousVersions:false});
+          this.setState({loadingPreviousVersions: false});
         })
       }
       // NEXT
       if(this.props.editingPublication && this.props.editingPublication.next_revision_uuids && this.props.editingPublication.next_revision_uuids.length >0){
-        this.setState({versioned:true});
+        this.setState({versioned: true});
         var nHubIDs= [];
-        this.props.editingPublication.next_revision_uuids.forEach(function(uuid, index) {
+        this.props.editingPublication.next_revision_uuids.forEach(function(uuid) {
           entity_api_get_entity(uuid, JSON.parse(localStorage.getItem("info")).groups_token)
             .then((response) => {
               if(response.results.hubmap_id){
@@ -442,9 +442,9 @@ class PublicationEdit extends Component {
             })
         });
         this.setState({
-          nextHubIDs:nHubIDs
+          nextHubIDs: nHubIDs
         },() => {
-          this.setState({loadingNextVersions:false});
+          this.setState({loadingNextVersions: false});
         })
       }
     }
@@ -563,6 +563,14 @@ class PublicationEdit extends Component {
     
   };
 
+  handleCloseBulk = (e) => {
+    e.preventDefault();
+      this.setState({
+        hideUUIDList: true,
+        fadeInBulkBox: false,
+      })
+  }
+
   handleInputChange = (e) => {
     var { id, value, name } = e.target;
     var checkName = (name==="publication_status") ? name : id;
@@ -571,12 +579,12 @@ class PublicationEdit extends Component {
       cleanVal = removeEmptyValues(cleanVal);
       cleanVal = cleanVal.filter(val => val && val.trim && val.trim() !== "");
       console.debug('%c◉ cleanVal ', 'color:#00ff7b', cleanVal);
-      if(cleanVal.length>0){
-        this.setState({
-          dataset_uuids_string: value,
-          dataset_uuids: value.split(",").map((item) => item.trim())
-        })
-      }
+      // if(cleanVal.length>0){
+      this.setState({
+        dataset_uuids_string: value,
+        dataset_uuids: value.split(",").map((item) => item.trim())
+      })
+      // }
       
     }else if(name==="groups"){
       this.setState(prev => ({
@@ -605,8 +613,10 @@ class PublicationEdit extends Component {
 
   handleInputUUIDs = (e) => {
     e.preventDefault();
+    
     if(e.target.innerText && e.target.innerText === "BULK"){
       this.setState({
+        sourceBulkStatus: "loading",
         // Lets make sure the field is freshest BEFORE opening it up
         dataset_uuids_string: this.state.dataset_uuids.join(", ")
       },() => {
@@ -616,71 +626,91 @@ class PublicationEdit extends Component {
       })
     } 
 
-    if (e.target.innerText && e.target.innerText === "ADD"){
+    if (e.target.innerText && e.target.innerText === "UPDATE"){
+
       // Lets clear out the previous errors first
       this.setState(prevState => ({
-        formErrors: { ...prevState.formErrors, ['source_uuid_list']:"" }, 
-        sourceBulkError:"",
+        formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" }, 
+        sourceBulkError: "",
       }));
-        // Ok, we want to Save what's Stored for data in the Table
-        let datasetTableRows = this.state.source_uuid_list;
-        console.log()
-        
-        // Clear out warnings
-        this.setState({
-          sourceBulkWarning: ""
-        })
-        
-        let originalUUIDList = this.state.source_uuid_list.map(dataset => dataset.uuid);
-        let uniqueUUIDListUpdate = [...new Set(this.state.dataset_uuids_string.split(", "))];
-        let repeatList = []
+      // Ok, we want to Save what's Stored for data in the Table
+      let datasetTableRows = this.state.source_uuid_list;
+      console.log("datasetTableRows", datasetTableRows);
+    
+      let cleanList = this.state.dataset_uuids_string.trim().split(", ")
 
-        uniqueUUIDListUpdate.forEach((dataset) => {
-          if(!originalUUIDList.includes(dataset) && dataset.length >0 ){
-            console.log("DATASET "+dataset+" NOT Included");
-            entity_api_get_entity(dataset)
-            .then((response) => {
-              console.debug('%c◉ ⚠️ Response ', 'background-color:#00ff7b', response);
-              if(response.results){
-                this.setState({
-                  hideUUIDList: false,
-                  source_uuid_list: [...this.state.source_uuid_list, response.results],
-                  dataset_uuids: [...this.state.dataset_uuids, response.results.uuid.trim()],
-                })
-              }else{
-                if(response.data && response.data.error ){
-                  console.debug('%c◉ response.data.error ', 'color:#ff005d', response.data.error);
-                  this.setState(prevState => ({
-                    formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" }, 
-                    sourceBulkError: response.data.error,
-                  }));
-                }else{
-                  this.props.reportError(response);
-                }
-              
-              }
-            })
-            .catch((error) => {
-              console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-              //consoledebug("UUIDCheck",error);
-              this.props.reportError(error);
-            })
-          }else{
-            console.log("DATASET "+dataset+" IS ALREADY Included");
-            repeatList.push(dataset)
+      entity_api_get_these_entities(cleanList)
+        .then((response) => {
+          console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
+
+          let entities = response.results
+          let entityDetails = entities.map(obj => obj.results)
+          let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
+          let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";
+          
+          this.setState({
+            source_uuid_list: entityDetails,
+            dataset_uuids: entityHIDs,
+            sourceBulkWarning: response.message ? response.message : "",
+            sourceBulkError: errors? errors : null,
+          },() => {
             this.setState({
-              sourceBulkWarning: "The Following Datasets are already Included: "+repeatList.join(", ")
+              hideUUIDList: true,
+              sourceBulkStatus: "complete"
             })
-          }
+          })
+        })
+        .catch((error) => {
+          console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+          this.props.reportError(error);
         });
 
-        // If Some are in the table and not in the Bulk input, nix em
-        // uniqueUUIDListUpdate.forEach((dataset)
-        originalUUIDList.forEach((dataset) => {
-          if(!uniqueUUIDListUpdate.includes(dataset)){
-            this.sourceRemover({uuid:dataset});
-          }
-        })
+      // uniqueUUIDListUpdate.forEach((dataset) => {
+      //   if(!originalUUIDList.includes(dataset) && dataset.length >0 ){
+      //     console.log("DATASET "+dataset+" NOT Included");
+      //     entity_api_get_entity(dataset)
+      //     .then((response) => {
+      //       console.debug('%c◉ ⚠️ Response ', 'background-color:#00ff7b', response);
+      //       if(response.results){
+      //         this.setState({
+      //           hideUUIDList: false,
+      //           source_uuid_list: [...this.state.source_uuid_list, response.results],
+      //           dataset_uuids: [...this.state.dataset_uuids, response.results.uuid.trim()],
+      //         })
+      //       }else{
+      //         if(response.data && response.data.error ){
+      //           console.debug('%c◉ response.data.error ', 'color:#ff005d', response.data.error);
+      //           this.setState(prevState => ({
+      //             formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" }, 
+      //             sourceBulkError: response.data.error,
+      //           }));
+      //         }else{
+      //           this.props.reportError(response);
+      //         }
+            
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+      //       //consoledebug("UUIDCheck",error);
+      //       this.props.reportError(error);
+      //     })
+      //   }else{
+      //     console.log("DATASET "+dataset+" IS ALREADY Included");
+      //     repeatList.push(dataset)
+      //     this.setState({
+      //       sourceBulkWarning: "The Following Datasets are already Included: "+repeatList.join(", ")
+      //     })
+      //   }
+      // });
+
+      // // If Some are in the table and not in the Bulk input, nix em
+      // // uniqueUUIDListUpdate.forEach((dataset)
+      // originalUUIDList.forEach((dataset) => {
+      //   if(!uniqueUUIDListUpdate.includes(dataset)){
+      //     this.sourceRemover({uuid:dataset});
+      //   }
+      // })
 
       // })
     }
@@ -733,7 +763,7 @@ class PublicationEdit extends Component {
           var slist = this.state.source_uuid_list;
           slist.push(selection.row);
           let dlist = this.state.dataset_uuids;
-          dlist.push(selection.row.uuid);
+          dlist.push(selection.row.hubmap_id);
 
           this.setState((prevState) => ({
             source_uuid: selection.row.hubmap_id,
@@ -741,7 +771,7 @@ class PublicationEdit extends Component {
             slist: slist,
             source_entity: selection.row, // save the entire entity to use for information
             LookUpShow: false,
-            validationStatus:  { ...prevState.validationStatus, ['source_uuid_list']: "" },
+            validationStatus: { ...prevState.validationStatus, ['source_uuid_list']: "" },
             formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },  
             dataset_uuids: dlist,
             dataset_uuids_string: dlist.join(", ")
@@ -795,84 +825,111 @@ class PublicationEdit extends Component {
             </p>
           </ReactTooltip>
 
-          <TableContainer
-            // className={this.state.formErrors.source_uuid_list && this.state.formErrors.source_uuid_list.length > 0 ? "border border-danger" : ""}
-            sx={
-              this.state.formErrors.source_uuid_list ?  {border : "1px solid red",} : {}
-            }
-            component={Paper}
-            style={{ maxHeight: 450 }}>
-            <Table
-              aria-label="Associated Publications"
-              size="small"
-              className="table table-striped table-hover mb-0">
-              <TableHead className="thead-dark font-size-sm">
-                <TableRow className="   ">
-                  <TableCell> Source ID</TableCell>
-                  <TableCell component="th">Subtype</TableCell>
-                  <TableCell component="th">Group Name</TableCell>
-                  <TableCell component="th">Status</TableCell>
-                  {this.state.writeable && (
-                    <TableCell component="th" align="right">
-                      Action
-                    </TableCell>
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.state.source_uuid_list.map((row, index) => (
-                  <TableRow
-                    key={row.hubmap_id + "" + index} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to
-                    // onClick={() => this.handleSourceCellSelection(row)}
-                    className="row-selection">
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.hubmap_id}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.dataset_type ? row.dataset_type : row.display_subtype}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.group_name}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.status && (
-                        <span
-                          className={
-                            "w-100 badge " +
-                            getPublishStatusColor(row.status, row.uuid)
-                          }>
-                          {" "}
-                          {row.status}
-                        </span>
+          <Box sx={{
+            position: "relative",
+            top: 0,
+            transitionProperty: "height",
+            transitionTimingFunction: "ease-in",
+            transitionDuration: "1s"
+            }}> 
+              <Box clasName="sourceShade" sx={{
+                opacity: this.state.sourceBulkStatus==="loading"?1:0, 
+                background: "#444a65", 
+                width: "100%", 
+                height: "45px", 
+                position: "absolute", 
+                color: "white", 
+                zIndex: 999, 
+                padding: "10px", 
+                boxSizing: "border-box" ,
+                borderRadius: "0.375rem",
+                transitionProperty: "opacity",
+                transitionTimingFunction: "ease-in",
+                transitionDuration: "0.5s"
+                }}>
+                  <GridLoader size="2px" color="white" width="30px"/> Loading ... 
+              </Box> 
+              <Box>
+                <TableContainer
+                  sx={this.state.formErrors.source_uuid_list ? {border: "1px solid red",} : {}}
+                  component={Paper}
+                  style={{ maxHeight: 450 }}>
+                <Table
+                  aria-label="Associated Publications"
+                  size="small"
+                  className="table table-striped table-hover mb-0">
+                  <TableHead className="thead-dark font-size-sm">
+                    <TableRow className="   ">
+                      <TableCell> Source ID</TableCell>
+                      <TableCell component="th">Subtype</TableCell>
+                      <TableCell component="th">Group Name</TableCell>
+                      <TableCell component="th">Status</TableCell>
+                      {this.state.writeable && (
+                        <TableCell component="th" align="right">
+                          Action
+                        </TableCell>
                       )}
-                    </TableCell>
-                    {this.state.writeable && (
-                      <TableCell
-                        className="clicky-cell"
-                        align="right"
-                        scope="row">
-                          <React.Fragment>
-                            <FontAwesomeIcon
-                              className="inline-icon interaction-icon "
-                              icon={faTrash}
-                              color="red"
-                              onClick={() => this.sourceRemover(row, index)}
-                            />
-                          </React.Fragment>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {this.state.source_uuid_list.map((row, index) => (
+                      <TableRow
+                        key={row.hubmap_id + "" + index} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data, but want to
+                        // onClick={() => this.handleSourceCellSelection(row)}
+                        className="row-selection">
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.hubmap_id}
+                        </TableCell>
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.dataset_type ? row.dataset_type : row.display_subtype}
+                        </TableCell>
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.group_name}
+                        </TableCell>
+                        <TableCell className="clicky-cell" scope="row">
+                          {row.status && (
+                            <span
+                              className={
+                                "w-100 badge " +
+                                getPublishStatusColor(row.status, row.uuid)
+                              }>
+                              {" "}
+                              {row.status}
+                            </span>
+                          )}
+                        </TableCell>
+                        {this.state.writeable && (
+                          <TableCell
+                            className="clicky-cell"
+                            align="right"
+                            scope="row">
+                              <React.Fragment>
+                                <FontAwesomeIcon
+                                  className="inline-icon interaction-icon "
+                                  icon={faTrash}
+                                  color="red"
+                                  onClick={() => this.sourceRemover(row, index)}
+                                />
+                              </React.Fragment>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          </Box>
           
           {this.state.writeable && (<>
             <Box className="w-100" width="100%">
               <Collapse
                 in={this.state.sourceBulkError}
                 orientation="vertical">
-                <Alert severity="error" className="mb-2" >
+                <Alert 
+                  className="m-0"
+                  severity="error" 
+                  onClose={() => {this.setState({sourceBulkError: false})}}>
                   <AlertTitle>Source Selection Error:</AlertTitle>
                   {this.state.sourceBulkError? this.state.sourceBulkError: ""} 
                 </Alert>
@@ -880,60 +937,71 @@ class PublicationEdit extends Component {
               <Collapse
                 in={this.state.sourceBulkWarning}
                 orientation="vertical">
-                <Alert severity="warning" className="mb-2" >
+                <Alert severity="warning" className="m-0" onClose={() => {this.setState({sourceBulkWarning: false})}}>
                   <AlertTitle>Source Selection Warning:</AlertTitle>
                   {(this.state.sourceBulkWarning && this.state.sourceBulkWarning.length > 0)? this.state.sourceBulkWarning.split('\n').map(warn => <p>{warn}</p>): ""} 
                 </Alert>
               </Collapse>
             </Box>
-            <Box className="mt-2 w-100" width="100%" display="flex">
-              <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row">
+
+            <Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
+              <Box p={1} className="m-0 text-right" id="bulkButtons" display="inline-flex" flexDirection="row" >
                 <Button
-                    variant="contained"
-                    type="button"
-                    size="small"
-                    className="btn btn-neutral"
-                    onClick={() => this.handleLookUpClick()}>
-                    Add{" "}
-                    {this.state.dataset_uuids &&
-                      this.state.dataset_uuids.length >= 1 &&
-                      "Another"}{" "}
-                    Source
-                    <FontAwesomeIcon
-                      className="fa button-icon m-2"
-                      icon={faPlus}
-                    />
-                  </Button>
+                  sx={{maxHeight: "35px",verticalAlign: 'bottom',}}
+                  variant="contained"
+                  type="button"
+                  size="small"
+                  className="btn btn-neutral"
+                  onClick={() => this.handleLookUpClick()}>
+                  Add
+                  <FontAwesomeIcon
+                    className="fa button-icon m-2"
+                    icon={faPlus}
+                  />
+                </Button>
                 <Button
+                  sx={{maxHeight: "35px",verticalAlign: 'bottom'}}
                   variant="text"
                   type='link'
                   size="small"
                   className='mx-2'
                   onClick={(event) => this.handleInputUUIDs(event)}>
                   {this.state.hideUUIDList && (<>Bulk</>)}
-                  {!this.state.hideUUIDList && (<>Add</>)}
+                  {!this.state.hideUUIDList && (<>UPDATE</>)}
                   <FontAwesomeIcon className='fa button-icon m-2' icon={faPenToSquare}/>
                 </Button>
               </Box>
-              <Collapse
-                in={!this.state.hideUUIDList}
-                orientation="horizontal"
+              <Box
+                display="flex" 
+                flexDirection="row"
+                className="m-0 col-9 row"
                 sx={{
-                  overflow: 'hidden',
-                  display: 'inline-box',
-                }}>
-                  <FormControl
-                    sx={{
-                      verticalAlign: 'bottom',
-                      minWidth: "400px",
-                      overflow: 'hidden', 
-                    }}>
+                  overflowX: "visible",
+                  overflowY: "visible",
+                  padding: "0px",  
+                  maxHeight: "45px",}}>
+
+                <Collapse 
+                  in={!this.state.hideUUIDList} 
+                  orientation="horizontal" 
+                  className="row"
+                  width="100%"
+                  addEndListener={() => {
+                    console.log("fadeInBulkBox",this.state.fadeInBulkBox)
+                    this.setState({fadeInBulkBox: true})
+                  }}>
+                  <Box
+                    display="inline-flex"
+                    flexDirection="row"
+                    sx={{ 
+                      overflow: "hidden",
+                      width: "650px"}}>
                     <StyledTextField
                       name="dataset_uuids_string"
+                      display="flex"
                       id="dataset_uuids_string"
                       error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
                       multiline
-                      rows={2}
                       inputProps={{ 'aria-label': 'description' }}
                       placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
                       variant="standard"
@@ -942,22 +1010,26 @@ class PublicationEdit extends Component {
                       onChange={(event) => this.handleInputChange(event)}
                       value={this.state.dataset_uuids_string}
                       sx={{
+                        overflow: "hidden",
                         marginTop: '10px',
-                        width: '100%',
                         verticalAlign: 'bottom',
+                        width: "100%",
                       }}/>
-                  </FormControl>
-              </Collapse>
-
-              {!this.state.hideUUIDList && (
-                <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
-                  <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => this.setState({hideUUIDList:true})}><CancelPresentationIcon/></IconButton>
-                </Box>
-              )}
-          
+                    <Button
+                      // display={!this.state.fadeInBulkBox ? "flex" : "none"}
+                      variant="text"
+                      type='link'
+                      size="small"
+                      onClick={(e) => this.handleCloseBulk(e) }>
+                      <ClearIcon size="small"/>
+                    </Button>
+                  </Box>
+                </Collapse>
+              </Box>
             </Box>
            
-          </>)}
+          </>
+          )}
 
           {/* {this.state.writeable && (
             <React.Fragment>
@@ -1028,7 +1100,7 @@ class PublicationEdit extends Component {
     });
   };
 
-  handleClickOutside = (e) => {
+  handleClickOutside = () => {
     this.setState({
       showCollectionsDropDown: false,
     });
@@ -1083,41 +1155,40 @@ class PublicationEdit extends Component {
     window.location.reload();
   };
 
-  handleStatusSet = (e) => {
-    this.setState({submittingUpdate:true});
+  handleStatusSet = () => {
+    this.setState({submittingUpdate: true});
     var newStatus = this.state.newStatus;
     entity_api_update_entity(
         this.props.editingPublication.uuid, 
-        {"status":newStatus}, 
+        {"status": newStatus}, 
         JSON.parse(localStorage.getItem("info")).groups_token)
         .then((response) => {
           if (response.status < 300) {
             this.setState({ 
-              submit_error:false, 
-              submitting:false, 
-              submittingUpdate:false,
+              submit_error: false, 
+              submitting: false, 
+              submittingUpdate: false,
               });
             this.props.onUpdated(response.results);
           } else {
             this.setState({ 
-              submit_error:true, 
-              submitting:false, 
-              submittingUpdate:false,
-              submitErrorResponse:response.results.statusText ? response.results.statusText : response.results.error,
-              fieldString:response.results.statusText ? response.results.statusText : response.results.error,
+              submit_error: true, 
+              submitting: false, 
+              submittingUpdate: false,
+              submitErrorResponse: response.results.statusText ? response.results.statusText : response.results.error,
+              fieldString: response.results.statusText ? response.results.statusText : response.results.error,
             });
           }
         })
         .catch((error) => {
           this.setState({
-            submit_error:true, 
-            submitting:false,
-            submitErrorResponse:error.toString(),
-            fieldString:error.toString(),
+            submit_error: true, 
+            submitting: false,
+            submitErrorResponse: error.toString(),
+            fieldString: error.toString(),
           });
         });
   }
-  
 
   handleSubmit = (submitIntention) => {
     
@@ -1175,18 +1246,18 @@ class PublicationEdit extends Component {
           // package the data up
           var data = {
             description: this.state.editingPublication.description,
-            title:this.state.editingPublication.title,
-            publication_venue:this.state.editingPublication.publication_venue,
-            publication_date:this.state.editingPublication.publication_date,
-            publication_doi:this.state.editingPublication.publication_doi,
-            omap_doi:this.state.editingPublication.omap_doi,
+            title: this.state.editingPublication.title,
+            publication_venue: this.state.editingPublication.publication_venue,
+            publication_date: this.state.editingPublication.publication_date,
+            publication_doi: this.state.editingPublication.publication_doi,
+            omap_doi: this.state.editingPublication.omap_doi,
             // publication_status:this.state.editingPublication.publication_status,
-            publication_status:pubVal,
-            publication_url:this.state.editingPublication.publication_url,
-            issue:parseInt(this.state.editingPublication.issue,),
-            volume:parseInt(this.state.editingPublication.volume,),
-            pages_or_article_num:this.state.editingPublication.pages_or_article_num,
-            contains_human_genetic_sequences:false //Holdover from Dataset
+            publication_status: pubVal,
+            publication_url: this.state.editingPublication.publication_url,
+            issue: parseInt(this.state.editingPublication.issue,),
+            volume: parseInt(this.state.editingPublication.volume,),
+            pages_or_article_num: this.state.editingPublication.pages_or_article_num,
+            contains_human_genetic_sequences: false //Holdover from Dataset
           };
           if(isNaN(data.issue)){delete data.issue}
           if(isNaN(data.volume)){delete data.volume}
@@ -1205,13 +1276,6 @@ class PublicationEdit extends Component {
               data["direct_ancestor_uuids"] = direct_ancestor_uuid;
             }
           }
-          const config = {
-            headers: {
-              Authorization:
-                "Bearer " +
-                JSON.parse(localStorage.getItem("info")).groups_token,
-            },
-          };
 
           // Edits, not news
           if (this.props.editingPublication && !this.props.newForm) {
@@ -1310,7 +1374,7 @@ class PublicationEdit extends Component {
                         "message": "Publication has been submitted ("+ingestURL+")"
                       }
                       ingest_api_notify_slack(slackMessage)
-                        .then((slackRes) => {
+                        .then(() => {
                           //consoledebug("slackRes", slackRes);
                           if (response.status < 300) {
                             this.setState({ 
@@ -1329,8 +1393,8 @@ class PublicationEdit extends Component {
                         submit_error: true, 
                         submitting: false, 
                         // submitErrorResponse:response.results.statusText,
-                        submitErrorResponse:response,
-                        buttonSpinnerTarget:"" });
+                        submitErrorResponse: response,
+                        buttonSpinnerTarget: "" });
                     }
                 }) 
                 .catch((error) => {
@@ -1339,8 +1403,8 @@ class PublicationEdit extends Component {
                   this.setState({ 
                     submit_error: true, 
                     submitting: false, 
-                    submitErrorResponse:error.result.data,
-                    buttonSpinnerTarget:"" 
+                    submitErrorResponse: error.result.data,
+                    buttonSpinnerTarget: "" 
                   });
                 });
             
@@ -1367,9 +1431,9 @@ class PublicationEdit extends Component {
                       this.setState({ 
                         submit_error: true, 
                         submitting: false,
-                        buttonSpinnerTarget:"", 
-                        submitErrorStatus:statusText,
-                        submitErrorResponse:submitErrorResponse ,
+                        buttonSpinnerTarget: "", 
+                        submitErrorStatus: statusText,
+                        submitErrorResponse: submitErrorResponse ,
                       });
                     }
                 })
@@ -1378,9 +1442,9 @@ class PublicationEdit extends Component {
                     this.setState({ 
                       submit_error: true, 
                       submitting: false, 
-                      submitErrorResponse:error, 
-                      submitErrorStatus:error,
-                      buttonSpinnerTarget:"" });
+                      submitErrorResponse: error, 
+                      submitErrorStatus: error,
+                      buttonSpinnerTarget: "" });
                  });
             }else{
               //consoledebug("UPDATING data", data);
@@ -1399,8 +1463,8 @@ class PublicationEdit extends Component {
                         submit_error: true, 
                         submitting: false, 
                         // submitErrorResponse:response.results.statusText,
-                        submitErrorResponse:response,
-                        buttonSpinnerTarget:"" });
+                        submitErrorResponse: response,
+                        buttonSpinnerTarget: "" });
                     }
                 }) 
                 .catch((error) => {
@@ -1409,12 +1473,10 @@ class PublicationEdit extends Component {
                     this.setState({ 
                     submit_error: true, 
                     submitting: false, 
-                    submitErrorResponse:error.result.data,
-                    buttonSpinnerTarget:"" });
+                    submitErrorResponse: error.result.data,
+                    buttonSpinnerTarget: "" });
                   });
             }
-
-            
 
           // New, not edits
           }else{
@@ -1500,7 +1562,7 @@ class PublicationEdit extends Component {
           submit_error: true,
           submitting: false,
           buttonSpinnerTarget: "",
-          submitErrorStatus:"There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again."
+          submitErrorStatus: "There was a problem handling your form, and it is currently in an invalid state. Please review the marked items and try again."
         });
         // Alert("There was a problem handling your form. Please review the marked items and try again.");
       }
@@ -1511,14 +1573,14 @@ class PublicationEdit extends Component {
     //consoledebug("validateProcessor", stateKey, this.state.editingPublication[stateKey]);
       if(!this.state.editingPublication[stateKey] || this.state.editingPublication[stateKey].length ===0) {
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, [stateKey]: errorMsg },
+          validationStatus: { ...prevState.validationStatus, [stateKey]: errorMsg },
           formErrors: { ...prevState.formErrors, [stateKey]: "is-invalid" },
         }));
         return false;
       } else {
         //consoledebug("valid", stateKey, this.state.editingPublication[stateKey]);
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, [stateKey]: "" },
+          validationStatus: { ...prevState.validationStatus, [stateKey]: "" },
           formErrors: { ...prevState.formErrors, [stateKey]: "" },
         }));
         return true;
@@ -1527,15 +1589,15 @@ class PublicationEdit extends Component {
 
   validateForm() {
     
-    return new Promise((resolve, reject) => {
-      let isValid =   true;
+    return new Promise((resolve) => {
+      let isValid = true;
 
       // Check required fields
       // The Processor here will wipe the previosu error, so run it first
       var requiredFields = ["title","publication_venue","publication_date","publication_url","description" ];
       var errorMsg = "Field is Required"
       requiredFields.forEach((field) => {
-        if(this.validateProcessor(field, errorMsg) ===  false) {
+        if(this.validateProcessor(field, errorMsg) === false) {
           isValid = false;
           resolve(isValid);
         }
@@ -1546,14 +1608,14 @@ class PublicationEdit extends Component {
       //consoledebug({pubstat});
       if(pubstat === undefined || pubstat === null || pubstat.length === 0){
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, ['publication_status']: "Status is Required" },
+          validationStatus: { ...prevState.validationStatus, ['publication_status']: "Status is Required" },
           formErrors: { ...prevState.formErrors, ['publication_status']: "is-invalid" },
         }));
         isValid = false;
         resolve(isValid);
       }else{
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, ['publication_status']: "" },
+          validationStatus: { ...prevState.validationStatus, ['publication_status']: "" },
           formErrors: { ...prevState.formErrors, ['publication_status']: "" },
         }));
       }
@@ -1561,32 +1623,31 @@ class PublicationEdit extends Component {
       // Check for  at least one Source 
       if(this.state.source_uuid_list.length === 0) {
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, source_uuid_list:"Please select at least one source" },
-          formErrors: { ...prevState.formErrors, source_uuid_list:"is-invalid" },
+          validationStatus: { ...prevState.validationStatus, source_uuid_list: "Please select at least one source" },
+          formErrors: { ...prevState.formErrors, source_uuid_list: "is-invalid" },
         }));
         isValid = false;
         resolve(isValid);
       }else{
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, ['source_uuid_list']: "" },
+          validationStatus: { ...prevState.validationStatus, ['source_uuid_list']: "" },
           formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },
         }));
       }
-
       
       // Check Int values are ints
       var intFields = ["issue", "volume"];
       intFields.forEach((field) => {
         if(this.state.editingPublication[field] && this.state.editingPublication[field].length >0 && isNaN(this.state.editingPublication[field])) {
           this.setState((prevState) => ({
-            validationStatus:  { ...prevState.validationStatus, [field]: "Must be a Number" },
+            validationStatus: { ...prevState.validationStatus, [field]: "Must be a Number" },
             formErrors: { ...prevState.formErrors, [field]: "is-invalid" },
           }));
           isValid = false;
           resolve(isValid);
         }else{
           this.setState((prevState) => ({
-            validationStatus:  { ...prevState.validationStatus, [field]: "" },
+            validationStatus: { ...prevState.validationStatus, [field]: "" },
             formErrors: { ...prevState.formErrors, [field]: "" },
           }));
         }
@@ -1595,7 +1656,7 @@ class PublicationEdit extends Component {
       // is the Source Bulk erroring?
       if(this.state.sourceBulkError.length > 0){
         this.setState((prevState) => ({
-          validationStatus:  { ...prevState.validationStatus, ['source_uuid_list']: this.state.sourceBulkError },
+          validationStatus: { ...prevState.validationStatus, ['source_uuid_list']: this.state.sourceBulkError },
           formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" },
         }));
         isValid = false;
@@ -1609,7 +1670,7 @@ class PublicationEdit extends Component {
           submit_error: true,
           submitting: false,
           buttonSpinnerTarget: "",
-          submitErrorResponse:toString(this.state.validationStatus),
+          submitErrorResponse: toString(this.state.validationStatus),
         });
       }
 
@@ -1765,7 +1826,6 @@ class PublicationEdit extends Component {
       </Dialog>
     );
   }
-    
 
   renderButtonOverlay() {
     return (
@@ -1785,7 +1845,6 @@ class PublicationEdit extends Component {
     }));
   };
 
-
   renderManualStatusControl=()=>{
     return(  
       <div className="mt-1">
@@ -1795,7 +1854,7 @@ class PublicationEdit extends Component {
           onClick={this.toggleStatSetView}>
          {this.state.statusSetLabel}
         </Button>
-        {this.state.toggleStatusSet  && (
+        {this.state.toggleStatusSet && (
           <LoadingButton 
             className="mx-1"
             loading={this.state.submittingUpdate}
@@ -1826,7 +1885,6 @@ class PublicationEdit extends Component {
       </div>
     )
   }
-  
 
   renderButtons() {
     // @TODO: A lot of the combined checks are redundant 
@@ -1836,22 +1894,12 @@ class PublicationEdit extends Component {
     var latestCheck = !this.state.editingPublication.next_revision_uuid ||this.state.editingPublication.next_revision_uuid === undefined;
     var writeCheck = this.state.has_write_priv
     var adminCheck = this.state.has_admin_priv
-    var versCheck = this.state.has_version_priv
+    // var versCheck = this.state.has_version_priv
     var pubCheck = this.state.editingPublication.status === "Published"
     var subCheck = this.state.editingPublication.status === "Submitted"
     var newStateCheck = this.state.editingPublication.status === "New"
     var newFormCheck = this.props.newForm
 
-
-    var permMatrix = {
-      "latestCheck":latestCheck,
-      "writeCheck":writeCheck,
-      "adminCheck":adminCheck,
-      "versCheck":versCheck,
-      "pubCheck":pubCheck,
-      "newFormCheck":newFormCheck,
-      "newStateCheck":newStateCheck,
-    }
     //consoletable("permMatrix",permMatrix)
     
     return (
@@ -1893,7 +1941,6 @@ class PublicationEdit extends Component {
     //   !this.props.editingPublication.next_revision_uuid ||
     //   this.props.editingPublication.next_revision_uuid === undefined;
     // if (datasetStatus && writability && latestVersion) {
-
 
     // Checking before even calling this function now
       return (
@@ -2004,8 +2051,7 @@ class PublicationEdit extends Component {
     );
   }
 
-
-  errorClass(error, e) {
+  errorClass(error) {
     //consoledebug("errorClass", error, e);
     if (error === "valid") return "is-valid";
     else if (error === "invalid" || error === "is-invalid") return "is-invalid";
@@ -2163,7 +2209,7 @@ class PublicationEdit extends Component {
                   modecheck="Source"
                   // whitelist="dataset" 
                   restrictions={{ // Disables type selection entierly, vs just hiding options
-                    entityType : "dataset"
+                    entityType: "dataset"
                   }}
                 />
               </DialogContent>
@@ -2255,7 +2301,7 @@ class PublicationEdit extends Component {
           {/* pub Status */}
           <div className={"form-gropup mb-4 "+this.state.formErrors.publication_status}>
             <FormControl
-              error={ this.state.validationStatus.publication_status.length>0 ? true : false}  >
+              error={ this.state.validationStatus.publication_status.length>0 ? true : false} >
               <FormLabel 
                 id="publication_status"
                 error={ this.state.validationStatus.publication_status.length>0 ? true : false }>
