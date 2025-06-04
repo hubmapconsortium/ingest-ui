@@ -296,9 +296,10 @@ class PublicationEdit extends Component {
           //consoledebug("Error Checking Permissions", err);
         });
     } else {
-      this.setState({
-        sourceBulkStatus: "complete",
-      })
+      setTimeout(() => {
+        // Looks janky if it looks like it doesnt even try
+        this.setState({ sourceBulkStatus: "complete", });
+      }, 1000);
     }
 
     ingest_api_users_groups(auth)
@@ -506,10 +507,12 @@ class PublicationEdit extends Component {
     if (!this.state.lookUpCancelled) {
       this.setState({
         LookUpShow: true,
+        sourceBulkStatus: "loading",
       });
     }
     this.setState({
       lookUpCancelled: false,
+      sourceBulkStatus: "complete",
     });
   };
 
@@ -568,6 +571,7 @@ class PublicationEdit extends Component {
       this.setState({
         hideUUIDList: true,
         fadeInBulkBox: false,
+        sourceBulkStatus: "complete",
       })
   }
 
@@ -665,54 +669,6 @@ class PublicationEdit extends Component {
           this.props.reportError(error);
         });
 
-      // uniqueUUIDListUpdate.forEach((dataset) => {
-      //   if(!originalUUIDList.includes(dataset) && dataset.length >0 ){
-      //     console.log("DATASET "+dataset+" NOT Included");
-      //     entity_api_get_entity(dataset)
-      //     .then((response) => {
-      //       console.debug('%c◉ ⚠️ Response ', 'background-color:#00ff7b', response);
-      //       if(response.results){
-      //         this.setState({
-      //           hideUUIDList: false,
-      //           source_uuid_list: [...this.state.source_uuid_list, response.results],
-      //           dataset_uuids: [...this.state.dataset_uuids, response.results.uuid.trim()],
-      //         })
-      //       }else{
-      //         if(response.data && response.data.error ){
-      //           console.debug('%c◉ response.data.error ', 'color:#ff005d', response.data.error);
-      //           this.setState(prevState => ({
-      //             formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" }, 
-      //             sourceBulkError: response.data.error,
-      //           }));
-      //         }else{
-      //           this.props.reportError(response);
-      //         }
-            
-      //       }
-      //     })
-      //     .catch((error) => {
-      //       console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-      //       //consoledebug("UUIDCheck",error);
-      //       this.props.reportError(error);
-      //     })
-      //   }else{
-      //     console.log("DATASET "+dataset+" IS ALREADY Included");
-      //     repeatList.push(dataset)
-      //     this.setState({
-      //       sourceBulkWarning: "The Following Datasets are already Included: "+repeatList.join(", ")
-      //     })
-      //   }
-      // });
-
-      // // If Some are in the table and not in the Bulk input, nix em
-      // // uniqueUUIDListUpdate.forEach((dataset)
-      // originalUUIDList.forEach((dataset) => {
-      //   if(!uniqueUUIDListUpdate.includes(dataset)){
-      //     this.sourceRemover({uuid:dataset});
-      //   }
-      // })
-
-      // })
     }
   }
 
@@ -774,9 +730,14 @@ class PublicationEdit extends Component {
             validationStatus: { ...prevState.validationStatus, ['source_uuid_list']: "" },
             formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },  
             dataset_uuids: dlist,
-            dataset_uuids_string: dlist.join(", ")
-
+            dataset_uuids_string: dlist.join(", "),
+          },() => {
+            setTimeout(() => {
+              // Looks janky if it looks like it doesnt even try
+              this.setState({ sourceBulkStatus: "complete", });
+            }, 2000);
           }));
+          
           this.hideLookUpModal();
         }
       );
@@ -996,25 +957,30 @@ class PublicationEdit extends Component {
                     sx={{ 
                       overflow: "hidden",
                       width: "650px"}}>
-                    <StyledTextField
-                      name="dataset_uuids_string"
-                      display="flex"
-                      id="dataset_uuids_string"
-                      error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
-                      multiline
-                      inputProps={{ 'aria-label': 'description' }}
-                      placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
-                      variant="standard"
-                      size="small"
-                      fullWidth={true}
-                      onChange={(event) => this.handleInputChange(event)}
-                      value={this.state.dataset_uuids_string}
-                      sx={{
-                        overflow: "hidden",
-                        marginTop: '10px',
-                        verticalAlign: 'bottom',
-                        width: "100%",
-                      }}/>
+                    <FormControl >
+                      <StyledTextField
+                        name="dataset_uuids_string"
+                        display="flex"
+                        id="dataset_uuids_string"
+                        error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
+                        multiline
+                        inputProps={{ 'aria-label': 'description' }}
+                        placeholder="HBM123.ABC.456, HBM789.DEF.789, [...etc]"
+                        variant="standard"
+                        size="small"
+                        fullWidth={true}
+                        onChange={(event) => this.handleInputChange(event)}
+                        value={this.state.dataset_uuids_string}
+                        sx={{
+                          overflow: "hidden",
+                          marginTop: '10px',
+                          verticalAlign: 'bottom',
+                          width: "100%",
+                        }}/>
+                        <FormHelperText id="component-helper-text" sx={{width:"100%", marginLeft:"0px"}}>
+                          {"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
+                        </FormHelperText>
+                    </FormControl>
                     <Button
                       // display={!this.state.fadeInBulkBox ? "flex" : "none"}
                       variant="text"
@@ -1023,6 +989,7 @@ class PublicationEdit extends Component {
                       onClick={(e) => this.handleCloseBulk(e) }>
                       <ClearIcon size="small"/>
                     </Button>
+                    
                   </Box>
                 </Collapse>
               </Box>
@@ -1031,37 +998,6 @@ class PublicationEdit extends Component {
           </>
           )}
 
-          {/* {this.state.writeable && (
-            <React.Fragment>
-              <Box className="mt-2 w-100" width="100%" display="flex">
-                <Box p={1} className="m-0  text-right" flexShrink={0}>
-                  <Button
-                    variant="contained"
-                    type="button"
-                    size="small"
-                    className="btn btn-neutral"
-                    onClick={() => this.handleLookUpClick()}>
-                    Add{" "}
-                    {this.state.dataset_uuids &&
-                      this.state.dataset_uuids.length >= 1 &&
-                      "Another"}{" "}
-                    Source
-                    <FontAwesomeIcon
-                      className="fa button-icon m-2"
-                      icon={faPlus}
-                    />
-                  </Button>
-                </Box>
-                <Box p={1} width="100%">
-                  {this.state.validationStatus.source_uuid_list && this.state.validationStatus.source_uuid_list.length>0  && (
-                    <Alert severity="error" width="100% ">
-                      Invalid Source: At least one source must be added.
-                    </Alert>
-                  )}
-                </Box>
-              </Box>
-            </React.Fragment>
-          )} */}
         </div>
       );
     } else if (this.state.writeable && this.state.editingPublication) {
