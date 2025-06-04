@@ -957,25 +957,30 @@ class PublicationEdit extends Component {
                     sx={{ 
                       overflow: "hidden",
                       width: "650px"}}>
-                    <StyledTextField
-                      name="dataset_uuids_string"
-                      display="flex"
-                      id="dataset_uuids_string"
-                      error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
-                      multiline
-                      inputProps={{ 'aria-label': 'description' }}
-                      placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
-                      variant="standard"
-                      size="small"
-                      fullWidth={true}
-                      onChange={(event) => this.handleInputChange(event)}
-                      value={this.state.dataset_uuids_string}
-                      sx={{
-                        overflow: "hidden",
-                        marginTop: '10px',
-                        verticalAlign: 'bottom',
-                        width: "100%",
-                      }}/>
+                    <FormControl >
+                      <StyledTextField
+                        name="dataset_uuids_string"
+                        display="flex"
+                        id="dataset_uuids_string"
+                        error={this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? true : false}
+                        multiline
+                        inputProps={{ 'aria-label': 'description' }}
+                        placeholder="HBM123.ABC.456, HBM789.DEF.789, [...etc]"
+                        variant="standard"
+                        size="small"
+                        fullWidth={true}
+                        onChange={(event) => this.handleInputChange(event)}
+                        value={this.state.dataset_uuids_string}
+                        sx={{
+                          overflow: "hidden",
+                          marginTop: '10px',
+                          verticalAlign: 'bottom',
+                          width: "100%",
+                        }}/>
+                        <FormHelperText id="component-helper-text" sx={{width:"100%", marginLeft:"0px"}}>
+                          {"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " + (this.state.formErrors.dataset_uuids_string && this.state.formErrors.dataset_uuids_string.length > 0 ? " - " + this.state.formErrors.dataset_uuids_string : "")}
+                        </FormHelperText>
+                    </FormControl>
                     <Button
                       // display={!this.state.fadeInBulkBox ? "flex" : "none"}
                       variant="text"
@@ -984,6 +989,7 @@ class PublicationEdit extends Component {
                       onClick={(e) => this.handleCloseBulk(e) }>
                       <ClearIcon size="small"/>
                     </Button>
+                    
                   </Box>
                 </Collapse>
               </Box>
