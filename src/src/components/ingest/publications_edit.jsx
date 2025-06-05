@@ -983,11 +983,11 @@ class PublicationEdit extends Component {
                     </FormControl>
                     <Button
                       // display={!this.state.fadeInBulkBox ? "flex" : "none"}
+                      endIcon={<ClearIcon />}
                       variant="text"
                       type='link'
                       size="small"
                       onClick={(e) => this.handleCloseBulk(e) }>
-                      <ClearIcon size="small"/>
                     </Button>
                     
                   </Box>
