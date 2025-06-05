@@ -1577,17 +1577,16 @@ class DatasetEdit extends Component {
     // console.debug("permMatrix")
     // console.table(permMatrix)
 
-
-    if (this.state.has_admin_priv === true 
-            && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
-            && this.state.status.toUpperCase() === "PUBLISHED") {
-        //  return (
-        //    <div className="buttonWrapRight">
-        //         {this.reprocessButton()}
-        //         {this.cancelButton()}
-        //     </div>
-        //   )
-    }
+    // if (this.state.has_admin_priv === true 
+    //         && (!this.state.previous_revision_uuid || this.state.previous_revision_uuid === undefined )
+    //         && this.state.status.toUpperCase() === "PUBLISHED") {
+    //     //  return (
+    //     //    <div className="buttonWrapRight">
+    //     //         {this.reprocessButton()}
+    //     //         {this.cancelButton()}
+    //     //     </div>
+    //     //   )
+    // }
     // console.debug("CheckTwo",this.state.writeable === false && this.state.has_version_priv === false);
     if (this.state.writeable === false ){            
       return (
@@ -1599,11 +1598,20 @@ class DatasetEdit extends Component {
         </div>
       )
     } else {
-      if (["NEW", "INVALID", "REOPENED", "ERROR", "SUBMITTED"].includes( 
-              this.state.status.toUpperCase())) {
+      if (["NEW", "INVALID", "REOPENED", "ERROR", "SUBMITTED", "QA"].includes(this.state.status.toUpperCase())) {
+        console.debug('%c◉ IN QA ', 'color:#00ff7b', );
+        // We need to Check admin status stuff here, 
+        // ONLY ADMIN can save on QA Statuses, All users can save on all others 
+        let saveCheck = true;
+        if (this.state.status.toUpperCase()==="QA" && !permMatrix.adminCheck){
+          saveCheck = false; 
+        }
+
         return (
           <div className="buttonWrapRight">
-              {this.aButton(this.state.status.toLowerCase(), "Save")}
+              {saveCheck &&(
+                this.aButton(this.state.status.toLowerCase(), "Save")
+              )}      
               {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
                 this.aButton("processing", "Process"))
               }
