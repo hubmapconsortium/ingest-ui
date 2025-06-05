@@ -208,3 +208,58 @@ export function entity_api_attach_bulk_metadata(uuid,item){
     } );
 };
 
+/*
+ * Get Multiple Entities from a list 
+ * 
+ * return:  { status, results}
+ */
+export function entity_api_get_these_entities(uuids) {
+  let message = "";
+  let uuidSet = Array.from(new Set(uuids)); // Nix any Dupes
+  let dupes = uuids.filter((item, idx, arr) => arr.indexOf(item) !== idx); // Also get a list of dupes to note
+  // let dupes = uuidSet.difference(uuids)
+  if (dupes.length > 0) {
+    message = "Duplicate IDs found and Removed: " + Array.from(new Set(dupes)).join(", ");
+  }
+  console.group("entity_api_get_these_entities");
+    console.debug("uuids: ", uuids);
+    console.debug("uuidSet", uuidSet);
+    console.debug("dupes", dupes);
+  console.groupEnd();
+
+  if (uuids.length === 0) {
+    message = "No UUIDs provided";
+    return Promise.resolve({ status: 400, results: { message: message } });
+  }
+  // Fetch all entities in parallel
+  return Promise.all(uuidSet.map(entity_api_get_entity))
+
+    .then((results) => {
+      // console.debug("entity_api_get_globus_url", res);\
+      let badList = []; 
+      let goodList = [];
+      let errMessage = null;
+      results.map((item) => {
+        console.debug('%c◉ item ', 'color:#00ff7b', item);
+        if (item.status !== 200) {
+          badList.push(item.data.error || item.data.message || item.data || "Unknown Error");
+          errMessage = "Error fetching entities: "+ badList.join(", ");
+        }else{
+          goodList.push(item);
+        }
+      });
+      return ({
+        status: 200,
+        message: message,
+        results: goodList,
+        badList: badList,
+        error: errMessage? errMessage : null
+      })
+    })
+    
+    .catch(error => ({
+      status: 500,
+      message: message,
+      results: error.message?error.message: "Error fetching entities" 
+    }));
+}
