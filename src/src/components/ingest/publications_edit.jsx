@@ -1,6 +1,7 @@
 import React,{Component} from "react";
 import {
-  faExternalLinkAlt,faPenToSquare,
+  faExternalLinkAlt,
+  faPenToSquare,
   faPlus,
   faQuestionCircle,
   faSpinner,
@@ -616,9 +617,9 @@ class PublicationEdit extends Component {
   };
 
   handleInputUUIDs = (e) => {
+    console.debug('%c◉ e ', 'color:#00ff7b', e);  
     e.preventDefault();
-    
-    if(e.target.innerText && e.target.innerText === "BULK"){
+    if(this.state.hideUUIDList){
       this.setState({
         sourceBulkStatus: "loading",
         // Lets make sure the field is freshest BEFORE opening it up
@@ -628,15 +629,16 @@ class PublicationEdit extends Component {
            hideUUIDList: false,
         })
       })
-    } 
-
-    if (e.target.innerText && e.target.innerText === "UPDATE"){
-
+    }else{
       // Lets clear out the previous errors first
       this.setState(prevState => ({
         formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" }, 
         sourceBulkError: "",
+        // We still should close up, even if empty
+        hideUUIDList: true,
+        sourceBulkStatus: "complete"
       }));
+
       // Ok, we want to Save what's Stored for data in the Table
       let datasetTableRows = this.state.source_uuid_list;
       console.log("datasetTableRows", datasetTableRows);
@@ -941,7 +943,6 @@ class PublicationEdit extends Component {
                   overflowY: "visible",
                   padding: "0px",  
                   maxHeight: "45px",}}>
-
                 <Collapse 
                   in={!this.state.hideUUIDList} 
                   orientation="horizontal" 
@@ -982,14 +983,12 @@ class PublicationEdit extends Component {
                         </FormHelperText>
                     </FormControl>
                     <Button
-                      // display={!this.state.fadeInBulkBox ? "flex" : "none"}
-                      endIcon={<ClearIcon />}
                       variant="text"
                       type='link'
                       size="small"
                       onClick={(e) => this.handleCloseBulk(e) }>
+                      <ClearIcon size="small"/>
                     </Button>
-                    
                   </Box>
                 </Collapse>
               </Box>
