@@ -1,11 +1,11 @@
 // Search APIs
 
 import axios from "axios";
-// import { GROUPS } from "./groups";
 import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from "../constants";
-
 import {ingest_api_all_user_groups} from "./ingest_api";
 export const esb = require("elastic-builder");
+let globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
+let options={headers: {Authorization: "Bearer " + globalToken,"Content-Type": "application/json"}}
 
 /*
  * Auth Validation  method
@@ -13,15 +13,8 @@ export const esb = require("elastic-builder");
  * return:  { status}
  */
 // Something of a hack to validate the auth token
-export function api_validate_token(auth) {
-  const options = {
-    headers: {
-      Authorization: "Bearer " + auth,
-      "Content-Type": "application/json",
-    },
-  };
+export function api_validate_token() {
   let payload = search_api_filter_es_query_builder("test", 1, 1);
-
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
@@ -33,20 +26,12 @@ export function api_validate_token(auth) {
 }
 
 /*
- * Search API method
+ * Search API metvarhod
  *
  * return:  { status, results}
  */
-export function api_search(params, auth) {
-  const options = {
-    headers: {
-      Authorization: "Bearer " + auth,
-      "Content-Type": "application/json",
-    },
-  };
-
+export function api_search(params) {
   let payload = search_api_filter_es_query_builder(params, 0, 100);
-
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
@@ -70,18 +55,8 @@ export function api_search(params, auth) {
 }
 
 export function api_search2(params, auth, from, size, fields, source) {
-  // console.debug('%c⊙', 'color:#00ff7b', fields );
-  // console.debug('%c⊙', 'color:#00ff7b', "api2", params, auth, from, size, fields,source);
-  const options = {
-    headers: {
-      Authorization: "Bearer " + auth,
-      "Content-Type": "application/json",
-    },
-  };
   let payload = search_api_filter_es_query_builder(params, from, size, fields);
-  // console.debug('payload', payload)
-  return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
+  return axios.post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       // console.debug("API api_search2 res", res);
       let hits = res.data.hits.hits;
@@ -107,12 +82,11 @@ export function api_search2(params, auth, from, size, fields, source) {
  *
  */
 export function search_api_filter_es_query_builder(
-  fields,
-  from,
-  size,
-  colFields
-) {
-  // console.debug("%c⊙queryBits:", "color:#00ff7b", fields, from, size, colFields);
+    fields,
+    from,
+    size,
+    colFields
+  ){
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1) {
@@ -217,35 +191,27 @@ export function search_api_filter_es_query_builder(
   return requestBody.toJSON();
 }
 
-// export function fixKeywordText(text) {
-//   let x = text.replace(/-/gi, "\\-");
-//   return x;
-// }
-
 // this WAS a  function that reads from a static file groups.jsx
 export function search_api_search_group_list() {
-  ingest_api_all_user_groups(
-    JSON.parse(localStorage.getItem("info")).groups_token
-  )
-    .then((res) => {
-      // no need to filter out the data_providers, the ingest api does that for us
-      let groups = res.results;
-      return groups;
-    })
-    .catch((err) => {
-      console.debug(
-        "%c⭗",
-        "color:#ff005d",
-        "search_api_search_group_list error",
-        err
-      );
-      return err;
-    });
+  ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+  .then((res) => {
+    // no need to filter out the data_providers, the ingest api does that for us
+    let groups = res.results;
+    return groups;
+  })
+  .catch((err) => {
+    console.debug(
+      "%c⭗",
+      "color:#ff005d",
+      "search_api_search_group_list error",
+      err
+    );
+    return err;
+  });
 }
 
 export function search_api_get_assay_type(assay) {
-  return axios
-    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`)
+  return axios.get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`)
     .then((res) => {
       let data = res.data;
       var found_dt = undefined;
@@ -303,8 +269,7 @@ export function search_api_get_assay_set(scope) {
 }
 
 export function search_api_get_assay_primaries() {
-  return axios
-    .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`)
+  return axios.get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`)
     .then((res) => {
       let data = res.data;
       let dtListMapped = data.result.map((value, index) => {
