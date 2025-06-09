@@ -52,7 +52,7 @@ export function api_search(params) {
     });
 }
 
-export function api_search2(params, auth, from, size, fields, source) {
+export function api_search2(params, auth, from, size, fields) {
   let payload = search_api_filter_es_query_builder(params, from, size, fields);
   return axios.post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
@@ -246,7 +246,7 @@ export function search_api_get_assay_set(scope) {
       .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype` + target)
       .then((res) => {
         let data = res.data;
-        let mapCheck = data.result.map((value, index) => {
+        let mapCheck = data.result.map((value) => {
           return value;
         });
         console.debug("API get_processed_assays data", data, mapCheck);
@@ -270,7 +270,7 @@ export function search_api_get_assay_primaries() {
   return axios.get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`)
     .then((res) => {
       let data = res.data;
-      let dtListMapped = data.result.map((value, index) => {
+      let dtListMapped = data.result.map((value) => {
         return value;
       });
       return { status: res.status, data: dtListMapped };
