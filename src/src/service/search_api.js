@@ -15,8 +15,7 @@ let options={headers: {Authorization: "Bearer " + globalToken,"Content-Type": "a
 // Something of a hack to validate the auth token
 export function api_validate_token() {
   let payload = search_api_filter_es_query_builder("test", 1, 1);
-  return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
+  return axios.post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       return { status: res.status };
     })
@@ -32,8 +31,7 @@ export function api_validate_token() {
  */
 export function api_search(params) {
   let payload = search_api_filter_es_query_builder(params, 0, 100);
-  return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
+  return axios.post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       let hits = res.data.hits.hits;
 
