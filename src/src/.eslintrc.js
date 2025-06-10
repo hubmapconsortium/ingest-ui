@@ -28,16 +28,19 @@ module.exports = {
     "react"
   ],
   rules: {
-    // indent: ["warn", 2],
+    // "indent": ["warn", 2,{ "outerIIFEBody": 1 }],
+    "indent": 0,
     // "keyword-spacing": ["warn", {
-      //   before: false,
-      //   after: false,
-      //   overrides: {
-        //     from: {before: true, after: true},
-        //     import: {before: false, after: true},
-        //     static: {after: true}
-        //   }
-        // }],
+    //     before: false,
+    //     after: false,
+    //     overrides: {
+    //         from: {before: true, after: true},
+    //         import: {before: false, after: true},
+    //         static: {after: true}
+    //       }
+    //     }
+    // ],
+    "keyword-spacing": [0],
     "no-unused-expressions": ["error", { "allowTernary": true }],
     "no-undef": "error",
     "no-unused-vars": ["warn", "all"],
@@ -51,21 +54,25 @@ module.exports = {
     "space-before-function-paren": [0],
     // "space-in-parens": ["warn", "never", {"exceptions": ["{}"]}],
     "space-in-parens": [0],
+    // "quotes": ["warn", "single"],
+    "quotes": 0,
+    // "jsx-quotes": ["warn", "prefer-single"],
+    "jsx-quotes": 0,
+    // "block-spacing": ["warn",'never'],
+    "block-spacing": 0,
+    // "comma-spacing": ["warn", {before: false, after: true}],
+    "comma-spacing": 0,
+    "quote-props": 0,
     "no-multiple-empty-lines": ["warn", {max: 1}],
     "no-multi-spaces": ["warn", {ignoreEOLComments: true}],
     "object-curly-newline": [0],
-    "keyword-spacing": [0],
     "key-spacing": ["warn", {beforeColon: false, afterColon: true, mode: "strict"}],
     "array-callback-return": 0,
     "arrow-spacing": 0,
-    "block-spacing": 0,
-    "block-spacing": 0,
     "brace-style": 0,
     "camelcase": 0,
     "comma-dangle": 0,
-    "comma-spacing": 0,
     "dot-notation": 0,
-    "indent": 0,
     "lines-between-class-members": 0,
     "no-empty": 0,
     "no-mixed-spaces-and-tabs": 0,
@@ -79,8 +86,6 @@ module.exports = {
     "object-property-newline": 0,
     "padded-blocks": 0,
     "prefer-const": 0,
-    "quote-props": 0,
-    "quotes": 0,
     "react/jsx-no-target-blank": 0,
     "react/no-unescaped-entities": 0, // disable rule
     "react/no-unknown-property": 0,
