@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 import {stripHTML,toTitleCase} from '../utils/string_helper'
 
 /*
@@ -62,7 +62,7 @@ export function ubkg_api_get_organ_type_set(format){
       }
     })
     .catch(error => {
-      console.debug("ubkg_api_get_organ_type_set", error, error.response);
+      console.debug('ubkg_api_get_organ_type_set', error, error.response);
       captureError(error);
     });
 };
@@ -78,7 +78,7 @@ export function ubkg_api_get_dataset_type_set(){
       return data;
     })
     .catch(error => {
-      console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+      console.debug('ubkg_api_get_dataset_type_set', error, error.response);
       captureError(error);
     });
 };
@@ -94,7 +94,7 @@ export function ubkg_api_get_upload_dataset_types(){
       return data;
     })
     .catch(error => {
-      console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+      console.debug('ubkg_api_get_dataset_type_set', error, error.response);
       captureError(error);
     });
 };
@@ -104,7 +104,7 @@ export function ubkg_api_get_upload_dataset_types(){
  *
  */
 export function ubkg_api_generate_display_subtype(entity){
-  var display_subtype = ""
+  var display_subtype = ''
   var entity_type = entity['entity_type']
   if(entity_type === 'Sample' && 'sample_category' in entity){
     if(entity['sample_category'].toLowerCase() === 'organ'){
@@ -121,7 +121,7 @@ export function ubkg_api_generate_display_subtype(entity){
           });
           
       }else{
-        throw new Error("Missing Organ key for  Sample with uuid: {entity['uuid']}")
+        throw new Error('Missing Organ key for  Sample with uuid: {entity[\'uuid\']}')
       }
     }else{
       display_subtype=entity['sample_category'].toString();
@@ -132,7 +132,7 @@ export function ubkg_api_generate_display_subtype(entity){
     display_subtype=entity['dataset_type'].toString()
     // return (entity['dataset_type'].toString())
   }else if(entity_type === 'Upload'){ 
-    return("Data Upload")
+    return('Data Upload')
   }else{ 
     // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
     display_subtype= toTitleCase(entity_type.toString())
@@ -142,10 +142,10 @@ export function ubkg_api_generate_display_subtype(entity){
 }
 
 function captureError (error){
-  console.debug("Error Format CHeck", error);
+  console.debug('Error Format CHeck', error);
   if(error.response ){
     if(error.response.data ){
-      if(error.response.data.includes("<!DOCTYPE html>")){
+      if(error.response.data.includes('<!DOCTYPE html>')){
         var responseData = stripHTML(error.response.data)
         return{status: error.response.status, results: responseData}
       }else{

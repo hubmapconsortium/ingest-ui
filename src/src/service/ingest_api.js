@@ -1,10 +1,10 @@
 // Ingest specific APIs
 
-import axios from "axios";
-import FormData from "form-data";
+import axios from 'axios';
+import FormData from 'form-data';
 
-const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
-const options={headers: {Authorization: "Bearer " + globalToken,"Content-Type": "application/json"}}
+const globalToken = localStorage.getItem('info') ? JSON.parse(localStorage.getItem('info')).groups_token : null;
+const options={headers: {Authorization: 'Bearer ' + globalToken,'Content-Type': 'application/json'}}
 /*
  * User Groups only those data provider groups are return
  *
@@ -21,8 +21,8 @@ export function ingest_api_users_groups(){
       return{status: res.status, results: group_list}
     })
     .catch(error => {
-      if(error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read"){
-        console.debug("User exists just not in the read group");
+      if(error && error.response && error.response.response && error.response.response === 'User is not a member of group HuBMAP-read'){
+        console.debug('User exists just not in the read group');
         //  it's not really an /error/ to have anaccount w/o read
         return{status: 200, results: error.response.response} 
       }
@@ -48,14 +48,14 @@ export function ingest_api_user_admin(){
       for(let group in groups){
         let groupName = groups[group].name
         console.debug('%c◉ groupName ', 'color:#ffe921', groupName);
-        if(groupName.includes("hubmap-data-admin")){
+        if(groupName.includes('hubmap-data-admin')){
           return true
         }
       }
       return false
     })
     .catch(error => {
-      console.debug("ERR ingest_api_users_groups", error, error.response);
+      console.debug('ERR ingest_api_users_groups', error, error.response);
       return{error}
     });
 }
@@ -116,7 +116,7 @@ export function ingest_api_allowable_edit_states(uuid){
       return{status: res.status, results: res.data}
     })
     .catch(error => {
-      console.debug("ingest_api_allowable_edit_states", error, error.response);
+      console.debug('ingest_api_allowable_edit_states', error, error.response);
       if(error.response){
         return{status: error.response.status, results: error.response.data}
       }else{
@@ -230,13 +230,13 @@ export function ingest_api_bulk_entities_upload(type, data){
   dataForm.append('file', data);
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`, dataForm, options)
     .then(res => {
-      console.debug("ingest_api_bulk_entities",res);
+      console.debug('ingest_api_bulk_entities',res);
       //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
       // We might back back a 201 with an array of errors encountered. Let's check for that!  
       let results = res.data;
-      console.debug("results",results);
+      console.debug('results',results);
       if(results[0]){
-        console.debug("results DATA ",results[0]);
+        console.debug('results DATA ',results[0]);
       }
       return{status: res.status, results: results}
     })
@@ -277,12 +277,12 @@ export function ingest_api_get_associated_ids(uuid){
           if(
             parseInt(
               a.submission_id.substring(
-                a.submission_id.lastIndexOf("-") + 1
+                a.submission_id.lastIndexOf('-') + 1
               )
             ) >
             parseInt(
               b.submission_id.substring(
-                a.submission_id.lastIndexOf("-") + 1
+                a.submission_id.lastIndexOf('-') + 1
               )
             )
           ){
@@ -291,12 +291,12 @@ export function ingest_api_get_associated_ids(uuid){
           if(
             parseInt(
               b.submission_id.substring(
-                a.submission_id.lastIndexOf("-") + 1
+                a.submission_id.lastIndexOf('-') + 1
               )
             ) >
             parseInt(
               a.submission_id.substring(
-                a.submission_id.lastIndexOf("-") + 1
+                a.submission_id.lastIndexOf('-') + 1
               )
             )
           ){
@@ -392,12 +392,12 @@ export function ingest_api_notify_slack(data){
   return axios 
     .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/notify`,data,options)
     .then(res => {
-      console.debug("ingest_api_notify_slack",res);
+      console.debug('ingest_api_notify_slack',res);
       let results = res.data;
       return{status: res.status, results: results}
     })
     .catch(error => {
-      console.debug("ingest_api_notify_slack",error);
+      console.debug('ingest_api_notify_slack',error);
       return{error}
     });
 }
@@ -408,13 +408,13 @@ export function ingest_api_notify_slack(data){
 export function ingest_api_upload_bulk_metadata(type, dataFile){ 
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'file'}),dataFile.name);
-  formData.append('entity_type', "Sample")
+  formData.append('entity_type', 'Sample')
   formData.append('sub_type', type)
   formData.append('validate_uuids', 1)
   console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`,formData,options)
     .then(res => {
-      console.debug("ingest_api_upload_bulk_metadata",res);
+      console.debug('ingest_api_upload_bulk_metadata',res);
       let results = res.data;
       return{status: res.status, results: results}
     })
@@ -453,7 +453,7 @@ export function ingest_api_publish_collection( data){
 export function ingest_api_pipeline_test_privs(){ 
   return axios.get(`${process.env.REACT_APP_DATAINGEST_API_URL}/has-pipeline-test-privs`, options)
     .then(res => {
-      console.debug("ingest_api_pipeline_test_privs",res);
+      console.debug('ingest_api_pipeline_test_privs',res);
       let results = res.data;
       return{status: res.status, results: results}
     })
@@ -487,11 +487,11 @@ export function ingest_api_pipeline_test_submit( data){
 export function ingest_api_validate_contributors(dataFile){ 
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values'}),dataFile.name);
-  formData.append('entity_type', "contributors")
+  formData.append('entity_type', 'contributors')
 
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate?ensure-latest-cedar-version=true`, formData, options)
     .then(res => {
-      console.debug("ingest_api_validate_contributors",res);
+      console.debug('ingest_api_validate_contributors',res);
       let results = res.data;
       return{status: res.status, results: results}
     })

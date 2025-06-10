@@ -1,11 +1,11 @@
-import axios from "axios";
+import axios from 'axios';
 
-const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
+const globalToken = localStorage.getItem('info') ? JSON.parse(localStorage.getItem('info')).groups_token : null;
 const options = {
   headers: {
-    "X-Hubmap-Application": "ingest-ui",
-    "Authorization": "Bearer " + globalToken, 
-    "Content-Type": "application/json"
+    'X-Hubmap-Application': 'ingest-ui',
+    'Authorization': 'Bearer ' + globalToken, 
+    'Content-Type': 'application/json'
   }
 };
 /*
@@ -22,7 +22,7 @@ export function entity_api_get_entity(uuid){
       return{status: res.status, results: results}
     })
     .catch(error => {
-      console.debug("entity_api_get_entity", error, error.response);
+      console.debug('entity_api_get_entity', error, error.response);
       if(error.response){
         return error.response
       }else{
@@ -45,7 +45,7 @@ export function entity_api_update_entity(uuid, data){
     })
     .catch(error => {
       if(error.response){
-        console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
+        console.debug('entity_api_update_entity Error', error.response.status, error.response.data);
         return{status: error.response.status, results: error.response.data}
       }else{
         return{error: error.response}
@@ -66,7 +66,7 @@ export function entity_api_create_entity(entitytype, data){
       return{status: res.status, results: results}
     })
     .catch((error) => {
-      console.debug("entity_api_create_entity error", error, error.response);
+      console.debug('entity_api_create_entity error', error, error.response);
       if(error.response && error.response.data){
         return{error: error.response.data}
       }else{
@@ -181,11 +181,11 @@ export function entity_api_get_globus_url(uuid){
 
 // @TODO  DEPRECATING replaced with newer ingest API call
 export function entity_api_attach_bulk_metadata(uuid,item){ 
-  console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item);
+  console.debug('%c⭗', 'color:#ff005d', 'entity_api_upload_bulk_metadata', item);
   return axios 
     .put(`${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid,item,options)
     .then(res => {
-      console.debug("ingest_api_attach_bulk_metadata",res);
+      console.debug('ingest_api_attach_bulk_metadata',res);
       let results = res.data;
       return{status: res.status, results: results}
     })
@@ -202,14 +202,14 @@ export function entity_api_attach_bulk_metadata(uuid,item){
  * return:  { status, results}
  */
 export function entity_api_get_these_entities(uuids) {
-  let message = "";
+  let message = '';
   let uuidSet = Array.from(new Set(uuids)); // Nix any Dupes
   let dupes = uuids.filter((item, idx, arr) => arr.indexOf(item) !== idx); // Also get a list of dupes to note
   if(dupes.length > 0) {
-    message = "Duplicate IDs found and Removed: " + Array.from(new Set(dupes)).join(", ");
+    message = 'Duplicate IDs found and Removed: ' + Array.from(new Set(dupes)).join(', ');
   }
   if(uuids.length === 0) {
-    message = "No UUIDs provided";
+    message = 'No UUIDs provided';
     return Promise.resolve({status: 400, results: {message: message}});
   }
   // Fetch all entities in parallel
@@ -221,8 +221,8 @@ export function entity_api_get_these_entities(uuids) {
       results.map((item) => {
         console.debug('%c◉ item ', 'color:#00ff7b', item);
         if(item.status !== 200) {
-          badList.push(item.data.error || item.data.message || item.data || "Unknown Error");
-          errMessage = "Error fetching entities: "+ badList.join(", ");
+          badList.push(item.data.error || item.data.message || item.data || 'Unknown Error');
+          errMessage = 'Error fetching entities: '+ badList.join(', ');
         }else{
           goodList.push(item);
         }
@@ -238,6 +238,6 @@ export function entity_api_get_these_entities(uuids) {
     .catch(error => ({
       status: 500,
       message: message,
-      results: error.message?error.message: "Error fetching entities" 
+      results: error.message?error.message: 'Error fetching entities' 
     }));
 }

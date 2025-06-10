@@ -1,11 +1,11 @@
 // Search APIs
 
-import axios from "axios";
-import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from "../constants";
-import {ingest_api_all_user_groups} from "./ingest_api";
-export const esb = require("elastic-builder");
-let globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
-let options={headers: {Authorization: "Bearer " + globalToken,"Content-Type": "application/json"}}
+import axios from 'axios';
+import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from '../constants';
+import {ingest_api_all_user_groups} from './ingest_api';
+export const esb = require('elastic-builder');
+let globalToken = localStorage.getItem('info') ? JSON.parse(localStorage.getItem('info')).groups_token : null;
+let options={headers: {Authorization: 'Bearer ' + globalToken,'Content-Type': 'application/json'}}
 
 /*
  * Auth Validation  method
@@ -14,7 +14,7 @@ let options={headers: {Authorization: "Bearer " + globalToken,"Content-Type": "a
  */
 // Something of a hack to validate the auth token
 export function api_validate_token(){
-  let payload = search_api_filter_es_query_builder("test", 1, 1);
+  let payload = search_api_filter_es_query_builder('test', 1, 1);
   return axios.post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       return{status: res.status};
@@ -37,11 +37,11 @@ export function api_search(params){
 
       let entities = {};
       hits.forEach((s) => {
-        let uuid = s["_source"]["uuid"];
+        let uuid = s['_source']['uuid'];
         if(entities[uuid]){
-          entities[s["_source"]["uuid"]].push(s["_source"]);
+          entities[s['_source']['uuid']].push(s['_source']);
         }else{
-          entities[s["_source"]["uuid"]] = [s["_source"]];
+          entities[s['_source']['uuid']] = [s['_source']];
         }
       });
 
@@ -60,8 +60,8 @@ export function api_search2(params, auth, from, size, fields){
       let hits = res.data.hits.hits;
       let entities = [];
       hits.forEach((s) => {
-        let data = s["_source"];
-        data["id"] = s["_source"]["uuid"];
+        let data = s['_source'];
+        data['id'] = s['_source']['uuid'];
         entities.push(data);
       });
       return{
@@ -86,11 +86,11 @@ export function search_api_filter_es_query_builder(
   colFields
 ){
   let requestBody = esb.requestBodySearch();
-  let boolQuery = "";
-  if(fields["keywords"] && fields["keywords"].indexOf("*") > -1){
+  let boolQuery = '';
+  if(fields['keywords'] && fields['keywords'].indexOf('*') > -1){
     // if keywords contain a wildcard
     boolQuery = esb
-      .queryStringQuery(fields["keywords"])
+      .queryStringQuery(fields['keywords'])
       .fields(ES_SEARCHABLE_WILDCARDS);
   }else{
     boolQuery = esb.boolQuery();
@@ -99,82 +99,82 @@ export function search_api_filter_es_query_builder(
       // console.debug("full search")
       boolQuery.must(
         esb.matchQuery(
-          "entity_type",
-          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection"
+          'entity_type',
+          'Donor OR Sample OR Dataset OR Upload OR Publication OR Collection'
         )
       );
     }else{
       // was a group name selected
-      if(fields["group_name"]){
+      if(fields['group_name']){
         boolQuery.must(
-          esb.matchQuery("group_name.keyword", fields["group_name"])
+          esb.matchQuery('group_name.keyword', fields['group_name'])
         );
-      }else if(fields["group_uuid"]){
+      }else if(fields['group_uuid']){
         // this'll be from the dropdown,
         // if its a collection, we wanna search the datasets of it, not it itself
-        if(fields["entity_type"] === "Collection"){
+        if(fields['entity_type'] === 'Collection'){
           boolQuery.must(
-            esb.matchQuery("datasets.group_uuid.keyword", fields["group_uuid"])
+            esb.matchQuery('datasets.group_uuid.keyword', fields['group_uuid'])
           );
         }else{
           boolQuery.must(
-            esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
+            esb.matchQuery('group_uuid.keyword', fields['group_uuid'])
           );
         }
       }
       // was specimen types selected
-      if(fields["sample_category"]){
+      if(fields['sample_category']){
         // console.debug("sample_category", fields["sample_category"]);
-        if(fields["sample_category"] !== "donor"){
+        if(fields['sample_category'] !== 'donor'){
           boolQuery.must(
-            esb.matchQuery("sample_category.keyword", fields["sample_category"])
+            esb.matchQuery('sample_category.keyword', fields['sample_category'])
           );
         }else{
-          boolQuery.must(esb.matchQuery("entity_type.keyword", "Donor"));
+          boolQuery.must(esb.matchQuery('entity_type.keyword', 'Donor'));
         }
-      }else if(fields["organ"]){
-        boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
+      }else if(fields['organ']){
+        boolQuery.must(esb.matchQuery('organ.keyword', fields['organ']));
       }else{
         // was entity types select
-        if(fields["entity_type"]){
-          if(fields["entity_type"] === "DonorSample"){
+        if(fields['entity_type']){
+          if(fields['entity_type'] === 'DonorSample'){
             // hack to deal with no type selected from the UI, this clues from the donor/sample filer
-            boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
+            boolQuery.must(esb.matchQuery('entity_type', 'Donor OR Sample'));
           }else{
             boolQuery.must(
-              esb.matchQuery("entity_type.keyword", fields["entity_type"])
+              esb.matchQuery('entity_type.keyword', fields['entity_type'])
             );
           }
         }else{
           boolQuery.must(
             esb.matchQuery(
-              "entity_type",
-              "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection"
+              'entity_type',
+              'Donor OR Sample OR Dataset OR Upload OR Publication OR Collection'
             )
           ); // default everything ; this maybe temp
         }
       }
 
-      if(fields["keywords"]){
-        if(fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
+      if(fields['keywords']){
+        if(fields['keywords'] && fields['keywords'].indexOf('HBM') === 0){
           boolQuery.must(
-            esb.matchQuery("hubmap_id.keyword", fields["keywords"])
+            esb.matchQuery('hubmap_id.keyword', fields['keywords'])
           );
         }else{
           boolQuery.filter(
-            esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"])
+            esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields['keywords'])
           );
         }
       }
     }
   }
-  if(fields["keywords"] && fields["keywords"].indexOf("HBM") > -1){
+  if(fields['keywords'] && fields['keywords'].indexOf('HBM') > -1){
     // console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", boolQuery );
     requestBody
       .query(boolQuery)
       .from(from)
       .size(1)
-      .sort(esb.sort("last_modified_timestamp", "asc"))
+      .sort(esb.sort('last_modified_timestamp', 'asc'))
       .source(colFields)
       .trackTotalHits(true);
   }else{
@@ -182,7 +182,7 @@ export function search_api_filter_es_query_builder(
       .query(boolQuery)
       .from(from)
       .size(size)
-      .sort(esb.sort("last_modified_timestamp", "asc"))
+      .sort(esb.sort('last_modified_timestamp', 'asc'))
       .source(colFields)
       .trackTotalHits(true);
   }
@@ -191,7 +191,7 @@ export function search_api_filter_es_query_builder(
 
 // this WAS a  function that reads from a static file groups.jsx
 export function search_api_search_group_list(){
-  ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
+  ingest_api_all_user_groups(JSON.parse(localStorage.getItem('info')).groups_token)
     .then((res) => {
     // no need to filter out the data_providers, the ingest api does that for us
       let groups = res.results;
@@ -199,9 +199,9 @@ export function search_api_search_group_list(){
     })
     .catch((err) => {
       console.debug(
-        "%c⭗",
-        "color:#ff005d",
-        "search_api_search_group_list error",
+        '%c⭗',
+        'color:#ff005d',
+        'search_api_search_group_list error',
         err
       );
       return err;
@@ -214,7 +214,7 @@ export function search_api_get_assay_type(assay){
       let data = res.data;
       var found_dt = undefined;
       data.result.forEach((s) => {
-        if(s["name"] === assay){
+        if(s['name'] === assay){
           found_dt = s;
         }
       });
@@ -229,13 +229,13 @@ export function search_api_get_assay_type(assay){
 
 export function search_api_get_assay_set(scope){
   // Scope informs either Primary, Alt, or All
-  var target = "";
+  var target = '';
   switch(scope){
-  case"primary":
-    target = "?primary=true";
+  case'primary':
+    target = '?primary=true';
     break;
-  case"alt":
-    target = "?primary=false";
+  case'alt':
+    target = '?primary=false';
     break;
   default:
     break;
@@ -246,11 +246,11 @@ export function search_api_get_assay_set(scope){
       let mapCheck = data.result.map((value) => {
         return value;
       });
-      console.debug("API get_processed_assays data", data, mapCheck);
+      console.debug('API get_processed_assays data', data, mapCheck);
       return{data};
     })
     .catch((error) => {
-      console.debug("search_api_get_assay_set", error, error.response);
+      console.debug('search_api_get_assay_set', error, error.response);
       if(error.response){
         return{
           status: error.response.status,
