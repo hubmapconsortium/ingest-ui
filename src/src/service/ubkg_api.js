@@ -50,23 +50,21 @@ import { stripHTML,toTitleCase } from '../utils/string_helper'
  *
  * return: {'AO': 'Aorta' ... }
  */
-export function ubkg_api_get_organ_type_set(format) {
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`;
-  return axios
-    .get(url)
-      .then(res => {
-        let data = res.data;
-        if(format && format === 'array'){
-          let organArray = Object.entries(data).map(([key, value]) => ({ key, value }));
-          return organArray;
-        }else{
-          return data;
-        }
-      })
-      .catch(error => {
-        console.debug("ubkg_api_get_organ_type_set", error, error.response);
-        captureError(error);
-      });
+export function ubkg_api_get_organ_type_set(format) {  
+  return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`)
+    .then(res => {
+      let data = res.data;
+      if(format && format === 'array'){
+        let organArray = Object.entries(data).map(([key, value]) => ({ key, value }));
+        return organArray;
+      }else{
+        return data;
+      }
+    })
+    .catch(error => {
+      console.debug("ubkg_api_get_organ_type_set", error, error.response);
+      captureError(error);
+    });
 };
 
 /*
@@ -74,36 +72,31 @@ export function ubkg_api_get_organ_type_set(format) {
  *
  */
 export function ubkg_api_get_dataset_type_set() {
-  // let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`;
-  return axios
-    .get(url)
-      .then(res => {
-        let data = res.data;
-        return data;
-      })
-      .catch(error => {
-        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
-        captureError(error);
-      });
+  return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`)
+    .then(res => {
+      let data = res.data;
+      return data;
+    })
+    .catch(error => {
+      console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+      captureError(error);
+    });
 };
 
 /*
  * UBKG GET Specilized Dataset Types for Uploads method
  *
  */
-export function ubkg_api_get_upload_dataset_types() {
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`; 
-  return axios
-    .get(url)
-      .then(res => {
-        let data = res.data;
-        return data;
-      })
-      .catch(error => {
-        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
-        captureError(error);
-      });
+export function ubkg_api_get_upload_dataset_types() {   
+  return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`)
+    .then(res => {
+      let data = res.data;
+      return data;
+    })
+    .catch(error => {
+      console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+      captureError(error);
+    });
 };
 
 /*
@@ -151,9 +144,7 @@ export function ubkg_api_generate_display_subtype(entity) {
 }
 
 function captureError (error){
-
   console.debug("Error Format CHeck", error);
-
   if(error.response ){
     if(error.response.data ){
       if(error.response.data.includes("<!DOCTYPE html>")){

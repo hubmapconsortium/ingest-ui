@@ -240,30 +240,27 @@ export function search_api_get_assay_set(scope) {
     default:
       break;
   }
-  return (
-    axios
-      // primaryness NEEDS to be in the url, not a form body addon
-      .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype` + target)
-      .then((res) => {
-        let data = res.data;
-        let mapCheck = data.result.map((value) => {
-          return value;
-        });
-        console.debug("API get_processed_assays data", data, mapCheck);
-        return { data };
-      })
-      .catch((error) => {
-        console.debug("search_api_get_assay_set", error, error.response);
-        if (error.response) {
-          return {
-            status: error.response.status,
-            results: error.response.data,
-          };
-        } else {
-          return { error };
-        }
-      })
-  );
+  return axios.get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype` + target)
+    .then((res) => {
+      let data = res.data;
+      let mapCheck = data.result.map((value) => {
+        return value;
+      });
+      console.debug("API get_processed_assays data", data, mapCheck);
+      return { data };
+    })
+    .catch((error) => {
+      console.debug("search_api_get_assay_set", error, error.response);
+      if (error.response) {
+        return {
+          status: error.response.status,
+          results: error.response.data,
+        };
+      } else {
+        return { error };
+      }
+    });
+  
 }
 
 export function search_api_get_assay_primaries() {
