@@ -80,11 +80,11 @@ export function api_search2(params, auth, from, size, fields){
  *
  */
 export function search_api_filter_es_query_builder(
-    fields,
-    from,
-    size,
-    colFields
-  ){
+  fields,
+  from,
+  size,
+  colFields
+){
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1){
@@ -192,20 +192,20 @@ export function search_api_filter_es_query_builder(
 // this WAS a  function that reads from a static file groups.jsx
 export function search_api_search_group_list(){
   ingest_api_all_user_groups(JSON.parse(localStorage.getItem("info")).groups_token)
-  .then((res) => {
+    .then((res) => {
     // no need to filter out the data_providers, the ingest api does that for us
-    let groups = res.results;
-    return groups;
-  })
-  .catch((err) => {
-    console.debug(
-      "%c⭗",
-      "color:#ff005d",
-      "search_api_search_group_list error",
-      err
-    );
-    return err;
-  });
+      let groups = res.results;
+      return groups;
+    })
+    .catch((err) => {
+      console.debug(
+        "%c⭗",
+        "color:#ff005d",
+        "search_api_search_group_list error",
+        err
+      );
+      return err;
+    });
 }
 
 export function search_api_get_assay_type(assay){
@@ -231,14 +231,14 @@ export function search_api_get_assay_set(scope){
   // Scope informs either Primary, Alt, or All
   var target = "";
   switch (scope){
-    case "primary":
-      target = "?primary=true";
-      break;
-    case "alt":
-      target = "?primary=false";
-      break;
-    default:
-      break;
+  case "primary":
+    target = "?primary=true";
+    break;
+  case "alt":
+    target = "?primary=false";
+    break;
+  default:
+    break;
   }
   return axios.get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype` + target)
     .then((res) => {

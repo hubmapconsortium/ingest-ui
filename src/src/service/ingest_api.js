@@ -14,10 +14,10 @@ export function ingest_api_users_groups(){
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
     .then(res => {
       const group_list = res.data.groups
-            .filter(g => g.data_provider)
-            .map(g => {
-              return g;
-            });
+        .filter(g => g.data_provider)
+        .map(g => {
+          return g;
+        });
       return {status: res.status, results: group_list}
     })
     .catch(error => {
@@ -43,21 +43,21 @@ export function ingest_api_users_groups(){
  */
 export function ingest_api_user_admin(){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
-  .then(res => {
-    let groups = res.data.groups;
-    for (let group in groups){
-      let groupName = groups[group].name
-      console.debug('%c◉ groupName ', 'color:#ffe921', groupName);
-      if(groupName.includes("hubmap-data-admin")){
-        return true
+    .then(res => {
+      let groups = res.data.groups;
+      for (let group in groups){
+        let groupName = groups[group].name
+        console.debug('%c◉ groupName ', 'color:#ffe921', groupName);
+        if(groupName.includes("hubmap-data-admin")){
+          return true
+        }
       }
-    }
-    return false
-  })
-  .catch(error => {
-    console.debug("ERR ingest_api_users_groups", error, error.response);
-    return {error}
-  });
+      return false
+    })
+    .catch(error => {
+      console.debug("ERR ingest_api_users_groups", error, error.response);
+      return {error}
+    });
 }
 
 /*
@@ -71,8 +71,8 @@ export function ingest_api_file_upload(data, options){
       return {status: res.status, results: res}
     })
     .catch(error => {
-        return {error}
-      });
+      return {error}
+    });
 }
 
 /*
@@ -83,10 +83,10 @@ export function ingest_api_all_user_groups(){
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
     .then(res => {
       const group_list = res.data.groups;
-        return {status: res.status, results: group_list}
+      return {status: res.status, results: group_list}
     })
     .catch(error => {
-            return {error}
+      return {error}
     });
 }
 
@@ -98,10 +98,10 @@ export function ingest_api_all_groups(){
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
     .then(res => {
       const group_list = res.data.groups;
-        return {status: res.status, results: group_list}
+      return {status: res.status, results: group_list}
     })
     .catch(error => {
-            return {error}
+      return {error}
     });
 }
 
@@ -147,8 +147,8 @@ export function ingest_api_allowable_edit_states_statusless(uuid){
 export function ingest_api_create_dataset(data){
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, data, options)
     .then(res => {
-        let results = res.data;
-        return {status: res.status, results: results}
+      let results = res.data;
+      return {status: res.status, results: results}
     })
     .catch(error => {
       return {error}
@@ -162,8 +162,8 @@ export function ingest_api_create_dataset(data){
 export function ingest_api_create_publication(data){ 
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/publications`, data, options)
     .then(res => {
-        let results = res.data;
-        return {status: res.status, results: results}
+      let results = res.data;
+      return {status: res.status, results: results}
     })
     .catch(error => {
       if(error.response){
@@ -181,7 +181,7 @@ export function ingest_api_create_publication(data){
 export function ingest_api_dataset_submit(uuid, data){ 
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`, data, options)
     .then(res => {
-        let results = res.data;
+      let results = res.data;
       return {status: res.status, results: results}
     })
     .catch(error => {
@@ -196,7 +196,7 @@ export function ingest_api_dataset_submit(uuid, data){
 export function ingest_api_dataset_publish(uuid, data){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/publish`, data, options)
     .then(res => {
-        let results = res.data;
+      let results = res.data;
     
       return {status: res.status, results: results}
     })
@@ -212,7 +212,7 @@ export function ingest_api_dataset_publish(uuid, data){
 export function ingest_api_derived_dataset(uuid, data){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`, data, options)
     .then(res => {
-        let results = res.data;
+      let results = res.data;
     
       return {status: res.status, results: results}
     })
@@ -254,7 +254,7 @@ export function ingest_api_bulk_entities_register(type, data){
     .then(res => {
       console.debug('%c⭗ INGESTAPI BULK RES: ', 'color:#FF00FF', res);
       // console.debug("ingest_ap i_bulk_entities",res);
-        let results = res.data;
+      let results = res.data;
       return {status: res.status, results: results}
     })
     .catch(error => {
@@ -329,7 +329,7 @@ export function ingest_api_get_globus_url(uuid){
 export function ingest_api_create_upload(data){ 
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`, data, options)
     .then(res => {
-        let results = res.data;
+      let results = res.data;
       return {status: res.status, results: results}
     })
     .catch(error => {
@@ -359,7 +359,7 @@ export function ingest_api_submit_upload(uuid, data){
 export function ingest_api_validate_upload(uuid, data){ 
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/validate`, data, options)
     .then(res => {
-        let results = res.data;
+      let results = res.data;
     
       return {status: res.status, results: results}
     })
@@ -393,13 +393,13 @@ export function ingest_api_notify_slack(data){
     .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/notify`,data,options)
     .then(res => {
       console.debug("ingest_api_notify_slack",res);
-        let results = res.data;
-        return {status: res.status, results: results}
-      })
-      .catch(error => {
-        console.debug("ingest_api_notify_slack",error);
-        return {error}
-      });
+      let results = res.data;
+      return {status: res.status, results: results}
+    })
+    .catch(error => {
+      console.debug("ingest_api_notify_slack",error);
+      return {error}
+    });
 }
 /* 
  *  Bulk Metadata
@@ -415,8 +415,8 @@ export function ingest_api_upload_bulk_metadata(type, dataFile){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`,formData,options)
     .then(res => {
       console.debug("ingest_api_upload_bulk_metadata",res);
-        let results = res.data;
-        return {status: res.status, results: results}
+      let results = res.data;
+      return {status: res.status, results: results}
     })
     .catch(error => {
       console.debug('%c⭗  ingest_api_upload_bulk_metadata', 'color:#ff005d',error );
@@ -434,8 +434,8 @@ export function ingest_api_upload_bulk_metadata(type, dataFile){
 export function ingest_api_publish_collection( data){ 
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${data}/register-doi`, data, options)
     .then(res => {
-        let results = res.data;
-        return {status: res.status, results: results}
+      let results = res.data;
+      return {status: res.status, results: results}
     })
     .catch(error => {
       if(error.response){
@@ -453,9 +453,9 @@ export function ingest_api_publish_collection( data){
 export function ingest_api_pipeline_test_privs(){ 
   return axios.get(`${process.env.REACT_APP_DATAINGEST_API_URL}/has-pipeline-test-privs`, options)
     .then(res => {
-        console.debug("ingest_api_pipeline_test_privs",res);
-        let results = res.data;
-        return {status: res.status, results: results}
+      console.debug("ingest_api_pipeline_test_privs",res);
+      let results = res.data;
+      return {status: res.status, results: results}
     })
     .catch(error => {
       console.debug('%c⭗  ingest_api_pipeline_test_privs', 'color:#ff005d',error );
@@ -472,8 +472,8 @@ export function ingest_api_pipeline_test_submit( data){
   return axios
     .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${data['uuid']}/submit-for-pipeline-testing`, {}, options)
     .then(res => {
-        let results = res.data;
-        return {status: res.status, results: results}})
+      let results = res.data;
+      return {status: res.status, results: results}})
     .catch(error => {
       console.debug('%c⭗  ingest_api_pipeline_test_submit', 'color:#ff005d',error );
       return {error}
@@ -492,8 +492,8 @@ export function ingest_api_validate_contributors(dataFile){
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate?ensure-latest-cedar-version=true`, formData, options)
     .then(res => {
       console.debug("ingest_api_validate_contributors",res);
-        let results = res.data;
-        return {status: res.status, results: results}
+      let results = res.data;
+      return {status: res.status, results: results}
     })
     .catch(error => {
       console.debug('%c⭗  ingest_api_validate_contributors', 'color:#ff005d',error );
