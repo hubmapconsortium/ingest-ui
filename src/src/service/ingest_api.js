@@ -390,7 +390,7 @@ export function ingest_api_reorganize_upload(uuid) {
  */
 export function ingest_api_notify_slack(data) {
   return axios 
-    .post(${process.env.REACT_APP_DATAINGEST_API_URL}/notify,data,options)
+    .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/notify`,data,options)
     .then(res => {
       console.debug("ingest_api_notify_slack",res);
         let results = res.data;
@@ -413,7 +413,7 @@ export function ingest_api_upload_bulk_metadata(type, dataFile) {
   formData.append('validate_uuids', 1)
   console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
   // console.debug(`${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
-  return axios.put(url,formData,options)
+  return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`,formData,options)
     .then(res => {
       console.debug("ingest_api_upload_bulk_metadata",res);
         let results = res.data;

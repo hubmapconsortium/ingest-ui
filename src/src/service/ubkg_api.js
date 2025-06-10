@@ -132,9 +132,7 @@ export function ubkg_api_generate_display_subtype(entity) {
     display_subtype=entity['dataset_type'].toString()
     // return (entity['dataset_type'].toString())
   }else if (entity_type === 'Upload'){ 
-    // Uploads just need language fix
     return ("Data Upload")
-    display_subtype="Data Upload"
   }else{ 
     // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
     display_subtype= toTitleCase(entity_type.toString())
