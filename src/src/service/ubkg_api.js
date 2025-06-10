@@ -50,7 +50,7 @@ import {stripHTML,toTitleCase} from '../utils/string_helper'
  *
  * return: {'AO': 'Aorta' ... }
  */
-export function ubkg_api_get_organ_type_set(format) {  
+export function ubkg_api_get_organ_type_set(format){  
   return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`)
     .then(res => {
       let data = res.data;
@@ -71,7 +71,7 @@ export function ubkg_api_get_organ_type_set(format) {
  * UBKG GET dataset types method
  *
  */
-export function ubkg_api_get_dataset_type_set() {
+export function ubkg_api_get_dataset_type_set(){
   return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`)
     .then(res => {
       let data = res.data;
@@ -87,7 +87,7 @@ export function ubkg_api_get_dataset_type_set() {
  * UBKG GET Specilized Dataset Types for Uploads method
  *
  */
-export function ubkg_api_get_upload_dataset_types() {   
+export function ubkg_api_get_upload_dataset_types(){   
   return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`)
     .then(res => {
       let data = res.data;
@@ -103,12 +103,12 @@ export function ubkg_api_get_upload_dataset_types() {
  * UBKG Generate Display Subtype method
  *
  */
-export function ubkg_api_generate_display_subtype(entity) {
+export function ubkg_api_generate_display_subtype(entity){
   var display_subtype = ""
   var entity_type = entity['entity_type']
   if (entity_type === 'Sample' && 'sample_category' in entity){
     if (entity['sample_category'].toLowerCase() === 'organ'){
-      if ('organ' in entity) {
+      if ('organ' in entity){
         var organCode = entity['organ'];
         ubkg_api_get_organ_type_set()
           .then((res) => {

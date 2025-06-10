@@ -9,7 +9,7 @@ const options={headers: {Authorization: "Bearer " + globalToken,"Content-Type": 
  * User Groups only those data provider groups are return
  *
  */
-export function ingest_api_users_groups() { 
+export function ingest_api_users_groups(){ 
   console.debug('%c◉ Global: ', 'color:#00ff7b', globalToken);
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
     .then(res => {
@@ -21,7 +21,7 @@ export function ingest_api_users_groups() {
       return {status: res.status, results: group_list}
     })
     .catch(error => {
-      if (error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read") {
+      if (error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read"){
         console.debug("User exists just not in the read group");
         //  it's not really an /error/ to have anaccount w/o read
         return {status: 200, results: error.response.response} 
@@ -41,11 +41,11 @@ export function ingest_api_users_groups() {
  * Is User Admin
  *
  */
-export function ingest_api_user_admin() { 
+export function ingest_api_user_admin(){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
   .then(res => {
     let groups = res.data.groups;
-    for (let group in groups) {
+    for (let group in groups){
       let groupName = groups[group].name
       console.debug('%c◉ groupName ', 'color:#ffe921', groupName);
       if(groupName.includes("hubmap-data-admin")){
@@ -64,7 +64,7 @@ export function ingest_api_user_admin() {
  * Upload a file
  *
  */
-export function ingest_api_file_upload(data, options) { 
+export function ingest_api_file_upload(data, options){ 
   return axios.get(`${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
     .then(res => {
       // console.debug("ingest_api_file_upload", res);
@@ -79,7 +79,7 @@ export function ingest_api_file_upload(data, options) {
  * User Groups ALL groups are return (For that user only)
  *
  */
-export function ingest_api_all_user_groups() { 
+export function ingest_api_all_user_groups(){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
     .then(res => {
       const group_list = res.data.groups;
@@ -94,7 +94,7 @@ export function ingest_api_all_user_groups() {
  * ALL groups are returned
  *
  */
-export function ingest_api_all_groups() { 
+export function ingest_api_all_groups(){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
     .then(res => {
       const group_list = res.data.groups;
@@ -110,7 +110,7 @@ export function ingest_api_all_groups() {
  * 
  * return:  { status, results}
  */
-export function ingest_api_allowable_edit_states(uuid) { 
+export function ingest_api_allowable_edit_states(uuid){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states`,options)
     .then(res => {
       return {status: res.status, results: res.data}
@@ -130,7 +130,7 @@ export function ingest_api_allowable_edit_states(uuid) {
  * 
  * return:  { status, results}
  */
-export function ingest_api_allowable_edit_states_statusless(uuid) { 
+export function ingest_api_allowable_edit_states_statusless(uuid){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`,options)
     .then(res => {
       return {status: res.status, results: res.data}
@@ -144,7 +144,7 @@ export function ingest_api_allowable_edit_states_statusless(uuid) {
  * create a dataset
  *
  */
-export function ingest_api_create_dataset(data) {
+export function ingest_api_create_dataset(data){
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, data, options)
     .then(res => {
         let results = res.data;
@@ -159,7 +159,7 @@ export function ingest_api_create_dataset(data) {
  * create a publication
  *
  */
-export function ingest_api_create_publication(data) { 
+export function ingest_api_create_publication(data){ 
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/publications`, data, options)
     .then(res => {
         let results = res.data;
@@ -178,7 +178,7 @@ export function ingest_api_create_publication(data) {
  * submit a dataset
  *
  */
-export function ingest_api_dataset_submit(uuid, data) { 
+export function ingest_api_dataset_submit(uuid, data){ 
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`, data, options)
     .then(res => {
         let results = res.data;
@@ -193,7 +193,7 @@ export function ingest_api_dataset_submit(uuid, data) {
  * Publish a dataset
  *
  */
-export function ingest_api_dataset_publish(uuid, data) {
+export function ingest_api_dataset_publish(uuid, data){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/publish`, data, options)
     .then(res => {
         let results = res.data;
@@ -209,7 +209,7 @@ export function ingest_api_dataset_publish(uuid, data) {
  * Derived dataset
  *
  */
-export function ingest_api_derived_dataset(uuid, data) {
+export function ingest_api_derived_dataset(uuid, data){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`, data, options)
     .then(res => {
         let results = res.data;
@@ -225,7 +225,7 @@ export function ingest_api_derived_dataset(uuid, data) {
  * ingest_api_bulk_entities - create A file COntaining bulk entries on .TSF file upload
  *
  */
-export function ingest_api_bulk_entities_upload(type, data) { 
+export function ingest_api_bulk_entities_upload(type, data){ 
   var dataForm = new FormData();
   dataForm.append('file', data);
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`, dataForm, options)
@@ -249,7 +249,7 @@ export function ingest_api_bulk_entities_upload(type, data) {
  * ingest_api_bulk_entities - Registers / Inserts bulk entries based on ID of .TSV file upload
  *
  */
-export function ingest_api_bulk_entities_register(type, data) { 
+export function ingest_api_bulk_entities_register(type, data){ 
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`, data, options)
     .then(res => {
       console.debug('%c⭗ INGESTAPI BULK RES: ', 'color:#FF00FF', res);
@@ -269,10 +269,10 @@ export function ingest_api_bulk_entities_register(type, data) {
 /* gets a list of associated IDS if the entity has multiple records. 
    these are multi-labs records
 */
-export function ingest_api_get_associated_ids(uuid) {
+export function ingest_api_get_associated_ids(uuid){
   return axios.get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}/ingest-group-ids`, options)
     .then(res => {
-      if (res.data.ingest_group_ids.length > 1) {
+      if (res.data.ingest_group_ids.length > 1){
         res.data.ingest_group_ids.sort((a, b) => {
           if (
             parseInt(
@@ -285,7 +285,7 @@ export function ingest_api_get_associated_ids(uuid) {
                 a.submission_id.lastIndexOf("-") + 1
               )
             )
-          ) {
+          ){
             return 1;
           }
           if (
@@ -299,7 +299,7 @@ export function ingest_api_get_associated_ids(uuid) {
                 a.submission_id.lastIndexOf("-") + 1
               )
             )
-          ) {
+          ){
             return -1;
           }
           return 0;
@@ -312,7 +312,7 @@ export function ingest_api_get_associated_ids(uuid) {
     });
 }
 
-export function ingest_api_get_globus_url(uuid) {
+export function ingest_api_get_globus_url(uuid){
   return axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url/`,options)
     .then((res) => {
       return {status: 200, results: res.data}
@@ -326,7 +326,7 @@ export function ingest_api_get_globus_url(uuid) {
  * Create New Upload
  *
  */
-export function ingest_api_create_upload(data) { 
+export function ingest_api_create_upload(data){ 
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`, data, options)
     .then(res => {
         let results = res.data;
@@ -341,7 +341,7 @@ export function ingest_api_create_upload(data) {
  * Submit Uploads
  *
  */
-export function ingest_api_submit_upload(uuid, data) { 
+export function ingest_api_submit_upload(uuid, data){ 
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/submit`, data, options)
     .then(res => {
       let results = res.data;
@@ -356,7 +356,7 @@ export function ingest_api_submit_upload(uuid, data) {
  * Validate Upload
  *
  */
-export function ingest_api_validate_upload(uuid, data) { 
+export function ingest_api_validate_upload(uuid, data){ 
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/validate`, data, options)
     .then(res => {
         let results = res.data;
@@ -372,7 +372,7 @@ export function ingest_api_validate_upload(uuid, data) {
  * Reorganize or uploads
  *
  */
-export function ingest_api_reorganize_upload(uuid) {
+export function ingest_api_reorganize_upload(uuid){
   const data = {}
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/reorganize`, data, options)
     .then(res => {
@@ -388,7 +388,7 @@ export function ingest_api_reorganize_upload(uuid) {
  *  Notify
  *
  */
-export function ingest_api_notify_slack(data) {
+export function ingest_api_notify_slack(data){
   return axios 
     .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/notify`,data,options)
     .then(res => {
@@ -405,7 +405,7 @@ export function ingest_api_notify_slack(data) {
  *  Bulk Metadata
  *
  */
-export function ingest_api_upload_bulk_metadata(type, dataFile) { 
+export function ingest_api_upload_bulk_metadata(type, dataFile){ 
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'file'}),dataFile.name);
   formData.append('entity_type', "Sample")
@@ -431,7 +431,7 @@ export function ingest_api_upload_bulk_metadata(type, dataFile) {
  *  Notify
  *
  */
-export function ingest_api_publish_collection( data) { 
+export function ingest_api_publish_collection( data){ 
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${data}/register-doi`, data, options)
     .then(res => {
         let results = res.data;
@@ -450,7 +450,7 @@ export function ingest_api_publish_collection( data) {
  *  Pipeline Testing Privledges
  *
  */
-export function ingest_api_pipeline_test_privs() { 
+export function ingest_api_pipeline_test_privs(){ 
   return axios.get(`${process.env.REACT_APP_DATAINGEST_API_URL}/has-pipeline-test-privs`, options)
     .then(res => {
         console.debug("ingest_api_pipeline_test_privs",res);
@@ -468,7 +468,7 @@ export function ingest_api_pipeline_test_privs() {
  *  Pipeline Testing Submit
  *
  */
-export function ingest_api_pipeline_test_submit( data) { 
+export function ingest_api_pipeline_test_submit( data){ 
   return axios
     .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${data['uuid']}/submit-for-pipeline-testing`, {}, options)
     .then(res => {
@@ -484,7 +484,7 @@ export function ingest_api_pipeline_test_submit( data) {
  * Contibutor TSV Validation
  *
  */
-export function ingest_api_validate_contributors(dataFile) { 
+export function ingest_api_validate_contributors(dataFile){ 
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values'}),dataFile.name);
   formData.append('entity_type', "contributors")
