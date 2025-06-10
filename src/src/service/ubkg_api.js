@@ -106,9 +106,9 @@ export function ubkg_api_get_upload_dataset_types(){
 export function ubkg_api_generate_display_subtype(entity){
   var display_subtype = ""
   var entity_type = entity['entity_type']
-  if (entity_type === 'Sample' && 'sample_category' in entity){
-    if (entity['sample_category'].toLowerCase() === 'organ'){
-      if ('organ' in entity){
+  if(entity_type === 'Sample' && 'sample_category' in entity){
+    if(entity['sample_category'].toLowerCase() === 'organ'){
+      if('organ' in entity){
         var organCode = entity['organ'];
         ubkg_api_get_organ_type_set()
           .then((res) => {
@@ -117,22 +117,22 @@ export function ubkg_api_generate_display_subtype(entity){
             // return (res[organCode])
           })
           .catch((error) => {
-            return (error)
+            return(error)
           });
           
       }else{
         throw new Error("Missing Organ key for  Sample with uuid: {entity['uuid']}")
       }
-    } else {
+    }else{
       display_subtype=entity['sample_category'].toString();
       // return entity['sample_category'].toString();
     }  
-  }else if (entity_type === 'Dataset' && 'dataset_type' in entity){ 
+  }else if(entity_type === 'Dataset' && 'dataset_type' in entity){ 
     // Datasets store in ugly format, need to reff pretty style
     display_subtype=entity['dataset_type'].toString()
     // return (entity['dataset_type'].toString())
-  }else if (entity_type === 'Upload'){ 
-    return ("Data Upload")
+  }else if(entity_type === 'Upload'){ 
+    return("Data Upload")
   }else{ 
     // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
     display_subtype= toTitleCase(entity_type.toString())
@@ -147,14 +147,14 @@ function captureError (error){
     if(error.response.data ){
       if(error.response.data.includes("<!DOCTYPE html>")){
         var responseData = stripHTML(error.response.data)
-        return {status: error.response.status, results: responseData}
+        return{status: error.response.status, results: responseData}
       }else{
-        return {status: error.response.status, results: error.response.data}
+        return{status: error.response.status, results: error.response.data}
       }
     }else{
-      return {status: error.response.status, results: error.response.data}
+      return{status: error.response.status, results: error.response.data}
     }
-  } else {
-    return {error}
+  }else{
+    return{error}
   }
 }

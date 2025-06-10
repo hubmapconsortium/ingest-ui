@@ -18,21 +18,21 @@ export function ingest_api_users_groups(){
         .map(g => {
           return g;
         });
-      return {status: res.status, results: group_list}
+      return{status: res.status, results: group_list}
     })
     .catch(error => {
-      if (error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read"){
+      if(error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read"){
         console.debug("User exists just not in the read group");
         //  it's not really an /error/ to have anaccount w/o read
-        return {status: 200, results: error.response.response} 
+        return{status: 200, results: error.response.response} 
       }
       if(error.response){
-        return {status: error.response.status, results: error.response.data}
+        return{status: error.response.status, results: error.response.data}
       }else{
         console.error('%c⊙ Off Format err', 'color:#ff007b', error); 
         // console.error(error); 
         // throw new Error(error);
-        return {error}
+        return{error}
       }
     });
 }
@@ -45,7 +45,7 @@ export function ingest_api_user_admin(){
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
     .then(res => {
       let groups = res.data.groups;
-      for (let group in groups){
+      for(let group in groups){
         let groupName = groups[group].name
         console.debug('%c◉ groupName ', 'color:#ffe921', groupName);
         if(groupName.includes("hubmap-data-admin")){
@@ -56,7 +56,7 @@ export function ingest_api_user_admin(){
     })
     .catch(error => {
       console.debug("ERR ingest_api_users_groups", error, error.response);
-      return {error}
+      return{error}
     });
 }
 
@@ -68,10 +68,10 @@ export function ingest_api_file_upload(data, options){
   return axios.get(`${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
     .then(res => {
       // console.debug("ingest_api_file_upload", res);
-      return {status: res.status, results: res}
+      return{status: res.status, results: res}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 }
 
@@ -83,10 +83,10 @@ export function ingest_api_all_user_groups(){
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
     .then(res => {
       const group_list = res.data.groups;
-      return {status: res.status, results: group_list}
+      return{status: res.status, results: group_list}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 }
 
@@ -98,10 +98,10 @@ export function ingest_api_all_groups(){
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
     .then(res => {
       const group_list = res.data.groups;
-      return {status: res.status, results: group_list}
+      return{status: res.status, results: group_list}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 }
 
@@ -113,14 +113,14 @@ export function ingest_api_all_groups(){
 export function ingest_api_allowable_edit_states(uuid){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states`,options)
     .then(res => {
-      return {status: res.status, results: res.data}
+      return{status: res.status, results: res.data}
     })
     .catch(error => {
       console.debug("ingest_api_allowable_edit_states", error, error.response);
       if(error.response){
-        return {status: error.response.status, results: error.response.data}
+        return{status: error.response.status, results: error.response.data}
       }else{
-        return {error}
+        return{error}
       }
     });
 };
@@ -133,10 +133,10 @@ export function ingest_api_allowable_edit_states(uuid){
 export function ingest_api_allowable_edit_states_statusless(uuid){ 
   return axios.get(`${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`,options)
     .then(res => {
-      return {status: res.status, results: res.data}
+      return{status: res.status, results: res.data}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -148,10 +148,10 @@ export function ingest_api_create_dataset(data){
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`, data, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -163,13 +163,13 @@ export function ingest_api_create_publication(data){
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/publications`, data, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
       if(error.response){
-        return {status: error.response.status, results: error.response.data}
+        return{status: error.response.status, results: error.response.data}
       }else{
-        return {error}
+        return{error}
       }
     });
 };
@@ -182,10 +182,10 @@ export function ingest_api_dataset_submit(uuid, data){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`, data, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -198,10 +198,10 @@ export function ingest_api_dataset_publish(uuid, data){
     .then(res => {
       let results = res.data;
     
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -214,10 +214,10 @@ export function ingest_api_derived_dataset(uuid, data){
     .then(res => {
       let results = res.data;
     
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -238,10 +238,10 @@ export function ingest_api_bulk_entities_upload(type, data){
       if(results[0]){
         console.debug("results DATA ",results[0]);
       }
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -255,14 +255,14 @@ export function ingest_api_bulk_entities_register(type, data){
       console.debug('%c⭗ INGESTAPI BULK RES: ', 'color:#FF00FF', res);
       // console.debug("ingest_ap i_bulk_entities",res);
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
       // console.debug('%c‼️ INGESTAPI BULK ERR', 'color:#ff005d', error);
       // throw new Error(error);
       // var err = new Error(error);
       // throw err;
-      return (error)
+      return(error)
     });
 };
 
@@ -272,9 +272,9 @@ export function ingest_api_bulk_entities_register(type, data){
 export function ingest_api_get_associated_ids(uuid){
   return axios.get(`${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}/ingest-group-ids`, options)
     .then(res => {
-      if (res.data.ingest_group_ids.length > 1){
+      if(res.data.ingest_group_ids.length > 1){
         res.data.ingest_group_ids.sort((a, b) => {
-          if (
+          if(
             parseInt(
               a.submission_id.substring(
                 a.submission_id.lastIndexOf("-") + 1
@@ -288,7 +288,7 @@ export function ingest_api_get_associated_ids(uuid){
           ){
             return 1;
           }
-          if (
+          if(
             parseInt(
               b.submission_id.substring(
                 a.submission_id.lastIndexOf("-") + 1
@@ -300,25 +300,25 @@ export function ingest_api_get_associated_ids(uuid){
               )
             )
           ){
-            return -1;
+            return-1;
           }
           return 0;
         });
       }
-      return {status: res.status, results: res.data.ingest_group_ids}
+      return{status: res.status, results: res.data.ingest_group_ids}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 }
 
 export function ingest_api_get_globus_url(uuid){
   return axios.get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/globus-url/`,options)
     .then((res) => {
-      return {status: 200, results: res.data}
+      return{status: 200, results: res.data}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 }
 
@@ -330,10 +330,10 @@ export function ingest_api_create_upload(data){
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads`, data, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -345,10 +345,10 @@ export function ingest_api_submit_upload(uuid, data){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/submit`, data, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -361,10 +361,10 @@ export function ingest_api_validate_upload(uuid, data){
     .then(res => {
       let results = res.data;
     
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -377,10 +377,10 @@ export function ingest_api_reorganize_upload(uuid){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/reorganize`, data, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
-      return {error}
+      return{error}
     });
 };
 
@@ -394,11 +394,11 @@ export function ingest_api_notify_slack(data){
     .then(res => {
       console.debug("ingest_api_notify_slack",res);
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
       console.debug("ingest_api_notify_slack",error);
-      return {error}
+      return{error}
     });
 }
 /* 
@@ -416,14 +416,14 @@ export function ingest_api_upload_bulk_metadata(type, dataFile){
     .then(res => {
       console.debug("ingest_api_upload_bulk_metadata",res);
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
       console.debug('%c⭗  ingest_api_upload_bulk_metadata', 'color:#ff005d',error );
       // Is it a server error or just a Validation error? 
       console.debug('%c◉ error ', 'color:#00ff7b', error, error.status);
       // throw new Error(error);
-      return {error}
+      return{error}
     });
 };
 
@@ -435,13 +435,13 @@ export function ingest_api_publish_collection( data){
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${data}/register-doi`, data, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
       if(error.response){
-        return {status: error.response.status, results: error.response.data}
+        return{status: error.response.status, results: error.response.data}
       }else{
-        return {error}
+        return{error}
       }
     });
 };
@@ -455,12 +455,12 @@ export function ingest_api_pipeline_test_privs(){
     .then(res => {
       console.debug("ingest_api_pipeline_test_privs",res);
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
       console.debug('%c⭗  ingest_api_pipeline_test_privs', 'color:#ff005d',error );
       // throw new Error(error);
-      return {error}
+      return{error}
     });
 };
 
@@ -473,10 +473,10 @@ export function ingest_api_pipeline_test_submit( data){
     .post(`${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${data['uuid']}/submit-for-pipeline-testing`, {}, options)
     .then(res => {
       let results = res.data;
-      return {status: res.status, results: results}})
+      return{status: res.status, results: results}})
     .catch(error => {
       console.debug('%c⭗  ingest_api_pipeline_test_submit', 'color:#ff005d',error );
-      return {error}
+      return{error}
     });
 };
 
@@ -493,11 +493,11 @@ export function ingest_api_validate_contributors(dataFile){
     .then(res => {
       console.debug("ingest_api_validate_contributors",res);
       let results = res.data;
-      return {status: res.status, results: results}
+      return{status: res.status, results: results}
     })
     .catch(error => {
       console.debug('%c⭗  ingest_api_validate_contributors', 'color:#ff005d',error );
       // throw new Error(error);
-      return {error}
+      return{error}
     });
 };

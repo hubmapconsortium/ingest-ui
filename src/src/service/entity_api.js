@@ -205,10 +205,10 @@ export function entity_api_get_these_entities(uuids) {
   let message = "";
   let uuidSet = Array.from(new Set(uuids)); // Nix any Dupes
   let dupes = uuids.filter((item, idx, arr) => arr.indexOf(item) !== idx); // Also get a list of dupes to note
-  if (dupes.length > 0) {
+  if(dupes.length > 0) {
     message = "Duplicate IDs found and Removed: " + Array.from(new Set(dupes)).join(", ");
   }
-  if (uuids.length === 0) {
+  if(uuids.length === 0) {
     message = "No UUIDs provided";
     return Promise.resolve({status: 400, results: {message: message}});
   }
@@ -220,14 +220,14 @@ export function entity_api_get_these_entities(uuids) {
       let errMessage = null;
       results.map((item) => {
         console.debug('%c◉ item ', 'color:#00ff7b', item);
-        if (item.status !== 200) {
+        if(item.status !== 200) {
           badList.push(item.data.error || item.data.message || item.data || "Unknown Error");
           errMessage = "Error fetching entities: "+ badList.join(", ");
         }else{
           goodList.push(item);
         }
       });
-      return ({
+      return({
         status: 200,
         message: message,
         results: goodList,
