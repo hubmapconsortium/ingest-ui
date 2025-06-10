@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {stripHTML,toTitleCase} from '../utils/string_helper'
+import {stripHTML, toTitleCase} from '../utils/string_helper'
 
 /*
  * UBKG GET assaytype method

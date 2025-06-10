@@ -16,7 +16,7 @@ const options = {
 export function entity_api_get_entity(uuid){ 
   // console.debug("entity_api_get_entity");
   return axios 
-    .get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`,options)
+    .get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`, options)
     .then(res => {
       let results = res.data;
       return{status: res.status, results: results}
@@ -120,7 +120,7 @@ export function entity_api_update_multiple_entities(data){
 // @TODO: Rename to reflect Organ endpoint
 export function entity_api_get_entity_ancestor(uuid){ 
   return axios 
-    .get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`,options)
+    .get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`, options)
     .then(res => {
       // console.debug(res);
       let results = res.data;
@@ -133,7 +133,7 @@ export function entity_api_get_entity_ancestor(uuid){
 
 export function entity_api_get_entity_ancestor_organ(uuid){ 
   return axios 
-    .get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`,options)
+    .get(`${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}/ancestor-organs`, options)
     .then(res => {
       // console.debug(res);
       let results = res.data;
@@ -151,7 +151,7 @@ export function entity_api_get_entity_ancestor_organ(uuid){
  */
 export function entity_api_get_entity_ancestor_list(uuid){ 
   return axios 
-    .get(`${process.env.REACT_APP_ENTITY_API_URL}/ancestors/${uuid}`,options)
+    .get(`${process.env.REACT_APP_ENTITY_API_URL}/ancestors/${uuid}`, options)
     .then(res => {
       // console.debug(res);
       let results = res.data;
@@ -180,17 +180,17 @@ export function entity_api_get_globus_url(uuid){
 };
 
 // @TODO  DEPRECATING replaced with newer ingest API call
-export function entity_api_attach_bulk_metadata(uuid,item){ 
+export function entity_api_attach_bulk_metadata(uuid, item){ 
   console.debug('%c⭗', 'color:#ff005d', 'entity_api_upload_bulk_metadata', item);
   return axios 
-    .put(`${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid,item,options)
+    .put(`${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid, item, options)
     .then(res => {
-      console.debug('ingest_api_attach_bulk_metadata',res);
+      console.debug('ingest_api_attach_bulk_metadata', res);
       let results = res.data;
       return{status: res.status, results: results}
     })
     .catch(error => {
-      console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error);
+      console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d', error);
       // throw new Error(error);
       return{error}
     });

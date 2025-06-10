@@ -1,11 +1,11 @@
 // Search APIs
 
 import axios from 'axios';
-import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from '../constants';
+import {ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS} from '../constants';
 import {ingest_api_all_user_groups} from './ingest_api';
 export const esb = require('elastic-builder');
 let globalToken = localStorage.getItem('info') ? JSON.parse(localStorage.getItem('info')).groups_token : null;
-let options={headers: {Authorization: 'Bearer ' + globalToken,'Content-Type': 'application/json'}}
+let options={headers: {Authorization: 'Bearer ' + globalToken, 'Content-Type': 'application/json'}}
 
 /*
  * Auth Validation  method
