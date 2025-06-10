@@ -1,5 +1,5 @@
 import axios from "axios";
-import { stripHTML,toTitleCase } from '../utils/string_helper'
+import {stripHTML,toTitleCase} from '../utils/string_helper'
 
 /*
  * UBKG GET assaytype method
@@ -55,7 +55,7 @@ export function ubkg_api_get_organ_type_set(format) {
     .then(res => {
       let data = res.data;
       if(format && format === 'array'){
-        let organArray = Object.entries(data).map(([key, value]) => ({ key, value }));
+        let organArray = Object.entries(data).map(([key, value]) => ({key, value}));
         return organArray;
       }else{
         return data;

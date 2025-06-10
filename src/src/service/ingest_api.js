@@ -407,12 +407,11 @@ export function ingest_api_notify_slack(data) {
  */
 export function ingest_api_upload_bulk_metadata(type, dataFile) { 
   var formData = new FormData();
-  formData.append('metadata', new Blob([dataFile],{type: 'file' }),dataFile.name);
+  formData.append('metadata', new Blob([dataFile],{type: 'file'}),dataFile.name);
   formData.append('entity_type', "Sample")
   formData.append('sub_type', type)
   formData.append('validate_uuids', 1)
   console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
-  // console.debug(`${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
   return axios.put(`${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`,formData,options)
     .then(res => {
       console.debug("ingest_api_upload_bulk_metadata",res);
@@ -487,7 +486,7 @@ export function ingest_api_pipeline_test_submit( data) {
  */
 export function ingest_api_validate_contributors(dataFile) { 
   var formData = new FormData();
-  formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);
+  formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values'}),dataFile.name);
   formData.append('entity_type', "contributors")
 
   return axios.post(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate?ensure-latest-cedar-version=true`, formData, options)

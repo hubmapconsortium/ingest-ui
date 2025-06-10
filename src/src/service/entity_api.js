@@ -210,7 +210,7 @@ export function entity_api_get_these_entities(uuids) {
   }
   if (uuids.length === 0) {
     message = "No UUIDs provided";
-    return Promise.resolve({ status: 400, results: { message: message } });
+    return Promise.resolve({status: 400, results: {message: message}});
   }
   // Fetch all entities in parallel
   return Promise.all(uuidSet.map(entity_api_get_entity))

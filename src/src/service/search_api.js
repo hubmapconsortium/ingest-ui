@@ -17,10 +17,10 @@ export function api_validate_token() {
   let payload = search_api_filter_es_query_builder("test", 1, 1);
   return axios.post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
-      return { status: res.status };
+      return {status: res.status};
     })
     .catch((error) => {
-      return { error };
+      return {error};
     });
 }
 
@@ -45,10 +45,10 @@ export function api_search(params) {
         }
       });
 
-      return { status: res.status, results: entities };
+      return {status: res.status, results: entities};
     })
     .catch((error) => {
-      return { error };
+      return {error};
     });
 }
 
@@ -71,7 +71,7 @@ export function api_search2(params, auth, from, size, fields) {
       };
     })
     .catch((error) => {
-      return { error };
+      return {error};
     });
 }
 
@@ -220,10 +220,10 @@ export function search_api_get_assay_type(assay) {
       });
 
       console.debug(found_dt);
-      return { status: res.status, results: found_dt };
+      return {status: res.status, results: found_dt};
     })
     .catch((error) => {
-      return { error };
+      return {error};
     });
 }
 
@@ -247,7 +247,7 @@ export function search_api_get_assay_set(scope) {
         return value;
       });
       console.debug("API get_processed_assays data", data, mapCheck);
-      return { data };
+      return {data};
     })
     .catch((error) => {
       console.debug("search_api_get_assay_set", error, error.response);
@@ -257,7 +257,7 @@ export function search_api_get_assay_set(scope) {
           results: error.response.data,
         };
       } else {
-        return { error };
+        return {error};
       }
     });
   
@@ -270,9 +270,9 @@ export function search_api_get_assay_primaries() {
       let dtListMapped = data.result.map((value) => {
         return value;
       });
-      return { status: res.status, data: dtListMapped };
+      return {status: res.status, data: dtListMapped};
     })
     .catch((error) => {
-      return { error };
+      return {error};
     });
 }
