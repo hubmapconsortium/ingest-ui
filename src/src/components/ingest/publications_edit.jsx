@@ -668,7 +668,6 @@ class PublicationEdit extends Component {
           console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
           this.props.reportError(error);
         });
-
     }
   }
 
@@ -896,7 +895,7 @@ class PublicationEdit extends Component {
                 </Alert>
               </Collapse>
               <Collapse
-                in={this.state.sourceBulkWarning}
+                in={this.state.sourceBulkWarning.length>0}
                 orientation="vertical">
                 <Alert severity="warning" className="m-0" onClose={() => {this.setState({sourceBulkWarning: false})}}>
                   <AlertTitle>Source Selection Warning:</AlertTitle>
@@ -1560,8 +1559,11 @@ class PublicationEdit extends Component {
         resolve(isValid);
       }else{
         this.setState((prevState) => ({
-          validationStatus: { ...prevState.validationStatus, ['source_uuid_list']: "" },
-          formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },
+          validationStatus: { ...prevState.validationStatus, 'source_uuid_list': "" },
+          formErrors: { ...prevState.formErrors, 'source_uuid_list': "" },
+          // Dupes Attached through Search still bug, but The bulk selector filters out dupes and Errored Datasets 
+          sourceBulkError: "", 
+          sourceBulkWarning: ""
         }));
       }
       
@@ -2235,7 +2237,7 @@ class PublicationEdit extends Component {
               <FormLabel 
                 id="publication_status"
                 error={ this.state.validationStatus.publication_status.length>0 ? true : false }>
-                  Has this Publication been Published?
+                  Has this Publication been Published? *
               </FormLabel>
               <RadioGroup
                 row
