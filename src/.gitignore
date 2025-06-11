@@ -42,8 +42,7 @@ src/.DS_Store
 src/npm-debug.log*
 src/yarn-debug.log*
 src/yarn-error.log*
-
-
+.directory
 
 #ignore the ui build dir
 src/build/*
