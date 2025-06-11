@@ -1,5 +1,5 @@
-import axios from 'axios';
-import {stripHTML, toTitleCase} from '../utils/string_helper'
+import axios from "axios";
+import { stripHTML,toTitleCase } from '../utils/string_helper'
 
 /*
  * UBKG GET assaytype method
@@ -50,65 +50,72 @@ import {stripHTML, toTitleCase} from '../utils/string_helper'
  *
  * return: {'AO': 'Aorta' ... }
  */
-export function ubkg_api_get_organ_type_set(format){  
-  return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`)
-    .then(res => {
-      let data = res.data;
-      if(format && format === 'array'){
-        let organArray = Object.entries(data).map(([key, value]) => ({key, value}));
-        return organArray;
-      }else{
-        return data;
-      }
-    })
-    .catch(error => {
-      console.debug('ubkg_api_get_organ_type_set', error, error.response);
-      captureError(error);
-    });
+export function ubkg_api_get_organ_type_set(format) {
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`;
+  return axios
+    .get(url)
+      .then(res => {
+        let data = res.data;
+        if(format && format === 'array'){
+          let organArray = Object.entries(data).map(([key, value]) => ({ key, value }));
+          return organArray;
+        }else{
+          return data;
+        }
+      })
+      .catch(error => {
+        console.debug("ubkg_api_get_organ_type_set", error, error.response);
+        captureError(error);
+      });
 };
 
 /*
  * UBKG GET dataset types method
  *
  */
-export function ubkg_api_get_dataset_type_set(){
-  return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`)
-    .then(res => {
-      let data = res.data;
-      return data;
-    })
-    .catch(error => {
-      console.debug('ubkg_api_get_dataset_type_set', error, error.response);
-      captureError(error);
-    });
+export function ubkg_api_get_dataset_type_set() {
+  // let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`;
+  return axios
+    .get(url)
+      .then(res => {
+        let data = res.data;
+        return data;
+      })
+      .catch(error => {
+        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+        captureError(error);
+      });
 };
 
 /*
  * UBKG GET Specilized Dataset Types for Uploads method
  *
  */
-export function ubkg_api_get_upload_dataset_types(){   
-  return axios.get(`${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`)
-    .then(res => {
-      let data = res.data;
-      return data;
-    })
-    .catch(error => {
-      console.debug('ubkg_api_get_dataset_type_set', error, error.response);
-      captureError(error);
-    });
+export function ubkg_api_get_upload_dataset_types() {
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`; 
+  return axios
+    .get(url)
+      .then(res => {
+        let data = res.data;
+        return data;
+      })
+      .catch(error => {
+        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+        captureError(error);
+      });
 };
 
 /*
  * UBKG Generate Display Subtype method
  *
  */
-export function ubkg_api_generate_display_subtype(entity){
-  var display_subtype = ''
+export function ubkg_api_generate_display_subtype(entity) {
+  var display_subtype = ""
   var entity_type = entity['entity_type']
-  if(entity_type === 'Sample' && 'sample_category' in entity){
-    if(entity['sample_category'].toLowerCase() === 'organ'){
-      if('organ' in entity){
+  if (entity_type === 'Sample' && 'sample_category' in entity){
+    if (entity['sample_category'].toLowerCase() === 'organ'){
+      if ('organ' in entity) {
         var organCode = entity['organ'];
         ubkg_api_get_organ_type_set()
           .then((res) => {
@@ -117,22 +124,24 @@ export function ubkg_api_generate_display_subtype(entity){
             // return (res[organCode])
           })
           .catch((error) => {
-            return(error)
+            return (error)
           });
           
       }else{
-        throw new Error('Missing Organ key for  Sample with uuid: {entity[\'uuid\']}')
+        throw new Error("Missing Organ key for  Sample with uuid: {entity['uuid']}")
       }
-    }else{
+    } else {
       display_subtype=entity['sample_category'].toString();
       // return entity['sample_category'].toString();
     }  
-  }else if(entity_type === 'Dataset' && 'dataset_type' in entity){ 
+  }else if (entity_type === 'Dataset' && 'dataset_type' in entity){ 
     // Datasets store in ugly format, need to reff pretty style
     display_subtype=entity['dataset_type'].toString()
     // return (entity['dataset_type'].toString())
-  }else if(entity_type === 'Upload'){ 
-    return('Data Upload')
+  }else if (entity_type === 'Upload'){ 
+    // Uploads just need language fix
+    return ("Data Upload")
+    display_subtype="Data Upload"
   }else{ 
     // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
     display_subtype= toTitleCase(entity_type.toString())
@@ -142,19 +151,21 @@ export function ubkg_api_generate_display_subtype(entity){
 }
 
 function captureError (error){
-  console.debug('Error Format CHeck', error);
+
+  console.debug("Error Format CHeck", error);
+
   if(error.response ){
     if(error.response.data ){
-      if(error.response.data.includes('<!DOCTYPE html>')){
+      if(error.response.data.includes("<!DOCTYPE html>")){
         var responseData = stripHTML(error.response.data)
-        return{status: error.response.status, results: responseData}
+        return {status: error.response.status, results: responseData}
       }else{
-        return{status: error.response.status, results: error.response.data}
+        return {status: error.response.status, results: error.response.data}
       }
     }else{
-      return{status: error.response.status, results: error.response.data}
+      return {status: error.response.status, results: error.response.data}
     }
-  }else{
-    return{error}
+  } else {
+    return {error}
   }
 }
