@@ -215,16 +215,19 @@ export function entity_api_attach_bulk_metadata(uuid,item){
  */
 export function entity_api_get_these_entities(uuids) {
   let message = "";
-  let uuidSet = Array.from(new Set(uuids)); // Nix any Dupes
+  let trimmed = uuids.map((item) => item.trim()); // Trim any whitespace
+  let uuidSet = Array.from(new Set(trimmed)); // Nix any Dupes
   let dupes = uuids.filter((item, idx, arr) => arr.indexOf(item) !== idx); // Also get a list of dupes to note
   // let dupes = uuidSet.difference(uuids)
   if (dupes.length > 0) {
     message = "Duplicate IDs found and Removed: " + Array.from(new Set(dupes)).join(", ");
   }
+  let cleanSet = new Set(uuidSet); // Make sure we have a Set for the API call
   console.group("entity_api_get_these_entities");
     console.debug("uuids: ", uuids);
     console.debug("uuidSet", uuidSet);
     console.debug("dupes", dupes);
+    console.debug("cleanSet", cleanSet);
   console.groupEnd();
 
   if (uuids.length === 0) {
