@@ -247,7 +247,7 @@ class PublicationEdit extends Component {
           }
         }
         this.setState({
-          dataset_uuids: uuidList,
+          dataset_uuids: hidList,
           dataset_uuids_string: hidList.join(", ")
          },() => {
         this.setState({
@@ -505,28 +505,18 @@ class PublicationEdit extends Component {
   };
 
   handleLookUpClick = () => {
-    if (!this.state.lookUpCancelled) {
+    if (!this.state.LookUpShow) {
       this.setState({
         LookUpShow: true,
         sourceBulkStatus: "loading",
       });
     }
-    this.setState({
-      lookUpCancelled: false,
-      sourceBulkStatus: "complete",
-    });
   };
 
   hideLookUpModal = () => {
     this.setState({
       LookUpShow: false,
-    });
-  };
-
-  cancelLookUpModal = () => {
-    this.setState({
-      LookUpShow: false,
-      lookUpCancelled: true
+      sourceBulkStatus: "complete",
     });
   };
   
@@ -2145,7 +2135,7 @@ class PublicationEdit extends Component {
               </DialogContent>
               <DialogActions>
                 <Button
-                  onClick={this.cancelLookUpModal}
+                  onClick={this.hideLookUpModal}
                   variant="contained"
                   color="primary">
                   Close
