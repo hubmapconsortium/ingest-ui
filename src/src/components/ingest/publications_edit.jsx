@@ -648,17 +648,15 @@ class PublicationEdit extends Component {
       entity_api_get_these_entities(cleanList)
         .then((response) => {
           console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
-
           let entities = response.results
           let entityDetails = entities.map(obj => obj.results)
           let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
           let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";
-          
           this.setState({
             source_uuid_list: entityDetails,
             dataset_uuids: entityHIDs,
             sourceBulkWarning: response.message ? response.message : "",
-            sourceBulkError: errors? errors : null,
+            sourceBulkError: errors? errors : "",
           },() => {
             this.setState({
               hideUUIDList: true,
@@ -670,7 +668,6 @@ class PublicationEdit extends Component {
           console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
           this.props.reportError(error);
         });
-
     }
   }
 
@@ -887,18 +884,18 @@ class PublicationEdit extends Component {
           {this.state.writeable && (<>
             <Box className="w-100" width="100%">
               <Collapse
-                in={this.state.sourceBulkError}
+                in={this.state.sourceBulkError.length > 0}
                 orientation="vertical">
                 <Alert 
                   className="m-0"
                   severity="error" 
-                  onClose={() => {this.setState({sourceBulkError: false})}}>
+                  onClose={() => {this.setState({sourceBulkError: ""})}}>
                   <AlertTitle>Source Selection Error:</AlertTitle>
                   {this.state.sourceBulkError? this.state.sourceBulkError: ""} 
                 </Alert>
               </Collapse>
               <Collapse
-                in={this.state.sourceBulkWarning}
+                in={this.state.sourceBulkWarning.length>0}
                 orientation="vertical">
                 <Alert severity="warning" className="m-0" onClose={() => {this.setState({sourceBulkWarning: false})}}>
                   <AlertTitle>Source Selection Warning:</AlertTitle>
@@ -1127,8 +1124,6 @@ class PublicationEdit extends Component {
 
   handleSubmit = (submitIntention) => {
     
-  console.log("!!!CURR FRM ERR", this.state.formErrors);
-
     this.setState({ 
       submitting: true,
       buttonSpinnerTarget: submitIntention.toLowerCase(), 
@@ -1136,7 +1131,6 @@ class PublicationEdit extends Component {
 
     this.validateForm().then((isValid) => {
 
-      console.log("CURR FRM ERR", this.state.formErrors);
       // For whatever reason getting the set of invalid fields just Does Not Function in the validateForm func
       // Even though all of the data is there and dev tools SHOWS the state values,  everything else just ignores it because curses or whatever
       if(!isValid){
@@ -1144,7 +1138,6 @@ class PublicationEdit extends Component {
         let errorSet = removeEmptyValues(this.state.formErrors);
         let result = Object.keys(errorSet);
         console.debug('%c◉ ERRORSET ', 'color:#ff005d',errorSet, result);
-        //consoledebug("result",result);
         let fieldString = "";
         for (let r in result) {
           console.debug('%c◉ result r ', 'color:#00ff7b', r, result[r]);
@@ -1484,7 +1477,6 @@ class PublicationEdit extends Component {
                     submitErrorResponse: err,
                     buttonSpinnerTarget: "",
                   }, () => {
-                    //
                     this.props.reportError(err);
                   }
                 );
@@ -1565,8 +1557,11 @@ class PublicationEdit extends Component {
         resolve(isValid);
       }else{
         this.setState((prevState) => ({
-          validationStatus: { ...prevState.validationStatus, ['source_uuid_list']: "" },
-          formErrors: { ...prevState.formErrors, ['source_uuid_list']: "" },
+          validationStatus: { ...prevState.validationStatus, 'source_uuid_list': "" },
+          formErrors: { ...prevState.formErrors, 'source_uuid_list': "" },
+          // Dupes Attached through Search still bug, but The bulk selector filters out dupes and Errored Datasets 
+          sourceBulkError: "", 
+          sourceBulkWarning: ""
         }));
       }
       
@@ -1589,7 +1584,7 @@ class PublicationEdit extends Component {
       });
 
       // is the Source Bulk erroring?
-      if(this.state.sourceBulkError.length > 0){
+      if(this.state.sourceBulkError && this.state.sourceBulkError.length > 0){
         this.setState((prevState) => ({
           validationStatus: { ...prevState.validationStatus, ['source_uuid_list']: this.state.sourceBulkError },
           formErrors: { ...prevState.formErrors, ['source_uuid_list']: "is-invalid" },
@@ -2240,7 +2235,7 @@ class PublicationEdit extends Component {
               <FormLabel 
                 id="publication_status"
                 error={ this.state.validationStatus.publication_status.length>0 ? true : false }>
-                  Has this Publication been Published?
+                  Has this Publication been Published? *
               </FormLabel>
               <RadioGroup
                 row
