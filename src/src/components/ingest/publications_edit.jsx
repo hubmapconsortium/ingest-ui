@@ -1531,8 +1531,6 @@ class PublicationEdit extends Component {
       });
 
       // Because it can be False, pub status needs special handling
-      // UPDATE: As It;s not Required..... Assume lack of response is False? 
-      // or check pub date (if avail) against today?
       var pubstat = this.state.editingPublication.publication_status;
       //consoledebug({pubstat});
       if(pubstat === undefined || pubstat === null || pubstat.length === 0){
