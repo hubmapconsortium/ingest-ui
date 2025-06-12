@@ -26,7 +26,7 @@ src/log
 src/node_modules
 src/ingest-ui/.pnp
 src/ingest-ui/.pnp.js
-src/package-lock.json
+# src/package-lock.json
 
 # testing
 src/react-app/coverage
@@ -60,10 +60,11 @@ favorites.json
 # .eslintrc.js
 
 # Lock FIles
-*.lock
-*.~lock
-*.~lock.*
-package-lock.json
+# *.lock
+# *.~lock
+# *.~lock.*
+# Disabling so Dependabot can figure itself out
+# package-lock.json
 
 #cypress
 src/cypress.config.js
