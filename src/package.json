@@ -20,7 +20,6 @@
     "@mui/x-date-pickers": "^7.0.00",
     "@stefftek/tick.js": "^1.1.1",
     "axios": "0.30.0",
-    "axios-hooks": "^3.0.0",
     "bootstrap": "^5.2.0-beta1",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.4",
