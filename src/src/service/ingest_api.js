@@ -80,18 +80,19 @@ export function ingest_api_user_admin(auth) {
  * Upload a file
  *
  */
-export function ingest_api_file_upload(data, options) { 
-  return axios 
-  .get(
-    `${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
-    .then(res => {
-      // console.debug("ingest_api_file_upload", res);
-      return {status:res.status, results:res}
-    })
-    .catch(error => {
-        return {error}
-      });
-}
+// No Longer seen elsewhere in the codebase
+// export function ingest_api_file_upload(data, options) { 
+//   return axios 
+//   .get(
+//     `${process.env.REACT_APP_DATAINGEST_API_URL}/file-upload`, data, options)
+//     .then(res => {
+//       // console.debug("ingest_api_file_upload", res);
+//       return {status:res.status, results:res}
+//     })
+//     .catch(error => {
+//         return {error}
+//       });
+// }
 
 
 /*
@@ -138,7 +139,7 @@ export function ingest_api_all_groups(auth) {
  * 
  * return:  { status, results}
  */
-export function ingest_api_allowable_edit_states(uuid, auth) { 
+export function ingest_api_allowable_edit_states(uuid) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states`;
@@ -162,7 +163,7 @@ export function ingest_api_allowable_edit_states(uuid, auth) {
  * 
  * return:  { status, results}
  */
-export function ingest_api_allowable_edit_states_statusless(uuid, auth) { 
+export function ingest_api_allowable_edit_states_statusless(uuid) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`;
@@ -180,7 +181,7 @@ export function ingest_api_allowable_edit_states_statusless(uuid, auth) {
  * create a dataset
  *
  */
-export function ingest_api_create_dataset(data, auth) { 
+export function ingest_api_create_dataset(data) { 
   // console.debug("ingest_api_create_dataset", data);
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
@@ -201,7 +202,7 @@ export function ingest_api_create_dataset(data, auth) {
  * create a publication
  *
  */
-export function ingest_api_create_publication(data, auth) { 
+export function ingest_api_create_publication(data) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
 
@@ -225,7 +226,7 @@ export function ingest_api_create_publication(data, auth) {
  * submit a dataset
  *
  */
-export function ingest_api_dataset_submit(uuid, data, auth) { 
+export function ingest_api_dataset_submit(uuid, data) { 
   // console.debug("ingest_api_dataset_submit", data);
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
@@ -247,7 +248,7 @@ export function ingest_api_dataset_submit(uuid, data, auth) {
  * Publish a dataset
  *
  */
-export function ingest_api_dataset_publish(uuid, data, auth) { 
+export function ingest_api_dataset_publish(uuid, data) { 
   // console.debug("ingest_api_dataset_submit", data);
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
@@ -270,7 +271,7 @@ export function ingest_api_dataset_publish(uuid, data, auth) {
  * Derived dataset
  *
  */
-export function ingest_api_derived_dataset(uuid, data, auth) { 
+export function ingest_api_derived_dataset(uuid, data) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
 
@@ -293,18 +294,22 @@ export function ingest_api_derived_dataset(uuid, data, auth) {
  * ingest_api_bulk_entities - create A file COntaining bulk entries on .TSF file upload
  *
  */
-export function ingest_api_bulk_entities_upload(type, data, auth) { 
+export function ingest_api_bulk_entities_upload(type, data) { 
   console.debug("Starting Data: ",data);
   console.debug("Going to : ",type);
   var dataForm = new FormData();
   dataForm.append('file', data);
-  const options = {headers:{Authorization: "Bearer " + globalToken,
-          "Content-Type":"multipart/form-data"},
-      onUploadProgress:(ev: ProgressEvent) => {
-        const progress = ev.loaded / ev.total * 100;
-        console.debug("prog", Math.round(progress));
-      }};
-  let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
+  const options = {
+    headers:{
+      Authorization: "Bearer " + globalToken,
+      "Content-Type":"multipart/form-data"
+    },
+    // This hasnt been working (github.com/axios/axios/issues/5149#issuecomment-1705809606)
+    onUploadProgress:(ev: ProgressEvent) => { 
+      const progress = ev.loaded / ev.total * 100;
+      console.debug("prog", Math.round(progress));
+    }};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
 
   return axios 
     .post(url, dataForm, options)
@@ -329,15 +334,19 @@ export function ingest_api_bulk_entities_upload(type, data, auth) {
  * ingest_api_bulk_entities - Registers / Inserts bulk entries based on ID of .TSV file upload
  *
  */
-export function ingest_api_bulk_entities_register(type, data, auth) { 
+export function ingest_api_bulk_entities_register(type, data) { 
   console.debug("Starting Data: ",data);
-  const options = {headers:{Authorization: "Bearer " + globalToken,
-          "Content-Type":"application/json"},
-      onUploadProgress:(ev: ProgressEvent) => {
-        const progress = ev.loaded / ev.total * 100;
-        console.debug("prog", Math.round(progress));
-      }};
-  let url =  `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`;
+  const options = {
+    headers:{
+      Authorization: "Bearer " + globalToken,
+      "Content-Type":"application/json"
+    },
+    // This hasnt been working (github.com/axios/axios/issues/5149#issuecomment-1705809606)
+    onUploadProgress:(ev: ProgressEvent) => { 
+      const progress = ev.loaded / ev.total * 100;
+      console.debug("prog", Math.round(progress));
+    }};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`;
   console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
   return axios 
      .post(url, data, options)
@@ -348,10 +357,6 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
         return {status:res.status, results:results}
       })
       .catch(error => {
-        // console.debug('%c‼️ INGESTAPI BULK ERR', 'color:#ff005d', error);
-        // throw new Error(error);
-        // var err = new Error(error);
-        // throw err;
         return (error)
      });
 };
@@ -359,7 +364,7 @@ export function ingest_api_bulk_entities_register(type, data, auth) {
 /* gets a list of associated IDS if the entity has multiple records. 
    these are multi-labs records
 */
-export function ingest_api_get_associated_ids(uuid, auth) {
+export function ingest_api_get_associated_ids(uuid) {
    const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
    return axios
@@ -406,7 +411,7 @@ export function ingest_api_get_associated_ids(uuid, auth) {
         });
 }
 
-export function ingest_api_get_globus_url(uuid, auth) {
+export function ingest_api_get_globus_url(uuid) {
   const config = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"multipart/form-data",},};
 
@@ -429,7 +434,7 @@ export function ingest_api_get_globus_url(uuid, auth) {
  * Create New Upload
  *
  */
-export function ingest_api_create_upload(data, auth) { 
+export function ingest_api_create_upload(data) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
     
@@ -450,7 +455,7 @@ export function ingest_api_create_upload(data, auth) {
  * Submit Uploads
  *
  */
-export function ingest_api_submit_upload(uuid, data, auth) { 
+export function ingest_api_submit_upload(uuid, data) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
     
@@ -471,7 +476,7 @@ export function ingest_api_submit_upload(uuid, data, auth) {
  * Validate Upload
  *
  */
-export function ingest_api_validate_upload(uuid, data, auth) { 
+export function ingest_api_validate_upload(uuid, data) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
     
@@ -493,7 +498,7 @@ export function ingest_api_validate_upload(uuid, data, auth) {
  * Reorganize or uploads
  *
  */
-export function ingest_api_reorganize_upload(uuid, auth) { 
+export function ingest_api_reorganize_upload(uuid) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
           "Content-Type":"application/json"}};
   const data = {}
@@ -537,9 +542,9 @@ export function ingest_api_notify_slack(data) {
  *  Bulk Metadata
  *
  */
-export function ingest_api_upload_bulk_metadata(type, dataFile, auth) { 
-  console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type, auth);
-  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
+export function ingest_api_upload_bulk_metadata(type, dataFile) { 
+  console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type);
+  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"multipart/form-data"}};
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'file' }),dataFile.name);
   formData.append('entity_type', "Sample")
@@ -638,7 +643,7 @@ export function ingest_api_pipeline_test_submit(auth, data) {
  *
  */
 export function ingest_api_validate_contributors(auth,dataFile) { 
-  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
+  const options = {headers:{Authorization: "Bearer " + globalToken,"Content-Type":"multipart/form-data"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate?ensure-latest-cedar-version=true`;
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);

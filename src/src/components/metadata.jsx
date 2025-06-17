@@ -140,7 +140,7 @@ function parseErrorJSON(error) {
             setResults("Failure");
             setFailedStep(2);
             var err = resp.error.response.data.error ? resp.error.response.data.error : resp
-            if(!err.includes("row")){
+            if(!err.includes("row") || !err.includes("[")){
               // Non Row Error Handling first
               try{
                 setErrorList(err.toString());
