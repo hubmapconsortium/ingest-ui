@@ -124,7 +124,7 @@ function infoPanels(entityData,permissions,globusURL){
           </big></strong>
         </Typography>
       )}
-      {permissions.has_write_priv && (
+      {permissions.has_write_priv && entityData[1]!=="Publication"&&(
         <HIPPA />
       )}
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (

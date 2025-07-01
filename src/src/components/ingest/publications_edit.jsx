@@ -709,7 +709,6 @@ class PublicationEdit extends Component {
           slist.push(selection.row);
           let dlist = this.state.dataset_uuids;
           dlist.push(selection.row.hubmap_id);
-
           this.setState((prevState) => ({
             source_uuid: selection.row.hubmap_id,
             source_uuid_list: slist,
@@ -2122,7 +2121,7 @@ class PublicationEdit extends Component {
               aria-labelledby="source-lookup-dialog"
               open={this.state.LookUpShow ? this.state.LookUpShow : false}>
               <DialogContent>
-                <SearchComponent
+                {/* <SearchComponent
                   select={this.handleSelectClick}
                   custom_title="Search for a Source ID for your Publication"
                   // filter_type="Publication"
@@ -2131,7 +2130,7 @@ class PublicationEdit extends Component {
                   restrictions={{ // Disables type selection entierly, vs just hiding options
                     entityType: "dataset"
                   }}
-                />
+                /> */}
               </DialogContent>
               <DialogActions>
                 <Button
