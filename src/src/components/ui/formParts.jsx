@@ -124,7 +124,7 @@ function infoPanels(entityData,permissions,globusURL){
           </big></strong>
         </Typography>
       )}
-      {permissions.has_write_priv && (
+      {permissions.has_write_priv && entityData[1]!=="Publication"&&(
         <HIPPA />
       )}
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
@@ -230,6 +230,29 @@ export function UserGroupSelectMenu(formValues){
   if(formValues.group_name){
     return(
       <option value={formValues.group_uuid}>
+        {formValues.group_name}
+      </option>
+    )
+  }else{
+    let menuArray = [];
+    for(let group of userGroups){
+      menuArray.push(
+        <option key={group.uuid} value={group.uuid}>
+          {group.shortname}
+        </option>
+      );
+    }
+    return menuArray;
+  } 
+}
+
+
+export function UserGroupSelectMenuPatch(formValues){
+  console.debug('%c◉ UserGroupSelectMenuPatch ', 'color:#0026FF', formValues);
+  let userGroups = JSON.parse(localStorage.getItem("userGroups"));
+  if(formValues.group_name){
+    return(
+      <option key={formValues.group_uuid} value={formValues.group_uuid}>
         {formValues.group_name}
       </option>
     )
