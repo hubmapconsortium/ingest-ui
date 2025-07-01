@@ -5,7 +5,6 @@ import {
   entity_api_get_entity,
   entity_api_get_these_entities,
   entity_api_update_entity,
-  entity_api_create_entity,
   entity_api_get_globus_url
 } from "../service/entity_api";
 import {
@@ -23,7 +22,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
 import {GridLoader} from "react-spinners";
-import {toTitleCase,humanize} from "../utils/string_helper";
+import {humanize} from "../utils/string_helper";
 import {Typography} from "@mui/material";
 
 import Dialog from '@mui/material/Dialog';
@@ -31,7 +30,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchComponent from "./search/SearchComponent";
-import {removeEmptyValues} from "../utils/constants_helper";
 
 import {
   faPenToSquare,
@@ -67,7 +65,6 @@ export const PublicationForm = (props) => {
   let[entityData, setEntityData] = useState();
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
-  let[validationError, setValidationError] = useState(null);
   let[valErrorMessages, setValErrorMessages] = useState([]);
   let[pageErrors, setPageErrors] = useState(null);
 
@@ -291,7 +288,6 @@ const validateDOI = (protocolDOI) => {
 }
 
 const validateForm = ()=> {
-  setValidationError(null);
   setValErrorMessages(null);
   setFormErrors({...formValues})
   let errors = 0;
@@ -337,10 +333,10 @@ const validateForm = ()=> {
   errors += validateDOI(formValues['protocol_url']);
 
   if(errors>0){
-    setValidationError("Please Review the following fields and try again.");
+    // setValidationError("Please Review the following fields and try again.");
     setValErrorMessages(e_messages);
   }else{
-    setValidationError(null);
+    // setValidationError(null);
   }    
   console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
   // return false;
@@ -796,7 +792,7 @@ const buttonEngine = () => {
                               className="inline-icon interaction-icon "
                               icon={faTrash}
                               color="red"
-                              onClick={(e) => sourceRemover(row)}
+                              onClick={() => sourceRemover(row)}
                             />
                           </React.Fragment>
                       </TableCell>
