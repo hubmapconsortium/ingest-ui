@@ -23,12 +23,15 @@ import InputLabel from "@mui/material/InputLabel";
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
 import {GridLoader} from "react-spinners";
-import {toTitleCase} from "../utils/string_helper";
+import {toTitleCase,humanize} from "../utils/string_helper";
+import {Typography} from "@mui/material";
+
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchComponent from "./search/SearchComponent";
+import {removeEmptyValues} from "../utils/constants_helper";
 
 import {
   faPenToSquare,
@@ -64,6 +67,8 @@ export const PublicationForm = (props) => {
   let[entityData, setEntityData] = useState();
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
+  let[validationError, setValidationError] = useState(null);
+  let[valErrorMessages, setValErrorMessages] = useState([]);
   let[pageErrors, setPageErrors] = useState(null);
 
   let [bulkError, setBulkError] = useState(false);
@@ -198,7 +203,6 @@ export const PublicationForm = (props) => {
                 publication_venue: entityData.publication_venue || "",
                 publication_date: entityData.publication_date || "",
                 publication_status: entityData.publication_status ? entityData.publication_status.toString() : "false", 
-                
                 publication_url: entityData.publication_url || "",
                 publication_doi: entityData.publication_doi || "",
                 omap_doi: entityData.omap_doi || "",
@@ -258,9 +262,8 @@ const handleInputChange = (e) => {
       [id]: value,
     }));
     }
-    
     if(id === "dataset_uuids_string"){
-      // This is the string of IDs, so lets update the selected_HIDs
+      console.debug('%c◉  dataset_uuids_string', 'color:#00ff7b', value);
       setSelectedString(value); 
     }
   }
@@ -288,71 +291,107 @@ const validateDOI = (protocolDOI) => {
 }
 
 const validateForm = ()=> {
+  setValidationError(null);
+  setValErrorMessages(null);
+  setFormErrors({...formValues})
   let errors = 0;
-  let requiredFields = ["title", "publication_venue", "publication_date", "publication_url", "description",];
+  let e_messages=[]
+
+  let requiredFields = ["title", "publication_venue", "publication_date", "publication_status", "publication_url", "description","direct_ancestor_uuids"];
   for(let field of requiredFields){
+    console.debug('%c◉ formValues[field] ', 'color:#00ff7b', formValues[field]);
     if(!validateRequired(formValues[field])){
       console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
+      // let fieldName = toTitleCase(field.replace(/_/g, " "));
+      let fieldName = formFields.find(f => f.id === field)?.label || humanize(field);
+      if(field !== "direct_ancestor_uuids"){
+        e_messages.push(fieldName+" is a required field");
+      }
+      console.log(field)
+      
       setFormErrors((prevValues) => ({
         ...prevValues,
         [field]: " Required",
       }));
-
       errors++;
+    }else{
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        [field]: "",
+      }));
     }
   }
+  console.log("!!!!!!!!!!1",formValues['direct_ancestor_uuids'],formValues['direct_ancestor_uuids'].length,formValues['direct_ancestor_uuids'].length <= 0)
+  
+  if(formValues['direct_ancestor_uuids'].length <= 0 && sourcesData.length <= 0){
+    e_messages.push("Please select at least one Source");
+  }else if(sourcesData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0){
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      'direct_ancestor_uuids': sourcesData.map(obj => obj.uuid),
+    }));
+
+  }
+
   // Formatting Validation
   errors += validateDOI(formValues['protocol_url']);
-  // End Validation
+
+  if(errors>0){
+    setValidationError("Please Review the following fields and try again.");
+    setValErrorMessages(e_messages);
+  }else{
+    setValidationError(null);
+  }    
+  console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
+  // return false;
   return errors === 0;
 }
 
-
-  const handleInputUUIDs = (e) => {
-    console.debug('%c◉ e ', 'color:#00ff7b', e);  
-    e.preventDefault();
-    if(!showHIDList){
-      setShowHIDList(true);
-      setSelectedString(selected_HIDs.join(", "))
-      setSourceBulkStatus("Waiting for Input...");
-    }else{
-      // Lets clear out the previous errors first
-      setFormErrors()
-      setShowHIDList(false);
-      setSourceBulkStatus("loading");
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-        'source_uuid_list': ""
-      }));
-      // Ok, we want to Save what's Stored for data in the Table
-      let datasetTableRows = selected_HIDs
-      console.log("datasetTableRows", datasetTableRows);
-      let cleanList = selected_string.trim().split(", ")
-      entity_api_get_these_entities(cleanList)
-        .then((response) => {
-          console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
-          let entities = response.results
-          let entityDetails = entities.map(obj => obj.results)
-          let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
-          let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";  
-          setBulkError(errors ? errors : "");
-          setBulkWarning(response.message ? response.message : "");
-          setSelectedHIDs(entityHIDs);
-          setSelectedString(entityHIDs.join(", "));
-          setSourcesData(entityDetails);
-          setShowHIDList(false);
-          setSourceBulkStatus("complete");
-          setFormValues((prevValues) => ({
-            ...prevValues,
-            'direct_ancestor_uuids': entityDetails.map(obj => obj.uuid),
-          }));
-        })
-        .catch((error) => {
-          console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-          props.reportError(error);
-        });
-    }
+const handleInputUUIDs = (e) => {
+  console.debug('%c◉ e ', 'color:#00ff7b', e);  
+  e.preventDefault();
+  if(!showHIDList){
+    setShowHIDList(true);
+    setSelectedString(selected_HIDs.join(", "))
+    setSourceBulkStatus("Waiting for Input...");
+  }else{
+    // Lets clear out the previous errors first
+    setFormErrors()
+    setShowHIDList(false);
+    setSourceBulkStatus("loading");
+    setFormErrors((prevValues) => ({
+      ...prevValues,
+      'source_uuid_list': ""
+    }));
+    // Ok, we want to Save what's Stored for data in the Table
+    let datasetTableRows = selected_HIDs
+    console.log("datasetTableRows", datasetTableRows);
+    let cleanList = selected_string.trim().split(", ")
+    entity_api_get_these_entities(cleanList)
+      .then((response) => {
+        console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
+        let entities = response.results
+        let entityDetails = entities.map(obj => obj.results)
+        let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
+        let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";  
+        setBulkError(errors ? errors : "");
+        setBulkWarning(response.message ? response.message : "");
+        setSelectedHIDs(entityHIDs);
+        setSelectedString(entityHIDs.join(", "));
+        setSourcesData(entityDetails);
+        setShowHIDList(false);
+        setSourceBulkStatus("complete");
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          'direct_ancestor_uuids': entityDetails.map(obj => obj.uuid),
+        }));
+      })
+      .catch((error) => {
+        console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+        props.reportError(error);
+      });
   }
+}
 
  const sourceRemover = (row) => {
   let hid = row.hubmap_id;
@@ -377,6 +416,7 @@ const handleSubmit = (e) => {
     console.log(e.target.name)    
     setIsProcessing(true);
     console.log(formValues)
+    
     if(validateForm()){
       let selectedUUIDs = sourcesData.map((obj) => obj.uuid);
       console.debug('%c◉ selected_UUIDs ', 'color:#00ff7b', selectedUUIDs);
@@ -429,10 +469,12 @@ const handleSubmit = (e) => {
                     if (response.status < 300) {
                         props.onUpdated(response.results);
                     } else {
+                      wrapUp(response)
                       props.reportError(response);
                     }
                   })
               } else { 
+                wrapUp(response)
                 setPageErrors(response);
                 setButtonLoading((prev) => ({
                   ...prev,
@@ -477,14 +519,16 @@ const handleSubmit = (e) => {
           });
       }
     }else{
+      // wrapUp(response)
       setIsProcessing(false);
       console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
 
 const wrapUp = (error) => {
-  setPageErrors(error);
+  setPageErrors(error.error ? error.error : error);
   setIsProcessing(false);
+  // formatValidationResponse(formErrors);
 }
 
 const buttonEngine = () => {
@@ -505,7 +549,7 @@ const buttonEngine = () => {
           className="m-2"
           onClick={(e) => handleSubmit(e)}
           type="submit">
-          Generate ID
+            Save
         </LoadingButton>
       )}
       {/* Process */}
@@ -522,6 +566,7 @@ const buttonEngine = () => {
       {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="new" && (
         <LoadingButton 
           loading={buttonLoading['submit']} 
+          onClick={(e) => handleSubmit(e)}
           name="submit"
           variant="contained" 
           className="m-2">
@@ -533,6 +578,7 @@ const buttonEngine = () => {
         <LoadingButton 
           loading={buttonLoading['save']} 
           name="save"
+          onClick={(e) => handleSubmit(e)}
           variant="contained" 
           className="m-2">
           Save
@@ -546,15 +592,21 @@ const buttonEngine = () => {
   const handleSelectClick = (event) => {
     if (!selected_HIDs.includes(event.row.hubmap_id)) {
       setSourcesData((rows) => [...rows, event.row]);
-      setSelectedUUIDs((uuids) => [...uuids, event.row.uuid]);
+      setSelectedUUIDs((rows) => [...rows, event.row.uuid]);
       setSelectedHIDs((ids) => [...ids, event.row.hubmap_id]);
       setSelectedString((str) => str + (str ? ", " : "") + event.row.hubmap_id);
+    
       console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
+      console.debug("selected_UUIDs", selected_UUIDs);
       setFormValues((prevValues) => ({
         ...prevValues,
         'dataset_uuids': selected_UUIDs,
         'direct_ancestor_uuids': selected_UUIDs,
       }))
+      setFormErrors((prevValues) => ({ //Clear Errors
+        ...prevValues,
+        'direct_ancestor_uuids': "",
+      }));
       setShowSearchDialog(false); 
     } else {
       // maybe alert them theyre selecting one they already picked?
@@ -564,12 +616,12 @@ const buttonEngine = () => {
 
     return (
       <>
-        {formFields.map((field) => {
+        {formFields.map((field,index) => {
           if (["text", "date"].includes(field.type)) {
             return (
               <TextField
                 InputLabelProps={{ shrink: true }}
-                key={field.id}
+                key={field.id+"_"+index}
                 required={field.required}
                 type={field.type}
                 id={field.id}
@@ -597,7 +649,7 @@ const buttonEngine = () => {
             return (
               <FormControl
                 id={field.id}
-                key={field.id}
+                key={field.id+"_"+index}
                 component="fieldset"
                 variant="standard"
                 size="small"  
@@ -613,6 +665,7 @@ const buttonEngine = () => {
                 <RadioGroup row aria-labelledby="publication_status" name="publication_status">
                   {field.values && field.values.map((val) => (
                     <FormControlLabel 
+                      key={field.id+"_"+val}
                       value={val}
                       id={field.id + "_" + val} 
                       onChange={(e) => handleInputChange(e)}
@@ -620,7 +673,7 @@ const buttonEngine = () => {
                       disabled={!permissions.has_write_priv} 
                       checked={formValues[field.id] === val ? true : false}
                       control={<Radio />} 
-                      inputProps={{ 'aria-label': toTitleCase(val), id: field.id + "_" + val }}
+                      // inputProps={{ 'aria-label': toTitleCase(val), id: field.id + "_" + val }}
                       label={val==="true" ? "Yes" : "No"} />
                   ))}
                 </RadioGroup>
@@ -826,14 +879,12 @@ const buttonEngine = () => {
                   overflow: "hidden",
                   width: "650px"}}>
                 <FormControl >
-                  {/* <StyledTextField */}
                   <TextField
                     name="dataset_uuids_string"
                     display="flex"
                     id="dataset_uuids_string"
                     // error={props?.fields?dataset_uuids_string?.error && props?.dataset_uuids_string?.error.length > 0 ? true : false}
                     multiline
-                    inputProps={{ 'aria-label': 'description' }}
                     placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
                     variant="standard"
                     size="small"
@@ -903,6 +954,18 @@ const buttonEngine = () => {
             </NativeSelect>
           </Box>
         )}
+
+       {valErrorMessages && valErrorMessages.length > 0 && (
+          <Alert severity="error">
+            <AlertTitle>Please Review the following problems:</AlertTitle>
+            {valErrorMessages.map(error => (
+              <Typography >
+                {error}
+              </Typography>
+            ))}
+          </Alert>
+      )}
+
         {buttonEngine()}
       </form>
     
