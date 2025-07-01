@@ -72,8 +72,9 @@ export const PublicationForm = (props) => {
   let [sourceBulkStatus, setSourceBulkStatus] = useState("idle");
   let [showHIDList, setShowHIDList] = useState(false);
   
-  let [selected_HIDs, setSelectedHIDs] = useState( []);
-  let [selected_string, setSelectedString] = useState( "");
+  let [selected_HIDs, setSelectedHIDs] = useState([]);
+  let [selected_UUIDs, setSelectedUUIDs] = useState([]);
+  let [selected_string, setSelectedString] = useState("");
   let [sourcesData, setSourcesData] = useState([]);
 
   let[permissions,setPermissions] = useState({ 
@@ -125,14 +126,14 @@ export const PublicationForm = (props) => {
       id: "publication_status",
       label: "Publication Status ",
       helperText: "Has this Publication been Published?",
-      required: false,
+      required: true,
       type: "radio",
       values: ["true","false"]
     },{ 
       id: "publication_url",
       label: "Publication URL",
       helperText: "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
-      required: false,
+      required: true,
       type: "text",
     },{ 
       id: "publication_doi",
@@ -174,7 +175,6 @@ export const PublicationForm = (props) => {
       rows: 4,
     }
   ], []);
-  let publication_status_tracker = "False"
   const{uuid} = useParams();
 
   useEffect(() => {
@@ -197,7 +197,8 @@ export const PublicationForm = (props) => {
                 title: entityData.title || "",
                 publication_venue: entityData.publication_venue || "",
                 publication_date: entityData.publication_date || "",
-                publication_status: entityData.publication_status || "",
+                publication_status: entityData.publication_status ? entityData.publication_status.toString() : "false", 
+                
                 publication_url: entityData.publication_url || "",
                 publication_doi: entityData.publication_doi || "",
                 omap_doi: entityData.omap_doi || "",
@@ -243,12 +244,6 @@ export const PublicationForm = (props) => {
 
 const handleInputChange = (e) => {
     const { id, value } = e.target;
-    console.debug('%c◉ e ', 'color:#00ff7b', e);
-    console.debug('%c◉ e.target ', 'color:#00ff7b', e.target);
-    console.debug('%c◉ handleInputChange ', 'color:#00ff7b',"ID: " +id,"Value: " + value);
-    // if(id. === "publication_status"){ 
-    // if string containts "publication_status" then set valuesz
-    console.debug(id.indexOf('publication_status'));
     if(e.target.type === "radio"){
       console.log(e.target.checked);
       // let boolVal = value.substring(id.lastIndexOf("publication_status") + 1)
@@ -271,49 +266,49 @@ const handleInputChange = (e) => {
   }
 
 const validateDOI = (protocolDOI) => {
-    if (!validateProtocolIODOI(protocolDOI)) {
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-          'protocol_url': "Please enter a valid protocols.io URL"
-        }));
-      return 1
-    } else if (!validateSingleProtocolIODOI(protocolDOI)) {
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-          'protocol_url': "Please enter only one valid protocols.io URL"
-        }));
-      return 1
-    }else{
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-          'protocol_url': ""
-        }));
-      return 0
-    }
+  if (!validateProtocolIODOI(protocolDOI)) {
+    setFormErrors((prevValues) => ({
+      ...prevValues,
+        'protocol_url': "Please enter a valid protocols.io URL"
+      }));
+    return 1
+  } else if (!validateSingleProtocolIODOI(protocolDOI)) {
+    setFormErrors((prevValues) => ({
+      ...prevValues,
+        'protocol_url': "Please enter only one valid protocols.io URL"
+      }));
+    return 1
+  }else{
+    setFormErrors((prevValues) => ({
+      ...prevValues,
+        'protocol_url': ""
+      }));
+    return 0
   }
+}
 
 const validateForm = ()=> {
+  let errors = 0;
+  let requiredFields = ["title", "publication_venue", "publication_date", "publication_url", "description",];
+  for(let field of requiredFields){
+    if(!validateRequired(formValues[field])){
+      console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        [field]: " Required",
+      }));
 
-    let errors = 0;
-    let requiredFields = ["title", "publication_venue", "publication_date", "publication_url", "description",];
-    for(let field of requiredFields){
-      if(!validateRequired(formValues[field])){
-        console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
-        setFormErrors((prevValues) => ({
-          ...prevValues,
-          [field]: " Required",
-        }));
-
-        errors++;
-      }
+      errors++;
     }
-    // Formatting Validation
-    errors += validateDOI(formValues['protocol_url']);
-    // End Validation
-    return errors === 0;
   }
+  // Formatting Validation
+  errors += validateDOI(formValues['protocol_url']);
+  // End Validation
+  return errors === 0;
+}
 
-const handleInputUUIDs = (e) => {
+
+  const handleInputUUIDs = (e) => {
     console.debug('%c◉ e ', 'color:#00ff7b', e);  
     e.preventDefault();
     if(!showHIDList){
@@ -329,12 +324,10 @@ const handleInputUUIDs = (e) => {
         ...prevValues,
         'source_uuid_list': ""
       }));
-
       // Ok, we want to Save what's Stored for data in the Table
       let datasetTableRows = selected_HIDs
       console.log("datasetTableRows", datasetTableRows);
       let cleanList = selected_string.trim().split(", ")
-
       entity_api_get_these_entities(cleanList)
         .then((response) => {
           console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
@@ -349,7 +342,6 @@ const handleInputUUIDs = (e) => {
           setSourcesData(entityDetails);
           setShowHIDList(false);
           setSourceBulkStatus("complete");
-
           setFormValues((prevValues) => ({
             ...prevValues,
             'direct_ancestor_uuids': entityDetails.map(obj => obj.uuid),
@@ -362,12 +354,32 @@ const handleInputUUIDs = (e) => {
     }
   }
 
+ const sourceRemover = (row) => {
+  let hid = row.hubmap_id;
+  setFormValues((prev) => ({
+    ...prev,
+    'direct_ancestor_uuids': prev.direct_ancestor_uuids.filter((uuid) => uuid !== row.row.uuid),
+  }));
+  setSelectedHIDs((prev) => prev.filter((id) => id !== hid));
+  setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hid));
+  setSelectedString((prev) => {
+    const filtered = prev
+      .split(",")
+      .map((s) => s.trim())
+      .filter((id) => id && id !== hid);
+    return filtered.join(", ");
+  });
+
+};
+
 const handleSubmit = (e) => {
     e.preventDefault()
     console.log(e.target.name)    
     setIsProcessing(true);
     console.log(formValues)
     if(validateForm()){
+      let selectedUUIDs = sourcesData.map((obj) => obj.uuid);
+      console.debug('%c◉ selected_UUIDs ', 'color:#00ff7b', selectedUUIDs);
       let cleanForm ={
         title: formValues.title,
         publication_venue: formValues.publication_venue,
@@ -376,12 +388,11 @@ const handleSubmit = (e) => {
         publication_url: formValues.publication_url,
         publication_doi: formValues.publication_doi,
         omap_doi: formValues.omap_doi,
-        // issue: formValues.issue,
         ...((formValues.issue) && {issue: formValues.issue} ),
         ...((formValues.volume) && {volume: formValues.volume} ),
         pages_or_article_num: formValues.pages_or_article_num,
         description: formValues.description,
-        direct_ancestor_uuids: selected_HIDs,
+        direct_ancestor_uuids: selectedUUIDs,
         contains_human_genetic_sequences: false // Holdover From Dataset Days
       }
 
@@ -453,8 +464,8 @@ const handleSubmit = (e) => {
             if(response.status === 200){
               entity_api_get_globus_url(response.results.uuid)
                 .then((res) => {
-                  let globus_path = res.results;
-                  props.onCreated({entity: response.results, globus_path: res.results});
+                  let fullResult = {...response.results, globus_path: res.results};
+                  props.onCreated(fullResult);
                 })
             }else{
               wrapUp(response.error ? response.error : response)
@@ -462,6 +473,7 @@ const handleSubmit = (e) => {
           })
           .catch((error) => {
             wrapUp(error)
+            setPageErrors(error);
           });
       }
     }else{
@@ -507,6 +519,15 @@ const buttonEngine = () => {
           Process
         </LoadingButton>
       )}
+      {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="new" && (
+        <LoadingButton 
+          loading={buttonLoading['submit']} 
+          name="submit"
+          variant="contained" 
+          className="m-2">
+          Submit
+        </LoadingButton>
+      )}
       {/* Save */}
       {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="published" && (
         <LoadingButton 
@@ -518,30 +539,21 @@ const buttonEngine = () => {
         </LoadingButton>
       )}
       {/* Submit */}
-      {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="new" && (
-        <LoadingButton 
-          loading={buttonLoading['submit']} 
-          name="submit"
-          variant="contained" 
-          className="m-2">
-          Submit
-        </LoadingButton>
-      )}
-
     </Box>
   );
 }
   //Click on row from Search
   const handleSelectClick = (event) => {
-
     if (!selected_HIDs.includes(event.row.hubmap_id)) {
       setSourcesData((rows) => [...rows, event.row]);
+      setSelectedUUIDs((uuids) => [...uuids, event.row.uuid]);
       setSelectedHIDs((ids) => [...ids, event.row.hubmap_id]);
       setSelectedString((str) => str + (str ? ", " : "") + event.row.hubmap_id);
       console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
       setFormValues((prevValues) => ({
         ...prevValues,
-        'dataset_uuids': selected_HIDs,
+        'dataset_uuids': selected_UUIDs,
+        'direct_ancestor_uuids': selected_UUIDs,
       }))
       setShowSearchDialog(false); 
     } else {
@@ -731,7 +743,7 @@ const buttonEngine = () => {
                               className="inline-icon interaction-icon "
                               icon={faTrash}
                               color="red"
-                              onClick={(e) => props.sourceManager(e, {row, index})}
+                              onClick={(e) => sourceRemover(row)}
                             />
                           </React.Fragment>
                       </TableCell>
@@ -744,7 +756,7 @@ const buttonEngine = () => {
         </Box> 
       </Box>
 
-      <Box className="mt-2" display="inline-flex" flexDirection={"column"} >
+      <Box className="my-2" display="inline-flex" flexDirection={"column"} >
         <Box className="w-100" width="100%" flexDirection="row" display="inline-flex" >
           <Collapse
             in={(bulkError && bulkError.length > 0)}
@@ -842,7 +854,10 @@ const buttonEngine = () => {
                   variant="text"
                   type='link'
                   size="small"
-                  onClick={() => setShowHIDList(false) }>
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowHIDList(false);
+                  }}>
                   <ClearIcon size="small"/>
                 </Button>
               </Box>
