@@ -1,64 +1,40 @@
-import React, {useEffect, useState} from "react";
-import {useParams, useNavigate} from "react-router-dom";
-import {ingest_api_allowable_edit_states,ingest_api_dataset_submit,ingest_api_notify_slack,ingest_api_create_publication} from "../service/ingest_api";
-import {
-  entity_api_get_entity,
-  entity_api_get_these_entities,
-  entity_api_update_entity,
-  entity_api_get_globus_url
-} from "../service/entity_api";
-import {
-  validateRequired,
-  validateProtocolIODOI,
-  validateSingleProtocolIODOI
-} from "../utils/validators";
-import AlertTitle from '@mui/material/AlertTitle';
-
-import Collapse from '@mui/material/Collapse';
 import LoadingButton from "@mui/lab/LoadingButton";
+import {Typography} from "@mui/material";
+import Alert from "@mui/material/Alert";
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormLabel from '@mui/material/FormLabel';
+import Grid from '@mui/material/Grid';
+import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
-import InputLabel from "@mui/material/InputLabel";
-import Box from "@mui/material/Box";
-import Grid from '@mui/material/Grid';
-import {GridLoader} from "react-spinners";
-import {humanize} from "../utils/string_helper";
-import {Typography} from "@mui/material";
-
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import ClearIcon from '@mui/icons-material/Clear';
-import SearchComponent from "./search/SearchComponent";
-
-import {
-  faPenToSquare,
-  faPlus,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-
-import TextField from "@mui/material/TextField";
-import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
+import TextField from "@mui/material/TextField";
+import React,{useEffect,useState} from "react";
 
-import {getPublishStatusColor} from "../utils/badgeClasses";
+import {useNavigate,useParams} from "react-router-dom";
+import {
+	entity_api_get_entity,
+	entity_api_get_globus_url,
+	entity_api_get_these_entities,
+	entity_api_update_entity
+} from "../service/entity_api";
+import {ingest_api_allowable_edit_states,ingest_api_create_publication,ingest_api_dataset_submit,ingest_api_notify_slack} from "../service/ingest_api";
+import {humanize} from "../utils/string_helper";
+import {
+	validateProtocolIODOI,
+	validateRequired,
+	validateSingleProtocolIODOI
+} from "../utils/validators";
 
+import {BulkSelector} from "./ui/bulkSelector";
 import {FormHeader,UserGroupSelectMenuPatch} from "./ui/formParts";
+
 
 export const PublicationForm = (props) => {
   let navigate = useNavigate();
@@ -177,8 +153,18 @@ export const PublicationForm = (props) => {
       rows: 4,
     }
   ], []);
+
   const{uuid} = useParams();
 
+	const memoizedFormHeader = React.useMemo(
+		() => <FormHeader entityData={uuid ? entityData : ["new", "Publication"]} permissions={permissions} />,
+		[uuid, entityData, permissions]
+	);
+	const memoizedUserGroupSelectMenuPatch = React.useMemo(
+		() => <UserGroupSelectMenuPatch />,
+		[]
+	);
+	
   useEffect(() => {
     if(uuid && uuid !== ""){
       entity_api_get_entity(uuid)
@@ -243,49 +229,51 @@ export const PublicationForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-const handleInputChange = (e) => {
+  const handleInputChange = (e) => {
+		console.log('%c◉ handleInputChange ', 'color:#00ff7b', e);
     const { id, value } = e.target;
-    if(e.target.type === "radio"){
+
+		if(e.target.type === "radio"){
       console.log(e.target.checked);
-      // let boolVal = value.substring(id.lastIndexOf("publication_status") + 1)
       setFormValues((prevValues) => ({
         ...prevValues,
         publication_status: value,
       }));
 
     }else{
-      setFormValues((prevValues) => ({
-      ...prevValues,
-      [id]: value,
-    }));
+      setFormValues(prev => {
+				if (prev[id] === value) return prev;
+				return { ...prev, [id]: value };
+			});
     }
     if(id === "dataset_uuids_string"){
       console.debug('%c◉  dataset_uuids_string', 'color:#00ff7b', value);
       setSelectedString(value); 
     }
+
   }
 
-const validateDOI = (protocolDOI) => {
-  if (!validateProtocolIODOI(protocolDOI)) {
-    setFormErrors((prevValues) => ({
-      ...prevValues,
-        'protocol_url': "Please enter a valid protocols.io URL"
-      }));
-    return 1
-  } else if (!validateSingleProtocolIODOI(protocolDOI)) {
-    setFormErrors((prevValues) => ({
-      ...prevValues,
-        'protocol_url': "Please enter only one valid protocols.io URL"
-      }));
-    return 1
-  }else{
-    setFormErrors((prevValues) => ({
-      ...prevValues,
-        'protocol_url': ""
-      }));
-    return 0
-  }
-}
+	const validateDOI = (protocolDOI) => {
+		if (!validateProtocolIODOI(protocolDOI)) {
+			setFormErrors((prevValues) => ({
+				...prevValues,
+					'protocol_url': "Please enter a valid protocols.io URL"
+				}));
+			return 1
+		} else if (!validateSingleProtocolIODOI(protocolDOI)) {
+			setFormErrors((prevValues) => ({
+				...prevValues,
+					'protocol_url': "Please enter only one valid protocols.io URL"
+				}));
+			return 1
+		}else{
+			setFormErrors((prevValues) => ({
+				...prevValues,
+					'protocol_url': ""
+				}));
+			return 0
+		}
+	}
 
 const validateForm = ()=> {
   setValErrorMessages(null);
@@ -294,17 +282,15 @@ const validateForm = ()=> {
   let e_messages=[]
 
   let requiredFields = ["title", "publication_venue", "publication_date", "publication_status", "publication_url", "description","direct_ancestor_uuids"];
-  for(let field of requiredFields){
+  
+	for(let field of requiredFields){
     console.debug('%c◉ formValues[field] ', 'color:#00ff7b', formValues[field]);
     if(!validateRequired(formValues[field])){
       console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
-      // let fieldName = toTitleCase(field.replace(/_/g, " "));
       let fieldName = formFields.find(f => f.id === field)?.label || humanize(field);
       if(field !== "direct_ancestor_uuids"){
         e_messages.push(fieldName+" is a required field");
       }
-      console.log(field)
-      
       setFormErrors((prevValues) => ({
         ...prevValues,
         [field]: " Required",
@@ -317,7 +303,6 @@ const validateForm = ()=> {
       }));
     }
   }
-  console.log("!!!!!!!!!!1",formValues['direct_ancestor_uuids'],formValues['direct_ancestor_uuids'].length,formValues['direct_ancestor_uuids'].length <= 0)
   
   if(formValues['direct_ancestor_uuids'].length <= 0 && sourcesData.length <= 0){
     e_messages.push("Please select at least one Source");
@@ -339,13 +324,13 @@ const validateForm = ()=> {
     // setValidationError(null);
   }    
   console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
-  // return false;
   return errors === 0;
 }
 
 const handleInputUUIDs = (e) => {
   console.debug('%c◉ e ', 'color:#00ff7b', e);  
   e.preventDefault();
+
   if(!showHIDList){
     setShowHIDList(true);
     setSelectedString(selected_HIDs.join(", "))
@@ -359,10 +344,15 @@ const handleInputUUIDs = (e) => {
       ...prevValues,
       'source_uuid_list': ""
     }));
+		
     // Ok, we want to Save what's Stored for data in the Table
-    let datasetTableRows = selected_HIDs
-    console.log("datasetTableRows", datasetTableRows);
-    let cleanList = selected_string.trim().split(", ")
+		let cleanList = Array.from(new Set(
+			selected_string
+			.split(",")
+			.map(s => s.trim())
+			.filter(s => s.length > 0)
+		));
+
     entity_api_get_these_entities(cleanList)
       .then((response) => {
         console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
@@ -384,12 +374,13 @@ const handleInputUUIDs = (e) => {
       })
       .catch((error) => {
         console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-        props.reportError(error);
+				setPageErrors(error);
+				props.reportError(error);
       });
   }
 }
 
- const sourceRemover = (row) => {
+const sourceRemover = (row) => {
   let hid = row.hubmap_id;
   setFormValues((prev) => ({
     ...prev,
@@ -409,10 +400,7 @@ const handleInputUUIDs = (e) => {
 
 const handleSubmit = (e) => {
     e.preventDefault()
-    console.log(e.target.name)    
     setIsProcessing(true);
-    console.log(formValues)
-    
     if(validateForm()){
       let selectedUUIDs = sourcesData.map((obj) => obj.uuid);
       console.debug('%c◉ selected_UUIDs ', 'color:#00ff7b', selectedUUIDs);
@@ -608,8 +596,8 @@ const buttonEngine = () => {
       // maybe alert them theyre selecting one they already picked?
     }
   };
-  const renderForum = () => {
 
+  const renderForum = () => {
     return (
       <>
         {formFields.map((field,index) => {
@@ -652,7 +640,6 @@ const buttonEngine = () => {
                 required={field.required}
                 error={formErrors[field.id] && formErrors[field.id].length > 0 ? true : false}
                 className="mb-3"
-                // helperText={formErrors[field.id].length > 0 ? formErrors[field.id] : field.helperText}
                 fullWidth>
                 <FormLabel component="legend">{field.label}</FormLabel> 
                 <FormHelperText>
@@ -685,248 +672,46 @@ const buttonEngine = () => {
         })}
       </>
     );
-  } 
-
-  const renderBulk = ()=> {
-
-    return (<> 
-      <Dialog
-        fullWidth={true}
-        maxWidth="lg"
-        onClose={() => showSearchDialog(false)}
-        aria-labelledby="source-lookup-dialog"
-        open={showSearchDialog === true ? true : false}>
-        <DialogContent>
-        <SearchComponent
-          select={(e) => handleSelectClick(e)}
-          custom_title="Search for a Source ID for your Publication"
-          modecheck="Source"
-          restrictions={{
-            entityType: "dataset"
-          }}
-        />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setShowSearchDialog(false)}
-            variant="contained"
-            color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Box sx={{
-        position: "relative",
-        top: 0,
-        transitionProperty: "height",
-        transitionTimingFunction: "ease-in",
-        transitionDuration: "1s"}}> 
-        <Box className="sourceShade" sx={{
-          opacity: sourceBulkStatus==="loading"?1:0, 
-          background: "#444a65", 
-          width: "100%", 
-          height: "45px", 
-          position: "absolute", 
-          color: "white", 
-          zIndex: 999, 
-          padding: "10px", 
-          boxSizing: "border-box" ,
-          borderRadius: "0.375rem",
-          transitionProperty: "opacity",
-          transitionTimingFunction: "ease-in",
-          transitionDuration: "0.5s"}}>
-          <GridLoader size="2px" color="white" width="30px"/> Loading ... 
-        </Box> 
-        <Box>
-          <TableContainer
-            // sx={formErrors.source_uuid_list ? {border: "1px solid red",} : {}}
-            // component={Paper}
-            style={{ maxHeight: 450 }}>
-            <Table
-              aria-label="Associated Publications"
-              size="small"
-              className="table table-striped table-hover mb-0">
-              <TableHead className="thead-dark font-size-sm">
-                <TableRow className="   ">
-                  <TableCell> Source ID</TableCell>
-                  <TableCell component="th">Subtype</TableCell>
-                  <TableCell component="th">Group Name</TableCell>
-                  <TableCell component="th">Status</TableCell>
-                  {permissions.has_write_priv && (
-                    <TableCell component="th" align="right">
-                      Action
-                    </TableCell>
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sourcesData.map((row, index) => (
-                  <TableRow
-                    key={row.hubmap_id + "" + index} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data
-                    // onClick={() => handleSourceCellSelection(row)}
-                    className="row-selection">
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.hubmap_id}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.dataset_type ? row.dataset_type : row.display_subtype}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.group_name}
-                    </TableCell>
-                    <TableCell className="clicky-cell" scope="row">
-                      {row.status && (
-                        <span className={"w-100 badge " +getPublishStatusColor(row.status, row.uuid)}>
-                          {" "}{row.status}
-                        </span>
-                      )}
-                    </TableCell>
-                    {permissions.has_write_priv && (
-                      <TableCell
-                        className="clicky-cell"
-                        align="right"
-                        name="source_delete"
-                        scope="row">
-                          <React.Fragment>
-                            <FontAwesomeIcon
-                              className="inline-icon interaction-icon "
-                              icon={faTrash}
-                              color="red"
-                              onClick={() => sourceRemover(row)}
-                            />
-                          </React.Fragment>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer> 
-        </Box> 
-      </Box>
-
-      <Box className="my-2" display="inline-flex" flexDirection={"column"} >
-        <Box className="w-100" width="100%" flexDirection="row" display="inline-flex" >
-          <Collapse
-            in={(bulkError && bulkError.length > 0)}
-            orientation="vertical">
-            <Alert 
-              className="m-0"
-              severity="error" 
-              onClose={() => {setBulkError("")}}>
-              <AlertTitle>Source Selection Error:</AlertTitle>
-              {bulkError? bulkError: ""} 
-            </Alert>
-          </Collapse>
-          <Collapse
-            in={(bulkWarning && bulkWarning.length>0)}
-            orientation="vertical">
-            <Alert severity="warning" className="m-0" onClose={() => {setBulkWarning("")}}>
-              <AlertTitle>Source Selection Warning:</AlertTitle>
-              {(bulkWarning && bulkWarning.length > 0)? bulkWarning.split('\n').map(warn => <p>{warn}</p>): ""} 
-            </Alert>
-          </Collapse>
-        </Box>
-        <Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
-          <Box p={1} className="m-0 text-right" id="bulkButtons" display="inline-flex" flexDirection="row" >
-            <Button
-              sx={{maxHeight: "35px",verticalAlign: 'bottom',}}
-              variant="contained"
-              type="button"
-              size="small"
-              className="btn btn-neutral"
-              onClick={() => setShowSearchDialog(true)}>
-              Add
-              <FontAwesomeIcon
-                className="fa button-icon m-2"
-                icon={faPlus}
-              />
-            </Button>
-            <Button
-              sx={{maxHeight: "35px",verticalAlign: 'bottom'}}
-              variant="text"
-              type='link'
-              size="small"
-              className='mx-2'
-              onClick={(e) => handleInputUUIDs(e)}>
-              {!showHIDList && (<>Bulk</>)}
-              {showHIDList && (<>UPDATE</>)}
-              <FontAwesomeIcon className='fa button-icon m-2' icon={faPenToSquare}/>
-            </Button>
-          </Box>
-          <Box
-            display="flex" 
-            flexDirection="row"
-            className="m-0 col-9 row"
-            sx={{
-              overflowX: "visible",
-              overflowY: "visible",
-              padding: "0px",  
-              maxHeight: "45px",}}>
-            <Collapse 
-              in={showHIDList} 
-              orientation="horizontal" 
-              className="row"
-              width="100%">
-              <Box
-                display="inline-flex"
-                flexDirection="row"
-                sx={{ 
-                  overflow: "hidden",
-                  width: "650px"}}>
-                <FormControl >
-                  <TextField
-                    name="dataset_uuids_string"
-                    display="flex"
-                    id="dataset_uuids_string"
-                    // error={props?.fields?dataset_uuids_string?.error && props?.dataset_uuids_string?.error.length > 0 ? true : false}
-                    multiline
-                    placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
-                    variant="standard"
-                    size="small"
-                    fullWidth={true}
-                    onChange={(event) => handleInputChange(event)}
-                    value={selected_string}
-                    sx={{
-                      overflow: "hidden",
-                      marginTop: '10px',
-                      verticalAlign: 'bottom',
-                      width: "100%",
-                    }}/>
-                    <FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
-                      {"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " }
-                    </FormHelperText>
-                </FormControl>
-                <Button
-                  variant="text"
-                  type='link'
-                  size="small"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowHIDList(false);
-                  }}>
-                  <ClearIcon size="small"/>
-                </Button>
-              </Box>
-            </Collapse>
-          </Box>
-        </Box>
-      </Box> 
-    </>)
   }
+	const memoizedForum = React.useMemo(
+		() => renderForum(),
+		[formFields, formValues, formErrors, permissions,]
+	);
 
   // MAIN RENDER
-
   if(isLoading ||((!entityData || !formValues) && uuid) ){
     return(<LinearProgress />);
   }else{
     return(<>
       <Grid container className='mb-2'>
-        <FormHeader entityData={uuid ? entityData : ["new","Publication"]} permissions={permissions} />
+				{memoizedFormHeader}
       </Grid>
       <form onSubmit={(e) => handleSubmit(e)}>
-        {renderBulk()}
-        {renderForum()} 
+        <BulkSelector
+          showSearchDialog={showSearchDialog}
+          setShowSearchDialog={setShowSearchDialog}
+          sourceBulkStatus={sourceBulkStatus}
+          setSourceBulkStatus={setSourceBulkStatus}
+          bulkError={bulkError}
+          setBulkError={setBulkError}
+          bulkWarning={bulkWarning}
+          setBulkWarning={setBulkWarning}
+          showHIDList={showHIDList}
+          setShowHIDList={setShowHIDList}
+          selected_HIDs={selected_HIDs}
+          setSelectedHIDs={setSelectedHIDs}
+          selected_string={selected_string}
+          setSelectedString={setSelectedString}
+          sourcesData={sourcesData}
+          setSourcesData={setSourcesData}
+          permissions={permissions}
+          formErrors={formErrors}
+          handleInputUUIDs={handleInputUUIDs}
+          handleSelectClick={handleSelectClick}
+          handleInputChange={handleInputChange}
+          sourceRemover={sourceRemover}
+        />
+        {memoizedForum} 
         {/* Group */}
         {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
         {!uuid && (
@@ -946,7 +731,7 @@ const buttonEngine = () => {
               }}
               disabled={uuid?true:false}
               value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
-              <UserGroupSelectMenuPatch />
+								{memoizedUserGroupSelectMenuPatch}
             </NativeSelect>
           </Box>
         )}
