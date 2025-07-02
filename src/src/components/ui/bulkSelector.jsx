@@ -110,7 +110,6 @@ export function BulkSelector({
 							)}
 							</TableRow>
 						</TableHead>
-
 						<TableBody>
 							{(!sourcesData || sourcesData.length === 0) && (
 								<TableRow>
@@ -162,30 +161,26 @@ export function BulkSelector({
 			</Box> 
 		</Box>
 		<Box className="my-2" display="inline-flex" flexDirection={"column"} >
-				<Box className="w-100" width="100%" flexDirection="row" display="inline-flex" >
-				<Collapse
-						in={(bulkError && bulkError.length > 0)}
-						orientation="vertical">
-						<Alert 
+			<Box className="w-100" width="100%" flexDirection="row" display="inline-flex" >
+				<Collapse in={(bulkError && bulkError.length > 0)} orientation="vertical">
+					<Alert 
 						className="m-0"
 						severity="error" 
 						onClose={() => {setBulkError("")}}>
-						<AlertTitle>Source Selection Error:</AlertTitle>
+					<AlertTitle>Source Selection Error:</AlertTitle>
 						{bulkError? bulkError: ""} 
-						</Alert>
+					</Alert>
 				</Collapse>
-				<Collapse
-						in={(bulkWarning && bulkWarning.length>0)}
-						orientation="vertical">
-						<Alert severity="warning" className="m-0" onClose={() => {setBulkWarning("")}}>
-						<AlertTitle>Source Selection Warning:</AlertTitle>
-						{(bulkWarning && bulkWarning.length > 0)? bulkWarning.split('\n').map(warn => <p>{warn}</p>): ""} 
-						</Alert>
+				<Collapse in={(bulkWarning && bulkWarning.length>0)} orientation="vertical">
+					<Alert severity="warning" className="m-0" onClose={() => {setBulkWarning("")}}>
+					<AlertTitle>Source Selection Warning:</AlertTitle>
+					{(bulkWarning && bulkWarning.length > 0)? bulkWarning.split('\n').map(warn => <p>{warn}</p>): ""} 
+					</Alert>
 				</Collapse>
-				</Box>
-				<Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
+			</Box>
+			<Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
 				<Box p={1} className="m-0 text-right" id="bulkButtons" display="inline-flex" flexDirection="row" >
-						<Button
+					<Button
 						sx={{maxHeight: "35px",verticalAlign: 'bottom',}}
 						variant="contained"
 						type="button"
@@ -194,9 +189,8 @@ export function BulkSelector({
 						onClick={() => setShowSearchDialog(true)}>
 						Add
 						<FontAwesomeIcon
-								className="fa button-icon m-2"
-								icon={faPlus}
-						/>
+							className="fa button-icon m-2"
+							icon={faPlus}/>
 						</Button>
 						<Button
 						sx={{maxHeight: "35px",verticalAlign: 'bottom'}}
@@ -211,62 +205,62 @@ export function BulkSelector({
 						</Button>
 				</Box>
 				<Box
-						display="flex" 
-						flexDirection="row"
-						className="m-0 col-9 row"
-						sx={{
+					display="flex" 
+					flexDirection="row"
+					className="m-0 col-9 row"
+					sx={{
 						overflowX: "visible",
 						overflowY: "visible",
 						padding: "0px",  
 						maxHeight: "45px",}}>
-						<Collapse 
+					<Collapse 
 						in={showHIDList} 
 						orientation="horizontal" 
 						className="row"
 						width="100%">
 						<Box
-								display="inline-flex"
-								flexDirection="row"
-								sx={{ 
+							display="inline-flex"
+							flexDirection="row"
+							sx={{ 
 								overflow: "hidden",
 								width: "650px"}}>
-								<FormControl >
-								<TextField
-										name="dataset_uuids_string"
-										display="flex"
-										id="dataset_uuids_string"
-										// error={props?.fields?dataset_uuids_string?.error && props?.dataset_uuids_string?.error.length > 0 ? true : false}
-										multiline
-										placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
-										variant="standard"
-										size="small"
-										fullWidth={true}
-										onChange={(event) => handleInputChange(event)}
-										value={selected_string}
-										sx={{
+							<FormControl >
+							<TextField
+									name="dataset_uuids_string"
+									display="flex"
+									id="dataset_uuids_string"
+									// error={props?.fields?dataset_uuids_string?.error && props?.dataset_uuids_string?.error.length > 0 ? true : false}
+									multiline
+									placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
+									variant="standard"
+									size="small"
+									fullWidth={true}
+									onChange={(event) => handleInputChange(event)}
+									value={selected_string}
+									sx={{
 										overflow: "hidden",
 										marginTop: '10px',
 										verticalAlign: 'bottom',
 										width: "100%",
-										}}/>
-										<FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
+									}}/>
+									<FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
 										{"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " }
-										</FormHelperText>
+									</FormHelperText>
 								</FormControl>
 								<Button
-								variant="text"
-								type='link'
-								size="small"
-								onClick={(e) => {
+									variant="text"
+									type='link'
+									size="small"
+									onClick={(e) => {
 										e.preventDefault();
 										setShowHIDList(false);
-								}}>
-								<ClearIcon size="small"/>
+									}}>
+									<ClearIcon size="small"/>
 								</Button>
 						</Box>
-						</Collapse>
+					</Collapse>
 				</Box>
-				</Box>
+			</Box>
 		</Box> 
 	</>)
 }

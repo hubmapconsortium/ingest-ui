@@ -7,7 +7,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
-import NewspaperIcon from '@mui/icons-material/Newspaper';
+import ArticleIcon from '@mui/icons-material/Article';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import {tsToDate} from "../../utils/string_helper";
 import {SAMPLE_CATEGORIES} from "../../constants";
@@ -51,7 +51,7 @@ function iconSelection(entity_type,status){
     case "upload":
       return <DriveFolderUploadIcon style={style} sx={newSX} />
     case "publication":
-      return <NewspaperIcon style={style} sx={newSX} />
+      return <ArticleIcon style={style} sx={newSX} />
     case "collection":
       return <CollectionsBookmarkIcon style={style} sx={newSX} />
     case "eppicollection":
@@ -82,13 +82,13 @@ function topHeader(entityData){
             <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
           )}
           {entityData.priority_project_list	 && (
-            <Typography variant="caption" sx={{display:"inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
+            <Typography variant="caption" sx={{display: "inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
           )}
-          <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
           {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
-            <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+            <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
           )}
-          <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
         </Grid>
       </React.Fragment>
     ) 
@@ -239,9 +239,9 @@ export function newBadge(type){
     "&&": { color: "#ffffff!important" } ,
     fontWeight: "bold",
     color: "white",
-    padding:"4px",
+    padding: "4px",
     fontSize: "1.2rem!important",
-    height:"auto",
+    height: "auto",
     display: "inlineTable",
     verticalAlign: "super",
    
@@ -271,7 +271,6 @@ export function UserGroupSelectMenu(formValues){
     return menuArray;
   } 
 }
-
 
 export function UserGroupSelectMenuPatch(formValues){
   console.debug('%c◉ UserGroupSelectMenuPatch ', 'color:#0026FF', formValues);
@@ -360,7 +359,6 @@ export function handleSortOrgans(organList){
   }
   return sortedMap;
 };
-
 
 export function GroupSelector({ formValues, handleInputChange, memoizedUserGroupSelectMenuPatch, uuid }) {
   if (uuid) return null;
