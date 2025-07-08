@@ -40,7 +40,7 @@ export function BulkSelector({
   handleSelectClick,
   handleInputChange,
   sourceRemover,
-  fieldError
+  fieldError,
 }) {
      
 	return (<> 
@@ -227,7 +227,7 @@ export function BulkSelector({
 								overflow: "hidden",
 								width: "650px"}}>
 							<FormControl >
-							<TextField
+								<TextField
 									name="dataset_uuids_string"
 									display="flex"
 									id="dataset_uuids_string"
@@ -245,20 +245,20 @@ export function BulkSelector({
 										verticalAlign: 'bottom',
 										width: "100%",
 									}}/>
-									<FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
-										{"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " }
-									</FormHelperText>
-								</FormControl>
-								<Button
-									variant="text"
-									type='link'
-									size="small"
-									onClick={(e) => {
-										e.preventDefault();
-										setShowHIDList(false);
-									}}>
-									<ClearIcon size="small"/>
-								</Button>
+								<FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
+									{"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " }
+								</FormHelperText>
+							</FormControl>
+							<Button
+								variant="text"
+								type='link'
+								size="small"
+								onClick={(e) => {
+									e.preventDefault();
+									setShowHIDList(false);
+								}}>
+								<ClearIcon size="small"/>
+							</Button>
 						</Box>
 					</Collapse>
 				</Box>

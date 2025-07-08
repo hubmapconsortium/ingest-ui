@@ -275,152 +275,152 @@ export const PublicationForm = (props) => {
 		}
 	}
 
-const validateForm = ()=> {
-  setValErrorMessages(null);
-  let errors = 0;
-  let e_messages=[]
+  const validateForm = ()=> {
+    setValErrorMessages(null);
+    setSourceTableError(false);
+    let errors = 0;
+    let e_messages=[]
 
-  let requiredFields = ["title", "publication_venue", "publication_date", "publication_status", "publication_url", "description","direct_ancestor_uuids"];
-  
-	for(let field of requiredFields){
-    console.debug(`%c◉ formValues[${field}] `, 'color:#00ff7b', formValues[field]);
-    if(!validateRequired(formValues[field])){
-      console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
-      let fieldName = formFields.find(f => f.id === field)?.label || humanize(field);
-      if(field !== "direct_ancestor_uuids"){
-        e_messages.push(fieldName+" is a required field");
-      }
-      setSourceTableError(true)
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-        [field]: " Required",
-      }));
-      errors++;
-    }else{
-      setFormErrors((prevValues) => ({
-        ...prevValues,
-        [field]: "",
-      }));
-    }
-  }
-
-  function validatePositiveIntegerField(fieldName, label) {
-    if (formValues[fieldName] && formValues[fieldName].length > 0) {
-      if (isNaN(formValues[fieldName]) || parseInt(formValues[fieldName]) < 0) {
-        e_messages.push(`${label} must be a positive integer`);
+    let requiredFields = ["title", "publication_venue", "publication_date", "publication_status", "publication_url", "description","direct_ancestor_uuids"];
+    
+    for(let field of requiredFields){
+      console.debug(`%c◉ formValues[${field}] `, 'color:#00ff7b', formValues[field]);
+      if(!validateRequired(formValues[field])){
+        console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
+        let fieldName = formFields.find(f => f.id === field)?.label || humanize(field);
+        if(field !== "direct_ancestor_uuids"){
+          e_messages.push(fieldName+" is a required field");
+        }
+        setSourceTableError(true)
         setFormErrors((prevValues) => ({
           ...prevValues,
-          [fieldName]: " Must be a positive integer",
+          [field]: " Required",
         }));
         errors++;
-      } else {
+      }else{
         setFormErrors((prevValues) => ({
           ...prevValues,
-          [fieldName]: "",
+          [field]: "",
         }));
       }
     }
-  }
-  validatePositiveIntegerField('issue', 'Issue');
-  validatePositiveIntegerField('volume', 'Volume');
-  console.log(formValues['direct_ancestor_uuids'],sourcesData )
-  if(formValues['direct_ancestor_uuids'].length <= 0 && sourcesData.length <= 0){
-    e_messages.push("Please select at least one Source");
-    setFormErrors((prevValues) => ({
-      ...prevValues,
-      ["direct_ancestor_uuids"]: "Required",
-    }));
-    setSourceTableError(true);
-  }else if(sourcesData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0){
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      'direct_ancestor_uuids': sourcesData.map(obj => obj.uuid),
-    }));
 
-  }else{
+    function validatePositiveIntegerField(fieldName, label) {
+      if (formValues[fieldName] && formValues[fieldName].length > 0) {
+        if (isNaN(formValues[fieldName]) || parseInt(formValues[fieldName]) < 0) {
+          e_messages.push(`${label} must be a positive integer`);
+          setFormErrors((prevValues) => ({
+            ...prevValues,
+            [fieldName]: " Must be a positive integer",
+          }));
+          errors++;
+        } else {
+          setFormErrors((prevValues) => ({
+            ...prevValues,
+            [fieldName]: "",
+          }));
+        }
+      }
+    }
+    validatePositiveIntegerField('issue', 'Issue');
+    validatePositiveIntegerField('volume', 'Volume');
+    console.log(formValues['direct_ancestor_uuids'],sourcesData )
+    if(formValues['direct_ancestor_uuids'].length <= 0 && sourcesData.length <= 0){
+      e_messages.push("Please select at least one Source");
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        ["direct_ancestor_uuids"]: "Required",
+      }));
+      setSourceTableError(true);
+    }else if(sourcesData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0){
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        'direct_ancestor_uuids': sourcesData.map(obj => obj.uuid),
+      }));
+
+    }else{
+      setSourceTableError(false);
+    }
+    // Formatting Validation
+    errors += validateDOI(formValues['protocol_url']); 
+    console.debug('%c◉ ERRORTEST ', 'color:#00ff7b',errors );
+    setValErrorMessages(errors>0?e_messages:null);
+    return errors === 0;
+  }
+
+  const handleInputUUIDs = (e) => {
+    console.debug('%c◉ e ', 'color:#00ff7b', e);  
+    e.preventDefault();
     setSourceTableError(false);
+    if(!showHIDList){
+      setShowHIDList(true);
+      setSelectedString(selected_HIDs.join(", "))
+      setSourceBulkStatus("Waiting for Input...");
+    }else{
+      // Lets clear out the previous errors first
+      setFormErrors()
+      setShowHIDList(false);
+      setSourceBulkStatus("loading");
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        'source_uuid_list': ""
+      }));
+      
+      // Ok, we want to Save what's Stored for data in the Table
+      let cleanList = Array.from(new Set(
+        selected_string
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0)
+      ));
+
+      entity_api_get_these_entities(cleanList)
+        .then((response) => {
+          console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
+          let entities = response.results
+          let entityDetails = entities.map(obj => obj.results)
+          let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
+          let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";  
+          setBulkError(errors ? errors : "");
+          setBulkWarning(response.message ? response.message : "");
+          setSelectedHIDs(entityHIDs);
+          setSelectedString(entityHIDs.join(", "));
+          setSourcesData(entityDetails);
+          setShowHIDList(false);
+          setSourceBulkStatus("complete");
+          setFormValues((prevValues) => ({
+            ...prevValues,
+            'direct_ancestor_uuids': entityDetails.map(obj => obj.uuid),
+          }));
+        })
+        .catch((error) => {
+          console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+          setPageErrors(error);
+          props.reportError(error);
+        });
+    }
   }
 
-  // Formatting Validation
-  errors += validateDOI(formValues['protocol_url']); 
-  console.debug('%c◉ ERRORTEST ', 'color:#00ff7b',errors );
-  setValErrorMessages(errors>0?e_messages:null);
-  return errors === 0;
-}
-
-const handleInputUUIDs = (e) => {
-  console.debug('%c◉ e ', 'color:#00ff7b', e);  
-  e.preventDefault();
-  setSourceTableError(false);
-  if(!showHIDList){
-    setShowHIDList(true);
-    setSelectedString(selected_HIDs.join(", "))
-    setSourceBulkStatus("Waiting for Input...");
-  }else{
-    // Lets clear out the previous errors first
-    setFormErrors()
-    setShowHIDList(false);
-    setSourceBulkStatus("loading");
-    setFormErrors((prevValues) => ({
-      ...prevValues,
-      'source_uuid_list': ""
+  const sourceRemover = (row_uuid,hubmap_id) => {
+    console.debug('%c◉ Deleting: ', 'color:#00ff7b', hubmap_id);
+    let newUUIDs = formValues['direct_ancestor_uuids'].filter((uuid) => uuid !== row_uuid);
+    setSelectedHIDs((prev) => prev.filter((id) => id !== hubmap_id));
+    setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hubmap_id));
+    setFormValues((prev) => ({
+      ...prev,
+      'direct_ancestor_uuids': newUUIDs
     }));
-		
-    // Ok, we want to Save what's Stored for data in the Table
-		let cleanList = Array.from(new Set(
-			selected_string
-			.split(",")
-			.map(s => s.trim())
-			.filter(s => s.length > 0)
-		));
+    setSelectedString((prev) => {
+      const filtered = prev
+        .split(",")
+        .map((s) => s.trim())
+        .filter((id) => id && id !== hubmap_id);
+      return filtered.join(", ");
+    });
 
-    entity_api_get_these_entities(cleanList)
-      .then((response) => {
-        console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
-        let entities = response.results
-        let entityDetails = entities.map(obj => obj.results)
-        let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
-        let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";  
-        setBulkError(errors ? errors : "");
-        setBulkWarning(response.message ? response.message : "");
-        setSelectedHIDs(entityHIDs);
-        setSelectedString(entityHIDs.join(", "));
-        setSourcesData(entityDetails);
-        setShowHIDList(false);
-        setSourceBulkStatus("complete");
-        setFormValues((prevValues) => ({
-          ...prevValues,
-          'direct_ancestor_uuids': entityDetails.map(obj => obj.uuid),
-        }));
-      })
-      .catch((error) => {
-        console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-				setPageErrors(error);
-				props.reportError(error);
-      });
-  }
-}
+  };
 
-const sourceRemover = (row_uuid,hubmap_id) => {
-  console.debug('%c◉ Deleting: ', 'color:#00ff7b', hubmap_id);
-  let newUUIDs = formValues['direct_ancestor_uuids'].filter((uuid) => uuid !== row_uuid);
-  setSelectedHIDs((prev) => prev.filter((id) => id !== hubmap_id));
-  setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hubmap_id));
-  setFormValues((prev) => ({
-    ...prev,
-    'direct_ancestor_uuids': newUUIDs
-  }));
-  setSelectedString((prev) => {
-    const filtered = prev
-      .split(",")
-      .map((s) => s.trim())
-      .filter((id) => id && id !== hubmap_id);
-    return filtered.join(", ");
-  });
-
-};
-
-const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
     if(validateForm()){
       setIsProcessing(true);
@@ -533,74 +533,75 @@ const handleSubmit = (e) => {
     }
   }
 
-const wrapUp = (error) => {
-  setPageErrors(error.error ? error.error : error);
-  setButtonLoading(() => ({
-    process: false,
-    save: false,
-    submit: false,
-  }));
-}
+  const wrapUp = (error) => {
+    setPageErrors(error.error ? error.error : error);
+    setButtonLoading(() => ({
+      process: false,
+      save: false,
+      submit: false,
+    }));
+  }
 
-const buttonEngine = () => {
-  return(
-    <Box sx={{textAlign: "right"}}>
-      <LoadingButton 
-        variant="contained"
-        className="m-2"
-        onClick={() => navigate("/")}>
-        Cancel
-      </LoadingButton>
-      {/* @TODO use next form to help work this in to its own UI component? */}
-      {!uuid && (
-        <LoadingButton
-          variant="contained"
-          name="generate"
-          loading={isProcessing}
-          className="m-2"
-          onClick={(e) => handleSubmit(e)}
-          type="submit">
-            Save
-        </LoadingButton>
-      )}
-      {/* Process */}
-      {uuid && uuid.length > 0 && permissions.has_admin_priv && (
-        <LoadingButton  
-          loading={buttonLoading['process']} 
-          name="process"
-          onClick={(e) => handleSubmit(e)}
-          variant="contained" 
-          className="m-2">
-          Process
-        </LoadingButton>
-      )}
-      {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="new" && (
-        <LoadingButton  
-          loading={buttonLoading['submit']} 
-          onClick={(e) => handleSubmit(e)}
-          name="submit"
-          variant="contained" 
-          className="m-2">
-          Submit
-        </LoadingButton>
-      )}
-      {/* Save */}
-      {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="published" && (
+  const buttonEngine = () => {
+    return(
+      <Box sx={{textAlign: "right"}}>
         <LoadingButton 
-          loading={buttonLoading['save']===true?true:false} 
-          name="save"
-          onClick={(e) => handleSubmit(e)}
-          variant="contained" 
-          className="m-2">
-          Save
+          variant="contained"
+          className="m-2"
+          onClick={() => navigate("/")}>
+          Cancel
         </LoadingButton>
-      )}
-      {/* Submit */}
-    </Box>
-  );
-}
+        {/* @TODO use next form to help work this in to its own UI component? */}
+        {!uuid && (
+          <LoadingButton
+            variant="contained"
+            name="generate"
+            loading={isProcessing}
+            className="m-2"
+            onClick={(e) => handleSubmit(e)}
+            type="submit">
+              Save
+          </LoadingButton>
+        )}
+        {/* Process */}
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (
+          <LoadingButton  
+            loading={buttonLoading['process']} 
+            name="process"
+            onClick={(e) => handleSubmit(e)}
+            variant="contained" 
+            className="m-2">
+            Process
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="new" && (
+          <LoadingButton  
+            loading={buttonLoading['submit']} 
+            onClick={(e) => handleSubmit(e)}
+            name="submit"
+            variant="contained" 
+            className="m-2">
+            Submit
+          </LoadingButton>
+        )}
+        {/* Save */}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="published" && (
+          <LoadingButton 
+            loading={buttonLoading['save']===true?true:false} 
+            name="save"
+            onClick={(e) => handleSubmit(e)}
+            variant="contained" 
+            className="m-2">
+            Save
+          </LoadingButton>
+        )}
+        {/* Submit */}
+      </Box>
+    );
+  }
   //Click on row from Search
   const handleSelectClick = (event) => {
+    setSourceTableError(false)
     if (!selected_HIDs.includes(event.row.hubmap_id)) {
       setSourcesData((rows) => [...rows, event.row]);
       setSelectedUUIDs((rows) => [...rows, event.row.uuid]);
