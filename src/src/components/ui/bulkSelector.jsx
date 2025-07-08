@@ -39,7 +39,8 @@ export function BulkSelector({
   handleInputUUIDs,
   handleSelectClick,
   handleInputChange,
-  sourceRemover
+  sourceRemover,
+  fieldError
 }) {
      
 	return (<> 
@@ -91,9 +92,10 @@ export function BulkSelector({
 				<GridLoader size="2px" color="white" width="30px"/> Loading ... 
 			</Box> 
 			<Box>
-				<TableContainer style={{ maxHeight: 450 }}>
+				<TableContainer style={{maxHeight: 450, border: fieldError?"1px solid red":"1px solid rgba(68, 74, 101,.20)"}}>
 					<Table
 						stickyHeader
+						
 						aria-label="Associated Publications"
 						size="small"
 						className="table table-striped table-hover mb-0">
@@ -112,8 +114,8 @@ export function BulkSelector({
 						</TableHead>
 						<TableBody>
 							{(!sourcesData || sourcesData.length === 0) && (
-								<TableRow>
-									<TableCell colSpan={6} sx={{textAlign:"center"}}>No data loaded</TableCell>
+								<TableRow sx={{borderBottom: "0px!important"}}>
+									<TableCell colSpan={6} sx={{textAlign: "center"}}>No data loaded</TableCell>
 								</TableRow>
 							)}
 							{sourcesData.map((row, index) => (
@@ -148,7 +150,7 @@ export function BulkSelector({
 											className="inline-icon interaction-icon "
 											icon={faTrash}
 											color="red"
-											onClick={() => sourceRemover(row)}
+											onClick={() => sourceRemover(row.uuid, row.hubmap_id)}
 										/>
 									</React.Fragment>
 								</TableCell>
@@ -160,7 +162,7 @@ export function BulkSelector({
 				</TableContainer> 
 			</Box> 
 		</Box>
-		<Box className="my-2" display="inline-flex" flexDirection={"column"} >
+		<Box className="mt-2 mb-4" display="inline-flex" flexDirection={"column"} >
 			<Box className="w-100" width="100%" flexDirection="row" display="inline-flex" >
 				<Collapse in={(bulkError && bulkError.length > 0)} orientation="vertical">
 					<Alert 

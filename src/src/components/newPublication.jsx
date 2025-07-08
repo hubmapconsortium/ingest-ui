@@ -53,6 +53,7 @@ export const PublicationForm = (props) => {
   let [selected_UUIDs, setSelectedUUIDs] = useState([]);
   let [selected_string, setSelectedString] = useState("");
   let [sourcesData, setSourcesData] = useState([]);
+  let [sourceTableError, setSourceTableError] = useState(false);
 
   let[permissions,setPermissions] = useState({ 
     has_admin_priv: false,
@@ -289,6 +290,7 @@ const validateForm = ()=> {
       if(field !== "direct_ancestor_uuids"){
         e_messages.push(fieldName+" is a required field");
       }
+      setSourceTableError(true)
       setFormErrors((prevValues) => ({
         ...prevValues,
         [field]: " Required",
@@ -321,28 +323,35 @@ const validateForm = ()=> {
   }
   validatePositiveIntegerField('issue', 'Issue');
   validatePositiveIntegerField('volume', 'Volume');
-  
+  console.log(formValues['direct_ancestor_uuids'],sourcesData )
   if(formValues['direct_ancestor_uuids'].length <= 0 && sourcesData.length <= 0){
     e_messages.push("Please select at least one Source");
+    setFormErrors((prevValues) => ({
+      ...prevValues,
+      ["direct_ancestor_uuids"]: "Required",
+    }));
+    setSourceTableError(true);
   }else if(sourcesData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0){
     setFormValues((prevValues) => ({
       ...prevValues,
       'direct_ancestor_uuids': sourcesData.map(obj => obj.uuid),
     }));
 
+  }else{
+    setSourceTableError(false);
   }
 
   // Formatting Validation
-  errors += validateDOI(formValues['protocol_url']);
-  
+  errors += validateDOI(formValues['protocol_url']); 
   console.debug('%c◉ ERRORTEST ', 'color:#00ff7b',errors );
+  setValErrorMessages(errors>0?e_messages:null);
   return errors === 0;
 }
 
 const handleInputUUIDs = (e) => {
   console.debug('%c◉ e ', 'color:#00ff7b', e);  
   e.preventDefault();
-
+  setSourceTableError(false);
   if(!showHIDList){
     setShowHIDList(true);
     setSelectedString(selected_HIDs.join(", "))
@@ -392,19 +401,20 @@ const handleInputUUIDs = (e) => {
   }
 }
 
-const sourceRemover = (row) => {
-  let hid = row.hubmap_id;
+const sourceRemover = (row_uuid,hubmap_id) => {
+  console.debug('%c◉ Deleting: ', 'color:#00ff7b', hubmap_id);
+  let newUUIDs = formValues['direct_ancestor_uuids'].filter((uuid) => uuid !== row_uuid);
+  setSelectedHIDs((prev) => prev.filter((id) => id !== hubmap_id));
+  setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hubmap_id));
   setFormValues((prev) => ({
     ...prev,
-    'direct_ancestor_uuids': prev.direct_ancestor_uuids.filter((uuid) => uuid !== row.row.uuid),
+    'direct_ancestor_uuids': newUUIDs
   }));
-  setSelectedHIDs((prev) => prev.filter((id) => id !== hid));
-  setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hid));
   setSelectedString((prev) => {
     const filtered = prev
       .split(",")
       .map((s) => s.trim())
-      .filter((id) => id && id !== hid);
+      .filter((id) => id && id !== hubmap_id);
     return filtered.join(", ");
   });
 
@@ -412,9 +422,8 @@ const sourceRemover = (row) => {
 
 const handleSubmit = (e) => {
     e.preventDefault()
-    
-    setIsProcessing(true);
     if(validateForm()){
+      setIsProcessing(true);
       let selectedUUIDs = sourcesData.map((obj) => obj.uuid);
       console.debug('%c◉ selected_UUIDs ', 'color:#00ff7b', selectedUUIDs);
       let cleanForm ={
@@ -435,6 +444,7 @@ const handleSubmit = (e) => {
 
       if(uuid){ // We're in Edit Mode
         let target = e.target.name;
+        console.debug('%c◉ VALPASS ', 'color:#00ff7b', );
         setButtonLoading((prev) => ({
           ...prev,
           [target]: true,
@@ -478,7 +488,6 @@ const handleSubmit = (e) => {
               }
           })
         }else if(e.target.name === "save"){ // Save
-          
           entity_api_update_entity(uuid,JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
@@ -516,6 +525,11 @@ const handleSubmit = (e) => {
       }
     }else{
       console.debug("%c◉ Invalid ", "color:#00ff7b");
+      setButtonLoading(() => ({
+        process: false,
+        save: false,
+        submit: false,
+      }));
     }
   }
 
@@ -695,7 +709,7 @@ const buttonEngine = () => {
   if(isLoading ||((!entityData || !formValues) && uuid) ){
     return(<LinearProgress />);
   }else{
-    return(<>
+    return(<div className={formErrors}>
       <Grid container className='mb-2'>
 				{memoizedFormHeader}
       </Grid>
@@ -723,6 +737,7 @@ const buttonEngine = () => {
           handleSelectClick={handleSelectClick}
           handleInputChange={handleInputChange}
           sourceRemover={sourceRemover}
+          fieldError={sourceTableError}
         />
         {memoizedForum} 
         {/* Group */}
@@ -768,6 +783,6 @@ const buttonEngine = () => {
           <strong>Error:</strong> {JSON.stringify(pageErrors)}
         </Alert>
       )}
-    </>);
+    </div>);
   }
 }
