@@ -39,7 +39,7 @@ export const PublicationForm = (props) => {
   let navigate = useNavigate();
   let[entityData, setEntityData] = useState();
   let[isLoading, setLoading] = useState(true);
-  // let[isProcessing, setIsProcessing] = useState(false);
+  let[isProcessing, setIsProcessing] = useState(false);
   let[valErrorMessages, setValErrorMessages] = useState([]);
   let[pageErrors, setPageErrors] = useState(null);
 
@@ -413,7 +413,7 @@ const sourceRemover = (row) => {
 const handleSubmit = (e) => {
     e.preventDefault()
     
-    // setIsProcessing(true);
+    setIsProcessing(true);
     if(validateForm()){
       let selectedUUIDs = sourcesData.map((obj) => obj.uuid);
       console.debug('%c◉ selected_UUIDs ', 'color:#00ff7b', selectedUUIDs);
@@ -433,14 +433,13 @@ const handleSubmit = (e) => {
         contains_human_genetic_sequences: false // Holdover From Dataset Days
       }
 
-      if(uuid){ // We're in Edit Mode\
+      if(uuid){ // We're in Edit Mode
         let target = e.target.name;
         setButtonLoading((prev) => ({
           ...prev,
           [target]: true,
-          "TEST": true,
         }));
-        console.log(buttonLoading,target, buttonLoading[target]);
+        console.log("buttonLoading",buttonLoading,target, buttonLoading[target]);
         if(e.target.name === "process"){ // Process
           ingest_api_dataset_submit(uuid, JSON.stringify(cleanForm))
             .then((response) => {
@@ -483,8 +482,7 @@ const handleSubmit = (e) => {
           entity_api_update_entity(uuid,JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
-                console.debug('%c◉ 200 yay! ', 'color:#00ff7b', );
-                // props.onUpdated(response.results);
+                props.onUpdated(response.results);
               }else{
                 wrapUp(response)
               }
@@ -492,10 +490,6 @@ const handleSubmit = (e) => {
             .catch((error) => {
               wrapUp(error)
             });
-            setButtonLoading((prev) => ({
-              ...prev,
-              save: false,
-            }));
         }
       }else{ // We're in Create mode
         // They might not have changed the Group Selector, so lets check for the value
@@ -537,27 +531,27 @@ const wrapUp = (error) => {
 const buttonEngine = () => {
   return(
     <Box sx={{textAlign: "right"}}>
-      <Button
+      <LoadingButton 
         variant="contained"
         className="m-2"
         onClick={() => navigate("/")}>
         Cancel
-      </Button>
+      </LoadingButton>
       {/* @TODO use next form to help work this in to its own UI component? */}
       {!uuid && (
         <LoadingButton
           variant="contained"
           name="generate"
-          loading={buttonLoading['save']}
+          loading={isProcessing}
           className="m-2"
           onClick={(e) => handleSubmit(e)}
           type="submit">
-            Save {buttonLoading['save'].toString() === "true" ? "ing" : ""}
+            Save
         </LoadingButton>
       )}
       {/* Process */}
       {uuid && uuid.length > 0 && permissions.has_admin_priv && (
-        <LoadingButton 
+        <LoadingButton  
           loading={buttonLoading['process']} 
           name="process"
           onClick={(e) => handleSubmit(e)}
@@ -567,7 +561,7 @@ const buttonEngine = () => {
         </LoadingButton>
       )}
       {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="new" && (
-        <LoadingButton 
+        <LoadingButton  
           loading={buttonLoading['submit']} 
           onClick={(e) => handleSubmit(e)}
           name="submit"
@@ -579,7 +573,7 @@ const buttonEngine = () => {
       {/* Save */}
       {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status!=="published" && (
         <LoadingButton 
-          loading={buttonLoading['save']} 
+          loading={buttonLoading['save']===true?true:false} 
           name="save"
           onClick={(e) => handleSubmit(e)}
           variant="contained" 
