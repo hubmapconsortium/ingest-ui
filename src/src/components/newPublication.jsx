@@ -35,12 +35,11 @@ import {
 import {BulkSelector} from "./ui/bulkSelector";
 import {FormHeader,UserGroupSelectMenuPatch} from "./ui/formParts";
 
-
 export const PublicationForm = (props) => {
   let navigate = useNavigate();
   let[entityData, setEntityData] = useState();
   let[isLoading, setLoading] = useState(true);
-  let[isProcessing, setIsProcessing] = useState(false);
+  // let[isProcessing, setIsProcessing] = useState(false);
   let[valErrorMessages, setValErrorMessages] = useState([]);
   let[pageErrors, setPageErrors] = useState(null);
 
@@ -91,13 +90,13 @@ export const PublicationForm = (props) => {
     },{ 
       id: "publication_venue",
       label: "Publication Venue",
-      helperText: "The date of publication",
+      helperText: "The venue of the publication, journal, conference, preprint server, etc...",
       required: true,
       type: "text",
     },{ 
       id: "publication_date",
       label: "Publication Date",
-      helperText: "The venue of the publication, journal, conference, preprint server, etc...",
+      helperText: "The date of publication",
       required: false,
       type: "date",
     },{ 
@@ -277,14 +276,13 @@ export const PublicationForm = (props) => {
 
 const validateForm = ()=> {
   setValErrorMessages(null);
-  setFormErrors({...formValues})
   let errors = 0;
   let e_messages=[]
 
   let requiredFields = ["title", "publication_venue", "publication_date", "publication_status", "publication_url", "description","direct_ancestor_uuids"];
   
 	for(let field of requiredFields){
-    console.debug('%c◉ formValues[field] ', 'color:#00ff7b', formValues[field]);
+    console.debug(`%c◉ formValues[${field}] `, 'color:#00ff7b', formValues[field]);
     if(!validateRequired(formValues[field])){
       console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
       let fieldName = formFields.find(f => f.id === field)?.label || humanize(field);
@@ -303,6 +301,26 @@ const validateForm = ()=> {
       }));
     }
   }
+
+  function validatePositiveIntegerField(fieldName, label) {
+    if (formValues[fieldName] && formValues[fieldName].length > 0) {
+      if (isNaN(formValues[fieldName]) || parseInt(formValues[fieldName]) < 0) {
+        e_messages.push(`${label} must be a positive integer`);
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          [fieldName]: " Must be a positive integer",
+        }));
+        errors++;
+      } else {
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          [fieldName]: "",
+        }));
+      }
+    }
+  }
+  validatePositiveIntegerField('issue', 'Issue');
+  validatePositiveIntegerField('volume', 'Volume');
   
   if(formValues['direct_ancestor_uuids'].length <= 0 && sourcesData.length <= 0){
     e_messages.push("Please select at least one Source");
@@ -316,14 +334,8 @@ const validateForm = ()=> {
 
   // Formatting Validation
   errors += validateDOI(formValues['protocol_url']);
-
-  if(errors>0){
-    // setValidationError("Please Review the following fields and try again.");
-    setValErrorMessages(e_messages);
-  }else{
-    // setValidationError(null);
-  }    
-  console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
+  
+  console.debug('%c◉ ERRORTEST ', 'color:#00ff7b',errors );
   return errors === 0;
 }
 
@@ -400,7 +412,8 @@ const sourceRemover = (row) => {
 
 const handleSubmit = (e) => {
     e.preventDefault()
-    setIsProcessing(true);
+    
+    // setIsProcessing(true);
     if(validateForm()){
       let selectedUUIDs = sourcesData.map((obj) => obj.uuid);
       console.debug('%c◉ selected_UUIDs ', 'color:#00ff7b', selectedUUIDs);
@@ -412,20 +425,23 @@ const handleSubmit = (e) => {
         publication_url: formValues.publication_url,
         publication_doi: formValues.publication_doi,
         omap_doi: formValues.omap_doi,
-        ...((formValues.issue) && {issue: formValues.issue} ),
-        ...((formValues.volume) && {volume: formValues.volume} ),
+        ...((formValues.issue) && {issue: parseInt(formValues.issue)} ),
+        ...((formValues.volume) && {volume: parseInt(formValues.volume)} ),
         pages_or_article_num: formValues.pages_or_article_num,
         description: formValues.description,
         direct_ancestor_uuids: selectedUUIDs,
         contains_human_genetic_sequences: false // Holdover From Dataset Days
       }
 
-      if(uuid){ // We're in Edit Mode
+      if(uuid){ // We're in Edit Mode\
+        let target = e.target.name;
+        setButtonLoading((prev) => ({
+          ...prev,
+          [target]: true,
+          "TEST": true,
+        }));
+        console.log(buttonLoading,target, buttonLoading[target]);
         if(e.target.name === "process"){ // Process
-          setButtonLoading((prev) => ({
-            ...prev,
-            process: true,
-          }));
           ingest_api_dataset_submit(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if (response.status < 300) {
@@ -460,17 +476,15 @@ const handleSubmit = (e) => {
               } else { 
                 wrapUp(response)
                 setPageErrors(response);
-                setButtonLoading((prev) => ({
-                  ...prev,
-                  process: false,
-                }));
               }
           })
         }else if(e.target.name === "save"){ // Save
+          
           entity_api_update_entity(uuid,JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
-                props.onUpdated(response.results);
+                console.debug('%c◉ 200 yay! ', 'color:#00ff7b', );
+                // props.onUpdated(response.results);
               }else{
                 wrapUp(response)
               }
@@ -478,6 +492,10 @@ const handleSubmit = (e) => {
             .catch((error) => {
               wrapUp(error)
             });
+            setButtonLoading((prev) => ({
+              ...prev,
+              save: false,
+            }));
         }
       }else{ // We're in Create mode
         // They might not have changed the Group Selector, so lets check for the value
@@ -503,16 +521,17 @@ const handleSubmit = (e) => {
           });
       }
     }else{
-      // wrapUp(response)
-      setIsProcessing(false);
       console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
 
 const wrapUp = (error) => {
   setPageErrors(error.error ? error.error : error);
-  setIsProcessing(false);
-  // formatValidationResponse(formErrors);
+  setButtonLoading(() => ({
+    process: false,
+    save: false,
+    submit: false,
+  }));
 }
 
 const buttonEngine = () => {
@@ -529,11 +548,11 @@ const buttonEngine = () => {
         <LoadingButton
           variant="contained"
           name="generate"
-          loading={isProcessing}
+          loading={buttonLoading['save']}
           className="m-2"
           onClick={(e) => handleSubmit(e)}
           type="submit">
-            Save
+            Save {buttonLoading['save'].toString() === "true" ? "ing" : ""}
         </LoadingButton>
       )}
       {/* Process */}
