@@ -114,13 +114,13 @@ export const PublicationForm = (props) => {
       type: "text",
     },{ 
       id: "publication_doi",
-      label: "Publication Doi",
-      helperText: "The doi of the publication. (##.####/[alpha-numeric-string])",
+      label: "Publication DOI",
+      helperText: "The DOI of the publication. (##.####/[alpha-numeric-string])",
       required: false,
       type: "text",
     },{ 
       id: "OMAP_doi",
-      label: "OMAP Doi",
+      label: "OMAP DOI",
       helperText: "A DOI pointing to an Organ Mapping Antibody Panel relevant to this publication",
       required: false,
       type: "text",
