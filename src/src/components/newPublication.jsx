@@ -461,7 +461,7 @@ const handleSubmit = (e) => {
           entity_api_update_entity(uuid, JSON.stringify(cleanForm))
             .then((response) => {
                 if (response.status < 300 ) {
-                var ingestURL= process.env.REACT_APP_URL+"/publication/"+this.props.editingPublication.uuid
+                var ingestURL= process.env.REACT_APP_URL+"/publication/"+uuid
                 var slackMessage = {"message": "Publication has been submitted ("+ingestURL+")"}
                 ingest_api_notify_slack(slackMessage)
                   .then(() => {
