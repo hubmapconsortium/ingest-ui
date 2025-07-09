@@ -7,13 +7,16 @@ import PersonIcon from '@mui/icons-material/Person';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
-import NewspaperIcon from '@mui/icons-material/Newspaper';
+import ArticleIcon from '@mui/icons-material/Article';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import {tsToDate} from "../../utils/string_helper";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import HIPPA from "./HIPPA";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Chip from '@mui/material/Chip';
+import Box from "@mui/material/Box";
+import InputLabel from "@mui/material/InputLabel";
+import NativeSelect from '@mui/material/NativeSelect';
 
 // import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 // import {entity_api_get_entity} from "../../service/entity_api";
@@ -32,24 +35,27 @@ export const FormHeader = (props) => {
   )
 }
 
-function iconSelection(entity_type){
+function iconSelection(entity_type,status){  
+  console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
+  console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
+  let newSX={ "&&": { color: status?"white":"" } }
   switch
   (entity_type && entity_type.toLowerCase()){
     case "donor":
-      return <PersonIcon style={style} />
+      return <PersonIcon style={style} sx={newSX} />
     case "sample":
-      return <BubbleChartIcon style={style} />
+      return <BubbleChartIcon style={style} sx={newSX} />
     case "dataset":
-      return <TableChartIcon style={style} />
+      return <TableChartIcon style={style} sx={newSX} />
     case "upload":
-      return <DriveFolderUploadIcon style={style} />
+      return <DriveFolderUploadIcon style={style} sx={newSX} />
     case "publication":
-      return <NewspaperIcon style={style} />
+      return <ArticleIcon style={style} sx={newSX} />
     case "collection":
-      return <CollectionsBookmarkIcon style={style} />
+      return <CollectionsBookmarkIcon style={style} sx={newSX} />
     case "eppicollection":
-      return <CollectionsBookmarkIcon style={style} />
+      return <CollectionsBookmarkIcon style={style} sx={newSX} />
     default:
       return <BubbleChartIcon style={style} />
   }
@@ -67,7 +73,7 @@ function topHeader(entityData){
   if(entityData[0] !== "new"){
     return (
       <React.Fragment>
-        <Grid item xs={12} className="" >  
+        <Grid item xs={12} className="" > 
           <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
         </Grid>
         <Grid item xs={6} className="" >
@@ -76,22 +82,24 @@ function topHeader(entityData){
             <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
           )}
           {entityData.priority_project_list	 && (
-            <Typography variant="caption" sx={{display:"inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
+            <Typography variant="caption" sx={{display: "inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
           )}
-          <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
           {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
-            <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+            <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
           )}
-          <Typography variant="caption" sx={{display:"inline-block", width:"100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
         </Grid>
       </React.Fragment>
-    )
+    ) 
   }else{
     return (
       <React.Fragment>
         <Grid item xs={entityData[1] === "Upload" ? 12 : 6} className="" >  
-          <h3 style={{marginLeft: "-2px"}}> {iconSelection(entityData[1])} Registering a new {entityData[1]}</h3>
+          {newBadge(entityData[1],"new")}
+          <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityData[1]}</h3>
         </Grid>
+        
         {entityData[1] === "Upload" && (
           <Grid item xs={6} className="" >
             <Typography sx={{marginRight: "10px"}} >
@@ -99,6 +107,7 @@ function topHeader(entityData){
             </Typography>
           </Grid>
         )}
+        
       </React.Fragment>
     )
   }
@@ -124,7 +133,7 @@ function infoPanels(entityData,permissions,globusURL){
           </big></strong>
         </Typography>
       )}
-      {permissions.has_write_priv && (
+      {permissions.has_write_priv &&(
         <HIPPA />
       )}
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
@@ -224,12 +233,51 @@ export function statusBadge(status){
     <Chip sx={{fontWeight: "bold"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
+export function newBadge(type){
+  console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
+  let newBadgeStyle = {
+    "&&": { color: "#ffffff!important" } ,
+    fontWeight: "bold",
+    color: "white",
+    padding: "4px",
+    fontSize: "1.2rem!important",
+    height: "auto",
+    display: "inlineTable",
+    verticalAlign: "super",
+   
+  }
+  return (  
+    <Chip style={newBadgeStyle} className={badgeClass("NEW")} icon={iconSelection(type,"new")} label={"NEW"} size="small" />
+  )
+}
 
 export function UserGroupSelectMenu(formValues){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));
   if(formValues.group_name){
     return(
       <option value={formValues.group_uuid}>
+        {formValues.group_name}
+      </option>
+    )
+  }else{
+    let menuArray = [];
+    for(let group of userGroups){
+      menuArray.push(
+        <option key={group.uuid} value={group.uuid}>
+          {group.shortname}
+        </option>
+      );
+    }
+    return menuArray;
+  } 
+}
+
+export function UserGroupSelectMenuPatch(formValues){
+  console.debug('%c◉ UserGroupSelectMenuPatch ', 'color:#0026FF', formValues);
+  let userGroups = JSON.parse(localStorage.getItem("userGroups"));
+  if(formValues.group_name){
+    return(
+      <option key={formValues.group_uuid} value={formValues.group_uuid}>
         {formValues.group_name}
       </option>
     )
@@ -311,3 +359,28 @@ export function handleSortOrgans(organList){
   }
   return sortedMap;
 };
+
+export function GroupSelector({ formValues, handleInputChange, memoizedUserGroupSelectMenuPatch, uuid }) {
+  if (uuid) return null;
+  return (
+    <Box className="my-3">
+      <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+        Group
+      </InputLabel>
+      <NativeSelect
+        id="group_uuid"
+        label="Group"
+        onChange={handleInputChange}
+        fullWidth
+        className="p-2"
+        sx={{
+          BorderTopLeftRadius: "4px",
+          BorderTopRightRadius: "4px",
+        }}
+        disabled={!!uuid}
+        value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
+        {memoizedUserGroupSelectMenuPatch}
+      </NativeSelect>
+    </Box>
+  );
+}
