@@ -281,7 +281,7 @@ export const PublicationForm = (props) => {
     let errors = 0;
     let e_messages=[]
 
-    let requiredFields = ["title", "publication_venue", "publication_date", "publication_status", "publication_url", "description","direct_ancestor_uuids"];
+    let requiredFields = ["title", "publication_venue", "publication_date", "publication_status", "publication_url", "description"];
     
     for(let field of requiredFields){
       console.debug(`%c◉ formValues[${field}] `, 'color:#00ff7b', formValues[field]);
@@ -296,7 +296,8 @@ export const PublicationForm = (props) => {
           ...prevValues,
           [field]: " Required",
         }));
-        errors++;
+        errors++; 
+        console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
       }else{
         setFormErrors((prevValues) => ({
           ...prevValues,
@@ -324,26 +325,29 @@ export const PublicationForm = (props) => {
     }
     validatePositiveIntegerField('issue', 'Issue');
     validatePositiveIntegerField('volume', 'Volume');
+
     console.log(formValues['direct_ancestor_uuids'],sourcesData )
-    if(formValues['direct_ancestor_uuids'].length <= 0 && sourcesData.length <= 0){
+
+    if(!sourcesData || sourcesData.length <= 0){
       e_messages.push("Please select at least one Source");
+      errors++; 
       setFormErrors((prevValues) => ({
         ...prevValues,
         ["direct_ancestor_uuids"]: "Required",
       }));
       setSourceTableError(true);
     }else if(sourcesData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0){
+      console.log("source table has data, but no uuids, so we'll sync back to formVals");
       setFormValues((prevValues) => ({
         ...prevValues,
         'direct_ancestor_uuids': sourcesData.map(obj => obj.uuid),
       }));
-
     }else{
       setSourceTableError(false);
     }
     // Formatting Validation
     errors += validateDOI(formValues['protocol_url']); 
-    console.debug('%c◉ ERRORTEST ', 'color:#00ff7b',errors );
+    console.debug('%c◉ ERROR COUNTER: ', 'color:#00ff7b',errors );
     setValErrorMessages(errors>0?e_messages:null);
     return errors === 0;
   }
@@ -363,7 +367,7 @@ export const PublicationForm = (props) => {
       setSourceBulkStatus("loading");
       setFormErrors((prevValues) => ({
         ...prevValues,
-        'source_uuid_list': ""
+        'direct_ancestor_uuids': ""
       }));
       
       // Ok, we want to Save what's Stored for data in the Table
@@ -385,13 +389,16 @@ export const PublicationForm = (props) => {
           setBulkWarning(response.message ? response.message : "");
           setSelectedHIDs(entityHIDs);
           setSelectedString(entityHIDs.join(", "));
-          setSourcesData(entityDetails);
           setShowHIDList(false);
           setSourceBulkStatus("complete");
-          setFormValues((prevValues) => ({
+
+          setSourcesData(entities.map(obj => obj.results)); // Table Data
+          setFormValues((prevValues) => ({ // FOrm Data
             ...prevValues,
             'direct_ancestor_uuids': entityDetails.map(obj => obj.uuid),
           }));
+          console.debug('%c◉ entityDetails.map(obj => obj.uuid) ', 'color:#00ff7b', entityDetails.map(obj => obj.uuid));
+
         })
         .catch((error) => {
           console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
@@ -422,6 +429,7 @@ export const PublicationForm = (props) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
     if(validateForm()){
       setIsProcessing(true);
       let selectedUUIDs = sourcesData.map((obj) => obj.uuid);
@@ -602,19 +610,19 @@ export const PublicationForm = (props) => {
   //Click on row from Search
   const handleSelectClick = (event) => {
     setSourceTableError(false)
+    console.debug('%c◉ !selected_HIDs.includes(event.row.hubmap_id ', 'color:#00ff7b', !selected_HIDs.includes(event.row.hubmap_id));
     if (!selected_HIDs.includes(event.row.hubmap_id)) {
-      setSourcesData((rows) => [...rows, event.row]);
       setSelectedUUIDs((rows) => [...rows, event.row.uuid]);
       setSelectedHIDs((ids) => [...ids, event.row.hubmap_id]);
       setSelectedString((str) => str + (str ? ", " : "") + event.row.hubmap_id);
-    
       console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
       console.debug("selected_UUIDs", selected_UUIDs);
+      setSourcesData((rows) => [...rows, event.row]);
       setFormValues((prevValues) => ({
         ...prevValues,
-        'dataset_uuids': selected_UUIDs,
-        'direct_ancestor_uuids': selected_UUIDs,
+        'direct_ancestor_uuids': (rows) => [...rows, event.row.uuid],
       }))
+      
       setFormErrors((prevValues) => ({ //Clear Errors
         ...prevValues,
         'direct_ancestor_uuids': "",
@@ -769,7 +777,7 @@ export const PublicationForm = (props) => {
           <Alert severity="error">
             <AlertTitle>Please Review the following problems:</AlertTitle>
             {valErrorMessages.map(error => (
-              <Typography >
+              <Typography key={error}>
                 {error}
               </Typography>
             ))}
