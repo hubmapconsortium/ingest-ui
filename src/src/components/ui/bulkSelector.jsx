@@ -1,49 +1,165 @@
-import React from "react";
+import React,{useEffect,useState} from "react";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Button from "@mui/material/Button";
 import ClearIcon from "@mui/icons-material/Clear";
 import FormControl from '@mui/material/FormControl';
+import DialogTitle from '@mui/material/DialogTitle';
 import FormHelperText from '@mui/material/FormHelperText';
+import {Typography} from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Collapse from '@mui/material/Collapse';
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from "@mui/material/Box";
 import TableContainer from "@mui/material/TableContainer";
+import Tooltip from '@mui/material/Tooltip';
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableChartIcon from '@mui/icons-material/TableChart';
+import PublishIcon from '@mui/icons-material/Publish';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faPenToSquare, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faPenToSquare, faFolderTree,faTable,faTrash,faCircleExclamation,faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import GridLoader from "react-spinners/GridLoader";
 import SearchComponent from "../search/SearchComponent";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
+import {FeedbackDialog } from "./formParts";
+
+
 
 export function BulkSelector({
-  showSearchDialog,
-  setShowSearchDialog,
-  sourceBulkStatus,
-  bulkError,
-  setBulkError,
-  bulkWarning,
-  setBulkWarning,
-  showHIDList,
-  setShowHIDList,
-  selected_string,
-  sourcesData,
-  permissions,
-  handleInputUUIDs,
-  handleSelectClick,
-  handleInputChange,
-  sourceRemover,
-  fieldError,
+	dialogTitle,
+	dialogSubtitle,
+	setShowSearchDialog,
+	showSearchDialog,
+	bulkError,
+	setBulkError,
+	bulkWarning,
+	setBulkWarning,
+	sourceBulkStatus,
+	showHIDList,
+	setShowHIDList,
+	selected_string,
+	sourcesData,
+	permissions,
+	handleInputUUIDs,
+	handleSelectClick,
+	handleInputChange,
+	sourceRemover,
+	sourceTableError,
+	showBulkError,
+	setShowBulkError,
+	showBulkWarning,
+	setShowBulkWarning,
+	
 }) {
-     
-	return (<> 
+
+	function renderBulkDialog() {
+		return (
+			<Dialog 
+				open={showHIDList === true ? true : false} 
+				sx={{margin: "auto",border:"1px solid #444A65"}}
+				fullWidth={true}>
+				<DialogTitle sx={{
+					background:"#444A65", 
+					borderBottom:"1px solid #444A65",
+					background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)", 
+					color:"white", padding:"2px 10px", 
+					marginBottom:"10px"}}> 
+					<FontAwesomeIcon icon={faFolderTree} sx={{marginRight:"10px"}} /> Providing {dialogTitle}</DialogTitle>
+				<DialogContent > 
+					<FormControl sx={{width: "100%",}} >
+						<TextField
+							name="dataset_uuids_string"
+							fullWidth={true}
+							sx={{marginBottom: "0.5em", width: "100%"}}
+							display="flex"
+							id="dataset_uuids_string"
+							error={sourceTableError}
+							multiline
+							placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
+							variant="standard"
+							size="small"
+							onChange={(event) => handleInputChange(event)}
+							value={selected_string}/>
+						<FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
+							{"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " }
+						</FormHelperText>
+					</FormControl>
+				</DialogContent>
+				<DialogActions sx={{
+					background:"rgb(207, 211, 226)", 
+					padding:"6px 10px", 
+					display:"flex", 
+					justifyContent:"space-between",
+					borderTop:"1px solid #444A6540"}}>
+					<Button
+						size="small"
+						sx={{background:"white", color:"#444a65"}}
+						onClick={() => setShowHIDList(false)}
+						variant="contained"
+						startIcon={<ClearIcon />}
+						color="primary">
+						Close
+					</Button>
+					<Button
+						size="small"
+						onClick={(e) => handleInputUUIDs(e)}
+						variant="contained"
+						endIcon={<PublishIcon />}
+						color="primary">
+						Update
+					</Button>
+				</DialogActions>
+			</Dialog>
+		)
+	}
+
+	function renderFeedbackDialog() {
+		
+		return (<>
+			<FeedbackDialog 
+				showBulkMessage={showBulkError}
+				setShowBulkMessage={setShowBulkError}
+				bulkMessage={bulkError}
+				// title={title},
+				// summary={summary},
+				// color={color},
+				// icon={icon}
+ 			/>
+			<FeedbackDialog 
+				showBulkMessage={showBulkWarning}
+				setShowBulkMessage={setShowBulkWarning}
+				bulkMessage={bulkWarning}
+				title={"Bulk Selection Warning"}
+				summary={"Please review the following:"}
+				color={"#D3C52F"}
+				icon={faTriangleExclamation}
+ 			/>
+		</>
+		)
+	}
+
+	let totalWarnings = 0;
+	if (bulkWarning && bulkWarning.length > 0) {
+		for(let warningSets of bulkWarning) {
+			console.log("errorSetsW", warningSets[1].length);
+			totalWarnings += warningSets[1].length;
+		}
+	}
+	let totalErrors = 0;
+	if (bulkError && bulkError.length > 0) {
+		for(let errorSets of bulkError) {
+			totalErrors += errorSets[1].length;
+		}
+	}
+	
+	return (<>
+		{/* Search Dialog */}
 		<Dialog
 			fullWidth={true}
 			maxWidth="lg"
@@ -69,17 +185,26 @@ export function BulkSelector({
 				</Button>
 			</DialogActions>
 		</Dialog>
+		{/* Bulk Input Field Dialog */}
+		{renderBulkDialog()}
+		{/* Feedback Dialogs */}
+		{renderFeedbackDialog()}
 		<Box sx={{
 			position: "relative",
 			top: 0,
 			transitionProperty: "height",
 			transitionTimingFunction: "ease-in",
 			transitionDuration: "1s"}}> 
+			<Box sx={{color: "#444a65", display:"inline-block",width:"100%;"}}>
+					<Typography sx={{fontWeight:"bold", fontSize:"1rem",display:"inline-block", marginRight:"10px"}}><TableChartIcon sx={{marginRight:"2px", fontSize: "1.5em", "verticalAlign": "text-bottom"}} /> {dialogTitle}</Typography>
+					<Typography variant="caption">{dialogSubtitle}</Typography>
+				</Box>
 			<Box className="sourceShade" sx={{
 				opacity: sourceBulkStatus==="loading"?1:0, 
-				background: "#444a65", 
+				background: "#444a65",
+				background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)", 
 				width: "100%", 
-				height: "45px", 
+				height: "48px", 
 				position: "absolute", 
 				color: "white", 
 				zIndex: 999, 
@@ -91,19 +216,26 @@ export function BulkSelector({
 				transitionDuration: "0.5s"}}>
 				<GridLoader size="2px" color="white" width="30px"/> Loading ... 
 			</Box> 
-			<Box>
-				<TableContainer style={{maxHeight: 450, border: fieldError?"1px solid red":"1px solid rgba(68, 74, 101,.20)"}}>
+
+			<Box id="bulkTableWrapper">
+				<TableContainer 
+					style={{ border: sourceTableError?"2px solid red":""}}
+					sx={{
+						maxHeight: "450px", 
+						scrollbarColor: "#cbcbcb #444a65", 
+						overflowY: "scroll", 
+						background:"#444a65"}}>
 					<Table
+						sx={{borderLeft:"12px solid #444a65"}} // Makes up visually for the scrollbar on the right
 						stickyHeader
-						
-						aria-label="Associated Publications"
+						aria-label={{dialogTitle}}
 						size="small"
-						className="table table-striped table-hover mb-0">
-						<TableHead className="thead-dark font-size-sm">
+						className="bulk-table table table-striped table-hover mb-0">
+						<TableHead className="thead-dark font-size-sm" sx={{background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)", color: "white"}}>
 							<TableRow className="   ">
-							<TableCell> Source ID</TableCell>
+							<TableCell sx={{width:"166px"}}> Source ID</TableCell>
 							<TableCell component="th">Subtype</TableCell>
-							<TableCell component="th">Group Name</TableCell>
+							<TableCell component="th" sx={{maxWidth:"200px"}}>Group Name</TableCell>
 							<TableCell component="th">Status</TableCell>
 							{permissions.has_write_priv && (
 								<TableCell component="th" align="right">
@@ -112,24 +244,31 @@ export function BulkSelector({
 							)}
 							</TableRow>
 						</TableHead>
-						<TableBody>
+						<TableBody >
 							{(!sourcesData || sourcesData.length === 0) && (
 								<TableRow sx={{borderBottom: "0px!important"}}>
-									<TableCell colSpan={6} sx={{textAlign: "center"}}>No data loaded</TableCell>
+									<TableCell colSpan={6} sx={{textAlign: "center"}}>
+										No Data Loaded
+									</TableCell>
+								</TableRow>
+							)}
+							{(sourceBulkStatus ==="loading" ) && (
+								<TableRow sx={{borderBottom: "0px!important"}}>
+									<TableCell colSpan={6} sx={{textAlign: "center"}}><GridLoader size="2px" color="#444a65" width="30px"/>  </TableCell>
 								</TableRow>
 							)}
 							{sourcesData.map((row, index) => (
 							<TableRow
-								key={row.hubmap_id + "" + index} // Tweaked the key to avoid Errors RE uniqueness. SHould Never happen w/ proper data
+								key={row.hubmap_id + "" + index} 
 								// onClick={() => handleSourceCellSelection(row)}
 								className="row-selection">
-								<TableCell className="clicky-cell" scope="row">
+								<TableCell className="clicky-cell" sx={{width:"166px"}} scope="row">
 									{row.hubmap_id}
 								</TableCell>
-								<TableCell className="clicky-cell" scope="row">
+								<TableCell className="clicky-cell" scope="row" sx={{maxWidth: "210px"}}>
 									{row.dataset_type ? row.dataset_type : row.display_subtype}
 								</TableCell>
-								<TableCell className="clicky-cell" scope="row">
+								<TableCell sx={{maxWidth:"250px"}} className="clicky-cell" scope="row">
 									{row.group_name}
 								</TableCell>
 								<TableCell className="clicky-cell" scope="row">
@@ -160,108 +299,90 @@ export function BulkSelector({
 						</TableBody>
 					</Table>
 				</TableContainer> 
+				
+
+				<Box sx={{color: "#444a65", display:"inline-block",width:"100%;"}}>
+					<Typography sx={{fontSize:"0.8rem", float:"left"}}>Total Selected: {sourcesData.length}</Typography>
+					<Typography sx={{fontSize:"0.8rem", float:"right"}}> 
+						<Tooltip arrow title={
+							<React.Fragment>
+								<Typography color="inherit">{bulkWarning.length} Warning{bulkWarning.length>1?"s":""}</Typography>
+								{"Click to view Details"}
+							</React.Fragment>
+						}>
+							<span 
+								onClick={() =>setShowBulkWarning(true)}
+								style={
+									bulkWarning && bulkWarning.length>0 ? {
+										textDecoration: "underline #D3C52F",
+										marginLeft:"10px",
+										cursor:"pointer"
+									}:{marginLeft:"10px"}
+								}>
+								<FontAwesomeIcon 
+									icon={faTriangleExclamation} 
+									color={bulkWarning && bulkWarning.length>0 ? "#D3C52F " : "rgb(68, 74, 101)"}/>  
+								{totalWarnings}
+							</span>
+						</Tooltip>
+						&nbsp;
+						<Tooltip arrow title={
+							<React.Fragment>
+								<Typography color="inherit">{bulkError.length} Error{bulkError.length>1?"s":""}</Typography>
+								{"Click to view Details"}
+							</React.Fragment>
+						}>
+							<span 
+								onClick={() =>setShowBulkError(true)}
+								style={
+									bulkError && bulkError.length>0 ? {
+										textDecoration: "underline #ff3028",
+										marginLeft:"10px",
+										cursor:"pointer"
+									}:{marginLeft:"10px"}
+								}>
+								<FontAwesomeIcon 
+									sx={{paddingLeft:"1.2em"}}  
+									icon={faCircleExclamation} 
+									color={bulkError && bulkError.length>0 ? "red " : "rgb(68, 74, 101)"}/> 
+								{totalErrors}
+							</span>
+						</Tooltip>
+					</Typography>
+				</Box> 
 			</Box> 
 		</Box>
-		<Box className="mt-2 mb-4" display="inline-flex" flexDirection={"column"} >
-			<Box className="w-100" width="100%" flexDirection="row" display="inline-flex" >
-				<Collapse in={(bulkError && bulkError.length > 0)} orientation="vertical">
-					<Alert 
-						className="m-0"
-						severity="error" 
-						onClose={() => {setBulkError("")}}>
-					<AlertTitle>Source Selection Error:</AlertTitle>
-						{bulkError? bulkError: ""} 
-					</Alert>
-				</Collapse>
-				<Collapse in={(bulkWarning && bulkWarning.length>0)} orientation="vertical">
-					<Alert severity="warning" className="m-0" onClose={() => {setBulkWarning("")}}>
-					<AlertTitle>Source Selection Warning:</AlertTitle>
-					{(bulkWarning && bulkWarning.length > 0)? bulkWarning.split('\n').map(warn => <p>{warn}</p>): ""} 
-					</Alert>
-				</Collapse>
-			</Box>
+
+		<Box className="mt-2 mb-4"  >
 			<Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
-				<Box p={1} className="m-0 text-right" id="bulkButtons" display="inline-flex" flexDirection="row" >
+				<Box className="m-0 text-right" id="bulkButtons" display={!permissions.has_write_priv ? "none" :"inline-flex" } flexDirection="row" >
 					<Button
 						sx={{maxHeight: "35px",verticalAlign: 'bottom',}}
 						variant="contained"
 						type="button"
 						size="small"
+						disabled={!permissions.has_write_priv}
 						className="btn btn-neutral"
 						onClick={() => setShowSearchDialog(true)}>
 						Add
 						<FontAwesomeIcon
 							className="fa button-icon m-2"
 							icon={faPlus}/>
-						</Button>
-						<Button
+					</Button>
+					<Button
 						sx={{maxHeight: "35px",verticalAlign: 'bottom'}}
 						variant="text"
 						type='link'
+						disabled={!permissions.has_write_priv}
 						size="small"
 						className='mx-2'
 						onClick={(e) => handleInputUUIDs(e)}>
 						{!showHIDList && (<>Bulk</>)}
 						{showHIDList && (<>UPDATE</>)}
 						<FontAwesomeIcon className='fa button-icon m-2' icon={faPenToSquare}/>
-						</Button>
+					</Button>
 				</Box>
-				<Box
-					display="flex" 
-					flexDirection="row"
-					className="m-0 col-9 row"
-					sx={{
-						overflowX: "visible",
-						overflowY: "visible",
-						padding: "0px",  
-						maxHeight: "45px",}}>
-					<Collapse 
-						in={showHIDList} 
-						orientation="horizontal" 
-						className="row"
-						width="100%">
-						<Box
-							display="inline-flex"
-							flexDirection="row"
-							sx={{ 
-								overflow: "hidden",
-								width: "650px"}}>
-							<FormControl >
-								<TextField
-									name="dataset_uuids_string"
-									display="flex"
-									id="dataset_uuids_string"
-									// error={props?.fields?dataset_uuids_string?.error && props?.dataset_uuids_string?.error.length > 0 ? true : false}
-									multiline
-									placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
-									variant="standard"
-									size="small"
-									fullWidth={true}
-									onChange={(event) => handleInputChange(event)}
-									value={selected_string}
-									sx={{
-										overflow: "hidden",
-										marginTop: '10px',
-										verticalAlign: 'bottom',
-										width: "100%",
-									}}/>
-								<FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
-									{"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " }
-								</FormHelperText>
-							</FormControl>
-							<Button
-								variant="text"
-								type='link'
-								size="small"
-								onClick={(e) => {
-									e.preventDefault();
-									setShowHIDList(false);
-								}}>
-								<ClearIcon size="small"/>
-							</Button>
-						</Box>
-					</Collapse>
-				</Box>
+
 			</Box>
 		</Box> 
 	</>)

@@ -960,3 +960,18 @@ svg.invalid {
 .taskAssignment.disabled{
   opacity: 0.7;
 }
+
+
+.bulk-table tr td{
+  height:24px; 
+  overflow:hidden; 
+  white-space:nowrap; 
+  text-overflow:ellipsis;
+} 
+
+/* Brute Force Inter Fix / Death To Roboto */
+/* all of the manual overrides to force Inter over Roboto */
+.bulk-table,
+.bulk-table tr td{
+  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+} 
