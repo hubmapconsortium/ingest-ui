@@ -432,8 +432,8 @@ export function FeedbackDialog( {
         </Typography >
         {bulkMessage ? bulkMessage.map(([details, items], index) => (
           <React.Fragment key={index}>
-            <p>{details}</p>
-            <ul style={{marginLeft: "20px", paddingLeft: "0px"}}>
+            <Typography sx={{marginTop:"20px"}}>{details}</Typography>
+            <ul style={{marginLeft: "20px", marginBottom:"20px", paddingLeft: "0px"}}>
               {Array.isArray(items) && items.map((item, i) => {
                 // Split at the first space before the parenthesis
                 const match = item.match(/^([^\s(]+)\s*(\(.*\))?$/);

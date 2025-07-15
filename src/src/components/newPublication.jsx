@@ -396,14 +396,14 @@ export const PublicationForm = (props) => {
     // Check against type/filter requirements
     for(let entity of results){
       if (entity.entity_type !== "Dataset"){
-        typeArray.push(`${entity.hubmap_id}: Invalid Type`);
+        typeArray.push(`${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`);
       }else{
         goodArray.push(entity);
       } 
     }
     console.debug('%c◉ typeArray: ', 'color:#00ff7b', typeArray? typeArray : "None");
     if(typeArray.length > 0){
-      errorArray.push(`The following ${typeArray.length} IDs are of the wrong Type:`, typeArray);
+      errorArray.push([`The following ${typeArray.length} IDs are of the wrong Type:`, typeArray]);
     }
 
     // prepare and trigger launch of the warning/error feedback

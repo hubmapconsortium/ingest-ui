@@ -142,13 +142,14 @@ export function BulkSelector( {
 	let totalWarnings = 0;
 	if (bulkWarning && bulkWarning.length > 0){
 		for(let warningSets of bulkWarning){
-			console.log("errorSetsW", warningSets[1].length);
+			console.log("warningSets", warningSets[1].length);
 			totalWarnings += warningSets[1].length;
 		}
 	}
 	let totalErrors = 0;
 	if (bulkError && bulkError.length > 0){
 		for(let errorSets of bulkError){
+			console.log("errorSets", errorSets[1].length);
 			totalErrors += errorSets[1].length;
 		}
 	}
@@ -300,7 +301,7 @@ export function BulkSelector( {
 					<Typography sx={{fontSize: "0.8rem", float: "right"}}> 
 						<Tooltip arrow title={
 							<React.Fragment>
-								<Typography color="inherit">{bulkWarning.length} Warning{bulkWarning.length>1?"s":""}</Typography>
+								<Typography color="inherit">{totalWarnings} Warning{bulkWarning.length>1?"s":""}</Typography>
 								{"Click to view Details"}
 							</React.Fragment>
 						}>
@@ -322,7 +323,7 @@ export function BulkSelector( {
 						&nbsp;
 						<Tooltip arrow title={
 							<React.Fragment>
-								<Typography color="inherit">{bulkError.length} Error{bulkError.length>1?"s":""}</Typography>
+								<Typography color="inherit">{totalErrors} Error{bulkError.length>1?"s":""}</Typography>
 								{"Click to view Details"}
 							</React.Fragment>
 						}>
