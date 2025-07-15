@@ -221,7 +221,7 @@ export function BulkSelector( {
 						overflowY: "scroll", 
 						background: "#444a65"}}>
 					<Table
-						sx={{borderLeft: "12px solid #444a65"}} // Makes up visually for the scrollbar on the right
+						sx={{borderLeft: "12px solid #444a65", borderBottom: "4px solid #444a65"}} // Left Border up visually for the scrollbar on the right
 						stickyHeader
 						aria-label={{dialogTitle}}
 						size="small"
