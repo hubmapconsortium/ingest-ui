@@ -450,34 +450,52 @@ export const PublicationForm = (props) => {
         .filter(s => s.length > 0)
       ));
 
-      let cols=["hubmap_id","uuid","entity_type","subtype","group_name","status","dataset_type","display_subtype"];
-      search_api_es_query_ids(cleanList,['datasets'],cols) 
-        .then((response) => {
-          console.debug('%c◉ response ', 'color:#00ff7b', response);
-          if(response.status >= 300){
-            console.error("search_api_es_query_ids ERROR", response);
-            setPageErrors(response);
-            setSourceBulkStatus("error");
-            return;
-          }else if(response.results.length <= 0){
-            setBulkError("No Datasets Found for the provided IDs");
-          }else{
-            let validatedSources = preValidateSources(response.results,cleanList);
-            setSourcesData(validatedSources)
-            let entityHIDs = validatedSources.map(obj => obj.hubmap_id)
-            setSelectedHIDs(entityHIDs);
-            setSelectedString(entityHIDs.join(", "));
-            setShowHIDList(false);
-            setSourceBulkStatus("complete");
-            setFormValues((prevValues) => ( { // Form Field Data
-              ...prevValues,
-              'direct_ancestor_uuids': (validatedSources.map(obj => obj.uuid)),
-            } ));
-          }
-        } )
-        .catch((error) => {
-          console.debug('%c◉ error ', 'color:#00ff7b', error);
-        } )
+      // If We just Cleared out the whole thing, dump the whole table
+      //  & errors/warnings
+      if(selected_string.length<=0){
+        setSourcesData([])
+        setSelectedHIDs([]);
+        setSelectedString("");
+        setBulkError([]);
+        setBulkWarning([]);
+        setSourceBulkStatus("complete");
+        setFormValues((prevValues) => ( { // Form Field Data
+          ...prevValues,
+          'direct_ancestor_uuids': null,
+        } ));
+
+      }else{
+        let cols=["hubmap_id","uuid","entity_type","subtype","group_name","status","dataset_type","display_subtype"];
+        search_api_es_query_ids(cleanList,['datasets'],cols) 
+          .then((response) => {
+            console.debug('%c◉ response ', 'color:#00ff7b', response);
+            if(response.status >= 300){
+              console.error("search_api_es_query_ids ERROR", response);
+              setPageErrors(response);
+              setSourceBulkStatus("error");
+              return;
+            }else if(response.results.length <= 0){
+              setBulkError("No Datasets Found for the provided IDs");
+            }else{
+              let validatedSources = preValidateSources(response.results,cleanList);
+              setSourcesData(validatedSources)
+              let entityHIDs = validatedSources.map(obj => obj.hubmap_id)
+              setSelectedHIDs(entityHIDs);
+              setSelectedString(entityHIDs.join(", "));
+              setShowHIDList(false);
+              setSourceBulkStatus("complete");
+              setFormValues((prevValues) => ( { // Form Field Data
+                ...prevValues,
+                'direct_ancestor_uuids': (validatedSources.map(obj => obj.uuid)),
+              } ));
+            }
+          } )
+          .catch((error) => {
+            console.debug('%c◉ error ', 'color:#00ff7b', error);
+          } )
+      
+        }
+
     }
   }
 

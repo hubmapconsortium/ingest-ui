@@ -149,10 +149,11 @@ export function BulkSelector( {
 	let totalErrors = 0;
 	if (bulkError && bulkError.length > 0){
 		for(let errorSets of bulkError){
-			console.log("errorSets", errorSets[1].length);
-			totalErrors += errorSets[1].length;
+			// console.log("errorSets", errorSets[1].length);
+			totalErrors += errorSets[1]?errorSets[1].length:0;
 		}
 	}
+	let totalRejected = totalWarnings + totalErrors;
 	
 	return (<>
 		{/* Search Dialog */}
@@ -213,21 +214,24 @@ export function BulkSelector( {
 				<GridLoader size="2px" color="white" width="30px"/> Loading ... 
 			</Box> 
 
-			<Box id="bulkTableWrapper">
+			<Box id="bulkTableWrapper" sx={{borderRadius:"4px",border: "4px solid #444a65"}}>
 				<TableContainer 
-					style={{border: sourceTableError?"2px solid red":""}}
+					style={{ border: sourceTableError?"2px solid red":""}}
 					sx={{
 						maxHeight: "450px", 
 						scrollbarColor: "#cbcbcb #444a65", 
 						overflowY: "scroll", 
 						background: "#444a65"}}>
 					<Table
-						sx={{borderLeft: "12px solid #444a65", borderBottom: "4px solid #444a65"}} // Left Border up visually for the scrollbar on the right
+						sx={{borderLeft: "12px solid #444a65"}} // Left Border up visually for the scrollbar on the right
 						stickyHeader
 						aria-label={{dialogTitle}}
 						size="small"
 						className="bulk-table table table-striped table-hover mb-0">
-						<TableHead className="thead-dark font-size-sm" sx={{background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)", color: "white"}}>
+						<TableHead className="thead-dark font-size-sm" sx={{
+							background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)", 
+							color: "white",
+							padding:"2rem .0rem"}}>
 							<TableRow className="   ">
 							<TableCell sx={{width: "166px"}}> Source ID</TableCell>
 							<TableCell component="th">Subtype</TableCell>
@@ -296,8 +300,20 @@ export function BulkSelector( {
 					</Table>
 				</TableContainer> 
 
-				<Box sx={{color: "#444a65", display: "inline-block",width: "100%;"}}>
-					<Typography sx={{fontSize: "0.8rem", float: "left"}}>Total Selected: {sourcesData.length}</Typography>
+				
+			</Box> 
+			<Box sx={{color: "#444a65", display: "inline-block",width: "100%;"}}>
+					<Typography sx={{fontSize: "0.8rem", float: "left"}}>Total Selected: {sourcesData.length} 
+						{(permissions.has_write_priv && totalRejected >0) && (
+							<Tooltip arrow title={
+								<React.Fragment>
+									<Typography color="inherit">{totalRejected} Rejected</Typography>
+									{"Explore the Warning and Error details for more information"}
+								</React.Fragment>}>
+									 &nbsp;| <Typography component="span" sx={{fontSize: "0.8rem", textDecoration:"underline"}}>Total Rejected: {totalRejected}</Typography>
+							</Tooltip>
+						)}
+					</Typography>
 					<Typography sx={{fontSize: "0.8rem", float: "right"}}> 
 						<Tooltip arrow title={
 							<React.Fragment>
@@ -317,7 +333,7 @@ export function BulkSelector( {
 								<FontAwesomeIcon 
 									icon={faTriangleExclamation} 
 									color={bulkWarning && bulkWarning.length>0 ? "#D3C52F " : "rgb(68, 74, 101)"}/>  
-								{totalWarnings}
+								&nbsp;{totalWarnings}
 							</span>
 						</Tooltip>
 						&nbsp;
@@ -325,34 +341,31 @@ export function BulkSelector( {
 							<React.Fragment>
 								<Typography color="inherit">{totalErrors} Error{bulkError.length>1?"s":""}</Typography>
 								{"Click to view Details"}
-							</React.Fragment>
-						}>
+							</React.Fragment>}>
 							<span 
 								onClick={() =>setShowBulkError(true)}
 								style={
 									bulkError && bulkError.length>0 ? {
 										textDecoration: "underline #ff3028",
-										marginLeft: "10px",
+										marginLeft: "15px",
 										cursor: "pointer"
-									}:{marginLeft: "10px"}
-								}>
+									}:{marginLeft: "10px"}}>
 								<FontAwesomeIcon 
 									sx={{paddingLeft: "1.2em"}}  
 									icon={faCircleExclamation} 
 									color={bulkError && bulkError.length>0 ? "red " : "rgb(68, 74, 101)"}/> 
-								{totalErrors}
+								&nbsp;{totalErrors}
 							</span>
 						</Tooltip>
 					</Typography>
 				</Box> 
-			</Box> 
 		</Box>
 
-		<Box className="mt-2 mb-4" >
+		<Box className="mt-0 mb-4" >
 			<Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
 				<Box className="m-0 text-right" id="bulkButtons" display={!permissions.has_write_priv ? "none" :"inline-flex" } flexDirection="row" >
 					<Button
-						sx={{maxHeight: "35px",verticalAlign: 'bottom',}}
+						sx={{maxHeight: "35px", verticalAlign: 'bottom', background: "#444a65!important"}}
 						variant="contained"
 						type="button"
 						size="small"
@@ -365,7 +378,7 @@ export function BulkSelector( {
 							icon={faPlus}/>
 					</Button>
 					<Button
-						sx={{maxHeight: "35px",verticalAlign: 'bottom'}}
+						sx={{maxHeight: "35px",verticalAlign: 'bottom', color:"#444a65"}}
 						variant="text"
 						type='link'
 						disabled={!permissions.has_write_priv}

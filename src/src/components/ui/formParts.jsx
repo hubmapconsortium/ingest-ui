@@ -431,7 +431,7 @@ export function FeedbackDialog( {
         <Typography sx={{fontSize: "0.9rem", marginBottom: "10px"}}>
           {summary?summary:defaultSummary}
         </Typography >
-        {bulkMessage ? bulkMessage.map(([details, items], index) => (
+        {(bulkMessage && bulkMessage.length>0 && typeof bulkMessage ==="object") ? bulkMessage.map(([details, items], index) => (
           <React.Fragment key={index}>
             <Typography sx={{fontSize: "0.9rem", marginTop:"20px"}}>{details}</Typography>
             <ul style={{margin: "10px 0px 20px 0px", padding: "20px", background:messageColor+"20", borderRadius: "5px"}}>
@@ -447,7 +447,7 @@ export function FeedbackDialog( {
                         width: "100%",
                         borderBottom: "1px solid #444a6520"
                       }}>
-                      <Typography component="span" >{match ? match[1] : item}</Typography>
+                      <Typography component="span" ><FontAwesomeIcon icon={icon?icon:faCircleExclamation} color={altColorLight} sx={{marginRight: "5px", fontSize:"0.5rem"}}/> {match ? match[1] : item}</Typography>
                       {match && match[2] && (
                         <Typography component="span" sx={{marginLeft: "0.5em", fontSize: "0.8rem", color: altColorDark}}>
                           {match[2] && match[2].includes("Invalid Type:") ? (
