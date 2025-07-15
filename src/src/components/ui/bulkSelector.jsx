@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from "react";
+import React from "react";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -9,9 +9,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormHelperText from '@mui/material/FormHelperText';
 import {Typography} from "@mui/material";
 import TextField from "@mui/material/TextField";
-import Collapse from '@mui/material/Collapse';
-import Alert from "@mui/material/Alert";
-import AlertTitle from '@mui/material/AlertTitle';
 import Box from "@mui/material/Box";
 import TableContainer from "@mui/material/TableContainer";
 import Tooltip from '@mui/material/Tooltip';
@@ -22,24 +19,22 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import TableChartIcon from '@mui/icons-material/TableChart';
 import PublishIcon from '@mui/icons-material/Publish';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faPenToSquare, faFolderTree,faTable,faTrash,faCircleExclamation,faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPlus, faPenToSquare, faFolderTree,faTrash,faCircleExclamation,faTriangleExclamation} from "@fortawesome/free-solid-svg-icons";
 import GridLoader from "react-spinners/GridLoader";
 import SearchComponent from "../search/SearchComponent";
-import { getPublishStatusColor } from "../../utils/badgeClasses";
-import {FeedbackDialog } from "./formParts";
+import {getPublishStatusColor} from "../../utils/badgeClasses";
+import {FeedbackDialog} from "./formParts";
 
-
-
-export function BulkSelector({
+export function BulkSelector( {
 	dialogTitle,
 	dialogSubtitle,
 	setShowSearchDialog,
 	showSearchDialog,
 	bulkError,
-	setBulkError,
+	// setBulkError,
 	bulkWarning,
-	setBulkWarning,
+	// setBulkWarning,
 	sourceBulkStatus,
 	showHIDList,
 	setShowHIDList,
@@ -56,21 +51,21 @@ export function BulkSelector({
 	showBulkWarning,
 	setShowBulkWarning,
 	
-}) {
+} ){
 
-	function renderBulkDialog() {
+	function renderBulkDialog(){
 		return (
 			<Dialog 
 				open={showHIDList === true ? true : false} 
-				sx={{margin: "auto",border:"1px solid #444A65"}}
+				sx={{margin: "auto",border: "1px solid #444A65"}}
 				fullWidth={true}>
 				<DialogTitle sx={{
-					background:"#444A65", 
-					borderBottom:"1px solid #444A65",
+					background: "#444A65", 
+					borderBottom: "1px solid #444A65",
 					background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)", 
-					color:"white", padding:"2px 10px", 
-					marginBottom:"10px"}}> 
-					<FontAwesomeIcon icon={faFolderTree} sx={{marginRight:"10px"}} /> Providing {dialogTitle}</DialogTitle>
+					color: "white", padding: "2px 10px", 
+					marginBottom: "10px"}}> 
+					<FontAwesomeIcon icon={faFolderTree} sx={{marginRight: "10px"}} /> Providing {dialogTitle}</DialogTitle>
 				<DialogContent > 
 					<FormControl sx={{width: "100%",}} >
 						<TextField
@@ -92,14 +87,14 @@ export function BulkSelector({
 					</FormControl>
 				</DialogContent>
 				<DialogActions sx={{
-					background:"rgb(207, 211, 226)", 
-					padding:"6px 10px", 
-					display:"flex", 
-					justifyContent:"space-between",
-					borderTop:"1px solid #444A6540"}}>
+					background: "rgb(207, 211, 226)", 
+					padding: "6px 10px", 
+					display: "flex", 
+					justifyContent: "space-between",
+					borderTop: "1px solid #444A6540"}}>
 					<Button
 						size="small"
-						sx={{background:"white", color:"#444a65"}}
+						sx={{background: "white", color: "#444a65"}}
 						onClick={() => setShowHIDList(false)}
 						variant="contained"
 						startIcon={<ClearIcon />}
@@ -119,7 +114,7 @@ export function BulkSelector({
 		)
 	}
 
-	function renderFeedbackDialog() {
+	function renderFeedbackDialog(){
 		
 		return (<>
 			<FeedbackDialog 
@@ -145,15 +140,15 @@ export function BulkSelector({
 	}
 
 	let totalWarnings = 0;
-	if (bulkWarning && bulkWarning.length > 0) {
-		for(let warningSets of bulkWarning) {
+	if (bulkWarning && bulkWarning.length > 0){
+		for(let warningSets of bulkWarning){
 			console.log("errorSetsW", warningSets[1].length);
 			totalWarnings += warningSets[1].length;
 		}
 	}
 	let totalErrors = 0;
-	if (bulkError && bulkError.length > 0) {
-		for(let errorSets of bulkError) {
+	if (bulkError && bulkError.length > 0){
+		for(let errorSets of bulkError){
 			totalErrors += errorSets[1].length;
 		}
 	}
@@ -195,8 +190,8 @@ export function BulkSelector({
 			transitionProperty: "height",
 			transitionTimingFunction: "ease-in",
 			transitionDuration: "1s"}}> 
-			<Box sx={{color: "#444a65", display:"inline-block",width:"100%;"}}>
-					<Typography sx={{fontWeight:"bold", fontSize:"1rem",display:"inline-block", marginRight:"10px"}}><TableChartIcon sx={{marginRight:"2px", fontSize: "1.5em", "verticalAlign": "text-bottom"}} /> {dialogTitle}</Typography>
+			<Box sx={{color: "#444a65", display: "inline-block",width: "100%;"}}>
+					<Typography sx={{fontWeight: "bold", fontSize: "1rem",display: "inline-block", marginRight: "10px"}}><TableChartIcon sx={{marginRight: "2px", fontSize: "1.5em", "verticalAlign": "text-bottom"}} /> {dialogTitle}</Typography>
 					<Typography variant="caption">{dialogSubtitle}</Typography>
 				</Box>
 			<Box className="sourceShade" sx={{
@@ -219,23 +214,23 @@ export function BulkSelector({
 
 			<Box id="bulkTableWrapper">
 				<TableContainer 
-					style={{ border: sourceTableError?"2px solid red":""}}
+					style={{border: sourceTableError?"2px solid red":""}}
 					sx={{
 						maxHeight: "450px", 
 						scrollbarColor: "#cbcbcb #444a65", 
 						overflowY: "scroll", 
-						background:"#444a65"}}>
+						background: "#444a65"}}>
 					<Table
-						sx={{borderLeft:"12px solid #444a65"}} // Makes up visually for the scrollbar on the right
+						sx={{borderLeft: "12px solid #444a65"}} // Makes up visually for the scrollbar on the right
 						stickyHeader
 						aria-label={{dialogTitle}}
 						size="small"
 						className="bulk-table table table-striped table-hover mb-0">
 						<TableHead className="thead-dark font-size-sm" sx={{background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)", color: "white"}}>
 							<TableRow className="   ">
-							<TableCell sx={{width:"166px"}}> Source ID</TableCell>
+							<TableCell sx={{width: "166px"}}> Source ID</TableCell>
 							<TableCell component="th">Subtype</TableCell>
-							<TableCell component="th" sx={{maxWidth:"200px"}}>Group Name</TableCell>
+							<TableCell component="th" sx={{maxWidth: "200px"}}>Group Name</TableCell>
 							<TableCell component="th">Status</TableCell>
 							{permissions.has_write_priv && (
 								<TableCell component="th" align="right">
@@ -252,7 +247,7 @@ export function BulkSelector({
 									</TableCell>
 								</TableRow>
 							)}
-							{(sourceBulkStatus ==="loading" ) && (
+							{(sourceBulkStatus ==="loading") && (
 								<TableRow sx={{borderBottom: "0px!important"}}>
 									<TableCell colSpan={6} sx={{textAlign: "center"}}><GridLoader size="2px" color="#444a65" width="30px"/>  </TableCell>
 								</TableRow>
@@ -262,13 +257,13 @@ export function BulkSelector({
 								key={row.hubmap_id + "" + index} 
 								// onClick={() => handleSourceCellSelection(row)}
 								className="row-selection">
-								<TableCell className="clicky-cell" sx={{width:"166px"}} scope="row">
+								<TableCell className="clicky-cell" sx={{width: "166px"}} scope="row">
 									{row.hubmap_id}
 								</TableCell>
 								<TableCell className="clicky-cell" scope="row" sx={{maxWidth: "210px"}}>
 									{row.dataset_type ? row.dataset_type : row.display_subtype}
 								</TableCell>
-								<TableCell sx={{maxWidth:"250px"}} className="clicky-cell" scope="row">
+								<TableCell sx={{maxWidth: "250px"}} className="clicky-cell" scope="row">
 									{row.group_name}
 								</TableCell>
 								<TableCell className="clicky-cell" scope="row">
@@ -299,11 +294,10 @@ export function BulkSelector({
 						</TableBody>
 					</Table>
 				</TableContainer> 
-				
 
-				<Box sx={{color: "#444a65", display:"inline-block",width:"100%;"}}>
-					<Typography sx={{fontSize:"0.8rem", float:"left"}}>Total Selected: {sourcesData.length}</Typography>
-					<Typography sx={{fontSize:"0.8rem", float:"right"}}> 
+				<Box sx={{color: "#444a65", display: "inline-block",width: "100%;"}}>
+					<Typography sx={{fontSize: "0.8rem", float: "left"}}>Total Selected: {sourcesData.length}</Typography>
+					<Typography sx={{fontSize: "0.8rem", float: "right"}}> 
 						<Tooltip arrow title={
 							<React.Fragment>
 								<Typography color="inherit">{bulkWarning.length} Warning{bulkWarning.length>1?"s":""}</Typography>
@@ -315,9 +309,9 @@ export function BulkSelector({
 								style={
 									bulkWarning && bulkWarning.length>0 ? {
 										textDecoration: "underline #D3C52F",
-										marginLeft:"10px",
-										cursor:"pointer"
-									}:{marginLeft:"10px"}
+										marginLeft: "10px",
+										cursor: "pointer"
+									}:{marginLeft: "10px"}
 								}>
 								<FontAwesomeIcon 
 									icon={faTriangleExclamation} 
@@ -337,12 +331,12 @@ export function BulkSelector({
 								style={
 									bulkError && bulkError.length>0 ? {
 										textDecoration: "underline #ff3028",
-										marginLeft:"10px",
-										cursor:"pointer"
-									}:{marginLeft:"10px"}
+										marginLeft: "10px",
+										cursor: "pointer"
+									}:{marginLeft: "10px"}
 								}>
 								<FontAwesomeIcon 
-									sx={{paddingLeft:"1.2em"}}  
+									sx={{paddingLeft: "1.2em"}}  
 									icon={faCircleExclamation} 
 									color={bulkError && bulkError.length>0 ? "red " : "rgb(68, 74, 101)"}/> 
 								{totalErrors}
@@ -353,7 +347,7 @@ export function BulkSelector({
 			</Box> 
 		</Box>
 
-		<Box className="mt-2 mb-4"  >
+		<Box className="mt-2 mb-4" >
 			<Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
 				<Box className="m-0 text-right" id="bulkButtons" display={!permissions.has_write_priv ? "none" :"inline-flex" } flexDirection="row" >
 					<Button
