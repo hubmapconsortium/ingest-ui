@@ -459,7 +459,7 @@ export function FeedbackDialog( {
         borderTop: "1px solid #D32F2F40"
         }}>
         <Typography variant="caption" color={"#444a65"}>
-          <strong>Note: </strong>If you need to review this information again, clicking on the symbol (<FontAwesomeIcon sx={{padding: "1.2em"}} icon={icon?icon:faCircleExclamation}/>) beneith the table will re-launch this message
+          <strong>Note: </strong>If you need to review this information again, clicking on the <FontAwesomeIcon sx={{padding: "1.2em"}} icon={icon?icon:faCircleExclamation}/> symbol beneith the table will re-launch this message
         </Typography>
         <Button
           size="small"
