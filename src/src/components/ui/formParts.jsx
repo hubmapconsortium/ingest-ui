@@ -441,7 +441,7 @@ export function FeedbackDialog( {
                   <li key={i} style={{display: "flex", alignItems: "center"}}>
                     <Typography component="span">{match ? match[1] : item}</Typography>
                     {match && match[2] && (
-                      <Typography component="span" sx={{marginLeft: "0.5em", color: "gray"}}>
+                      <Typography component="span" sx={{marginLeft: "0.5em", fontSize: "0.8rem", color: "gray"}}>
                         {match[2]}
                       </Typography>
                     )}
