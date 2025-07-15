@@ -131,7 +131,7 @@ export function BulkSelector( {
 				setShowBulkMessage={setShowBulkWarning}
 				bulkMessage={bulkWarning}
 				title={"Bulk Selection Warning"}
-				summary={"Please review the following:"}
+				summary={(bulkWarning && bulkWarning.length>0 ? "Please review the following:" :	"There are no warnings at this time" )}
 				color={"#D3C52F"}
 				icon={faTriangleExclamation}
  			/>

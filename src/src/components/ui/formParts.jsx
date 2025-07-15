@@ -405,7 +405,7 @@ export function FeedbackDialog( {
   let messageColor = color ? color : "#d32f2f";
   let altColor = LightenHex(messageColor, 20);
   let defaultSummary = "";
-  if (!bulkMessage && bulkMessage.length > 0){
+  if (bulkMessage && bulkMessage.length > 0){
     defaultSummary = "There were some problems with your selection. Please review the following messages and update your data as necessary (Acceptable results have already been attached to the table, and no further action is needed for them):";
   } else{
     defaultSummary = "There are no problems currently known.";
