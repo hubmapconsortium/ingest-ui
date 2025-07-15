@@ -403,7 +403,8 @@ export function FeedbackDialog( {
   icon
 } ){
   let messageColor = color ? color : "#d32f2f";
-  let altColor = LightenHex(messageColor, 20);
+  let altColorLight = LightenHex(messageColor, 20);
+  let altColorDark = DarkenHex(messageColor, 20);
   let defaultSummary = "";
   if (bulkMessage && bulkMessage.length > 0){
     defaultSummary = "There were some problems with your selection. Please review the following messages and update your data as necessary (Acceptable results have already been attached to the table, and no further action is needed for them):";
@@ -419,7 +420,7 @@ export function FeedbackDialog( {
       fullWidth={true}>
       <DialogTitle sx={{
         // background: color, 
-        background: `linear-gradient(180deg,${messageColor} 0%, ${altColor} 100%)`, 
+        background: `linear-gradient(180deg,${messageColor} 0%, ${altColorLight} 100%)`, 
         borderBottom: `1px solid {messageColor}`, 
         color: "white", 
         padding: "2px 10px", 
@@ -432,19 +433,30 @@ export function FeedbackDialog( {
         </Typography >
         {bulkMessage ? bulkMessage.map(([details, items], index) => (
           <React.Fragment key={index}>
-            <Typography sx={{marginTop:"20px"}}>{details}</Typography>
-            <ul style={{marginLeft: "20px", marginBottom:"20px", paddingLeft: "0px"}}>
+            <Typography sx={{fontSize: "0.9rem", marginTop:"20px"}}>{details}</Typography>
+            <ul style={{margin: "10px 0px 20px 0px", padding: "20px", background:messageColor+"20", borderRadius: "5px"}}>
               {Array.isArray(items) && items.map((item, i) => {
                 // Split at the first space before the parenthesis
                 const match = item.match(/^([^\s(]+)\s*(\(.*\))?$/);
                 return (
-                  <li key={i} style={{display: "flex", alignItems: "center"}}>
-                    <Typography component="span">{match ? match[1] : item}</Typography>
-                    {match && match[2] && (
-                      <Typography component="span" sx={{marginLeft: "0.5em", fontSize: "0.8rem", color: "gray"}}>
-                        {match[2]}
-                      </Typography>
-                    )}
+                  <li key={i}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        width: "100%",
+                        borderBottom: "1px solid #444a6520"
+                      }}>
+                      <Typography component="span" >{match ? match[1] : item}</Typography>
+                      {match && match[2] && (
+                        <Typography component="span" sx={{marginLeft: "0.5em", fontSize: "0.8rem", color: altColorDark}}>
+                          {match[2] && match[2].includes("Invalid Type:") ? (
+                            <>Invalid Type: <strong>{match[2].match(/Invalid Type:\s*([^)]+)/)?.[1] || ""}</strong></>
+                          ) : (
+                            match[2]
+                          )}
+                        </Typography>
+                      )}
                   </li>
                 );
               } )}

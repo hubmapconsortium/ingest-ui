@@ -381,7 +381,7 @@ export const PublicationForm = (props) => {
     console.debug('%c◉ entitiesWithBoth: ', 'color:#00ff7b', entitiesWithBoth? entitiesWithBoth : "None");
     if (entitiesWithBoth.length > 0){
       let entList = entitiesWithBoth.map(entity => `${entity.hubmap_id} (${entity.uuid})`)
-      warnArray.push([`The following ${entitiesWithBoth.length} IDs have both UUID and Hubmap ID provided:`,entList])
+      warnArray.push([`The following ${entitiesWithBoth.length} ID${entitiesWithBoth.length>1?'s':''} ${entitiesWithBoth.length>1?'have':'has'} both UUID and Hubmap ID provided:`,entList])
     }
 
     // Checks whatever values were missed from those provided
@@ -391,7 +391,7 @@ export const PublicationForm = (props) => {
     );
     console.debug('%c◉ missingIds: ', 'color:#00ff7b', missingIds? missingIds : "None");
     if (missingIds.length > 0){
-      errorArray.push([`The following IDs ${missingIds.length} were not Included from the original set:`,missingIds]);
+      errorArray.push([`The following ${missingIds.length} ID${missingIds.length>1?'s':''} ${entitiesWithBoth.length>1?'were':'was'} not Included from the original set, and there is no Rejection message available. Please review, and make sure the value is properly formatted:`,missingIds]);
     }
     // Check against type/filter requirements
     for(let entity of results){
@@ -403,7 +403,7 @@ export const PublicationForm = (props) => {
     }
     console.debug('%c◉ typeArray: ', 'color:#00ff7b', typeArray? typeArray : "None");
     if(typeArray.length > 0){
-      errorArray.push([`The following ${typeArray.length} IDs are of the wrong Type:`, typeArray]);
+      errorArray.push([`The following ${typeArray.length} ID${typeArray.length>1?'s':''} ${typeArray.length>1?'are':'is'} of the wrong Type:`, typeArray]);
     }
 
     // prepare and trigger launch of the warning/error feedback
