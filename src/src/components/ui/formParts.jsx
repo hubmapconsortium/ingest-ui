@@ -1,22 +1,30 @@
-import React from "react";
-import Grid from '@mui/material/Grid';
-import Alert from "@mui/material/Alert";
-import Typography from '@mui/material/Typography';
-import WarningIcon from '@mui/icons-material/Warning';
-import PersonIcon from '@mui/icons-material/Person';
-import BubbleChartIcon from '@mui/icons-material/BubbleChart';
-import TableChartIcon from '@mui/icons-material/TableChart';
-import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import ArticleIcon from '@mui/icons-material/Article';
+import BubbleChartIcon from '@mui/icons-material/BubbleChart';
+import ClearIcon from "@mui/icons-material/Clear";
+import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import {tsToDate} from "../../utils/string_helper";
-import {SAMPLE_CATEGORIES} from "../../constants";
-import HIPPA from "./HIPPA";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Chip from '@mui/material/Chip';
+import PersonIcon from '@mui/icons-material/Person';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import WarningIcon from '@mui/icons-material/Warning';
+import {Typography} from "@mui/material";
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleExclamation} from "@fortawesome/free-solid-svg-icons";
+import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
+import React from "react";
+import {SAMPLE_CATEGORIES} from "../../constants";
+import {tsToDate} from "../../utils/string_helper";
+import HIPPA from "./HIPPA";
 
 // import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 // import {entity_api_get_entity} from "../../service/entity_api";
@@ -35,11 +43,11 @@ export const FormHeader = (props) => {
   )
 }
 
-function iconSelection(entity_type,status){  
+export function IconSelection(entity_type,status){  
   console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
   console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
-  let newSX={ "&&": { color: status?"white":"" } }
+  let newSX={"&&": {color: status?"white":""}}
   switch
   (entity_type && entity_type.toLowerCase()){
     case "donor":
@@ -74,7 +82,7 @@ function topHeader(entityData){
     return (
       <React.Fragment>
         <Grid item xs={12} className="" > 
-          <h3 style={{marginLeft: "-2px"}}>{iconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
+          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
         </Grid>
         <Grid item xs={6} className="" >
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
@@ -85,7 +93,7 @@ function topHeader(entityData){
             <Typography variant="caption" sx={{display: "inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
           )}
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
-          {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample" ) && (
+          {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
             <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
           )}
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
@@ -115,7 +123,7 @@ function topHeader(entityData){
 
 function infoPanels(entityData,permissions,globusURL){
   return (
-    <Grid item xs={6} className="" >
+    <Grid item xs={6} className="" > {entityData.entity_type}
       {globusURL&& (
         <Typography className="pb-1">
           <strong><big>
@@ -133,7 +141,7 @@ function infoPanels(entityData,permissions,globusURL){
           </big></strong>
         </Typography>
       )}
-      {permissions.has_write_priv &&(
+      {permissions.has_write_priv && entityData.entity_type !== "publication" &&(
         <HIPPA />
       )}
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
@@ -176,7 +184,7 @@ export function badgeClass(status){
     badge_class = "badge-danger";
     console.log("No Status Value for this unit ");
   }else{
-	switch (status.toUpperCase()) {
+	switch (status.toUpperCase()){
     case "NEW":
       badge_class = "badge-purple";
       break;
@@ -236,7 +244,7 @@ export function statusBadge(status){
 export function newBadge(type){
   console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
   let newBadgeStyle = {
-    "&&": { color: "#ffffff!important" } ,
+    "&&": {color: "#ffffff!important"} ,
     fontWeight: "bold",
     color: "white",
     padding: "4px",
@@ -247,7 +255,7 @@ export function newBadge(type){
    
   }
   return (  
-    <Chip style={newBadgeStyle} className={badgeClass("NEW")} icon={iconSelection(type,"new")} label={"NEW"} size="small" />
+    <Chip style={newBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
 
@@ -304,20 +312,20 @@ export function FormCheckRedirect(uuid,entityType,form){
   }
 }
 
-export function combineTypeOptionsComplete () {
+export function combineTypeOptionsComplete(){
   // Removes the Whitelist / Blacklist stuff,
   // mostly for use for resetting the main Search Page View
 
   var combinedList = [];
 
   // FIRST: Main Entity Types
-  combinedList.push({  // @TODO: Find out why Importing Warps this
+  combinedList.push( {  // @TODO: Find out why Importing Warps this
     donor: "Donor" ,
     sample: "Sample",
     dataset: "Dataset", 
     upload: "Data Upload",
     publication: "Publication",
-    collection: "Collection"});
+    collection: "Collection"} );
 
   // NEXT: Sample Categories
   combinedList.push(SAMPLE_CATEGORIES);
@@ -329,17 +337,17 @@ export function combineTypeOptionsComplete () {
   try {
     organList.forEach((value, key) => {
       organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key; // Gives it that Indent
-    });
+    } );
     combinedList.push(organs.sort());
-    console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList );
+    console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList);
     return combinedList;
-  } catch (error) {
+  } catch (error){
     console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
     var errStringMSG = "";
     typeof error.type === "string"
       ? (errStringMSG = "Error on Organ Assembly")
       : (errStringMSG = error);
-    console.debug('%c◉ ERROR  ', 'color:#ff005d', error);
+    console.debug('%c◉ ERROR  ', 'color:#ff005d', error,errStringMSG);
   }
 };
 
@@ -348,23 +356,23 @@ export function handleSortOrgans(organList){
   let sortedDataProp = {};
   let sortedDataArray = [];
   var sortedMap = new Map();
-  for (let key in organList) {
+  for (let key in organList){
     let value = organList[key];
     sortedDataProp[value] = key;
     sortedDataArray.push(value);
   }
   sortedDataArray = sortedDataArray.sort();
-  for (const [index, element] of sortedDataArray.entries()) {
+  for (const [index, element] of sortedDataArray.entries()){
     sortedMap.set(element, sortedDataProp[element]);
   }
   return sortedMap;
 };
 
-export function GroupSelector({ formValues, handleInputChange, memoizedUserGroupSelectMenuPatch, uuid }) {
+export function GroupSelector( {formValues, handleInputChange, memoizedUserGroupSelectMenuPatch, uuid} ){
   if (uuid) return null;
   return (
     <Box className="my-3">
-      <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+      <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
         Group
       </InputLabel>
       <NativeSelect
@@ -383,4 +391,156 @@ export function GroupSelector({ formValues, handleInputChange, memoizedUserGroup
       </NativeSelect>
     </Box>
   );
+}
+
+export function FeedbackDialog( { 
+  showBulkMessage, 
+  setShowBulkMessage, 
+  bulkMessage,
+  title,
+  summary,
+  color,
+  icon
+} ){
+  let messageColor = color ? color : "#d32f2f";
+  let altColorLight = LightenHex(messageColor, 20);
+  let altColorDark = DarkenHex(messageColor, 20);
+  let defaultSummary = "";
+  if (bulkMessage && bulkMessage.length > 0){
+    defaultSummary = "There were some problems with your selection. Please review the following messages and update your data as necessary (Acceptable results have already been attached to the table, and no further action is needed for them):";
+  } else{
+    defaultSummary = "There are no problems currently known.";
+  }
+  
+  return (
+    <Dialog 
+      maxWidth="sm"
+      open={showBulkMessage} 
+      sx={{margin: "auto",border: `1px solid ${color}`}}
+      fullWidth={true}>
+      <DialogTitle sx={{
+        // background: color, 
+        background: `linear-gradient(180deg,${messageColor} 0%, ${altColorLight} 100%)`, 
+        borderBottom: `1px solid {messageColor}`, 
+        color: "white", 
+        padding: "2px 10px", 
+        marginBottom: "10px"}}> 
+        <FontAwesomeIcon icon={icon?icon:faCircleExclamation} sx={{marginRight: "10px"}} /> {title?title:"Bulk Selection Error"}
+      </DialogTitle>
+      <DialogContent > 
+        <Typography sx={{fontSize: "0.9rem", marginBottom: "10px"}}>
+          {summary?summary:defaultSummary}
+        </Typography >
+        {(bulkMessage && bulkMessage.length>0 && typeof bulkMessage ==="object") ? bulkMessage.map(([details, items], index) => (
+          <React.Fragment key={index}>
+            <Typography sx={{fontSize: "0.9rem", marginTop:"20px"}}>{details}</Typography>
+            <ul style={{margin: "10px 0px 20px 0px", padding: "20px", background:messageColor+"20", borderRadius: "5px"}}>
+              {Array.isArray(items) && items.map((item, i) => {
+                // Split at the first space before the parenthesis
+                const match = item.match(/^([^\s(]+)\s*(\(.*\))?$/);
+                return (
+                  <li key={i}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        width: "100%",
+                        borderBottom: "1px solid #444a6520"
+                      }}>
+                      <Typography component="span" ><FontAwesomeIcon icon={icon?icon:faCircleExclamation} color={altColorLight} sx={{marginRight: "5px", fontSize:"0.5rem"}}/> {match ? match[1] : item}</Typography>
+                      {match && match[2] && (
+                        <Typography component="span" sx={{marginLeft: "0.5em", fontSize: "0.8rem", color: altColorDark}}>
+                          {match[2] && match[2].includes("Invalid Type:") ? (
+                            <>Invalid Type: <strong>{match[2].match(/Invalid Type:\s*([^)]+)/)?.[1] || ""}</strong></>
+                          ) : (
+                            match[2]
+                          )}
+                        </Typography>
+                      )}
+                  </li>
+                );
+              } )}
+            </ul>
+          </React.Fragment>
+        )) : ""}
+      </DialogContent>
+      <DialogActions sx={{
+        background: "rgb(207, 211, 226)", 
+        padding: "6px 10px", 
+        display: "flex", 
+        borderTop: "1px solid #D32F2F40"
+        }}>
+        <Typography variant="caption" color={"#444a65"}>
+          <strong>Note: </strong>If you need to review this information again, clicking on the <FontAwesomeIcon sx={{padding: "1.2em"}} icon={icon?icon:faCircleExclamation}/> symbol beneith the table will re-launch this message
+        </Typography>
+        <Button
+          size="small"
+          sx={{
+            background: "white", 
+            color: "#444a65",
+            "&:hover": {
+              backgroundColor: "#444a65",
+              color: "white"
+            }
+          }}
+          onClick={() => setShowBulkMessage(false)}
+          variant="contained"
+          startIcon={<ClearIcon />}
+          color="primary">
+          Ok
+        </Button>
+      </DialogActions>
+		</Dialog>
+  )
+}
+
+// TODO: Move this into.... idk a Value/Calculation helper service/thing?
+export function HexToHsl(hex){
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+  const num = parseInt(hex, 16);
+  let r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if (max === min){ h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max){
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+      default: h = 0; break;
+    }
+    h /= 6;
+  }
+  return {h: h * 360, s: s * 100, l: l * 100};
+}
+export function HslToHex(h, s, l){
+  s /= 100; l /= 100;
+  let c = (1 - Math.abs(2 * l - 1)) * s;
+  let x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  let m = l - c / 2, r = 0, g = 0, b = 0;
+  if (0 <= h && h < 60){ r = c; g = x; b = 0; }
+  else if (60 <= h && h < 120){ r = x; g = c; b = 0; }
+  else if (120 <= h && h < 180){ r = 0; g = c; b = x; }
+  else if (180 <= h && h < 240){ r = 0; g = x; b = c; }
+  else if (240 <= h && h < 300){ r = x; g = 0; b = c; }
+  else if (300 <= h && h < 360){ r = c; g = 0; b = x; }
+  r = Math.round((r + m) * 255);
+  g = Math.round((g + m) * 255);
+  b = Math.round((b + m) * 255);
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
+    .toString(16).slice(1).toUpperCase();
+}
+export function LightenHex(hex, amount = 15){
+  let {h, s, l} = HexToHsl(hex);
+  l = Math.min(100, l + amount); // Increase lightness by 'amount'
+  return HslToHex(h, s, l);
+}
+export function DarkenHex(hex, amount = 15){
+  let {h, s, l} = HexToHsl(hex);
+  l = Math.max(0, l - amount); // Decrease lightness by 'amount', but not below 0
+  return HslToHex(h, s, l);
 }

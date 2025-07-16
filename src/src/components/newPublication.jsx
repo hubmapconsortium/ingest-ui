@@ -3,7 +3,6 @@ import {Typography} from "@mui/material";
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -21,17 +20,20 @@ import {useNavigate,useParams} from "react-router-dom";
 import {
 	entity_api_get_entity,
 	entity_api_get_globus_url,
-	entity_api_get_these_entities,
 	entity_api_update_entity
 } from "../service/entity_api";
-import {ingest_api_allowable_edit_states,ingest_api_create_publication,ingest_api_dataset_submit,ingest_api_notify_slack} from "../service/ingest_api";
+import {
+  ingest_api_allowable_edit_states,
+  ingest_api_create_publication,
+  ingest_api_dataset_submit,
+  ingest_api_notify_slack} from "../service/ingest_api";
+import {search_api_es_query_ids} from "../service/search_api";
 import {humanize} from "../utils/string_helper";
 import {
 	validateProtocolIODOI,
 	validateRequired,
 	validateSingleProtocolIODOI
 } from "../utils/validators";
-
 import {BulkSelector} from "./ui/bulkSelector";
 import {FormHeader,UserGroupSelectMenuPatch} from "./ui/formParts";
 
@@ -45,6 +47,9 @@ export const PublicationForm = (props) => {
 
   let [bulkError, setBulkError] = useState(false);
   let [bulkWarning, setBulkWarning] = useState(false);
+  let [showBulkError, setShowBulkError] = useState(false);
+  let [showBulkWarning, setShowBulkWarning] = useState(false);
+
   let [showSearchDialog, setShowSearchDialog] = useState(false);
   let [sourceBulkStatus, setSourceBulkStatus] = useState("idle");
   let [showHIDList, setShowHIDList] = useState(false);
@@ -55,18 +60,18 @@ export const PublicationForm = (props) => {
   let [sourcesData, setSourcesData] = useState([]);
   let [sourceTableError, setSourceTableError] = useState(false);
 
-  let[permissions,setPermissions] = useState({ 
+  let[permissions,setPermissions] = useState( { 
     has_admin_priv: false,
     has_publish_priv: false,
     has_submit_priv: false,
     has_write_priv: false
-  });
-  let [buttonLoading, setButtonLoading] = useState({
+  } );
+  let [buttonLoading, setButtonLoading] = useState( {
     process: false,
     save: false,
     submit: false,
-  })
-  var[formValues, setFormValues] = useState({
+  } )
+  var[formValues, setFormValues] = useState( {
     title: "",
     publication_venue: "", 
     publication_date: "", 
@@ -79,8 +84,8 @@ export const PublicationForm = (props) => {
     pages_or_article_num: "", 
     description: "",
     direct_ancestor_uuids: [],
-  });
-  let[formErrors, setFormErrors] = useState({...formValues}); // Null out the unused vs ""
+  } );
+  let[formErrors, setFormErrors] = useState( {...formValues} ); // Null out the unused vs ""
   const formFields = React.useMemo(() => [
     { 
       id: "title",
@@ -181,7 +186,7 @@ export const PublicationForm = (props) => {
               const entityData = response.results;
               setEntityData(entityData);
               console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
-              setFormValues({
+              setFormValues( {
                 title: entityData.title || "",
                 publication_venue: entityData.publication_venue || "",
                 publication_date: entityData.publication_date || "",
@@ -194,57 +199,57 @@ export const PublicationForm = (props) => {
                 pages_or_article_num: entityData.pages_or_article_num || "",
                 description: entityData.description || "",
                 direct_ancestor_uuids: entityData.direct_ancestors.map(obj => obj.uuid) || [],
-              });
+              } );
               // publication_status_tracker = entityData.publication_status ? toTitleCase(entityData.publication_status) : "False";
               setSourcesData(entityData.direct_ancestors || []);
 
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
                   if(entityData.data_access_level === "public"){
-                    setPermissions({
+                    setPermissions( {
                       has_write_priv: false,
-                    });
+                    } );
                   }
                   setPermissions(response.results);
-                })
+                } )
                 .catch((error) => {
                   console.error("ingest_api_allowable_edit_states ERROR", error);
                   setPageErrors(error);
-                });
+                } );
             }
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
           }
-        })
+        } )
         .catch((error) => {
           console.debug("entity_api_get_entity ERROR", error);
           setPageErrors(error);
-        });
+        } );
     }else{
-      setPermissions({
+      setPermissions( {
         has_write_priv: true,
-      });
+      } );
     }
     setLoading(false);
   }, [uuid]);
 
   const handleInputChange = (e) => {
 		console.log('%c◉ handleInputChange ', 'color:#00ff7b', e);
-    const { id, value } = e.target;
+    const {id, value} = e.target;
 
 		if(e.target.type === "radio"){
       console.log(e.target.checked);
-      setFormValues((prevValues) => ({
+      setFormValues((prevValues) => ( {
         ...prevValues,
         publication_status: value,
-      }));
+      } ));
 
     }else{
       setFormValues(prev => {
 				if (prev[id] === value) return prev;
-				return { ...prev, [id]: value };
-			});
+				return {...prev, [id]: value};
+			} );
     }
     if(id === "dataset_uuids_string"){
       console.debug('%c◉  dataset_uuids_string', 'color:#00ff7b', value);
@@ -254,23 +259,23 @@ export const PublicationForm = (props) => {
   }
 
 	const validateDOI = (protocolDOI) => {
-		if (!validateProtocolIODOI(protocolDOI)) {
-			setFormErrors((prevValues) => ({
+		if (!validateProtocolIODOI(protocolDOI)){
+			setFormErrors((prevValues) => ( {
 				...prevValues,
 					'protocol_url': "Please enter a valid protocols.io URL"
-				}));
+				} ));
 			return 1
-		} else if (!validateSingleProtocolIODOI(protocolDOI)) {
-			setFormErrors((prevValues) => ({
+		} else if (!validateSingleProtocolIODOI(protocolDOI)){
+			setFormErrors((prevValues) => ( {
 				...prevValues,
 					'protocol_url': "Please enter only one valid protocols.io URL"
-				}));
+				} ));
 			return 1
 		}else{
-			setFormErrors((prevValues) => ({
+			setFormErrors((prevValues) => ( {
 				...prevValues,
 					'protocol_url': ""
-				}));
+				} ));
 			return 0
 		}
 	}
@@ -292,64 +297,131 @@ export const PublicationForm = (props) => {
           e_messages.push(fieldName+" is a required field");
         }
         setSourceTableError(true)
-        setFormErrors((prevValues) => ({
+        setFormErrors((prevValues) => ( {
           ...prevValues,
           [field]: " Required",
-        }));
+        } ));
         errors++; 
         console.debug("%c◉ Required Field Error ", "color:#00ff7b", field, formValues[field]);
       }else{
-        setFormErrors((prevValues) => ({
+        setFormErrors((prevValues) => ( {
           ...prevValues,
           [field]: "",
-        }));
+        } ));
       }
     }
 
-    function validatePositiveIntegerField(fieldName, label) {
-      if (formValues[fieldName] && formValues[fieldName].length > 0) {
-        if (isNaN(formValues[fieldName]) || parseInt(formValues[fieldName]) < 0) {
+    function validatePositiveIntegerField(fieldName, label){
+      if (formValues[fieldName] && formValues[fieldName].length > 0){
+        if (isNaN(formValues[fieldName]) || parseInt(formValues[fieldName]) < 0){
           e_messages.push(`${label} must be a positive integer`);
-          setFormErrors((prevValues) => ({
+          setFormErrors((prevValues) => ( {
             ...prevValues,
             [fieldName]: " Must be a positive integer",
-          }));
+          } ));
           errors++;
         } else {
-          setFormErrors((prevValues) => ({
+          setFormErrors((prevValues) => ( {
             ...prevValues,
             [fieldName]: "",
-          }));
+          } ));
         }
       }
     }
     validatePositiveIntegerField('issue', 'Issue');
     validatePositiveIntegerField('volume', 'Volume');
 
-    console.log(formValues['direct_ancestor_uuids'],sourcesData )
+    console.log(formValues['direct_ancestor_uuids'],sourcesData)
 
     if(!sourcesData || sourcesData.length <= 0){
       e_messages.push("Please select at least one Source");
       errors++; 
-      setFormErrors((prevValues) => ({
+      setFormErrors((prevValues) => ( {
         ...prevValues,
         ["direct_ancestor_uuids"]: "Required",
-      }));
+      } ));
       setSourceTableError(true);
     }else if(sourcesData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0){
       console.log("source table has data, but no uuids, so we'll sync back to formVals");
-      setFormValues((prevValues) => ({
+      setFormValues((prevValues) => ( {
         ...prevValues,
         'direct_ancestor_uuids': sourcesData.map(obj => obj.uuid),
-      }));
+      } ));
     }else{
       setSourceTableError(false);
     }
     // Formatting Validation
     errors += validateDOI(formValues['protocol_url']); 
-    console.debug('%c◉ ERROR COUNTER: ', 'color:#00ff7b',errors );
+    console.debug('%c◉ ERROR COUNTER: ', 'color:#00ff7b',errors);
     setValErrorMessages(errors>0?e_messages:null);
     return errors === 0;
+  }
+
+  const preValidateSources = (results,cleanList) => {
+    console.debug('%c◉ preValidateSources ', 'color:#00ff7b', cleanList, results);
+
+    // Clean up the old
+    setBulkError([]);
+    setBulkWarning([]);
+    setShowBulkError(false)
+    setShowBulkWarning(false)
+
+    // Prep the new
+    let errorArray = [];
+    let warnArray = [];
+    let goodArray = [];
+    let typeArray = [];
+
+    // The Search wont return dupes, so we need to check if the original list has 
+    // both the uuid or hubmap_id of the same entity in the results
+    const entitiesWithBoth = results.filter(
+      entity =>
+        cleanList.includes(entity.uuid) && cleanList.includes(entity.hubmap_id)
+    );
+    console.debug('%c◉ entitiesWithBoth: ', 'color:#00ff7b', entitiesWithBoth? entitiesWithBoth : "None");
+    if (entitiesWithBoth.length > 0){
+      let entList = entitiesWithBoth.map(entity => `${entity.hubmap_id} (${entity.uuid})`)
+      warnArray.push([`The following ${entitiesWithBoth.length} ID${entitiesWithBoth.length>1?'s':''} ${entitiesWithBoth.length>1?'have':'has'} both UUID and Hubmap ID provided:`,entList])
+    }
+
+    // Checks whatever values were missed from those provided
+    const missingIds = cleanList
+      .filter(id =>!results
+        .some(entity => entity.uuid === id || entity.hubmap_id === id)
+    );
+    console.debug('%c◉ missingIds: ', 'color:#00ff7b', missingIds? missingIds : "None");
+    if (missingIds.length > 0){
+      errorArray.push([`The following ${missingIds.length} ID${missingIds.length>1?'s':''} ${entitiesWithBoth.length>1?'were':'was'} not Included from the original set, and there is no Rejection message available. Please review, and make sure the value is properly formatted:`,missingIds]);
+    }
+    // Check against type/filter requirements
+    for(let entity of results){
+      if (entity.entity_type !== "Dataset"){
+        typeArray.push(`${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`);
+      }else{
+        goodArray.push(entity);
+      } 
+    }
+    console.debug('%c◉ typeArray: ', 'color:#00ff7b', typeArray? typeArray : "None");
+    if(typeArray.length > 0){
+      errorArray.push([`The following ${typeArray.length} ID${typeArray.length>1?'s':''} ${typeArray.length>1?'are':'is'} of the wrong Type:`, typeArray]);
+    }
+
+    // prepare and trigger launch of the warning/error feedback
+    console.debug('%c◉ errorArray: ', 'color:#00ff7b', errorArray? errorArray : "None");
+    if (errorArray.length > 0){
+      setBulkError(errorArray);
+      setShowBulkError(true)
+      console.warn("Bulk Error: ", errorArray);
+    }
+    if(warnArray.length > 0){
+      setBulkWarning(warnArray);
+      setShowBulkWarning(true)
+      console.warn("Bulk Warning: ", warnArray);
+    }
+
+    // Return the ones that are good
+    console.debug('%c◉ errorArray: ', 'color:#00ff7b', goodArray? goodArray : "None");
+    return goodArray;
   }
 
   const handleInputUUIDs = (e) => {
@@ -365,10 +437,10 @@ export const PublicationForm = (props) => {
       setFormErrors()
       setShowHIDList(false);
       setSourceBulkStatus("loading");
-      setFormErrors((prevValues) => ({
+      setFormErrors((prevValues) => ( {
         ...prevValues,
         'direct_ancestor_uuids': ""
-      }));
+      } ));
       
       // Ok, we want to Save what's Stored for data in the Table
       let cleanList = Array.from(new Set(
@@ -378,33 +450,52 @@ export const PublicationForm = (props) => {
         .filter(s => s.length > 0)
       ));
 
-      entity_api_get_these_entities(cleanList)
-        .then((response) => {
-          console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
-          let entities = response.results
-          let entityDetails = entities.map(obj => obj.results)
-          let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
-          let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";  
-          setBulkError(errors ? errors : "");
-          setBulkWarning(response.message ? response.message : "");
-          setSelectedHIDs(entityHIDs);
-          setSelectedString(entityHIDs.join(", "));
-          setShowHIDList(false);
-          setSourceBulkStatus("complete");
+      // If We just Cleared out the whole thing, dump the whole table
+      //  & errors/warnings
+      if(selected_string.length<=0){
+        setSourcesData([])
+        setSelectedHIDs([]);
+        setSelectedString("");
+        setBulkError([]);
+        setBulkWarning([]);
+        setSourceBulkStatus("complete");
+        setFormValues((prevValues) => ( { // Form Field Data
+          ...prevValues,
+          'direct_ancestor_uuids': null,
+        } ));
 
-          setSourcesData(entities.map(obj => obj.results)); // Table Data
-          setFormValues((prevValues) => ({ // FOrm Data
-            ...prevValues,
-            'direct_ancestor_uuids': entityDetails.map(obj => obj.uuid),
-          }));
-          console.debug('%c◉ entityDetails.map(obj => obj.uuid) ', 'color:#00ff7b', entityDetails.map(obj => obj.uuid));
+      }else{
+        let cols=["hubmap_id","uuid","entity_type","subtype","group_name","status","dataset_type","display_subtype"];
+        search_api_es_query_ids(cleanList,['datasets'],cols) 
+          .then((response) => {
+            console.debug('%c◉ response ', 'color:#00ff7b', response);
+            if(response.status >= 300){
+              console.error("search_api_es_query_ids ERROR", response);
+              setPageErrors(response);
+              setSourceBulkStatus("error");
+              return;
+            }else if(response.results.length <= 0){
+              setBulkError("No Datasets Found for the provided IDs");
+            }else{
+              let validatedSources = preValidateSources(response.results,cleanList);
+              setSourcesData(validatedSources)
+              let entityHIDs = validatedSources.map(obj => obj.hubmap_id)
+              setSelectedHIDs(entityHIDs);
+              setSelectedString(entityHIDs.join(", "));
+              setShowHIDList(false);
+              setSourceBulkStatus("complete");
+              setFormValues((prevValues) => ( { // Form Field Data
+                ...prevValues,
+                'direct_ancestor_uuids': (validatedSources.map(obj => obj.uuid)),
+              } ));
+            }
+          } )
+          .catch((error) => {
+            console.debug('%c◉ error ', 'color:#00ff7b', error);
+          } )
+      
+        }
 
-        })
-        .catch((error) => {
-          console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-          setPageErrors(error);
-          props.reportError(error);
-        });
     }
   }
 
@@ -413,17 +504,17 @@ export const PublicationForm = (props) => {
     let newUUIDs = formValues['direct_ancestor_uuids'].filter((uuid) => uuid !== row_uuid);
     setSelectedHIDs((prev) => prev.filter((id) => id !== hubmap_id));
     setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hubmap_id));
-    setFormValues((prev) => ({
+    setFormValues((prev) => ( {
       ...prev,
       'direct_ancestor_uuids': newUUIDs
-    }));
+    } ));
     setSelectedString((prev) => {
       const filtered = prev
         .split(",")
         .map((s) => s.trim())
         .filter((id) => id && id !== hubmap_id);
       return filtered.join(", ");
-    });
+    } );
 
   };
 
@@ -452,49 +543,49 @@ export const PublicationForm = (props) => {
 
       if(uuid){ // We're in Edit Mode
         let target = e.target.name;
-        console.debug('%c◉ VALPASS ', 'color:#00ff7b', );
-        setButtonLoading((prev) => ({
+        console.debug('%c◉ VALPASS ', 'color:#00ff7b',);
+        setButtonLoading((prev) => ( {
           ...prev,
           [target]: true,
-        }));
+        } ));
         console.log("buttonLoading",buttonLoading,target, buttonLoading[target]);
         if(e.target.name === "process"){ // Process
           ingest_api_dataset_submit(uuid, JSON.stringify(cleanForm))
             .then((response) => {
-              if (response.status < 300) {
+              if (response.status < 300){
                 props.onUpdated(response.results);
               } else {
                 setPageErrors(response);
-                setButtonLoading((prev) => ({
+                setButtonLoading((prev) => ( {
                   ...prev,
                   process: false,
-                }));
+                } ));
               }
-          })
+          } )
           .catch((error) => {
             props.reportError(error);
             setPageErrors(error);
-          });
+          } );
         }else if(e.target.name === "submit"){ // Submit
           entity_api_update_entity(uuid, JSON.stringify(cleanForm))
             .then((response) => {
-                if (response.status < 300 ) {
+                if (response.status < 300){
                 var ingestURL= process.env.REACT_APP_URL+"/publication/"+uuid
                 var slackMessage = {"message": "Publication has been submitted ("+ingestURL+")"}
                 ingest_api_notify_slack(slackMessage)
                   .then(() => {
-                    if (response.status < 300) {
+                    if (response.status < 300){
                         props.onUpdated(response.results);
                     } else {
                       wrapUp(response)
                       props.reportError(response);
                     }
-                  })
+                  } )
               } else { 
                 wrapUp(response)
                 setPageErrors(response);
               }
-          })
+          } )
         }else if(e.target.name === "save"){ // Save
           entity_api_update_entity(uuid,JSON.stringify(cleanForm))
             .then((response) => {
@@ -503,10 +594,10 @@ export const PublicationForm = (props) => {
               }else{
                 wrapUp(response)
               }
-            })
+            } )
             .catch((error) => {
               wrapUp(error)
-            });
+            } );
         }
       }else{ // We're in Create mode
         // They might not have changed the Group Selector, so lets check for the value
@@ -521,33 +612,33 @@ export const PublicationForm = (props) => {
                 .then((res) => {
                   let fullResult = {...response.results, globus_path: res.results};
                   props.onCreated(fullResult);
-                })
+                } )
             }else{
               wrapUp(response.error ? response.error : response)
             }
-          })
+          } )
           .catch((error) => {
             wrapUp(error)
             setPageErrors(error);
-          });
+          } );
       }
     }else{
       console.debug("%c◉ Invalid ", "color:#00ff7b");
-      setButtonLoading(() => ({
+      setButtonLoading(() => ( {
         process: false,
         save: false,
         submit: false,
-      }));
+      } ));
     }
   }
 
   const wrapUp = (error) => {
     setPageErrors(error.error ? error.error : error);
-    setButtonLoading(() => ({
+    setButtonLoading(() => ( {
       process: false,
       save: false,
       submit: false,
-    }));
+    } ));
   }
 
   const buttonEngine = () => {
@@ -611,22 +702,22 @@ export const PublicationForm = (props) => {
   const handleSelectClick = (event) => {
     setSourceTableError(false)
     console.debug('%c◉ !selected_HIDs.includes(event.row.hubmap_id ', 'color:#00ff7b', !selected_HIDs.includes(event.row.hubmap_id));
-    if (!selected_HIDs.includes(event.row.hubmap_id)) {
+    if (!selected_HIDs.includes(event.row.hubmap_id)){
       setSelectedUUIDs((rows) => [...rows, event.row.uuid]);
       setSelectedHIDs((ids) => [...ids, event.row.hubmap_id]);
       setSelectedString((str) => str + (str ? ", " : "") + event.row.hubmap_id);
       console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
       console.debug("selected_UUIDs", selected_UUIDs);
       setSourcesData((rows) => [...rows, event.row]);
-      setFormValues((prevValues) => ({
+      setFormValues((prevValues) => ( {
         ...prevValues,
         'direct_ancestor_uuids': (rows) => [...rows, event.row.uuid],
-      }))
+      } ))
       
-      setFormErrors((prevValues) => ({ //Clear Errors
+      setFormErrors((prevValues) => ( { //Clear Errors
         ...prevValues,
         'direct_ancestor_uuids': "",
-      }));
+      } ));
       setShowSearchDialog(false); 
     } else {
       // maybe alert them theyre selecting one they already picked?
@@ -637,10 +728,10 @@ export const PublicationForm = (props) => {
     return (
       <>
         {formFields.map((field,index) => {
-          if (["text", "date"].includes(field.type)) {
+          if (["text", "date"].includes(field.type)){
             return (
               <TextField
-                InputLabelProps={{ shrink: true }}
+                InputLabelProps={{shrink: true}}
                 key={field.id+"_"+index}
                 required={field.required}
                 type={field.type}
@@ -665,7 +756,7 @@ export const PublicationForm = (props) => {
                 className={"my-3 "+(formErrors[field.id] && formErrors[field.id].length > 0 ? "error" : "")}/>
             );
           }
-          if (field.type === "radio") {
+          if (field.type === "radio"){
             return (
               <FormControl
                 id={field.id}
@@ -699,13 +790,12 @@ export const PublicationForm = (props) => {
               </FormControl>
             );
           }
-          // Fallback: Render a div for unknown field types
           return (
             <div key={field.id} className="my-3">
               {field.label}: {field.value}
             </div>
           );
-        })}
+        } )}
       </>
     );
   }
@@ -715,7 +805,7 @@ export const PublicationForm = (props) => {
 	);
 
   // MAIN RENDER
-  if(isLoading ||((!entityData || !formValues) && uuid) ){
+  if(isLoading ||((!entityData || !formValues) && uuid)){
     return(<LinearProgress />);
   }else{
     return(<div className={formErrors}>
@@ -724,14 +814,16 @@ export const PublicationForm = (props) => {
       </Grid>
       <form onSubmit={(e) => handleSubmit(e)}>
         <BulkSelector
-          showSearchDialog={showSearchDialog}
+          dialogTitle="Associated Dataset IDs"
+          dialogSubtitle="Datasets that are associated with this Publication "
           setShowSearchDialog={setShowSearchDialog}
+          showSearchDialog={showSearchDialog}
+          bulkError={bulkError} 
+          setBulkError={setBulkError } 
+          bulkWarning={bulkWarning } 
+          setBulkWarning={setBulkWarning } 
           sourceBulkStatus={sourceBulkStatus}
           setSourceBulkStatus={setSourceBulkStatus}
-          bulkError={bulkError}
-          setBulkError={setBulkError}
-          bulkWarning={bulkWarning}
-          setBulkWarning={setBulkWarning}
           showHIDList={showHIDList}
           setShowHIDList={setShowHIDList}
           selected_HIDs={selected_HIDs}
@@ -741,13 +833,15 @@ export const PublicationForm = (props) => {
           sourcesData={sourcesData}
           setSourcesData={setSourcesData}
           permissions={permissions}
-          formErrors={formErrors}
-          handleInputUUIDs={handleInputUUIDs}
+          handleInputUUIDs={(e) => handleInputUUIDs(e)}
           handleSelectClick={handleSelectClick}
           handleInputChange={handleInputChange}
           sourceRemover={sourceRemover}
-          fieldError={sourceTableError}
-        />
+          sourceTableError={sourceTableError}
+          showBulkError={showBulkError}
+          setShowBulkError={setShowBulkError}
+          showBulkWarning={showBulkWarning}
+          setShowBulkWarning={setShowBulkWarning} />
         {memoizedForum} 
         {/* Group */}
         {/* Data is viewable in form header & cannot be changed, so only show on Creation */}

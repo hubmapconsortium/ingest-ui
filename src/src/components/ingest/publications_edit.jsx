@@ -40,7 +40,7 @@ import "../../App.css";
 import {
   entity_api_create_entity,
   entity_api_get_entity,
-  entity_api_get_these_entities,
+  // entity_api_get_these_entities,
   entity_api_get_globus_url,
   entity_api_update_entity,
 } from "../../service/entity_api";
@@ -635,29 +635,29 @@ class PublicationEdit extends Component {
     
       let cleanList = this.state.dataset_uuids_string.trim().split(", ")
 
-      entity_api_get_these_entities(cleanList)
-        .then((response) => {
-          console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
-          let entities = response.results
-          let entityDetails = entities.map(obj => obj.results)
-          let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
-          let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";
-          this.setState({
-            source_uuid_list: entityDetails,
-            dataset_uuids: entityHIDs,
-            sourceBulkWarning: response.message ? response.message : "",
-            sourceBulkError: errors? errors : "",
-          },() => {
-            this.setState({
-              hideUUIDList: true,
-              sourceBulkStatus: "complete"
-            })
-          })
-        })
-        .catch((error) => {
-          console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
-          this.props.reportError(error);
-        });
+      // entity_api_get_these_entities(cleanList)
+        // .then((response) => {
+        //   console.debug('%c◉ entity_api_get_these_entities response ', 'color:#00ff7b', response);
+        //   let entities = response.results
+        //   let entityDetails = entities.map(obj => obj.results)
+        //   let entityHIDs = entityDetails.map(obj => obj.hubmap_id)
+        //   let errors = (response.badList && response.badList.length > 0) ? response.badList.join(", ") : "";
+        //   this.setState({
+        //     source_uuid_list: entityDetails,
+        //     dataset_uuids: entityHIDs,
+        //     sourceBulkWarning: response.message ? response.message : "",
+        //     sourceBulkError: errors? errors : "",
+        //   },() => {
+        //     this.setState({
+        //       hideUUIDList: true,
+        //       sourceBulkStatus: "complete"
+        //     })
+        //   })
+        // })
+        // .catch((error) => {
+        //   console.debug('%c◉ ⚠️ CAUGHT ERROR ', 'background-color:#ff005d', error);
+        //   this.props.reportError(error);
+        // });
     }
   }
 
