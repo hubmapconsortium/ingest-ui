@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -53,6 +53,11 @@ export function BulkSelector( {
 	
 } ){
 
+	let [stringIDs, setStringIDs] = useState(selected_string ? selected_string : "")
+	if(stringIDs !== selected_string){
+		setStringIDs(selected_string);
+	}
+	
 	function renderBulkDialog(){
 		return (
 			<Dialog 
@@ -61,8 +66,8 @@ export function BulkSelector( {
 				fullWidth={true}>
 				<DialogTitle sx={{
 					background: "#444A65", 
-					borderBottom: "1px solid #444A65",
 					background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)", 
+					borderBottom: "1px solid #444A65",
 					color: "white", padding: "2px 10px", 
 					marginBottom: "10px"}}> 
 					<FontAwesomeIcon icon={faFolderTree} sx={{marginRight: "10px"}} /> Providing {dialogTitle}</DialogTitle>
@@ -80,7 +85,7 @@ export function BulkSelector( {
 							variant="standard"
 							size="small"
 							onChange={(event) => handleInputChange(event)}
-							value={selected_string}/>
+							value={stringIDs}/>
 						<FormHelperText id="component-helper-text" sx={{width: "100%", marginLeft: "0px"}}>
 							{"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated " }
 						</FormHelperText>

@@ -200,8 +200,12 @@ export const PublicationForm = (props) => {
                 description: entityData.description || "",
                 direct_ancestor_uuids: entityData.direct_ancestors.map(obj => obj.uuid) || [],
               } );
-              // publication_status_tracker = entityData.publication_status ? toTitleCase(entityData.publication_status) : "False";
-              setSourcesData(entityData.direct_ancestors || []);
+              
+              // Populate values for Source Management
+              let string = entityData.direct_ancestors.map(obj => obj.hubmap_id).join(", ");
+              setSelectedString(string);
+              setSelectedHIDs(entityData.direct_ancestors.map(obj => obj.hubmap_id));
+              setSourcesData(entityData.direct_ancestors)
 
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
