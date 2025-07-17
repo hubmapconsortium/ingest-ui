@@ -123,7 +123,7 @@ function topHeader(entityData){
 
 function infoPanels(entityData,permissions,globusURL){
   return (
-    <Grid item xs={6} className="" > {entityData.entity_type}
+    <Grid item xs={6} className="" >
       {globusURL&& (
         <Typography className="pb-1">
           <strong><big>
