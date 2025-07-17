@@ -49,7 +49,7 @@ export const PublicationForm = (props) => {
   let [bulkWarning, setBulkWarning] = useState(false);
   let [showBulkError, setShowBulkError] = useState(false);
   let [showBulkWarning, setShowBulkWarning] = useState(false);
-
+   
   let [showSearchDialog, setShowSearchDialog] = useState(false);
   let [sourceBulkStatus, setSourceBulkStatus] = useState("idle");
   let [showHIDList, setShowHIDList] = useState(false);
@@ -357,8 +357,7 @@ export const PublicationForm = (props) => {
     return errors === 0;
   }
 
-  const preValidateSources = (results,cleanList) => {
-    console.debug('%c◉ preValidateSources ', 'color:#00ff7b', cleanList, results);
+  const preValidateSources = (results) => {
 
     // Clean up the old
     setBulkError([]);
@@ -371,56 +370,67 @@ export const PublicationForm = (props) => {
     let warnArray = [];
     let goodArray = [];
     let typeArray = [];
+    let originalString = selected_string.split(",").map(s => s.trim());
 
-    // The Search wont return dupes, so we need to check if the original list has 
-    // both the uuid or hubmap_id of the same entity in the results
+
+    // Warnings
+    // Checking for duplicated strings in the provided list
+    let seen = new Set();
+    let duplicates = new Set();
+    for (let id of originalString) {
+      if (seen.has(id)) {
+        duplicates.add(id);
+      } else {
+        seen.add(id);
+      }
+    }
+    duplicates = Array.from(duplicates);
+
+    // Check for entities that were requested by both UUID and Hubmap ID
     const entitiesWithBoth = results.filter(
       entity =>
-        cleanList.includes(entity.uuid) && cleanList.includes(entity.hubmap_id)
-    );
-    console.debug('%c◉ entitiesWithBoth: ', 'color:#00ff7b', entitiesWithBoth? entitiesWithBoth : "None");
-    if (entitiesWithBoth.length > 0){
-      let entList = entitiesWithBoth.map(entity => `${entity.hubmap_id} (${entity.uuid})`)
-      warnArray.push([`The following ${entitiesWithBoth.length} ID${entitiesWithBoth.length>1?'s':''} ${entitiesWithBoth.length>1?'have':'has'} both UUID and Hubmap ID provided:`,entList])
-    }
+        originalString.includes(entity.uuid) && originalString.includes(entity.hubmap_id)
+    );    
+    let dupeEntList = entitiesWithBoth.map(entity => `${entity.hubmap_id} (${entity.uuid})`)
 
+    // Combine these results, if there are any then raise the warning
+    let combined = [...dupeEntList, ...duplicates];    
+    console.debug('%c◉ combined ', 'color:#FF00DD', combined, combined.length);
+    if(combined.length > 0 ){
+      warnArray.push([`The following  ${combined.length} Entit${combined.length>1?'ies':'y'} ${combined.length>1?'were':'are'} referenced more than one time:`,combined])
+      console.warn("Bulk Warning: ", warnArray);
+      setBulkWarning(warnArray);
+      console.debug('%c◉ warnArray ', 'color:#6200FF', warnArray);
+      setShowBulkWarning(true)
+    }
+    
+    // Errors
     // Checks whatever values were missed from those provided
-    const missingIds = cleanList
+    const missingIds = originalString
       .filter(id =>!results
         .some(entity => entity.uuid === id || entity.hubmap_id === id)
     );
-    console.debug('%c◉ missingIds: ', 'color:#00ff7b', missingIds? missingIds : "None");
     if (missingIds.length > 0){
-      errorArray.push([`The following ${missingIds.length} ID${missingIds.length>1?'s':''} ${entitiesWithBoth.length>1?'were':'was'} not Included from the original set, and there is no Rejection message available. Please review, and make sure the value is properly formatted:`,missingIds]);
+      errorArray.push([`The following Entit${missingIds.length>1?'ies':'y'} ${missingIds.length>1?'were':'was'} not found, either because ${missingIds.length>1?'they do':'it does'} not exist or ${missingIds.length>1?'their':'its'} ${missingIds.length>1?'IDs are':'ID is'} not formatted correctly:`,missingIds]);
     }
+
     // Check against type/filter requirements
     for(let entity of results){
       if (entity.entity_type !== "Dataset"){
         typeArray.push(`${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`);
-      }else{
-        goodArray.push(entity);
-      } 
+      }else{goodArray.push(entity);} 
     }
-    console.debug('%c◉ typeArray: ', 'color:#00ff7b', typeArray? typeArray : "None");
     if(typeArray.length > 0){
       errorArray.push([`The following ${typeArray.length} ID${typeArray.length>1?'s':''} ${typeArray.length>1?'are':'is'} of the wrong Type:`, typeArray]);
     }
-
-    // prepare and trigger launch of the warning/error feedback
-    console.debug('%c◉ errorArray: ', 'color:#00ff7b', errorArray? errorArray : "None");
+    // Launch the Errors dialog if there are any errors
     if (errorArray.length > 0){
       setBulkError(errorArray);
       setShowBulkError(true)
       console.warn("Bulk Error: ", errorArray);
     }
-    if(warnArray.length > 0){
-      setBulkWarning(warnArray);
-      setShowBulkWarning(true)
-      console.warn("Bulk Warning: ", warnArray);
-    }
 
     // Return the ones that are good
-    console.debug('%c◉ errorArray: ', 'color:#00ff7b', goodArray? goodArray : "None");
     return goodArray;
   }
 
@@ -442,7 +452,6 @@ export const PublicationForm = (props) => {
         'direct_ancestor_uuids': ""
       } ));
       
-      // Ok, we want to Save what's Stored for data in the Table
       let cleanList = Array.from(new Set(
         selected_string
         .split(",")
@@ -857,8 +866,8 @@ export const PublicationForm = (props) => {
               fullWidth
               className="p-2"
               sx={{
-                BorderTopLeftRadius: "4px",
-                BorderTopRightRadius: "4px",
+                borderTopLeftRadius: "4px",
+                borderTopRightRadius: "4px",
               }}
               disabled={uuid?true:false}
               value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
