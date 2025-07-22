@@ -123,7 +123,7 @@ function topHeader(entityData){
 
 function infoPanels(entityData,permissions,globusURL){
   return (
-    <Grid item xs={6} className="" > {entityData.entity_type}
+    <Grid item xs={6} className="" >
       {globusURL&& (
         <Typography className="pb-1">
           <strong><big>
@@ -407,7 +407,7 @@ export function FeedbackDialog( {
   let altColorDark = DarkenHex(messageColor, 20);
   let defaultSummary = "";
   if (bulkMessage && bulkMessage.length > 0){
-    defaultSummary = "There were some problems with your selection. Please review the following messages and update your data as necessary (Acceptable results have already been attached to the table, and no further action is needed for them):";
+    // defaultSummary = "There were some problems with your selection. Please review the following messages and update your data as necessary (Acceptable results have already been attached to the table, and no further action is needed for them):";
   } else{
     defaultSummary = "There are no problems currently known.";
   }
@@ -416,25 +416,25 @@ export function FeedbackDialog( {
     <Dialog 
       maxWidth="sm"
       open={showBulkMessage} 
-      sx={{margin: "auto",border: `1px solid ${color}`}}
+      sx={{margin: "auto", marginBottom: "0px"}}
       fullWidth={true}>
       <DialogTitle sx={{
-        // background: color, 
         background: `linear-gradient(180deg,${messageColor} 0%, ${altColorLight} 100%)`, 
-        borderBottom: `1px solid {messageColor}`, 
+        border: `1px solid ${messageColor}`, 
         color: "white", 
-        padding: "2px 10px", 
-        marginBottom: "10px"}}> 
+        padding: "2px 10px 0px 10px",
+        borderTopLeftRadius: "4px",
+        borderTopRightRadius: "4px",}}> 
         <FontAwesomeIcon icon={icon?icon:faCircleExclamation} sx={{marginRight: "10px"}} /> {title?title:"Bulk Selection Error"}
       </DialogTitle>
-      <DialogContent > 
+      <DialogContent sx={{border: `1px solid ${messageColor}`}}> 
         <Typography sx={{fontSize: "0.9rem", marginBottom: "10px"}}>
           {summary?summary:defaultSummary}
         </Typography >
         {(bulkMessage && bulkMessage.length>0 && typeof bulkMessage ==="object") ? bulkMessage.map(([details, items], index) => (
           <React.Fragment key={index}>
-            <Typography sx={{fontSize: "0.9rem", marginTop:"20px"}}>{details}</Typography>
-            <ul style={{margin: "10px 0px 20px 0px", padding: "20px", background:messageColor+"20", borderRadius: "5px"}}>
+            <Typography sx={{fontSize: "0.9rem", marginTop: "20px"}}>{details}</Typography>
+            <ul style={{margin: "10px 0px 20px 0px", padding: "20px", background: messageColor+"20", borderRadius: "5px", border: `1px solid ${messageColor+20}`}}>
               {Array.isArray(items) && items.map((item, i) => {
                 // Split at the first space before the parenthesis
                 const match = item.match(/^([^\s(]+)\s*(\(.*\))?$/);
@@ -447,7 +447,14 @@ export function FeedbackDialog( {
                         width: "100%",
                         borderBottom: "1px solid #444a6520"
                       }}>
-                      <Typography component="span" ><FontAwesomeIcon icon={icon?icon:faCircleExclamation} color={altColorLight} sx={{marginRight: "5px", fontSize:"0.5rem"}}/> {match ? match[1] : item}</Typography>
+                      <Typography component="span" >
+                        <FontAwesomeIcon 
+                          className='messageIcon'
+                          icon={icon?icon:faCircleExclamation} 
+                          color={altColorLight} 
+                          style={{marginRight: "10px"}}/> 
+                        {match ? match[1] : item}
+                      </Typography>
                       {match && match[2] && (
                         <Typography component="span" sx={{marginLeft: "0.5em", fontSize: "0.8rem", color: altColorDark}}>
                           {match[2] && match[2].includes("Invalid Type:") ? (
@@ -468,8 +475,11 @@ export function FeedbackDialog( {
         background: "rgb(207, 211, 226)", 
         padding: "6px 10px", 
         display: "flex", 
-        borderTop: "1px solid #D32F2F40"
-        }}>
+        // borderTop: "1px solid #D32F2F40"
+        border: `1px solid ${messageColor}`, 
+        borderTop:"none",
+        borderBottomLeftRadius: "4px",
+        borderBottomRightRadius: "4px"}}>
         <Typography variant="caption" color={"#444a65"}>
           <strong>Note: </strong>If you need to review this information again, clicking on the <FontAwesomeIcon sx={{padding: "1.2em"}} icon={icon?icon:faCircleExclamation}/> symbol beneith the table will re-launch this message
         </Typography>
