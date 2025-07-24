@@ -16,6 +16,10 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import React,{Component} from "react";
 import ReactTooltip from "react-tooltip";
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import Snackbar from '@mui/material/Snackbar';
+
 import '../../App.css';
 // import HIPPA from "../uuid/HIPPA.jsx";
 import HIPPA from "../ui/HIPPA.jsx";
@@ -147,6 +151,7 @@ class DatasetEdit extends Component {
       source_uuid_list:"",
       source_uuid:"",
     },
+    showValidModal:false,
   };
 
     
@@ -423,6 +428,10 @@ class DatasetEdit extends Component {
 
   showModal = () => {
     this.setState({ show:true });
+  };
+
+  toggleSnack = () => {
+    this.setState({ showValidModal: !this.state.showValidModal });
   };
 
   launchSubmitModal = () => {
@@ -743,8 +752,7 @@ class DatasetEdit extends Component {
           </TableBody>
         </Table>
         </TableContainer>
-        
-                 
+  
         {this.state.writeable && (this.props.editingDataset.creation_action !== "Multi-Assay Split" && this.props.editingDataset.creation_action !=="Central Process") && (
         <React.Fragment>
           <Box className="mt-2 w-100" width="100%"  display="flex">
@@ -755,15 +763,13 @@ class DatasetEdit extends Component {
                   type='button'
                   size="small"
                   className='btn btn-neutral'
-                  onClick={() => this.handleLookUpClick()} 
-                  >
+                  onClick={() => this.handleLookUpClick()} >
                   Add {this.state.source_uuids && this.state.source_uuids.length>=1 && (
                     "Another"
                     )} Source 
                   <FontAwesomeIcon
                     className='fa button-icon m-2'
-                    icon={faPlus}
-                  />
+                    icon={faPlus}/>
                 </Button>
               </Box>
 
@@ -835,9 +841,6 @@ class DatasetEdit extends Component {
   }
 
   handleButtonClick = (i, event) => {
-    if(event){
-    }
-
     this.setState({new_status:i,
       buttonState:{i:true}}, () => {
       this.handleSubmit(i);
@@ -1051,8 +1054,7 @@ class DatasetEdit extends Component {
                       submitting:false,   
                       submitLoader:false, 
                       submitErrorResponse:error.result.data,
-                      buttonSpinnerTarget:"", 
-});
+                      buttonSpinnerTarget:"",});
                   });
                 
                 }) 
@@ -1072,35 +1074,35 @@ class DatasetEdit extends Component {
               this.setState({submit_error:false}, () => {
                 // Dnt actually submit till we confrm in the modal.
               })
-                ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                  .then((response) => {
-                    if (response.status < 300) {
-                      this.props.onUpdated(response.results);
-                    } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
-                      var statusText = "";
-                      console.debug("err", response, response.error);
-                      if(response.err){
-                        statusText = response.err.response.status+" "+response.err.response.statusText;
-                      }else if(response.error){
-                        statusText = response.error.response.status+" "+response.error.response.statusText;
-                      }
-                      var submitErrorResponse="Uncaptured Error";
-                      if(response.err && response.err.response.data ){
-                        submitErrorResponse = response.err.response.data 
-                      }
-                      if(response.error && response.error.response.data ){
-                        submitErrorResponse = response.error.response.data 
-                      }
-                      this.setState({ 
-                        submit_error:true, 
-                        submitting:false,
-                        buttonSpinnerTarget:"", 
-                        submitErrorStatus:statusText,
-                        submitErrorResponse:submitErrorResponse ,
-                      });
+              ingest_api_dataset_submit(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                .then((response) => {
+                  if (response.status < 300) {
+                    this.props.onUpdated(response.results);
+                  } else { // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
+                    var statusText = "";
+                    console.debug("err", response, response.error);
+                    if(response.err){
+                      statusText = response.err.response.status+" "+response.err.response.statusText;
+                    }else if(response.error){
+                      statusText = response.error.response.status+" "+response.error.response.statusText;
                     }
-                })
-                .catch((error) => {
+                    var submitErrorResponse="Uncaptured Error";
+                    if(response.err && response.err.response.data ){
+                      submitErrorResponse = response.err.response.data 
+                    }
+                    if(response.error && response.error.response.data ){
+                      submitErrorResponse = response.error.response.data 
+                    }
+                    this.setState({ 
+                      submit_error:true, 
+                      submitting:false,
+                      buttonSpinnerTarget:"", 
+                      submitErrorStatus:statusText,
+                      submitErrorResponse:submitErrorResponse ,
+                    });
+                  }
+              })
+              .catch((error) => {
                     this.props.reportError(error);
                     this.setState({ 
                       submit_error:true, 
@@ -1112,8 +1114,8 @@ class DatasetEdit extends Component {
                     });
                  });
             } else { // just update
-                  entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-                    .then((response) => {
+                entity_api_update_entity(this.props.editingDataset.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+                  .then((response) => {
                         if (response.status < 300) {
                           this.setState({submit_error:false, 
                             submitting:false,});
@@ -1588,6 +1590,7 @@ class DatasetEdit extends Component {
     //     //   )
     // }
     // console.debug("CheckTwo",this.state.writeable === false && this.state.has_version_priv === false);
+    
     if (this.state.writeable === false ){            
       return (
         <div className="buttonWrapRight">
@@ -1598,6 +1601,8 @@ class DatasetEdit extends Component {
         </div>
       )
     } else {
+      // this.renderValidateButton();
+
       if (["NEW", "INVALID", "REOPENED", "ERROR", "SUBMITTED", "QA"].includes(this.state.status.toUpperCase())) {
         console.debug('%c◉ IN QA ', 'color:#00ff7b', );
         // We need to Check admin status stuff here, 
@@ -1611,7 +1616,17 @@ class DatasetEdit extends Component {
           <div className="buttonWrapRight">
               {saveCheck &&(
                 this.aButton(this.state.status.toLowerCase(), "Save")
-              )}      
+              )}   
+              {this.state.has_admin_priv && (
+                <Button
+                  type='button'
+                  name={"button-Val2"}
+                  variant="contained"
+                  disabled={this.state.submitting}
+                  onClick={() => this.setState({ showValidModal: true })}>
+                    Validate
+                </Button>
+              )}   
               {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
                 this.aButton("processing", "Process"))
               }
@@ -2316,6 +2331,24 @@ name, display_doi, doi
               )}
             </div>
             <div className="col-4"> 
+              <Snackbar
+                open={this.state.showValidModal}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center'
+                }}
+                action={
+                  <IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={() => this.toggleSnack()}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                }
+                autoHideDuration={6000}
+                onClose={() => this.toggleSnack()}
+                message="This feature is not yet implemented"/>
               {this.renderButtons()}
             </div>
           </div>

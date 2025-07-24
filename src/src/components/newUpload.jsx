@@ -43,6 +43,7 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from '@mui/material/FormHelperText';
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
+import Snackbar from '@mui/material/Snackbar';
 import Button from "@mui/material/Button";
 import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
 import {Typography} from "@mui/material";
@@ -94,7 +95,9 @@ export const UploadForm = (props) => {
   const defaultGroupUUID = userGroups[0].uuid;
   let saveStatuses = ["submitted", "valid", "invalid", "error", "new"]
   let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
+  let validateRestrictions = ["published", "processing"]
   let[validationError, setValidationError] = useState(null);
+  let[showValidModal, setShowValidModal] = useState(false);
   const{uuid} = useParams();
   dayjs.extend(isBetween);
   const [SWAT, setSWAT] = useState(false);
@@ -540,11 +543,37 @@ export const UploadForm = (props) => {
               Reorganize
             </LoadingButton>
           )}
+
+          {/* For Uploads not in Published or Processing status (If Upload status is Published or Upload status is Processing do not enable) */}
+
+          <Snackbar
+            open={showValidModal}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center'}}
+            action={
+              <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={() => setShowValidModal(false)}>
+                <CloseIcon fontSize="small" />
+              </IconButton>}
+            autoHideDuration={6000}
+            onClose={() => setShowValidModal(false)}
+            message="This feature is not yet implemented"/>
+          {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && !validateRestrictions.includes(entityData.status.toLowerCase())) && (
+            <LoadingButton disaled={isProcessing} loading={processingButton === "Validate2"} variant="contained" className="m-1" onClick={() => setShowValidModal(true)}>
+              Validate
+            </LoadingButton>
+          )}
           {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && validateStatuses.includes(entityData.status.toLowerCase())) && (
             <LoadingButton disaled={isProcessing} loading={processingButton === "Validate"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Validate")}>
               Validate
             </LoadingButton>
           )}
+
+
           {uuid && uuid.length > 0 && saveCheck() === true && (
             <LoadingButton disabled={!saveCheck} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Save")}>
               Save
