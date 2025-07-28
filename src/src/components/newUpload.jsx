@@ -567,12 +567,6 @@ export const UploadForm = (props) => {
               Validate
             </LoadingButton>
           )}
-          {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && validateStatuses.includes(entityData.status.toLowerCase())) && (
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Validate"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Validate")}>
-              Validate
-            </LoadingButton>
-          )}
-
 
           {uuid && uuid.length > 0 && saveCheck() === true && (
             <LoadingButton disabled={!saveCheck} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Save")}>
