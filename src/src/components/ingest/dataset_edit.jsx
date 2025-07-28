@@ -1618,14 +1618,16 @@ class DatasetEdit extends Component {
                 this.aButton(this.state.status.toLowerCase(), "Save")
               )}   
               {this.state.has_admin_priv && (
-                <Button
-                  type='button'
-                  name={"button-Val2"}
-                  variant="contained"
-                  disabled={this.state.submitting}
-                  onClick={() => this.setState({ showValidModal: true })}>
-                    Validate
-                </Button>
+                <div>
+                  <Button
+                    type='button'
+                    name={"button-Val2"}
+                    variant="contained"
+                    disabled={this.state.submitting}
+                    onClick={() => this.setState({ showValidModal: true })}>
+                      Validate
+                  </Button>
+                </div>
               )}   
               {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
                 this.aButton("processing", "Process"))
