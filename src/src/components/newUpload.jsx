@@ -90,9 +90,7 @@ export const UploadForm = (props) => {
   let[globusPath, setGlobusPath] = useState(null);
   let[datasetMenu, setDatasetMenu] = useState();
   let[expandVMessage, setExpandVMessage] = useState(false);
-  const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const allGroups = JSON.parse(localStorage.getItem("allGroups"));
-  const defaultGroupUUID = userGroups[0].uuid;
   let saveStatuses = ["submitted", "valid", "invalid", "error", "new"]
   let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
   let validateRestrictions = ["published", "processing"]
@@ -321,7 +319,7 @@ export const UploadForm = (props) => {
     setProcessingButton(target)
     if(validateForm()){
       let selectedGroup = document.getElementById("group_uuid");
-      let selectedGroupUUID = (!uuid && selectedGroup?.value) ? selectedGroup.value : defaultGroupUUID;
+      let selectedGroupUUID = (!uuid && selectedGroup?.value) ? selectedGroup.value : "";
       let cleanForm ={
         title: formValues.title,
         description: formValues.description,
@@ -882,7 +880,7 @@ export const UploadForm = (props) => {
                     onChange={(e) => handleInputChange(e)}
                     fullWidth
                     disabled={uuid?true:false}
-                    value={formValues.group_uuid ? formValues.group_uuid : defaultGroupUUID}>
+                    value={formValues.group_uuid ? formValues.group_uuid : ""}>
                     <option key={"0"} value={null}></option>
                     <UserGroupSelectMenu formValues={formValues} />
                   </NativeSelect>

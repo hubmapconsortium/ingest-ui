@@ -57,9 +57,7 @@ export const SampleForm = (props) => {
   let [ruiEnabled, setRuiEnabled] = React.useState(false);
   let [RUIJson, setRUIJson] = React.useState(false);
   let [RUIDetails, setRUIDetails] = React.useState([null,null]);
-  const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const userInfo = JSON.parse(localStorage.getItem("info"));
-  const defaultGroup = userGroups[0].uuid;
   let organ_types = JSON.parse(localStorage.getItem("organs"));
   let[permissions,setPermissions] = useState( { 
     has_admin_priv: false,
@@ -373,8 +371,10 @@ export const SampleForm = (props) => {
         // We're in Create mode
 
         // They might not have changed the Group Selector, so lets check for the value
+        // actually there will always be /A/ value, so no need to mess with grabbing a default group
         let selectedGroup = document.getElementById("group_uuid");
-        sampleFormData.group_uuid = selectedGroup?.value ? selectedGroup.value : defaultGroup;
+        sampleFormData.group_uuid = selectedGroup?.value ? selectedGroup.value : "";
+        // sampleFormData.group_uuid = selectedGroup?.value ? selectedGroup.value : defaultGroup;
         
         // We need to add the Category back to the Form being submitted 
         sampleFormData.sample_category = ((formValues.sample_category === "" && formValues.organ) ? "organ": formValues.sample_category)
@@ -875,7 +875,7 @@ export const SampleForm = (props) => {
                   BorderTopRightRadius: "4px",
                 }}
                 disabled={uuid?true:false}
-                value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
+                value={formValues.group_uuid ? formValues.group_uuid : ""}>
                 <UserGroupSelectMenu formValues={formValues} />
               </NativeSelect>
             </Box>

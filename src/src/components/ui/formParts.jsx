@@ -32,9 +32,10 @@ import HIPPA from "./HIPPA";
 
 export const FormHeader = (props) => {
   let entityData = props.entityData;
+  let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
-  document.title = `HuBMAP Ingest Portal | ${entityData.entity_type}: ${entityData.hubmap_id}`; //@TODO - somehow handle this detection in App
+  document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   return (
     <React.Fragment>
       {topHeader(entityData)}

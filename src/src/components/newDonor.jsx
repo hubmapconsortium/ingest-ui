@@ -48,8 +48,6 @@ export const DonorForm = (props) => {
     protocol_url: "",
     description: "",
   });
-  const userGroups = JSON.parse(localStorage.getItem("userGroups"));
-  const defaultGroup = userGroups[0].uuid;
   var[formValues, setFormValues] = useState({
     lab_donor_id: "",
     label: "",
@@ -324,7 +322,7 @@ export const DonorForm = (props) => {
                   BorderTopRightRadius: "4px",
                 }}
                 disabled={uuid?true:false}
-                value={formValues.group_uuid ? formValues.group_uuid : defaultGroup}>
+                value={formValues.group_uuid ? formValues.group_uuid : ""}>
                 <UserGroupSelectMenu formValues={formValues} />
               </NativeSelect>
             </Box>
