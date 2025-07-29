@@ -70,3 +70,4 @@ src/cypress.env.json
 
 .idea
 src/cypress.env.json
+.directory
