@@ -93,7 +93,7 @@ export const UploadForm = (props) => {
   const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   let saveStatuses = ["submitted", "valid", "invalid", "error", "new"]
   let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
-  let validateRestrictions = ["published", "processing"]
+  let validateRestrictions = ["reorganized", "processing"]
   let[validationError, setValidationError] = useState(null);
   let[showValidModal, setShowValidModal] = useState(false);
   const{uuid} = useParams();
