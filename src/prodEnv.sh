@@ -2,6 +2,8 @@
 
 declare -A test_vars dev_vars prod_vars
 
+# Note: You'll need at least both .env.test as well as .env.production
+
 echo "Fetching values from dotenv files..."
 parse_env_file() {
     local file="$1"
