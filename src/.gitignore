@@ -33,8 +33,8 @@ src/react-app/coverage
 thunder-tests/
 
 # env files
-src/.env.*
-src/.env
+# src/.env.*
+# src/.env
 
 # misc
 .DS_Store
