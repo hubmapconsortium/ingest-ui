@@ -93,7 +93,14 @@ class Result extends Component {
 
           <div className="col-sm-12 mt-2 mr-2 mb-2 text-center">
             {this.props.result !== undefined && this.props.result.entity.entity_type === "Donor" && (
-              <Tooltip placement="top-start" title={"Registering organs from a new Donor will return with the release of the new Sample form 🎉"}>
+              <Tooltip 
+              placement="bottom-start" 
+              title={
+                  <React.Fragment>
+                    <Typography variant="caption" color="inherit">Registering organs from a new Donor will return with the release of the new Sample form 🎉</Typography><br />
+                    <Typography variant="caption" color="inherit">To Register an organ choose "Sample" from the "INDIVIDUAL" menu and pick this Donor's ID as the "Source ID".</Typography>
+                  </React.Fragment>
+                }>
                 <span>
                   <Button
                     className="btn btn-success m-2"
