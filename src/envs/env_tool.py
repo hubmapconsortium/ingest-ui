@@ -3,7 +3,7 @@ import sys
 import re
 
 # Run (from first /src folder) As:
-# python ./envs/env_tool.py [Env File] [Target Directory (Will use ./build if not provided)]
+# python ./envs/env_tool.py <Env File> [Target Directory (Will use ./build if not provided)]
 # Example:
 # python ./envs/env_tool.py ./envs/example.env.test ./build
 
