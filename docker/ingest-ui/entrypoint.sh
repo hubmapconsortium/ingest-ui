@@ -26,6 +26,9 @@ chown -R hive:hive /var/run/nginx.pid
 chown -R hive:hive /var/cache/nginx
 chown -R hive:hive /var/log/nginx
 
+# Make sure the React generated build directory is writable
+chown -R hive:hive /usr/src/app/src/build
+
 # Lastly we use su-exec to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments
 # "$@" is a shell variable that means "all the arguments"
