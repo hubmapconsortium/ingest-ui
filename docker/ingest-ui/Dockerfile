@@ -39,6 +39,7 @@ RUN yum install -y yum-utils && \
     curl -fsSL https://rpm.nodesource.com/setup_20.x | bash - && \
     yum install -y nodejs && \
     npm install npm@latest -g && \
+    chmod +x start.sh && \
     yum clean all
     
 # Change to source code directory
