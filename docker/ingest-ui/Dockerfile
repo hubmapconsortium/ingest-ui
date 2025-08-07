@@ -59,4 +59,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-CMD ["/usr/src/app/start.sh"]
+# Change directory
+WORKDIR /usr/src/app
+
+CMD ["./start.sh"]
