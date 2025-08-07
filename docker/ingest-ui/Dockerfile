@@ -59,4 +59,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-CMD ["./start.sh"]
+CMD ["/usr/src/app/start.sh"]
