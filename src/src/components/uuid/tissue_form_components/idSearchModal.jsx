@@ -83,9 +83,9 @@ class IDSearchModal extends Component {
     //   params: params
     // };
 
-    // var specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search`;
+    // var specimen_url = `${process.env.REACT_APP_DATAINGEST_API_URL}/specimens/search`;
     // if (this.props.parent === "dataset") {
-    //   specimen_url = `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/search?include_datasets=true`;
+    //   specimen_url = `${process.env.REACT_APP_DATAINGEST_API_URL}/specimens/search?include_datasets=true`;
     // }
 
     // axios

@@ -58,7 +58,7 @@ class DataList extends Component {
 
     axios
       .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/userroles`,
+        `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/userroles`,
         config
       )
       .then((res) => {
@@ -79,7 +79,7 @@ class DataList extends Component {
 
     axios
       .get(
-        `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`,
+        `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`,
         config
       )
       .then((res) => {
