@@ -1,5 +1,5 @@
 # Parent image
-FROM hubmap/api-base-image:1.0.0
+FROM hubmap/api-base-image:1.1.0
 
 LABEL description="HuBMAP Ingest UI"
 
@@ -27,7 +27,7 @@ module_hotfixes=true\n'\
 # 4 - Remove the default nginx config file
 # 5 - Overwrite the nginx.conf with ours to run nginx as non-root
 # 6 - Use our nginx config file for ingest-ui
-# 7 - Install Node.js v18.x (includes npm) based on https://github.com/nodesource/distributions?tab=readme-ov-file#as-root-2
+# 7 - Install Node.js v20.x (includes npm)
 # 8 - Update npm to the latest version
 # 9 - Clean all yum cache
 RUN yum install -y yum-utils && \
@@ -44,9 +44,9 @@ RUN yum install -y yum-utils && \
 # Change to source code directory
 WORKDIR /usr/src/app/src
 
-# Install npm dependencies and generate static site
+# Install npm dependencies and generate static production bundle with our custom tags
 RUN npm install && \
-    npm run build
+    npm run build:tags
 
 # The EXPOSE instruction informs Docker that the container listens on the specified network ports at runtime. 
 # Here 80 for nginx to serve the react generated static site
@@ -58,4 +58,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["./start.sh"]

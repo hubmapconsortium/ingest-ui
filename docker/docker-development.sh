@@ -76,7 +76,7 @@ else
 
         echo 'Checks complete, all good :)'
     elif [ "$1" = "config" ]; then
-        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui config
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui config
     elif [ "$1" = "build" ]; then
         # Delete the copied source code dir if exists
         if [ -d "ingest-ui/src" ]; then
@@ -89,12 +89,12 @@ else
         # Also explicitly copy the .env file
         cp ../src/.env ingest-ui/src
 
-        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui build
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui build
     elif [ "$1" = "start" ]; then
-        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui up -d
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui up -d
     elif [ "$1" = "stop" ]; then
-        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui stop
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui stop
     elif [ "$1" = "down" ]; then
-        docker-compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui down
+        docker compose -f docker-compose.yml -f docker-compose.development.yml -p ingest-ui down
     fi
 fi

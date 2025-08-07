@@ -1,5 +1,3 @@
-version: "3.7"
-
 # Will use the hostname when talking between services on the same network
 services:
 
@@ -21,6 +19,8 @@ services:
     volumes:
       # Mount the logging to container
       - "../log:/usr/src/app/log"
+      # Mount the .env config to container
+      - "../src/.env:/usr/src/app/src/.env"
       # For configurable banner message
       - "../src/public/assets/liveBanner.js:/usr/src/app/src/build/assets/liveBanner.js"
     networks:
