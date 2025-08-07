@@ -34,9 +34,13 @@ def replace_env_tags_in_text(text, env_vars):
     return re.sub(r'%%([A-Z0-9_]+)%%', replacer, text)
 
 def process_files_in_dir(directory, env_vars):
-    """Replace tags in all files in the directory (recursively)."""
+    """Replace tags in all .js, .jsx, .css, and .html files in the directory (recursively)."""
+    allowed_exts = {'.js', '.jsx', '.css', '.html'}
     for root, dirs, files in os.walk(directory):
         for fname in files:
+            _, ext = os.path.splitext(fname)
+            if ext.lower() not in allowed_exts:
+                continue
             fpath = os.path.join(root, fname)
             try:
                 with open(fpath, 'r', encoding='utf-8') as f:
