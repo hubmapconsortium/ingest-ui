@@ -51,6 +51,7 @@ def process_files_in_dir(directory, env_vars):
                         f.write(new_content)
                     print(f"Updated: {fpath}")
             except Exception:
+                print(f"Env Engine Processing Error: {fpath}: {e}")
                 continue
 
 if __name__ == "__main__":
