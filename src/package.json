@@ -69,7 +69,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "envbuild": "env-cmd -f envs/env.tags react-scripts build",
+    "build:tags": "env-cmd -f envs/env.tags react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "cypress:open": "cypress open"
