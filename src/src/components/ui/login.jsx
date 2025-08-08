@@ -1,7 +1,7 @@
 import React from "react";
 
 const Login = (props) => {
-  const login_url = `${process.env.REACT_APP_BACKEND_URL}/login`;
+  const login_url = `${process.env.REACT_APP_DATAINGEST_API_URL}/login`;
   function cleanLogin(e){
     e.preventDefault();
     console.debug('%c◉ Purging storage... ', 'color:#00ff7b');
@@ -11,7 +11,7 @@ const Login = (props) => {
     localStorage.removeItem('allGroups');
     localStorage.removeItem('userGroups');
     console.debug('%c◉ Goodbye! 👋', 'color:#00ff7b');
-    window.location = `${process.env.REACT_APP_BACKEND_URL}/login`;
+    window.location = `${process.env.REACT_APP_DATAINGEST_API_URL}/login`;
   }
   return (
     <div className="alert alert-info" role="alert">
