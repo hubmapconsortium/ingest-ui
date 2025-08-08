@@ -268,7 +268,7 @@ class LabIDsModal extends Component {
         //let formData = this.createSampleList();
         // axios
         //   .put(
-        //     `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens`,
+        //     `${process.env.REACT_APP_DATAINGEST_API_URL}/specimens`,
         //     formData,
         //     config
         //   )

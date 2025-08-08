@@ -13,7 +13,7 @@ export function ingest_api_users_groups(auth) {
   console.debug('%c◉ Global: ', 'color:#00ff7b', globalToken);
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
-  return axios .get(`${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+  return axios .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`, options)
     .then(res => {
     const group_list = res.data.groups
             .filter(g => g.data_provider)
@@ -51,7 +51,7 @@ export function ingest_api_user_admin(auth) {
         "Content-Type":"application/json"}};
   return axios 
  .get(
-   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+   `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`, options)
  .then(res => {
 
     console.debug('%c◉ res ', 'color:#00ff7b', res);
@@ -105,7 +105,7 @@ export function ingest_api_all_user_groups(auth) {
 
   return axios 
  .get(
-   `${process.env.REACT_APP_METADATA_API_URL}/metadata/usergroups`, options)
+   `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`, options)
  .then(res => {
   const group_list = res.data.groups;
     return {status:res.status, results:group_list}
@@ -124,7 +124,7 @@ export function ingest_api_all_groups(auth) {
         "Content-Type":"application/json"}};
   return axios 
   .get(
-    `${process.env.REACT_APP_METADATA_API_URL}/metadata/data-provider-groups`, options)
+    `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/data-provider-groups`, options)
   .then(res => {
     const group_list = res.data.groups;
       return {status:res.status, results:group_list}
@@ -142,7 +142,7 @@ export function ingest_api_all_groups(auth) {
 export function ingest_api_allowable_edit_states(uuid) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
-  let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${uuid}/allowable-edit-states`;
   return axios 
     .get(url,options)
       .then(res => {
@@ -166,7 +166,7 @@ export function ingest_api_allowable_edit_states(uuid) {
 export function ingest_api_allowable_edit_states_statusless(uuid) { 
   const options = {headers:{Authorization: "Bearer " + globalToken,
         "Content-Type":"application/json"}};
-  let url = `${process.env.REACT_APP_METADATA_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${uuid}/allowable-edit-states?ignore-publication-status=true`;
   return axios 
     .get(url,options)
       .then(res => {
@@ -369,7 +369,7 @@ export function ingest_api_get_associated_ids(uuid) {
         "Content-Type":"application/json"}};
    return axios
         .get(
-          `${process.env.REACT_APP_SPECIMEN_API_URL}/specimens/${uuid}/ingest-group-ids`, options)
+          `${process.env.REACT_APP_DATAINGEST_API_URL}/specimens/${uuid}/ingest-group-ids`, options)
         .then(res => {
           if (res.data.ingest_group_ids.length > 1) {
             res.data.ingest_group_ids.sort((a, b) => {
