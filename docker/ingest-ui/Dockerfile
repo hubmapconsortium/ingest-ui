@@ -29,7 +29,8 @@ module_hotfixes=true\n'\
 # 6 - Use our nginx config file for ingest-ui
 # 7 - Install Node.js v20.x (includes npm)
 # 8 - Update npm to the latest version
-# 9 - Clean all yum cache
+# 9 - Make the start.sh executable
+# 10 - Clean all yum cache
 RUN yum install -y yum-utils && \
     yum-config-manager --enable nginx-mainline && \
     yum install -y nginx && \
@@ -45,9 +46,11 @@ RUN yum install -y yum-utils && \
 # Change to source code directory
 WORKDIR /usr/src/app/src
 
-# Install npm dependencies and generate static production bundle with our custom tags
+# Install dependencies and generate static production bundle with our custom tags
+# Delete node_modules to reduce image size
 RUN npm install && \
-    npm run build:tags
+    npm run build:tags && \
+    rm -rf node_modules
 
 # The EXPOSE instruction informs Docker that the container listens on the specified network ports at runtime. 
 # Here 8080 for nginx to serve the React generated static build
