@@ -13,8 +13,8 @@ echo "Starting ingest-ui container with the same host user UID: $HOST_UID and GI
 getent passwd $HOST_UID > /dev/null 2&>1
 # $? is a special variable that captures the exit status of last task
 if [ $? -ne 0 ]; then
-    groupadd -r -g $HOST_GID hubmap
-    useradd -r -u $HOST_UID -g $HOST_GID -m hubmap
+    groupadd -r -g $HOST_GID hive
+    useradd -r -u $HOST_UID -g $HOST_GID -m hive
 fi
 
 # When running Nginx as a non-root user, we need to create the pid file
@@ -22,11 +22,14 @@ fi
 # In individual nginx *.conf, also don't listen on ports 80 or 443 because 
 # only root processes can listen to ports below 1024
 touch /var/run/nginx.pid
-chown -R hubmap:hubmap /var/run/nginx.pid
-chown -R hubmap:hubmap /var/cache/nginx
-chown -R hubmap:hubmap /var/log/nginx
+chown -R hive:hive /var/run/nginx.pid
+chown -R hive:hive /var/cache/nginx
+chown -R hive:hive /var/log/nginx
 
-# Lastly we use gosu to execute our process "$@" as that user
+# Make sure the React generated build directory is writable
+chown -R hive:hive /usr/src/app/src/build
+
+# Lastly we use su-exec to execute our process "$@" as that user
 # Remember CMD from a Dockerfile of child image gets passed to the entrypoint.sh as command line arguments
 # "$@" is a shell variable that means "all the arguments"
-exec /usr/local/bin/gosu hubmap "$@"
+exec /usr/local/bin/su-exec hive "$@"
