@@ -1017,7 +1017,15 @@ class DatasetEdit extends Component {
                 .then((res) => {
                   this.setState({
                     valMessage: res,
-                    eValopen: true
+                    eValopen: true,
+                    submitting:false, 
+                    buttonSpinnerTarget:"", 
+                  } ,() => {
+                    let alertInner = document.getElementsByClassName('eValSnackbar')[0];
+                    console.log("alertInner", alertInner)
+                    if(alertInner){
+                      alertInner.classList.remove("MuiPaper-root");
+                    }
                   });
                 })
                 .catch((error) => {

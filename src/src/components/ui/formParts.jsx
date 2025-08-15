@@ -515,7 +515,7 @@ export function EntityValidationMessage(props) {
     if (response?.status === 202) message = "This Entity has been accepted for validation.";
     
     const handleClose = (event, reason) => reason !== 'clickaway' && setEValopen(false);
-
+    
     return (
       <Snackbar
         sx={{ marginBottom: "20px" }}
@@ -526,6 +526,7 @@ export function EntityValidationMessage(props) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         onClose={handleClose}>
         <Alert
+          className="eValSnackbar"
           variant="filled"
           severity={severity}
           sx={severity === "info" ? { backgroundColor: "#444a65" } : {}}
