@@ -35,7 +35,8 @@ import {
   ingest_api_notify_slack,
   ingest_api_users_groups,
   ingest_api_pipeline_test_privs,
-  ingest_api_pipeline_test_submit
+  ingest_api_pipeline_test_submit,
+  ingest_api_validate_entity
 } from '../../service/ingest_api';
 import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 import {getPublishStatusColor} from "../../utils/badgeClasses";
@@ -45,6 +46,7 @@ import {validateRequired} from "../../utils/validators";
 import SearchComponent from "../search/SearchComponent";
 import GroupModal from "../uuid/groupModal";
 import Modal from "../uuid/modal";
+import {EntityValidationMessage} from "../ui/formParts";
 
 import {Typography} from "@material-ui/core";
 import Table from '@material-ui/core/Table';
@@ -152,6 +154,8 @@ class DatasetEdit extends Component {
       source_uuid:"",
     },
     showValidModal:false,
+    valMessage:null,
+    eValopen:false,
   };
 
     
@@ -841,7 +845,8 @@ class DatasetEdit extends Component {
   }
 
   handleButtonClick = (i, event) => {
-    this.setState({new_status:i,
+    this.setState({
+      new_status:i,
       buttonState:{i:true}}, () => {
       this.handleSubmit(i);
     })
@@ -1004,6 +1009,24 @@ class DatasetEdit extends Component {
                     submitErrorResponse:err, 
                     buttonSpinnerTarget:"" } ,
                     () => {});
+                });
+            }
+            // if Admin's clicked on Validate
+            else if (submitIntention === "validate") { 
+                ingest_api_validate_entity(this.props.editingDataset.uuid, "datasets")
+                .then((res) => {
+                  this.setState({
+                    valMessage: res,
+                    eValopen: true
+                  });
+                })
+                .catch((error) => {
+                  this.setState({ 
+                    submit_error:true, 
+                    submitting:false, 
+                    submitErrorResponse:error.result.data,
+                    buttonSpinnerTarget:"", 
+                  });
                 });
             }
             // if user selected Publish
@@ -1455,6 +1478,12 @@ class DatasetEdit extends Component {
     }
   }
 
+  setEValopen(){
+    this.setState({
+      eValopen: !this.state.eValopen
+    });
+  }
+
   renderButtonOverlay(){
     return ( // @TODO: Improved form-bottom Control Overlay?
       <></>
@@ -1493,7 +1522,6 @@ class DatasetEdit extends Component {
       </Button>
     )
   }
-
 
   renderManualStatusControl=()=>{
     return(  
@@ -1614,21 +1642,15 @@ class DatasetEdit extends Component {
 
         return (
           <div className="buttonWrapRight">
+
+            {this.state.has_admin_priv && this.state.status.toUpperCase() !=="PUBLISHED" &&(
+              this.aButton("validate", "Validate"))
+            }
+
               {saveCheck &&(
                 this.aButton(this.state.status.toLowerCase(), "Save")
               )}   
-              {this.state.has_admin_priv && (
-                <div>
-                  <Button
-                    type='button'
-                    name={"button-Val2"}
-                    variant="contained"
-                    disabled={this.state.submitting}
-                    onClick={() => this.setState({ showValidModal: true })}>
-                      Validate
-                  </Button>
-                </div>
-              )}   
+              
               {this.state.has_admin_priv && (this.state.status.toUpperCase() ==="NEW" || this.state.status.toUpperCase() ==="SUBMITTED" ) &&(
                 this.aButton("processing", "Process"))
               }
@@ -1842,8 +1864,8 @@ class DatasetEdit extends Component {
   onChangeGlobusLink(newLink, newDataset) {
     
     const {
-name, display_doi, doi
-} = newDataset;
+    name, display_doi, doi
+    } = newDataset;
     this.setState({
       globus_url:newLink,
        name:name, 
@@ -2382,6 +2404,14 @@ name, display_doi, doi
           </div>
         </Modal>
         {this.renderSubmitModal()}
+
+        {this.state.valMessage?.status && (
+          <EntityValidationMessage
+            response={this.state.valMessage}
+            eValopen={this.state.eValopen}
+            setEValopen={()=>this.setEValopen()}
+          />
+        )}
         {this.renderFeedbackModall()}
         
       </React.Fragment>

@@ -4,7 +4,7 @@ import {
   ingest_api_allowable_edit_states, 
   ingest_api_create_upload,
   ingest_api_submit_upload,
-  ingest_api_validate_upload,
+  ingest_api_validate_entity,
   ingest_api_reorganize_upload,
   ingest_api_notify_slack
 } from "../service/ingest_api";
@@ -399,7 +399,7 @@ export const UploadForm = (props) => {
          
         case "Validate":
           console.debug('%c◉ Validate ', 'color:#2158FF');
-          ingest_api_validate_upload(uuid, JSON.stringify(cleanForm))
+          ingest_api_validate_entity(uuid, "uploads")
             .then((response) => {
               console.debug("Response from validate", response);
               setValMessage(response);

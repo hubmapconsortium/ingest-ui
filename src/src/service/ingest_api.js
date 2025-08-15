@@ -386,9 +386,10 @@ export function ingest_api_submit_upload(uuid, data) {
  * Validate Upload
  *
  */
-export function ingest_api_validate_upload(uuid) { 
+// changed from validate_upload to account for both Uploads and Datasets
+export function ingest_api_validate_entity(uuid,type) { 
   let data = [uuid]
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/validate`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type}/validate`;
   return axios 
     .post(url, data, options)
       .then(res => {
@@ -407,7 +408,6 @@ export function ingest_api_validate_upload(uuid) {
         }
       });
 };
-
 
 /* 
  * Reorganize or uploads

@@ -35,7 +35,7 @@ import {
   ingest_api_notify_slack,
   ingest_api_reorganize_upload,
   ingest_api_submit_upload,
-  ingest_api_validate_upload
+  // ingest_api_validate_upload
 } from '../../service/ingest_api';
 import {getPublishStatusColor} from "../../utils/badgeClasses";
 import {RevertFeature} from "../../utils/revertModal";
@@ -450,21 +450,21 @@ class EditUploads extends Component{
           };
   
 
-          if (this.props.editingUpload) {
+          // if (this.props.editingUpload) {
             
-            // if user selected Publish
-            ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
-              .then((response) => {
+          //   // if user selected Publish
+          //   // ingest_api_validate_upload(this.props.editingUpload.uuid, JSON.stringify(data), JSON.parse(localStorage.getItem("info")).groups_token)
+          //     .then((response) => {
                 
-                  if (response.status === 200) {
-                    this.props.onUpdated(response.results);
-                    this.handleSpinnerClear();
-                  } else {
-                    this.setState({ submit_error: true, submitting: false });
-                    this.handleSpinnerClear();
-                  }
-            });
-          } 
+          //         if (response.status === 200) {
+          //           this.props.onUpdated(response.results);
+          //           this.handleSpinnerClear();
+          //         } else {
+          //           this.setState({ submit_error: true, submitting: false });
+          //           this.handleSpinnerClear();
+          //         }
+          //   });
+          // } 
         }
       }else{
         this.handleSpinnerClear();
