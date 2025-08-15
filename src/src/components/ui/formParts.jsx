@@ -21,6 +21,7 @@ import {faCircleExclamation} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
+import Snackbar from '@mui/material/Snackbar';
 import React from "react";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import {tsToDate} from "../../utils/string_helper";
@@ -504,6 +505,36 @@ export function FeedbackDialog( {
 		</Dialog>
   )
 }
+
+export function EntityValidationMessage(props) {
+    const {response, eValopen, setEValopen} = props
+    console.debug('%c◉ EntityValidationMessage Inner Response  ', 'color:#00ff7b', response);
+    let message = response?.results ?? response?.data ?? "No Response";
+    let severity = message?.error ? "error" : "info";
+    if (message?.error) message = message.error;
+    if (response?.status === 202) message = "This Entity has been accepted for validation.";
+    
+    const handleClose = (event, reason) => reason !== 'clickaway' && setEValopen(false);
+
+    return (
+      <Snackbar
+        sx={{ marginBottom: "20px" }}
+        direction="up"
+        autoHideDuration={5000}
+        disableWindowBlurListener
+        open={eValopen}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        onClose={handleClose}>
+        <Alert
+          variant="filled"
+          severity={severity}
+          sx={severity === "info" ? { backgroundColor: "#444a65" } : {}}
+          onClose={handleClose}>
+          {message}
+        </Alert>
+      </Snackbar>
+    );
+  }
 
 // TODO: Move this into.... idk a Value/Calculation helper service/thing?
 export function HexToHsl(hex){

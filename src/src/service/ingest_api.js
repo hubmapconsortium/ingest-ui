@@ -386,18 +386,28 @@ export function ingest_api_submit_upload(uuid, data) {
  * Validate Upload
  *
  */
-export function ingest_api_validate_upload(uuid, data) { 
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/${uuid}/validate`;
+export function ingest_api_validate_upload(uuid) { 
+  let data = [uuid]
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/uploads/validate`;
   return axios 
-     .put(url, data, options)
+    .post(url, data, options)
       .then(res => {
+        console.debug('%c◉ ingest_api_validate_upload res ', 'color:#00ff7b', res);
         let results = res.data;
+        console.debug('%c◉ ingest_api_validate_upload results ', 'color:#00ff7b', results);
         return {status: res.status, results: results}
       })
       .catch(error => {
-        return {error}
+        console.debug('%c◉ ingest_api_validate_upload error ', 'color:#ff005d', error);
+        if(error.response){
+          return {status: error.response.status, results: error.response.data}
+        }else{
+          console.error('%c⊙ Off Format err', 'color:#ff007b', error); 
+          return {error}
+        }
       });
 };
+
 
 /* 
  * Reorganize or uploads
