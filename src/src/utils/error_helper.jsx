@@ -1,4 +1,7 @@
 
+import Alert from "@mui/material/Alert";
+import AlertTitle from '@mui/material/AlertTitle';
+
 // Creates a new error object with the given message
 export const BuildError = (message) => {
     var newError;
@@ -31,6 +34,38 @@ export const FormatError = (message) => {
         newError = new Error(message);
     }
     return (newError)
+}
+
+export const RenderPageError = (errorObj) => {
+  if (!errorObj) return null;
+  let error = typeof errorObj === "string" ? { message: errorObj } : errorObj;
+  return (
+    <Alert variant="filled" severity="error" sx={{ whiteSpace: "pre-line" }}>
+      <AlertTitle>Error</AlertTitle>
+      <strong>{error.message || ""}</strong>
+      <ul style={{ margin: "0.5em 0 0 1.5em", padding: 0 }}>
+        {error.status && <li>Status: <strong>{error.status}</strong></li>}
+        {error.code && <li>Code: <strong>{error.code}</strong></li>}
+        {error.name && <li>Name: <strong>{error.name}</strong></li>}
+        {error.config?.method && <li>Method: <strong>{error.config.method.toUpperCase()}</strong></li>}
+        {error.config?.url && <li>URL: <strong>{error.config.url}</strong></li>}
+      </ul>
+      {error.stack && (
+        <details style={{ marginTop: "0.5em" }}>
+          <summary>Stack Trace</summary>
+          <pre style={{ fontSize: "0.8em", maxHeight: 120, overflow: "auto" }}>
+            {error.stack.split('\n').slice(0, 5).join('\n')}
+            {error.stack.split('\n').length > 5 ? "\n..." : ""}
+          </pre>
+        </details>
+      )}
+      {!error.stack && (
+        <pre style={{ fontSize: "0.8em", maxHeight: 120, overflow: "auto" }}>
+          {JSON.stringify(error, null, 2)}
+        </pre>
+      )}
+    </Alert>
+  );
 }
 
 // ERR TABLE

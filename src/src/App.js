@@ -561,10 +561,10 @@ export function App(props){
                     <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
 
                   </Routes>
-
+ 
                   <Dialog 
                     aria-labelledby="result-dialog" 
-                    open={successDialogRender} 
+                    open={successDialogRender?successDialogRender.toString():false} 
                     sx={{margin: "auto"}}
                     fullWidth={ (newEntity && newEntity.newSamples) ? true : false}>
                     <DialogTitle sx={{background: "rgb(209, 231, 221)", marginBottom: "0.5em",}} >Success!</DialogTitle>

@@ -4,7 +4,7 @@ import {
   ingest_api_allowable_edit_states, 
   ingest_api_create_upload,
   ingest_api_submit_upload,
-  ingest_api_validate_upload,
+  ingest_api_validate_entity,
   ingest_api_reorganize_upload,
   ingest_api_notify_slack
 } from "../service/ingest_api";
@@ -45,7 +45,8 @@ import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Snackbar from '@mui/material/Snackbar';
 import Button from "@mui/material/Button";
-import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
+import {FormHeader,UserGroupSelectMenu,EntityValidationMessage} from "./ui/formParts";
+import {RenderPageError} from "../utils/error_helper";
 import {Typography} from "@mui/material";
 import {DataGrid} from "@mui/x-data-grid";
 import dayjs from "dayjs";
@@ -55,7 +56,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export const UploadForm = (props) => {
-  const [open, setOpen] = useState(true);
+  const [eValopen, setEValopen] = useState(true);
   let [submitProcessModal, setSubmitProcessModal] = useState(false);
   let[entityData, setEntityData] = useState({
     title: "",
@@ -76,7 +77,8 @@ export const UploadForm = (props) => {
     anticipated_dataset_count: "",
   });
   let[formErrors, setFormErrors] = useState({});
-  let[valErrorMessages, setValErrorMessages] = useState([]);
+  let[valErrorMessages, setValErrorMessages] = useState([]); //form validation
+  let[valMessage, setValMessage] = useState([]); //Entity Validation
   let[permissions,setPermissions] = useState({ 
     has_admin_priv: false,
     has_publish_priv: false,
@@ -92,7 +94,7 @@ export const UploadForm = (props) => {
   let[expandVMessage, setExpandVMessage] = useState(false);
   const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   let saveStatuses = ["submitted", "valid", "invalid", "error", "new"]
-  let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
+  // let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
   let validateRestrictions = ["reorganized", "processing"]
   let[validationError, setValidationError] = useState(null);
   let[showValidModal, setShowValidModal] = useState(false);
@@ -101,8 +103,8 @@ export const UploadForm = (props) => {
   const [SWAT, setSWAT] = useState(false);
   const [MOSDAP, setMOSDAP] = useState(false);
   let projectPriorityValues=[
-    {name:"SWAT (Integration Paper)",description:"For questions about the SWAT effort, email Ajay"},
-    {name:"MOSDAP",description:"For questions about the MOSDAP effort, email Gloria Pryhuber"},
+    {name: "SWAT (Integration Paper)",description: "For questions about the SWAT effort, email Ajay"},
+    {name: "MOSDAP",description: "For questions about the MOSDAP effort, email Gloria Pryhuber"},
   ]
 
  
@@ -222,11 +224,6 @@ export const UploadForm = (props) => {
     }
   }
 
-  function handleClose(){
-
-    setOpen(false);
-  };
-  
   function validateForm(){
     setValidationError(null);
     setValErrorMessages(null);
@@ -299,7 +296,8 @@ export const UploadForm = (props) => {
 
   function wrapUp(error){
     console.error('%c◉⚠️ WRAP UP ERROR: ', 'color:#ff005d', error);
-    setPageErrors(error.error ? error.error : error);
+    console.error(error.error.response.data);
+    setPageErrors(error?.error?.response?.data ? error.error.response.data : error);
     setIsProcessing(false);
     setProcessingButton(false);
   }
@@ -400,13 +398,20 @@ export const UploadForm = (props) => {
           break;
          
         case "Validate":
-          console.debug('%c◉ Validate ', 'color:#00ff7b');
-          ingest_api_validate_upload(uuid, JSON.stringify(cleanForm))
+          console.debug('%c◉ Validate ', 'color:#2158FF');
+          ingest_api_validate_entity(uuid, "uploads")
             .then((response) => {
-              processResults(response);
+              console.debug("Response from validate", response);
+              setValMessage(response);
+              setEValopen(true)
+              setProcessingButton(false);
             })
             .catch((error) => {
-              wrapUp(error)
+              console.debug('%c◉  error', 'color:#ff005d', error );
+              console.debug('%c◉  error long', 'color:#ff005d', error?.data?.error );
+                setValMessage(error?.data?.error || error);
+                setProcessingButton(false);
+              
             });
           break;
 
@@ -443,7 +448,7 @@ export const UploadForm = (props) => {
       // Dont bother
     }
   }
-  
+
   function renderDatasets(){
     if(entityData.datasets && entityData.datasets.length > 0 ){
       // @TODO: use the Datatables used elsewhere across the site 
@@ -475,7 +480,7 @@ export const UploadForm = (props) => {
             rowCount={compiledCollection.length}
             loading={!compiledCollection.length > 0 && uuid}
             sx={{
-              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px',overflowY:'scroll!important',maxHeight:'350px'},
+              '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px',overflowY: 'scroll!important',maxHeight: '350px'},
               background: "rgba(0, 0, 0, 0.04)",
               cursor: "cell!important",
               
@@ -488,8 +493,6 @@ export const UploadForm = (props) => {
 
   function saveCheck(){
     // Slightly more compelx
-    let sc = entityData.status ? saveStatuses.includes(entityData.status.toLowerCase()) : false;
-    let st = entityData.status ? entityData.status.toLowerCase() : null;
     if(entityData && entityData.status){
       if(saveStatuses.includes(entityData.status.toLowerCase()) && (permissions.has_write_priv === true || permissions.has_admin_priv === true) ){
         return true
@@ -531,43 +534,27 @@ export const UploadForm = (props) => {
           {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
             <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
           )}
+
           {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status && (entityData.status.toLowerCase() !== "reorganized" && entityData.status.toLowerCase() !== "submitted")) &&(
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={() => submitModalOpen()}>
+            <LoadingButton disaled={isProcessing.toString()} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={() => submitModalOpen()}>
               Submit
             </LoadingButton>
           )}
+
           {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && entityData.status.toLowerCase() === "submitted") && (
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Reorganize"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Reorganize")}>
+            <LoadingButton disaled={isProcessing.toString()} loading={processingButton === "Reorganize"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Reorganize")}>
               Reorganize
             </LoadingButton>
           )}
 
           {/* For Uploads not in Published or Processing status (If Upload status is Published or Upload status is Processing do not enable) */}
-
-          <Snackbar
-            open={showValidModal}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'center'}}
-            action={
-              <IconButton
-                size="small"
-                aria-label="close"
-                color="inherit"
-                onClick={() => setShowValidModal(false)}>
-                <CloseIcon fontSize="small" />
-              </IconButton>}
-            autoHideDuration={6000}
-            onClose={() => setShowValidModal(false)}
-            message="This feature is not yet implemented"/>
           {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && !validateRestrictions.includes(entityData.status.toLowerCase())) && (
-            <LoadingButton disaled={isProcessing} loading={processingButton === "Validate2"} variant="contained" className="m-1" onClick={() => setShowValidModal(true)}>
+            <LoadingButton disaled={isProcessing.toString()} loading={processingButton === "Validate"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Validate")}>
               Validate
             </LoadingButton>
           )}
-
           {uuid && uuid.length > 0 && saveCheck() === true && (
-            <LoadingButton disabled={!saveCheck} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Save")}>
+            <LoadingButton disabled={!saveCheck.toString()} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Save")}>
               Save
             </LoadingButton>
           )}
@@ -904,10 +891,17 @@ export const UploadForm = (props) => {
         </form>
 
         {renderSubmitDialog()}
+        
+        {valMessage?.status && (
+          <EntityValidationMessage
+            response={valMessage}
+            eValopen={eValopen}
+            setEValopen={setEValopen}
+          />
+        )}
+
         {pageErrors && (
-          <Alert variant="filled" severity="error">
-            <strong>Error:</strong> {JSON.stringify(pageErrors)}
-          </Alert>
+          <>{RenderPageError(pageErrors)}</>
         )}
       </Box>
     );
