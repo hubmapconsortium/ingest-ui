@@ -417,7 +417,7 @@ export function FeedbackDialog( {
   return (
     <Dialog 
       maxWidth="sm"
-      open={showBulkMessage} 
+      open={showBulkMessage.toString()} 
       sx={{margin: "auto", marginBottom: "0px"}}
       fullWidth={true}>
       <DialogTitle sx={{

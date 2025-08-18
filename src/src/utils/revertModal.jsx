@@ -71,13 +71,13 @@ export const RevertFeature = (props) => {
         className='zindex-tooltip revertTooltip'
         place='top'
         variant='light'
-        border="#000000"
+        // border="#000000"
         effect='solid'>
         <p sx={{ color: "black!important", maxWidth: "160px", fontSize: "inherent"}}>
           Revert this <span sx={{color: 'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
       </ReactTooltip>
       <Button variant="contained" onClick={() => handleClickOpen()} data-tip data-for='revert_tooltip'> Revert </Button>
-      <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open} fullWidth={true} maxWidth={"sm"}>
+      <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open ? open.toString() : false} fullWidth={true} maxWidth={"sm"}>
         <React.Fragment>
           <DialogTitle sx={{ m: 0, p: 2, background: "#444a65", color: "White" }} id="customized-dialog-title">
             Select {type} Status
