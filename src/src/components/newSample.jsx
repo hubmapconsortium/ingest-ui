@@ -23,6 +23,8 @@ import PageviewIcon from '@mui/icons-material/Pageview';
 import TextField from "@mui/material/TextField";
 import {Typography} from "@mui/material";
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Snackbar from '@mui/material/Snackbar';
+import CloseIcon from '@mui/icons-material/Close';
 import Checkbox from '@mui/material/Checkbox';
 
 import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../service/ingest_api";
@@ -57,6 +59,11 @@ export const SampleForm = (props) => {
   let [ruiEnabled, setRuiEnabled] = React.useState(false);
   let [RUIJson, setRUIJson] = React.useState(false);
   let [RUIDetails, setRUIDetails] = React.useState([null,null]);
+  let [snackbarController, setSnackbarController] = React.useState({
+    open: false,
+    message: "", 
+    status: "info"
+  });
   const userInfo = JSON.parse(localStorage.getItem("info"));
   let organ_types = JSON.parse(localStorage.getItem("organs"));
   let[permissions,setPermissions] = useState( { 
@@ -91,13 +98,6 @@ export const SampleForm = (props) => {
   let[formErrors, setFormErrors] = useState( {
   } );
 
-  // let organMenu = Object.keys(organ_types)
-  //   .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
-  //   .map(key => (
-  //     <option key={key} value={key}>
-  //       {organ_types[key]}
-  //     </option>
-  //   ));
   const organMenu = useMemo(() => {
     return Object.keys(organ_types)
       .sort((a, b) => organ_types[a].localeCompare(organ_types[b]))
@@ -137,7 +137,7 @@ export const SampleForm = (props) => {
                     // console.debug('%c◉ LOADED BY UUID, PARENT ORG IS:', 'color:#00ff7b', organ);
                     // entityInfo.organ = organ;
                     console.debug('%c◉ RUI_ORGAN_TYPES.includes(organ) ', 'color:#00ff7b', RUI_ORGAN_TYPES.includes(organ));
-                    console.debug('%c◉ setRuiEnabled: ', 'color:#E7EEFF;background: #9359FF;padding:200',(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block"));
+                    // console.debug('%c◉ setRuiEnabled: ', 'color:#E7EEFF;background: #9359FF;padding:200',(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block"));
                     setRUIDetails([organ])
                     setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block") ? true : false,organ]);
                     // entityInfo.ruiEnabled =(RUI_ORGAN_TYPES.includes(entityInfo.organ) && entityInfo.sample_category==="block" ) ? true : false;
@@ -201,7 +201,34 @@ export const SampleForm = (props) => {
     }else{
       setPermissions( {
         has_write_priv: true,
-      } );
+      });
+      // We should check if we're being passed a sourceEntity through the URL
+      let url = new URL(window.location.href);
+      let sourceID = url.searchParams.get("source");
+      if(sourceID){
+        console.debug('%c◉ URL sourceID ', 'color:#00ff7b', sourceID);
+        entity_api_get_entity(sourceID)
+          .then((response) => {
+            let source = response.results;
+            console.debug('%c◉ source ', 'color:#00ff7b', source);
+            // setSourceEntity(source);
+            handleSelectSource({row: source})
+            setFormValues((prevValues) => ( {
+              ...prevValues,
+              direct_ancestor_uuid: source.uuid,
+              // sample_category: "organ",
+            }));
+            setSnackbarController({
+              open: true,
+              message: "Source information populated from URL", 
+              status: "success"
+            })
+          })
+          .catch((error) => {
+            console.debug("entity_api_get_entity ERROR", error);
+            setPageErrors(error);
+          } );
+      }
       
     }
     setLoading(false);
@@ -436,7 +463,7 @@ export const SampleForm = (props) => {
     } ));
     // If the source is a Donor we already know we're not RUI Enabled abymore
     if(e.row.entity_type === "Donor"){
-      console.debug('%c◉ setRuiEnabled:  FALSE', 'color:#E7EEFF;background: #9359FF;padding:200');
+      // console.debug('%c◉ setRuiEnabled:  FALSE', 'color:#E7EEFF;background: #9359FF;padding:200');
       setRuiEnabled([false]);
     }
   }
@@ -492,7 +519,7 @@ export const SampleForm = (props) => {
   }
 
   function shouldShowRUIInterface(){
-    console.debug('%c◉ ruiEnabled ', 'color:#00ff7b', ruiEnabled);
+    // console.debug('%c◉ ruiEnabled ', 'color:#00ff7b', ruiEnabled);
     return ruiEnabled[0]
   }
     
@@ -542,11 +569,6 @@ export const SampleForm = (props) => {
               closeRUIModal={() => setRuiModal([false])}
               location={RUIJson ? RUIJson : null}
               parent="SamplesForm" />
-              {/* <RUI 
-                user={JSON.parse(localStorage.getItem("info")).name}
-                uuid={uuid ? uuid : (sourceEntity ? sourceEntity.uuid : entityData.direct_ancestor_uuid)} 
-                source={sourceEntity ? sourceEntity : entityData.direct_ancestor} 
-                organ={ruiEnabled[1] ? ruiEnabled[1] : entityData.direct_ancestor }/> */}
           </Dialog>
         )}
         
@@ -575,7 +597,6 @@ export const SampleForm = (props) => {
                     overflowY: "scroll", 
                     marginTop: "20px", 
                     padding: "10px",
-                    // columnCount: "3"  
                     display: "flex",
                     flexDirection: "column",
                     flexWrap: "wrap",
@@ -596,11 +617,8 @@ export const SampleForm = (props) => {
                     );
                   } )}
                 </ul>
-                {/* </ul> */}
             </Collapse> 
-
           </Alert>
-          
         )}
 
         <form onSubmit={(e) => handleSubmit(e)} className="mt-2">
@@ -895,6 +913,27 @@ export const SampleForm = (props) => {
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
         )}
+
+        {/* Snackbar Feedback*/}
+        <Snackbar 
+          open={snackbarController.open} 
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          autoHideDuration={6000} 
+          onClose={() => setSnackbarController(prev => ({ ...prev, open: false }))}>
+          <Alert
+            onClose={() => setSnackbarController(prev => ({ ...prev, open: false }))}
+            severity={snackbarController.status}
+            variant="filled"
+            sx={{ 
+              width: '100%',
+              backgroundColor: snackbarController.status === "error" ? "#f44336" : "#4caf50",
+              }}>
+            {snackbarController.message}
+          </Alert>
+        </Snackbar>
       </Box>
     );
   }
