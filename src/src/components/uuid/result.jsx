@@ -163,4 +163,4 @@ class ResultLegacy extends Component {
   }
 }
 
-export default Result;
+export default ResultLegacy;
