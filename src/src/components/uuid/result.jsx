@@ -9,7 +9,7 @@ import {
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 
-class Result extends Component {
+class ResultLegacy extends Component {
   state = { results: [] };
 
   handleCopyToClipboard = () => {
