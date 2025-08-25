@@ -11,7 +11,7 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 
 const Result = (props) => {
-
+  console.debug('%c◉ props ', 'color:#00ff7b', props);
   const handleReturnClick = (e) => {
     console.debug("handleReturnClick", e);
     if (props.onReturn) {
@@ -29,14 +29,14 @@ const Result = (props) => {
     ) : null;
   }
 
-  function newSamplePreload() {
+  function newSampleSourcePreload() {
     let thisSource = props.result.entity;
+    console.debug('%c◉ thisSource ', 'color:#001AFF', thisSource);
     if(thisSource && thisSource.uuid) {
-      let newURL = `${process.env.REACT_APP_URL}/new/sample?source=${thisSource.uuid}`;
+      let newURL = `${process.env.REACT_APP_URL}/new/sample?direct_ancestor_uuid=${thisSource.uuid}`;
       window.location.replace(newURL);
     }
   }
-
   return (
     <React.Fragment>
       {(props.result.entity?.new_samples && props.result.entity.new_samples.length > 1) && (
@@ -79,49 +79,18 @@ const Result = (props) => {
       )}
       <div className="row">
         <div className="col-sm-12 mt-2 mr-2 mb-2 text-center">
-          {props.result !== undefined && props.result.entity.entity_type === "Donor" && (
-            // <Tooltip
-            //   placement="bottom-start"
-            //   title={
-            //     <React.Fragment>
-            //       <Typography variant="caption" color="inherit">Registering organs from a new Donor will return with the release of the new Sample form 🎉</Typography><br />
-            //       <Typography variant="caption" color="inherit">To Register an organ choose "Sample" from the "INDIVIDUAL" menu and pick this Donor's ID as the "Source ID".</Typography>
-            //     </React.Fragment>
-            //   }>
-              <span>
-                <Button
-                  className="btn btn-success m-2"
-                  variant="contained"
-                  color="primary"
-                  onClick={(e) =>newSamplePreload(e)}>
-                  Register an organ from this donor
-                </Button>
-              </span>
-            // </Tooltip>
-          )}
-          {/* @TODO: this likely needs to update from specimen type */}
-          {props.result !== undefined && props.result.organ && (
-            <Tooltip placement="top-start" title={"Registering tisse samples from a new organ will return with the release of the new Sample form 🎉"}>
-              <span>
-                <Button
-                  className="btn btn-primary m-2"
-                  variant="contained"
-                  disabled
-                  color="success"
-                  sx={{
-                    marginRight: '10px',
-                  }}
-                  type="button"
-                  onClick={() =>
-                    props.onCreateNext(
-                      props.result.entity
-                    )
-                  }
-                >
-                  Register tissue samples from this organ
-                </Button>
-              </span>
-            </Tooltip>
+          {props.result !== undefined && (props.result.entity.entity_type === "Donor" || props.result.entity.sample_category === "organ" ) && (
+            <span>
+              <Button
+                className="btn btn-success m-2"
+                variant="contained"
+                color="primary"
+                onClick={(e) =>newSampleSourcePreload(e)}>
+                  {props.result.entity.entity_type === "Donor" 
+                    ? "Register an Organ from this Donor" 
+                    : "Register a new Sample from this Organ"}
+              </Button>
+            </span>
           )}
           <Button
             className="btn btn-success"
