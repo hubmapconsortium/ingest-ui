@@ -134,10 +134,7 @@ export const SampleForm = (props) => {
                       organObject = ancestorList.results;
                     }
                     organ = organObject.organ ? organObject.organ : undefined;
-                    // console.debug('%c◉ LOADED BY UUID, PARENT ORG IS:', 'color:#00ff7b', organ);
-                    // entityInfo.organ = organ;
                     console.debug('%c◉ RUI_ORGAN_TYPES.includes(organ) ', 'color:#00ff7b', RUI_ORGAN_TYPES.includes(organ));
-                    // console.debug('%c◉ setRuiEnabled: ', 'color:#E7EEFF;background: #9359FF;padding:200',(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block"));
                     setRUIDetails([organ])
                     setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block") ? true : false,organ]);
                     // entityInfo.ruiEnabled =(RUI_ORGAN_TYPES.includes(entityInfo.organ) && entityInfo.sample_category==="block" ) ? true : false;
@@ -240,10 +237,17 @@ export const SampleForm = (props) => {
     response.results.length === 1
       ? response.results[0]
       : response.results.find((d) => d.entity_type === "Donor");
-    const donorMeta = donorDetails.metadata.organ_donor_data || donorDetails.metadata.living_donor_data;
-    // Get Sex Details
-    const donorSexDetails = donorMeta.find((m) => m.grouping_code === "57312000");
-    return donorSexDetails.preferred_term;
+      let donorMeta = null;
+      try {
+        console.debug('%c◉ donorDetails ', 'color:#00ff7b', donorDetails.metadata);
+        donorMeta = donorDetails.metadata.organ_donor_data || donorDetails.metadata.living_donor_data;
+        const donorSexDetails = donorMeta.find((m) => m.grouping_code === "57312000");
+        return donorSexDetails.preferred_term;
+      }catch(error){
+        console.log("No Donormeta",error);
+        return null;
+      }
+    
   }
 
   function handleInputChange(e){
@@ -265,12 +269,8 @@ export const SampleForm = (props) => {
           console.debug('%c◉ isRUIEntity Response ', 'color:#00ff7b', response.results);
           let donorSex = donorSexDetail(response);
           
-          if(!donorSex || donorSex === undefined){
-            // We dont have the RUI data we need for setup
-            console.log("Donor Sx Undef")
-            setRuiEnabled([false]);
-          }else if(formValues.RUIOrgan && formValues.RUIOrgan === true && (donorSex && donorSex.length > 0)){
-            setRUIDetails([formValues.organ,donorSex]);
+        if(formValues.RUIOrgan && formValues.RUIOrgan === true){
+            setRUIDetails([formValues.organ,donorSex?donorSex:null]);
             setRuiEnabled([true]);
           }else if(sourceEntity.sample_category !== "block" && sourceEntity.sample_category !== "organ" ){
             // If the source isnt an Organ or Block, We're not enabling RUI
@@ -825,21 +825,53 @@ export const SampleForm = (props) => {
                 <Typography variant="caption">(Sample must be a Block from a Supported Organ Type)<br /></Typography>
               )}
               {/* THere wont be donor sex details if we're missing critical dnor info */}
-              {!RUIDetails[1] && (
+              {/* {!RUIDetails[1] && (
                 <Typography variant="caption">(Donor must have required  Metadata)<br /></Typography>
               )}
-              
+               */}
             </Alert>
           )}
-          {shouldShowRUIInterface() === true && !checked && (
-            <Button
-              className="mt-2"
-              disabled={!permissions.has_write_priv}
-              onClick={() => setRuiModal([true])}
-              variant="contained">
-                {entityData.rui_location ? "Modify Location Information" : "Register Location"}
-            </Button>
-          )}          
+          {shouldShowRUIInterface() && !checked && (
+            <Box>
+              {entityData.rui_location ? (
+                <Button
+                  className="mt-2"
+                  disabled={!permissions.has_write_priv}
+                  onClick={() => setRuiModal([true])}
+                  variant="contained">
+                  Modify Location Information
+                </Button>
+              ) : RUIDetails[1] ? (
+                <Button
+                  className="mt-2"
+                  disabled={!permissions.has_write_priv}
+                  onClick={() => setRuiModal([true])}
+                  variant="contained">
+                  Register Location
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    className="m-2"
+                    small
+                    disabled={!permissions.has_write_priv}
+                    onClick={() => setRuiModal([true])}
+                    variant="contained">
+                    Register Location (male)
+                  </Button>
+                  <Button
+                    small
+                    className="m-2"
+                    disabled={!permissions.has_write_priv}
+                    onClick={() => setRuiModal([true])}
+                    variant="contained"
+                  >
+                    Register Location (female)
+                  </Button>
+                </>
+              )}
+            </Box>
+          )}   
           
           {/* RUI VIEW */}
           {(formValues.rui_location) && !checked && (
