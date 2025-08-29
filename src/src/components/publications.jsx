@@ -6,12 +6,11 @@ import PublicationFormLegacy from "./ingest/publications_edit";
 import {useNavigate} from "react-router-dom";
 import { useLocation } from 'react-router'
 
-
-
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import Result from "./uuid/result";
+import ResultLegacy from "./uuid/result";
 
+// !!! Deprecated & succedded by newPublication.jsx
 
 /*
 title: string, required-- this overrides the title field in Dataset which is auto-calculated
@@ -33,8 +32,6 @@ pages_or_article_num, string, e.g., “23”, “23-49”, “e1003424”, not-r
 publication_status, boolean, required
   A boolean representing if the publication has been published yet or not.  (Published in the target/venue journal/proceeding/etc.. NOT published in the sense of Dataset publication)
 */
-
-
 
 
 export const RenderPublication = (props) => {
@@ -188,7 +185,7 @@ export const RenderPublication = (props) => {
       return (
         <Dialog aria-labelledby="result-dialog" open={newVersionShow} maxWidth="xs">
         <DialogContent>
-        <Result
+        <ResultLegacy
           result={newResult}
           onReturn={onClose}
           handleCancelForm={handleCancelForm}

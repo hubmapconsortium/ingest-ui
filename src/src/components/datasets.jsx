@@ -7,7 +7,7 @@ import {useNavigate} from "react-router-dom";
 import {useLocation } from 'react-router'
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
-import Result from "./uuid/result";
+import ResultLegacy from "./uuid/result";
 import { HuBMAPContext } from "./hubmapContext";
 
 
@@ -154,7 +154,7 @@ export const RenderDataset = (props) => {
       return (
         <Dialog aria-labelledby="result-dialog" open={newVersionShow} maxWidth="xs">
         <DialogContent>
-        <Result
+        <ResultLegacy
           result={newResult}
           onReturn={onClose}
           handleCancel={handleCancel}
