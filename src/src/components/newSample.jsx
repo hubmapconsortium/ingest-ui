@@ -690,7 +690,7 @@ export const SampleForm = (props) => {
                 <b>Source Category:</b>{" "}
                 {sourceEntity.entity_type === "Donor" ? "Donor" : toTitleCase(sourceEntity.sample_category) }
               </Typography>
-              {sourceEntity.organ && (
+              {sourceEntity.organ && !entityData.direct_ancestor?.organ &&(
                 <Typography>
                   <b>Source Organ:</b>{" "}
                   {organ_types[sourceEntity.organ]}
