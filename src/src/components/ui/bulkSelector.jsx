@@ -50,7 +50,6 @@ export function BulkSelector( {
 	setShowBulkError,
 	showBulkWarning,
 	setShowBulkWarning,
-	
 } ){
 
 	let [stringIDs, setStringIDs] = useState(selected_string ? selected_string : "")
@@ -118,30 +117,27 @@ export function BulkSelector( {
 			</Dialog>
 		)
 	}
-
+	
 	function renderFeedbackDialog(){
-		
 		return (<>
 			<FeedbackDialog 
-				showBulkMessage={showBulkError}
-				setShowBulkMessage={setShowBulkError}
-				bulkMessage={bulkError}
-				// title={title},
-				// summary={summary},
-				// color={color},
-				// icon={icon}
- 			/>
+				showMessage={showBulkError}
+				setShowMessage={setShowBulkError}
+				message={bulkError}
+				title={"Bulk Selection Error"}
+				color={"#d32f2f"}
+				summary={(bulkError && bulkError.length>0 ? "" :	"There are no errors at this time" )}
+				note={"Acceptable results have already been attached to the table, and no further action is needed for them."	}
+				icon={faCircleExclamation}/>
 			<FeedbackDialog 
-				showBulkMessage={showBulkWarning}
-				setShowBulkMessage={setShowBulkWarning}
-				bulkMessage={bulkWarning}
+				showMessage={showBulkWarning}
+				setShowMessage={setShowBulkWarning}
+				message={bulkWarning}
 				title={"Bulk Selection Warning"}
 				summary={(bulkWarning && bulkWarning.length>0 ? "" :	"There are no warnings at this time" )}
 				color={"#D3C52F"}
-				icon={faTriangleExclamation}
- 			/>
-		</>
-		)
+				icon={faTriangleExclamation}/>
+		</>)
 	}
 
 	let totalWarnings = 0;
