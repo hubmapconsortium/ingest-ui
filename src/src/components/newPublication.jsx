@@ -103,7 +103,7 @@ export const PublicationForm = (props) => {
       id: "publication_date",
       label: "Publication Date",
       helperText: "The date of publication",
-      required: false,
+      required: true,
       type: "date",
     },{ 
       id: "publication_status",
@@ -399,12 +399,9 @@ export const PublicationForm = (props) => {
 
     // Combine these results, if there are any then raise the warning
     let combined = [...dupeEntList, ...duplicates];    
-    console.debug('%c◉ combined ', 'color:#FF00DD', combined, combined.length);
     if(combined.length > 0 ){
-      warnArray.push([`The following  ${combined.length} Entit${combined.length>1?'ies':'y'} ${combined.length>1?'were':'are'} referenced more than one time:`,combined])
-      console.warn("Bulk Warning: ", warnArray);
+      warnArray.push([`The following  ${combined.length} Entit${combined.length>1?'ies':'y'} ${combined.length>1?'were':'was'} referenced more than once:`,combined])
       setBulkWarning(warnArray);
-      console.debug('%c◉ warnArray ', 'color:#6200FF', warnArray);
       setShowBulkWarning(true)
     }
     
@@ -514,13 +511,15 @@ export const PublicationForm = (props) => {
 
   const sourceRemover = (row_uuid,hubmap_id) => {
     console.debug('%c◉ Deleting: ', 'color:#00ff7b', hubmap_id);
-    let newUUIDs = formValues['direct_ancestor_uuids'].filter((uuid) => uuid !== row_uuid);
+    if(formValues['direct_ancestor_uuids'] && formValues['direct_ancestor_uuids'].length >= 1){
+      let newUUIDs = formValues['direct_ancestor_uuids'].filter((uuid) => uuid !== row_uuid);
+        setFormValues((prev) => ( {
+        ...prev,
+        'direct_ancestor_uuids': newUUIDs
+      }));
+    }
     setSelectedHIDs((prev) => prev.filter((id) => id !== hubmap_id));
     setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hubmap_id));
-    setFormValues((prev) => ( {
-      ...prev,
-      'direct_ancestor_uuids': newUUIDs
-    } ));
     setSelectedString((prev) => {
       const filtered = prev
         .split(",")
@@ -719,14 +718,11 @@ export const PublicationForm = (props) => {
       setSelectedUUIDs((rows) => [...rows, event.row.uuid]);
       setSelectedHIDs((ids) => [...ids, event.row.hubmap_id]);
       setSelectedString((str) => str + (str ? ", " : "") + event.row.hubmap_id);
-      console.debug("handleSelectClick SelctedSOurces", event.row, event.row.uuid);
-      console.debug("selected_UUIDs", selected_UUIDs);
       setSourcesData((rows) => [...rows, event.row]);
       setFormValues((prevValues) => ( {
         ...prevValues,
-        'direct_ancestor_uuids': (rows) => [...rows, event.row.uuid],
+        'direct_ancestor_uuids': selected_UUIDs,
       } ))
-      
       setFormErrors((prevValues) => ( { //Clear Errors
         ...prevValues,
         'direct_ancestor_uuids': "",
