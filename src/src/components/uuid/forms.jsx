@@ -8,7 +8,7 @@ import { toTitleCase } from "../../utils/string_helper";
 import DonorForm from "./donor_form_components/donorForm";
 import TissueForm from "./tissue_form_components/tissueForm";
 import DatasetEdit from "../ingest/dataset_edit";
-import Result from "./result";
+import ResultLegacy from "./result";
 // import NewDatasetModal from "../../ingest/newDatasetModal";
 import NewDatasetModal from "../ingest/newDatasetModal";
 import PublicationEdit from '../ingest/publications_edit';
@@ -170,7 +170,7 @@ class Forms extends Component {
       return (
         <Dialog aria-labelledby="result-dialog" open={this.state.showSuccessDialog} maxWidth={this.state.result_dialog_size}>
         <DialogContent>
-        <Result
+        <ResultLegacy
           result={this.state.result}
           onReturn={this.props.onReturn}
           handleCancel={this.props.handleCancel}
@@ -181,14 +181,14 @@ class Forms extends Component {
         </Dialog>
       );
     }
-    if (this.state.formType === "donor") {
+    if (this.state.formType === "donor") { // Deprecated, Form Upgraded
       return (       
         <DonorForm
           onCreated={this.onCreated}
           handleCancel={this.props.handleCancel}
         />
       );
-    } else if (this.state.formType === "sample") {
+    } else if (this.state.formType === "sample") { // Deprecated, Form Upgraded
       return (
         <TissueForm
           onCreated={this.onCreated}
@@ -218,7 +218,7 @@ class Forms extends Component {
           />
           
         )
-    } else if (this.props.formType === "publication"  ) {
+    } else if (this.props.formType === "publication"  ) { // Deprecated, Form Upgraded
       
       
         return (
