@@ -221,16 +221,27 @@ export const SampleForm = (props) => {
         // Let's just pass it as if it were a row in the search table
         entity_api_get_entity(params.direct_ancestor_uuid)
           .then((response) => {
-            let passSource = {row:response.results}
-            if(response.results.entity_type !== "Donor" && response.results.entity_type !== "Sample"){
+            let error = response?.data?.error ?? false;
+            if (!error && (response?.results?.entity_type === "Donor" || response.results.entity_type === "Sample")){
+              console.debug('%c◉ error ', 'color:#00ff7b', error);
+              let passSource = {row: response?.results ? response.results : null};
+              console.log("passSource",passSource)
+              handleSelectSource(passSource)
+            }
+            else if(!error && response?.results?.entity_type !== "Donor" && response.results.entity_type !== "Sample"){
               setSnackbarController({
                 open: true,
                 message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must be a Donor or Sample) `,
                 status: "error"
               });
+            }else if(error){
+              setSnackbarController({
+                open: true,
+                message: `Sorry, There was an error selecting your source: ${error}`,
+                status: "error"
+              });
             }else{
-              console.log("passSource",passSource)
-              handleSelectSource(passSource)
+              throw new Error(response)
             }
           })
           .catch((error) => {
