@@ -399,12 +399,9 @@ export const PublicationForm = (props) => {
 
     // Combine these results, if there are any then raise the warning
     let combined = [...dupeEntList, ...duplicates];    
-    console.debug('%c◉ combined ', 'color:#FF00DD', combined, combined.length);
     if(combined.length > 0 ){
-      warnArray.push([`The following  ${combined.length} Entit${combined.length>1?'ies':'y'} ${combined.length>1?'were':'are'} referenced more than one time:`,combined])
-      console.warn("Bulk Warning: ", warnArray);
+      warnArray.push([`The following  ${combined.length} Entit${combined.length>1?'ies':'y'} ${combined.length>1?'were':'was'} referenced more than once:`,combined])
       setBulkWarning(warnArray);
-      console.debug('%c◉ warnArray ', 'color:#6200FF', warnArray);
       setShowBulkWarning(true)
     }
     
