@@ -36,6 +36,7 @@ import {
   entity_api_get_entity_ancestor_list
 } from "../service/entity_api";
 import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
+// import {OrganIcons} from "./ui/icons";
 import SearchComponent from "./search/SearchComponent";
 import RUIIntegration from "./uuid/tissue_form_components/ruiIntegration";
 import {toTitleCase} from "../utils/string_helper";
@@ -211,7 +212,7 @@ export const SampleForm = (props) => {
         }));
         setSnackbarController({
           open: true,
-          message: "Form values populated from URL parameters",
+          message: "Passing Form values from URL parameters",
           status: "success"
         });
       }
@@ -221,9 +222,16 @@ export const SampleForm = (props) => {
         entity_api_get_entity(params.direct_ancestor_uuid)
           .then((response) => {
             let passSource = {row:response.results}
-            console.log("passSource",passSource)
-            handleSelectSource(passSource)
-            
+            if(response.results.entity_type !== "Donor" && response.results.entity_type !== "Sample"){
+              setSnackbarController({
+                open: true,
+                message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must be a Donor or Sample) `,
+                status: "error"
+              });
+            }else{
+              console.log("passSource",passSource)
+              handleSelectSource(passSource)
+            }
           })
           .catch((error) => {
             console.debug("entity_api_get_entity ERROR", error);
@@ -690,7 +698,7 @@ export const SampleForm = (props) => {
                 <b>Source Category:</b>{" "}
                 {sourceEntity.entity_type === "Donor" ? "Donor" : toTitleCase(sourceEntity.sample_category) }
               </Typography>
-              {sourceEntity.organ && !entityData.direct_ancestor?.organ &&(
+              {sourceEntity.organ && !entityData.direct_ancestor?.organ && sourceEntity.sample_category.toLowerCase() !== "organ" &&(
                 <Typography>
                   <b>Source Organ:</b>{" "}
                   {organ_types[sourceEntity.organ]}
@@ -700,6 +708,7 @@ export const SampleForm = (props) => {
               {isOrganBloodType(sourceEntity.sample_category) && (
                 <Typography>
                   <b>Organ Type:</b>{" "}
+                  {/* {organ_types[sourceEntity.organ]} <img src={OrganIcons(sourceEntity.organ)} height={25} width={25} alt={organ_types[sourceEntity.organ]}/> */}
                   {organ_types[sourceEntity.organ]}
                 </Typography>
               )}
