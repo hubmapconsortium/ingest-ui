@@ -23,6 +23,8 @@ import PageviewIcon from '@mui/icons-material/Pageview';
 import TextField from "@mui/material/TextField";
 import {Typography} from "@mui/material";
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Snackbar from '@mui/material/Snackbar';
+import CloseIcon from '@mui/icons-material/Close';
 import Checkbox from '@mui/material/Checkbox';
 
 import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../service/ingest_api";
@@ -34,6 +36,7 @@ import {
   entity_api_get_entity_ancestor_list
 } from "../service/entity_api";
 import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
+// import {OrganIcons} from "./ui/icons";
 import SearchComponent from "./search/SearchComponent";
 import RUIIntegration from "./uuid/tissue_form_components/ruiIntegration";
 import {toTitleCase} from "../utils/string_helper";
@@ -54,9 +57,14 @@ export const SampleForm = (props) => {
   let [openSearch, setOpenSearch] = React.useState(false);
   let [ruiModal, setRuiModal] = React.useState([false]);
   let [ruiDetailsModal, setRUIDetailsModal] = React.useState(false);
-  let [ruiEnabled, setRuiEnabled] = React.useState(false);
+  let [ruiEnabled, setRuiEnabled] = React.useState([false]);
   let [RUIJson, setRUIJson] = React.useState(false);
   let [RUIDetails, setRUIDetails] = React.useState([null,null]);
+  let [snackbarController, setSnackbarController] = React.useState({
+    open: false,
+    message: "", 
+    status: "info"
+  });
   const userInfo = JSON.parse(localStorage.getItem("info"));
   let organ_types = JSON.parse(localStorage.getItem("organs"));
   let[permissions,setPermissions] = useState( { 
@@ -91,13 +99,6 @@ export const SampleForm = (props) => {
   let[formErrors, setFormErrors] = useState( {
   } );
 
-  // let organMenu = Object.keys(organ_types)
-  //   .sort((a, b) => organ_types[a].localeCompare(organ_types[b])) // Sort keys by their values
-  //   .map(key => (
-  //     <option key={key} value={key}>
-  //       {organ_types[key]}
-  //     </option>
-  //   ));
   const organMenu = useMemo(() => {
     return Object.keys(organ_types)
       .sort((a, b) => organ_types[a].localeCompare(organ_types[b]))
@@ -125,30 +126,28 @@ export const SampleForm = (props) => {
                 .then((ancestorList) => {
                   console.debug('%c◉ ancestorList ', 'color:#00ff7b', ancestorList);
                   let organObject;
-                  let organ;
-                  try {
-                    if(Array.isArray(ancestorList.results)){
-                      organObject = ancestorList.results.find(obj => obj.hasOwnProperty('organ'));
-                      console.debug('%c◉ organObject ', 'color:#00ff7b', organObject.organ);
-                    }else{
-                      organObject = ancestorList.results;
-                    }
-                    organ = organObject.organ ? organObject.organ : undefined;
-                    // console.debug('%c◉ LOADED BY UUID, PARENT ORG IS:', 'color:#00ff7b', organ);
-                    // entityInfo.organ = organ;
-                    console.debug('%c◉ RUI_ORGAN_TYPES.includes(organ) ', 'color:#00ff7b', RUI_ORGAN_TYPES.includes(organ));
-                    console.debug('%c◉ setRuiEnabled: ', 'color:#E7EEFF;background: #9359FF;padding:200',(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block"));
-                    setRUIDetails([organ])
-                    setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block") ? true : false,organ]);
-                    // entityInfo.ruiEnabled =(RUI_ORGAN_TYPES.includes(entityInfo.organ) && entityInfo.sample_category==="block" ) ? true : false;
-                  }catch(error){
-                    console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
-                    // return error;
+                  if(Array.isArray(ancestorList.results)){
+                    organObject = ancestorList.results.find(obj => obj.hasOwnProperty('organ'));
+                  }else{
+                    organObject = ancestorList.results;
                   }
-                } )
+                  let organ = organObject.organ ? organObject.organ : undefined;
+                  console.debug(
+                    '%c ◉ setRuiEnabled:  ', 
+                    'color:#E7EEFF;background: #9359FF;padding:200',
+                    organ,
+                    RUI_ORGAN_TYPES.includes(organ)
+                  );
+                  setRUIDetails([organ])
+                  setRuiEnabled([(RUI_ORGAN_TYPES.includes(organ) && entityInfo.sample_category==="block") ? true : false,organ]);
+                  setSourceEntity((prevValues) => ({
+                    ...prevValues,
+                    organ: organ,
+                  }));
+                })
                 .catch((error) => { 
                   console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
-                } )
+                })
             }else if(entityInfo.direct_ancestor.organ){
               // We already have the Organ from the Source
               console.debug('%c◉ setRuiEnabled:  ', 'color:#E7EEFF;background: #9359FF;padding:200',(RUI_ORGAN_TYPES.includes(entityInfo.direct_ancestor.organ) && entityInfo.sample_category==="block"));
@@ -201,23 +200,76 @@ export const SampleForm = (props) => {
     }else{
       setPermissions( {
         has_write_priv: true,
-      } );
-      
+      });
+      // We should check if we're being passed a sourceEntity through the URL
+      let url = new URL(window.location.href);
+      let params = Object.fromEntries(url.searchParams.entries());
+      if (Object.keys(params).length > 0) {
+        console.debug('%c◉ URL params ', 'color:#00ff7b', params);
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          ...params
+        }));
+        setSnackbarController({
+          open: true,
+          message: "Passing Form values from URL parameters",
+          status: "success"
+        });
+      }
+      // Set the Source if Passed from URL
+      if (params.direct_ancestor_uuid) {
+        // Let's just pass it as if it were a row in the search table
+        entity_api_get_entity(params.direct_ancestor_uuid)
+          .then((response) => {
+            let error = response?.data?.error ?? false;
+            if (!error && (response?.results?.entity_type === "Donor" || response.results.entity_type === "Sample")){
+              console.debug('%c◉ error ', 'color:#00ff7b', error);
+              let passSource = {row: response?.results ? response.results : null};
+              console.log("passSource",passSource)
+              handleSelectSource(passSource)
+            }
+            else if(!error && response?.results?.entity_type !== "Donor" && response.results.entity_type !== "Sample"){
+              setSnackbarController({
+                open: true,
+                message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must be a Donor or Sample) `,
+                status: "error"
+              });
+            }else if(error){
+              setSnackbarController({
+                open: true,
+                message: `Sorry, There was an error selecting your source: ${error}`,
+                status: "error"
+              });
+            }else{
+              throw new Error(response)
+            }
+          })
+          .catch((error) => {
+            console.debug("entity_api_get_entity ERROR", error);
+            setPageErrors(error);
+          } );
+      }
     }
     setLoading(false);
   }, [uuid]);
 
-  function handleRUIJson(dataFromChild){
-    console.debug('%c◉Form  handleRUIJson ', 'color:#00ff7b',dataFromChild);
-    setFormValues((prevValues) => ( {
-      ...prevValues,
-      rui_location: JSON.stringify(dataFromChild)
-    } ));
-    console.log("dataFromChild: "+typeof dataFromChild)
-    setRUIJson(JSON.parse(dataFromChild))
-    setRuiModal([false])
-    console.debug('%c◉ PostRUISELECT ', 'color:#00ff7b', RUIJson, formValues);
-  };
+  function donorSexDetail(response){
+    const donorDetails =
+    response.results.length === 1
+      ? response.results[0]
+      : response.results.find((d) => d.entity_type === "Donor");
+      let donorMeta = null;
+      try {
+        console.debug('%c◉ donorDetails ', 'color:#00ff7b', donorDetails.metadata);
+        donorMeta = donorDetails.metadata.organ_donor_data || donorDetails.metadata.living_donor_data;
+        const donorSexDetails = donorMeta.find((m) => m.grouping_code === "57312000");
+        return donorSexDetails.preferred_term;
+      }catch(error){
+        console.log("No Donormeta",error);
+        return null;
+      }
+    
+  }
 
   function handleInputChange(e){
     const{id, value, checked} = e.target;
@@ -235,39 +287,22 @@ export const SampleForm = (props) => {
       console.debug('%c◉ Block! ', 'color:#005EFF');
       entity_api_get_entity_ancestor_list(formValues.direct_ancestor_uuid)
         .then((response) => {
-          console.debug('%c◉ isRUIEntity Response ', 'color:#00ff7b', response);
-          console.log(response.results);
-          // the handleJson values
-          const donorDetails =
-          response.results.length === 1
-            ? response.results[0]
-            : response.results.find((d) => d.entity_type === "Donor");
-          const donorMeta =
-            donorDetails.metadata.organ_donor_data ||
-            donorDetails.metadata.living_donor_data;
-          // Get Sex Details
-          const donorSexDetails = donorMeta.find(
-            (m) => m.grouping_code === "57312000"
-          );
-          console.debug('%c◉ donorSexDetails ', 'color:#00ff7b', donorSexDetails);
-          let donorSex = donorSexDetails.preferred_term;
-          console.debug('%c◉ donorSex ', 'color:#00ff7b', donorSex);
-
-          let organ;
-          let organObject;
-          // Lets skip Right to assembly of RUI Info
-          // If we've already set an ruiOrgan By Selecting it as the Source
-          console.debug('%c◉ formValues ', 'color:#ffe921', formValues);
-          if(formValues.RUIOrgan && formValues.RUIOrgan === true){
-            setRUIDetails([formValues.organ,donorSex]);
+          console.debug('%c◉ isRUIEntity Response ', 'color:#00ff7b', response.results);
+          let donorSex = donorSexDetail(response);
+        if(formValues.RUIOrgan && formValues.RUIOrgan === true){
+            setRUIDetails([formValues.organ,donorSex?donorSex:null]);
             setRuiEnabled([true]);
           }else if(sourceEntity.sample_category !== "block" && sourceEntity.sample_category !== "organ" ){
+            // @TODO: Review the logic here bcause we're in the process of setting the form value, 
+            // this shouldnt happen, whats going on?
             // If the source isnt an Organ or Block, We're not enabling RUI
             setRuiEnabled([false]);
           }else{
             // We gotta fetch the organ from up the ancestry chain
             // Then assemble the RUI Info
             try {
+              let organ;
+              let organObject;
               if(Array.isArray(response.results)){
                 organObject = response.results.find(obj => obj.hasOwnProperty('organ'));
                 console.debug('%c◉ organObject ', 'color:#00ff7b', organObject.organ);
@@ -333,13 +368,6 @@ export const SampleForm = (props) => {
     setIsProcessing(false);
   }
     
-  function openRUIDetailModal(){
-    console.debug('%c◉  openRUIDetailModal', 'color:#00ff7b');
-    console.debug(RUIJson);
-    // console.debug(RUIJson.location);
-    setRUIDetailsModal(true)
-  }
- 
   function handleSubmit(e){
     e.preventDefault()    
     setIsProcessing(true);
@@ -417,8 +445,39 @@ export const SampleForm = (props) => {
       console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
+  function fetchTopOrgan(direct_ancestor_uuid){
+    if(!direct_ancestor_uuid){
+      return null;
+    }
+    let organObject;
+    entity_api_get_entity_ancestor_list(direct_ancestor_uuid)
+      .then((response) => {
+        // console.debug('%c◉ fetchTopOrgan response ', 'color:#00ff7b', response);
+        if(Array.isArray(response.results)){
+          organObject = response.results.find(obj => obj.hasOwnProperty('organ'));
+          // console.debug('%c◉ organObject ', 'color:#00ff7b', organObject);
+        }else{
+          organObject = response.results;
+          // console.debug('%c◉ organObject ', 'color:#00ff7b', organObject);
+        }
+        let organ = organObject.organ ? organObject.organ : undefined;
+        console.debug('%c◉ organ ', 'color:#00ff7b', organ);
+        setSourceEntity((prevValues) => ({
+          ...prevValues,
+          organ: organ,
+        }));
+        return organ;
+      })
+      .catch((error) => { 
+        console.debug('%c◉ getAncestorOrgan error ', 'color:#ff005d', error);
+        return error;
+      } );
+  }
 
   function handleSelectSource(e){
+    if(!e){
+      return null;
+    }
     setOpenSearch(false);
     handleClose(e);
     console.debug('%c◉ handleSelectSource ', 'color:#00ff7b', e.row);
@@ -427,16 +486,20 @@ export const SampleForm = (props) => {
     if(e.row.organ){
       // Is this a RUI Organ?
       ruiOrgan = RUI_ORGAN_TYPES.includes(e.row.organ) 
+    }else{
+      fetchTopOrgan(e.row.uuid);
     }
+
     setFormValues((prevValues) => ( {
       ...prevValues,
       direct_ancestor_uuid: e.row.uuid,
       ...((e.row.organ) && {organ: e.row.organ} ),
       ...((ruiOrgan === true) && {RUIOrgan: true} ),
     } ));
+
     // If the source is a Donor we already know we're not RUI Enabled abymore
     if(e.row.entity_type === "Donor"){
-      console.debug('%c◉ setRuiEnabled:  FALSE', 'color:#E7EEFF;background: #9359FF;padding:200');
+      // console.debug('%c◉ setRuiEnabled:  FALSE', 'color:#E7EEFF;background: #9359FF;padding:200');
       setRuiEnabled([false]);
     }
   }
@@ -453,7 +516,8 @@ export const SampleForm = (props) => {
   }
 
   function wrapUp(error){
-    console.debug('%c◉ Wrapup Err ', 'color:#00ff7b');
+    let errors = pageErrors;
+    console.debug('%c◉ Wrapup Err pageErrors ', 'color:#00ff7b', errors);
     setPageErrors(error);
     setIsProcessing(false);
   }
@@ -491,8 +555,26 @@ export const SampleForm = (props) => {
       sptype === "blood";
   }
 
+  // RUI
+  function handleRUIJson(dataFromChild){
+    console.debug('%c◉Form  handleRUIJson ', 'color:#00ff7b',dataFromChild);
+    setFormValues((prevValues) => ( {
+      ...prevValues,
+      rui_location: JSON.stringify(dataFromChild)
+    } ));
+    console.log("dataFromChild: "+typeof dataFromChild)
+    setRUIJson(JSON.parse(dataFromChild))
+    setRuiModal([false])
+    console.debug('%c◉ PostRUISELECT ', 'color:#00ff7b', RUIJson, formValues);
+  }
+  function openRUIDetailModal(){
+    console.debug('%c◉  openRUIDetailModal', 'color:#00ff7b');
+    console.debug(RUIJson);
+    // console.debug(RUIJson.location);
+    setRUIDetailsModal(true)
+  }
   function shouldShowRUIInterface(){
-    console.debug('%c◉ ruiEnabled ', 'color:#00ff7b', ruiEnabled);
+    // console.debug('%c◉ ruiEnabled ', 'color:#00ff7b', ruiEnabled);
     return ruiEnabled[0]
   }
     
@@ -542,11 +624,6 @@ export const SampleForm = (props) => {
               closeRUIModal={() => setRuiModal([false])}
               location={RUIJson ? RUIJson : null}
               parent="SamplesForm" />
-              {/* <RUI 
-                user={JSON.parse(localStorage.getItem("info")).name}
-                uuid={uuid ? uuid : (sourceEntity ? sourceEntity.uuid : entityData.direct_ancestor_uuid)} 
-                source={sourceEntity ? sourceEntity : entityData.direct_ancestor} 
-                organ={ruiEnabled[1] ? ruiEnabled[1] : entityData.direct_ancestor }/> */}
           </Dialog>
         )}
         
@@ -575,7 +652,6 @@ export const SampleForm = (props) => {
                     overflowY: "scroll", 
                     marginTop: "20px", 
                     padding: "10px",
-                    // columnCount: "3"  
                     display: "flex",
                     flexDirection: "column",
                     flexWrap: "wrap",
@@ -596,11 +672,8 @@ export const SampleForm = (props) => {
                     );
                   } )}
                 </ul>
-                {/* </ul> */}
             </Collapse> 
-
           </Alert>
-          
         )}
 
         <form onSubmit={(e) => handleSubmit(e)} className="mt-2">
@@ -636,10 +709,17 @@ export const SampleForm = (props) => {
                 <b>Source Category:</b>{" "}
                 {sourceEntity.entity_type === "Donor" ? "Donor" : toTitleCase(sourceEntity.sample_category) }
               </Typography>
+              {sourceEntity.organ && !entityData.direct_ancestor?.organ && sourceEntity.sample_category.toLowerCase() !== "organ" &&(
+                <Typography>
+                  <b>Source Organ:</b>{" "}
+                  {organ_types[sourceEntity.organ]}
+                </Typography>
+              )}
 
               {isOrganBloodType(sourceEntity.sample_category) && (
                 <Typography>
                   <b>Organ Type:</b>{" "}
+                  {/* {organ_types[sourceEntity.organ]} <img src={OrganIcons(sourceEntity.organ)} height={25} width={25} alt={organ_types[sourceEntity.organ]}/> */}
                   {organ_types[sourceEntity.organ]}
                 </Typography>
               )}
@@ -805,18 +885,32 @@ export const SampleForm = (props) => {
           {(shouldShowRUIInterface() === false) && !checked && (    
             <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
               <Typography variant="caption">RUI Interface not Available < br/></Typography>
-              <Typography variant="caption">(Sample must be a Block from a Supported Organ Type)</Typography>
+              {formValues.sample_category !== "block" && (
+                <Typography variant="caption">(Sample must be a Block from a Supported Organ Type)<br /></Typography>
+              )}
             </Alert>
           )}
-          {shouldShowRUIInterface() === true && !checked && (
-            <Button
-              className="mt-2"
-              disabled={!permissions.has_write_priv}
-              onClick={() => setRuiModal([true])}
-              variant="contained">
-                {entityData.rui_location ? "Modify Location Information" : "Register Location"}
-            </Button>
-          )}          
+          {shouldShowRUIInterface() && !checked && (
+            <Box>
+              {entityData.rui_location ? ( // If we have a location
+                <Button
+                  className="mt-2"
+                  disabled={!permissions.has_write_priv}
+                  onClick={() => setRuiModal([true])}
+                  variant="contained">
+                  Modify Location Information
+                </Button>
+              ):( // No Saved Lcoation
+                <Button
+                  className="mt-2"
+                  disabled={!permissions.has_write_priv}
+                  onClick={() => setRuiModal([true])}
+                  variant="contained">
+                  Register Location
+                </Button>
+              )}
+            </Box>
+          )}   
           
           {/* RUI VIEW */}
           {(formValues.rui_location) && !checked && (
@@ -834,7 +928,6 @@ export const SampleForm = (props) => {
               <Dialog
                 sx={{
                   height: "80%",
-
                 }}
                 onClose={() => setRUIDetailsModal(false)}
                 aria-labelledby="rui-view-dialog"
@@ -895,6 +988,27 @@ export const SampleForm = (props) => {
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
         )}
+
+        {/* Snackbar Feedback*/}
+        <Snackbar 
+          open={snackbarController.open} 
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          autoHideDuration={6000} 
+          onClose={() => setSnackbarController(prev => ({ ...prev, open: false }))}>
+          <Alert
+            onClose={() => setSnackbarController(prev => ({ ...prev, open: false }))}
+            severity={snackbarController.status}
+            variant="filled"
+            sx={{ 
+              width: '100%',
+              backgroundColor: snackbarController.status === "error" ? "#f44336" : "#4caf50",
+              }}>
+            {snackbarController.message}
+          </Alert>
+        </Snackbar>
       </Box>
     );
   }
