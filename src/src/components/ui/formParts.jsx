@@ -17,7 +17,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCircleExclamation} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCircleExclamation} from "@fortawesome/free-solid-svg-icons";
+import CircleNotificationsIcon from '@mui/icons-material/CircleNotifications';
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -395,29 +396,45 @@ export function GroupSelector( {formValues, handleInputChange, memoizedUserGroup
   );
 }
 
+function errorNote(){
+		return (<>
+			<Typography variant="caption" color={"#444a65"}>
+				<strong><FontAwesomeIcon sx={{padding: "1.2em"}} icon={faHeadset}/></strong>If this message persists, please reach out to help@hubmapconsortium.org symbol beneith the table will re-launch this message
+			</Typography>
+		</>)
+	}
+  
+function noteWrap(note){
+  return (
+    <Typography variant="caption" color={"#444a65"}>
+      <strong>Note: </strong>{note}
+    </Typography>
+  );
+}
+
 export function FeedbackDialog( { 
-  showBulkMessage, 
-  setShowBulkMessage, 
-  bulkMessage,
+  showMessage, 
+  setShowMessage, 
+  message,
   title,
   summary,
+  note,
   color,
   icon
 } ){
-  let messageColor = color ? color : "#d32f2f";
+  let messageColor = color ? color : "#444A65";
   let altColorLight = LightenHex(messageColor, 20);
   let altColorDark = DarkenHex(messageColor, 20);
+  let defaultNote = ""
   let defaultSummary = "";
-  if (bulkMessage && bulkMessage.length > 0){
-    // defaultSummary = "There were some problems with your selection. Please review the following messages and update your data as necessary (Acceptable results have already been attached to the table, and no further action is needed for them):";
-  } else{
-    defaultSummary = "There are no problems currently known.";
+  if (!message || message.length <= 0){
+    defaultSummary = "No Known Problems or Messages";
   }
   
   return (
     <Dialog 
       maxWidth="sm"
-      open={showBulkMessage.toString()} 
+      open={showMessage} 
       sx={{margin: "auto", marginBottom: "0px"}}
       fullWidth={true}>
       <DialogTitle sx={{
@@ -427,13 +444,13 @@ export function FeedbackDialog( {
         padding: "2px 10px 0px 10px",
         borderTopLeftRadius: "4px",
         borderTopRightRadius: "4px",}}> 
-        <FontAwesomeIcon icon={icon?icon:faCircleExclamation} sx={{marginRight: "10px"}} /> {title?title:"Bulk Selection Error"}
+        <FontAwesomeIcon icon={icon?icon:faBell} sx={{marginRight: "10px"}} /> {title?title:"Attention: "}
       </DialogTitle>
       <DialogContent sx={{border: `1px solid ${messageColor}`}}> 
-        <Typography sx={{fontSize: "0.9rem", marginBottom: "10px"}}>
+        <Typography sx={{fontSize: "0.9rem", marginBottom: "10px", marginTop: "10px"}}>
           {summary?summary:defaultSummary}
         </Typography >
-        {(bulkMessage && bulkMessage.length>0 && typeof bulkMessage ==="object") ? bulkMessage.map(([details, items], index) => (
+        {(message && message.length>0 && typeof message ==="object") ? message.map(([details, items], index) => (
           <React.Fragment key={index}>
             <Typography sx={{fontSize: "0.9rem", marginTop: "20px"}}>{details}</Typography>
             <ul style={{margin: "10px 0px 20px 0px", padding: "20px", background: messageColor+"20", borderRadius: "5px", border: `1px solid ${messageColor+20}`}}>
@@ -477,14 +494,19 @@ export function FeedbackDialog( {
         background: "rgb(207, 211, 226)", 
         padding: "6px 10px", 
         display: "flex", 
-        // borderTop: "1px solid #D32F2F40"
         border: `1px solid ${messageColor}`, 
         borderTop:"none",
         borderBottomLeftRadius: "4px",
         borderBottomRightRadius: "4px"}}>
-        <Typography variant="caption" color={"#444a65"}>
-          <strong>Note: </strong>If you need to review this information again, clicking on the <FontAwesomeIcon sx={{padding: "1.2em"}} icon={icon?icon:faCircleExclamation}/> symbol beneith the table will re-launch this message
-        </Typography>
+          
+        {note && (
+          noteWrap(note)  
+        )}
+          
+        {((!message || message.length <= 0) && (!summary || summary.length<=0)) && (!note || note.length<=0) && (
+          errorNote(errorNote)  
+        )}
+        
         <Button
           size="small"
           sx={{
@@ -495,7 +517,7 @@ export function FeedbackDialog( {
               color: "white"
             }
           }}
-          onClick={() => setShowBulkMessage(false)}
+          onClick={() => setShowMessage(false)}
           variant="contained"
           startIcon={<ClearIcon />}
           color="primary">
