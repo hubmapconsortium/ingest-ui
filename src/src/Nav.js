@@ -13,7 +13,7 @@ import LoadingButton from '@mui/lab/LoadingButton'
 import {ingest_api_users_groups} from './service/ingest_api';
 
 export const Navigation = (props) => {
-  const[userDataGroups, setUserDataGroups] = React.useState(props.userDataGroups ? props.userDataGroups : null)
+  const[userDataGroups, setUserDataGroups] = React.useState(JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null)
   const[anchorEl, setAnchorEl] = React.useState({
     I: null,
     B: null,
@@ -23,12 +23,12 @@ export const Navigation = (props) => {
   const open_B = Boolean(anchorEl.B)
   const open_S = Boolean(anchorEl.S)
 
-  const userInfo = props.appInfo
+  const userInfo = JSON.parse(localStorage.getItem("info")) ? JSON.parse(localStorage.getItem("info")) : null
 
   useEffect(() => {
     console.debug('%c◉ userGroup UseEffect ', 'color:#00ff7b', );
     try{
-      let userGroups = JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)
+      let userGroups = JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null
       if(!userGroups || userGroups === null){
         ingest_api_users_groups()
         .then((res) => {
@@ -54,6 +54,18 @@ export const Navigation = (props) => {
 
   const handleClose = () => {
     setAnchorEl({I: null, B: null, S: null})
+  }
+
+  const handleChange = (to) => {
+    setAnchorEl({I: null, B: null, S: null})
+    let url = new URL(window.location.href);
+    if(url.pathname === to){
+      setTimeout(() => {
+        window.location.assign(`${process.env.REACT_APP_URL}${to}`);
+      }, 500);    
+    }else{
+      window.location.assign(`${process.env.REACT_APP_URL}${to}`);
+    }
   }
 
   function renderMenuButtonBar(){
@@ -102,14 +114,14 @@ export const Navigation = (props) => {
           aria-controls={open ? 'IndividualMenu' : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
-          onClick={handleClick}>
+          onClick={(e) => handleClick(e)}>
           { label.toString() }
         </Button>
         <Menu
           id="IndividualMenu"
           anchorEl={anchorEl}
           open={open}
-          onClose={() => handleClose()}
+          onClose={(e) => handleClose(e)}
           MenuListProps={{
             'aria-labelledby': 'IndividualButton'
           }}>
@@ -120,15 +132,15 @@ export const Navigation = (props) => {
       </React.Fragment>
     )
   }
+  
   function renderMenuButton(to, label, index){
     return(
       <MenuItem
         key={index}
         className="nav-link"
         component={Link}
-        onClick={handleClose}
-        to={to} >
-        {label}
+        onClick={() => handleChange(to)} >
+        {label} 
       </MenuItem>
     )
   }
