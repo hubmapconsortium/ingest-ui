@@ -31,8 +31,6 @@ import EmojiNatureIcon from '@mui/icons-material/EmojiNature';
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 import {GridLoader} from "react-spinners";
-
-
 import {
   entity_api_get_entity,
   entity_api_update_entity,
@@ -387,6 +385,7 @@ export const SampleForm = (props) => {
       entity_api_get_entity_ancestor_list(sourceUUID)
         .then((response) => {  
           let sex = getDonorSexDetail(response);
+          console.debug('%c◉ sex, ', 'color:#00ff7b', sex);
           setRUIManagerObject((prevValues) => ({...prevValues,
             details: {...prevValues.details, 
               donorSex: sex,
@@ -413,9 +412,13 @@ export const SampleForm = (props) => {
       return null;
     }else{
       const donorDetails = ancestors.results.length === 1 ? ancestors.results[0] : ancestors.results.find((d) => d.entity_type === "Donor");
-      let donorMeta = donorDetails.metadata.organ_donor_data || donorDetails.metadata.living_donor_data;
-      const donorSexDetails = donorMeta.find((m) => m.grouping_code === "57312000");
-      return donorSexDetails.preferred_term
+      if(donorDetails.metadata){
+        let donorMeta = donorDetails.metadata.organ_donor_data || donorDetails.metadata.living_donor_data;
+        const donorSexDetails = donorMeta.find((m) => m.grouping_code === "57312000");
+        return donorSexDetails.preferred_term
+      }else{
+        return null
+      }
     }
   }      
   function getSourceOrganDetail(ancestors){
@@ -562,22 +565,26 @@ export const SampleForm = (props) => {
       );
     }else{ // No Donor Metadata 
       return(
-        <><Button // Female Button
-        className="mt-2"
-        endIcon={<FemaleIcon />}
-        disabled={!permissions.has_write_priv}
-        onClick={() => preloadRUI({donorSex: "female"})}
-        variant="contained">
-        Register Location
-      </Button>
-      <Button // Male Button
-        className="mt-2 mx-2"
-        endIcon={<MaleIcon />}
-        disabled={!permissions.has_write_priv}
-        onClick={() => preloadRUI({donorSex: "male"})}
-        variant="contained">
-        Register Location
-      </Button></>
+        <>
+          <Button // Female Button
+            small
+            className="m-1"
+            endIcon={<FemaleIcon />}
+            disabled={!permissions.has_write_priv}
+            onClick={() => preloadRUI({donorSex: "female"})}
+            variant="contained">
+            Register Location
+          </Button>
+          <Button // Male Button
+            small
+            className="m-1"
+            endIcon={<MaleIcon />}
+            disabled={!permissions.has_write_priv}
+            onClick={() => preloadRUI({donorSex: "male"})}
+            variant="contained">
+            Register Location
+          </Button>
+        </>
       );
     }
   }
@@ -877,15 +884,14 @@ export const SampleForm = (props) => {
                   onClose={(e) => handleClose(e)}
                   aria-labelledby="rui-dialog"
                   open={RUIManagerObject.interface.openReg}>
-                      <RUIIntegration
-                        handleJsonRUI={(str) =>handleRUIJson(str)}
-                        closeRUIModal = {(str) => closeRUIModal(str)}
-                        organList={localStorage.getItem('organs') ? JSON.parse(localStorage.getItem('organs')) : {}}
-                        organ={ RUIManagerObject.details.organ ? RUIManagerObject.details.organ : "error"}
-                        sex={RUIManagerObject.details.donorSex ? RUIManagerObject.details.donorSex : RUIManagerObject.interface.tempSex}
-                        user={sourceEntity ? sourceEntity.created_by_user_displayname : null}
-                        location={RUIManagerObject.details.json ? RUIManagerObject.details.json : null}
-                      />
+                    <RUIIntegration
+                      handleJsonRUI={(str) =>handleRUIJson(str)}
+                      closeRUIModal = {(str) => closeRUIModal(str)}
+                      organList={localStorage.getItem('organs') ? JSON.parse(localStorage.getItem('organs')) : {}}
+                      organ={RUIManagerObject.details.organ ? RUIManagerObject.details.organ : "error"}
+                      sex={RUIManagerObject.details.donorSex ? RUIManagerObject.details.donorSex : RUIManagerObject.interface.tempSex}
+                      user={sourceEntity ? sourceEntity.created_by_user_displayname : null}
+                      location={RUIManagerObject.details.json ? RUIManagerObject.details.json : null}/>
                 </Dialog>
               )}
               {(formValues.rui_location) && !checked && ( // View JSON Data
@@ -919,16 +925,19 @@ export const SampleForm = (props) => {
             {/* RUI State Feedback */}
             {!shouldShowRUIInterface() && !checked && (permissions.has_admin_priv || permissions.has_write_priv) &&( // RUI is Not Available (but user could edit)
               <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
+                
                 {sourceEntity && sourceEntity.entity_type === "Donor" &&(  // Waiting for Source to be present
                   <Typography variant="caption">RUI Interface is only available on Block Samples  < br/></Typography>
                 )}
-                {RUIManagerObject.details.organ && (<>
-                  {!formValues.direct_ancestor_uuid &&(  // Waiting for Source to be present
-                    <Typography variant="caption">Please select a source to begin determining RUI Eligibility  < br/></Typography>
-                  )}
-                  {!RUIManagerObject.interface.loading && formValues.direct_ancestor_uuid && !formValues.sample_category && (  // Waiting for Category to be selected
-                    <Typography variant="caption">Please select a Sample Category to determine RUI Eligibility  < br/></Typography>
-                  )}
+
+                {!formValues.direct_ancestor_uuid &&(  // Waiting for Source to be present
+                  <Typography variant="caption">Please select a source to begin determining RUI Eligibility  < br/></Typography>
+                )}
+
+                {!RUIManagerObject.interface.loading && formValues.direct_ancestor_uuid && !formValues.sample_category && (  // Waiting for Category to be selected
+                  <Typography variant="caption">Please select the category 'Block' to enable RUI Interface  < br/></Typography>
+                )}
+
                   {!RUIManagerObject.interface.loading && formValues.direct_ancestor_uuid && formValues.sample_category && ( // RUI is Unavailable, not loading or waiting
                     <> 
                       <Typography variant="caption">RUI Interface not Available < br/></Typography>
@@ -940,30 +949,31 @@ export const SampleForm = (props) => {
                       )}
                     </>
                   )}
-                </>)}
+
+
               </Alert>
               )}
             {/* END RUI State Feedback */}
             {/* RUI Manager Interface (Buttons) */}
               {/* Edit or Add RUI data*/}
-      
-              {/* Open RUI JSON Data */}
-                {(RUIManagerObject.details.json) && !checked && ( // We have RUI Data in The Form Field
-                  <React.Fragment>
-                    <div className="col-sm-6 text-left">
-                      {(entityData.rui_location || RUIManagerObject.details.json) ? ( // If we have a location from the Entity Data (already saved)
-                        <Button
-                          className="mt-2"
-                          disabled={!permissions.has_write_priv}
-                          onClick={() => setRUIManagerObject((prevValues) => ( {...prevValues, interface: {...prevValues.interface, openReg: true} }))}
-                          variant="contained">
-                          Modify Location Information
-                        </Button>
-                      ):( // No Saved Entity RUI Data, offer to Register
-                        <>{renderRuiRegisterButtonset()}</>
-                      )}
-                    </div>
-                    <div className="col-sm-6 text-left">
+
+              {shouldShowRUIInterface() && !checked && ( // RUI is Available
+                <React.Fragment>
+                  <div className="col-sm-12 text-left">
+                    {(entityData.rui_location || RUIManagerObject.details.json) ? ( // If we have a location from the Entity Data (already saved)
+                      <Button
+                        className="mt-2"
+                        disabled={!permissions.has_write_priv}
+                        onClick={() => setRUIManagerObject((prevValues) => ( {...prevValues, interface: {...prevValues.interface, openReg: true} }))}
+                        variant="contained">
+                        Modify Location Information
+                      </Button>
+                    ):( // No Saved Entity RUI Data, offer to Register
+                      <>{renderRuiRegisterButtonset()}</>
+                    )}
+                  </div>
+                  <div className="col-sm-6 text-left">
+                    {(RUIManagerObject.details.json) && !checked && ( // We have RUI Data in The Form Field
                       <Button
                         small
                         variant="text"
@@ -973,13 +983,15 @@ export const SampleForm = (props) => {
                         onClick={() => setRUIManagerObject((prevValues) => ( {...prevValues, interface: {...prevValues.interface, JSONView: true} }))}>
                         View Location
                       </Button>
-                    </div>             
-                  </React.Fragment>
-                )}
+                    )}
+                  </div>
+                </React.Fragment>
+              )}
+              
             {/* END  Manager Interface (Buttons) */}
               
               {/* TODO: Would be nice to test rendering/viewing toggles to provide this info by choice on dev/test/prod */}
-               {/* <Alert 
+              {/* <Alert 
                 icon={<EmojiNatureIcon fontSize="inherit" />} 
                 variant="caption" 
                 severity="info" 
@@ -1000,6 +1012,11 @@ export const SampleForm = (props) => {
                   variant="caption" 
                   sx={!RUIManagerObject.details.organ ? {color: "red"} : {color: "green"}}>
                       RUIOrgan:  {RUIManagerObject.details.organ || null}
+                </Typography><br />
+                <Typography 
+                  variant="caption" 
+                  sx={!RUIManagerObject.details.json ? {color: "red"} : {color: "green"}}>
+                      RUIJSON:  {RUIManagerObject.details.json ? "true" : "false"}
                 </Typography><br />
                 <Typography 
                   variant="caption" 
