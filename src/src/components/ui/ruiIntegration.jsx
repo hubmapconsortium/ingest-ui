@@ -41,7 +41,6 @@ class RUIIntegration extends Component {
 
   componentDidMount() {
     console.log('RUI...', this.props)
-
     this.setState({organ_types: JSON.parse(localStorage.getItem("organs"))}, () => {
         console.log(this.state.organ_types);
       }, () => {
@@ -51,7 +50,6 @@ class RUIIntegration extends Component {
     this.updateRUIConfig();
     this.updateDimensions();
     window.addEventListener("resize", this.updateDimensions.bind(this));
-
     this.setState({
       mounted: true,
     });
@@ -117,8 +115,10 @@ class RUIIntegration extends Component {
       // IEC TODO: Fetch previous registrations for this user/organization to the same organ
       return [];
     };
-    rui.cancelRegistration = function () {
-      rui.register(self.props.location);
+    rui.cancelRegistration = function (str) {
+      console.log("cancelRegistration",str);
+      self.setState({ close_rui: true });
+      self.props.closeRUIModal();
     };
     rui.skipUnsavedChangesConfirmation="true"
     if (location &&
