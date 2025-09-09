@@ -1,9 +1,8 @@
 import React, { Component } from "react";
-import { RUI_ORGAN_MAPPING } from "../../../constants.jsx";
-import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
-import "../../../App.css";
+import { RUI_ORGAN_MAPPING } from "../../constants.jsx";
+import "../../App.css";
 
-// NOTE: This will be superseeded by the ruiIntegration.jsx in /ui/ 
+// NOTE: This will be superseeding the ruiIntegration.jsx in /uuid/tissue_form_components/
 class RUIIntegration extends Component {
 
   constructor() {
@@ -30,9 +29,9 @@ class RUIIntegration extends Component {
     if (window.innerWidth < 1100) {
       this.setState({ width: 1000, height: 647 });
     } else {
-      const update_width = Math.min(window.innerWidth - 50, 2000);
-      const update_height = Math.round(window.innerHeight - 50, 2000);
-      this.setState({ width: update_width, height: update_height, margin_left: 25 });
+      const update_width = Math.min(window.innerWidth - 60, 2000);
+      const update_height = Math.round(window.innerHeight - 60, 2000);
+      this.setState({ width: update_width, height: update_height, margin_left: 0 });
     }
   }
 
@@ -43,13 +42,10 @@ class RUIIntegration extends Component {
   componentDidMount() {
     console.log('RUI...', this.props)
 
-    ubkg_api_get_organ_type_set()
-      .then((res) => {
-        this.setState({organ_types: res}, () => {
-          console.log(this.state.organ_types);
-        }, () => {
-          console.log('ERROR: ubkg_api_get_organ_type_set')
-        });
+    this.setState({organ_types: JSON.parse(localStorage.getItem("organs"))}, () => {
+        console.log(this.state.organ_types);
+      }, () => {
+        console.log('ERROR: ubkg_api_get_organ_type_set')
       });
 
     this.updateRUIConfig();
@@ -99,7 +95,6 @@ class RUIIntegration extends Component {
     }
     
     const self = this;
-
     const rui = this.ruiRef.current;
     rui.baseHref = process.env.REACT_APP_RUI_BASE_URL;
     rui.user = {
@@ -125,6 +120,7 @@ class RUIIntegration extends Component {
     rui.cancelRegistration = function () {
       rui.register(self.props.location);
     };
+    rui.skipUnsavedChangesConfirmation="true"
     if (location &&
         // Don't re-set the registration if it's the same as before
         (!rui.editRegistration || location['@id'] !== rui.editRegistration['@id'])) {
@@ -140,9 +136,12 @@ class RUIIntegration extends Component {
           {!this.state.close_rui &&
             (
               <React.Fragment>
-                <div id='unityContainer'
-                  style={{ width: this.state.width, height: this.state.height, marginLeft: this.state.margin_left}}
-                >
+                <div 
+                  id='unityContainer'
+                  style={{ 
+                    width: this.state.width, 
+                    height: this.state.height, 
+                    marginLeft: this.state.margin_left}}>
                   <ccf-rui ref={this.ruiRef}></ccf-rui>
                 </div>
               </React.Fragment>
